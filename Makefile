@@ -2,7 +2,7 @@
 # (programs)
 JAVAC=javac
 SCALA_HOME=${HOME}/programs/scala
-SCALAC=${SCALA_HOME}/bin/scalac
+SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
 SCALADOC=${SCALA_HOME}/bin/scaladoc
 # (locations)

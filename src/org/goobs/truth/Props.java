@@ -27,6 +27,19 @@ public class Props {
   @Option(name="reverb.raw.gzip", gloss="If true, the input files are in gzip format")
   public static boolean REVERB_RAW_GZIP = true;
 
+  @Option(name="psql.host", gloss="The hostname for the PSQL server")
+  public static String PSQL_HOST = "john0";
+  @Option(name="psql.host.tunnels", gloss="A list of hosts which don't have direct access, but tunnel through localhost")
+  public static String[] PSQL_HOST_TUNNELS = new String[]{"hal".intern()};
+  @Option(name="psql.port", gloss="The port at which postgres is running")
+  public static int PSQL_PORT = 4243;
+  @Option(name="psql.db", gloss="The database name")
+  public static String PSQL_DB = "truth";
+  @Option(name="psql.username", gloss="The username for the postgres session")
+  public static String PSQL_USERNAME = "gabor";
+  @Option(name="psql.password", gloss="The password for the postgres session")
+  public static String PSQL_PASSWORD = "gabor";
+
   private static void initializeAndValidate() {
     /* nothing yet */
   }
