@@ -1,0 +1,215 @@
+\documentclass[11pt,a4paper]{article}
+% -- IMPORTS --
+% (lib)
+%\usepackage{acl2013}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
+\usepackage{multirow,hhline}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[ruled,lined,linesnumbered]{algorithm2e}
+% (custom)
+\input std-macros.tex
+% (tweaks)
+\definecolor{darkred}{rgb}{0.5451, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.3922, 0.0}
+
+\def\w#1{\textit{#1}}
+
+
+\title{Cats have Tails}
+\author{ 
+}
+\date{}
+
+% -- CONTENT --
+\begin{document}
+
+\maketitle
+
+
+\Section{search}{Search Problem}
+We run a search from each of the three terms in the
+  query fact.
+That is, for each of $a_1$, $r$, $a_2$, we create a
+  search problem as defined below.
+The paths from the result of these searches are used
+  as features in the learning problem
+  (see \refsec{learn}).
+
+We define the problem by specifying the state space,
+  the valid transitions, along with the weights of
+  the transitions.
+The algorithm used is a Uniform Cost Search, leading
+  to the additional challenge of ensuring that the
+  cost of each transition is very fast -- that is,
+  on the order of microseconds to keep pace with
+  the memory accesses for the search.
+
+Before delving into the search problem, we define the
+  notion of a \textbf{node}.
+A node is, at a high level, a phrase such as one
+  which would correspond to an argument or a relation.
+It is:
+\begin{itemize}
+\item Case sensitive, but normalized to be either
+      capitalized, all capitals, or all lowercase.
+\item Lemmatized and normalized where appropriate.
+      For instance, \w{has} and \w{had} are the same
+      node. In particular, the ReVerb normalized
+      relation is used.
+\item In the case when the phrase maps exactly to a
+      word form in WordNet, it is the WordNet synset.
+\end{itemize}
+
+The definition of the search problem is:
+
+\paragraph{State}
+A state is a tuple of the \textit{current} 
+  node, as well as the node that the search
+  directly came from; and, whether the query fact has been
+  following a valid series of steps for natural logic entailment.
+The state space is thus squared with respect to the
+  size of the vocabulary, and is utterly impractical
+  to enumerate directly.
+
+We can denote a state as $(n_{-1}, n)$.
+
+\paragraph{Transitions}
+A valid transition is one between states
+  $(n_{-1}, n)$ and $(n, n_{+1})$, such that in
+  relation to $n$, $n_{+1}$ is one of:
+
+\begin{itemize}
+\item \textbf{Add/Remove a closed class word}.
+      This is a class of transitions denoted by
+      \textit{ins($w$)} or \textit{del($w$)} 
+      where $w$ is the word being added or removed.
+      For example, transitioning from \w{cat} to
+      \w{a cat} or \w{every cat} or visa versa.
+\item \textbf{Add/Remove an adjective}.
+      Similar to above, but with adjectives. These are distinguished
+      from the above in that they have meaning for natural logic
+      entailment.
+\item \textbf{WordNet hypernymy}.
+      This is a class of transitions denoted by
+      \textit{hyper($n$)} or \textit{hypo($n$)},
+      where $n$ denotes the number of levels up or
+      down the tree we are jumping.
+      For example, we could transition from \w{cat}
+      to \w{feline} or to \w{animal}
+\item \textbf{WordNet relations}.
+      This is a class of transitions related to the other
+      WordNet relations (e.g., antonymy), primarily to
+      capture some of the inferences in natlog.
+\item \textbf{Freebase relations}.
+      This is a class of transitions aimed primarily
+      for proper nouns, traversing Freebase relations.
+      These are denoted by \textit{freebase($r$)},
+      where $r$ denotes the freebase relation we
+      have traversed.
+      For example, \w{Barack Obama} could transition
+      to \w{USA} via the \textit{employee\_of}
+      relation.
+\item \textbf{ReVerb relation}.
+      As in the Freebase case, we can move along a
+      ReVerb relation, denoted as \textit{reverb($r$)}.
+\item \textbf{Acronym and de-acronym}.
+      Expanding or creating an acronym,denoted by
+      \textit{acronym} and \textit{deacronym}.
+\item \textbf{Nearest neighbor similarity}.
+      The fallback is to search for nearest neighbors in similarity space.
+      This is, roughly, the equivalent of the CoNLL paper.
+\end{itemize}
+
+\paragraph{Weights}
+The weight of a transition from $(n_{-1},n)$ to
+  $(n,n_{+1})$ is given by appealing to the
+  transitions between $n_{-1}$ and $n$, and between
+  $n$ and $n_{+1}$.
+
+We denote the type of transition 
+  (e.g., ins($w$) or freebase($r$))
+  between $n_{-1}$ and $n$ to be $\phi_{-1}$, and the
+  type of transition between $n$ and $n_{+1}$ to
+  be $\phi_0$.
+For both of these, we define weights $w_{\phi_{-1}}$
+  and $w_{\phi_0}$, as well as a weight for the
+  bigram of the two: $w_{\phi_{-1}, \phi_0}$.
+Lastly, we incur a cost for exiting the domain of natural
+  logic entailments: $w_{nle}$.
+Our cost is thus given by:
+
+\begin{equation}
+\textrm{cost} = - w_{\phi_{0}}
+                - w_{\phi_{-1}, \phi_0}
+                - \1(\textrm{broke entailment}) \cdot w_{nle}
+\end{equation}
+
+We constrain $w_{\phi} \leq 0$ to ensure that the
+  cost is always positive. 
+
+Note, furthermore, that this is a natural decomposition
+  of a log-linear model where $\phi$ denote features
+  and $w$ denote the weights of the features.
+The cost of a path will become:
+
+\begin{equation}
+\sum_i cost_i = - \sum_i \left[ w_{\phi_i)} + w_{\phi_{i-1}, \phi_i}\right]
+\end{equation}
+
+If we exponentiate the negative of this, we arrive at:
+
+\begin{equation}
+\exp( \sum_i cost_i )
+  = \exp\left( \sum_i \left[ w_{\phi_i)} + w_{\phi_{i-1}, \phi_i} \right] \right)
+\end{equation}
+
+Over two classes: \textit{true} and \textit{false};
+  and, defining notation where $\phi$ denotes the
+  vector of active path types taken and $w$ denotes
+  the global weight vector, we arrive at our
+  log-linear model:
+
+\begin{equation}
+P(\textit{true}) \propto e^{w^{T} \phi}
+\end{equation}
+
+This decomposition is important, as it allows our
+  search to get smarter along with our learning
+  algorithm, and allows us to find better support
+  for facts as we learn what patterns entail
+  ``good'' support.
+
+\paragraph{Start State}
+The start state is the relevant word from the fact
+  we are beginning from, normalized to a valid node
+  (i.e., lemmatized, properly cased, etc.).
+For example, the search from $a_1$ of \w{cats have tails}
+  would be \w{cat}.
+
+\paragraph{Terminal State}
+The terminal state of the search is any node which
+  is attached to a known fact on the correct term.
+For example, a search ffrom $a_1$ of \w{cats have tails}
+  would finish at \w{dog} if there is a fact in the
+  database such as \w{dogs have tails}.
+
+\Section{learn}{Learning Problem}
+
+The prediction problem is a binary prediction task: is the given fact true
+  or false, given a database of known facts.
+We divide this section into the model, the objective function, and the
+  data (or lack thereof).
+
+\Subsection{model}{Model}
+Given a query fact $(a_1, r, a_2)$ we define the \textbf{support} for that
+  fact as the set of facts $\{ (a_1', r', a_2') \}$ such that we have
+  paths from $a_1 \rightarrow a_1'$, $r \rightarrow n'$,
+  and $a_2 \rightarrow a_2'$.
+We are thus given a set of triples of paths $\{p_{a_1}, p_{r}, p_{a_2}\}$.
+When featurized, 
+
+\Subsection{objective}{Objective}
+
+
+
+\end{document}

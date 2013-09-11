@@ -1,0 +1,42 @@
+#!/bin/bash
+exec scala -cp qry.jar "$0" "$@"
+!#
+import Qry._
+
+
+val program:List[String] = ("java"
+  -('cp, cp)
+//	-"Xrunhprof:cpu=samples,depth=25"
+	-"Xmx4G"
+	-"Xss32m"
+  -"XX:MaxPermSize=256M"
+	-'server
+  -'ea
+	->"org.goobs.truth.scripts.CreateGraph"
+).toList
+
+using("src/org/goobs/truth/conf/base.conf")
+
+submit(program
+)
+
+
+def cp:String = {
+  val JAVANLP = List(
+    System.getenv("JAVANLP_HOME") + "/projects/core/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/joda-time.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/jollyday-0.4.7.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/more/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/more/lib/BerkeleyParser.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/research/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/scala-2.10/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
+    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
+    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar"
+  ).mkString(":")
+  val SCALA = List(
+      System.getenv("SCALA_HOME") + "/lib/scala-library.jar",
+      System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
+    ).mkString(":")
+  List("dist/truth.jar", JAVANLP, SCALA).mkString(":")
+}
