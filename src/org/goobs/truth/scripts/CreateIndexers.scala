@@ -46,7 +46,7 @@ object CreateGraph {
         val phraseInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_PHRASE_INTERN + " (key, words) VALUES (?, ?);")
         val factInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_FACT_INTERN + " (key, file, begin_index, end_index, left_arg, rel, right_arg) VALUES (?, ?, ?, ?, ?, ?, ?);")
         wordInsert.setInt(1, wordIndexer.indexOf("", true))
-        wordInsert.setString(2, "")
+        wordInsert.setBytes(2, "".getBytes("UTF-8"))
         wordInsert.executeUpdate
         // Iterate over facts
         for (fact <- facts) {
@@ -60,7 +60,7 @@ object CreateGraph {
                   if (index < 0) {
                     index = wordIndexer.indexOf(word, true)
                     wordInsert.setInt(1, index)
-                    wordInsert.setString(2, word)
+                    wordInsert.setBytes(2, word.getBytes("UTF-8"))
                     wordInsert.executeUpdate
                   }
                   index
@@ -76,14 +76,14 @@ object CreateGraph {
           // Add fact
           factInsert.setInt(1, factI)
           factI += 1;
-          factInsert.setString(2, fact.file)
+          factInsert.setBytes(2, fact.file.getBytes("UTF-8"))
           factInsert.setLong(3, fact.begin)
           factInsert.setLong(4, fact.end)
           factInsert.setInt(5, phrases(0))
           factInsert.setInt(6, phrases(1))
           factInsert.setInt(7, phrases(2))
           factInsert.executeUpdate
-          if (factI % 1000 == 0) {
+          if (factI % 10000 == 0) {
             psql.commit
             println("added " + factI + " facts")
           }
