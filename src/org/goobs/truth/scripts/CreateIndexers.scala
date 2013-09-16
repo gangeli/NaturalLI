@@ -49,7 +49,7 @@ object CreateGraph {
         wordInsert.setBytes(2, "".getBytes("UTF-8"))
         wordInsert.executeUpdate
         // Iterate over facts
-        for (fact <- facts) {
+        for (fact <- facts if fact.confidence >= 0.5) {
           val phrases = for (phrase <- fact.elements) yield {
             var phraseIndex = phraseIndexer.indexOf(phrase)
             if (phraseIndex < 0) {
