@@ -12,6 +12,8 @@ import java.sql.ResultSet
 import edu.stanford.nlp.io.IOUtils._
 import edu.stanford.nlp.util.HashIndex
 
+import edu.smu.tspell.wordnet._
+
 import org.goobs.truth._
 import org.goobs.truth.Postgres._
 import org.goobs.truth.Implicits._
@@ -34,7 +36,8 @@ object CreateEdges {
     map.toMap
   }
 
-  def handlePhrases(wordIndex:Map[Int, String]):Unit = {
+  def handlePhrases(wordIndex:Map[Int, String],
+                    handleEdge:(Int,Int,String)=>Any):Unit = {
     slurpTable(TABLE_PHRASE_INTERN, {(r:ResultSet) =>
       val phrase:Array[Int] = r.getArray("words").getArray.asInstanceOf[Array[Integer]].map( x => x.asInstanceOf[Int] );
       println(phrase.map( wordIndex(_) ).mkString(" "))
@@ -44,7 +47,9 @@ object CreateEdges {
   def main(args:Array[String]) = {
     Props.exec(() => {
       val wordIndex:Map[Int, String] = handleWords
-      handlePhrases(wordIndex)
+      handlePhrases(wordIndex, { case (start:Int, end:Int, name:String) =>
+        7
+      })
     }, args)
   }
 }

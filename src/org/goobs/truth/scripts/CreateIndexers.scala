@@ -70,7 +70,7 @@ object CreateGraph {
                   if (index < 0) {
                     index = wordIndexer.indexOf(word, true)
                     wordInsert.setInt(1, index)
-                    wordInsert.setString(2, word)
+                    wordInsert.setString(2, word.replaceAll("\u0000", ""));
                     wordInsert.executeUpdate
                   }
                   index
@@ -86,7 +86,7 @@ object CreateGraph {
           // Add fact
           factInsert.setInt(1, factI)
           factI += 1;
-          factInsert.setBytes(2, fact.file.getBytes("UTF-8"))
+          factInsert.setString(2, fact.file.replaceAll("\u0000", ""))
           factInsert.setLong(3, fact.begin)
           factInsert.setLong(4, fact.end)
           factInsert.setInt(5, phrases(0))
