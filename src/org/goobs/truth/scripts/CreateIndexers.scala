@@ -16,7 +16,8 @@ import org.goobs.truth.Implicits._
 
 /**
  *
- * The entry point for constructing a graph between fact arguments.
+ * The entry point for constructing the nodes of a graph, indexed to a compact
+ * form.
  *
  * @author Gabor Angeli
  */
@@ -55,7 +56,7 @@ object CreateGraph {
         val phraseInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_PHRASE_INTERN + " (key, words) VALUES (?, ?);")
         val factInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_FACT_INTERN + " (key, file, begin_index, end_index, left_arg, rel, right_arg) VALUES (?, ?, ?, ?, ?, ?, ?);")
         wordInsert.setInt(1, wordIndexer.indexOf("", true))
-        wordInsert.setBytes(2, "".getBytes("UTF-8"))
+        wordInsert.setString(2, "")
         wordInsert.executeUpdate
         // Iterate over facts
         for (fact <- facts if fact.confidence >= 0.5) {
@@ -69,7 +70,7 @@ object CreateGraph {
                   if (index < 0) {
                     index = wordIndexer.indexOf(word, true)
                     wordInsert.setInt(1, index)
-                    wordInsert.setBytes(2, word.getBytes("UTF-8"))
+                    wordInsert.setString(2, word)
                     wordInsert.executeUpdate
                   }
                   index
