@@ -74,7 +74,7 @@ public class Props {
       Execution.exec(new Runnable() { @Override public void run() {
         initializeAndValidate();
         toRun.apply(props);
-      } }, config);
+      } }, props);
     } else {
       // Case: Run with Properties file or command line arguments
       final Properties props = StringUtils.argsToProperties(args);

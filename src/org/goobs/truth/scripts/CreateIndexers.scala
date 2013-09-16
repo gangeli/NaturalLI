@@ -26,9 +26,18 @@ object CreateGraph {
   def facts:Iterator[Fact] = {
     var offset:Long = 0;
     for (file <- iterFilesRecursive(Props.REVERB_RAW_DIR).iterator;
-         line <- {
-           if (Props.REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
-           else Source.fromFile(file) }.getLines
+         line <-
+           try {
+            { if (Props.REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
+              else Source.fromFile(file) }.getLines
+           } catch {
+             case (e:java.util.zip.ZipException) =>
+               try {
+                 Source.fromFile(file).getLines
+               } catch {
+                 case (e:Exception) => Nil
+               }
+           }
          ) yield Fact(file.getName, offset,
                       {offset += line.length + 1; offset},
                       line.split("\t"))
