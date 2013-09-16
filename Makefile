@@ -15,8 +15,8 @@ DIST=dist
 TMP=tmp
 DOC=scaladoc
 # (classpaths)
-JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/more/lib/BerkeleyParser.jar:${JAVANLP_HOME}/projects/core/lib/joda-time.jar:${JAVANLP_HOME}/projects/core/lib/jollyday-0.4.7.jar:${JAVANLP_HOME}/projects/research/lib/reverb.jar
-CP=${JAVANLP}
+JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
+CP=${JAVANLP}:lib/jaws.jar
 
 # -- BUILD --
 ${DIST}/truth.jar: $(wildcard src/org/goobs/truth/*.scala) $(wildcard src/org/goobs/truth/*.java) $(wildcard src/org/goobs/truth/scripts/*.scala) $(wildcard src/org/goobs/truth/conf/*.conf)

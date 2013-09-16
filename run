@@ -12,7 +12,7 @@ val program:List[String] = ("java"
   -"XX:MaxPermSize=256M"
 	-'server
   -'ea
-	->"org.goobs.truth.scripts.CreateGraph"
+	->"org.goobs.truth.scripts.CreateEdges"
 ).toList
 
 using("src/org/goobs/truth/conf/base.conf")
