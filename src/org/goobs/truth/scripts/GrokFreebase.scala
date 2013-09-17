@@ -65,9 +65,9 @@ object GrokFreebase {
       val id2name = new scala.collection.mutable.HashMap[String,List[String]]()
       for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.FREEBASE_RAW_PATH)))).getLines.drop(7)) {
         val fields = line.split("\t")
-        if (fields.length == 3 && nameRelations.contains(fields(1)) && fields(2).endsWith("@en")) {
+        if (fields.length == 3 && nameRelations.contains(fields(1)) && fields(2).endsWith("@en.")) {
           val id = fields(0)
-          val name = fields(2).substring(1, fields(2).length - 3)
+          val name = fields(2).substring(1, fields(2).length - 5)
           val existing = 
             if (!id2name.contains(id)) { Nil } else { id2name(id) }
           id2name(id) = name :: existing
@@ -90,8 +90,8 @@ object GrokFreebase {
             id2name.get(raw) match {
               case Some(x) => x
               case None => raw match {
-                case r""" ?"([^\"]+)${text}"@en" ?""" => List(text)
-                case r""" ?"([^\"]+)${text}".*" ?""" => List(text)
+                case r""".?"([^\"]+)${text}"@en.?""" => List(text)
+                case r""".?"([^\"]+)${text}".*.?""" => List(text)
                 case _ => List(raw)
               }
 
