@@ -26,6 +26,11 @@ public class Props {
   public static File REVERB_RAW_DIR = new File("/scr/nlp/data/openie/output/reverb1.4/clueweb_english");
   @Option(name="reverb.raw.gzip", gloss="If true, the input files are in gzip format")
   public static boolean REVERB_RAW_GZIP = true;
+  
+  @Option(name="freebase.raw.path", gloss="The location of the raw Freebase dump")
+  public static File FREEBASE_RAW_PATH = new File("/u/scr/nlp/data/Wikipedia/FreebaseWikipediaExtraction/freebase-rdf-2013-06-23-00-00.gz");
+  @Option(name="freebase.path", gloss="The location of the processed Freebase dump")
+  public static File FREEBASE_PATH = new File("etc/freebase.tab");
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = "john0";

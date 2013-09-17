@@ -10,9 +10,10 @@ val program:List[String] = ("java"
 	-"Xmx50G"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
+  -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
-	->"org.goobs.truth.scripts.CreateEdges"
+	->"org.goobs.truth.scripts.GrokFreebase"
 ).toList
 
 using("src/org/goobs/truth/conf/base.conf")
@@ -39,5 +40,9 @@ def cp:String = {
       System.getenv("SCALA_HOME") + "/lib/scala-library.jar",
       System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
     ).mkString(":")
-  List("dist/truth.jar", JAVANLP, SCALA).mkString(":")
+  val CUSTOM = List(
+      "lib/jaws.jar",
+      "lib/corenlp-scala.jar"
+    ).mkString(":")
+  List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
