@@ -71,7 +71,7 @@ object GrokFreebase {
           val existing = 
             if (!id2name.contains(id)) { Nil } else { id2name(id) }
           id2name(id) = name :: existing
-          logger.log(id + " -> " + name)
+          logger.debug(id + " -> " + name)
         }
       }
       endTrack("Gathering names")
@@ -83,7 +83,7 @@ object GrokFreebase {
         val fields = line.split("\t")
         if (fields.length == 3 && interestingRelations.contains(fields(1))) {
           // Read relation
-          val leftArgs:Seq[String] = id2name(fields(0))
+          val leftArgs:Seq[String] = id2name.get(fields(0)).getOrElse(List[String]())
           val relation:String = fields(1)
           val rightArgs:Seq[String] = {
             val raw = fields(2)
