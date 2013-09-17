@@ -91,8 +91,9 @@ object GrokFreebase {
               case Some(x) => x
               case None => raw match {
                 case r""".?"([^\"]+)${text}"@en.?""" => List(text)
+                case r""".?"([^\"]+)${text}"@[a-z]{2}.?""" => List()
                 case r""".?"([^\"]+)${text}".*.?""" => List(text)
-                case _ => List(raw)
+                case _ => logger.warn("unknown value: " + raw); List[String]()
               }
 
             }
@@ -100,7 +101,7 @@ object GrokFreebase {
           // Save relation
           for (leftArg <- leftArgs; rightArg <- rightArgs) {
             try {
-              writer.write(leftArg + "\t" + relation + "\t" + rightArg)
+              writer.write(leftArg + "\t" + relation + "\t" + rightArg + "\n")
             } catch { case (e:Exception) => throw new RuntimeException(e) }
           }
         }
