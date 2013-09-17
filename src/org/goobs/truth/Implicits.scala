@@ -20,5 +20,8 @@ object Implicits {
 
   implicit def fn2execInput1(fn:()=>Unit):edu.stanford.nlp.util.Function[Properties, AnyRef] = new Fn1(fn)
   implicit def fn2execInput2(fn:Properties=>Unit):edu.stanford.nlp.util.Function[Properties, AnyRef] = new Fn2(fn)
-
+  
+  implicit class Regex(sc: StringContext) {
+    def r = new util.matching.Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
+  }
 }

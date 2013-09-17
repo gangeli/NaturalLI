@@ -22,7 +22,7 @@ import org.goobs.truth.Implicits._
  * @author Gabor Angeli
  */
 
-object CreateGraph {
+object CreateIndexers {
 
   def facts:Iterator[Fact] = {
     var offset:Long = 0;
