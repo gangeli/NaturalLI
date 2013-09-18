@@ -87,7 +87,8 @@ object GrokFreebase {
           val relation:String = fields(1)
           val rightArgs:Seq[String] = {
             val raw = fields(2)
-            id2name.get(raw) match {
+            id2name.get(raw)
+                .orElse(id2name.get(raw.substring(0, raw.length-1)) match {
               case Some(x) => x
               case None => raw match {
                 case r""".?"([^\"]+)${text}"@en.?""" => List(text)
