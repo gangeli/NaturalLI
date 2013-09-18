@@ -48,7 +48,7 @@ object CreateEdges {
   def wordnet(phrase:Sentence, register:(Seq[String], String) => Unit) = {
     val gloss = phrase.words.mkString(" ")
     for (elem <- jaws.getSynsets(gloss, pos2synsetType(phrase.pos(0))) ) {
-      for (antonyms <- elem.getAntonyms(gloss);
+      for (antonyms <- Option(elem.getAntonyms(gloss));
            wordForm <- antonyms) {
         register(wordForm.getWordForm.split("""\s+"""), WORDNET_ANTONYM)
       }
