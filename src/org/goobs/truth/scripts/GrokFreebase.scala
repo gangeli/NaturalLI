@@ -74,6 +74,7 @@ object GrokFreebase {
           logger.debug(id + " -> " + name)
         }
       }
+      logger.log(id2name.size + " names found")
       endTrack("Gathering names")
 
       // Read the relation
@@ -94,7 +95,7 @@ object GrokFreebase {
                 case r""".?"([^\"]+)${text}"@en.?""" => List(text)
                 case r""".?"([^\"]+)${text}"@[a-z]{2}.?""" => List()
                 case r""".?"([^\"]+)${text}".*.?""" => List(text)
-                case _ => logger.warn("unknown value: " + raw); List[String]()
+                case _ => logger.debug("unknown value: " + raw); List[String]()
               }
 
             }
