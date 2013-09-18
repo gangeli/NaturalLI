@@ -48,6 +48,10 @@ object CreateEdges {
   def wordnet(phrase:Sentence, register:(Seq[String], String) => Unit) = {
     val gloss = phrase.words.mkString(" ")
     for (elem <- jaws.getSynsets(gloss, pos2synsetType(phrase.pos(0))) ) {
+      for (antonyms <- elem.getAntonyms(gloss);
+           wordForm <- antonyms) {
+        register(wordForm.getWordForm.split("""\s+"""), WORDNET_ANTONYM)
+      }
       elem match {
         case (ns:NounSynset) =>
           for (hyper <- ns.getHypernyms;
@@ -93,7 +97,9 @@ object CreateEdges {
           }
       }
     }
-    
+  }
+  
+  def quantifiers(phrase:Sentence, register:(Seq[String], String) => Unit) = {
   }
 
   /**

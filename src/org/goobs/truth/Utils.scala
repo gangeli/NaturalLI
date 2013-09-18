@@ -20,6 +20,7 @@ object Utils {
 }
 
 object Edges {
+  val WORDNET_NOUN_ANTONYM = "wordnet_antonym"
   val WORDNET_NOUN_HYPERNYM = "wordnet_noun_hypernym"
   val WORDNET_NOUN_INSTANCE_HYPERNYM = "wordnet_noun_instance_hypernym"
   val WORDNET_NOUN_HYPONYM = "wordnet_noun_hyponym"
