@@ -9,6 +9,7 @@ import java.sql.Connection
 
 import edu.stanford.nlp.io.IOUtils._
 import edu.stanford.nlp.util.HashIndex
+import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
 
 import edu.smu.tspell.wordnet._
@@ -28,7 +29,9 @@ import org.goobs.truth.EdgeType._
  * @author Gabor Angeli
  */
 
-object CreateIndexers {
+object BootstrapGraph {
+  
+  private val logger = Redwood.channels("MKGraph")
   
   val wordIndexer = new HashIndex[String]
 
@@ -141,6 +144,7 @@ object CreateIndexers {
         val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
         val unknownNames = new scala.collection.mutable.HashSet[String]
         forceTrack("Reading File")
+        // Pass 1: read edges
         for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
           val fields = line.split("\t")
           if (fields(1) == "fb:type.object.type") {
@@ -151,15 +155,16 @@ object CreateIndexers {
           }
         }
         log ("pass 1 complete: read edges")
+        // Pass 2: read names
         for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
           val fields = line.split("\t")
           if (fields(1) == "fb:type.object.name" && unknownNames(fields(0))) {
             fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
-            fbNames.put(fields(0), fields(0))
           }
         }
         log ("pass 2 complete: read names")
         endTrack("Reading File")
+        // Store edges
         startTrack("Creating Edges")
         for ( (hypo, hyper) <- hypernyms;
               hypoName <- fbNames.get(hypo) ) {
@@ -186,17 +191,17 @@ object CreateIndexers {
         // Save words
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)
-          wordInsert.setString(2, word)
+          wordInsert.setString(2, word.replaceAll("\u0000", ""))
           wordInsert.executeUpdate
         }
-        log("saved words")
+        logger.log("saved words")
         // Save edge types
         for (edgeType <- EdgeType.values) {
           edgeTypeInsert.setInt(1, edgeType.id)
-          edgeTypeInsert.setString(2, edgeType.toString)
+          edgeTypeInsert.setString(2, edgeType.toString.replaceAll("\u0000", ""))
           edgeTypeInsert.executeUpdate
         }
-        log("saved edge types")
+        logger.log("saved edge types")
         // Save edges
         var edgeCount = 0;
         var outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
@@ -220,120 +225,18 @@ object CreateIndexers {
         for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }
         for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }
         for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }
-        log("saved edges")
+        logger.log("saved edges")
         forceTrack("Committing")
         psql.commit
         endTrack("Committing")
         endTrack("Writing to DB")
 
         // Print stats
-        log(BLUE, "   vocabulary size: " + wordIndexer.size)
-        log(BLUE, "       total edges: " + edgeCount)
-        log(BLUE, "average out-degree: " + outDegree.sum.toDouble / outDegree.length.toDouble)
+        logger.log(BLUE, "   vocabulary size: " + wordIndexer.size)
+        logger.log(BLUE, "       total edges: " + edgeCount)
+        logger.log(BLUE, "average out-degree: " + outDegree.sum.toDouble / outDegree.length.toDouble)
       }
     }, args)
-  }
-
-  /*
-  def main(args:Array[String]) = {
-    val wordIndexer = new HashIndex[String]
-    val phraseIndexer = new HashIndex[String]
-    var factI = 0;
-
-    Props.exec(() => {
-      withConnection{ (psql:Connection) =>
-        // Create Statements
-        val wordInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_WORD_INTERN + " (key, gloss) VALUES (?, ?);")
-        val phraseInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_PHRASE_INTERN + " (key, words) VALUES (?, ?);")
-        val factInsert = psql.prepareStatement("INSERT INTO " + Postgres.TABLE_FACT_INTERN + " (key, file, begin_index, end_index, left_arg, rel, right_arg) VALUES (?, ?, ?, ?, ?, ?, ?);")
-        wordInsert.setInt(1, wordIndexer.indexOf("", true))
-        wordInsert.setString(2, "")
-        wordInsert.executeUpdate
-        // Iterate over facts
-        for (fact <- facts if fact.confidence >= 0.5) {
-          val phrases = for (phrase <- fact.elements) yield {
-            var phraseIndex = phraseIndexer.indexOf(phrase)
-            if (phraseIndex < 0) {
-              phraseIndex = phraseIndexer.indexOf(phrase, true)
-              // Add words
-              val words = for (word <- phrase.split("""\s+""")) yield {
-                  var index = wordIndexer.indexOf(word);
-                  if (index < 0) {
-                    index = wordIndexer.indexOf(word, true)
-                    wordInsert.setInt(1, index)
-                    wordInsert.setString(2, word.replaceAll("\u0000", ""));
-                    wordInsert.executeUpdate
-                  }
-                  index
-                }
-              // Add phrase
-              val array = psql.createArrayOf("int4", words.map( x => x.asInstanceOf[Object]))
-              phraseInsert.setInt(1, phraseIndex)
-              phraseInsert.setArray(2, array)
-              phraseInsert.executeUpdate
-            }
-            phraseIndex
-          }
-          // Add fact
-          factInsert.setInt(1, factI)
-          factI += 1;
-          factInsert.setString(2, fact.file.replaceAll("\u0000", ""))
-          factInsert.setLong(3, fact.begin)
-          factInsert.setLong(4, fact.end)
-          factInsert.setInt(5, phrases(0))
-          factInsert.setInt(6, phrases(1))
-          factInsert.setInt(7, phrases(2))
-          factInsert.executeUpdate
-          if (factI % 10000 == 0) {
-            psql.commit
-            println("added " + factI + " facts")
-          }
-        }
-      }
-    }, args)
-
-  }
-  */
-
-  def facts:Iterator[Fact] = {
-    var offset:Long = 0;
-    for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).iterator;
-         line <-
-           try {
-            { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
-              else Source.fromFile(file) }.getLines
-           } catch {
-             case (e:java.util.zip.ZipException) =>
-               try {
-                 Source.fromFile(file).getLines
-               } catch {
-                 case (e:Exception) => Nil
-               }
-           }
-         ) yield Fact(file.getName, offset,
-                      {offset += line.length + 1; offset},
-                      line.split("\t"))
-  }
-
-  /**
-   * An embodiment of a fact.
-   *
-   * @author Gabor Angeli
-   */
-  case class Fact(file:String, begin:Long, end:Long, fields:Array[String]) {
-    assert(fields.length == 18 || fields.length == 17,
-           "Invalid length line\n" + fields.zipWithIndex.map{ case (a, b) => (b.toInt + 1) + " " + a }.mkString("\n"))
-  
-    def leftArg :String = fields(15)
-    def relation:String = fields(16)
-    def rightArg:String = if (fields.length == 18) fields(17) else ""
-  
-    def confidence:Double = fields(11).toDouble
-
-    def words:Iterable[String] = leftArg.split("""\s+""") ++ relation.split("""\s+""") ++ rightArg.split("""\s+""")
-    def elements:Array[String] = Array[String](leftArg, relation, rightArg)
-  
-    override def toString:String = leftArg + " ~ " + relation + " ~ " + rightArg
   }
 }
 

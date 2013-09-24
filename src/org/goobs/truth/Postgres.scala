@@ -28,14 +28,14 @@ object Postgres {
   def slurpTable[E](tableName:String, callback:ResultSet=>Any):Unit = {
     withConnection{ (psql:Connection) =>
       val stmt = psql.createStatement
-      stmt.setFetchSize(10000)
+      stmt.setFetchSize(1000000)
       val results = stmt.executeQuery(s"SELECT * FROM $tableName")
       while (results.next) callback(results)
     }
   }
 
   val TABLE_WORD_INTERN:String = "word_indexer";
-  val TABLE_FACT_INTERN:String = "fact_indexer";
   val TABLE_EDGE_TYPE_INTERN:String = "edge_type_indexer";
+  val TABLE_FACTS:String = "facts";
   val TABLE_EDGES:String = "edges";
 }

@@ -41,7 +41,6 @@ def cp:String = {
       System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
     ).mkString(":")
   val CUSTOM = List(
-      "lib/jaws.jar",
       "lib/corenlp-scala.jar"
     ).mkString(":")
   List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")

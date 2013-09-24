@@ -16,7 +16,7 @@ TMP=tmp
 DOC=scaladoc
 # (classpaths)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
-CP=${JAVANLP}:lib/jaws.jar:lib/corenlp-scala.jar:lib/scripts/sim.jar
+CP=${JAVANLP}:lib/corenlp-scala.jar:lib/scripts/sim.jar:lib/scripts/jaws.jar:lib/scripts/trove.jar
 
 # -- BUILD --
 ${DIST}/truth.jar: $(wildcard src/org/goobs/truth/*.scala) $(wildcard src/org/goobs/truth/*.java) $(wildcard src/org/goobs/truth/scripts/*.scala) $(wildcard src/org/goobs/truth/conf/*.conf)

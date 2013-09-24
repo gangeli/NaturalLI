@@ -7,7 +7,7 @@ import Qry._
 val program:List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx100G"
+	-"Xmx7G"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
@@ -41,10 +41,10 @@ def cp:String = {
       System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
     ).mkString(":")
   val CUSTOM = List(
-      "lib/jaws.jar",
       "lib/corenlp-scala.jar",
       "lib/scripts/sim.jar",
-      "lib/scripts/breeze-math.jar"
+      "lib/scripts/jaws.jar",
+      "lib/scripts/trove.jar"
     ).mkString(":")
   List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
