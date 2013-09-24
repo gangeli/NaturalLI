@@ -140,17 +140,15 @@ object CreateIndexers {
         val fbNames = new scala.collection.mutable.HashMap[String, String]
         val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
         forceTrack("Reading File")
-        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+/        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
 //        for (line <- Source.fromFile(Props.SCRIPT_FREEBASE_RAW_PATH).getLines.drop(1)) {
           val fields = line.split("\t")
           if (fields(1) == "fb:type.object.name") {
             fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
             fbNames.put(fields(0), fields(0))
-            println("name: " + fields(0) + "  -->  " + fields(2).substring(1, fields(2).length - 5))
           } else if (fields(1) == "fb:type.object.type") {
             val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
             hypernyms.append( (fields(0), target) )
-            println("hyper: " + fields(0) + "  is_a  " + target)
           } else {
             /* do nothing */
           }
