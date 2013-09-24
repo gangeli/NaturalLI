@@ -1,0 +1,50 @@
+#!/bin/bash
+exec scala -cp qry.jar "$0" "$@"
+!#
+import Qry._
+
+
+val program:List[String] = ("java"
+  -('cp, cp)
+//	-"Xrunhprof:cpu=samples,depth=25"
+	-"Xmx6G"
+	-"Xss32m"
+  -"XX:MaxPermSize=256M"
+  -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
+	-'server
+  -'ea
+	->s"org.goobs.truth.scripts.${args(0)}"
+).toList
+
+using("src/org/goobs/truth/conf/script.conf")
+
+submit(program
+)
+
+
+def cp:String = {
+  val JAVANLP = List(
+    System.getenv("JAVANLP_HOME") + "/projects/core/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/joda-time.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/jollyday-0.4.7.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/more/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/more/lib/BerkeleyParser.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/research/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/scala-2.10/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
+    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
+    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar"
+  ).mkString(":")
+  val SCALA = List(
+      System.getenv("SCALA_HOME") + "/lib/scala-library.jar",
+      System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
+    ).mkString(":")
+  val CUSTOM = List(
+      "lib/jaws.jar",
+      "lib/corenlp-scala.jar",
+      "lib/scripts/sim.jar",
+      "lib/scripts/breeze-math.jar"
+    ).mkString(":")
+  List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+}
