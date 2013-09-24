@@ -161,9 +161,11 @@ object CreateIndexers {
         log ("pass 2 complete: read names")
         endTrack("Reading File")
         startTrack("Creating Edges")
-        for ( (hypo, hyper) <- hypernyms ) {
-          val hypoInt:Int = wordIndexer.indexOf(fbNames(hypo), true)
-          val hyperInt:Int = wordIndexer.indexOf(fbNames(hyper), true)
+        for ( (hypo, hyper) <- hypernyms;
+              hypoName <- fbNames.get(hypo) ) {
+          val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
+          val hypoInt:Int = wordIndexer.indexOf(hypoName, true)
+          val hyperInt:Int = wordIndexer.indexOf(hyperName, true)
           freebaseGraphUp.append( (hypoInt, hyperInt) )
           freebaseGraphDown.append( (hyperInt, hypoInt) )
         }
