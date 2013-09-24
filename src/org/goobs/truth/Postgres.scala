@@ -34,7 +34,8 @@ object Postgres {
     }
   }
 
-  def TABLE_FACT_INTERN:String = "fact_indexer";
-  def TABLE_PHRASE_INTERN:String = "phrase_indexer";
-  def TABLE_WORD_INTERN:String = "word_indexer";
+  val TABLE_WORD_INTERN:String = "word_indexer";
+  val TABLE_FACT_INTERN:String = "fact_indexer";
+  val TABLE_EDGE_TYPE_INTERN:String = "edge_type_indexer";
+  val TABLE_EDGES:String = "edges";
 }

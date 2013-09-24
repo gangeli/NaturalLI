@@ -19,16 +19,20 @@ object Utils {
   }
 }
 
-object Edges {
-  val WORDNET_ANTONYM = "wordnet_antonym"
-  val WORDNET_NOUN_HYPERNYM = "wordnet_noun_hypernym"
-  val WORDNET_NOUN_INSTANCE_HYPERNYM = "wordnet_noun_instance_hypernym"
-  val WORDNET_NOUN_HYPONYM = "wordnet_noun_hyponym"
-  val WORDNET_NOUN_INSTANCE_HYPONYM = "wordnet_noun_instance_hyponym"
-  val WORDNET_VERB_HYPERNYM = "wordnet_verb_hypernym"
-  val WORDNET_VERB_HYPONYM = "wordnet_verb_hyponym"
-  val WORDNET_ADJECTIVE_RELATED = "wordnet_jj_related"
-  val WORDNET_ADJECTIVE_PERTAINYM = "wordnet_jj_pertainym"
-  val WORDNET_ADJECTIVE_PARTICIPLE = "wordnet_jj_participle"
-  val WORDNET_ADVERB_PERTAINYM = "wordnet_rb_pertainym"
+object EdgeType extends Enumeration {
+  type EdgeType = Value
+  val WORDNET_UP                     = Value(0,  "wordnet_up")
+  val WORDNET_DOWN                   = Value(1,  "wordnet_down")
+  val WORDNET_NOUN_ANTONYM           = Value(2,  "wordnet_noun_antonym")
+  val WORDNET_VERB_ANTONYM           = Value(3,  "wordnet_verb_antonym")
+  val WORDNET_ADJECTIVE_ANTONYM      = Value(4,  "wordnet_adjective_antonym")
+  val WORDNET_ADVERB_ANTONYM         = Value(5,  "wordnet_adverb_antonym")
+  val WORDNET_ADJECTIVE_PERTAINYM    = Value(6,  "wordnet_adjective_pertainym")
+  val WORDNET_ADVERB_PERTAINYM       = Value(7,  "wordnet_adverb_pertainym")
+  val WORDNET_ADJECTIVE_RELATED      = Value(8,  "wordnet_adjective_related")
+  
+  val ANGLE_NEAREST_NEIGHBORS        = Value(9,  "angle_nn")
+  
+  val FREEBASE_UP                    = Value(10, "freebase_up")
+  val FREEBASE_DOWN                  = Value(11, "freebase_down")
 }

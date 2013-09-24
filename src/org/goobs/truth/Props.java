@@ -22,16 +22,6 @@ import java.util.Properties;
 public class Props {
   private static final Redwood.RedwoodChannels logger = Redwood.channels("Exec");
 
-  @Option(name="reverb.raw.dir", gloss="The raw directory where Reverb outputs are stored")
-  public static File REVERB_RAW_DIR = new File("/scr/nlp/data/openie/output/reverb1.4/clueweb_english");
-  @Option(name="reverb.raw.gzip", gloss="If true, the input files are in gzip format")
-  public static boolean REVERB_RAW_GZIP = true;
-  
-  @Option(name="freebase.raw.path", gloss="The location of the raw Freebase dump")
-  public static File FREEBASE_RAW_PATH = new File("/u/scr/nlp/data/Wikipedia/FreebaseWikipediaExtraction/freebase-rdf-2013-06-23-00-00.gz");
-  @Option(name="freebase.path", gloss="The location of the processed Freebase dump")
-  public static File FREEBASE_PATH = new File("etc/freebase.tab");
-
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = "john0";
   @Option(name="psql.host.tunnels", gloss="A list of hosts which don't have direct access, but tunnel through localhost")
@@ -44,6 +34,25 @@ public class Props {
   public static String PSQL_USERNAME = "gabor";
   @Option(name="psql.password", gloss="The password for the postgres session")
   public static String PSQL_PASSWORD = "gabor";
+  
+  @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
+  public static String SCRIPT_WORDNET_PATH = "/home/gabor/workspace/sim/etc/ontology.ser.gz";
+  @Option(name="script.distsim.cos", gloss="The path to the cosine similarity nearest neighbors")
+  public static String SCRIPT_DISTSIM_COS = "/home/gabor/workspace/truth/etc/cosNN.tab";
+  @Option(name="script.distsim.jaccard", gloss="The path to the jaccard similarity nearest neighbors")
+  public static String SCRIPT_DISTSIM_JACCARD = "/home/gabor/workspace/truth/etc/cosNN.tab";
+  @Option(name="script.distsim.hellinger", gloss="The path to the hellinger similarity nearest neighbors")
+  public static String SCRIPT_DISTSIM_HELLINGER = "/home/gabor/workspace/truth/etc/cosNN.tab";
+
+  @Option(name="script.reverb.raw.dir", gloss="The raw directory where Reverb outputs are stored")
+  public static File SCRIPT_REVERB_RAW_DIR = new File("/scr/nlp/data/openie/output/reverb1.4/clueweb_english");
+  @Option(name="script.reverb.raw.gzip", gloss="If true, the input files are in gzip format")
+  public static boolean SCRIPT_REVERB_RAW_GZIP = true;
+  
+  @Option(name="script.freebase.raw.path", gloss="The location of the raw Freebase dump")
+  public static File SCRIPT_FREEBASE_RAW_PATH = new File("/u/nlp/data/semparse/rdf/scr/jackson/state/execs/93.exec/0.ttl");
+  @Option(name="script.freebase.path", gloss="The location of the processed Freebase dump")
+  public static File SCRIPT_FREEBASE_PATH = new File("etc/freebase.tab");
 
   private static void initializeAndValidate() {
     /* nothing yet */

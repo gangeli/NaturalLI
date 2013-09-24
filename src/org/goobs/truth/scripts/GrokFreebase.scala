@@ -21,31 +21,32 @@ object GrokFreebase {
   private val logger = Redwood.channels("Edges")
 
   val interestingRelations:Set[String] = Set[String](
-    "ns:people.person.place_of_birth",
-    "ns:people.person.nationality",
-    "ns:people.person.gender",
-    "ns:people.person.profession",
-    "ns:people.person.religion",
-    "ns:people.person.ethnicity",
-    "ns:people.person.education",
-    "ns:people.person.places_lived",
-    "ns:organization.organization.geographic_scope",
-    "ns:organization.organization.sectors",
-    "ns:organization.organization.mailing_address",
-    "ns:organization.organization.organization_type",
-    "ns:organization.organization.location",
-    "ns:business.company_name_change",
-    "ns:location.location.contains",
-    "ns:location.location.containedby",
-    "ns:location.location.partiallycontains",
-    "ns:location.location.partially_contained_by",
-    "ns:location.location.adjoin_s",
-    "ns:music.recording.artist",
-    "ns:common.notable_for.display_name"
+    "fb:people.person.place_of_birth",
+    "fb:people.person.nationality",
+    "fb:people.person.gender",
+    "fb:people.person.profession",
+    "fb:people.person.religion",
+    "fb:people.person.ethnicity",
+    "fb:people.person.education",
+    "fb:people.person.places_lived",
+    "fb:organization.organization.geographic_scope",
+    "fb:organization.organization.sectors",
+    "fb:organization.organization.mailing_address",
+    "fb:organization.organization.organization_type",
+    "fb:organization.organization.location",
+    "fb:business.company_name_change",
+    "fb:location.location.contains",
+    "fb:location.location.containedby",
+    "fb:location.location.partiallycontains",
+    "fb:location.location.partially_contained_by",
+    "fb:location.location.adjoin_s",
+    "fb:music.recording.artist",
+    "fb:common.notable_for.display_name"
   )
 
   val nameRelations:Set[String] = Set[String](
-    "ns:common.topic.alias"
+    "fb:common.topic.alias",
+    "fb:type.object.name"
   )
 
   def main(args:Array[String]):Unit = {
@@ -63,7 +64,7 @@ object GrokFreebase {
       // Get names as strings
       forceTrack("Gathering names")
       val id2name = new scala.collection.mutable.HashMap[String,List[String]]()
-      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.FREEBASE_RAW_PATH)))).getLines.drop(7)) {
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines.drop(7)) {
         val fields = line.split("\t")
         if (fields.length == 3 && nameRelations.contains(fields(1)) && fields(2).endsWith("@en.")) {
           val id = fields(0)
@@ -79,8 +80,8 @@ object GrokFreebase {
 
       // Read the relation
       forceTrack("Gathering relations")
-      val writer = new FileWriter(Props.FREEBASE_PATH)
-      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.FREEBASE_RAW_PATH)))).getLines.drop(7)) {
+      val writer = new FileWriter(Props.SCRIPT_FREEBASE_PATH)
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines.drop(7)) {
         val fields = line.split("\t")
         if (fields.length == 3 && interestingRelations.contains(fields(1))) {
           // Read relation
