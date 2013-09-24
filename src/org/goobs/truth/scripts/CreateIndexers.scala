@@ -139,20 +139,26 @@ object CreateIndexers {
         forceTrack("Reading Freebase")
         val fbNames = new scala.collection.mutable.HashMap[String, String]
         val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
+        val unknownNames = new scala.collection.mutable.HashSet[String]
         forceTrack("Reading File")
         for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
-//        for (line <- Source.fromFile(Props.SCRIPT_FREEBASE_RAW_PATH).getLines.drop(1)) {
           val fields = line.split("\t")
-          if (fields(1) == "fb:type.object.name") {
-            fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
-            fbNames.put(fields(0), fields(0))
-          } else if (fields(1) == "fb:type.object.type") {
+          if (fields(1) == "fb:type.object.type") {
             val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
             hypernyms.append( (fields(0), target) )
-          } else {
-            /* do nothing */
+            unknownNames.add(fields(0))
+            unknownNames.add(target)
           }
         }
+        log ("pass 1 complete: read edges")
+        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+          val fields = line.split("\t")
+          if (fields(1) == "fb:type.object.name" && unknownNames(fields(0))) {
+            fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
+            fbNames.put(fields(0), fields(0))
+          }
+        }
+        log ("pass 2 complete: read names")
         endTrack("Reading File")
         startTrack("Creating Edges")
         for ( (hypo, hyper) <- hypernyms ) {
