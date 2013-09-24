@@ -136,29 +136,35 @@ object CreateIndexers {
         endTrack("Reading Nearest Neighbors")
 
         // Part 3: Read freebase
+        forceTrack("Reading Freebase")
         val fbNames = new scala.collection.mutable.HashMap[String, String]
         val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
-        for (line <- Source.fromFile(Props.SCRIPT_FREEBASE_RAW_PATH, "UTF-8").getLines) {
-          if (line.contains("fb:type.object.type") ||
-              line.contains("fb:type.object.name")    ) {
-            val fields = line.split("\t")
-            if (fields(1) == "fb:type.object.name") {
-              fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
-            } else if (fields(1) == "fb:type.object.type") {
-              hypernyms.append( (fields(0), fields(2)) )
-            } else {
-              /* do nothing */
-            }
+        forceTrack("Reading File")
+        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+          val fields = line.split("\t")
+          if (fields(1) == "fb:type.object.name") {
+            fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
+            fbNames.put(fields(0), fields(0))
+          } else if (fields(1) == "fb:type.object.type") {
+            val target = if (fields(2).endsWith(".")) fields(2).substring(2, fields(2).length -1) else fields(2)
+            hypernyms.append( (fields(0), target) )
+          } else {
+            /* do nothing */
           }
         }
+        endTrack("Reading File")
+        startTrack("Creating Edges")
         for ( (hypo, hyper) <- hypernyms ) {
           val hypoInt:Int = wordIndexer.indexOf(fbNames(hypo), true)
           val hyperInt:Int = wordIndexer.indexOf(fbNames(hyper), true)
           freebaseGraphUp.append( (hypoInt, hyperInt) )
           freebaseGraphDown.append( (hyperInt, hypoInt) )
         }
+        endTrack("Creating Edges")
+        endTrack("Reading Freebase")
 
         // Part 4: Save
+        forceTrack("Writing to DB")
         val wordInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_WORD_INTERN +
           " (index, gloss) VALUES (?, ?);")
@@ -174,12 +180,14 @@ object CreateIndexers {
           wordInsert.setString(2, word)
           wordInsert.executeUpdate
         }
+        log("saved words")
         // Save edge types
         for (edgeType <- EdgeType.values) {
           edgeTypeInsert.setInt(1, edgeType.id)
           edgeTypeInsert.setString(2, edgeType.toString)
           edgeTypeInsert.executeUpdate
         }
+        log("saved edge types")
         // Save edges
         var edgeCount = 0;
         var outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
@@ -203,9 +211,13 @@ object CreateIndexers {
         for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }
         for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }
         for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }
+        log("saved edges")
+        forceTrack("Committing")
+        psql.commit
+        endTrack("Committing")
+        endTrack("Writing to DB")
 
         // Print stats
-        psql.commit
         log(BLUE, "   vocabulary size: " + wordIndexer.size)
         log(BLUE, "       total edges: " + edgeCount)
         log(BLUE, "average out-degree: " + outDegree.sum.toDouble / outDegree.length.toDouble)
