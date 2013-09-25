@@ -47,7 +47,7 @@ object BootstrapGraph {
         normalizedWordCache(phrase.toLowerCase) = n
         n
     }
-    wordIndexer.indexOf(normalized)
+    wordIndexer.indexOf(normalized, true)
   }
 
   // ( begin, end, log(P(hyper) / P(hypo)) )
@@ -180,7 +180,8 @@ object BootstrapGraph {
       log ("pass 2 complete: read names")
       endTrack("Reading File")
       // Store edges
-      startTrack("Creating Edges")
+      forceTrack("Creating Edges")
+      var edgesAdded = 0
       for ( (hypo, hyper) <- hypernyms;
             hypoName <- fbNames.get(hypo) ) {
         val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
@@ -188,6 +189,11 @@ object BootstrapGraph {
         val hyperInt:Int = indexOf(hyperName)
         freebaseGraphUp.append( (hypoInt, hyperInt) )
         freebaseGraphDown.append( (hyperInt, hypoInt) )
+        edgesAdded += 1
+        if (edgesAdded % 1000000 == 0) {
+          logger.log("Added " + (edgesAdded / 1000000) + "M edges (@ " +
+              hypoName + " is_a " + hyperName + ")")
+        }
       }
       endTrack("Creating Edges")
       endTrack("Reading Freebase")
