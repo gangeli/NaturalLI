@@ -75,124 +75,124 @@ object BootstrapGraph {
     Props.exec(() => {
       indexOf("")
       val wordnet = Ontology.load(Props.SCRIPT_WORDNET_PATH)
+
+      // Part 1: Read Wordnet
+      // note: we are prohibiting ROOT as a valid node to traverse
+      forceTrack("Reading WordNet")
+      for ((phrase, nodes) <- wordnet.ontology) {
+        val phraseAsString:String = phrase.mkString(" ")
+        val source:Int = indexOf(phraseAsString)
+        for (node <- nodes;
+             hyper <- node.hypernyms) {
+          hyper match {
+            case (hyperNode:Ontology.RealNode) =>
+              val edgeWeight:Double = scala.math.log( hyperNode.count / node.count )
+              // is_a ontology
+              for (hyperWord <- hyperNode.synset.getWordForms) {
+                val hyperInt:Int = indexOf(hyperWord)
+                wordnetGraphUp.append( (source, hyperInt, edgeWeight) )
+                wordnetGraphDown.append( (hyperInt, source, edgeWeight) )
+              }
+              // other wordnet relations
+              hyperNode.synset match {
+                case (as:NounSynset) =>
+                  for (antonym <- as.getAntonyms(phraseAsString)) {
+                    val sink:Int = indexOf(antonym.getWordForm)
+                    wordnetVerbAntonym.append( (source, sink) )
+                  }
+                case (as:VerbSynset) =>
+                  for (antonym <- as.getAntonyms(phraseAsString)) {
+                    val sink:Int = indexOf(antonym.getWordForm)
+                    wordnetNounAntonym.append( (source, sink) )
+                  }
+                case (as:AdjectiveSynset) =>
+                  for (related <- as.getSimilar;
+                       wordForm <- related.getWordForms) {
+                    val sink:Int = indexOf(wordForm)
+                    wordnetAdjSimilar.append( (source, sink) )
+                  }
+                  for (pertainym <- as.getPertainyms(phraseAsString)) {
+                    val sink:Int = indexOf(pertainym.getWordForm)
+                    wordnetAdjPertainym.append( (source, sink) )
+                  }
+                  for (antonym <- as.getAntonyms(phraseAsString)) {
+                    val sink:Int = indexOf(antonym.getWordForm)
+                    wordnetAdjAntonym.append( (source, sink) )
+                  }
+                case (as:AdverbSynset) =>
+                  for (pertainym <- as.getPertainyms(phraseAsString)) {
+                    val sink:Int = indexOf(pertainym.getWordForm)
+                    wordnetAdvPertainym.append( (source, sink) )
+                  }
+                  for (antonym <- as.getAntonyms(phraseAsString)) {
+                    val sink:Int = indexOf(antonym.getWordForm)
+                    wordnetAdvAntonym.append( (source, sink) )
+                  }
+                case _ =>
+              }
+            case _ =>
+              debug("sub-root node: " + node + " [" + hyper.getClass + "]")
+          }
+          
+        }
+      }
+      endTrack("Reading WordNet")
+
+      // Part 2: Read distsim
+      forceTrack("Reading Nearest Neighbors")
+      for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines) {
+        val fields = line.split("\t")
+        val source:Int = indexOf(fields(0))
+        for (i <- 1 until fields.length) {
+          val scoreAndGloss = fields(i).split(" ")
+          assert(scoreAndGloss.length == 2)
+          val sink:Int = indexOf(scoreAndGloss(1))
+          val angle:Double = acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
+          angleNearestNeighbors.append( (source, sink, angle) )
+        }
+      }
+      endTrack("Reading Nearest Neighbors")
+
+      // Part 3: Read freebase
+      forceTrack("Reading Freebase")
+      val fbNames = new scala.collection.mutable.HashMap[String, String]
+      val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
+      val unknownNames = new scala.collection.mutable.HashSet[String]
+      forceTrack("Reading File")
+      // Pass 1: read edges
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+        val fields = line.split("\t")
+        if (fields(1) == "fb:type.object.type") {
+          val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
+          hypernyms.append( (fields(0), target) )
+          unknownNames.add(fields(0))
+          unknownNames.add(target)
+        }
+      }
+      log ("pass 1 complete: read edges")
+      // Pass 2: read names
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+        val fields = line.split("\t")
+        if (fields(1) == "fb:type.object.name" && unknownNames(fields(0))) {
+          fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
+        }
+      }
+      log ("pass 2 complete: read names")
+      endTrack("Reading File")
+      // Store edges
+      startTrack("Creating Edges")
+      for ( (hypo, hyper) <- hypernyms;
+            hypoName <- fbNames.get(hypo) ) {
+        val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
+        val hypoInt:Int = indexOf(hypoName)
+        val hyperInt:Int = indexOf(hyperName)
+        freebaseGraphUp.append( (hypoInt, hyperInt) )
+        freebaseGraphDown.append( (hyperInt, hypoInt) )
+      }
+      endTrack("Creating Edges")
+      endTrack("Reading Freebase")
+
       withConnection{ (psql:Connection) =>
-
-        // Part 1: Read Wordnet
-        // note: we are prohibiting ROOT as a valid node to traverse
-        forceTrack("Reading WordNet")
-        for ((phrase, nodes) <- wordnet.ontology) {
-          val phraseAsString:String = phrase.mkString(" ")
-          val source:Int = indexOf(phraseAsString)
-          for (node <- nodes;
-               hyper <- node.hypernyms) {
-            hyper match {
-              case (hyperNode:Ontology.RealNode) =>
-                val edgeWeight:Double = scala.math.log( hyperNode.count / node.count )
-                // is_a ontology
-                for (hyperWord <- hyperNode.synset.getWordForms) {
-                  val hyperInt:Int = indexOf(hyperWord)
-                  wordnetGraphUp.append( (source, hyperInt, edgeWeight) )
-                  wordnetGraphDown.append( (hyperInt, source, edgeWeight) )
-                }
-                // other wordnet relations
-                hyperNode.synset match {
-                  case (as:NounSynset) =>
-                    for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = indexOf(antonym.getWordForm)
-                      wordnetVerbAntonym.append( (source, sink) )
-                    }
-                  case (as:VerbSynset) =>
-                    for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = indexOf(antonym.getWordForm)
-                      wordnetNounAntonym.append( (source, sink) )
-                    }
-                  case (as:AdjectiveSynset) =>
-                    for (related <- as.getSimilar;
-                         wordForm <- related.getWordForms) {
-                      val sink:Int = indexOf(wordForm)
-                      wordnetAdjSimilar.append( (source, sink) )
-                    }
-                    for (pertainym <- as.getPertainyms(phraseAsString)) {
-                      val sink:Int = indexOf(pertainym.getWordForm)
-                      wordnetAdjPertainym.append( (source, sink) )
-                    }
-                    for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = indexOf(antonym.getWordForm)
-                      wordnetAdjAntonym.append( (source, sink) )
-                    }
-                  case (as:AdverbSynset) =>
-                    for (pertainym <- as.getPertainyms(phraseAsString)) {
-                      val sink:Int = indexOf(pertainym.getWordForm)
-                      wordnetAdvPertainym.append( (source, sink) )
-                    }
-                    for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = indexOf(antonym.getWordForm)
-                      wordnetAdvAntonym.append( (source, sink) )
-                    }
-                  case _ =>
-                }
-              case _ =>
-                debug("sub-root node: " + node + " [" + hyper.getClass + "]")
-            }
-            
-          }
-        }
-        endTrack("Reading WordNet")
-
-        // Part 2: Read distsim
-        forceTrack("Reading Nearest Neighbors")
-        for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines) {
-          val fields = line.split("\t")
-          val source:Int = indexOf(fields(0))
-          for (i <- 1 until fields.length) {
-            val scoreAndGloss = fields(i).split(" ")
-            assert(scoreAndGloss.length == 2)
-            val sink:Int = indexOf(scoreAndGloss(1))
-            val angle:Double = acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
-            angleNearestNeighbors.append( (source, sink, angle) )
-          }
-        }
-        endTrack("Reading Nearest Neighbors")
-
-        // Part 3: Read freebase
-        forceTrack("Reading Freebase")
-        val fbNames = new scala.collection.mutable.HashMap[String, String]
-        val hypernyms = new scala.collection.mutable.ArrayBuffer[ (String, String) ]
-        val unknownNames = new scala.collection.mutable.HashSet[String]
-        forceTrack("Reading File")
-        // Pass 1: read edges
-        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
-          val fields = line.split("\t")
-          if (fields(1) == "fb:type.object.type") {
-            val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
-            hypernyms.append( (fields(0), target) )
-            unknownNames.add(fields(0))
-            unknownNames.add(target)
-          }
-        }
-        log ("pass 1 complete: read edges")
-        // Pass 2: read names
-        for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
-          val fields = line.split("\t")
-          if (fields(1) == "fb:type.object.name" && unknownNames(fields(0))) {
-            fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
-          }
-        }
-        log ("pass 2 complete: read names")
-        endTrack("Reading File")
-        // Store edges
-        startTrack("Creating Edges")
-        for ( (hypo, hyper) <- hypernyms;
-              hypoName <- fbNames.get(hypo) ) {
-          val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
-          val hypoInt:Int = indexOf(hypoName)
-          val hyperInt:Int = indexOf(hyperName)
-          freebaseGraphUp.append( (hypoInt, hyperInt) )
-          freebaseGraphDown.append( (hyperInt, hypoInt) )
-        }
-        endTrack("Creating Edges")
-        endTrack("Reading Freebase")
-
         // Part 4: Save
         forceTrack("Writing to DB")
         val wordInsert = psql.prepareStatement(
