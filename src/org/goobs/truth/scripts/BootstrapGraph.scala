@@ -84,10 +84,6 @@ object BootstrapGraph {
   def main(args:Array[String]) = {
     edu.stanford.nlp.NLPConfig.caseless  // set caseless models
     Props.exec(() => {
-      println(cleanFBName("2011-11-20: San Jose, Costa Rica (#19)"))
-      println(cleanFBName("TurtleWax (turtlewax/6920a285ab8b7f7f) 2013-06-06t23:30:46.120-07:00"))
-      println(cleanFBName("I'm Busy (Off Dah Hook) (feat. Dru Down)"))
-      println(cleanFBName("""Aida: Atto Primo, Scena Primo. Scena e Pezzo D'assieme \"Su! Del Nilo Al Sacro Lido\" (Il Re, Ramfis, Ministri, Capitani, Aida, Radamès, Amneris, Sacerdoti, Messaggero)"""))
       indexOf("")
       val wordnet = Ontology.load(Props.SCRIPT_WORDNET_PATH)
 
