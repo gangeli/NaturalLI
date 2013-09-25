@@ -75,7 +75,7 @@ object Utils {
   }
   
   def tokenizeWithCase(phrase:String):Array[String] = {
-    tokenizeWithCase(Whitespace.split(phrase))
+    tokenizeWithCase(Sentence(phrase).words)
   }
 }
 

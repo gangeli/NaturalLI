@@ -13,6 +13,7 @@ import edu.stanford.nlp.util.HashIndex
 import edu.stanford.nlp.math.SloppyMath.acos
 import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
+import edu.stanford.nlp._
 
 import edu.smu.tspell.wordnet._
 
@@ -50,6 +51,16 @@ object BootstrapGraph {
     wordIndexer.indexOf(normalized, true)
   }
 
+  private val Timestamp = """\s*\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}[^\s]+\s*""".r
+  private val Parentheticals = """\s*\([^\)]+\)\s*""".r
+  private val EscapeChar = """\\""".r
+
+  def cleanFBName(raw:String):String = {
+    val withDeletions = List(Timestamp, Parentheticals, EscapeChar)
+      .foldLeft(raw){ case (str, regexp) => regexp.replaceAllIn(str, " ") }
+    new Sentence(withDeletions).words.mkString(" ")
+  }
+
   // ( begin, end, log(P(hyper) / P(hypo)) )
   val wordnetGraphUp = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
   val wordnetGraphDown = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
@@ -73,6 +84,10 @@ object BootstrapGraph {
   def main(args:Array[String]) = {
     edu.stanford.nlp.NLPConfig.caseless  // set caseless models
     Props.exec(() => {
+      println(cleanFBName("2011-11-20: San Jose, Costa Rica (#19)"))
+      println(cleanFBName("TurtleWax (turtlewax/6920a285ab8b7f7f) 2013-06-06t23:30:46.120-07:00"))
+      println(cleanFBName("I'm Busy (Off Dah Hook) (feat. Dru Down)"))
+      println(cleanFBName("""Aida: Atto Primo, Scena Primo. Scena e Pezzo D'assieme \"Su! Del Nilo Al Sacro Lido\" (Il Re, Ramfis, Ministri, Capitani, Aida, Radamès, Amneris, Sacerdoti, Messaggero)"""))
       indexOf("")
       val wordnet = Ontology.load(Props.SCRIPT_WORDNET_PATH)
 
@@ -173,8 +188,10 @@ object BootstrapGraph {
       // Pass 2: read names
       for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
         val fields = line.split("\t")
-        if (fields(1) == "fb:type.object.name" && unknownNames(fields(0))) {
-          fbNames.put(fields(0), fields(2).substring(1, fields(2).length - 5))
+        if (fields(1) == "fb:type.object.name" && unknownNames(fields(0)) &&
+            (!fields(2).contains("@") || fields(2).endsWith("@en.")) ) {
+          val name:String = fields(2).substring(1, fields(2).length - 5)
+          fbNames.put(fields(0), cleanFBName(name))
         }
       }
       log ("pass 2 complete: read names")
@@ -185,8 +202,8 @@ object BootstrapGraph {
       for ( (hypo, hyper) <- hypernyms;
             hypoName <- fbNames.get(hypo) ) {
         val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
-        val hypoInt:Int = indexOf(hypoName)
-        val hyperInt:Int = indexOf(hyperName)
+        val hypoInt:Int = wordIndexer.indexOf(hypoName, true)  // trust case
+        val hyperInt:Int = indexOf(hyperName)  // don't trust hypernym case
         freebaseGraphUp.append( (hypoInt, hyperInt) )
         freebaseGraphDown.append( (hyperInt, hypoInt) )
         edgesAdded += 1
