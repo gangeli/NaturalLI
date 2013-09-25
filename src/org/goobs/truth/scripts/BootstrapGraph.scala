@@ -20,6 +20,7 @@ import org.goobs.truth._
 import org.goobs.truth.Postgres._
 import org.goobs.truth.Implicits._
 import org.goobs.truth.EdgeType._
+import org.goobs.truth.Utils._
 
 /**
  *
@@ -34,6 +35,11 @@ object BootstrapGraph {
   private val logger = Redwood.channels("MKGraph")
   
   val wordIndexer = new HashIndex[String]
+
+  def indexOf(phrase:String):Int = {
+    val normalized = tokenizeWithCase(phrase).mkString(" ")
+    wordIndexer.indexOf(normalized)
+  }
 
   // ( begin, end, log(P(hyper) / P(hypo)) )
   val wordnetGraphUp = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
@@ -56,8 +62,9 @@ object BootstrapGraph {
   val freebaseGraphDown = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
 
   def main(args:Array[String]) = {
+    edu.stanford.nlp.NLPConfig.caseless  // set caseless models
     Props.exec(() => {
-      wordIndexer.indexOf("", true)
+      indexOf("")
       val wordnet = Ontology.load(Props.SCRIPT_WORDNET_PATH)
       withConnection{ (psql:Connection) =>
 
@@ -66,7 +73,7 @@ object BootstrapGraph {
         forceTrack("Reading WordNet")
         for ((phrase, nodes) <- wordnet.ontology) {
           val phraseAsString:String = phrase.mkString(" ")
-          val source:Int = wordIndexer.indexOf(phraseAsString, true)
+          val source:Int = indexOf(phraseAsString)
           for (node <- nodes;
                hyper <- node.hypernyms) {
             hyper match {
@@ -74,7 +81,7 @@ object BootstrapGraph {
                 val edgeWeight:Double = scala.math.log( hyperNode.count / node.count )
                 // is_a ontology
                 for (hyperWord <- hyperNode.synset.getWordForms) {
-                  val hyperInt:Int = wordIndexer.indexOf(hyperWord, true)
+                  val hyperInt:Int = indexOf(hyperWord)
                   wordnetGraphUp.append( (source, hyperInt, edgeWeight) )
                   wordnetGraphDown.append( (hyperInt, source, edgeWeight) )
                 }
@@ -82,35 +89,35 @@ object BootstrapGraph {
                 hyperNode.synset match {
                   case (as:NounSynset) =>
                     for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(antonym.getWordForm, true)
+                      val sink:Int = indexOf(antonym.getWordForm)
                       wordnetVerbAntonym.append( (source, sink) )
                     }
                   case (as:VerbSynset) =>
                     for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(antonym.getWordForm, true)
+                      val sink:Int = indexOf(antonym.getWordForm)
                       wordnetNounAntonym.append( (source, sink) )
                     }
                   case (as:AdjectiveSynset) =>
                     for (related <- as.getSimilar;
                          wordForm <- related.getWordForms) {
-                      val sink:Int = wordIndexer.indexOf(wordForm, true)
+                      val sink:Int = indexOf(wordForm)
                       wordnetAdjSimilar.append( (source, sink) )
                     }
                     for (pertainym <- as.getPertainyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(pertainym.getWordForm, true)
+                      val sink:Int = indexOf(pertainym.getWordForm)
                       wordnetAdjPertainym.append( (source, sink) )
                     }
                     for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(antonym.getWordForm, true)
+                      val sink:Int = indexOf(antonym.getWordForm)
                       wordnetAdjAntonym.append( (source, sink) )
                     }
                   case (as:AdverbSynset) =>
                     for (pertainym <- as.getPertainyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(pertainym.getWordForm, true)
+                      val sink:Int = indexOf(pertainym.getWordForm)
                       wordnetAdvPertainym.append( (source, sink) )
                     }
                     for (antonym <- as.getAntonyms(phraseAsString)) {
-                      val sink:Int = wordIndexer.indexOf(antonym.getWordForm, true)
+                      val sink:Int = indexOf(antonym.getWordForm)
                       wordnetAdvAntonym.append( (source, sink) )
                     }
                   case _ =>
@@ -127,11 +134,11 @@ object BootstrapGraph {
         forceTrack("Reading Nearest Neighbors")
         for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines) {
           val fields = line.split("\t")
-          val source:Int = wordIndexer.indexOf(fields(0), true)
+          val source:Int = indexOf(fields(0))
           for (i <- 1 until fields.length) {
             val scoreAndGloss = fields(i).split(" ")
             assert(scoreAndGloss.length == 2)
-            val sink:Int = wordIndexer.indexOf(scoreAndGloss(1), true)
+            val sink:Int = indexOf(scoreAndGloss(1))
             val angle:Double = scala.math.acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
             angleNearestNeighbors.append( (source, sink, angle) )
           }
@@ -169,8 +176,8 @@ object BootstrapGraph {
         for ( (hypo, hyper) <- hypernyms;
               hypoName <- fbNames.get(hypo) ) {
           val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
-          val hypoInt:Int = wordIndexer.indexOf(hypoName, true)
-          val hyperInt:Int = wordIndexer.indexOf(hyperName, true)
+          val hypoInt:Int = indexOf(hypoName)
+          val hyperInt:Int = indexOf(hyperName)
           freebaseGraphUp.append( (hypoInt, hyperInt) )
           freebaseGraphDown.append( (hyperInt, hypoInt) )
         }

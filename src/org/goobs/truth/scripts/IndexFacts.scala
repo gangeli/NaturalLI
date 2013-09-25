@@ -18,6 +18,7 @@ import org.goobs.truth._
 import org.goobs.truth.Postgres._
 import org.goobs.truth.Implicits._
 import org.goobs.truth.EdgeType._
+import org.goobs.truth.Utils._
 
 object IndexFacts {
   
@@ -86,7 +87,6 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      val Whitespace = """\s+""".r
       println( index(Whitespace.split("George Bush attended the United Nations talks")) )
 
       val factCumulativeWeight = TCollections.synchronizedMap(
