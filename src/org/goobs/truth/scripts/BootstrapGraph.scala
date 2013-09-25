@@ -51,13 +51,14 @@ object BootstrapGraph {
     wordIndexer.indexOf(normalized, true)
   }
 
-  private val Timestamp = """\s*\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}[^\s]+\s*""".r
+  private val Timestamp = """\s*\d{4}-\d{2}-\d{2}[tT]\d{2}:\d{2}:\d{2}[^\s]+\s*""".r
   private val Parentheticals = """\s*\([^\)]+\)\s*""".r
+  private val Brackets = """\s*\[[^\]]+\]\s*""".r
   private val EscapeChar = """\\""".r
 
   def cleanFBName(raw:String):String = {
-    val withDeletions = List(Timestamp, Parentheticals, EscapeChar)
-      .foldLeft(raw){ case (str, regexp) => regexp.replaceAllIn(str, " ") }
+    val withDeletions = List(Timestamp, Parentheticals, Brackets, EscapeChar)
+      .foldLeft(raw){ case (str:String, regexp:scala.util.matching.Regex) => regexp.replaceAllIn(str, " ") }
     new Sentence(withDeletions).words.mkString(" ")
   }
 
