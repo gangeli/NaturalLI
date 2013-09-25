@@ -1,6 +1,7 @@
 package org.goobs.truth.scripts
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.HashMap
 import scala.io.Source
 
 import java.io._
@@ -9,6 +10,7 @@ import java.sql.Connection
 
 import edu.stanford.nlp.io.IOUtils._
 import edu.stanford.nlp.util.HashIndex
+import edu.stanford.nlp.math.SloppyMath.acos
 import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
 
@@ -35,9 +37,16 @@ object BootstrapGraph {
   private val logger = Redwood.channels("MKGraph")
   
   val wordIndexer = new HashIndex[String]
+  val normalizedWordCache = new HashMap[String, String]
 
   def indexOf(phrase:String):Int = {
-    val normalized = tokenizeWithCase(phrase).mkString(" ")
+    val normalized = normalizedWordCache.get(phrase.toLowerCase) match {
+      case Some(normalized) => normalized
+      case None =>
+        val n = tokenizeWithCase(phrase).mkString(" ")
+        normalizedWordCache(phrase.toLowerCase) = n
+        n
+    }
     wordIndexer.indexOf(normalized)
   }
 
@@ -139,7 +148,7 @@ object BootstrapGraph {
             val scoreAndGloss = fields(i).split(" ")
             assert(scoreAndGloss.length == 2)
             val sink:Int = indexOf(scoreAndGloss(1))
-            val angle:Double = scala.math.acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
+            val angle:Double = acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
             angleNearestNeighbors.append( (source, sink, angle) )
           }
         }

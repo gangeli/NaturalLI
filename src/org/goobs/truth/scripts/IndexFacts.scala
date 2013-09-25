@@ -24,8 +24,9 @@ object IndexFacts {
   
   private val logger = Redwood.channels("Facts")
 
-  def index(phrase:Array[String])
+  def index(rawPhrase:Array[String])
            (implicit wordIndexer:TObjectIntHashMap[String]):Array[Int] = {
+    val phrase:Array[String] = tokenizeWithCase(rawPhrase)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
@@ -70,6 +71,7 @@ object IndexFacts {
 
 
   def main(args:Array[String]):Unit = {
+    edu.stanford.nlp.NLPConfig.caseless  // set caseless models
     Props.exec(() => {
       // Read word index
       forceTrack("Reading words")

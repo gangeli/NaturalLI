@@ -23,9 +23,9 @@ object Utils {
   val Whitespace = """\s+""".r
   val Roman_Numeral = """^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$""".r
 
-  private def tokenizeWithCaseImpl(phrase:String, sentence:Sentence,
+  private def tokenizeWithCaseImpl(phrase:Array[String], sentence:Sentence,
                                    beginOffset:Int):Array[String] = {
-    Whitespace.split(phrase).zipWithIndex
+    phrase.zipWithIndex
       .map{ case (word:String, i:Int) =>
         if ((Roman_Numeral findFirstIn word).nonEmpty) {
           // case: special case roman numerals
@@ -54,10 +54,10 @@ object Utils {
       }
   }
 
-  def tokenizeWithCase(phrase:String):Array[String] = {
+  def tokenizeWithCase(phrase:Array[String]):Array[String] = {
     import java.lang.Character
     // Construct a fake sentence
-    val lowercaseWords = Whitespace.split(phrase.toLowerCase)
+    val lowercaseWords = phrase.map( _.toLowerCase )
     val lowercaseSent = new Array[String](lowercaseWords.length + 3)
     lowercaseSent(0) = "the"
     System.arraycopy(lowercaseWords, 0, lowercaseSent, 1, lowercaseWords.length)
@@ -72,6 +72,10 @@ object Utils {
     } else {
       tokenizeWithCaseImpl(phrase, sentence, 1)
     }
+  }
+  
+  def tokenizeWithCase(phrase:String):Array[String] = {
+    tokenizeWithCase(Whitespace.split(phrase))
   }
 }
 
