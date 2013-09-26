@@ -160,10 +160,12 @@ object IndexFacts {
               } else {
                 toExecute.setArray(4, rightArgArray)
               }
-              toExecute.executeUpdate
+              toExecute.addBatch
               // ^^          ^^
             }
           } 
+          factInsert.executeBatch
+          factUpdate.executeBatch
         }
       }
     }, args)
