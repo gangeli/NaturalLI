@@ -39,7 +39,6 @@ object IndexFacts {
         if (wordIndexer.containsKey(candidate)) {
           val index = wordIndexer.get(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
-          logger.log( candidate + " -> " + index )
         }
       }
     }
@@ -52,7 +51,6 @@ object IndexFacts {
         if (wordIndexer.containsKey(candidate)) {
           val index = wordIndexer.get(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
-          logger.log( candidate + " -> " + index )
         }
       }
     }
@@ -89,8 +87,6 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      println( index(Whitespace.split("George Bush attended the United Nations talks")) )
-
       val factCumulativeWeight = TCollections.synchronizedMap(
           new TObjectFloatHashMap[Array[Int]])
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {

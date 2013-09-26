@@ -249,6 +249,7 @@ object BootstrapGraph {
           edgeInsert.setInt(2, sink)
           edgeInsert.setInt(3, t.id)
           edgeInsert.setFloat(4, weight.toFloat)
+          edgeInsert.executeUpdate
           edgeCount += 1
         }
         for ( (source, sink, weight) <- wordnetGraphUp) { edge(WORDNET_UP, source, sink, weight); }; psql.commit
