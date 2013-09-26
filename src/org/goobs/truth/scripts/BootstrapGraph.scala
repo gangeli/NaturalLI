@@ -98,7 +98,9 @@ object BootstrapGraph {
              hyper <- node.hypernyms) {
           hyper match {
             case (hyperNode:Ontology.RealNode) =>
-              val edgeWeight:Double = scala.math.log( hyperNode.count / node.count )
+              val edgeWeight = scala.math.log(
+                hyperNode.subtreeCount.toDouble / node.subtreeCount.toDouble )
+              assert(edgeWeight >= 0.0)
               // is_a ontology
               for (hyperWord <- hyperNode.synset.getWordForms) {
                 val hyperInt:Int = indexOf(hyperWord)
@@ -160,6 +162,7 @@ object BootstrapGraph {
           assert(scoreAndGloss.length == 2)
           val sink:Int = indexOf(scoreAndGloss(1))
           val angle:Double = acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
+          assert(angle >= 0.0)
           angleNearestNeighbors.append( (source, sink, angle) )
         }
       }

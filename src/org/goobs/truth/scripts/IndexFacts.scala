@@ -87,6 +87,8 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
+      println( index(Whitespace.split("George Bush attended the United Nations talks")) )
+      System.exit(1)
       val factCumulativeWeight = TCollections.synchronizedMap(
           new TObjectFloatHashMap[Array[Int]])
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {
