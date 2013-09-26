@@ -25,6 +25,13 @@ import org.goobs.truth.Implicits._
 import org.goobs.truth.EdgeType._
 import org.goobs.truth.Utils._
 
+//
+// SQL prerequisite statements for this script:
+// CREATE TABLE word_indexer ( index INTEGER PRIMARY KEY, gloss TEXT);
+// CREATE TABLE edge_type_indexer ( index SMALLINT PRIMARY KEY, gloss TEXT);
+// CREATE TABLE edges ( source INTEGER, sink INTEGER, type SMALLINT, cost REAL );
+//
+
 /**
  *
  * The entry point for constructing the nodes of a graph, indexed to a compact
@@ -32,7 +39,6 @@ import org.goobs.truth.Utils._
  *
  * @author Gabor Angeli
  */
-
 object BootstrapGraph {
   
   private val logger = Redwood.channels("MKGraph")

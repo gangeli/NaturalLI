@@ -20,6 +20,20 @@ import org.goobs.truth.Implicits._
 import org.goobs.truth.EdgeType._
 import org.goobs.truth.Utils._
 
+
+//
+// SQL prerequisite statements for this script:
+// CREATE TABLE facts ( left_arg INTEGER[], rel INTEGER[], right_arg INTEGER[], weight REAL );
+// CREATE INDEX index_fact_left_arg on "facts" USING GIN ("left_arg");
+// CREATE INDEX index_fact_right_arg on "facts" USING GIN ("right_arg");
+// CREATE INDEX index_fact_rel on "facts" USING GIN ("rel");
+//
+
+/**
+ * The entry point for reading and indexing the ReVerb facts.
+ *
+ * @author Gabor Angeli
+ */
 object IndexFacts {
   
   private val logger = Redwood.channels("Facts")
@@ -87,8 +101,8 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      println( index(Whitespace.split("George Bush attended the United Nations talks")) )
-      System.exit(1)
+//      println( index(Whitespace.split("George Bush attended the United Nations talks")) )
+//      System.exit(1)
       val factCumulativeWeight = TCollections.synchronizedMap(
           new TObjectFloatHashMap[Array[Int]])
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {
@@ -118,9 +132,9 @@ object IndexFacts {
             if (fact.confidence >= 0.5) {
               // vv add fact vv
               // Index terms
-              val leftArg  = index(Whitespace.split(fact.leftArg))
-              val relation = index(Whitespace.split(fact.relation))
-              val rightArg = index(Whitespace.split(fact.rightArg))
+              val leftArg :Array[Int] = index(Whitespace.split(fact.leftArg))
+              val relation:Array[Int] = index(Whitespace.split(fact.relation))
+              val rightArg:Array[Int] = index(Whitespace.split(fact.rightArg))
               // Get cumulative confidence
               val key = new Array[Int](leftArg.length + relation.length + rightArg.length)
               System.arraycopy(leftArg,  0, key, 0, leftArg.length)
@@ -135,9 +149,17 @@ object IndexFacts {
               val toExecute = 
                 if (weight != fact.confidence.toFloat) factUpdate else factInsert
               toExecute.setFloat(1, weight)
-              toExecute.setArray(2, leftArgArray)
+              if (leftArg.length == 1 && leftArg(0) == 0) {
+                toExecute.setNull(2, java.sql.Types.ARRAY)
+              } else {
+                toExecute.setArray(2, leftArgArray)
+              }
               toExecute.setArray(3, relArray)
-              toExecute.setArray(4, rightArgArray)
+              if (rightArg.length == 1 && rightArg(0) == 0) {
+                toExecute.setNull(4, java.sql.Types.ARRAY)
+              } else {
+                toExecute.setArray(4, rightArgArray)
+              }
               toExecute.executeUpdate
               // ^^          ^^
             }
