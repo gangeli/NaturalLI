@@ -24,6 +24,7 @@ import org.goobs.truth.Utils._
 //
 // SQL prerequisite statements for this script:
 // CREATE TABLE facts ( left_arg INTEGER[], rel INTEGER[], right_arg INTEGER[], weight REAL );
+// <run script>
 // CREATE INDEX index_fact_left_arg on "facts" USING GIN ("left_arg");
 // CREATE INDEX index_fact_right_arg on "facts" USING GIN ("right_arg");
 // CREATE INDEX index_fact_rel on "facts" USING GIN ("rel");
@@ -101,8 +102,7 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-//      println( index(Whitespace.split("George Bush attended the United Nations talks")) )
-//      System.exit(1)
+      startTrack("Adding Facts (parallel)")
       val factCumulativeWeight = TCollections.synchronizedMap(
           new TObjectFloatHashMap[Array[Int]])
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {
@@ -166,8 +166,10 @@ object IndexFacts {
           } 
           factInsert.executeBatch
           factUpdate.executeBatch
+          logger.log("finished adding " + file)
         }
       }
+      endTrack("Adding Facts (parallel)")
     }, args)
   }
   
