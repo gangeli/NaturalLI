@@ -237,9 +237,10 @@ object BootstrapGraph {
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)
           wordInsert.setString(2, word.replaceAll("\u0000", ""))
-          wordInsert.executeUpdate
+          wordInsert.addBatch
         }
         logger.log("saved words")
+        wordInsert.executeBatch
         psql.commit
         // Save edge types
         for (edgeType <- EdgeType.values) {
@@ -258,21 +259,21 @@ object BootstrapGraph {
           edgeInsert.setInt(2, sink)
           edgeInsert.setInt(3, t.id)
           edgeInsert.setFloat(4, weight.toFloat)
-          edgeInsert.executeUpdate
+          edgeInsert.addBatch
           edgeCount += 1
         }
-        for ( (source, sink, weight) <- wordnetGraphUp) { edge(WORDNET_UP, source, sink, weight); }; psql.commit
-        for ( (source, sink, weight) <- wordnetGraphDown) { edge(WORDNET_DOWN, source, sink, weight); }; psql.commit
-        for ( (source, sink) <- wordnetNounAntonym) { edge(WORDNET_NOUN_ANTONYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetVerbAntonym) { edge(WORDNET_VERB_ANTONYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetAdjAntonym) { edge(WORDNET_ADJECTIVE_ANTONYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetAdvAntonym) { edge(WORDNET_ADVERB_ANTONYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetAdjPertainym) { edge(WORDNET_ADJECTIVE_PERTAINYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetAdvPertainym) { edge(WORDNET_ADVERB_PERTAINYM, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- wordnetAdjSimilar) { edge(WORDNET_ADJECTIVE_RELATED, source, sink, 1.0); }; psql.commit
-        for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }; psql.commit
-        for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }; psql.commit
-        for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }; psql.commit
+        for ( (source, sink, weight) <- wordnetGraphUp) { edge(WORDNET_UP, source, sink, weight); }; edgeInsert.executeBatch
+        for ( (source, sink, weight) <- wordnetGraphDown) { edge(WORDNET_DOWN, source, sink, weight); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetNounAntonym) { edge(WORDNET_NOUN_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetVerbAntonym) { edge(WORDNET_VERB_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetAdjAntonym) { edge(WORDNET_ADJECTIVE_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetAdvAntonym) { edge(WORDNET_ADVERB_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetAdjPertainym) { edge(WORDNET_ADJECTIVE_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetAdvPertainym) { edge(WORDNET_ADVERB_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- wordnetAdjSimilar) { edge(WORDNET_ADJECTIVE_RELATED, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }; edgeInsert.executeBatch
+        for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
         forceTrack("Committing")
         psql.commit
