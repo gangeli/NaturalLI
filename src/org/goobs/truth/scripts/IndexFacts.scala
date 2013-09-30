@@ -221,11 +221,11 @@ object IndexFacts {
                 // ^^          ^^
               }
             }
-          } 
+          } catch { case (e:Exception) => e.printStackTrace } }
           factInsert.executeBatch
           factUpdate.executeBatch
           logger.log("finished adding " + file)
-        } catch { case (e:Exception) => e.printStackTrace } }
+        }
       } catch { case (e:Exception) => e.printStackTrace } }
       endTrack("Adding Facts (parallel)")
     }, args)
