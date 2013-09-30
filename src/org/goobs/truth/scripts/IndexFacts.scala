@@ -67,7 +67,7 @@ object IndexFacts {
 
 
   def index(rawPhrase:Array[String])
-           (implicit wordIndexer:TObjectIntMap[String]):Array[Int] = {
+           (implicit wordIndexer:TObjectIntMap[String]):Option[Array[Int]] = {
     val phrase:Array[String] = tokenizeWithCase(rawPhrase)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
@@ -101,12 +101,13 @@ object IndexFacts {
     var lastElem:Int = -999
     var rtn = List[Int]()
     for (i <- indexResult.length - 1 to 0 by -1) {
+      if (indexResult(i) < 0) { return None }
       if (indexResult(i) != lastElem) {
         lastElem = indexResult(i)
         rtn = indexResult(i) :: rtn
       }
     }
-    return rtn.toArray
+    return Some(rtn.toArray)
   }
       
   var factCumulativeWeight = List( new TObjectFloatCustomHashMap[Array[Int]](new IntArrayStrategy) )
@@ -182,43 +183,43 @@ object IndexFacts {
             val fact = Fact(file.getName, offset,
                             {offset += line.length + 1; offset},
                             line.split("\t"))
-            if (fact.confidence >= 0.5) {
-              // vv add fact vv
-              // Index terms
-              val leftArg :Array[Int] = index(Whitespace.split(fact.leftArg))
-              val relation:Array[Int] = index(Whitespace.split(fact.relation))
-              val rightArg:Array[Int] = index(Whitespace.split(fact.rightArg))
-              // Get cumulative confidence
-              val key = new Array[Int](leftArg.length + relation.length + rightArg.length)
-              System.arraycopy(leftArg,  0, key, 0, leftArg.length)
-              System.arraycopy(relation, 0, key, leftArg.length, relation.length)
-              System.arraycopy(rightArg, 0, key, leftArg.length + relation.length, rightArg.length)
-              val weight = updateWeight(key, fact.confidence.toFloat)
-              // Create postgres-readable arrays
-              val leftArgArray = psql.createArrayOf("int4", leftArg.map( x => x.asInstanceOf[Object]))
-              val relArray = psql.createArrayOf("int4", relation.map( x => x.asInstanceOf[Object]))
-              val rightArgArray = psql.createArrayOf("int4", rightArg.map( x => x.asInstanceOf[Object]))
-              // Write to Postgres
-              val toExecute = 
-                if (weight != fact.confidence.toFloat) {
-                  factUpdate
+            if (fact.confidence >= 0.25) {
+              for (leftArg:Array[Int] <- index(Whitespace.split(fact.leftArg));
+                   rightArg:Array[Int] <- index(Whitespace.split(fact.rightArg));
+                   relation:Array[Int] <- index(Whitespace.split(fact.relation))) {
+                // vv add fact vv
+                // Get cumulative confidence
+                val key = new Array[Int](leftArg.length + relation.length + rightArg.length)
+                System.arraycopy(leftArg,  0, key, 0, leftArg.length)
+                System.arraycopy(relation, 0, key, leftArg.length, relation.length)
+                System.arraycopy(rightArg, 0, key, leftArg.length + relation.length, rightArg.length)
+                val weight = updateWeight(key, fact.confidence.toFloat)
+                // Create postgres-readable arrays
+                val leftArgArray = psql.createArrayOf("int4", leftArg.map( x => x.asInstanceOf[Object]))
+                val relArray = psql.createArrayOf("int4", relation.map( x => x.asInstanceOf[Object]))
+                val rightArgArray = psql.createArrayOf("int4", rightArg.map( x => x.asInstanceOf[Object]))
+                // Write to Postgres
+                val toExecute = 
+                  if (weight != fact.confidence.toFloat) {
+                    factUpdate
+                  } else {
+                    factInsert
+                  }
+                toExecute.setFloat(1, weight)
+                if (leftArg.length == 1 && leftArg(0) == 0) {
+                  toExecute.setNull(2, java.sql.Types.ARRAY)
                 } else {
-                  factInsert
+                  toExecute.setArray(2, leftArgArray)
                 }
-              toExecute.setFloat(1, weight)
-              if (leftArg.length == 1 && leftArg(0) == 0) {
-                toExecute.setNull(2, java.sql.Types.ARRAY)
-              } else {
-                toExecute.setArray(2, leftArgArray)
+                toExecute.setArray(3, relArray)
+                if (rightArg.length == 1 && rightArg(0) == 0) {
+                  toExecute.setNull(4, java.sql.Types.ARRAY)
+                } else {
+                  toExecute.setArray(4, rightArgArray)
+                }
+                toExecute.addBatch
+                // ^^          ^^
               }
-              toExecute.setArray(3, relArray)
-              if (rightArg.length == 1 && rightArg(0) == 0) {
-                toExecute.setNull(4, java.sql.Types.ARRAY)
-              } else {
-                toExecute.setArray(4, rightArgArray)
-              }
-              toExecute.addBatch
-              // ^^          ^^
             }
           } 
           factInsert.executeBatch
