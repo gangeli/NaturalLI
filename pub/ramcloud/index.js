@@ -5,7 +5,6 @@ require('./sfig/internal/RootedTree.js');
 require('./sfig/internal/metapost.js');
 require('./sfig/internal/seedrandom.js');
 require('./utils.js');
-require('./natlog.js');
 
 //------------------------------------------------------------------------------
 // Title
@@ -41,7 +40,7 @@ prez.addSlide(slide('Introduction',
       indent(image('img/socrates.jpg').scale(0.40)),
      _],
     [ex(true, 'Cats have tails'),
-      indent(image('img/cat.svg').scale(0.5)),
+      indent(image('img/cat.png').scale(0.5)),
      _],
     [ytable(
 //      'More practical examples'.fontcolor('darkred'),
@@ -301,7 +300,7 @@ _));
 prez.addSlide(slide('Problem Size',
   ytable(
     h('Vocabulary'),
-    indent('20 million word types'),
+    indent('20 million words'),
     indent('Average 11 edits per word'),
     indent('$>100$ edits for 100k most common words'),
     indent('$\\sim 10$ words per fact '),

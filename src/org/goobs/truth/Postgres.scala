@@ -19,9 +19,14 @@ object Postgres {
       psql.setAutoCommit(false)
       callback(psql)
       psql.commit
-      psql.close
     } catch {
       case (e:SQLException) => throw new RuntimeException(e);
+    } finally {
+      try {
+        psql.close
+      } catch {
+        case (e:SQLException) => throw new RuntimeException(e);
+      }
     }
   }
 

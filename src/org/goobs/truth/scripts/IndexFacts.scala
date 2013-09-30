@@ -2,7 +2,11 @@ package org.goobs.truth.scripts
 
 import scala.collection.JavaConversions._
 import scala.io.Source
-import gnu.trove.map.hash._
+import gnu.trove.map.TObjectIntMap
+import gnu.trove.map.TObjectFloatMap
+import gnu.trove.map.hash.TObjectIntHashMap
+import gnu.trove.map.custom_hash.TObjectFloatCustomHashMap
+import gnu.trove.strategy.HashingStrategy
 import gnu.trove.TCollections
 
 import java.io._
@@ -39,8 +43,31 @@ object IndexFacts {
   
   private val logger = Redwood.channels("Facts")
 
+  class IntArrayStrategy extends HashingStrategy[Array[Int]] { 
+    var last:Array[Int] = null;
+    var lastCode:Int = -1;
+    override def computeHashCode(o:Array[Int]):Int = {
+      if (o eq last) { 
+        lastCode
+      } else {
+        last = o;
+        lastCode = o.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); }
+        lastCode
+      }
+    }
+  
+    override def equals(a:Array[Int], b:Array[Int]):Boolean = {
+      if (a.length != b.length) { return false; }
+      for (i <- 0 until a.length) {
+        if (a(i) != b(i)) { return false; }
+      }
+      return true;
+    }
+  } 
+
+
   def index(rawPhrase:Array[String])
-           (implicit wordIndexer:TObjectIntHashMap[String]):Array[Int] = {
+           (implicit wordIndexer:TObjectIntMap[String]):Array[Int] = {
     val phrase:Array[String] = tokenizeWithCase(rawPhrase)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
@@ -81,6 +108,34 @@ object IndexFacts {
     }
     return rtn.toArray
   }
+      
+  var factCumulativeWeight = List( new TObjectFloatCustomHashMap[Array[Int]](new IntArrayStrategy) )
+  
+  def updateWeight(key:Array[Int], confidence:Float):Float = {
+    this.synchronized {
+      // Find the map which likely contains this key
+      val candidateMap = factCumulativeWeight
+        .collectFirst{ case (map:TObjectFloatMap[Array[Int]]) if (map.containsKey(key)) => map }
+        .getOrElse(factCumulativeWeight.head)
+      try {
+        // Try adding the weight
+        candidateMap.adjustOrPutValue(key, confidence, confidence)
+      } catch {
+        case (e:IllegalStateException) =>
+          // Could nto add; try making more maps (can overflow hashmap?)
+          warn("Could not write to hash map (" + e.getMessage + ")")
+          factCumulativeWeight = new TObjectFloatCustomHashMap[Array[Int]](new IntArrayStrategy) :: factCumulativeWeight;
+          try {
+            // Add to new hash map
+            factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
+          } catch {
+            // Still can't write? Give up.
+            case (e:IllegalStateException) => e.printStackTrace
+            confidence
+          }
+      }
+    }
+  }
 
 
   def main(args:Array[String]):Unit = {
@@ -103,8 +158,6 @@ object IndexFacts {
       
       // Read facts
       startTrack("Adding Facts (parallel)")
-      val factCumulativeWeight = TCollections.synchronizedMap(
-          new TObjectFloatHashMap[Array[Int]])
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {
         withConnection{ (psql:Connection) =>
           var offset:Long = 0;
@@ -140,14 +193,18 @@ object IndexFacts {
               System.arraycopy(leftArg,  0, key, 0, leftArg.length)
               System.arraycopy(relation, 0, key, leftArg.length, relation.length)
               System.arraycopy(rightArg, 0, key, leftArg.length + relation.length, rightArg.length)
-              val weight = factCumulativeWeight.adjustOrPutValue(key, fact.confidence.toFloat, fact.confidence.toFloat)
+              val weight = updateWeight(key, fact.confidence.toFloat)
               // Create postgres-readable arrays
               val leftArgArray = psql.createArrayOf("int4", leftArg.map( x => x.asInstanceOf[Object]))
               val relArray = psql.createArrayOf("int4", relation.map( x => x.asInstanceOf[Object]))
               val rightArgArray = psql.createArrayOf("int4", rightArg.map( x => x.asInstanceOf[Object]))
               // Write to Postgres
               val toExecute = 
-                if (weight != fact.confidence.toFloat) factUpdate else factInsert
+                if (weight != fact.confidence.toFloat) {
+                  factUpdate
+                } else {
+                  factInsert
+                }
               toExecute.setFloat(1, weight)
               if (leftArg.length == 1 && leftArg(0) == 0) {
                 toExecute.setNull(2, java.sql.Types.ARRAY)
