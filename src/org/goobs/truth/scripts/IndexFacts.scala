@@ -159,7 +159,7 @@ object IndexFacts {
       
       // Read facts
       startTrack("Adding Facts (parallel)")
-      for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) {
+      for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         withConnection{ (psql:Connection) =>
           var offset:Long = 0;
           val factInsert = psql.prepareStatement(
@@ -179,7 +179,7 @@ object IndexFacts {
                     } catch {
                       case (e:Exception) => Nil
                     }
-                } ) {
+                } ) { try {
             val fact = Fact(file.getName, offset,
                             {offset += line.length + 1; offset},
                             line.split("\t"))
@@ -225,8 +225,8 @@ object IndexFacts {
           factInsert.executeBatch
           factUpdate.executeBatch
           logger.log("finished adding " + file)
-        }
-      }
+        } catch { case (e:Exception) => e.printStackTrace } }
+      } catch { case (e:Exception) => e.printStackTrace } }
       endTrack("Adding Facts (parallel)")
     }, args)
   }
