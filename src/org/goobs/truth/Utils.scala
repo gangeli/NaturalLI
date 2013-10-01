@@ -65,7 +65,7 @@ object Utils {
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
-      if (phrase.length == 1) { fn(phrase(0)) }
+      else if (phrase.length == 1) { fn(phrase(0)) }
       else { fn(sentence.headWord(0, phrase.length)) }
     }
     // Tokenize
