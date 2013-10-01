@@ -51,6 +51,7 @@ object IndexFacts {
         rel.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); } ^
         rightArg.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); }
     }
+
     def equals(a:Array[Int], b:Array[Int]):Boolean = {
       if (a.length != b.length) { return false; }
       for (i <- 0 until a.length) {
@@ -58,12 +59,22 @@ object IndexFacts {
       }
       return true;
     }
+
     override def equals(other:Any):Boolean = {
       other match {
         case (o:MinimalFact) =>
           equals(leftArg, o.leftArg) && equals(rel, o.rel) && equals(rightArg, o.rightArg)
         case _ => false
       }
+    }
+
+    def hash:Long = {
+      val fact = leftArg ++ rel ++ rightArg
+      val (hash, shift) = fact.foldLeft( (0, 0) ) { 
+            case ( (hash, shift), word ) =>
+          (hash ^ (word << shift), shift + (64 / fact.length))
+        }
+      hash
     }
   }
   implicit def fn2troveFloatFn[E](fn:(E,Float)=>Unit):TObjectFloatProcedure[E] = {
@@ -119,18 +130,6 @@ object IndexFacts {
     }
     return Some(rtn.toArray)
   }
-
-  /**
-   * 
-   */
-  def hashKey(leftArg:Array[Int], rel:Array[Int], rightArg:Array[Int]):Long = {
-    val fact = leftArg ++ rel ++ rightArg
-    val (hash, shift) = fact.foldLeft( (0, 0) ) { 
-          case ( (hash, shift), word ) =>
-        (hash ^ (word << shift), shift + (64 / fact.length))
-      }
-    hash
-  }
       
   var factCumulativeWeight = List( new TLongFloatHashMap )
   
@@ -158,6 +157,12 @@ object IndexFacts {
           }
       }
     }
+  }
+
+  def getWeight(key:Long):Float = {
+    factCumulativeWeight
+      .collectFirst{ case (map:TLongFloatMap) if (map.containsKey(key)) => map }
+      .map{ _.get(key) }.getOrElse(0.0f)
   }
 
 
@@ -203,8 +208,8 @@ object IndexFacts {
                  relation:Array[Int] <- index(fact.relation.trim)) {
               // vv add fact vv
               // Get cumulative confidence
-              val weight = updateWeight(hashKey(leftArg, relation, rightArg), fact.confidence.toFloat)
               val factKey = new MinimalFact(leftArg, relation, rightArg)
+              val weight = updateWeight(factKey.hash, fact.confidence.toFloat)
               // Determine whether it's an update or insert
               if (weight == fact.confidence.toFloat) {
                 // case: insert (for now at least)
@@ -256,7 +261,7 @@ object IndexFacts {
             fill(factUpdate, key, weight)
           }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factInsert, key, weight)
+            fill(factInsert, key, getWeight(key.hash))  // get weight in case it changed from future updates
           }
           // Run Updates
           factInsert.executeBatch
