@@ -58,20 +58,22 @@ object Utils {
     import java.lang.Character
     // Construct a fake sentence
     val lowercaseWords = phrase.map( _.toLowerCase )
-    val lowercaseSent = new Array[String](lowercaseWords.length + 3)
-    lowercaseSent(0) = "the"
-    System.arraycopy(lowercaseWords, 0, lowercaseSent, 1, lowercaseWords.length)
-    lowercaseSent(1 + lowercaseWords.length + 0) = "is"
-    lowercaseSent(1 + lowercaseWords.length + 1) = "blue"
+    val lowercaseSent = new Array[String](lowercaseWords.length + 2)
+    System.arraycopy(lowercaseWords, 0, lowercaseSent, 0, lowercaseWords.length)
+    lowercaseSent(lowercaseWords.length + 0) = "is"
+    lowercaseSent(lowercaseWords.length + 1) = "blue"
     val sentence = Sentence(lowercaseSent)
-    for (fn <- headWord) { fn(sentence.headWord(0, phrase.length)) }
+    for (fn <- headWord) { 
+      if (phrase.length == 1) { fn(phrase(0)) }
+      else { fn(sentence.headWord(0, phrase.length)) }
+    }
     // Tokenize
     if (lowercaseWords.length == 0) { 
-      lowercaseSent
+      new Array[String](0)
     } else if (lowercaseWords.length == 1 && !sentence.pos(0).startsWith("N")) {
       lowercaseWords
     } else {
-      tokenizeWithCaseImpl(phrase, sentence, 1)
+      tokenizeWithCaseImpl(phrase, sentence, 0)
     }
   }
   
