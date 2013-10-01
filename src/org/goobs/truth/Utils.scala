@@ -31,8 +31,8 @@ object Utils {
     System.arraycopy(lowercaseWords, 0, lowercaseSent, 2, lowercaseWords.length)
     lowercaseSent(0) = "joe"
     lowercaseSent(1) = "and"
-    lowercaseSent(lowercaseWords.length + 0) = "is"
-    lowercaseSent(lowercaseWords.length + 1) = "blue"
+    lowercaseSent(lowercaseWords.length + 2) = "are"
+    lowercaseSent(lowercaseWords.length + 3) = "blue"
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
