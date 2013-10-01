@@ -326,6 +326,7 @@ object BootstrapGraph {
         // (morpha edges)
         for ( (source, sink) <- word2lemma ) { edge(MORPH_TO_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- fudgeNumber ) { edge(MORPH_FUDGE_NUMBER, source, sink, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
         forceTrack("Committing")
         psql.commit
