@@ -48,6 +48,8 @@ public class Props {
   public static File SCRIPT_REVERB_RAW_DIR = new File("/scr/nlp/data/openie/output/reverb1.4/clueweb_english");
   @Option(name="script.reverb.raw.gzip", gloss="If true, the input files are in gzip format")
   public static boolean SCRIPT_REVERB_RAW_GZIP = true;
+  @Option(name="script.reverb.head.do", gloss="If true, compute the head word for each fact added")
+  public static boolean SCRIPT_REVERB_HEAD_DO = false;
   
   @Option(name="script.freebase.raw.path", gloss="The location of the raw Freebase dump")
   public static File SCRIPT_FREEBASE_RAW_PATH = new File("/u/nlp/data/semparse/rdf/scr/jackson/state/execs/93.exec/0.ttl");

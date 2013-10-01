@@ -105,7 +105,7 @@ object IndexFacts {
     if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
     var headWord:Option[String] = None
     val phrase:Array[String] = tokenizeWithCase(rawPhrase,
-      if (doHead) Some((hw:String) => headWord = Some(hw)) else None)
+      if (doHead && Props.SCRIPT_REVERB_HEAD_DO) Some((hw:String) => headWord = Some(hw)) else None)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
@@ -260,9 +260,13 @@ object IndexFacts {
         } catch { case (e:Exception) => e.printStackTrace } }
         withConnection{ (psql:Connection) =>
           psql.setAutoCommit(true)
-          val factInsert = psql.prepareStatement(
-            "INSERT INTO " + Postgres.TABLE_FACTS +
-            " (weight, left_arg, left_head, rel, right_arg, right_head) VALUES (?, ?, ?, ?, ?, ?);")
+          val factInsert
+            = if (Props.SCRIPT_REVERB_HEAD_DO) psql.prepareStatement(
+                "INSERT INTO " + Postgres.TABLE_FACTS +
+                " (weight, left_arg, left_head, rel, right_arg, right_head) VALUES (?, ?, ?, ?, ?, ?);")
+              else psql.prepareStatement(
+                "INSERT INTO " + Postgres.TABLE_FACTS +
+                " (weight, left_arg, rel, right_arg) VALUES (?, ?, ?, ?);")
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
@@ -279,21 +283,21 @@ object IndexFacts {
             if (key.leftArg.length == 0 ||
                 (key.leftArg.length == 1 && key.leftArg(0) == 0)) {
               toExecute.setNull(2, java.sql.Types.ARRAY)
-              if (isInsert) toExecute.setNull(2, java.sql.Types.INTEGER)
+              if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) toExecute.setNull(2, java.sql.Types.INTEGER)
             } else {
               toExecute.setArray(2, leftArgArray)
-              if (isInsert) toExecute.setInt(3, key.leftHead)
+              if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) toExecute.setInt(3, key.leftHead)
             }
             // (relation)
-            toExecute.setArray(if (isInsert) 4 else 3, relArray)
+            toExecute.setArray(if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) 4 else 3, relArray)
             // (right arg + head)
             if (key.rightArg.length == 0 ||
                 (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
-              toExecute.setNull(if (isInsert) 5 else 4, java.sql.Types.ARRAY)
-              if (isInsert) toExecute.setNull(6, java.sql.Types.INTEGER)
+              toExecute.setNull(if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) 5 else 4, java.sql.Types.ARRAY)
+              if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) toExecute.setNull(6, java.sql.Types.INTEGER)
             } else {
-              toExecute.setArray(if (isInsert) 5 else 4, rightArgArray)
-              if (isInsert) toExecute.setInt(6, key.rightHead)
+              toExecute.setArray(if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) 5 else 4, rightArgArray)
+              if (isInsert && Props.SCRIPT_REVERB_HEAD_DO) toExecute.setInt(6, key.rightHead)
             }
             // (execute)
             toExecute.addBatch
