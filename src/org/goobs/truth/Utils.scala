@@ -66,7 +66,10 @@ object Utils {
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
       else if (phrase.length == 1) { fn(phrase(0)) }
-      else { fn(sentence.headWord(0, phrase.length)) }
+      else {
+        val headIndex = sentence.headIndex(0, phrase.length)
+        fn(phrase(headIndex))
+      }
     }
     // Tokenize
     if (lowercaseWords.length == 0) { 
