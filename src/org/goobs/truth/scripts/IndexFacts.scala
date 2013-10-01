@@ -106,7 +106,6 @@ object IndexFacts {
     var headWord:Option[String] = None
     val phrase:Array[String] = tokenizeWithCase(rawPhrase,
       if (doHead) Some((hw:String) => headWord = Some(hw)) else None)
-    assert(headWord != null)  // yes, I know it's nasty code; I'm lazy...
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
@@ -189,9 +188,11 @@ object IndexFacts {
   }
 
   def getWeight(key:Long):Float = {
-    factCumulativeWeight
-      .collectFirst{ case (map:TLongFloatMap) if (map.containsKey(key)) => map }
-      .map{ _.get(key) }.getOrElse(0.0f)
+    this.synchronized {
+      factCumulativeWeight
+        .collectFirst{ case (map:TLongFloatMap) if (map.containsKey(key)) => map }
+        .map{ _.get(key) }.getOrElse(0.0f)
+    }
   }
 
 

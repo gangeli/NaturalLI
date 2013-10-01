@@ -80,7 +80,7 @@ object Utils {
   }
   
   def tokenizeWithCase(phrase:String, headWord:Option[String=>Any]=None):Array[String] = {
-    tokenizeWithCase(Sentence(phrase).words)
+    tokenizeWithCaseImpl(Sentence(phrase).words, headWord)
   }
 }
 
