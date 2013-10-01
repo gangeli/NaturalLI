@@ -185,6 +185,7 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
+      val toInsertAllPending:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
@@ -214,9 +215,10 @@ object IndexFacts {
               if (weight == fact.confidence.toFloat) {
                 // case: insert (for now at least)
                 toInsert.put(factKey, weight)
+                toInsertAllPending.put(factKey, weight)
               } else {
                 // case: update
-                if (toInsert.containsKey(factKey)) {
+                if (toInsertAllPending.containsKey(factKey)) {
                   // check if it used to be an insert (if so, update the insert)
                   toInsert.adjustValue(factKey, weight)
                 } else {
@@ -261,6 +263,7 @@ object IndexFacts {
             fill(factUpdate, key, weight)
           }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
+            toInsertAllPending.remove(key)
             fill(factInsert, key, getWeight(key.hash))  // get weight in case it changed from future updates
           }
           // Run Updates
