@@ -217,12 +217,8 @@ object IndexFacts {
                 toInsert.put(factKey, weight)
                 toInsertAllPending.put(factKey, weight)
               } else {
-                // case: update
-                if (toInsertAllPending.containsKey(factKey)) {
-                  // check if it used to be an insert (if so, update the insert)
-                  toInsert.adjustValue(factKey, weight)
-                } else {
-                  // else, it was always an update
+                // case: update (but, make sure we're not updating elsewhere)
+                if (!toInsertAllPending.containsKey(factKey)) {
                   toUpdate.adjustOrPutValue(factKey, weight, weight)
                 }
               }
