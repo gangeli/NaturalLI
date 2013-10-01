@@ -41,6 +41,7 @@ import org.goobs.truth.Utils._
  * @author Gabor Angeli
  */
 object IndexFacts {
+  import scala.language.implicitConversions
   
   private val logger = Redwood.channels("Facts")
 
@@ -65,7 +66,6 @@ object IndexFacts {
       }
     }
   }
-  
   implicit def fn2troveFloatFn[E](fn:(E,Float)=>Unit):TObjectFloatProcedure[E] = {
     new TObjectFloatProcedure[E]() {
       override def execute(key:E, value:Float):Boolean = {
@@ -184,8 +184,6 @@ object IndexFacts {
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
         val toUpdate:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
-        var numInserts = 0
-        var numUpdates = 0
         for (line <-
              try {
               { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
@@ -254,19 +252,18 @@ object IndexFacts {
             toExecute.addBatch
           }
           // Run population
-          import scala.language.implicitConversions
           toUpdate.forEachEntry{ (key:MinimalFact, weight:Float) =>
             fill(factUpdate, key, weight)
           }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factUpdate, key, weight)
+            fill(factInsert, key, weight)
           }
           // Run Updates
           factInsert.executeBatch
           psql.commit
           factUpdate.executeBatch
           psql.commit
-          logger.log("finished [" + numInserts + " ins. " + numUpdates + " up.]: " + file)
+          logger.log("finished [" + toInsert.size + " ins. " + toUpdate.size + " up.]: " + file)
         }
       } catch { case (e:Exception) => e.printStackTrace } }
       endTrack("Adding Facts (parallel)")
