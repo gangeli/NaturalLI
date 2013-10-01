@@ -9,6 +9,7 @@ import gnu.trove.map.hash.TObjectIntHashMap
 import gnu.trove.map.hash.TLongFloatHashMap
 import gnu.trove.map.hash.TObjectFloatHashMap
 import gnu.trove.procedure.TObjectFloatProcedure
+import gnu.trove.TCollections._
 
 import java.io._
 import java.util.zip.GZIPInputStream
@@ -185,7 +186,8 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      val toInsertAllPending:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
+      val toInsertAllPending:TObjectFloatMap[MinimalFact]
+        = synchronizedMap(new TObjectFloatHashMap[MinimalFact])
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
