@@ -261,7 +261,7 @@ object IndexFacts {
           psql.setAutoCommit(true)
           val factInsert = psql.prepareStatement(
             "INSERT INTO " + Postgres.TABLE_FACTS +
-            " (weight, left_arg, leftHead, rel, right_arg, rightHead) VALUES (?, ?, ?, ?);")
+            " (weight, left_arg, leftHead, rel, right_arg, rightHead) VALUES (?, ?, ?, ?, ?, ?);")
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
