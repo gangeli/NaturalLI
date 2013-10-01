@@ -77,7 +77,7 @@ object IndexFacts {
       hash
     }
   }
-  implicit def fn2troveFloatFn[E](fn:(E,Float)=>Unit):TObjectFloatProcedure[E] = {
+  implicit def fn2troveFloatFn[E](fn:(E,Float)=>Any):TObjectFloatProcedure[E] = {
     new TObjectFloatProcedure[E]() {
       override def execute(key:E, value:Float):Boolean = {
         fn( key, value )
@@ -263,7 +263,6 @@ object IndexFacts {
             fill(factUpdate, key, weight)
           }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            toInsertAllPending.remove(key)
             fill(factInsert, key, getWeight(key.hash))  // get weight in case it changed from future updates
           }
           // Run Updates
@@ -271,6 +270,10 @@ object IndexFacts {
           psql.commit
           factUpdate.executeBatch
           psql.commit
+          // Unregister inserted entries
+          toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
+            toInsertAllPending.remove(key);
+          }
           logger.log("finished [" + toInsert.size + " ins. " + toUpdate.size + " up.]: " + file)
         }
       } catch { case (e:Exception) => e.printStackTrace } }
