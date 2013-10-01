@@ -32,7 +32,7 @@ import org.goobs.truth.Utils._
 
 //
 // SQL prerequisite statements for this script:
-// CREATE TABLE facts ( left_arg INTEGER[], rel INTEGER[], right_arg INTEGER[], weight REAL );
+// CREATE TABLE facts ( left_arg INTEGER[], left_head INTEGER, rel INTEGER[], right_arg INTEGER[], right_head INTEGER, weight REAL );
 // CREATE INDEX index_fact_left_arg on "facts" USING GIN ("left_arg");
 // CREATE INDEX index_fact_right_arg on "facts" USING GIN ("right_arg");
 // CREATE INDEX index_fact_rel on "facts" USING GIN ("rel");
@@ -48,7 +48,9 @@ object IndexFacts {
   
   private val logger = Redwood.channels("Facts")
 
-  case class MinimalFact(leftArg:Array[Int], rel:Array[Int], rightArg:Array[Int]) {
+  case class MinimalFact(leftArg:Array[Int], leftHead:Int,
+                         rel:Array[Int],
+                         rightArg:Array[Int], rightHead:Int) {
     override def hashCode:Int = {
       leftArg.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); } ^
         rel.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); } ^
@@ -89,10 +91,14 @@ object IndexFacts {
     }
   }
 
-  def index(rawPhrase:String, allowEmpty:Boolean=false)
-           (implicit wordIndexer:TObjectIntMap[String]):Option[Array[Int]] = {
+  def index(rawPhrase:String, doHead:Boolean, allowEmpty:Boolean=false)
+           (implicit wordIndexer:TObjectIntMap[String])
+           :Option[(Array[Int],Int)] = {
     if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
-    val phrase:Array[String] = tokenizeWithCase(rawPhrase)
+    var headWord:Option[String] = None
+    val phrase:Array[String] = tokenizeWithCase(rawPhrase,
+      if (doHead) Some((hw:String) => headWord = Some(hw)) else None)
+    assert(headWord != null)  // yes, I know it's nasty code; I'm lazy...
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
@@ -121,6 +127,14 @@ object IndexFacts {
       }
     }
 
+    // Find head word index
+    val headWordIndexed:Int =
+      (for (hw <- headWord) yield {
+        if (wordIndexer.containsKey(hw)) { Some(wordIndexer.get(hw)) }
+        else if (wordIndexer.containsKey(hw.toLowerCase)) { Some(wordIndexer.get(hw.toLowerCase)) }
+        else { None }
+      }).flatten.getOrElse(-1)
+
     // Create resulting array
     var lastElem:Int = -999
     var rtn = List[Int]()
@@ -131,7 +145,7 @@ object IndexFacts {
         rtn = indexResult(i) :: rtn
       }
     }
-    return Some(rtn.toArray)
+    return Some( (rtn.toArray, headWordIndexed) )
   }
       
   var factCumulativeWeight = List( new TLongFloatHashMap )
@@ -148,7 +162,7 @@ object IndexFacts {
         // Try adding the weight
         val newConfidence = candidateMap.adjustOrPutValue(key, confidence, confidence)
         if (newConfidence == confidence) { allInserts.add(fact) }
-        (newConfidence, newConfidence == confidence)
+        return (newConfidence, newConfidence == confidence)
       } catch {
         case (e:IllegalStateException) =>
           // Could nto add; try making more maps (can overflow hashmap?)
@@ -158,7 +172,7 @@ object IndexFacts {
             // Add to new hash map
             val newConfidence = factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
             if (newConfidence == confidence) { allInserts.add(fact) }
-            (newConfidence, newConfidence == confidence)
+            return (newConfidence, newConfidence == confidence)
           } catch {
             // Still can't write? Give up.
             case (e:IllegalStateException) => throw new RuntimeException(e)
@@ -213,12 +227,12 @@ object IndexFacts {
               } ) { try {
           val fact = Fact(file.getName, line.split("\t"))
           if (fact.confidence >= 0.25) {
-            for (leftArg:Array[Int] <- index(fact.leftArg.trim);
-                 rightArg:Array[Int] <- index(fact.rightArg.trim, true);  // can be empty
-                 relation:Array[Int] <- index(fact.relation.trim)) {
+            for ((leftArg:Array[Int], leftHead:Int) <- index(fact.leftArg.trim, true);
+                 (rightArg:Array[Int], rightHead:Int) <- index(fact.rightArg.trim, true, true);  // can be empty
+                 (relation:Array[Int], dontUseMe:Int) <- index(fact.relation.trim, false)) {
               // vv add fact vv
               // Get cumulative confidence
-              val factKey = new MinimalFact(leftArg, relation, rightArg)
+              val factKey = new MinimalFact(leftArg, leftHead, relation, rightArg, rightHead)
               val (weight, isInsert)
                 = updateWeight(factKey, fact.confidence.toFloat,
                                toInsertAllPending)
@@ -237,9 +251,10 @@ object IndexFacts {
           }
         } catch { case (e:Exception) => e.printStackTrace } }
         withConnection{ (psql:Connection) =>
+          psql.setAutoCommit(true)
           val factInsert = psql.prepareStatement(
             "INSERT INTO " + Postgres.TABLE_FACTS +
-            " (weight, left_arg, rel, right_arg) VALUES (?, ?, ?, ?);")
+            " (weight, left_arg, leftHead, rel, right_arg, rightHead) VALUES (?, ?, ?, ?);")
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
@@ -250,18 +265,27 @@ object IndexFacts {
             val relArray = psql.createArrayOf("int4", key.rel.map( x => x.asInstanceOf[Object]))
             val rightArgArray = psql.createArrayOf("int4", key.rightArg.map( x => x.asInstanceOf[Object]))
             // Populate fields
+            // (weight)
             toExecute.setFloat(1, weight)
-            if (key.leftArg.length == 1 && key.leftArg(0) == 0) {
+            // (left arg + head)
+            if (key.leftArg.length == 0 ||
+                (key.leftArg.length == 1 && key.leftArg(0) == 0)) {
               toExecute.setNull(2, java.sql.Types.ARRAY)
             } else {
               toExecute.setArray(2, leftArgArray)
+              toExecute.setInt(3, key.leftHead)
             }
-            toExecute.setArray(3, relArray)
-            if (key.rightArg.length == 1 && key.rightArg(0) == 0) {
+            // (relation)
+            toExecute.setArray(4, relArray)
+            // (right arg + head)
+            if (key.rightArg.length == 0 ||
+                (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
               toExecute.setNull(4, java.sql.Types.ARRAY)
             } else {
               toExecute.setArray(4, rightArgArray)
+              toExecute.setInt(5, key.rightHead)
             }
+            // (execute)
             toExecute.addBatch
           }
           // Run population
@@ -273,9 +297,7 @@ object IndexFacts {
           }
           // Run Updates
           factInsert.executeBatch
-          psql.commit
           factUpdate.executeBatch
-          psql.commit
           // Unregister inserted entries
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
             toInsertAllPending.remove(key);

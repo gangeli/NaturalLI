@@ -53,8 +53,8 @@ object Utils {
         }
       }
   }
-
-  def tokenizeWithCase(phrase:Array[String]):Array[String] = {
+  
+  def tokenizeWithCaseImpl(phrase:Array[String], headWord:Option[String=>Any]=None):Array[String] = {
     import java.lang.Character
     // Construct a fake sentence
     val lowercaseWords = phrase.map( _.toLowerCase )
@@ -64,6 +64,7 @@ object Utils {
     lowercaseSent(1 + lowercaseWords.length + 0) = "is"
     lowercaseSent(1 + lowercaseWords.length + 1) = "blue"
     val sentence = Sentence(lowercaseSent)
+    for (fn <- headWord) { fn(sentence.headWord(0, phrase.length)) }
     // Tokenize
     if (lowercaseWords.length == 0) { 
       lowercaseSent
@@ -74,7 +75,11 @@ object Utils {
     }
   }
   
-  def tokenizeWithCase(phrase:String):Array[String] = {
+  def tokenizeWithCase(phrase:Array[String]):Array[String] = {
+    tokenizeWithCaseImpl(phrase, None)
+  }
+  
+  def tokenizeWithCase(phrase:String, headWord:Option[String=>Any]=None):Array[String] = {
     tokenizeWithCase(Sentence(phrase).words)
   }
 }

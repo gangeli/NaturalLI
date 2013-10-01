@@ -23,14 +23,14 @@ object Postgres {
     try {
       psql.setAutoCommit(false)
       callback(psql)
-      psql.commit
+      if (!psql.getAutoCommit) psql.commit
     } catch {
-      case (e:SQLException) => log(e)
+      case (e:SQLException) => err(e); err(e.getNextException)
     } finally {
       try {
         psql.close
       } catch {
-        case (e:SQLException) => log(e)
+        case (e:SQLException) => err(e); err(e.getNextException)
       }
     }
   }
