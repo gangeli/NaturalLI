@@ -68,7 +68,7 @@ object Utils {
       else if (phrase.length == 1) { fn(phrase(0)) }
       else {
         val headIndex = sentence.headIndex(0, phrase.length)
-        fn(phrase(headIndex))
+        fn(phrase(0 + headIndex))
       }
     }
     // Tokenize
