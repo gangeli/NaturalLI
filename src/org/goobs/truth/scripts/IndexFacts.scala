@@ -2,6 +2,7 @@ package org.goobs.truth.scripts
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable.HashSet
+import scala.collection.mutable.SynchronizedSet
 import scala.io.Source
 
 import gnu.trove.map.TObjectIntMap
@@ -40,6 +41,13 @@ import org.goobs.truth.Utils._
 
 /**
  * The entry point for reading and indexing the ReVerb facts.
+ *
+ * We can lose facts in two ways:
+ *   1. We map two facts to the same Long hash (low probability, but
+ *      possible).
+ *   2. We update a fact in two threads, between when it was removed
+ *      from the pending operations (when its weight was re-read) and when 
+ *      it is actually comitted to the DB.
  *
  * @author Gabor Angeli
  */
@@ -151,7 +159,8 @@ object IndexFacts {
   var factCumulativeWeight = List( new TLongFloatHashMap )
   
   def updateWeight(fact:MinimalFact, confidence:Float,
-                   allInserts:HashSet[MinimalFact]):(Float,Boolean) = {
+                   operationsPending:HashSet[MinimalFact]):(Float,Boolean) = {
+    operationsPending.add(fact)
     val key:Long = fact.hash
     this.synchronized {
       // Find the map which likely contains this key
@@ -161,7 +170,6 @@ object IndexFacts {
       try {
         // Try adding the weight
         val newConfidence = candidateMap.adjustOrPutValue(key, confidence, confidence)
-        if (newConfidence == confidence) { allInserts.add(fact) }
         return (newConfidence, newConfidence == confidence)
       } catch {
         case (e:IllegalStateException) =>
@@ -171,7 +179,6 @@ object IndexFacts {
           try {
             // Add to new hash map
             val newConfidence = factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
-            if (newConfidence == confidence) { allInserts.add(fact) }
             return (newConfidence, newConfidence == confidence)
           } catch {
             // Still can't write? Give up.
@@ -207,8 +214,8 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      val toInsertAllPending:HashSet[MinimalFact]
-        = new HashSet[MinimalFact]
+      val operationsPending:HashSet[MinimalFact]
+        = new HashSet[MinimalFact] with SynchronizedSet[MinimalFact]
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
@@ -235,14 +242,14 @@ object IndexFacts {
               val factKey = new MinimalFact(leftArg, leftHead, relation, rightArg, rightHead)
               val (weight, isInsert)
                 = updateWeight(factKey, fact.confidence.toFloat,
-                               toInsertAllPending)
+                               operationsPending)
               // Determine whether it's an update or insert
               if (isInsert) {
                 // case: insert (for now at least)
                 toInsert.put(factKey, weight)
               } else {
                 // case: update (but, make sure we're not updating elsewhere)
-                if (!toInsertAllPending.contains(factKey)) {
+                if (!operationsPending.contains(factKey)) {
                   toUpdate.adjustOrPutValue(factKey, weight, weight)
                 }
               }
@@ -259,7 +266,7 @@ object IndexFacts {
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
           // Populate Postgres Statements
-          def fill(toExecute:PreparedStatement, key:MinimalFact, weight:Float):Unit = {
+          def fill(toExecute:PreparedStatement, key:MinimalFact, weight:Float, isInsert:Boolean):Unit = {
             // Create postgres-readable arrays
             val leftArgArray = psql.createArrayOf("int4", key.leftArg.map( x => x.asInstanceOf[Object]))
             val relArray = psql.createArrayOf("int4", key.rel.map( x => x.asInstanceOf[Object]))
@@ -273,35 +280,33 @@ object IndexFacts {
               toExecute.setNull(2, java.sql.Types.ARRAY)
             } else {
               toExecute.setArray(2, leftArgArray)
-              toExecute.setInt(3, key.leftHead)
+              if (isInsert) toExecute.setInt(3, key.leftHead)
             }
             // (relation)
-            toExecute.setArray(4, relArray)
+            toExecute.setArray(if (isInsert) 4 else 3, relArray)
             // (right arg + head)
             if (key.rightArg.length == 0 ||
                 (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
-              toExecute.setNull(4, java.sql.Types.ARRAY)
+              toExecute.setNull(if (isInsert) 5 else 4, java.sql.Types.ARRAY)
             } else {
-              toExecute.setArray(4, rightArgArray)
-              toExecute.setInt(5, key.rightHead)
+              toExecute.setArray(if (isInsert) 5 else 4, rightArgArray)
+              if (isInsert) toExecute.setInt(6, key.rightHead)
             }
             // (execute)
             toExecute.addBatch
           }
           // Run population
           toUpdate.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factUpdate, key, weight)
+            fill(factUpdate, key, getWeight(key.hash), false)
+            operationsPending.remove(key);
           }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factInsert, key, getWeight(key.hash))  // get weight in case it changed from future updates
+            fill(factInsert, key, getWeight(key.hash), true)  // get weight in case it changed from future updates
+            operationsPending.remove(key);
           }
           // Run Updates
           factInsert.executeBatch
           factUpdate.executeBatch
-          // Unregister inserted entries
-          toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            toInsertAllPending.remove(key);
-          }
           logger.log("finished [" + toInsert.size + " ins. " + toUpdate.size + " up.]: " + file)
         }
       } catch { case (e:Exception) => e.printStackTrace } }
