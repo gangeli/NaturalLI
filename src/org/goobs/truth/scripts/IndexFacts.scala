@@ -3,15 +3,17 @@ package org.goobs.truth.scripts
 import scala.collection.JavaConversions._
 import scala.io.Source
 import gnu.trove.map.TObjectIntMap
+import gnu.trove.map.TLongFloatMap
 import gnu.trove.map.TObjectFloatMap
 import gnu.trove.map.hash.TObjectIntHashMap
-import gnu.trove.map.custom_hash.TObjectFloatCustomHashMap
-import gnu.trove.strategy.HashingStrategy
-import gnu.trove.TCollections
+import gnu.trove.map.hash.TLongFloatHashMap
+import gnu.trove.map.hash.TObjectFloatHashMap
+import gnu.trove.procedure.TObjectFloatProcedure
 
 import java.io._
 import java.util.zip.GZIPInputStream
 import java.sql.Connection
+import java.sql.PreparedStatement
 import java.sql.ResultSet
 
 import edu.stanford.nlp.io.IOUtils._
@@ -42,28 +44,36 @@ object IndexFacts {
   
   private val logger = Redwood.channels("Facts")
 
-  class IntArrayStrategy extends HashingStrategy[Array[Int]] { 
-    var last:Array[Int] = null;
-    var lastCode:Int = -1;
-    override def computeHashCode(o:Array[Int]):Int = {
-      if (o eq last) { 
-        lastCode
-      } else {
-        last = o;
-        lastCode = o.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); }
-        lastCode
-      }
+  case class MinimalFact(leftArg:Array[Int], rel:Array[Int], rightArg:Array[Int]) {
+    override def hashCode:Int = {
+      leftArg.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); } ^
+        rel.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); } ^
+        rightArg.foldLeft(31) { case (h:Int, term:Int) => h ^ (31 * term); }
     }
-  
-    override def equals(a:Array[Int], b:Array[Int]):Boolean = {
+    def equals(a:Array[Int], b:Array[Int]):Boolean = {
       if (a.length != b.length) { return false; }
       for (i <- 0 until a.length) {
         if (a(i) != b(i)) { return false; }
       }
       return true;
     }
-  } 
-
+    override def equals(other:Any):Boolean = {
+      other match {
+        case (o:MinimalFact) =>
+          equals(leftArg, o.leftArg) && equals(rel, o.rel) && equals(rightArg, o.rightArg)
+        case _ => false
+      }
+    }
+  }
+  
+  implicit def fn2troveFloatFn[E](fn:(E,Float)=>Unit):TObjectFloatProcedure[E] = {
+    new TObjectFloatProcedure[E]() {
+      override def execute(key:E, value:Float):Boolean = {
+        fn( key, value )
+        true
+      }
+    }
+  }
 
   def index(rawPhrase:String, allowEmpty:Boolean=false)
            (implicit wordIndexer:TObjectIntMap[String]):Option[Array[Int]] = {
@@ -109,14 +119,26 @@ object IndexFacts {
     }
     return Some(rtn.toArray)
   }
+
+  /**
+   * 
+   */
+  def hashKey(leftArg:Array[Int], rel:Array[Int], rightArg:Array[Int]):Long = {
+    val fact = leftArg ++ rel ++ rightArg
+    val (hash, shift) = fact.foldLeft( (0, 0) ) { 
+          case ( (hash, shift), word ) =>
+        (hash ^ (word << shift), shift + (64 / fact.length))
+      }
+    hash
+  }
       
-  var factCumulativeWeight = List( new TObjectFloatCustomHashMap[Array[Int]](new IntArrayStrategy) )
+  var factCumulativeWeight = List( new TLongFloatHashMap )
   
-  def updateWeight(key:Array[Int], confidence:Float):Float = {
+  def updateWeight(key:Long, confidence:Float):Float = {
     this.synchronized {
       // Find the map which likely contains this key
       val candidateMap = factCumulativeWeight
-        .collectFirst{ case (map:TObjectFloatMap[Array[Int]]) if (map.containsKey(key)) => map }
+        .collectFirst{ case (map:TLongFloatMap) if (map.containsKey(key)) => map }
         .getOrElse(factCumulativeWeight.head)
       try {
         // Try adding the weight
@@ -125,7 +147,7 @@ object IndexFacts {
         case (e:IllegalStateException) =>
           // Could nto add; try making more maps (can overflow hashmap?)
           warn("Could not write to hash map (" + e.getMessage + ")")
-          factCumulativeWeight = new TObjectFloatCustomHashMap[Array[Int]](new IntArrayStrategy) :: factCumulativeWeight;
+          factCumulativeWeight = new TLongFloatHashMap :: factCumulativeWeight;
           try {
             // Add to new hash map
             factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
@@ -160,72 +182,86 @@ object IndexFacts {
       // Read facts
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
+        val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
+        val toUpdate:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
+        var numInserts = 0
+        var numUpdates = 0
+        for (line <-
+             try {
+              { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
+                else Source.fromFile(file) }.getLines
+              } catch {
+                case (e:java.util.zip.ZipException) =>
+                  try {
+                    Source.fromFile(file).getLines
+                  } catch {
+                    case (e:Exception) => Nil
+                  }
+              } ) { try {
+          val fact = Fact(file.getName, line.split("\t"))
+          if (fact.confidence >= 0.25) {
+            for (leftArg:Array[Int] <- index(fact.leftArg.trim);
+                 rightArg:Array[Int] <- index(fact.rightArg.trim, true);  // can be empty
+                 relation:Array[Int] <- index(fact.relation.trim)) {
+              // vv add fact vv
+              // Get cumulative confidence
+              val weight = updateWeight(hashKey(leftArg, relation, rightArg), fact.confidence.toFloat)
+              val factKey = new MinimalFact(leftArg, relation, rightArg)
+              // Determine whether it's an update or insert
+              if (weight == fact.confidence.toFloat) {
+                // case: insert (for now at least)
+                toInsert.put(factKey, weight)
+              } else {
+                // case: update
+                if (toInsert.containsKey(factKey)) {
+                  // check if it used to be an insert (if so, update the insert)
+                  toInsert.adjustValue(factKey, weight)
+                } else {
+                  // else, it was always an update
+                  toUpdate.adjustOrPutValue(factKey, weight, weight)
+                }
+              }
+              // ^^          ^^
+            }
+          }
+        } catch { case (e:Exception) => e.printStackTrace } }
         withConnection{ (psql:Connection) =>
-          var offset:Long = 0;
           val factInsert = psql.prepareStatement(
             "INSERT INTO " + Postgres.TABLE_FACTS +
             " (weight, left_arg, rel, right_arg) VALUES (?, ?, ?, ?);")
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
-          var numInserts = 0
-          var numUpdates = 0
-          for (line <-
-               try {
-                { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
-                  else Source.fromFile(file) }.getLines
-                } catch {
-                  case (e:java.util.zip.ZipException) =>
-                    try {
-                      Source.fromFile(file).getLines
-                    } catch {
-                      case (e:Exception) => Nil
-                    }
-                } ) { try {
-            val fact = Fact(file.getName, offset,
-                            {offset += line.length + 1; offset},
-                            line.split("\t"))
-            if (fact.confidence >= 0.25) {
-              for (leftArg:Array[Int] <- index(fact.leftArg.trim);
-                   rightArg:Array[Int] <- index(fact.rightArg.trim, true);  // can be empty
-                   relation:Array[Int] <- index(fact.relation.trim)) {
-                // vv add fact vv
-                // Get cumulative confidence
-                val key = new Array[Int](leftArg.length + relation.length + rightArg.length)
-                System.arraycopy(leftArg,  0, key, 0, leftArg.length)
-                System.arraycopy(relation, 0, key, leftArg.length, relation.length)
-                System.arraycopy(rightArg, 0, key, leftArg.length + relation.length, rightArg.length)
-                val weight = updateWeight(key, fact.confidence.toFloat)
-                // Create postgres-readable arrays
-                val leftArgArray = psql.createArrayOf("int4", leftArg.map( x => x.asInstanceOf[Object]))
-                val relArray = psql.createArrayOf("int4", relation.map( x => x.asInstanceOf[Object]))
-                val rightArgArray = psql.createArrayOf("int4", rightArg.map( x => x.asInstanceOf[Object]))
-                // Write to Postgres
-                val toExecute = 
-                  if (weight != fact.confidence.toFloat) {
-                    numUpdates += 1
-                    factUpdate
-                  } else {
-                    numInserts += 1
-                    factInsert
-                  }
-                toExecute.setFloat(1, weight)
-                if (leftArg.length == 1 && leftArg(0) == 0) {
-                  toExecute.setNull(2, java.sql.Types.ARRAY)
-                } else {
-                  toExecute.setArray(2, leftArgArray)
-                }
-                toExecute.setArray(3, relArray)
-                if (rightArg.length == 1 && rightArg(0) == 0) {
-                  toExecute.setNull(4, java.sql.Types.ARRAY)
-                } else {
-                  toExecute.setArray(4, rightArgArray)
-                }
-                toExecute.addBatch
-                // ^^          ^^
-              }
+          // Populate Postgres Statements
+          def fill(toExecute:PreparedStatement, key:MinimalFact, weight:Float):Unit = {
+            // Create postgres-readable arrays
+            val leftArgArray = psql.createArrayOf("int4", key.leftArg.map( x => x.asInstanceOf[Object]))
+            val relArray = psql.createArrayOf("int4", key.rel.map( x => x.asInstanceOf[Object]))
+            val rightArgArray = psql.createArrayOf("int4", key.rightArg.map( x => x.asInstanceOf[Object]))
+            // Populate fields
+            toExecute.setFloat(1, weight)
+            if (key.leftArg.length == 1 && key.leftArg(0) == 0) {
+              toExecute.setNull(2, java.sql.Types.ARRAY)
+            } else {
+              toExecute.setArray(2, leftArgArray)
             }
-          } catch { case (e:Exception) => e.printStackTrace } }
+            toExecute.setArray(3, relArray)
+            if (key.rightArg.length == 1 && key.rightArg(0) == 0) {
+              toExecute.setNull(4, java.sql.Types.ARRAY)
+            } else {
+              toExecute.setArray(4, rightArgArray)
+            }
+            toExecute.addBatch
+          }
+          // Run population
+          import scala.language.implicitConversions
+          toUpdate.forEachEntry{ (key:MinimalFact, weight:Float) =>
+            fill(factUpdate, key, weight)
+          }
+          toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
+            fill(factUpdate, key, weight)
+          }
+          // Run Updates
           factInsert.executeBatch
           psql.commit
           factUpdate.executeBatch
@@ -243,7 +279,7 @@ object IndexFacts {
    *
    * @author Gabor Angeli
    */
-  case class Fact(file:String, begin:Long, end:Long, fields:Array[String]) {
+  case class Fact(file:String, fields:Array[String]) {
     assert(fields.length == 18 || fields.length == 17,
            "Invalid length line\n" + fields.zipWithIndex.map{ case (a, b) => (b.toInt + 1) + " " + a }.mkString("\n"))
   
