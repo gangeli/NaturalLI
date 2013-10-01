@@ -33,7 +33,8 @@ import org.goobs.truth.Utils._
 
 //
 // SQL prerequisite statements for this script:
-// CREATE TABLE facts ( left_arg INTEGER[], left_head INTEGER, rel INTEGER[], right_arg INTEGER[], right_head INTEGER, weight REAL );
+// // (with heads enabled:) CREATE TABLE facts ( left_arg INTEGER[], left_head INTEGER, rel INTEGER[], right_arg INTEGER[], right_head INTEGER, weight REAL );
+// CREATE TABLE facts ( left_arg INTEGER[], rel INTEGER[], right_arg INTEGER[], weight REAL );
 // CREATE INDEX index_fact_left_arg on "facts" USING GIN ("left_arg");
 // CREATE INDEX index_fact_right_arg on "facts" USING GIN ("right_arg");
 // CREATE INDEX index_fact_rel on "facts" USING GIN ("rel");
@@ -48,6 +49,10 @@ import org.goobs.truth.Utils._
  *   2. We update a fact in two threads, between when it was removed
  *      from the pending operations (when its weight was re-read) and when 
  *      it is actually comitted to the DB.
+ *
+ *  Internal notes:
+ *    - remember to get number order of magnitude
+ *     - remember to fix the "no updates" bug
  *
  * @author Gabor Angeli
  */
@@ -104,8 +109,9 @@ object IndexFacts {
            :Option[(Array[Int],Int)] = {
     if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
     var headWord:Option[String] = None
-    val phrase:Array[String] = tokenizeWithCase(rawPhrase,
-      if (doHead && Props.SCRIPT_REVERB_HEAD_DO) Some((hw:String) => headWord = Some(hw)) else None)
+    val phrase:Array[String]
+      = if (doHead && Props.SCRIPT_REVERB_HEAD_DO) tokenizeWithCase(rawPhrase, (hw:String) => headWord = Some(hw))
+        else tokenizeWithCase(rawPhrase)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }

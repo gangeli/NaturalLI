@@ -46,12 +46,19 @@ object BootstrapGraph {
   val wordIndexer = new HashIndex[String]
   val normalizedWordCache = new HashMap[String, String]
 
-  def indexOf(phrase:String):Int = {
-    val normalized = normalizedWordCache.get(phrase.toLowerCase) match {
+  def indexOf(rawPhrase:String):Int = {
+    if (rawPhrase.trim == "") return 0
+    val Number = """^([0-9]+)$""".r
+    val phrase = rawPhrase.trim.toLowerCase.split("""\s+""")
+                               .map( (w:String) => w match {
+      case Number(n) => "#{" + n.length + "}"
+      case _ => w
+    }).mkString(" ");
+    val normalized = normalizedWordCache.get(phrase) match {
       case Some(normalized) => normalized
       case None =>
         val n = tokenizeWithCase(phrase).mkString(" ")
-        normalizedWordCache(phrase.toLowerCase) = n
+        normalizedWordCache(phrase) = n
         n
     }
     wordIndexer.indexOf(normalized, true)
@@ -87,6 +94,12 @@ object BootstrapGraph {
   // ( begin, end, [1.0] )
   val freebaseGraphUp = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
   val freebaseGraphDown = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
+  
+  // ( begin, end, [1.0] )
+  val word2lemma = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
+  val lemma2word = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
+  val fudgeNumber = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
+
 
   def main(args:Array[String]) = {
     edu.stanford.nlp.NLPConfig.caseless  // set caseless models
@@ -156,6 +169,8 @@ object BootstrapGraph {
           
         }
       }
+      val numWordnetWords = wordIndexer.size
+      log("number of words in WordNet: " + numWordnetWords)
       endTrack("Reading WordNet")
 
       // Part 2: Read distsim
@@ -172,6 +187,8 @@ object BootstrapGraph {
           angleNearestNeighbors.append( (source, sink, angle) )
         }
       }
+      val numDistSimWords = wordIndexer.size - numWordnetWords
+      log("number of (new) words in DistSim space: " + numDistSimWords)
       endTrack("Reading Nearest Neighbors")
 
       // Part 3: Read freebase
@@ -210,6 +227,9 @@ object BootstrapGraph {
         val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
         val hypoInt:Int = wordIndexer.indexOf(hypoName, true)  // trust case
         val hyperInt:Int = indexOf(hyperName)  // don't trust hypernym case
+        if (hyperInt < numWordnetWords) {
+          log(hypoName + " --[wordnet]--> " + hyperName)
+        }
         freebaseGraphUp.append( (hypoInt, hyperInt) )
         freebaseGraphDown.append( (hyperInt, hypoInt) )
         edgesAdded += 1
@@ -219,10 +239,36 @@ object BootstrapGraph {
         }
       }
       endTrack("Creating Edges")
+      val numFBWords = wordIndexer.size - numDistSimWords
+      log("number of (new) words in Freebase: " + numFBWords)
       endTrack("Reading Freebase")
+      
+      // Part 4: Morphology
+      forceTrack("Adding Morphology")
+      for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
+        if (!word.contains(" ")) {
+          val lemmas = Sentence(word).lemma
+          if (lemmas.length == 1) {
+            val lemmaIndex = indexOf(lemmas(0))
+            if (lemmaIndex != index) {
+              word2lemma.add( (index, lemmaIndex) )
+              lemma2word.add( (lemmaIndex, index) )
+            }
+          }
+        }
+      }
+      log("added lemmas")
+      for (oom <- (2 until 100) if wordIndexer.indexOf("#{" + oom + "}", false) >= 0) {
+        val lower = wordIndexer.indexOf("#{" + (oom-1) + "}")
+        val higher = wordIndexer.indexOf("#{" + (oom) + "}")
+        fudgeNumber.add( (lower, higher) )
+        fudgeNumber.add( (higher, lower) )
+      }
+      log("added number fudging")
+      endTrack("Adding Morphology")
 
+      // Part 5: Save
       withConnection{ (psql:Connection) =>
-        // Part 4: Save
         forceTrack("Writing to DB")
         val wordInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_WORD_INTERN +
@@ -262,6 +308,7 @@ object BootstrapGraph {
           edgeInsert.addBatch
           edgeCount += 1
         }
+        // (WordNet edges)
         for ( (source, sink, weight) <- wordnetGraphUp) { edge(WORDNET_UP, source, sink, weight); }; edgeInsert.executeBatch
         for ( (source, sink, weight) <- wordnetGraphDown) { edge(WORDNET_DOWN, source, sink, weight); }; edgeInsert.executeBatch
         for ( (source, sink) <- wordnetNounAntonym) { edge(WORDNET_NOUN_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
@@ -271,9 +318,14 @@ object BootstrapGraph {
         for ( (source, sink) <- wordnetAdjPertainym) { edge(WORDNET_ADJECTIVE_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- wordnetAdvPertainym) { edge(WORDNET_ADVERB_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- wordnetAdjSimilar) { edge(WORDNET_ADJECTIVE_RELATED, source, sink, 1.0); }; edgeInsert.executeBatch
+        // (nearest neighbors edges)
         for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }; edgeInsert.executeBatch
+        // (freebase edges)
         for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }; edgeInsert.executeBatch
+        // (morpha edges)
+        for ( (source, sink) <- word2lemma ) { edge(MORPH_TO_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
         forceTrack("Committing")
         psql.commit

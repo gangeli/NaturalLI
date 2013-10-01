@@ -22,44 +22,15 @@ object Utils {
   
   val Whitespace = """\s+""".r
   val Roman_Numeral = """^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$""".r
-
-  private def tokenizeWithCaseImpl(phrase:Array[String], sentence:Sentence,
-                                   beginOffset:Int):Array[String] = {
-    phrase.zipWithIndex
-      .map{ case (word:String, i:Int) =>
-        if ((Roman_Numeral findFirstIn word).nonEmpty) {
-          // case: special case roman numerals
-          word.toUpperCase
-        } else if (word.length < 2) {
-          // case: single character (take verbatim)
-          word
-        } else if (Character.isUpperCase(word(0)) &&
-                   Character.isLowerCase(word(1))) {
-          // case: normalize upper case
-          Character.toUpperCase(word(0)).toString + word.substring(1)
-        } else {
-          // case: run NER
-          if (sentence.pos(i + beginOffset) == "NNP") {
-            // case: a proper noun
-            if (word.toUpperCase == word) { word }  // maybe an acronym
-            else {
-              // force title case
-              Character.toUpperCase(word(0)).toString + word.substring(1)
-            }
-          } else {
-            // lowercase all non-proper-nouns
-            word.toLowerCase
-          }
-        }
-      }
-  }
   
-  def tokenizeWithCaseImpl(phrase:Array[String], headWord:Option[String=>Any]=None):Array[String] = {
+  def tokenizeWithCase(phrase:Array[String], headWord:Option[String=>Any]=None):Array[String] = {
     import java.lang.Character
     // Construct a fake sentence
     val lowercaseWords = phrase.map( _.toLowerCase )
-    val lowercaseSent = new Array[String](lowercaseWords.length + 2)
-    System.arraycopy(lowercaseWords, 0, lowercaseSent, 0, lowercaseWords.length)
+    val lowercaseSent = new Array[String](lowercaseWords.length + 4)
+    System.arraycopy(lowercaseWords, 0, lowercaseSent, 2, lowercaseWords.length)
+    lowercaseSent(0) = "joe"
+    lowercaseSent(1) = "and"
     lowercaseSent(lowercaseWords.length + 0) = "is"
     lowercaseSent(lowercaseWords.length + 1) = "blue"
     val sentence = Sentence(lowercaseSent)
@@ -67,26 +38,24 @@ object Utils {
       if (phrase.length == 0) { }
       else if (phrase.length == 1) { fn(phrase(0)) }
       else {
-        val headIndex = sentence.headIndex(0, phrase.length)
-        fn(phrase(0 + headIndex))
+        val headIndex = sentence.headIndex(2, 2 + phrase.length)
+        fn(phrase(2 + headIndex))
       }
     }
     // Tokenize
     if (lowercaseWords.length == 0) { 
       new Array[String](0)
-    } else if (lowercaseWords.length == 1 && !sentence.pos(0).startsWith("N")) {
-      lowercaseWords
     } else {
-      tokenizeWithCaseImpl(phrase, sentence, 0)
+      sentence.truecase.slice(2, 2 + phrase.length)
     }
   }
   
-  def tokenizeWithCase(phrase:Array[String]):Array[String] = {
-    tokenizeWithCaseImpl(phrase, None)
+  def tokenizeWithCase(phrase:String):Array[String] = {
+    tokenizeWithCase(Sentence(phrase).words, None)
   }
   
-  def tokenizeWithCase(phrase:String, headWord:Option[String=>Any]=None):Array[String] = {
-    tokenizeWithCaseImpl(Sentence(phrase).words, headWord)
+  def tokenizeWithCase(phrase:String, headWord:String=>Any):Array[String] = {
+    tokenizeWithCase(Sentence(phrase).words, Some(headWord))
   }
 }
 
@@ -106,4 +75,9 @@ object EdgeType extends Enumeration {
   
   val FREEBASE_UP                    = Value(10, "freebase_up")
   val FREEBASE_DOWN                  = Value(11, "freebase_down")
+  
+  // Could in theory be subdivided: tense, plurality, etc.
+  val MORPH_TO_LEMMA                 = Value(14, "morph_to_lemma")
+  val MORPH_FROM_LEMMA               = Value(15, "morph_from_lemma")
+  val MORPH_FUDGE_NUMBER             = Value(16, "morph_fudge_number")
 }
