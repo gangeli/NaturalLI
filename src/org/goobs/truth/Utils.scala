@@ -77,7 +77,7 @@ object EdgeType extends Enumeration {
   val FREEBASE_DOWN                  = Value(11, "freebase_down")
   
   // Could in theory be subdivided: tense, plurality, etc.
-  val MORPH_TO_LEMMA                 = Value(14, "morph_to_lemma")
-  val MORPH_FROM_LEMMA               = Value(15, "morph_from_lemma")
-  val MORPH_FUDGE_NUMBER             = Value(16, "morph_fudge_number")
+  val MORPH_TO_LEMMA                 = Value(12, "morph_to_lemma")
+  val MORPH_FROM_LEMMA               = Value(13, "morph_from_lemma")
+  val MORPH_FUDGE_NUMBER             = Value(14, "morph_fudge_number")
 }
