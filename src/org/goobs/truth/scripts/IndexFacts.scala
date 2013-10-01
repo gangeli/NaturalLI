@@ -278,6 +278,7 @@ object IndexFacts {
             if (key.leftArg.length == 0 ||
                 (key.leftArg.length == 1 && key.leftArg(0) == 0)) {
               toExecute.setNull(2, java.sql.Types.ARRAY)
+              if (isInsert) toExecute.setNull(2, java.sql.Types.INTEGER)
             } else {
               toExecute.setArray(2, leftArgArray)
               if (isInsert) toExecute.setInt(3, key.leftHead)
@@ -288,6 +289,7 @@ object IndexFacts {
             if (key.rightArg.length == 0 ||
                 (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
               toExecute.setNull(if (isInsert) 5 else 4, java.sql.Types.ARRAY)
+              if (isInsert) toExecute.setNull(6, java.sql.Types.INTEGER)
             } else {
               toExecute.setArray(if (isInsert) 5 else 4, rightArgArray)
               if (isInsert) toExecute.setInt(6, key.rightHead)
