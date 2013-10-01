@@ -28,7 +28,6 @@ import org.goobs.truth.Utils._
 //
 // SQL prerequisite statements for this script:
 // CREATE TABLE facts ( left_arg INTEGER[], rel INTEGER[], right_arg INTEGER[], weight REAL );
-// <run script>
 // CREATE INDEX index_fact_left_arg on "facts" USING GIN ("left_arg");
 // CREATE INDEX index_fact_right_arg on "facts" USING GIN ("right_arg");
 // CREATE INDEX index_fact_rel on "facts" USING GIN ("rel");
@@ -168,6 +167,8 @@ object IndexFacts {
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE left_arg=? AND rel=? AND right_arg=?;")
+          var numInserts = 0
+          var numUpdates = 0
           for (line <-
                try {
                 { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
@@ -201,8 +202,10 @@ object IndexFacts {
                 // Write to Postgres
                 val toExecute = 
                   if (weight != fact.confidence.toFloat) {
+                    numUpdates += 1
                     factUpdate
                   } else {
+                    numInserts += 1
                     factInsert
                   }
                 toExecute.setFloat(1, weight)
@@ -223,8 +226,10 @@ object IndexFacts {
             }
           } catch { case (e:Exception) => e.printStackTrace } }
           factInsert.executeBatch
+          psql.commit
           factUpdate.executeBatch
-          logger.log("finished adding " + file)
+          psql.commit
+          logger.log("finished [" + numInserts + " ins. " + numUpdates + " up.]: " + file)
         }
       } catch { case (e:Exception) => e.printStackTrace } }
       endTrack("Adding Facts (parallel)")

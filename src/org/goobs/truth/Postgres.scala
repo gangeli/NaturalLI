@@ -7,6 +7,9 @@ import java.net.UnknownHostException
 /**
  *
  * The entry point for constructing a graph between fact arguments.
+ * 
+ * Start the server with:
+ *   /u/nlp/packages/pgsql/bin/pg_ctl -D /john0/scr2/pgdata_truth -l /john0/scr2/pgdata_truth/psql.log start
  *
  * @author Gabor Angeli
  */
