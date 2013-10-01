@@ -1,7 +1,9 @@
 package org.goobs.truth.scripts
 
 import scala.collection.JavaConversions._
+import scala.collection.mutable.HashSet
 import scala.io.Source
+
 import gnu.trove.map.TObjectIntMap
 import gnu.trove.map.TLongFloatMap
 import gnu.trove.map.TObjectFloatMap
@@ -134,7 +136,9 @@ object IndexFacts {
       
   var factCumulativeWeight = List( new TLongFloatHashMap )
   
-  def updateWeight(key:Long, confidence:Float):Float = {
+  def updateWeight(fact:MinimalFact, confidence:Float,
+                   allInserts:HashSet[MinimalFact]):(Float,Boolean) = {
+    val key:Long = fact.hash
     this.synchronized {
       // Find the map which likely contains this key
       val candidateMap = factCumulativeWeight
@@ -142,7 +146,9 @@ object IndexFacts {
         .getOrElse(factCumulativeWeight.head)
       try {
         // Try adding the weight
-        candidateMap.adjustOrPutValue(key, confidence, confidence)
+        val newConfidence = candidateMap.adjustOrPutValue(key, confidence, confidence)
+        if (newConfidence == confidence) { allInserts.add(fact) }
+        (newConfidence, newConfidence == confidence)
       } catch {
         case (e:IllegalStateException) =>
           // Could nto add; try making more maps (can overflow hashmap?)
@@ -150,11 +156,12 @@ object IndexFacts {
           factCumulativeWeight = new TLongFloatHashMap :: factCumulativeWeight;
           try {
             // Add to new hash map
-            factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
+            val newConfidence = factCumulativeWeight.head.adjustOrPutValue(key, confidence, confidence)
+            if (newConfidence == confidence) { allInserts.add(fact) }
+            (newConfidence, newConfidence == confidence)
           } catch {
             // Still can't write? Give up.
-            case (e:IllegalStateException) => e.printStackTrace
-            confidence
+            case (e:IllegalStateException) => throw new RuntimeException(e)
           }
       }
     }
@@ -186,8 +193,8 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      val toInsertAllPending:TObjectFloatMap[MinimalFact]
-        = synchronizedMap(new TObjectFloatHashMap[MinimalFact])
+      val toInsertAllPending:HashSet[MinimalFact]
+        = new HashSet[MinimalFact]
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
@@ -212,15 +219,16 @@ object IndexFacts {
               // vv add fact vv
               // Get cumulative confidence
               val factKey = new MinimalFact(leftArg, relation, rightArg)
-              val weight = updateWeight(factKey.hash, fact.confidence.toFloat)
+              val (weight, isInsert)
+                = updateWeight(factKey, fact.confidence.toFloat,
+                               toInsertAllPending)
               // Determine whether it's an update or insert
-              if (weight == fact.confidence.toFloat) {
+              if (isInsert) {
                 // case: insert (for now at least)
                 toInsert.put(factKey, weight)
-                toInsertAllPending.put(factKey, weight)
               } else {
                 // case: update (but, make sure we're not updating elsewhere)
-                if (!toInsertAllPending.containsKey(factKey)) {
+                if (!toInsertAllPending.contains(factKey)) {
                   toUpdate.adjustOrPutValue(factKey, weight, weight)
                 }
               }

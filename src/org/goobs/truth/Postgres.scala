@@ -4,6 +4,8 @@ import java.sql._
 import java.net.InetAddress
 import java.net.UnknownHostException
 
+import edu.stanford.nlp.util.logging.Redwood.Util._
+
 /**
  *
  * The entry point for constructing a graph between fact arguments.
@@ -23,12 +25,12 @@ object Postgres {
       callback(psql)
       psql.commit
     } catch {
-      case (e:SQLException) => throw new RuntimeException(e);
+      case (e:SQLException) => log(e)
     } finally {
       try {
         psql.close
       } catch {
-        case (e:SQLException) => throw new RuntimeException(e);
+        case (e:SQLException) => log(e)
       }
     }
   }
