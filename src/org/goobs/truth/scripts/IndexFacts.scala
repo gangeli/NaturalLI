@@ -65,8 +65,9 @@ object IndexFacts {
   } 
 
 
-  def index(rawPhrase:Array[String])
+  def index(rawPhrase:String, allowEmpty:Boolean=false)
            (implicit wordIndexer:TObjectIntMap[String]):Option[Array[Int]] = {
+    if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
     val phrase:Array[String] = tokenizeWithCase(rawPhrase)
     // Create object to store result
     val indexResult:Array[Int] = new Array[Int](phrase.length)
@@ -185,9 +186,9 @@ object IndexFacts {
                             {offset += line.length + 1; offset},
                             line.split("\t"))
             if (fact.confidence >= 0.25) {
-              for (leftArg:Array[Int] <- index(Whitespace.split(fact.leftArg));
-                   rightArg:Array[Int] <- index(Whitespace.split(fact.rightArg));
-                   relation:Array[Int] <- index(Whitespace.split(fact.relation))) {
+              for (leftArg:Array[Int] <- index(fact.leftArg.trim);
+                   rightArg:Array[Int] <- index(fact.rightArg.trim, true);  // can be empty
+                   relation:Array[Int] <- index(fact.relation.trim)) {
                 // vv add fact vv
                 // Get cumulative confidence
                 val key = new Array[Int](leftArg.length + relation.length + rightArg.length)
