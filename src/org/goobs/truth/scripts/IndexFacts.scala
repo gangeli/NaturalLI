@@ -357,29 +357,20 @@ object IndexFacts {
         if (normalizedTokens.length != originalTokens.length) {
           return normalized.replaceAll("#", "#{1}")
         }
-        println("Input:")
-        println(original.mkString(" "))
-        println(normalized.mkString(" "))
         // compress tokens
         var lastToken = "~"
         val compressedOriginal  = new ArrayBuffer[String]()
         val compressedNormalized = new ArrayBuffer[String]()
         for (i <- 0 until originalTokens.length) {
-          println("  i = " + i)
           if (normalizedTokens(i) == "#" && lastToken == "#") {
-            println("    adding " + originalTokens(i) + " to " + compressedOriginal(compressedOriginal.length - 1))
             compressedOriginal(compressedOriginal.length - 1)
               = compressedOriginal(compressedOriginal.length - 1) + " " + originalTokens(i)
           } else {
-            println("    regular add " + originalTokens(i) + " (" + normalizedTokens(i) + ")")
             compressedOriginal.add(originalTokens(i))
             compressedNormalized.add(normalizedTokens(i))
           }
           lastToken = normalizedTokens(i)
         }
-        println("Compressed:")
-        println(compressedOriginal.mkString(" "))
-        println(compressedNormalized.mkString(" "))
         // match tokens
         (for ( (orig, norm) <- compressedOriginal.zip(compressedNormalized)) yield {
           if (norm == "#") {
