@@ -27,12 +27,13 @@ object Utils {
     import java.lang.Character
     // Construct a fake sentence
     val lowercaseWords = phrase.map( _.toLowerCase )
-    val lowercaseSent = new Array[String](lowercaseWords.length + 4)
+    val lowercaseSent = new Array[String](lowercaseWords.length + 5)
     System.arraycopy(lowercaseWords, 0, lowercaseSent, 2, lowercaseWords.length)
     lowercaseSent(0) = "joe"
     lowercaseSent(1) = "and"
     lowercaseSent(lowercaseWords.length + 2) = "are"
     lowercaseSent(lowercaseWords.length + 3) = "blue"
+    lowercaseSent(lowercaseWords.length + 4) = "."
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
