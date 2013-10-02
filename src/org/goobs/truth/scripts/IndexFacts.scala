@@ -262,10 +262,10 @@ object IndexFacts {
           val factInsert
             = if (Props.SCRIPT_REVERB_HEAD_DO) psql.prepareStatement(
                 "INSERT INTO " + Postgres.TABLE_FACTS +
-                " (weight, id, left_arg, rel, right_arg, left_head, right_head) VALUES (?, ?, ?, ?, ?, ?);")
+                " (weight, id, left_arg, rel, right_arg, left_head, right_head) VALUES (?, ?, ?, ?, ?, ?, ?);")
               else psql.prepareStatement(
                 "INSERT INTO " + Postgres.TABLE_FACTS +
-                " (weight, id, left_arg, rel, right_arg) VALUES (?, ?, ?, ?);")
+                " (weight, id, left_arg, rel, right_arg) VALUES (?, ?, ?, ?, ?);")
           val factUpdate = psql.prepareStatement(
             "UPDATE " + Postgres.TABLE_FACTS +
             " SET weight=? WHERE id=?;")
