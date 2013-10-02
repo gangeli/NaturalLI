@@ -226,14 +226,16 @@ object BootstrapGraph {
       // Store edges
       forceTrack("Creating Edges")
       var edgesAdded = 0
+      val wordnetLinked = new scala.collection.mutable.HashSet[String]
       for ( (hypo, hyper) <- hypernyms;
             hypoName <- fbNames.get(hypo) ) {
 
         val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
         val hypoInt:Int = wordIndexer.indexOf(hypoName, true)  // trust case
         val hyperInt:Int = indexOf(hyperName)  // don't trust hypernym case
-        if (hyperInt < numWordnetWords && !hyperName.equalsIgnoreCase("topic")) {
+        if (hyperInt < numWordnetWords && !wordnetLinked(hyperName)) {
           log(hypoName + " --[wordnet]--> " + hyperName)
+          wordnetLinked.add(hyperName)
         }
         freebaseGraphUp.append( (hypoInt, hyperInt) )
         freebaseGraphDown.append( (hyperInt, hypoInt) )
