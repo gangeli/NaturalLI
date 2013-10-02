@@ -52,9 +52,6 @@ import org.goobs.truth.Utils._
  *      from the pending operations (when its weight was re-read) and when 
  *      it is actually comitted to the DB.
  *
- *  Internal notes:
- *    - remember to get number order of magnitude
- *
  * @author Gabor Angeli
  */
 object IndexFacts {
