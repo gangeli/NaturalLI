@@ -276,6 +276,7 @@ object BootstrapGraph {
 
       // Part 5: Save
       withConnection{ (psql:Connection) =>
+        psql.setAutoCommit(true)
         forceTrack("Writing to DB")
         val wordInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_WORD_INTERN +
@@ -294,7 +295,6 @@ object BootstrapGraph {
         }
         wordInsert.executeBatch
         logger.log("saved words")
-        psql.commit
         // Save edge types
         for (edgeType <- EdgeType.values) {
           edgeTypeInsert.setInt(1, edgeType.id)
@@ -302,7 +302,6 @@ object BootstrapGraph {
           edgeTypeInsert.executeUpdate
         }
         logger.log("saved edge types")
-        psql.commit
         // Save edges
         var edgeCount = 0;
         var outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
@@ -335,9 +334,6 @@ object BootstrapGraph {
         for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- fudgeNumber ) { edge(MORPH_FUDGE_NUMBER, source, sink, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
-        forceTrack("Committing")
-        psql.commit
-        endTrack("Committing")
         endTrack("Writing to DB")
 
         // Print stats
