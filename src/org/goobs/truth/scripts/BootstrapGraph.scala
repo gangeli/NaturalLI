@@ -29,7 +29,7 @@ import org.goobs.truth.Utils._
 // SQL prerequisite statements for this script:
 // CREATE TABLE word_indexer ( index INTEGER PRIMARY KEY, gloss TEXT);
 // CREATE TABLE edge_type_indexer ( index SMALLINT PRIMARY KEY, gloss TEXT);
-// CREATE TABLE edges ( source INTEGER, sink INTEGER, type SMALLINT, cost REAL );
+// CREATE TABLE edge ( source INTEGER, sink INTEGER, type SMALLINT, cost REAL );
 //
 
 /**
@@ -200,11 +200,15 @@ object BootstrapGraph {
       // Pass 1: read edges
       for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
         val fields = line.split("\t")
-        if (fields(1) == "fb:type.object.type") {
+        if (fields(1) == "fb:type.object.type" || fields(1) == "fb:common.topic.notable_types") {
           val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
-          hypernyms.append( (fields(0), target) )
-          unknownNames.add(fields(0))
-          unknownNames.add(target)
+          if (target.startsWith("fb:type") &&
+              target != "fb:common.topic" &&
+              target != "fb:freebase.type_profile") {
+            hypernyms.append( (fields(0), target) )
+            unknownNames.add(fields(0))
+            unknownNames.add(target)
+          }
         }
       }
       log ("pass 1 complete: read edges")
@@ -224,10 +228,11 @@ object BootstrapGraph {
       var edgesAdded = 0
       for ( (hypo, hyper) <- hypernyms;
             hypoName <- fbNames.get(hypo) ) {
+
         val hyperName:String = fbNames.get(hyper).getOrElse(hyper)
         val hypoInt:Int = wordIndexer.indexOf(hypoName, true)  // trust case
         val hyperInt:Int = indexOf(hyperName)  // don't trust hypernym case
-        if (hyperInt < numWordnetWords) {
+        if (hyperInt < numWordnetWords && !hyperName.equalsIgnoreCase("topic")) {
           log(hypoName + " --[wordnet]--> " + hyperName)
         }
         freebaseGraphUp.append( (hypoInt, hyperInt) )
