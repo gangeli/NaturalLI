@@ -47,5 +47,5 @@ object Postgres {
   val TABLE_WORD_INTERN:String = "word_indexer";
   val TABLE_EDGE_TYPE_INTERN:String = "edge_type_indexer";
   val TABLE_FACTS:String = "fact";
-  val TABLE_EDGES:String = "edges";
+  val TABLE_EDGES:String = "edge";
 }

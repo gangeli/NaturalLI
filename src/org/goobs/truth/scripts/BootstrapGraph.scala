@@ -252,7 +252,7 @@ object BootstrapGraph {
       
       // Part 4: Morphology
       forceTrack("Adding Morphology")
-      for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
+      for ( (word, index) <- wordIndexer.objectsList.zipWithIndex.par ) {
         if (!word.contains(" ")) {
           val lemmas = Sentence(word).lemma
           if (lemmas.length == 1) {
@@ -292,8 +292,8 @@ object BootstrapGraph {
           wordInsert.setString(2, word.replaceAll("\u0000", ""))
           wordInsert.addBatch
         }
-        logger.log("saved words")
         wordInsert.executeBatch
+        logger.log("saved words")
         psql.commit
         // Save edge types
         for (edgeType <- EdgeType.values) {
