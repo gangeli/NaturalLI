@@ -202,7 +202,7 @@ object BootstrapGraph {
         val fields = line.split("\t")
         if (fields(1) == "fb:type.object.type" || fields(1) == "fb:common.topic.notable_types") {
           val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
-          if (target.startsWith("fb:type") &&
+          if (!target.startsWith("fb:type") &&
               target != "fb:common.topic" &&
               target != "fb:freebase.type_profile") {
             hypernyms.append( (fields(0), target) )
