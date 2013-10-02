@@ -13,7 +13,6 @@ import gnu.trove.map.hash.TObjectIntHashMap
 import gnu.trove.map.hash.TLongFloatHashMap
 import gnu.trove.map.hash.TObjectFloatHashMap
 import gnu.trove.procedure.TObjectFloatProcedure
-import gnu.trove.TCollections._
 
 import java.io._
 import java.util.zip.GZIPInputStream
@@ -29,7 +28,6 @@ import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth._
 import org.goobs.truth.Postgres._
 import org.goobs.truth.Implicits._
-import org.goobs.truth.EdgeType._
 import org.goobs.truth.Utils._
 
 

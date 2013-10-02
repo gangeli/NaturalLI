@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="javanlp-more">
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../nlp/projects/more/classes" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

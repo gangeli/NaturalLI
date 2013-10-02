@@ -55,7 +55,7 @@ object BootstrapGraph {
       case _ => w
     }).mkString(" ");
     val normalized = normalizedWordCache.get(phrase) match {
-      case Some(normalized) => normalized
+      case Some(n) => n
       case None =>
         val n = tokenizeWithCase(phrase).mkString(" ")
         normalizedWordCache(phrase) = n
@@ -252,7 +252,7 @@ object BootstrapGraph {
       
       // Part 4: Morphology
       forceTrack("Adding Morphology")
-      for ( (word, index) <- wordIndexer.objectsList.zipWithIndex.par ) {
+      for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
         if (!word.contains(" ")) {
           val lemmas = Sentence(word).lemma
           if (lemmas.length == 1) {
