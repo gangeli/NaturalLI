@@ -35,8 +35,8 @@ object Utils {
     lowercaseSent(1) = "see"
     lowercaseSent(2) = "that"
     lowercaseSent(lowercaseWords.length + offset + 0) = "is"
-    lowercaseSent(lowercaseWords.length + offset + 0) = "blue"
-    lowercaseSent(lowercaseWords.length + offset + 0) = "."
+    lowercaseSent(lowercaseWords.length + offset + 1) = "blue"
+    lowercaseSent(lowercaseWords.length + offset + 2) = "."
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
