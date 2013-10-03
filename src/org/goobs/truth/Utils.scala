@@ -10,6 +10,7 @@ import edu.smu.tspell.wordnet.SynsetType
 import org.goobs.truth.Implicits._
 
 object Utils {
+  NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
   private val logger = Redwood.channels("Utils")
 
   def pos2synsetType(pos:String):SynsetType = pos match {
@@ -26,21 +27,23 @@ object Utils {
   def tokenizeWithCase(phrase:Array[String], headWord:Option[String=>Any]=None):Array[String] = {
     import java.lang.Character
     // Construct a fake sentence
+    val offset = 3
     val lowercaseWords = phrase.map( _.toLowerCase )
-    val lowercaseSent = new Array[String](lowercaseWords.length + 5)
-    System.arraycopy(lowercaseWords, 0, lowercaseSent, 2, lowercaseWords.length)
-    lowercaseSent(0) = "joe"
-    lowercaseSent(1) = "and"
-    lowercaseSent(lowercaseWords.length + 2) = "are"
-    lowercaseSent(lowercaseWords.length + 3) = "blue"
-    lowercaseSent(lowercaseWords.length + 4) = "."
+    val lowercaseSent = new Array[String](lowercaseWords.length + 6)
+    System.arraycopy(lowercaseWords, 0, lowercaseSent, 3, lowercaseWords.length)
+    lowercaseSent(0) = "we"
+    lowercaseSent(1) = "see"
+    lowercaseSent(2) = "that"
+    lowercaseSent(lowercaseWords.length + 3) = "is"
+    lowercaseSent(lowercaseWords.length + 4) = "blue"
+    lowercaseSent(lowercaseWords.length + 5) = "."
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
       else if (phrase.length == 1) { fn(phrase(0)) }
       else {
-        val headIndex = sentence.headIndex(2, 2 + phrase.length)
-        fn(phrase(2 + headIndex))
+        val headIndex = sentence.headIndex(3, 3 + phrase.length)
+        fn(phrase(3 + headIndex))
       }
     }
     // Tokenize
