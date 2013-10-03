@@ -30,27 +30,27 @@ object Utils {
     val offset = 3
     val lowercaseWords = phrase.map( _.toLowerCase )
     val lowercaseSent = new Array[String](lowercaseWords.length + 6)
-    System.arraycopy(lowercaseWords, 0, lowercaseSent, 3, lowercaseWords.length)
+    System.arraycopy(lowercaseWords, 0, lowercaseSent, offset, lowercaseWords.length)
     lowercaseSent(0) = "we"
     lowercaseSent(1) = "see"
     lowercaseSent(2) = "that"
-    lowercaseSent(lowercaseWords.length + 3) = "is"
-    lowercaseSent(lowercaseWords.length + 4) = "blue"
-    lowercaseSent(lowercaseWords.length + 5) = "."
+    lowercaseSent(lowercaseWords.length + offset + 0) = "is"
+    lowercaseSent(lowercaseWords.length + offset + 0) = "blue"
+    lowercaseSent(lowercaseWords.length + offset + 0) = "."
     val sentence = Sentence(lowercaseSent)
     for (fn <- headWord) { 
       if (phrase.length == 0) { }
       else if (phrase.length == 1) { fn(phrase(0)) }
       else {
-        val headIndex = sentence.headIndex(3, 3 + phrase.length)
-        fn(phrase(3 + headIndex))
+        val headIndex = sentence.headIndex(offset, offset + phrase.length)
+        fn(phrase(offset + headIndex))
       }
     }
     // Tokenize
     if (lowercaseWords.length == 0) { 
       new Array[String](0)
     } else {
-      sentence.truecase.slice(2, 2 + phrase.length)
+      sentence.truecase.slice(offset, offset + phrase.length)
     }
   }
   
