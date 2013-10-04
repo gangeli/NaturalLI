@@ -114,26 +114,27 @@ object IndexFacts {
 
     for (length <- phrase.length until 0 by -1;
          start <- 0 to phrase.length - length) {
+      var found = false
       // Find largest phrases to index into (case sensitive)
       if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
         val candidate:String = phrase.slice(start, start+length).mkString(" ")
         if (wordIndexer.containsKey(candidate)) {
           val index = wordIndexer.get(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
+          found = true
         }
       }
-      if (length > 1) {
+      if (length > 1 && !found) {
         // Try to title-case (if it was title cased to begin with)
-        if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
-          val candidate:String = phrase.slice(start, start+length)
-                                       .map( (w:String) => if (w.length <= 1) w.toUpperCase
-                                                           else w.substring(0, 1).toUpperCase + w.substring(1) )
-                                       .mkString(" ")
-          if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
-              wordIndexer.containsKey(candidate)) {
-            val index = wordIndexer.get(candidate)
-            for (i <- start until start + length) { indexResult(i) = index; }
-          }
+        val candidate:String = phrase.slice(start, start+length)
+                                     .map( (w:String) => if (w.length <= 1) w.toUpperCase
+                                                         else w.substring(0, 1).toUpperCase + w.substring(1) )
+                                     .mkString(" ")
+        if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
+            wordIndexer.containsKey(candidate)) {
+          val index = wordIndexer.get(candidate)
+          for (i <- start until start + length) { indexResult(i) = index; }
+          found = true
         }
       }
     }
