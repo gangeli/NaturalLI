@@ -112,9 +112,9 @@ object IndexFacts {
     val indexResult:Array[Int] = new Array[Int](phrase.length)
     for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
 
-    // Find largest phrases to index into (case sensitive)
     for (length <- phrase.length until 0 by -1;
          start <- 0 to phrase.length - length) {
+      // Find largest phrases to index into (case sensitive)
       if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
         val candidate:String = phrase.slice(start, start+length).mkString(" ")
         if (wordIndexer.containsKey(candidate)) {
@@ -122,15 +122,29 @@ object IndexFacts {
           for (i <- start until start + length) { indexResult(i) = index; }
         }
       }
+      if (length > 1) {
+        // Try to title-case (if it was title cased to begin with)
+        if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
+          val candidate:String = phrase.slice(start, start+length)
+                                       .map( (w:String) => if (w.length <= 1) w.toUpperCase
+                                                           else w.substring(0, 1).toUpperCase + w.substring(1) )
+                                       .mkString(" ")
+          if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
+              wordIndexer.containsKey(candidate)) {
+            val index = wordIndexer.get(candidate)
+            for (i <- start until start + length) { indexResult(i) = index; }
+          }
+        }
+      }
     }
     
-    // Find largest phrases to index into (case insensitive)
+    // Find any dangling singletons
     for (length <- phrase.length until 0 by -1;
          start <- 0 to phrase.length - length) {
       if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
         val candidate:String = phrase.slice(start, start+length).mkString(" ")
-        if (wordIndexer.containsKey(candidate)) {
-          val index = wordIndexer.get(candidate)
+        if (wordIndexer.containsKey(candidate.toLowerCase)) {
+          val index = wordIndexer.get(candidate.toLowerCase)
           for (i <- start until start + length) { indexResult(i) = index; }
         }
       }
