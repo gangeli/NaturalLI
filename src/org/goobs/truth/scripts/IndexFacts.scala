@@ -350,7 +350,7 @@ object IndexFacts {
         val normalizedTokens = normalized.split("""\s+""")
         val originalTokens = original.split("""\s+""")
         if (normalizedTokens.length != originalTokens.length) {
-          return normalized.replaceAll("#", "#{1}")
+          return normalized.replaceAll("#", "NUM_1")
         }
         // compress tokens
         var lastToken = "~"
@@ -372,10 +372,10 @@ object IndexFacts {
             try {
               val number:Number = NumberNormalizer.wordToNumber(orig)
               if (number != null) {
-                "#{" + ("" + number.intValue).length + "}"
+                "NUM_" + ("" + number.intValue).length
               }
             } catch {
-              case (e:Exception) => "#{1}"
+              case (e:Exception) => "NUM_1"
             }
           } else {
             norm

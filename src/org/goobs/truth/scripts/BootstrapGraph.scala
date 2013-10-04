@@ -51,7 +51,7 @@ object BootstrapGraph {
     val Number = """^([0-9]+)$""".r
     val phrase = rawPhrase.trim.toLowerCase.split("""\s+""")
                                .map( (w:String) => w match {
-      case Number(n) => "#{" + n.length + "}"
+      case Number(n) => "NUM_" + n.length
       case _ => w
     }).mkString(" ");
     val normalized = normalizedWordCache.get(phrase) match {
@@ -260,9 +260,9 @@ object BootstrapGraph {
         }
       }
       log("added lemmas")
-      for (oom <- (2 until 100) if wordIndexer.indexOf("#{" + oom + "}", false) >= 0) {
-        val lower = wordIndexer.indexOf("#{" + (oom-1) + "}")
-        val higher = wordIndexer.indexOf("#{" + (oom) + "}")
+      for (oom <- (2 until 100) if wordIndexer.indexOf("NUM_" + oom, false) >= 0) {
+        val lower = wordIndexer.indexOf("NUM_" + (oom-1))
+        val higher = wordIndexer.indexOf("NUM_" + (oom))
         fudgeNumber.add( (lower, higher) )
         fudgeNumber.add( (higher, lower) )
       }
