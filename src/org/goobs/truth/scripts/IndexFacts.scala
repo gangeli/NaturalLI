@@ -209,6 +209,16 @@ object IndexFacts {
         .map{ _.get(key) }.getOrElse(0.0f)
     }
   }
+  
+  def update(toExecute:PreparedStatement, hash:Long, weight:Float):Unit = {
+    // (weight)
+    toExecute.setFloat(1, weight)
+    // (id)
+    toExecute.setLong(2, hash)
+    // (execute)
+    toExecute.addBatch
+  }
+  
 
 
   def main(args:Array[String]):Unit = {
@@ -230,12 +240,12 @@ object IndexFacts {
       endTrack("Reading words")
       
       // Read facts
-      val operationsPending:HashSet[MinimalFact]
-        = new HashSet[MinimalFact] with SynchronizedSet[MinimalFact]
+//      val operationsPending:HashSet[MinimalFact]
+//        = new HashSet[MinimalFact] with SynchronizedSet[MinimalFact]
       startTrack("Adding Facts (parallel)")
       for (file <- iterFilesRecursive(Props.SCRIPT_REVERB_RAW_DIR).par) { try {
         val toInsert:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
-        val toUpdate:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
+//        val toUpdate:TObjectFloatMap[MinimalFact] = new TObjectFloatHashMap[MinimalFact]
         for (line <-
              try {
               { if (Props.SCRIPT_REVERB_RAW_GZIP) Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(file))))
@@ -261,13 +271,14 @@ object IndexFacts {
               if (isInsert) {
                 // case: insert (for now at least)
                 toInsert.put(factKey, weight)
-              } else {
-                // case: update (but, make sure we're not updating elsewhere)
-                if (!operationsPending.contains(factKey)) {
-                  toUpdate.adjustOrPutValue(factKey, weight, weight)
-                }
               }
-              operationsPending.add(factKey)
+//              } else {
+//                // case: update (but, make sure we're not updating elsewhere)
+//                if (!operationsPending.contains(factKey)) {
+//                  toUpdate.adjustOrPutValue(factKey, weight, weight)
+//                }
+//              }
+//              operationsPending.add(factKey)
               // ^^          ^^
             }
           }
@@ -281,11 +292,8 @@ object IndexFacts {
               else psql.prepareStatement(
                 "INSERT INTO " + Postgres.TABLE_FACTS +
                 " (weight, id, left_arg, rel, right_arg) VALUES (?, ?, ?, ?, ?);")
-          val factUpdate = psql.prepareStatement(
-            "UPDATE " + Postgres.TABLE_FACTS +
-            " SET weight=? WHERE id=?;")
-          // Populate Postgres Statements
-          def fill(toExecute:PreparedStatement, key:MinimalFact, weight:Float, isInsert:Boolean):Unit = {
+          // Run population
+          def insert(toExecute:PreparedStatement, key:MinimalFact, weight:Float):Unit = {
             // Create postgres-readable arrays
             val leftArgArray = psql.createArrayOf("int4", key.leftArg.map( x => x.asInstanceOf[Object]))
             val relArray = psql.createArrayOf("int4", key.rel.map( x => x.asInstanceOf[Object]))
@@ -295,56 +303,71 @@ object IndexFacts {
             toExecute.setFloat(1, weight)
             // (id)
             toExecute.setLong(2, key.hash)
-            if (isInsert) {
-              // (left arg)
-              if (key.leftArg.length == 0 ||
-                  (key.leftArg.length == 1 && key.leftArg(0) == 0)) {
-                toExecute.setNull(3, java.sql.Types.ARRAY)
+            // (left arg)
+            if (key.leftArg.length == 0 ||
+                (key.leftArg.length == 1 && key.leftArg(0) == 0)) {
+              toExecute.setNull(3, java.sql.Types.ARRAY)
+            } else {
+              toExecute.setArray(3, leftArgArray)
+            }
+            // (relation)
+            toExecute.setArray(4, relArray)
+            // (right arg)
+            if (key.rightArg.length == 0 ||
+                (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
+              toExecute.setNull(5, java.sql.Types.ARRAY)
+            } else {
+              toExecute.setArray(5, rightArgArray)
+            }
+            // (heads
+            if (Props.SCRIPT_REVERB_HEAD_DO) {
+              if (key.leftHead > 0) {
+                toExecute.setInt(6, key.leftHead)
               } else {
-                toExecute.setArray(3, leftArgArray)
+                toExecute.setInt(6, -1)
               }
-              // (relation)
-              toExecute.setArray(4, relArray)
-              // (right arg)
-              if (key.rightArg.length == 0 ||
-                  (key.rightArg.length == 1 && key.rightArg(0) == 0)) {
-                toExecute.setNull(5, java.sql.Types.ARRAY)
+              if (key.rightHead > 0) {
+                toExecute.setInt(7, key.rightHead)
               } else {
-                toExecute.setArray(5, rightArgArray)
-              }
-              // (heads
-              if (Props.SCRIPT_REVERB_HEAD_DO) {
-                if (key.leftHead > 0) {
-                  toExecute.setInt(6, key.leftHead)
-                } else {
-                  toExecute.setInt(6, -1)
-                }
-                if (key.rightHead > 0) {
-                  toExecute.setInt(7, key.rightHead)
-                } else {
-                  toExecute.setInt(7, -1)
-                }
+                toExecute.setInt(7, -1)
               }
             }
             // (execute)
             toExecute.addBatch
           }
-          // Run population
-          toUpdate.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factUpdate, key, getWeight(key.hash), false)
-            operationsPending.remove(key);
-          }
+//          toUpdate.forEachEntry{ (key:MinimalFact, weight:Float) =>
+//            fill(factUpdate, key, getWeight(key.hash), false)
+//            operationsPending.remove(key);
+//          }
           toInsert.forEachEntry{ (key:MinimalFact, weight:Float) =>
-            fill(factInsert, key, getWeight(key.hash), true)  // get weight in case it changed from future updates
-            operationsPending.remove(key);
+            insert(factInsert, key, getWeight(key.hash))  // get weight in case it changed from future updates
+//            operationsPending.remove(key);
           }
           // Run Updates
           factInsert.executeBatch
-          factUpdate.executeBatch
-          logger.log("finished [" + toInsert.size + " ins. " + toUpdate.size + " up.]: " + file)
+          logger.log("finished [" + toInsert.size + " ]: " + file)
         }
       } catch { case (e:Exception) => e.printStackTrace } }
+
+
       endTrack("Adding Facts (parallel)")
+
+      forceTrack("Executing Updates")
+      withConnection{ (psql:Connection) =>
+        val factUpdate = psql.prepareStatement(
+          "UPDATE " + Postgres.TABLE_FACTS +
+          " SET weight=? WHERE id=?;")
+        for ( map <- factCumulativeWeight ) {
+          val iter = map.keySet.iterator
+          while (iter.hasNext) {
+            val hash = iter.next
+            update(factUpdate, hash, map.get(hash))
+          }
+        }
+        factUpdate.executeBatch
+      }
+      endTrack("Executing Updates")
+
     }, args)
   }
   
