@@ -61,6 +61,11 @@ object Utils {
   def tokenizeWithCase(phrase:String, headWord:String=>Any):Array[String] = {
     tokenizeWithCase(Sentence(phrase).words, Some(headWord))
   }
+
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+    val p = new java.io.PrintWriter(f)
+    try { op(p) } finally { p.close() }
+  }
 }
 
 object EdgeType extends Enumeration {

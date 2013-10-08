@@ -17,6 +17,12 @@ DOC=scaladoc
 # (classpaths)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
 CP=${JAVANLP}:lib/corenlp-scala.jar:lib/scripts/sim.jar:lib/scripts/jaws.jar:lib/scripts/trove.jar
+# (C++ build path)
+POSTGRES_I=/usr/include/postgresql/
+POSTGRES_L=/usr/lib/postgresql/9.1/lib
+
+check:
+	ls ${POSTGRES_ROOT} | grep libpq-fe.h
 
 # -- BUILD --
 ${DIST}/truth.jar: $(wildcard src/org/goobs/truth/*.scala) $(wildcard src/org/goobs/truth/*.java) $(wildcard src/org/goobs/truth/scripts/*.scala) $(wildcard src/org/goobs/truth/conf/*.conf)
@@ -26,9 +32,14 @@ ${DIST}/truth.jar: $(wildcard src/org/goobs/truth/*.scala) $(wildcard src/org/go
 	@echo "Compiling (${SCALAC})..."
 	@${SCALAC} -feature -deprecation -d ${BUILD} -cp ${CP} `find ${SRC} -name "*.scala"` `find ${SRC} -name "*.java"`
 	cp ${SRC}/org/goobs/truth/conf/* ${BUILD}/
-	mkdir -p ${DIST}
+	@mkdir -p ${DIST}
 	jar cf ${DIST}/truth.jar -C $(BUILD) .
 	jar uf ${DIST}/truth.jar -C $(SRC) .
+
+${DIST}/server: $(wildcard src/*.cc) $(wildcard src/*.h)
+	@mkdir -p ${BUILD}
+	@mkdir -p ${DIST}
+	g++ -ggdb -I`pg_config --includedir` `find ${SRC} -name "*.h"` `find ${SRC} -name "*.cc"` -L`pg_config --libdir` -lpq -o ${DIST}/server 
 
 doc:
 	@echo "Documenting (${SCALADOC})..."
@@ -46,4 +57,5 @@ clean:
 	rm -rf ${BUILD}
 	rm -rf ${TEST_BUILD}
 	rm -f ${DIST}/truth.jar
+	rm -f ${DIST}/server
 	rm -f java.hprof.txt
