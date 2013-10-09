@@ -51,7 +51,9 @@ string toString(const Graph* graph, const Path* path) {
 // ENTRY
 //
 int main(int argc, char** argv) {
-  // Populate RamCloud
+  // Populate Data
+  printf("---------------\n");
+  printf("Populating Data\n");
   const Graph* graph = ReadGraph();
   if (graph == NULL) {
     return 1;
@@ -60,12 +62,16 @@ int main(int argc, char** argv) {
   if (facts == NULL) {
     return 1;
   }
+  printf("done.\n");
+  printf("---------------\n");
 
   // Parameterize search
   SearchType* searchStrategy = new BreadthFirstSearch();
   CacheStrategy* cache = new CacheStrategyNone();
 
   // Run search
+  printf("---------------\n");
+  printf("    Search     \n");
   vector<Path*> paths
     = Search( graph, facts,
               lemurHaveTail(),
@@ -75,6 +81,8 @@ int main(int argc, char** argv) {
 
   // Print result
   for(vector<Path*>::iterator it = paths.begin(); it != paths.end(); ++it) {
-    printf("PATH\n----\n%s\n\n", toString(graph, *it).c_str());
+    printf("Path\n----\n%s\n\n", toString(graph, *it).c_str());
   }
+  printf("done.\n");
+  printf("---------------\n");
 }
