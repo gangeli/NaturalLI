@@ -1,8 +1,8 @@
 # LIKELY TO OVERWRITE
 # -------------------
 PG_CONFIG=pg_config  # the path to the program pg_config
-GTEST_ROOT=${HOME}/lib/c/gtest # the path to gtest (needed for tests)
-SCALA_HOME=${HOME}/programs/scala # the location of your Scala install
+GTEST_ROOT=/home/gabor/lib/c/gtest # the path to gtest (needed for tests)
+SCALA_HOME=/home/gabor/programs/scala # the location of your Scala install
 # -------------------
 
 # -- VARIABLES --
