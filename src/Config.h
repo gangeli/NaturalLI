@@ -10,7 +10,7 @@ using namespace std;
 //
 // Configuration
 //
-static string   PG_HOST        = "john0";
+static string   PG_HOST        = "john0.stanford.edu";
 static uint16_t PG_PORT        = 4243;
 static string   PG_DATABASE    = "truth";
 static string   PG_USER        = "gabor";

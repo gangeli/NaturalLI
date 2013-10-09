@@ -35,6 +35,7 @@ class InMemoryFactDB : public FactDB {
 
 
 FactDB* ReadFactDB() {
+  printf("Reading facts...\n");
   // Read facts
   set<int64_t> facts;
   // (query)
@@ -43,9 +44,9 @@ FactDB* ReadFactDB() {
   session factSession = query(factQuery);
   // (process)
   for (int i = 0; i < factSession.numResults; ++i) {
-    if (i % 10000000 == 0) { printf("loaded %iM words\n", i / 1000000); fflush(stdout); }
-    if (PQgetisnull(factSession.result, i, 0) || PQgetisnull(factSession.result, i, 1)) {
-      printf("null row in word indexer; query=%s\n", factQuery);
+    if (i % 10000000 == 0) { printf("loaded %iM facts\n", i / 1000000); fflush(stdout); }
+    if (PQgetisnull(factSession.result, i, 0)) {
+      printf("null row in fact indexer; query=%s\n", factQuery);
       return NULL;
     }
     int64_t key = atoi(PQgetvalue(factSession.result, i, 0));
@@ -55,5 +56,6 @@ FactDB* ReadFactDB() {
   release(factSession);
 
   // Return
+  printf("%s\n", "Done reading the fact database.");
   return new InMemoryFactDB(facts);
 }

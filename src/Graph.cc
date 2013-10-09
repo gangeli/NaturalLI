@@ -39,6 +39,7 @@ class InMemoryGraph : public Graph {
 
 
 Graph* ReadGraph() {
+  printf("Reading graph...\n");
   const uint32_t numWords = 18858251; // TODO(gabor) don't hard code
 
   // Read words
@@ -47,6 +48,9 @@ Graph* ReadGraph() {
   char wordQuery[127];
   snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
   session wordSession = query(wordQuery);
+  if (!wordSession.valid) {
+    return NULL;
+  }
   // (process)
   for (int i = 0; i < wordSession.numResults; ++i) {
     if (i % 1000000 == 0) { printf("loaded %iM words\n", i / 1000000); fflush(stdout); }
@@ -67,6 +71,9 @@ Graph* ReadGraph() {
   char edgeQuery[127];
   snprintf(edgeQuery, 127, "SELECT * FROM %s;", PG_TABLE_EDGE.c_str());
   session edgeSession = query(edgeQuery);
+  if (!edgeSession.valid) {
+    return NULL;
+  }
   // (process)
   vector<edge>* edges = (vector<edge>*) malloc((numWords+1) * sizeof(vector<edge>));
   for (int i = 0; i < edgeSession.numResults; ++i) {
@@ -92,6 +99,6 @@ Graph* ReadGraph() {
   
   
   // Finish
-  printf("%s\n", "RamCloud populated.");
+  printf("%s\n", "Done reading the graph.");
   return new InMemoryGraph(index2gloss, edges, numWords);
 }

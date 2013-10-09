@@ -56,10 +56,12 @@ int main(int argc, char** argv) {
   printf("Populating Data\n");
   const Graph* graph = ReadGraph();
   if (graph == NULL) {
+    printf("Graph was null; exiting...\n");
     return 1;
   }
   const FactDB* facts = ReadFactDB();
   if (facts == NULL) {
+    printf("Facts were null; exiting...\n");
     return 1;
   }
   printf("done.\n");
