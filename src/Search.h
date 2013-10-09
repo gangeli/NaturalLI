@@ -50,7 +50,6 @@ class SearchType {
   virtual void push(const Path&) = 0;
   virtual const Path pop() = 0;
   virtual bool isEmpty() = 0;
-
 };
 
 /**
