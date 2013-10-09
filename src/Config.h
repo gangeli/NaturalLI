@@ -22,7 +22,7 @@ static string   PG_TABLE_FACT  = "fact_partial";
 
 static bool     USE_RAMCLOUD   = false;
 
-static uint64_t SEARCH_TIMEOUT = 10000;
+static uint64_t SEARCH_TIMEOUT = 100000;
 
 //
 // Typedefs
