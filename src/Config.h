@@ -10,7 +10,7 @@ using namespace std;
 //
 // Configuration
 //
-static string   PG_HOST        = "127.0.0.1";
+static string   PG_HOST        = "john0";
 static uint16_t PG_PORT        = 4243;
 static string   PG_DATABASE    = "truth";
 static string   PG_USER        = "gabor";
@@ -18,7 +18,7 @@ static string   PG_PASSWORD    = "gabor";
  
 static string   PG_TABLE_WORD  = "word_indexer";
 static string   PG_TABLE_EDGE  = "edge";
-static string   PG_TABLE_FACT  = "edge";
+static string   PG_TABLE_FACT  = "fact_partial";
 
 static bool     USE_RAMCLOUD   = false;
 
