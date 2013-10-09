@@ -23,11 +23,36 @@ DOC=scaladoc
 # (classpaths)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
 CP=${JAVANLP}:lib/corenlp-scala.jar:lib/scripts/sim.jar:lib/scripts/jaws.jar:lib/scripts/trove.jar
+# (c++)
+CC = g++
+INCLUDE=-I`${PG_CONFIG} --includedir`
+LD_PATH=-L`${PG_CONFIG} --libdir`
+LDFLAGS=-lpq
+CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage
+# (files)
+_OBJS = Search.o FactDB.o Graph.o Postgres.o
+OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
+TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
+
+# -- Targets --
 default: ${DIST}/truth.jar ${DIST}/server
 
-check:
-	ls ${POSTGRES_ROOT} | grep libpq-fe.h
+client: ${DIST}/truth.jar
+	./run
+
+server: ${DIST}/server
+	${DIST}/server
+
+test: ${DIST}/test_server
+	${DIST}/test_server
+
+clean:
+	rm -rf ${BUILD}
+	rm -rf ${TEST_BUILD}
+	rm -f ${DIST}/*
+	rm -f java.hprof.txt
+	rm -f *.gcno
 
 
 # -- BUILD --
@@ -42,11 +67,21 @@ ${DIST}/truth.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/
 	jar cf ${DIST}/truth.jar -C $(BUILD) .
 	jar uf ${DIST}/truth.jar -C $(SRC) .
 
-${DIST}/server: $(wildcard ${SRC}/*.cc) $(wildcard ${SRC}/*.h)
+${BUILD}/%.o: ${SRC}/%.cc
 	@mkdir -p ${BUILD}
-	@mkdir -p ${DIST}
-	g++ -ggdb -I`${PG_CONFIG} --includedir` `find ${SRC} -name "*.h"` `find ${SRC} -name "*.cc"` -L`${PG_CONFIG} --libdir` -lpq -o ${DIST}/server 
+	${CC} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
 
+${DIST}/server: ${OBJS} ${BUILD}/InferenceServer.o $(wildcard ${SRC}/*.h)
+	@mkdir -p ${DIST}
+	g++ ${CPP_FLAGS} ${INCLUDE} -o ${DIST}/server $^ `find ${SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS}
+	mv -f *.gcno ${BUILD}
+
+${DIST}/server.a: ${OBJS}
+	ar rcs ${DIST}/server.a $^
+
+
+
+# -- TEST --
 ${TEST_BUILD}/libgtest.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
 	g++ -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest-all.cc -o ${TEST_BUILD}/libgtest.a
@@ -55,9 +90,19 @@ ${TEST_BUILD}/libgtest_main.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
 	g++ -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest_main.cc -o ${TEST_BUILD}/libgtest_main.a
 
-${DIST}/test_server: ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${TEST_SRC}/*.cc) $(wildcard ${TEST_SRC}/*.h)
+${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
+	@mkdir -p ${TEST_BUILD}
+	${CC} -c ${INCLUDE} -isystem ${GTEST_ROOT}/include -o $@ $< -c ${CPP_FLAGS} -lgcov
+
+${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	g++ -ggdb -isystem ${GTEST_ROOT}/include -pthread `find ${TEST_SRC} -name "*.h"` `find ${TEST_SRC} -name "*.cc"` ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a -o ${DIST}/test_server 
+	g++ ${CPP_FLAGS} ${INCLUDE} -isystem ${GTEST_ROOT}/include $^ `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	mv -f *.gcno ${TEST_BUILD}
+
+#${DIST}/test_server: ${DIST}/server ${BUILD}/libgtest.a ${BUILD}/libgtest_main.a $(wildcard ${TEST_SRC}/*.cc) $(wildcard ${TEST_SRC}/*.h)
+#	@mkdir -p ${DIST}
+#	echo ${GCOV_PREFIX}
+#	g++ -ggdb -fprofile-arcs -ftest-coverage -isystem ${GTEST_ROOT}/include -pthread `find ${TEST_SRC} -name "*.h"` `find ${TEST_SRC} -name "*.cc"` ${BUILD}/libgtest.a ${BUILD}/libgtest_main.a -lgcov -o ${DIST}/test_server 
 
 doc:
 	@echo "Documenting (${SCALADOC})..."
@@ -65,16 +110,3 @@ doc:
 	@${SCALADOC} -d ${DOC} -cp ${CP} `find ${SRC} -name "*.scala"` `find ${SRC} -name "*.java"`
 
 # -- TARGETS --
-test: ${DIST}/test_server
-
-run: ${DIST}/truth.jar
-	./run
-
-
-clean:
-	rm -rf ${BUILD}
-	rm -rf ${TEST_BUILD}
-	rm -f ${DIST}/truth.jar
-	rm -f ${DIST}/server
-	rm -f ${DIST}/test_server
-	rm -f java.hprof.txt
