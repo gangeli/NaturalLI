@@ -1,12 +1,33 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #include <string>
+#include <stdint.h>
+#include <vector>
 
 using namespace std;
 
-string PG_HOST     = "127.0.0.1";
-int    PG_PORT     = 4243;
-string PG_DATABASE = "truth";
-string PG_USER     = "gabor";
-string PG_PASSWORD = "gabor";
+//
+// Configuration
+//
+static string   PG_HOST        = "127.0.0.1";
+static uint16_t PG_PORT        = 4243;
+static string   PG_DATABASE    = "truth";
+static string   PG_USER        = "gabor";
+static string   PG_PASSWORD    = "gabor";
+ 
+static string   PG_TABLE_WORD  = "word_indexer";
+static string   PG_TABLE_EDGE  = "edge";
+static string   PG_TABLE_FACT  = "edge";
 
-string PG_TABLE_WORD = "word_indexer";
-string PG_TABLE_EDGE = "edge";
+static bool     USE_RAMCLOUD   = false;
+
+static uint64_t SEARCH_TIMEOUT = 10000;
+
+//
+// Typedefs
+//
+typedef uint32_t word;
+typedef uint8_t edge_type;
+
+#endif
