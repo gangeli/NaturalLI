@@ -40,7 +40,7 @@ FactDB* ReadFactDB() {
   set<int64_t> facts;
   // (query)
   char factQuery[127];
-  snprintf(factQuery, 127, "SELECT id FROM %s;", PG_TABLE_FACT.c_str());
+  snprintf(factQuery, 127, "SELECT id FROM %s LIMIT 10000000;", PG_TABLE_FACT.c_str());
   session factSession = query(factQuery);
   // (process)
   for (int i = 0; i < factSession.numResults; ++i) {

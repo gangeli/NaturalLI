@@ -100,7 +100,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
   // Add start state to the fringe
   fringe->push(Path(0, queryFact, 255));
   // Initialize timer (number of elements popped from the fringe)
-  unsigned long time = 0;
+  uint64_t time = 0;
 
   //
   // Search
@@ -112,6 +112,11 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
       std::exit(1);
     }
     const Path parent = fringe->pop();
+    // Update time
+    time += 1;
+    if (time % 1000 == 0) {
+      printf("[%dk] search tick; %d paths found\n", time / 1000, responses.size()); fflush(stdout);
+    }
     // Add the element to the cache
     cache->add(parent);
 
@@ -146,9 +151,10 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
         }
       }
     }
-
+  
   }
 
+  printf("Search complete; %d paths found\n", responses.size());
   return responses;
 }
 
