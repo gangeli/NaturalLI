@@ -115,7 +115,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
     // Update time
     time += 1;
     if (time % 1000 == 0) {
-      printf("[%dk] search tick; %d paths found\n", time / 1000, responses.size()); fflush(stdout);
+      printf("[%luk] search tick; %lu paths found\n", time / 1000, responses.size()); fflush(stdout);
     }
     // Add the element to the cache
     cache->add(parent);
@@ -154,7 +154,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
   
   }
 
-  printf("Search complete; %d paths found\n", responses.size());
+  printf("Search complete; %lu paths found\n", responses.size());
   return responses;
 }
 

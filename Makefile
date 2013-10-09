@@ -1,8 +1,8 @@
 # LIKELY TO OVERWRITE
 # -------------------
-PG_CONFIG=pg_config  # the path to the program pg_config
-GTEST_ROOT=/home/gabor/lib/c/gtest # the path to gtest (needed for tests)
-SCALA_HOME=/home/gabor/programs/scala # the location of your Scala install
+PG_CONFIG=pg_config
+GTEST_ROOT=/home/gabor/lib/c/gtest
+SCALA_HOME=/home/gabor/programs/scala
 # -------------------
 
 # -- VARIABLES --
@@ -34,7 +34,7 @@ check:
 ${DIST}/truth.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/org/goobs/truth/*.java) $(wildcard ${SRC}/org/goobs/truth/scripts/*.scala) $(wildcard ${SRC}/org/goobs/truth/conf/*.conf)
 	@mkdir -p ${BUILD}
 	@echo "Compiling (${JAVAC})..."
-	@${JAVAC} -d ${BUILD} -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find ${SRC} -name "*.java"`
+	${JAVAC} -d ${BUILD} -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find ${SRC} -name "*.java"`
 	@echo "Compiling (${SCALAC})..."
 	@${SCALAC} -feature -deprecation -d ${BUILD} -cp ${CP} `find ${SRC} -name "*.scala"` `find ${SRC} -name "*.java"`
 	cp ${SRC}/org/goobs/truth/conf/* ${BUILD}/
