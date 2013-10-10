@@ -2,8 +2,9 @@
 # LIKELY TO OVERWRITE
 # -------------------
 PG_CONFIG=pg_config
-GTEST_ROOT=/home/gabor/lib/c/gtest
 SCALA_HOME=/home/gabor/programs/scala
+RAMCLOUD_HOME=/home/gabor/workspace/ramcloud
+GTEST_ROOT=${RAMCLOUD_HOME}/gtest
 # -------------------
 
 # -- VARIABLES --
@@ -26,12 +27,12 @@ JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/clas
 CP=${JAVANLP}:lib/corenlp-scala.jar:lib/scripts/sim.jar:lib/scripts/jaws.jar:lib/scripts/trove.jar
 # (c++)
 CC = g++
-INCLUDE=-I`${PG_CONFIG} --includedir`
-LD_PATH=-L`${PG_CONFIG} --libdir`
-LDFLAGS=-lpq
-CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage
+INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include
+LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
+LDFLAGS=-lpq -lramcloud
+CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
-_OBJS = Search.o FactDB.o Graph.o Postgres.o
+_OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
@@ -93,11 +94,11 @@ ${TEST_BUILD}/libgtest_main.a: ${GTEST_ROOT}
 
 ${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
 	@mkdir -p ${TEST_BUILD}
-	${CC} -c ${INCLUDE} -Isrc -isystem ${GTEST_ROOT}/include -o $@ $< -c ${CPP_FLAGS} -lgcov
+	${CC} -c ${INCLUDE} -Isrc -o $@ $< -c ${CPP_FLAGS} -lgcov
 
 ${DIST}/test_server: ${TEST_BUILD}/TestUtils.o ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	g++ ${CPP_FLAGS} ${INCLUDE} -Isrc -isystem ${GTEST_ROOT}/include $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	g++ ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
 
 doc:

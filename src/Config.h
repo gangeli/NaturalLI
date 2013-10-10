@@ -15,6 +15,9 @@ static uint16_t PG_PORT        = 4243;
 static string   PG_DATABASE    = "truth";
 static string   PG_USER        = "gabor";
 static string   PG_PASSWORD    = "gabor";
+
+static string   RAMCLOUD_HOST  = "127.0.0.1";
+static uint16_t RAMCLOUD_PORT  = 12242;
  
 static string   PG_TABLE_WORD  = "word_indexer";
 static string   PG_TABLE_EDGE  = "edge";

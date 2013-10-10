@@ -34,6 +34,14 @@ class InMemoryGraph : public Graph {
   virtual const string gloss(word word) const {
     return string(index2gloss[word]);
   }
+  
+  virtual const vector<word> keys() const {
+    vector<word> keys(size);
+    for (int i = 0; i < size; ++i) {
+      keys[i] = i;
+    }
+    return keys;
+  }
 };
 
 
@@ -61,7 +69,6 @@ Graph* ReadGraph() {
     word key     = atoi(PQgetvalue(wordSession.result, i, 0));
     char* gloss = PQgetvalue(wordSession.result, i, 1);
     index2gloss[key] = gloss;
-//    printf("row: %d -> %s\n", key, gloss);
   }
   // (clean up)
   release(wordSession);
@@ -91,8 +98,6 @@ Graph* ReadGraph() {
     edge.type   = atoi(PQgetvalue(edgeSession.result, i, 2));
     edge.cost   = atof(PQgetvalue(edgeSession.result, i, 3));
     edges[edge.source].push_back(edge);
-//    printf("row: %s --[%d]--> %s  (%f)\n", index2gloss[edge.source], edge.type,
-//                                           index2gloss[edge.sink], edge.cost);
   }
   // (clean up)
   release(edgeSession);
@@ -178,7 +183,18 @@ class MockGraph : public Graph {
         return "<<unk>>";
     }
   }
- 
+  
+  virtual const vector<word> keys() const {
+    vector<word> keys(6);
+    keys[0] = 2479928;
+    keys[1] = 3701;
+    keys[2] = 16442985;
+    keys[3] = 27970;
+    keys[4] = 3844;
+    keys[5] = 14221;
+    return keys;
+  }
+
  private:
   vector<edge>* noEdges;
   vector<edge>* lemurEdges;

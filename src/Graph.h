@@ -24,6 +24,7 @@ class Graph {
  public:
   virtual const vector<edge>& outgoingEdges(word) const = 0;
   virtual const string gloss(word) const = 0;
+  virtual const vector<word> keys() const = 0;
 };
 
 /**
