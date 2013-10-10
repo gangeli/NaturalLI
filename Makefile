@@ -45,7 +45,7 @@ server: ${DIST}/server
 	${DIST}/server
 
 test: ${DIST}/test_server
-	${DIST}/test_server --gtest_output=xml:build/coverage.junit.xml
+	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
 
 clean:
 	rm -rf ${BUILD}
