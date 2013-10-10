@@ -35,7 +35,7 @@ OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
 
-# -- Targets --
+# -- TARGETS --
 default: ${DIST}/truth.jar ${DIST}/server
 
 client: ${DIST}/truth.jar
@@ -45,7 +45,7 @@ server: ${DIST}/server
 	${DIST}/server
 
 test: ${DIST}/test_server
-	${DIST}/test_server
+	${DIST}/test_server --gtest_output=xml:build/coverage.junit.xml
 
 clean:
 	rm -rf ${BUILD}
@@ -80,7 +80,6 @@ ${DIST}/server.a: ${OBJS}
 	ar rcs ${DIST}/server.a $^
 
 
-
 # -- TEST --
 ${TEST_BUILD}/libgtest.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
@@ -98,11 +97,6 @@ ${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TE
 	@mkdir -p ${DIST}
 	g++ ${CPP_FLAGS} ${INCLUDE} -isystem ${GTEST_ROOT}/include $^ `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
-
-#${DIST}/test_server: ${DIST}/server ${BUILD}/libgtest.a ${BUILD}/libgtest_main.a $(wildcard ${TEST_SRC}/*.cc) $(wildcard ${TEST_SRC}/*.h)
-#	@mkdir -p ${DIST}
-#	echo ${GCOV_PREFIX}
-#	g++ -ggdb -fprofile-arcs -ftest-coverage -isystem ${GTEST_ROOT}/include -pthread `find ${TEST_SRC} -name "*.h"` `find ${TEST_SRC} -name "*.cc"` ${BUILD}/libgtest.a ${BUILD}/libgtest_main.a -lgcov -o ${DIST}/test_server 
 
 doc:
 	@echo "Documenting (${SCALADOC})..."
