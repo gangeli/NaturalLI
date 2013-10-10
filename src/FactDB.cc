@@ -59,3 +59,23 @@ FactDB* ReadFactDB() {
   printf("%s\n", "Done reading the fact database.");
   return new InMemoryFactDB(facts);
 }
+
+
+/**
+ * A simple fact database, which simply stores [the hash of]
+ * all the facts in memory.
+ */
+class MockFactDB : public FactDB {
+ public:
+  
+  virtual const bool contains(const vector<word>& query) const {
+    return query.size() == 3 && 
+      query[0] == 27970 &&
+      query[1] == 3844 &&
+      query[2] == 14221;
+  }
+};
+
+FactDB* ReadMockFactDB() {
+  return new MockFactDB();
+}

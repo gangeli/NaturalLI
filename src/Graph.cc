@@ -102,3 +102,93 @@ Graph* ReadGraph() {
   printf("%s\n", "Done reading the graph.");
   return new InMemoryGraph(index2gloss, edges, numWords);
 }
+
+
+class MockGraph : public Graph {
+ public:
+  MockGraph() {
+    noEdges = new vector<edge>();
+    // Edges out of Lemur
+    lemurEdges = new vector<edge>();
+    edge lemurToTimone;
+    lemurToTimone.source = 2479928;
+    lemurToTimone.sink = 16442985;
+    lemurToTimone.type = 1;
+    lemurToTimone.cost = 0.01;
+    lemurEdges->push_back(lemurToTimone);
+    edge lemurToAnimal;
+    lemurToAnimal.source = 2479928;
+    lemurToAnimal.sink = 3701;
+    lemurToAnimal.type = 0;
+    lemurToAnimal.cost = 0.42;
+    lemurEdges->push_back(lemurToAnimal);
+    // Edges out of Animal
+    animalEdges = new vector<edge>();
+    edge animalToCat;
+    animalToCat.source = 3701;
+    animalToCat.sink = 27970;
+    animalToCat.type = 1;
+    animalToCat.cost = 42.00;
+    animalEdges->push_back(animalToCat);
+    // Other edges
+    timoneEdges = new vector<edge>();
+    catEdges = new vector<edge>();
+    haveEdges = new vector<edge>();
+    tailEdges = new vector<edge>();
+  }
+  ~MockGraph() {
+    delete noEdges, lemurEdges, animalEdges, timoneEdges,
+           catEdges, haveEdges, tailEdges;
+  }
+
+  virtual const vector<edge>& outgoingEdges(word source) const {
+    switch (source) {
+      case 2479928:  // lemur
+        return *lemurEdges;
+      case 3701:     // animal
+        return *animalEdges;
+      case 16442985: // timone
+        return *timoneEdges;
+      case 27970:    // cat
+        return *catEdges;
+      case 3844:     // have
+        return *haveEdges;
+      case 14221:    // tail
+        return *tailEdges;
+      default:
+        return *noEdges;
+    }
+  }
+
+  virtual const string gloss(word word) const {
+    switch (word) {
+      case 2479928:  // lemur
+        return "lemur";
+      case 3701:     // animal
+        return "animal";
+      case 16442985: // timone
+        return "Timone";
+      case 27970:    // cat
+        return "cat";
+      case 3844:     // have
+        return "have";
+      case 14221:    // tail
+        return "tail";
+      default:
+        return "<<unk>>";
+    }
+  }
+ 
+ private:
+  vector<edge>* noEdges;
+  vector<edge>* lemurEdges;
+  vector<edge>* animalEdges;
+  vector<edge>* timoneEdges;
+  vector<edge>* catEdges;
+  vector<edge>* haveEdges;
+  vector<edge>* tailEdges;
+};
+
+Graph* ReadMockGraph() {
+  return new MockGraph();
+}

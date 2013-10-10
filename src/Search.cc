@@ -25,6 +25,12 @@ Path::Path(const Path& source, const vector<word>& fact, const edge_type& edgeTy
     {
 };
 
+Path::Path(const vector<word>& fact)
+    : edgeType(255), fact(fact), sourceId(0),
+      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) )
+    {
+};
+
 Path::Path(const Path& copy)
     : id(copy.id), sourceId(copy.sourceId), fact(copy.fact), edgeType(copy.edgeType)
     {
@@ -33,12 +39,18 @@ Path::Path(const Path& copy)
 Path::~Path() {
 };
 
+bool Path::operator==(const Path& other) const {
+  return 
+         id == other.id && sourceId == other.sourceId &&
+         edgeType == other.edgeType && fact == other.fact;
+}
+
 Path* Path::source() const {
   if (USE_RAMCLOUD) {
     printf("TODO(gabor): lookup a path element by id in RamCloud (%lu)\n", this->id);
     std::exit(1);
   } else {
-    return (Path*) id;
+    return (Path*) sourceId;
   }
 }
 
@@ -98,7 +110,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
   // Create a vector for the return value to occupy
   vector<Path*> responses;
   // Add start state to the fringe
-  fringe->push(Path(0, queryFact, 255));
+  fringe->push(Path(queryFact));
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
 
@@ -137,11 +149,11 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
         // ... create the mutated fact
         vector<word> mutated(parent.fact.size());
         for (int i = 0; i < indexToMutate; ++i) {
-          mutated.push_back(parent.fact[i]);
+          mutated[i] = parent.fact[i];
         }
-        mutated.push_back(it->sink);
+        mutated[indexToMutate] = it->sink;
         for (int i = indexToMutate + 1; i < parent.fact.size(); ++i) {
-          mutated.push_back(parent.fact[i]);
+          mutated[i] = parent.fact[i];
         }
         // Create the corresponding search state
         Path* child = new Path(parent, mutated, it->type);

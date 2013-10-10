@@ -1,3 +1,4 @@
+# -------------------
 # LIKELY TO OVERWRITE
 # -------------------
 PG_CONFIG=pg_config
@@ -53,6 +54,7 @@ clean:
 	rm -f ${DIST}/*
 	rm -f java.hprof.txt
 	rm -f *.gcno
+	rm -f *.gcda
 
 
 # -- BUILD --
@@ -91,11 +93,11 @@ ${TEST_BUILD}/libgtest_main.a: ${GTEST_ROOT}
 
 ${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
 	@mkdir -p ${TEST_BUILD}
-	${CC} -c ${INCLUDE} -isystem ${GTEST_ROOT}/include -o $@ $< -c ${CPP_FLAGS} -lgcov
+	${CC} -c ${INCLUDE} -Isrc -isystem ${GTEST_ROOT}/include -o $@ $< -c ${CPP_FLAGS} -lgcov
 
-${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
+${DIST}/test_server: ${TEST_BUILD}/TestUtils.o ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	g++ ${CPP_FLAGS} ${INCLUDE} -isystem ${GTEST_ROOT}/include $^ `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	g++ ${CPP_FLAGS} ${INCLUDE} -Isrc -isystem ${GTEST_ROOT}/include $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
 
 doc:

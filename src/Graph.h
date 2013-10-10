@@ -32,4 +32,13 @@ class Graph {
  */
 Graph* ReadGraph();
 
+
+/**
+ * Create a simple, fake graph to use for debugging and testing.
+ * At the time of writing this comment, it handled the facts
+ * "lemur have tail", "animal have tail", and "cat have tail",
+ * with appropriate edges defined
+ */
+Graph* ReadMockGraph();
+
 #endif

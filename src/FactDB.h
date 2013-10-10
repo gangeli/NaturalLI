@@ -19,4 +19,10 @@ class FactDB {
  */
 FactDB* ReadFactDB();
 
+/**
+ * Read in a mock database of facts.
+ * As of writing this comment, only the fact "cats have tails" is included.
+ */
+FactDB* ReadMockFactDB();
+
 #endif

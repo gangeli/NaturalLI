@@ -21,8 +21,11 @@ class Path {
 
   Path(const uint64_t, const vector<word>&, const edge_type&);
   Path(const Path& source, const vector<word>&, const edge_type&);
+  Path(const vector<word>&);
   Path(const Path&);
   ~Path();
+
+  bool operator==(const Path& other) const;
 
   /**
    * Returns the actual pointer to the source path.
@@ -89,6 +92,7 @@ class CacheStrategy {
  * any memory.
  */
 class CacheStrategyNone : public CacheStrategy {
+ public:
   virtual bool isSeen(const Path&);
   virtual void add(const Path&);
 };
