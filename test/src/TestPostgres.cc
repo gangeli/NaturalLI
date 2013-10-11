@@ -56,3 +56,27 @@ TEST(PostgresTest, EdgeTypeIndexerHasCorrectEntries) {
     EXPECT_FALSE(results.hasNext());
   }
 }
+
+// Test gloss
+TEST(PostgresTest, WordIndexerHasCorrectEntries) {
+  for (uint32_t skip = 1; skip < 4; ++skip) {
+    PGIterator results = PGIterator(
+        "SELECT * FROM word_indexer ORDER BY index ASC LIMIT 10;",
+        skip);
+    // 0: wordnet_up
+    ASSERT_TRUE(results.hasNext());
+    PGRow term = results.next();
+    EXPECT_EQ(string("0"), string(term[0]));
+    EXPECT_EQ(string("cephalopod"), string(term[1]));
+    // 1: wordnet_up
+    ASSERT_TRUE(results.hasNext());
+    term = results.next();
+    EXPECT_EQ(string("1"), string(term[0]));
+    EXPECT_EQ(string("mollusk"), string(term[1]));
+    // 2: wordnet_noun_antonym
+    ASSERT_TRUE(results.hasNext());
+    term = results.next();
+    EXPECT_EQ(string("2"), string(term[0]));
+    EXPECT_EQ(string("mollusc"), string(term[1]));
+  }
+}

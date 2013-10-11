@@ -62,7 +62,7 @@ Graph* ReadGraph() {
     PGRow row = words.next();
     uint32_t len = strlen(row[1]);
     char* gloss = (char*) malloc( ((len > 127) ? 128 : len + 1) * sizeof(char) );
-    strncpy(row[1], gloss, 127);
+    strncpy(gloss, row[1], 127);
     index2gloss[atoi(row[0])] = gloss;
     wordI += 1;
     if (wordI % 1000000 == 0) {
