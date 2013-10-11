@@ -8,18 +8,18 @@
 
 // Ensure that we can issue a query
 TEST(PostgresTest, CanIssueQuery) {
-  ResultIterator results = ResultIterator("SELECT 1;");
+  PGIterator results = PGIterator("SELECT 1;");
 }
 
 // Ensure that our simple query has results returned
 TEST(PostgresTest, SELECT_ONE_HasResults) {
-  ResultIterator results = ResultIterator("SELECT 1;");
+  PGIterator results = PGIterator("SELECT 1;");
   EXPECT_TRUE(results.hasNext());
 }
 
 // Ensure that our simple query has the right result returned
 TEST(PostgresTest, SELECT_ONE_CanGetResults) {
-  ResultIterator results = ResultIterator("SELECT 1;");
+  PGIterator results = PGIterator("SELECT 1;");
   ASSERT_TRUE(results.hasNext());
   EXPECT_EQ(string("1"), string(results.next()[0]));
   EXPECT_FALSE(results.hasNext());
@@ -28,12 +28,12 @@ TEST(PostgresTest, SELECT_ONE_CanGetResults) {
 // Ensure proper semantics for reading a table
 TEST(PostgresTest, EdgeTypeIndexerHasCorrectEntries) {
   for (uint32_t skip = 1; skip < 4; ++skip) {
-    ResultIterator results = ResultIterator(
+    PGIterator results = PGIterator(
         "SELECT * FROM edge_type_indexer;",
         skip);
     // 0: wordnet_up
     ASSERT_TRUE(results.hasNext());
-    DatabaseRow term = results.next();
+    PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
     EXPECT_EQ(string("wordnet_up"), string(term[1]));
     // 1: wordnet_up

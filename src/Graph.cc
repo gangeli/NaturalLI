@@ -55,52 +55,37 @@ Graph* ReadGraph() {
   // (query)
   char wordQuery[127];
   snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
-  session wordSession = query(wordQuery);
-  if (!wordSession.valid) {
-    return NULL;
-  }
-  // (process)
-  for (int i = 0; i < wordSession.numResults; ++i) {
-    if (i % 1000000 == 0) { printf("loaded %iM words\n", i / 1000000); fflush(stdout); }
-    if (PQgetisnull(wordSession.result, i, 0) || PQgetisnull(wordSession.result, i, 1)) {
-      printf("null row in word indexer; query=%s\n", wordQuery);
-      return NULL;
+  PGIterator words = PGIterator(wordQuery);
+  uint64_t wordI = 0;
+  while (words.hasNext()) {
+    PGRow row = words.next();
+    index2gloss[atoi(row[0])] = row[1];
+    wordI += 1;
+    if (wordI % 1000000 == 0) {
+      printf("loaded %luM words\n", wordI / 1000000);
     }
-    word key     = atoi(PQgetvalue(wordSession.result, i, 0));
-    char* gloss = PQgetvalue(wordSession.result, i, 1);
-    index2gloss[key] = gloss;
   }
-  // (clean up)
-  release(wordSession);
   
   // Read edges
+  vector<edge>* edges = (vector<edge>*) malloc((numWords+1) * sizeof(vector<edge>));
   // (query)
   char edgeQuery[127];
   snprintf(edgeQuery, 127, "SELECT * FROM %s;", PG_TABLE_EDGE.c_str());
-  session edgeSession = query(edgeQuery);
-  if (!edgeSession.valid) {
-    return NULL;
-  }
-  // (process)
-  vector<edge>* edges = (vector<edge>*) malloc((numWords+1) * sizeof(vector<edge>));
-  for (int i = 0; i < edgeSession.numResults; ++i) {
-    if (i % 1000000 == 0) { printf("loaded %iM edges\n", i / 1000000); fflush(stdout); }
-    if (PQgetisnull(edgeSession.result, i, 0) ||
-        PQgetisnull(edgeSession.result, i, 1) ||
-        PQgetisnull(edgeSession.result, i, 2) ||
-        PQgetisnull(edgeSession.result, i, 3)    ) {
-      printf("null row in edges; query=%s\n", wordQuery);
-      return NULL;
-    }
+  PGIterator edgeIter = PGIterator(edgeQuery);
+  uint64_t edgeI = 0;
+  while (edgeIter.hasNext()) {
+    PGRow row = edgeIter.next();
     edge edge;
-    edge.source = atoi(PQgetvalue(edgeSession.result, i, 0));
-    edge.sink   = atoi(PQgetvalue(edgeSession.result, i, 1));
-    edge.type   = atoi(PQgetvalue(edgeSession.result, i, 2));
-    edge.cost   = atof(PQgetvalue(edgeSession.result, i, 3));
+    edge.source = atol(row[0]);
+    edge.sink   = atoi(row[1]);
+    edge.type   = atoi(row[2]);
+    edge.cost   = atof(row[3]);
     edges[edge.source].push_back(edge);
+    edgeI += 1;
+    if (edgeI % 1000000 == 0) {
+      printf("loaded %luM edges\n", edgeI / 1000000);
+    }
   }
-  // (clean up)
-  release(edgeSession);
   
   
   // Finish

@@ -41,19 +41,15 @@ FactDB* ReadFactDB() {
   // (query)
   char factQuery[127];
   snprintf(factQuery, 127, "SELECT id FROM %s LIMIT 10000000;", PG_TABLE_FACT.c_str());
-  session factSession = query(factQuery);
-  // (process)
-  for (int i = 0; i < factSession.numResults; ++i) {
-    if (i % 10000000 == 0) { printf("loaded %iM facts\n", i / 1000000); fflush(stdout); }
-    if (PQgetisnull(factSession.result, i, 0)) {
-      printf("null row in fact indexer; query=%s\n", factQuery);
-      return NULL;
+  PGIterator iter = PGIterator(factQuery);
+  uint64_t i = 0;
+  while (iter.hasNext()) {
+    facts.insert( atol(iter.next()[0]) );
+    i += 1;
+    if (i % 10000000 == 0) {
+      printf("loaded %luM facts\n", i / 1000000);
     }
-    int64_t key = atoi(PQgetvalue(factSession.result, i, 0));
-    facts.insert(key);
   }
-  // (clean up)
-  release(factSession);
 
   // Return
   printf("%s\n", "Done reading the fact database.");
