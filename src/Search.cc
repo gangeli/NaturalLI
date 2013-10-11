@@ -147,6 +147,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
+        if (it->type == 9) { continue; } // ignore nearest neighbors
         // ... create the mutated fact
         vector<word> mutated(parent.fact.size());
         for (int i = 0; i < indexToMutate; ++i) {
