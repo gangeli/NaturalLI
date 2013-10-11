@@ -39,7 +39,7 @@ string toString(const Graph* graph, const Path* path) {
     return "<start>";
   } else {
     return toString(graph, path->fact) +
-           "; from\n\t" +
+           "; from\n  " +
            toString(graph, path->source());
   }
 }

@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include "InferenceServer.h"
 #include "Graph.h"
@@ -59,7 +60,10 @@ Graph* ReadGraph() {
   uint64_t wordI = 0;
   while (words.hasNext()) {
     PGRow row = words.next();
-    index2gloss[atoi(row[0])] = row[1];
+    uint32_t len = strlen(row[1]);
+    char* gloss = (char*) malloc( ((len > 127) ? 128 : len + 1) * sizeof(char) );
+    strncpy(row[1], gloss, 127);
+    index2gloss[atoi(row[0])] = gloss;
     wordI += 1;
     if (wordI % 1000000 == 0) {
       printf("loaded %luM words\n", wordI / 1000000);

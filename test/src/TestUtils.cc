@@ -31,10 +31,10 @@ TEST_F(UtilsTest, ToStringPhrase) {
 }
 
 TEST_F(UtilsTest, ToStringPath) {
-  EXPECT_EQ(string("lemur have tail; from\n\t<start>"),
+  EXPECT_EQ(string("lemur have tail; from\n  <start>"),
             toString(graph, lemurs));
-  EXPECT_EQ(string("animal have tail; from\n\tlemur have tail; from\n\t<start>"),
+  EXPECT_EQ(string("animal have tail; from\n  lemur have tail; from\n  <start>"),
             toString(graph, animals));
-  EXPECT_EQ(string("cat have tail; from\n\tanimal have tail; from\n\tlemur have tail; from\n\t<start>"),
+  EXPECT_EQ(string("cat have tail; from\n  animal have tail; from\n  lemur have tail; from\n  <start>"),
             toString(graph, cats));
 }
