@@ -80,3 +80,9 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     EXPECT_EQ(string("mollusc"), string(term[1]));
   }
 }
+
+TEST(PostgresTest, CountQuery) {
+  EXPECT_EQ(18858251,
+    atoi(PGIterator("SELECT COUNT(*) FROM word_indexer;").next()[0]));
+
+}

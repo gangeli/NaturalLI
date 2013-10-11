@@ -49,7 +49,8 @@ class InMemoryGraph : public Graph {
 
 Graph* ReadGraph() {
   printf("Reading graph...\n");
-  const uint32_t numWords = 18858251; // TODO(gabor) don't hard code
+  const uint32_t numWords
+    = atoi(PGIterator("SELECT COUNT(*) FROM word_indexer;").next()[0]);
 
   // Read words
   char** index2gloss = (char**) malloc( numWords * sizeof(char*) );
