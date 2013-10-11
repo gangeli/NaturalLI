@@ -1,25 +1,40 @@
-#include "TestUtils.h"
+#include <limits.h>
 
-const vector<word> lemursHaveTails() {
-  vector<word> lemursHaveTails;
-  lemursHaveTails.push_back(2479928);
-  lemursHaveTails.push_back(3844);
-  lemursHaveTails.push_back(14221);
-  return lemursHaveTails;
+#include "gtest/gtest.h"
+
+#include "Utils.h"
+
+class UtilsTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    // Add base path element
+    lemurs = new Path(lemursHaveTails());
+    animals = new Path(*lemurs, animalsHaveTails(), 0);
+    cats = new Path(*animals, catsHaveTails(), 1);
+    graph = ReadMockGraph();
+  }
+
+  virtual void TearDown() {
+    delete lemurs, animals, cats;
+  }
+
+  Path* lemurs;
+  Path* animals;
+  Path* cats;
+  Graph* graph;
+};
+
+TEST_F(UtilsTest, ToStringPhrase) {
+  EXPECT_EQ(string("lemur have tail"), toString(graph, lemursHaveTails()));
+  EXPECT_EQ(string("animal have tail"), toString(graph, animalsHaveTails()));
+  EXPECT_EQ(string("cat have tail"), toString(graph, catsHaveTails()));
 }
 
-const vector<word> animalsHaveTails() {
-  vector<word> animalsHaveTails;
-  animalsHaveTails.push_back(3701);
-  animalsHaveTails.push_back(3844);
-  animalsHaveTails.push_back(14221);
-  return animalsHaveTails;
-}
-
-const vector<word> catsHaveTails() {
-  vector<word> catsHaveTails;
-  catsHaveTails.push_back(27970);
-  catsHaveTails.push_back(3844);
-  catsHaveTails.push_back(14221);
-  return catsHaveTails;
+TEST_F(UtilsTest, ToStringPath) {
+  EXPECT_EQ(string("lemur have tail; from\n\t<start>"),
+            toString(graph, lemurs));
+  EXPECT_EQ(string("animal have tail; from\n\tlemur have tail; from\n\t<start>"),
+            toString(graph, animals));
+  EXPECT_EQ(string("cat have tail; from\n\tanimal have tail; from\n\tlemur have tail; from\n\t<start>"),
+            toString(graph, cats));
 }

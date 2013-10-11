@@ -1,7 +1,7 @@
 #include <limits.h>
 
 #include "gtest/gtest.h"
-#include "TestUtils.h"
+#include "Utils.h"
 #include "FactDB.h"
 
 

@@ -2,7 +2,7 @@
 
 #include "gtest/gtest.h"
 #include "Config.h"
-#include "TestUtils.h"
+#include "Utils.h"
 #include "Search.h"
 #include "Graph.h"
 #include "FactDB.h"

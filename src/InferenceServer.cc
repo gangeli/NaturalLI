@@ -2,50 +2,12 @@
 #include <cstdio>
 
 #include "Config.h"
+#include "Utils.h"
 #include "Graph.h"
 #include "FactDB.h"
 #include "Search.h"
 
 using namespace std;
-
-//
-// Debugging Helpers
-//
-/**
- *  The fact (lemur, have, tail)
- */
-const vector<word> lemurHaveTail() {
-  vector<word> fact;
-  fact.push_back(2479928);
-  fact.push_back(3844);
-  fact.push_back(14221);
-  return fact;
-}
-
-/**
- * Print the string gloss for the given fact.
- */
-string toString(const Graph* graph, const vector<word> fact) {
-  string gloss = "";
-  for(vector<word>::const_iterator it = fact.begin(); it != fact.end(); ++it) {
-    gloss = gloss + (gloss == "" ? "" : " ") + graph->gloss(*it);
-  }
-  return gloss;
-}
-
-/**
- * Print a human readable dump of a search path.
- */
-string toString(const Graph* graph, const Path* path) {
-  if (path == NULL) {
-    return "<start>";
-  } else {
-    return toString(graph, path->fact) +
-           "; from\n\t" +
-           toString(graph, path->source());
-  }
-}
-
 
 //
 // ENTRY
@@ -76,7 +38,7 @@ int main(int argc, char** argv) {
   printf("    Search     \n");
   vector<Path*> paths
     = Search( graph, facts,
-              lemurHaveTail(),
+              lemursHaveTails(),
               searchStrategy,
               cache,
               SEARCH_TIMEOUT   );

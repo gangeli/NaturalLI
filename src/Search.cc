@@ -99,7 +99,8 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Function search()
 //
-
+// TODO(gabor) I leak memory like the Titanic in an old folk's home
+//
 vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
                      const vector<word>& queryFact,
                      SearchType* fringe, CacheStrategy* cache,
@@ -110,7 +111,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
   // Create a vector for the return value to occupy
   vector<Path*> responses;
   // Add start state to the fringe
-  fringe->push(Path(queryFact));
+  fringe->push(*(new Path(queryFact)));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
 

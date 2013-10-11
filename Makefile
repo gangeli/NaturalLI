@@ -32,7 +32,7 @@ LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
 LDFLAGS=-lpq -lramcloud
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
-_OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o
+_OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o Utils.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
@@ -96,7 +96,7 @@ ${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
 	@mkdir -p ${TEST_BUILD}
 	${CC} -c ${INCLUDE} -Isrc -o $@ $< -c ${CPP_FLAGS} -lgcov
 
-${DIST}/test_server: ${TEST_BUILD}/TestUtils.o ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
+${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
 	g++ ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
