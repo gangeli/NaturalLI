@@ -38,7 +38,7 @@ RamCloudFactDB::RamCloudFactDB()
     RAMCloud::MultiWriteObject* requests[100];
     float confidences[100];
     uint32_t numRequests = 0;
-    for (uint8_t i = 0; i++; i < 100) {
+    for (uint16_t i = 0; i < 100; ++i) {
       // If no more to write, break;
       if (!iter.hasNext()) { break; }
 
@@ -75,7 +75,7 @@ RamCloudFactDB::RamCloudFactDB()
     // Write request
     ramcloud.multiWrite(requests, numRequests);
     if (totalRead % 1000000 == 0) {
-      printf("Read %luM facts\n", totalRead / 1000000);
+      printf("Read %lu facts\n", totalRead);
     }
   }
 
