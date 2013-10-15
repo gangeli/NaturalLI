@@ -33,6 +33,7 @@ class RamCloudCacheStrategyFactSeen : public CacheStrategy {
   RAMCloud::RamCloud ramcloud;
   char cacheTableName[64];
   uint64_t cacheTableId;
+  bool* TRUE;
 };
 
 /**

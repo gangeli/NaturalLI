@@ -21,12 +21,15 @@ const char* ramcloudConnectionString() {
 RamCloudCacheStrategyFactSeen::RamCloudCacheStrategyFactSeen()
     : ramcloud(ramcloudConnectionString())
     {
-    snprintf(cacheTableName, 64, "fact_cache@%lu", uint64_t(this));
+    snprintf(cacheTableName, 64, "fact_cache_%lu", uint64_t(this));
     cacheTableId = ramcloud.createTable(cacheTableName);
+    TRUE = (bool*) malloc(sizeof(bool));
+    *TRUE = true;
 }
 
 RamCloudCacheStrategyFactSeen::~RamCloudCacheStrategyFactSeen() {
   ramcloud.dropTable(cacheTableName);
+  free(TRUE);
 }
 
 bool RamCloudCacheStrategyFactSeen::isSeen(const Path& query) {
@@ -49,7 +52,8 @@ void RamCloudCacheStrategyFactSeen::add(const Path& path) {
   RAMCloud::MultiWriteObject* requests[1];
   RAMCloud::MultiWriteObject requestObjects[1];
   requestObjects[0] =
-    RAMCloud::MultiWriteObject(cacheTableId, path.fact, path.factLength, "", 0);
+    RAMCloud::MultiWriteObject(cacheTableId, path.fact, path.factLength,
+                               TRUE, sizeof(bool));
   requests[0] = &requestObjects[0];
   ramcloud.multiWrite(requests, 1);
 }
