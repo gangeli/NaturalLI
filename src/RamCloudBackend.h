@@ -33,27 +33,6 @@ class RamCloudBreadthFirstSearch : public SearchType {
 };
 
 /**
- * A graph object backed by RamCloud tables.
- */
-class RamCloudGraph : public Graph {
- public:
-  RamCloudGraph();
-  RamCloudGraph(const Graph&);
-  ~RamCloudGraph();
-
-  virtual const vector<edge>& outgoingEdges(word) const;
-  virtual const string gloss(word) const;
-  virtual const vector<word> keys() const;
- 
- private:
-  RAMCloud::RamCloud ramcloud;
-  const uint64_t wordIndexerTable;
-  const uint64_t edgesTable;
-};
-
-Graph* ReadRamCloudGraph();
-
-/**
  * A set containing our known facts, implemented as a RamCloud
  * table.
  */

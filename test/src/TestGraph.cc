@@ -22,12 +22,12 @@ class MockGraphTest : public ::testing::Test {
 // Check to make sure that our test vocabulary is included in
 // the mock graph.
 TEST_F(MockGraphTest, HasVocabulary) {
-  EXPECT_EQ("lemur", mockGraph->gloss(2479928));
-  EXPECT_EQ("Timone", mockGraph->gloss(16442985));
-  EXPECT_EQ("animal", mockGraph->gloss(3701));
-  EXPECT_EQ("cat", mockGraph->gloss(27970));
-  EXPECT_EQ("have", mockGraph->gloss(3844));
-  EXPECT_EQ("tail", mockGraph->gloss(14221));
+  EXPECT_EQ("lemur",  string(mockGraph->gloss(2479928)));
+  EXPECT_EQ("Timone", string(mockGraph->gloss(16442985)));
+  EXPECT_EQ("animal", string(mockGraph->gloss(3701)));
+  EXPECT_EQ("cat",    string(mockGraph->gloss(27970)));
+  EXPECT_EQ("have",   string(mockGraph->gloss(3844)));
+  EXPECT_EQ("tail",   string(mockGraph->gloss(14221)));
 }
 
 // An independent check to make sure the edge counts of the graph

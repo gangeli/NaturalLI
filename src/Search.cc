@@ -127,7 +127,7 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // TODO(gabor) I leak memory like the Titanic in an old folk's home
 //
-vector<Path*> Search(const Graph* graph, FactDB* knownFacts,
+vector<Path*> Search(Graph* graph, FactDB* knownFacts,
                      const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
                      const uint64_t timeout) {

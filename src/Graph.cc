@@ -28,15 +28,15 @@ class InMemoryGraph : public Graph {
     free(edges);
   }
 
-  virtual const vector<edge>& outgoingEdges(word source) const {
+  virtual const vector<edge>& outgoingEdges(word source) {
     return edges[source];
   }
 
-  virtual const string gloss(word word) const {
-    return string(index2gloss[word]);
+  virtual const char* gloss(word word) {
+    return index2gloss[word];
   }
   
-  virtual const vector<word> keys() const {
+  virtual const vector<word> keys() {
     vector<word> keys(size);
     for (int i = 0; i < size; ++i) {
       keys[i] = i;
@@ -136,7 +136,7 @@ class MockGraph : public Graph {
            catEdges, haveEdges, tailEdges;
   }
 
-  virtual const vector<edge>& outgoingEdges(word source) const {
+  virtual const vector<edge>& outgoingEdges(word source) {
     switch (source) {
       case 2479928:  // lemur
         return *lemurEdges;
@@ -155,7 +155,7 @@ class MockGraph : public Graph {
     }
   }
 
-  virtual const string gloss(word word) const {
+  virtual const char* gloss(word word) {
     switch (word) {
       case 2479928:  // lemur
         return "lemur";
@@ -174,7 +174,7 @@ class MockGraph : public Graph {
     }
   }
   
-  virtual const vector<word> keys() const {
+  virtual const vector<word> keys() {
     vector<word> keys(6);
     keys[0] = 2479928;
     keys[1] = 3701;

@@ -17,14 +17,14 @@ int main(int argc, char** argv) {
   // Populate Data
   printf("---------------\n");
   printf("Populating Data\n");
-  const Graph* graph = ReadGraph();
-  if (graph == NULL) {
-    printf("Graph was null; exiting...\n");
-    return 1;
-  }
   FactDB* facts = ReadRamCloudFactDB();
   if (facts == NULL) {
     printf("Facts were null; exiting...\n");
+    return 1;
+  }
+  Graph* graph = ReadGraph();
+  if (graph == NULL) {
+    printf("Graph was null; exiting...\n");
     return 1;
   }
   printf("done.\n");

@@ -102,7 +102,7 @@ class CacheStrategyNone : public CacheStrategy {
  * Perform a search from the query fact, to any antecedents that can be
  * found by searching through valid edits, insertions, or deletions.
  */
-vector<Path*> Search(const Graph*, FactDB*,
+vector<Path*> Search(Graph*, FactDB*,
                      const word*, const uint8_t,
                      SearchType*,
                      CacheStrategy*, const uint64_t);
