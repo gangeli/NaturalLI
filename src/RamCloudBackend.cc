@@ -97,10 +97,11 @@ const bool RamCloudFactDB::contains(const word* key, const uint8_t wordLength) {
 
   ramcloud.multiRead(requests, 1);
 
-  if (statusToSymbol(requests[0]->status) == "STATUS_OBJECT_DOESNT_EXIST")
-    return false;
-  else
+  if (buffer.occupied) {
     return true;
+  } else {
+    return false;
+  }
 }
 
 // Clean up 

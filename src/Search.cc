@@ -125,8 +125,6 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Function search()
 //
-// TODO(gabor) I leak memory like the Titanic in an old folk's home
-//
 vector<Path*> Search(Graph* graph, FactDB* knownFacts,
                      const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
@@ -150,11 +148,16 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
       printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
       std::exit(1);
     }
+    if (time >= timeout) {
+      printf("I suck at logic?");
+      std::exit(1);
+    }
     const Path parent = fringe->pop();
     // Update time
     time += 1;
     if (time % 1000 == 0) {
-      printf("[%luk] search tick; %lu paths found\n", time / 1000, responses.size()); fflush(stdout);
+      printf("[%lu / %luk] search tick; %lu paths found\n", time / 1000, timeout / 1000,
+             responses.size()); fflush(stdout);
     }
     // Add the element to the cache
     cache->add(parent);
