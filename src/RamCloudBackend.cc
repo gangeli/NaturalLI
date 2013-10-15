@@ -31,7 +31,7 @@ RamCloudFactDB::RamCloudFactDB()
   char factQuery[127];
   snprintf(factQuery, 127, "SELECT left_arg, rel, right_arg, weight FROM %s LIMIT 10000000;", PG_TABLE_FACT.c_str());
   PGIterator iter = PGIterator(factQuery);
-  int totalRead = 0;
+  uint64_t totalRead = 0;
 
   while (iter.hasNext()) {
     RAMCloud::MultiWriteObject requestObjects[100];
@@ -50,13 +50,17 @@ RamCloudFactDB::RamCloudFactDB()
         if (row[k] == NULL) { continue; }
         // ...read it as a string
         uint32_t stringLength = strlen(row[k]);
-        printf("%s\n", row[k]);
         char stringWithoutBrackets[stringLength];
         memcpy( stringWithoutBrackets, &row[k][1], stringLength - 2 );
         // ...tokenize it
         const char* token = strtok(stringWithoutBrackets, ",");
         while (token != NULL) {
-          fact[factLength] = atoi(token);
+          char* end;
+          fact[factLength] = strtol(token, &end, 10);
+          if (end == token || *end != '\0') {
+            printf("Could not convert string to integer: %s\n", token);
+            std::exit(1);
+          }
           factLength += 1;  // append the word to the buffer
           token = strtok(NULL, ",");
         }
@@ -76,7 +80,7 @@ RamCloudFactDB::RamCloudFactDB()
     // Write request
     ramcloud.multiWrite(requests, numRequests);
     if (totalRead % 1000000 == 0) {
-      printf("Read %lu facts\n", totalRead);
+      printf("Read %luM facts\n", totalRead / 1000000);
     }
   }
 
