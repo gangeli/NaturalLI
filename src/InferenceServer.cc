@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
   // Parameterize search
   SearchType* searchStrategy = new BreadthFirstSearch();
-  CacheStrategy* cache = new CacheStrategyNone();
+  CacheStrategy* cache = new RamCloudCacheStrategyFactSeen();
 
   // Run search
   printf("---------------\n");

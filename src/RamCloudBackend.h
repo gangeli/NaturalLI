@@ -12,6 +12,9 @@
  */
 class RamCloudCacheStrategyFactSeen : public CacheStrategy {
  public:
+  RamCloudCacheStrategyFactSeen();
+  ~RamCloudCacheStrategyFactSeen();
+
   /**
    * Return true if the latest fact in the path has been visited already.
    */
@@ -20,6 +23,11 @@ class RamCloudCacheStrategyFactSeen : public CacheStrategy {
    * Add this path to the cache.
    */
   virtual void add(const Path&);
+ 
+ private:
+  RAMCloud::RamCloud ramcloud;
+  char cacheTableName[64];
+  uint64_t cacheTableId;
 };
 
 /**
@@ -44,7 +52,6 @@ class RamCloudFactDB : public FactDB {
 
  private:
   const char* factTableName;
-  // Handle to the Facts tables
   uint64_t factTableId;
   RAMCloud::RamCloud ramcloud;
 
