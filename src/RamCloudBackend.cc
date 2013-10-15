@@ -50,8 +50,12 @@ RamCloudFactDB::RamCloudFactDB()
         if (row[k] == NULL) { continue; }
         // ...read it as a string
         uint32_t stringLength = strlen(row[k]);
-        char stringWithoutBrackets[stringLength];
+        char stringWithoutBrackets[stringLength + 1];
+        printf("input: %s\n", row[k]);
         memcpy( stringWithoutBrackets, &row[k][1], stringLength - 2 );
+        stringWithoutBrackets[stringLength] = '\0';
+        printf("string without brackets: %s\n", stringWithoutBrackets);
+
         // ...tokenize it
         const char* token = strtok(stringWithoutBrackets, ",");
         while (token != NULL) {
