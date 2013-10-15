@@ -6,10 +6,11 @@
 #include "RamCloudBackend.h"
 #include "Postgres.h"
 
-char* ramcloudConnectionString() {
+const char* ramcloudConnectionString() {
   char* conn = (char*) malloc(128 * sizeof(char));
-  snprintf(conn, 127, "fast+udp: host=%s, port=%d",
+  snprintf(conn, 127, "fast+udp:host=%s,port=%d",
            RAMCLOUD_HOST.c_str(), RAMCLOUD_PORT);
+  printf("connecting to %s\n", conn);
   return conn;
 }
 
