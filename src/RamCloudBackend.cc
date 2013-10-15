@@ -45,10 +45,11 @@ bool RamCloudCacheStrategyFactSeen::isSeen(const Path& query) {
 }
 
 void RamCloudCacheStrategyFactSeen::add(const Path& path) {
+  printf(">begin add()\n");
   RAMCloud::MultiWriteObject* requests[1];
   RAMCloud::MultiWriteObject requestObjects[1];
   requestObjects[0] =
-    RAMCloud::MultiWriteObject(cacheTableId, path.fact, path.factLength, NULL, 0);
+    RAMCloud::MultiWriteObject(cacheTableId, path.fact, path.factLength, "", 0);
   requests[0] = &requestObjects[0];
   ramcloud.multiWrite(requests, 1);
 }
