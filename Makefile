@@ -29,7 +29,7 @@ CP=${JAVANLP}:lib/corenlp-scala.jar:lib/scripts/sim.jar:lib/scripts/jaws.jar:lib
 CC = g++
 INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include
 LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
-LDFLAGS=-lpq -lramcloud
+LDFLAGS=-lpq -lramcloud -lprofiler
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
 _OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o Utils.o

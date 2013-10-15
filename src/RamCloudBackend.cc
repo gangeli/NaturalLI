@@ -26,6 +26,7 @@ RamCloudFactDB::RamCloudFactDB()
     {
 
   factTableId = ramcloud.createTable(factTableName);
+  const uint16_t chunkSize = 1000;
 
   // Create a Postgres connection
   char factQuery[127];
@@ -34,11 +35,11 @@ RamCloudFactDB::RamCloudFactDB()
   uint64_t totalRead = 0;
 
   while (iter.hasNext()) {
-    RAMCloud::MultiWriteObject requestObjects[100];
-    RAMCloud::MultiWriteObject* requests[100];
-    float confidences[100];
+    RAMCloud::MultiWriteObject requestObjects[chunkSize];
+    RAMCloud::MultiWriteObject* requests[chunkSize];
+    float confidences[chunkSize];
     uint32_t numRequests = 0;
-    for (uint16_t i = 0; i < 100; ++i) {
+    for (uint16_t i = 0; i < chunkSize; ++i) {
       // If no more to write, break;
       if (!iter.hasNext()) { break; }
 
@@ -59,7 +60,8 @@ RamCloudFactDB::RamCloudFactDB()
           char* end;
           fact[factLength] = strtol(token, &end, 10);
           if (end == token || *end != '\0') {
-            printf("Could not convert string to integer: %s\n (end is '%c')", token);
+            printf("Could not convert string to integer: %s\n (end is '%c')",
+                   token, *end);
             std::exit(1);
           }
           factLength += 1;  // append the word to the buffer
@@ -81,7 +83,7 @@ RamCloudFactDB::RamCloudFactDB()
     // Write request
     ramcloud.multiWrite(requests, numRequests);
     if (totalRead % 1000000 == 0) {
-      printf("Read %luM facts\n", totalRead / 1000000);
+      printf("loaded %luM facts\n", totalRead / 1000000);
     }
   }
 
@@ -89,11 +91,15 @@ RamCloudFactDB::RamCloudFactDB()
   
 const bool RamCloudFactDB::contains(const word* key, const uint8_t wordLength) {
   RAMCloud::Buffer buffer;
-  ramcloud.read(factTableId, key, wordLength, &buffer);
-  if (buffer.getTotalLength() > 0)
-    return true;
-  else
-    return false;
+  try {
+    ramcloud.read(factTableId, key, wordLength, &buffer);
+  } catch (RAMCloud::ClientException &e) {
+    if (e.status == 3)
+      return false;
+    else
+      throw e;
+  }
+  return true;
 }
 
 // Clean up 
@@ -102,5 +108,6 @@ RamCloudFactDB::~RamCloudFactDB() {
 }
 
 FactDB* ReadRamCloudFactDB() {
+  printf("Reading facts...\n");
   return new RamCloudFactDB();
 }
