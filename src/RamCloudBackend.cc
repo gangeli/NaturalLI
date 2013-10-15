@@ -73,18 +73,31 @@ RamCloudBreadthFirstSearch::~RamCloudBreadthFirstSearch() {
 }
   
 void RamCloudBreadthFirstSearch::push(const Path& path) {
+  // Create requests
+  RAMCloud::MultiWriteObject* requests[1];
+  RAMCloud::MultiWriteObject requestObjects[1];
+
+  // Serialize Path object
+  // TODO(gabor)
+
+  // Write
+  requestObjects[0] =
+    RAMCloud::MultiWriteObject(queueTableId, path.fact, path.factLength, NULL, 0);
+  requests[0] = &requestObjects[0];
+  ramcloud.multiWrite(requests, 1);
 }
   
 const Path RamCloudBreadthFirstSearch::pop() {
+  // Do read
   RAMCloud::Tub<RAMCloud::Buffer> buffer;
   RAMCloud::MultiReadObject* requests[1];
   RAMCloud::MultiReadObject requestObject(queueTableId, &head, sizeof(uint64_t), &buffer);
   requests[0] = &requestObject;
-  
   ramcloud.multiRead(requests, 1);
 
   if (buffer) {
-    // Construct the path
+    // Deserialize path
+    // TODO(gabor)
     word fact[256];
     const uint8_t factLength;
     const edge_type edgeType;
@@ -99,10 +112,10 @@ const Path RamCloudBreadthFirstSearch::pop() {
 }
 
 bool RamCloudBreadthFirstSearch::isEmpty() {
+  return tail - head <= 0;
 }
 
 */
-
 
 
 

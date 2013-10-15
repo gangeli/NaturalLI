@@ -7,6 +7,8 @@
 #include "Graph.h"
 #include "FactDB.h"
 
+class SearchType;
+
 /**
  * A state in the search space.
  * This represents a path from the query fact, to the intermediate
@@ -16,10 +18,11 @@
  */
 class Path {
  public:
+  uint64_t id;
+  uint64_t sourceId;
   word fact[256];
-  const uint8_t factLength;
-  const edge_type edgeType;
-  const uint64_t sourceId;
+  uint8_t factLength;
+  edge_type edgeType;
 
   Path(const uint64_t, const uint64_t, const word*, const uint8_t,
        const edge_type&);
@@ -29,6 +32,7 @@ class Path {
   Path(const Path&);
   ~Path();
 
+  void operator=(const Path& copy);
   bool operator==(const Path& other) const;
 
   /**
@@ -36,10 +40,7 @@ class Path {
    * The implementation of this function depends on the backend being used
    * (e.g., RamCloud).
    */
-  Path* source() const;
- 
- private:
-  const uint64_t id;
+  Path* source(SearchType& queue) const;
 };
 
 /**
@@ -56,6 +57,7 @@ class SearchType {
   virtual void push(const Path&) = 0;
   virtual const Path pop() = 0;
   virtual bool isEmpty() = 0;
+  virtual Path* findPathById(uint64_t id) = 0;
 };
 
 /**
@@ -67,12 +69,14 @@ class BreadthFirstSearch : public SearchType {
   virtual void push(const Path&);
   virtual const Path pop();
   virtual bool isEmpty();
+  virtual Path* findPathById(uint64_t id);
   
   BreadthFirstSearch();
   ~BreadthFirstSearch();
 
  private:
   queue<Path>* impl;
+  vector<Path> id2path;
 };
 
 

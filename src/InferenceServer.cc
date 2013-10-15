@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 
   // Print result
   for(vector<Path*>::iterator it = paths.begin(); it != paths.end(); ++it) {
-    printf("Path\n----\n%s\n\n", toString(graph, *it).c_str());
+    printf("Path\n----\n%s\n\n", toString(*graph, *searchStrategy, *it).c_str());
   }
   printf("done.\n");
   printf("---------------\n");

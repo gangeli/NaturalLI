@@ -13,17 +13,33 @@
 class PathTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    searchType = new BreadthFirstSearch();
     // Add base path element
     root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
     dist1 = new Path(*root, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
     dist2 = new Path(*dist1, &catsHaveTails()[0], catsHaveTails().size(), 1);
     // Some paths with explicit ids
-    explicit1 = new Path(1, 0, &lemursHaveTails()[0], lemursHaveTails().size(), 255);
-    explicit2 = new Path(2, 1, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
+    explicit1 = new Path(10, 0, &lemursHaveTails()[0], lemursHaveTails().size(), 255);
+    explicit2 = new Path(20, 10, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
+    // Register paths with search
+    searchType->push(*root);
+    EXPECT_EQ(*root, *searchType->findPathById(root->id));
+    searchType->push(*dist1);
+    EXPECT_EQ(*dist1, *searchType->findPathById(dist1->id));
+    EXPECT_EQ(*root, *searchType->findPathById(root->id));
+    searchType->push(*dist2);
+    EXPECT_EQ(*dist2, *searchType->findPathById(dist2->id));
+    EXPECT_EQ(*root, *searchType->findPathById(root->id));
+    searchType->push(*explicit1);
+    EXPECT_EQ(*explicit1, *searchType->findPathById(explicit1->id));
+    EXPECT_EQ(*root, *searchType->findPathById(root->id));
+    searchType->push(*explicit2);
+    EXPECT_EQ(*explicit2, *searchType->findPathById(explicit2->id));
+    EXPECT_EQ(*root, *searchType->findPathById(root->id));
   }
 
   virtual void TearDown() {
-    delete root, dist1, dist2, explicit1, explicit2;
+    delete root, dist1, dist2, explicit1, explicit2, searchType;
   }
 
   Path* root;
@@ -31,6 +47,7 @@ class PathTest : public ::testing::Test {
   Path* dist2;
   Path* explicit1;
   Path* explicit2;
+  SearchType* searchType;
 };
 
 
@@ -45,8 +62,8 @@ TEST_F(PathTest, CanCreate) {
 TEST_F(PathTest, CanManageIdExplicitly) {
   EXPECT_FALSE(explicit1 == NULL);
   EXPECT_FALSE(explicit2 == NULL);
-  EXPECT_TRUE(explicit1->source() == NULL);
-  EXPECT_EQ(1, explicit2->sourceId);
+  EXPECT_TRUE(explicit1->source(*searchType) == NULL);
+  EXPECT_EQ(10, explicit2->sourceId);
 }
 
 // Test path equality
@@ -68,15 +85,27 @@ TEST_F(PathTest, CanCopy) {
 
 // Test getting the source path from a path
 TEST_F(PathTest, GetSource) {
-  EXPECT_TRUE(root->source() == NULL);
-  EXPECT_FALSE(dist1->source() == NULL);
-  EXPECT_FALSE(dist2->source() == NULL);
-  
-  EXPECT_EQ(root,  dist1->source());
-  EXPECT_EQ(dist1, dist2->source());
+  // Basic null checks
+  EXPECT_TRUE(root->source(*searchType) == NULL);
+  EXPECT_FALSE(dist1->source(*searchType) == NULL);
+  EXPECT_FALSE(dist2->source(*searchType) == NULL);
 
-  EXPECT_EQ(*root, *dist1->source());
-  EXPECT_EQ(*dist1, *dist2->source());
+  // Sanity checks
+  EXPECT_EQ(root->id, dist1->sourceId);
+  EXPECT_EQ(dist1->id, dist2->sourceId);
+  
+  // Fine-grained equality check
+  EXPECT_EQ(root->id, dist1->source(*searchType)->id);
+  EXPECT_EQ(root->sourceId, dist1->source(*searchType)->sourceId);
+  EXPECT_EQ(root->edgeType, dist1->source(*searchType)->edgeType);
+  ASSERT_EQ(root->factLength, dist1->source(*searchType)->factLength);
+  for (int i = 0; i < root->factLength; ++i) {
+    EXPECT_EQ(root->fact[i], dist1->source(*searchType)->fact[i]);
+  }
+
+  // Comprehensive equality check
+  EXPECT_EQ(*root, *dist1->source(*searchType));
+  EXPECT_EQ(*dist1, *dist2->source(*searchType));
 }
 
 
@@ -150,10 +179,23 @@ TEST_F(BreadthFirstSearchTest, RunBFS) {
                                 &search, cache, 100);
   ASSERT_EQ(1, result.size());
   ASSERT_EQ(3, result[0]->factLength);
-  EXPECT_EQ(c->fact[0], result[0]->fact[0]);
-  EXPECT_EQ(c->fact[1], result[0]->fact[1]);
-  EXPECT_EQ(c->fact[2], result[0]->fact[2]);
+  // check root
+  EXPECT_EQ(c->fact[0], result[0] ->fact[0]);
+  EXPECT_EQ(c->fact[1], result[0] ->fact[1]);
+  EXPECT_EQ(c->fact[2], result[0] ->fact[2]);
   EXPECT_EQ(c->edgeType, result[0]->edgeType);
+  // check path (b)
+  EXPECT_EQ(b->fact[0], result[0] ->source(search)->fact[0]);
+  EXPECT_EQ(b->fact[1], result[0] ->source(search)->fact[1]);
+  EXPECT_EQ(b->fact[2], result[0] ->source(search)->fact[2]);
+  EXPECT_EQ(b->edgeType, result[0]->source(search)->edgeType);
+  // check path (a)
+  EXPECT_EQ(a->fact[0], result[0] ->source(search)->source(search)->fact[0]);
+  EXPECT_EQ(a->fact[1], result[0] ->source(search)->source(search)->fact[1]);
+  EXPECT_EQ(a->fact[2], result[0] ->source(search)->source(search)->fact[2]);
+  EXPECT_EQ(a->edgeType, result[0]->source(search)->source(search)->edgeType);
+  // check null root
+  EXPECT_TRUE(result[0]->source(search)->source(search)->source(search) == NULL);
 }
 
 

@@ -1,14 +1,21 @@
-#include "Search.h"
-
 #include <cstdio>
 #include <cstdlib>
 #include <set>
+
+#include "Search.h"
+#include "Utils.h"
+
 
 
 //
 // Static Variables
 //
 uint64_t nextId = 1;
+
+// TODO(gabor) this is not threadsafe
+inline uint64_t generateUniqueId() {
+  nextId++;
+}
 
 //
 // Class Path
@@ -24,7 +31,7 @@ Path::Path(const uint64_t id, const uint64_t source, const word* fact, const uin
 
 Path::Path(const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
     : edgeType(edgeType), sourceId(source),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      id(generateUniqueId()),
       factLength(factLength)
     {
   for (int i = 0; i < factLength; ++i) {
@@ -34,7 +41,7 @@ Path::Path(const uint64_t source, const word* fact, const uint8_t factLength, co
 
 Path::Path(const Path& source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
     : edgeType(edgeType), sourceId(source.id),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      id(generateUniqueId()),
       factLength(factLength)
     {
   for (int i = 0; i < factLength; ++i) {
@@ -44,7 +51,7 @@ Path::Path(const Path& source, const word* fact, const uint8_t factLength, const
 
 Path::Path(const word* fact, const uint8_t factLength)
     : edgeType(255), sourceId(0),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      id(generateUniqueId()),
       factLength(factLength)
     {
   for (int i = 0; i < factLength; ++i) {
@@ -80,12 +87,21 @@ bool Path::operator==(const Path& other) const {
   return true;
 }
 
-Path* Path::source() const {
-  if (USE_RAMCLOUD) {
-    printf("TODO(gabor): lookup a path element by id in RamCloud (%lu)\n", this->id);
-    std::exit(1);
+void Path::operator=(const Path& copy) {
+  this->id = copy.id;
+  this->sourceId = copy.sourceId;
+  this->edgeType = copy.edgeType;
+  this->factLength = copy.factLength;
+  for (int i = 0; i < copy.factLength; ++i) {
+    this->fact[i] = copy.fact[i];
+  }
+}
+
+Path* Path::source(SearchType& queue) const {
+  if (sourceId == 0) {
+    return NULL;
   } else {
-    return (Path*) sourceId;
+    return queue.findPathById(sourceId);
   }
 }
 
@@ -105,6 +121,10 @@ BreadthFirstSearch::~BreadthFirstSearch() {
 }
   
 void BreadthFirstSearch::push(const Path& toAdd) {
+  while (id2path.size() <= toAdd.id) {
+    id2path.push_back(toAdd);
+  }
+  id2path[toAdd.id] = toAdd;
   impl->push(toAdd);
 }
 
@@ -116,6 +136,10 @@ const Path BreadthFirstSearch::pop() {
 
 bool BreadthFirstSearch::isEmpty() {
   return impl->empty();
+}
+  
+Path* BreadthFirstSearch::findPathById(uint64_t id) {
+  return &id2path[id];
 }
 
 //
@@ -147,7 +171,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 1;
+  const uint32_t tickTime = 10000;
 
   //
   // Search
@@ -166,16 +190,21 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
     // Update time
     time += 1;
     if (time % tickTime == 0) {
-      printf("[%lu / %lu%s] search tick; %lu paths found\n", time / tickTime, timeout / tickTime,
-             tickTime == 1 ? "" : (tickTime == 1000 ? "k" : (tickTime  == 1000000 ? "m" : " units") ),
-             responses.size()); fflush(stdout);
+      const uint32_t tickOOM
+        = tickTime < 1 ? 1000 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
+      printf("[%lu / %lu%s] search tick; %lu paths found\n",
+             time / tickOOM, timeout / tickOOM,
+             tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
+             responses.size());
     }
     // Add the element to the cache
     cache->add(parent);
 
     // -- Check If Valid --
     if (knownFacts->contains(parent.fact, parent.factLength)) {
-      responses.push_back(new Path(parent));
+      Path* result = new Path(parent);
+      printf("> %s\n", toString(*graph, *fringe, result).c_str());
+      responses.push_back(result);
     }
 
     // -- Mutations --
@@ -202,6 +231,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
         // Add the state to the fringe
         if (!cache->isSeen(child)) {
           fringe->push(child);
+        } else {
         }
       }
     }

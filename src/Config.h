@@ -24,8 +24,6 @@ static string   PG_TABLE_WORD    = "word_indexer";
 static string   PG_TABLE_EDGE    = "edge";
 static string   PG_TABLE_FACT    = "fact_partial";
 
-static bool     USE_RAMCLOUD     = false;
-
 static uint64_t SEARCH_TIMEOUT   = 100000;
 
 //

@@ -24,20 +24,20 @@ const vector<word> catsHaveTails() {
   return catsHaveTails;
 }
 
-string toString(Graph* graph, const word* fact, const uint8_t factLength) {
+string toString(Graph& graph, const word* fact, const uint8_t factLength) {
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
-    gloss = gloss + (gloss == "" ? "" : " ") + graph->gloss(fact[i]);
+    gloss = gloss + (gloss == "" ? "" : " ") + graph.gloss(fact[i]);
   }
   return gloss;
 }
 
-string toString(Graph* graph, const Path* path) {
+string toString(Graph& graph, SearchType& searchType, const Path* path) {
   if (path == NULL) {
     return "<start>";
   } else {
     return toString(graph, path->fact, path->factLength) +
            "; from\n  " +
-           toString(graph, path->source());
+           toString(graph, searchType, path->source(searchType));
   }
 }
