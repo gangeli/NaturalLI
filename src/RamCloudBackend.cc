@@ -37,7 +37,7 @@ RamCloudFactDB::RamCloudFactDB()
     RAMCloud::MultiWriteObject requestObjects[100];
     RAMCloud::MultiWriteObject* requests[100];
     float confidences[100];
-    uint32_t numRequests;
+    uint32_t numRequests = 0;
     for (uint8_t i = 0; i++; i < 100) {
       // If no more to write, break;
       if (!iter.hasNext()) { break; }
