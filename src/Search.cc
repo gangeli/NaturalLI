@@ -171,7 +171,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 1;
+  const uint32_t tickTime = 1000;
 
   //
   // Search
@@ -190,39 +190,32 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
     // Update time
     time += 1;
     if (time % tickTime == 0) {
-      printf("[%lu / %lu%s] search tick; %lu paths found\n", time / tickTime, timeout / tickTime,
-             tickTime == 1 ? "" : (tickTime == 1000 ? "k" : (tickTime  == 1000000 ? "m" : " units") ),
-             responses.size()); fflush(stdout);
-    }
-    printf("done with tick\n");
-    // Add the element to the cache
-    cache->add(parent);
-    printf("done with add\n");
-
-    // -- Check If Valid --
-    if (knownFacts->contains(parent.fact, parent.factLength)) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
       printf("[%lu / %lu%s] search tick; %lu paths found\n",
              time / tickOOM, timeout / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
              responses.size());
+    }
+    // Add the element to the cache
+    cache->add(parent);
+
+    // -- Check If Valid --
+    if (knownFacts->contains(parent.fact, parent.factLength)) {
       Path* result = new Path(parent);
+      printf("> %s\n", toString(*graph, *fringe, result).c_str());
       responses.push_back(result);
     }
 
     // -- Mutations --
-    printf("begin mutation\n");
     for (int indexToMutate = 0;
          indexToMutate < parent.factLength;
          ++indexToMutate) {  // for each index to mutate...
-      printf("  mutating %d\n", indexToMutate);
       const vector<edge>& mutations
         = graph->outgoingEdges(parent.fact[indexToMutate]);
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
-        printf("    ->%d\n", (*it).sink);
         if (it->type == 9) { continue; } // ignore nearest neighbors
         // ... create the mutated fact
         word mutated[parent.factLength];
@@ -233,19 +226,13 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
         for (int i = indexToMutate + 1; i < parent.factLength; ++i) {
           mutated[i] = parent.fact[i];
         }
-        printf("      copied fact\n");
         // Create the corresponding search state
         Path child(parent, mutated, parent.factLength, it->type);
-        printf("      created child\n");
         // Add the state to the fringe
-        printf("      checking seen...\n");
         if (!cache->isSeen(child)) {
-          printf("        not seen! pushing...\n");
           fringe->push(child);
         } else {
-          printf("        seen!\n");
         }
-        printf("      done.\n");
       }
     }
   

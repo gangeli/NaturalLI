@@ -48,7 +48,6 @@ bool RamCloudCacheStrategyFactSeen::isSeen(const Path& query) {
 }
 
 void RamCloudCacheStrategyFactSeen::add(const Path& path) {
-  printf(">begin add()\n");
   RAMCloud::MultiWriteObject* requests[1];
   RAMCloud::MultiWriteObject requestObjects[1];
   requestObjects[0] =
