@@ -51,10 +51,8 @@ RamCloudFactDB::RamCloudFactDB()
         // ...read it as a string
         uint32_t stringLength = strlen(row[k]);
         char stringWithoutBrackets[stringLength + 1];
-        printf("input: %s\n", row[k]);
         memcpy( stringWithoutBrackets, &row[k][1], stringLength - 2 );
         stringWithoutBrackets[stringLength] = '\0';
-        printf("string without brackets: %s\n", stringWithoutBrackets);
 
         // ...tokenize it
         const char* token = strtok(stringWithoutBrackets, ",");
@@ -62,7 +60,7 @@ RamCloudFactDB::RamCloudFactDB()
           char* end;
           fact[factLength] = strtol(token, &end, 10);
           if (end == token || *end != '\0') {
-            printf("Could not convert string to integer: %s\n", token);
+            printf("Could not convert string to integer: %s\n (end is '%c')", token);
             std::exit(1);
           }
           factLength += 1;  // append the word to the buffer
