@@ -122,11 +122,11 @@ RamCloudFactDB::RamCloudFactDB()
       PGRow row = iter.next();
       word fact[256];
       uint8_t factLength = 0;
-      for (int i = 0; i < 3; ++i) {  // for each argument...
+      for (int k = 0; k < 3; ++k) {  // for each argument...
         // ...read it as a string
-        uint32_t stringLength = strlen(row[i]);
+        uint32_t stringLength = strlen(row[k]);
         char stringWithoutBrackets[stringLength];
-        memcpy( stringWithoutBrackets, &row[i][1], stringLength - 2 );
+        memcpy( stringWithoutBrackets, &row[k][1], stringLength - 2 );
         // ...tokenize it
         const char* token = strtok(stringWithoutBrackets, ",");
         while (token != NULL) {
