@@ -90,16 +90,17 @@ RamCloudFactDB::RamCloudFactDB()
 }
   
 const bool RamCloudFactDB::contains(const word* key, const uint8_t wordLength) {
-  RAMCloud::Buffer buffer;
-  try {
-    ramcloud.read(factTableId, key, wordLength, &buffer);
-  } catch (RAMCloud::ClientException &e) {
-    if (e.status == 3)
-      return false;
-    else
-      throw e;
-  }
-  return true;
+  RAMCloud::Tub<RAMCloud::Buffer> buffer;
+  RAMCloud::MultiReadObject* requests[1];
+  RAMCloud::MultiReadObject requestObject(factTableId, key, uint16_t(wordLength), &buffer);
+  requests[0] = &requestObject;
+
+  ramcloud.multiRead(requests, 1);
+
+  if (statusToSymbol(requests[0]->status) == "STATUS_OBJECT_DOESNT_EXIST")
+    return false;
+  else
+    return true;
 }
 
 // Clean up 
