@@ -58,6 +58,7 @@ RamCloudFactDB::RamCloudFactDB()
         while (token != NULL) {
           fact[factLength] = atoi(token);
           factLength += 1;  // append the word to the buffer
+          token = strtok(NULL, ",");
         }
         // sanity check to prevent too long of a fact
         if (factLength >= 256) { break; }
