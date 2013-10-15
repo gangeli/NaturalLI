@@ -47,10 +47,10 @@ RamCloudFactDB::RamCloudFactDB()
       word fact[256];
       uint8_t factLength = 0;
       for (int k = 0; k < 3; ++k) {  // for each argument...
+        if (row[k] == NULL) { continue; }
         // ...read it as a string
         uint32_t stringLength = strlen(row[k]);
         printf("%s\n", row[k]);
-        if (stringLength < 3) { continue; }
         char stringWithoutBrackets[stringLength];
         memcpy( stringWithoutBrackets, &row[k][1], stringLength - 2 );
         // ...tokenize it
