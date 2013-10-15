@@ -31,6 +31,7 @@ RamCloudFactDB::RamCloudFactDB()
   char factQuery[127];
   snprintf(factQuery, 127, "SELECT left_arg, rel, right_arg, weight FROM %s LIMIT 10000000;", PG_TABLE_FACT.c_str());
   PGIterator iter = PGIterator(factQuery);
+  int totalRead = 0;
 
   while (iter.hasNext()) {
     RAMCloud::MultiWriteObject requestObjects[100];
@@ -67,9 +68,13 @@ RamCloudFactDB::RamCloudFactDB()
           &confidences[i], sizeof(float));
       requests[i] = &requestObjects[i];
       numRequests += 1;
+      totalRead += 1;
     }
     // Write request
     ramcloud.multiWrite(requests, numRequests);
+    if (totalRead % 1000000 == 0) {
+      printf("Read %luM facts\n", totalRead / 1000000);
+    }
   }
 
 }
