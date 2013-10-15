@@ -72,11 +72,11 @@ ${DIST}/truth.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/
 
 ${BUILD}/%.o: ${SRC}/%.cc
 	@mkdir -p ${BUILD}
-	${CC} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
+	${CC} ${CPP_FLAGS} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
 
 ${DIST}/server: ${OBJS} ${BUILD}/InferenceServer.o $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	g++ ${CPP_FLAGS} ${INCLUDE} -o ${DIST}/server $^ `find ${SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS}
+	${CC} ${CPP_FLAGS} ${INCLUDE} -o ${DIST}/server $^ `find ${SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS}
 	mv -f *.gcno ${BUILD}
 
 ${DIST}/server.a: ${OBJS}
@@ -86,19 +86,19 @@ ${DIST}/server.a: ${OBJS}
 # -- TEST --
 ${TEST_BUILD}/libgtest.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
-	g++ -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest-all.cc -o ${TEST_BUILD}/libgtest.a
+	${CC} ${CPP_FLAGS} -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest-all.cc -o ${TEST_BUILD}/libgtest.a
 
 ${TEST_BUILD}/libgtest_main.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
-	g++ -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest_main.cc -o ${TEST_BUILD}/libgtest_main.a
+	${CC} ${CPP_FLAGS} -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest_main.cc -o ${TEST_BUILD}/libgtest_main.a
 
 ${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
 	@mkdir -p ${TEST_BUILD}
-	${CC} -c ${INCLUDE} -Isrc -o $@ $< -c ${CPP_FLAGS} -lgcov
+	${CC} ${CPP_FLAGS} -c ${INCLUDE} -Isrc -o $@ $< -c ${CPP_FLAGS} -lgcov
 
 ${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	g++ ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	${CC} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
 
 doc:

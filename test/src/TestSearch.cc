@@ -14,9 +14,9 @@ class PathTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Add base path element
-    root = new Path(lemursHaveTails());
-    dist1 = new Path(*root, animalsHaveTails(), 0);
-    dist2 = new Path(*dist1, catsHaveTails(), 1);
+    root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
+    dist1 = new Path(*root, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
+    dist2 = new Path(*dist1, &catsHaveTails()[0], catsHaveTails().size(), 1);
   }
 
   virtual void TearDown() {
@@ -75,9 +75,9 @@ TEST_F(PathTest, GetSource) {
 class TestName : public ::testing::Test { \
  protected: \
   virtual void SetUp() { \
-    a = new Path(lemursHaveTails()); \
-    b = new Path(*a, animalsHaveTails(), 0); \
-    c = new Path(*b, catsHaveTails(), 1); \
+    a = new Path(&lemursHaveTails()[0], lemursHaveTails().size()); \
+    b = new Path(*a, &animalsHaveTails()[0], animalsHaveTails().size(), 0); \
+    c = new Path(*b, &catsHaveTails()[0], catsHaveTails().size(), 1); \
     cache = new CacheStrategyNone(); \
     graph = ReadMockGraph(); \
     facts = ReadMockFactDB(); \
@@ -132,10 +132,14 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
 }
 
 TEST_F(BreadthFirstSearchTest, RunBFS) {
-  vector<Path*> result = Search(graph, facts, lemursHaveTails(),
+  vector<Path*> result = Search(graph, facts,
+                                &lemursHaveTails()[0], lemursHaveTails().size(),
                                 &search, cache, 100);
-  ASSERT_EQ(result.size(), 1);
-  EXPECT_EQ(c->fact, result[0]->fact);
+  ASSERT_EQ(1, result.size());
+  ASSERT_EQ(3, result[0]->factLength);
+  EXPECT_EQ(c->fact[0], result[0]->fact[0]);
+  EXPECT_EQ(c->fact[1], result[0]->fact[1]);
+  EXPECT_EQ(c->fact[2], result[0]->fact[2]);
   EXPECT_EQ(c->edgeType, result[0]->edgeType);
 }
 
@@ -147,7 +151,7 @@ class CacheStrategyNoneTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Add base path element
-    root = new Path(lemursHaveTails());
+    root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
   }
 
   virtual void TearDown() {

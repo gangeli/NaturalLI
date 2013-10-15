@@ -8,9 +8,9 @@ class UtilsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Add base path element
-    lemurs = new Path(lemursHaveTails());
-    animals = new Path(*lemurs, animalsHaveTails(), 0);
-    cats = new Path(*animals, catsHaveTails(), 1);
+    lemurs = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
+    animals = new Path(*lemurs, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
+    cats = new Path(*animals, &catsHaveTails()[0], catsHaveTails().size(), 1);
     graph = ReadMockGraph();
   }
 
@@ -25,9 +25,9 @@ class UtilsTest : public ::testing::Test {
 };
 
 TEST_F(UtilsTest, ToStringPhrase) {
-  EXPECT_EQ(string("lemur have tail"), toString(graph, lemursHaveTails()));
-  EXPECT_EQ(string("animal have tail"), toString(graph, animalsHaveTails()));
-  EXPECT_EQ(string("cat have tail"), toString(graph, catsHaveTails()));
+  EXPECT_EQ(string("lemur have tail"), toString(graph, &lemursHaveTails()[0], lemursHaveTails().size()));
+  EXPECT_EQ(string("animal have tail"), toString(graph, &animalsHaveTails()[0], animalsHaveTails().size()));
+  EXPECT_EQ(string("cat have tail"), toString(graph, &catsHaveTails()[0], animalsHaveTails().size()));
 }
 
 TEST_F(UtilsTest, ToStringPath) {

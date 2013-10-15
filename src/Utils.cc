@@ -24,12 +24,10 @@ const vector<word> catsHaveTails() {
   return catsHaveTails;
 }
 
-string toString(const Graph* graph, const vector<word> fact) {
+string toString(const Graph* graph, const word* fact, const uint8_t factLength) {
   string gloss = "";
-  for (vector<word>::const_iterator it = fact.begin(); 
-       it != fact.end();
-       ++it) {
-    gloss = gloss + (gloss == "" ? "" : " ") + graph->gloss(*it);
+  for (int i = 0; i < factLength; ++i) {
+    gloss = gloss + (gloss == "" ? "" : " ") + graph->gloss(fact[i]);
   }
   return gloss;
 }
@@ -38,7 +36,7 @@ string toString(const Graph* graph, const Path* path) {
   if (path == NULL) {
     return "<start>";
   } else {
-    return toString(graph, path->fact) +
+    return toString(graph, path->fact, path->factLength) +
            "; from\n  " +
            toString(graph, path->source());
   }

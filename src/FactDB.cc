@@ -18,13 +18,13 @@ class InMemoryFactDB : public FactDB {
  public:
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
-  virtual const bool contains(const vector<word>& query) const {
+  virtual const bool contains(const word* query, const uint8_t queryLength) {
     // Variables for hashing
     int64_t hash = 0;
-    uint32_t shiftIncr = (64 / query.size());
+    uint32_t shiftIncr = (64 / queryLength);
     uint32_t shift = 0;
     // Hash fact
-    for (int i = 0; i < query.size(); ++i) {
+    for (int i = 0; i < queryLength; ++i) {
       hash = hash ^ query[i] << shift;
       shift += shiftIncr;
     }
@@ -64,8 +64,8 @@ FactDB* ReadFactDB() {
 class MockFactDB : public FactDB {
  public:
   
-  virtual const bool contains(const vector<word>& query) const {
-    return query.size() == 3 && 
+  virtual const bool contains(const word* query, const uint8_t queryLength) {
+    return queryLength == 3 && 
       query[0] == 27970 &&
       query[1] == 3844 &&
       query[2] == 14221;

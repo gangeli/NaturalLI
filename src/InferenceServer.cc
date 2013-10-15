@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     printf("Graph was null; exiting...\n");
     return 1;
   }
-  const FactDB* facts = ReadFactDB();
+  FactDB* facts = ReadFactDB();
   if (facts == NULL) {
     printf("Facts were null; exiting...\n");
     return 1;
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   printf("    Search     \n");
   vector<Path*> paths
     = Search( graph, facts,
-              lemursHaveTails(),
+              &lemursHaveTails()[0], lemursHaveTails().size(),
               searchStrategy,
               cache,
               SEARCH_TIMEOUT   );

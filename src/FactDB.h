@@ -9,7 +9,7 @@
  */
 class FactDB {
  public:
-  virtual const bool contains(const vector<word>&) const = 0;
+  virtual const bool contains(const word*, const uint8_t wordLength) = 0;
 };
 
 /**

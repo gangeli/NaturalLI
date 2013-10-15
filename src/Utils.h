@@ -25,7 +25,7 @@ const vector<word> catsHaveTails();
 /**
  * Print the string gloss for the given fact.
  */
-string toString(const Graph* graph, const vector<word> fact);
+string toString(const Graph* graph, const word* fact, const uint8_t factSize);
 
 /**
  * Print a human readable dump of a search path.

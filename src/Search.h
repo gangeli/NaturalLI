@@ -16,12 +16,13 @@
  */
 class Path {
  public:
-  const vector<word> fact;
+  word fact[256];
+  const uint8_t factLength;
   const edge_type edgeType;
 
-  Path(const uint64_t, const vector<word>&, const edge_type&);
-  Path(const Path& source, const vector<word>&, const edge_type&);
-  Path(const vector<word>&);
+  Path(const uint64_t, const word*, const uint8_t, const edge_type&);
+  Path(const Path& source, const word*, const uint8_t, const edge_type&);
+  Path(const word*, const uint8_t);
   Path(const Path&);
   ~Path();
 
@@ -101,8 +102,9 @@ class CacheStrategyNone : public CacheStrategy {
  * Perform a search from the query fact, to any antecedents that can be
  * found by searching through valid edits, insertions, or deletions.
  */
-vector<Path*> Search(const Graph*, const FactDB*,
-                     const vector<word>&, SearchType*,
+vector<Path*> Search(const Graph*, FactDB*,
+                     const word*, const uint8_t,
+                     SearchType*,
                      CacheStrategy*, const uint64_t);
 
 

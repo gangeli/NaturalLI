@@ -20,11 +20,11 @@ class MockFactDBTest : public ::testing::Test {
 
 // Make sure the correct fact is in there
 TEST_F(MockFactDBTest, HasCatsHaveTails) {
-  EXPECT_TRUE(facts->contains(catsHaveTails()));
+  EXPECT_TRUE(facts->contains(&catsHaveTails()[0], catsHaveTails().size()));
 }
 
 // Make sure the incorrect facts are not in there
 TEST_F(MockFactDBTest, DoesNotHaveOtherFacts) {
-  EXPECT_FALSE(facts->contains(lemursHaveTails()));
-  EXPECT_FALSE(facts->contains(animalsHaveTails()));
+  EXPECT_FALSE(facts->contains(&lemursHaveTails()[0], lemursHaveTails().size()));
+  EXPECT_FALSE(facts->contains(&animalsHaveTails()[0], animalsHaveTails().size()));
 }

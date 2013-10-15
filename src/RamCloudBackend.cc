@@ -90,3 +90,80 @@ Graph* ReadRamCloudGraph() {
   delete inMemoryGraph;
   return ramcloud;
 }
+
+//
+// RamCloudFactDB
+//
+  
+// Construct the requisite tables for storing facts
+// in RamCloud, if they don't already exist.
+RamCloudFactDB::RamCloudFactDB()
+    : ramcloud(ramcloudConnectionString()),
+      factTableName("Facts")
+    {
+
+  factTableId = ramcloud.createTable(factTableName);
+
+  // Create a Postgres connection
+  char factQuery[127];
+  snprintf(factQuery, 127, "SELECT left_arg, rel, right_arg, weight FROM %s;", PG_TABLE_FACT.c_str());
+  PGIterator iter = PGIterator(factQuery);
+
+  while (iter.hasNext()) {
+    RAMCloud::MultiWriteObject requestObjects[100];
+    RAMCloud::MultiWriteObject* requests[100];
+    float confidences[100];
+    uint32_t numRequests;
+    for (uint8_t i = 0; i++; i < 100) {
+      // If no more to write, break;
+      if (!iter.hasNext()) { break; }
+
+      // Get data from Postgres
+      PGRow row = iter.next();
+      word fact[256];
+      uint8_t factLength = 0;
+      for (int i = 0; i < 3; ++i) {  // for each argument...
+        // ...read it as a string
+        uint32_t stringLength = strlen(row[i]);
+        char stringWithoutBrackets[stringLength];
+        memcpy( stringWithoutBrackets, &row[i][1], stringLength - 2 );
+        // ...tokenize it
+        const char* token = strtok(stringWithoutBrackets, ",");
+        while (token != NULL) {
+          fact[factLength] = atoi(token);
+          factLength += 1;  // append the word to the buffer
+        }
+        // sanity check to prevent too long of a fact
+        if (factLength >= 256) { break; }
+      }
+      confidences[i] = atof(row[3]);
+      
+      // Create request object
+      requestObjects[i] =
+        RAMCloud::MultiWriteObject(factTableId, fact, factLength,
+          &confidences[i], sizeof(float));
+      requests[i] = &requestObjects[i];
+      numRequests += 1;
+    }
+    // Write request
+    ramcloud.multiWrite(requests, numRequests);
+  }
+
+}
+  
+const bool RamCloudFactDB::contains(const word* key, const uint8_t wordLength) {
+  RAMCloud::Buffer buffer;
+  ramcloud.read(factTableId, key, wordLength, &buffer);
+  if (buffer.getTotalLength() > 0)
+    return true;
+  else
+    return false;
+}
+
+// Clean up 
+RamCloudFactDB::~RamCloudFactDB() {
+//  dropTable(factTableName);  // TODO(gabor) drop me somewhere!
+}
+
+FactDB* ReadRamCloudFactDB() {
+}

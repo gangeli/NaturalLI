@@ -13,36 +13,62 @@ uint64_t nextId = 1;
 //
 // Class Path
 //
-Path::Path(const uint64_t source, const vector<word>& fact, const edge_type& edgeType)
-    : edgeType(edgeType), fact(fact), sourceId(source),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) )
+Path::Path(const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
+    : edgeType(edgeType), sourceId(source),
+      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      factLength(factLength)
     {
+  for (int i = 0; i < factLength; ++i) {
+    this->fact[i] = fact[i];
+  }
 };
 
-Path::Path(const Path& source, const vector<word>& fact, const edge_type& edgeType)
-    : edgeType(edgeType), fact(fact), sourceId(source.id),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) )
+Path::Path(const Path& source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
+    : edgeType(edgeType), sourceId(source.id),
+      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      factLength(factLength)
     {
+  for (int i = 0; i < factLength; ++i) {
+    this->fact[i] = fact[i];
+  }
 };
 
-Path::Path(const vector<word>& fact)
-    : edgeType(255), fact(fact), sourceId(0),
-      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) )
+Path::Path(const word* fact, const uint8_t factLength)
+    : edgeType(255), sourceId(0),
+      id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
+      factLength(factLength)
     {
+  for (int i = 0; i < factLength; ++i) {
+    this->fact[i] = fact[i];
+  }
 };
 
 Path::Path(const Path& copy)
-    : id(copy.id), sourceId(copy.sourceId), fact(copy.fact), edgeType(copy.edgeType)
+    : id(copy.id), sourceId(copy.sourceId), edgeType(copy.edgeType),
+      factLength(copy.factLength)
     {
+  for (int i = 0; i < copy.factLength; ++i) {
+    this->fact[i] = copy.fact[i];
+  }
 };
 
 Path::~Path() {
 };
 
 bool Path::operator==(const Path& other) const {
-  return 
-         id == other.id && sourceId == other.sourceId &&
-         edgeType == other.edgeType && fact == other.fact;
+  // Check metadata
+  if ( !( id == other.id && sourceId == other.sourceId &&
+          edgeType == other.edgeType && factLength == other.factLength ) ) {
+    return false;
+  }
+  // Check fact content
+  for (int i = 0; i < factLength; ++i) {
+    if (other.fact[i] != fact[i]) {
+      return false;
+    }
+  }
+  // Return true
+  return true;
 }
 
 Path* Path::source() const {
@@ -101,8 +127,8 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // TODO(gabor) I leak memory like the Titanic in an old folk's home
 //
-vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
-                     const vector<word>& queryFact,
+vector<Path*> Search(const Graph* graph, FactDB* knownFacts,
+                     const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
                      const uint64_t timeout) {
   //
@@ -111,7 +137,7 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
   // Create a vector for the return value to occupy
   vector<Path*> responses;
   // Add start state to the fringe
-  fringe->push(*(new Path(queryFact)));  // I need the memory to not go away
+  fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
 
@@ -134,13 +160,13 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
     cache->add(parent);
 
     // -- Check If Valid --
-    if (knownFacts->contains(parent.fact)) {
+    if (knownFacts->contains(parent.fact, parent.factLength)) {
       responses.push_back(new Path(parent));
     }
 
     // -- Mutations --
     for (int indexToMutate = 0;
-         indexToMutate < parent.fact.size();
+         indexToMutate < parent.factLength;
          ++indexToMutate) {  // for each index to mutate...
       const vector<edge>& mutations
         = graph->outgoingEdges(parent.fact[indexToMutate]);
@@ -149,19 +175,19 @@ vector<Path*> Search(const Graph* graph, const FactDB* knownFacts,
           ++it) {  // for each possible mutation on that index...
         if (it->type == 9) { continue; } // ignore nearest neighbors
         // ... create the mutated fact
-        vector<word> mutated(parent.fact.size());
+        word mutated[parent.factLength];
         for (int i = 0; i < indexToMutate; ++i) {
           mutated[i] = parent.fact[i];
         }
         mutated[indexToMutate] = it->sink;
-        for (int i = indexToMutate + 1; i < parent.fact.size(); ++i) {
+        for (int i = indexToMutate + 1; i < parent.factLength; ++i) {
           mutated[i] = parent.fact[i];
         }
         // Create the corresponding search state
-        Path* child = new Path(parent, mutated, it->type);
+        Path child(parent, mutated, parent.factLength, it->type);
         // Add the state to the fringe
-        if (!cache->isSeen(*child)) {
-          fringe->push(*child);
+        if (!cache->isSeen(child)) {
+          fringe->push(child);
         }
       }
     }

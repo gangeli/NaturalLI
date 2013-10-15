@@ -54,12 +54,27 @@ class RamCloudGraph : public Graph {
 Graph* ReadRamCloudGraph();
 
 /**
- * TODO(gabor)
+ * A set containing our known facts, implemented as a RamCloud
+ * table.
  */
 class RamCloudFactDB : public FactDB {
  public:
-  virtual const bool contains(const vector<word>&) const = 0;
+  RamCloudFactDB();
+  ~RamCloudFactDB();
+  virtual const bool contains(const word*, const uint8_t wordLength);
+
+ private:
+  const char* factTableName;
+  // Handle to the Facts tables
+  uint64_t factTableId;
+  RAMCloud::RamCloud ramcloud;
+
 };
+
+/**
+ * Read in the known database of facts to RamCloud
+ */
+FactDB* ReadRamCloudFactDB();
 
 
 #endif
