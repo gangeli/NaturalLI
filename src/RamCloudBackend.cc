@@ -97,7 +97,7 @@ const bool RamCloudFactDB::contains(const word* key, const uint8_t wordLength) {
 
   ramcloud.multiRead(requests, 1);
 
-  if (buffer.occupied) {
+  if (buffer) {
     return true;
   } else {
     return false;
