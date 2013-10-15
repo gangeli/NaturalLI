@@ -205,11 +205,15 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
              time / tickOOM, timeout / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
              responses.size());
+      printf("done with tick\n");
       Path* result = new Path(parent);
+      printf("done with copy\n");
       responses.push_back(result);
+      printf("done with push\n");
     }
 
     // -- Mutations --
+    printf("begin mutation\n");
     for (int indexToMutate = 0;
          indexToMutate < parent.factLength;
          ++indexToMutate) {  // for each index to mutate...
