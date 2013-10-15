@@ -6,6 +6,7 @@
 #include "Graph.h"
 #include "FactDB.h"
 #include "Search.h"
+#include "RamCloudBackend.h"
 
 using namespace std;
 
@@ -21,7 +22,7 @@ int main(int argc, char** argv) {
     printf("Graph was null; exiting...\n");
     return 1;
   }
-  FactDB* facts = ReadFactDB();
+  FactDB* facts = ReadRamCloudFactDB();
   if (facts == NULL) {
     printf("Facts were null; exiting...\n");
     return 1;

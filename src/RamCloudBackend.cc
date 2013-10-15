@@ -106,7 +106,7 @@ RamCloudFactDB::RamCloudFactDB()
 
   // Create a Postgres connection
   char factQuery[127];
-  snprintf(factQuery, 127, "SELECT left_arg, rel, right_arg, weight FROM %s;", PG_TABLE_FACT.c_str());
+  snprintf(factQuery, 127, "SELECT left_arg, rel, right_arg, weight FROM %s LIMIT 10000000;", PG_TABLE_FACT.c_str());
   PGIterator iter = PGIterator(factQuery);
 
   while (iter.hasNext()) {
@@ -166,4 +166,5 @@ RamCloudFactDB::~RamCloudFactDB() {
 }
 
 FactDB* ReadRamCloudFactDB() {
+  return new RamCloudFactDB();
 }
