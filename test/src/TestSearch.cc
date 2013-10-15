@@ -17,15 +17,20 @@ class PathTest : public ::testing::Test {
     root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
     dist1 = new Path(*root, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
     dist2 = new Path(*dist1, &catsHaveTails()[0], catsHaveTails().size(), 1);
+    // Some paths with explicit ids
+    explicit1 = new Path(1, 0, &lemursHaveTails()[0], lemursHaveTails().size(), 255);
+    explicit2 = new Path(2, 1, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
   }
 
   virtual void TearDown() {
-    delete root, dist1, dist2;
+    delete root, dist1, dist2, explicit1, explicit2;
   }
 
   Path* root;
   Path* dist1;
   Path* dist2;
+  Path* explicit1;
+  Path* explicit2;
 };
 
 
@@ -34,6 +39,14 @@ TEST_F(PathTest, CanCreate) {
   EXPECT_FALSE(root == NULL);
   EXPECT_FALSE(dist1 == NULL);
   EXPECT_FALSE(dist2 == NULL);
+}
+
+// Test path elements made with explicit ids
+TEST_F(PathTest, CanManageIdExplicitly) {
+  EXPECT_FALSE(explicit1 == NULL);
+  EXPECT_FALSE(explicit2 == NULL);
+  EXPECT_TRUE(explicit1->source() == NULL);
+  EXPECT_EQ(1, explicit2->sourceId);
 }
 
 // Test path equality

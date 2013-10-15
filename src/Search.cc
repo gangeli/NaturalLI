@@ -13,6 +13,15 @@ uint64_t nextId = 1;
 //
 // Class Path
 //
+Path::Path(const uint64_t id, const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
+    : edgeType(edgeType), sourceId(source), id(id),
+      factLength(factLength)
+    {
+  for (int i = 0; i < factLength; ++i) {
+    this->fact[i] = fact[i];
+  }
+};
+
 Path::Path(const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
     : edgeType(edgeType), sourceId(source),
       id(USE_RAMCLOUD ? nextId++ : ((uint64_t) this) ),
@@ -138,6 +147,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
+  const uint32_t tickTime = 1;
 
   //
   // Search
@@ -155,8 +165,9 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
     const Path parent = fringe->pop();
     // Update time
     time += 1;
-    if (time % 1000 == 0) {
-      printf("[%lu / %luk] search tick; %lu paths found\n", time / 1000, timeout / 1000,
+    if (time % tickTime == 0) {
+      printf("[%lu / %lu%s] search tick; %lu paths found\n", time / tickTime, timeout / tickTime,
+             tickTime == 1 ? "" : (tickTime == 1000 ? "k" : (tickTime  == 1000000 ? "m" : " units") ),
              responses.size()); fflush(stdout);
     }
     // Add the element to the cache

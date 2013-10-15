@@ -15,9 +15,8 @@ const char* ramcloudConnectionString() {
 }
 
 
-
 //
-// RamCloudFactDB
+// RamCloudCacheStrategy
 //
 RamCloudCacheStrategyFactSeen::RamCloudCacheStrategyFactSeen()
     : ramcloud(ramcloudConnectionString())
@@ -53,6 +52,57 @@ void RamCloudCacheStrategyFactSeen::add(const Path& path) {
   requests[0] = &requestObjects[0];
   ramcloud.multiWrite(requests, 1);
 }
+
+
+
+
+//
+// RamCloudBreadthFirstSearch
+//
+/*
+RamCloudBreadthFirstSearch::RamCloudBreadthFirstSearch()
+    : ramcloud(ramcloudConnectionString()),
+    head(0), tail(0)
+    {
+    snprintf(queueTableName, 64, "queue@%lu", uint64_t(this));
+    queueTableId = ramcloud.createTable(queueTableName);
+}
+
+RamCloudBreadthFirstSearch::~RamCloudBreadthFirstSearch() {
+  ramcloud.dropTable(queueTableName);
+}
+  
+void RamCloudBreadthFirstSearch::push(const Path& path) {
+}
+  
+const Path RamCloudBreadthFirstSearch::pop() {
+  RAMCloud::Tub<RAMCloud::Buffer> buffer;
+  RAMCloud::MultiReadObject* requests[1];
+  RAMCloud::MultiReadObject requestObject(queueTableId, &head, sizeof(uint64_t), &buffer);
+  requests[0] = &requestObject;
+  
+  ramcloud.multiRead(requests, 1);
+
+  if (buffer) {
+    // Construct the path
+    word fact[256];
+    const uint8_t factLength;
+    const edge_type edgeType;
+    const uint64_t id;
+    const uint64_t sourceId;
+
+    return Path(id, sourceId, fact, factLength, edgeType);
+  } else {
+    printf("called pop() on empty queue! head=%lu tail=%lu\n", head, tail);
+    std::exit(1);
+  }
+}
+
+bool RamCloudBreadthFirstSearch::isEmpty() {
+}
+
+*/
+
 
 
 

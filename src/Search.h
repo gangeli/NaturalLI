@@ -19,7 +19,10 @@ class Path {
   word fact[256];
   const uint8_t factLength;
   const edge_type edgeType;
+  const uint64_t sourceId;
 
+  Path(const uint64_t, const uint64_t, const word*, const uint8_t,
+       const edge_type&);
   Path(const uint64_t, const word*, const uint8_t, const edge_type&);
   Path(const Path& source, const word*, const uint8_t, const edge_type&);
   Path(const word*, const uint8_t);
@@ -37,7 +40,6 @@ class Path {
  
  private:
   const uint64_t id;
-  const uint64_t sourceId;
 };
 
 /**

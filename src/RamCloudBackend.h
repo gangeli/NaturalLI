@@ -8,7 +8,12 @@
 #include "Search.h"
 
 /**
- * TODO(gabor)
+ * A class representing the set of nodes already visited.
+ * This is to ensure that we don't return duplicate nodes,
+ * and don't do more work in the search than we should.
+ * In this implementation, the backend makes use of RamCloud to store
+ * seen facts, and a path is identified entirely by its most
+ * recent fact.
  */
 class RamCloudCacheStrategyFactSeen : public CacheStrategy {
  public:
@@ -31,13 +36,23 @@ class RamCloudCacheStrategyFactSeen : public CacheStrategy {
 };
 
 /**
- * TODO(gabor)
+ * A Queue, implemented in RamCloud
  */
 class RamCloudBreadthFirstSearch : public SearchType {
  public:
+  RamCloudBreadthFirstSearch();
+  ~RamCloudBreadthFirstSearch();
+
   virtual void push(const Path&);
   virtual const Path pop();
   virtual bool isEmpty();
+ 
+ private:
+  RAMCloud::RamCloud ramcloud;
+  char queueTableName[64];
+  uint64_t queueTableId;
+  uint64_t head;
+  uint64_t tail;
 };
 
 /**
