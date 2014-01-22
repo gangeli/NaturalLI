@@ -1,13 +1,16 @@
 package org.goobs.truth
 
 import edu.stanford.nlp._
-import edu.stanford.nlp.sequences.SeqClassifierFlags
 import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
 
 import edu.smu.tspell.wordnet.SynsetType
 
 import org.goobs.truth.Implicits._
+import org.goobs.truth.Postgres.{slurpTable, TABLE_WORD_INTERN}
+import gnu.trove.map.hash.TObjectIntHashMap
+import java.sql.ResultSet
+import gnu.trove.map.TObjectIntMap
 
 object Utils {
   NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
@@ -66,6 +69,95 @@ object Utils {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
+
+  def index(rawPhrase:String, doHead:Boolean=false, allowEmpty:Boolean=false)
+           (implicit wordIndexer:TObjectIntMap[String]) :Option[(Array[Int],Int)] = {
+    if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
+    var headWord:Option[String] = None
+    val phrase:Array[String]
+    = if (doHead && Props.SCRIPT_REVERB_HEAD_DO) tokenizeWithCase(rawPhrase, (hw:String) => headWord = Some(hw))
+    else tokenizeWithCase(rawPhrase)
+    // Create object to store result
+    val indexResult:Array[Int] = new Array[Int](phrase.length)
+    for (i <- 0 until indexResult.length) { indexResult(i) = -1 }
+
+    for (length <- phrase.length until 0 by -1;
+         start <- 0 to phrase.length - length) {
+      var found = false
+      // Find largest phrases to index into (case sensitive)
+      if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
+        val candidate:String = phrase.slice(start, start+length).mkString(" ")
+        if (wordIndexer.containsKey(candidate)) {
+          val index = wordIndexer.get(candidate)
+          for (i <- start until start + length) { indexResult(i) = index; }
+          found = true
+        }
+      }
+      if (length > 1 && !found) {
+        // Try to title-case (if it was title cased to begin with)
+        val candidate:String = phrase.slice(start, start+length)
+          .map( (w:String) => if (w.length <= 1) w.toUpperCase
+        else w.substring(0, 1).toUpperCase + w.substring(1) )
+          .mkString(" ")
+        if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
+          wordIndexer.containsKey(candidate)) {
+          val index = wordIndexer.get(candidate)
+          for (i <- start until start + length) { indexResult(i) = index; }
+          found = true
+        }
+      }
+    }
+
+    // Find any dangling singletons
+    for (length <- phrase.length until 0 by -1;
+         start <- 0 to phrase.length - length) {
+      if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
+        val candidate:String = phrase.slice(start, start+length).mkString(" ")
+        if (wordIndexer.containsKey(candidate.toLowerCase)) {
+          val index = wordIndexer.get(candidate.toLowerCase)
+          for (i <- start until start + length) { indexResult(i) = index; }
+        }
+      }
+    }
+
+    // Find head word index
+    val headWordIndexed:Int =
+      (for (hw <- headWord) yield {
+        if (wordIndexer.containsKey(hw)) { Some(wordIndexer.get(hw)) }
+        else if (wordIndexer.containsKey(hw.toLowerCase)) { Some(wordIndexer.get(hw.toLowerCase)) }
+        else { None }
+      }).flatten.getOrElse(-1)
+
+    // Create resulting array
+    var lastElem:Int = -999
+    var rtn = List[Int]()
+    for (i <- indexResult.length - 1 to 0 by -1) {
+      if (indexResult(i) < 0) { return None }
+      if (indexResult(i) != lastElem) {
+        lastElem = indexResult(i)
+        rtn = indexResult(i) :: rtn
+      }
+    }
+    return Some( (rtn.toArray, headWordIndexed) )
+  }
+
+  lazy val (wordIndexer, wordGloss):(TObjectIntHashMap[String],Array[String]) = {
+    startTrack("Reading Word Index")
+    val wordIndexer = new TObjectIntHashMap[String]
+    var count = 0
+    slurpTable(TABLE_WORD_INTERN, {(r:ResultSet) =>
+      val key:Int = r.getInt("index")
+      val gloss:String = r.getString("gloss")
+      wordIndexer.put(gloss, key)
+      count += 1
+      if (count % 1000000 == 0) {
+        logger.log("read " + (count / 1000000) + "M words; " + (Runtime.getRuntime.freeMemory / 1000000) + " MB of memory free")
+      }
+    })
+    endTrack("Reading Word Index")
+    (wordIndexer, wordIndexer.keys(new Array[String](wordIndexer.size())))
+  }
+
 }
 
 object EdgeType extends Enumeration {

@@ -1,0 +1,19 @@
+
+option java_package = "org.goobs.truth";
+
+message Word {
+  required uint32 word         = 1;
+  optional string gloss        = 2;
+  optional string pos          = 3;
+  optional string ner          = 4;
+  optional sint32 monotonicity = 5;
+}
+
+message Fact {
+  repeated Word word         = 1;
+  optional string gloss      = 2;
+  optional string toString   = 3;
+
+  optional bool truth        = 10;
+  optional double confidence = 11;
+}

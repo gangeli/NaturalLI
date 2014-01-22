@@ -308,8 +308,8 @@ prez.addSlide(slide('Problem Size',
   
   ytable(
     h('Fact database'),
-    indent('$>1$ billion known facts'),
-    indent('$>150$ GB in DB; 750 GB in text'),
+    indent('$>1.5$ billion known facts (so far!)'),
+    indent('$>182$ GB in DB (from 750 GB compressed text)'),
   _),
   
   ytable(
@@ -317,6 +317,63 @@ prez.addSlide(slide('Problem Size',
     indent('Depth 3 = $\\Omega( (100 * 10)^3 )$ edits'),
     indent('Deletions are easy'),
     indent('Insertions? (likely, quantifiers + neighboring facts)'),
+  _),
+_));
+
+//------------------------------------------------------------------------------
+// Schema
+//------------------------------------------------------------------------------
+prez.addSlide(slide('Proposed Approach',
+  ytable(
+    h('Schema (static)'),
+    indent(darkgreen('word_indexer( index INT, string_gloss TEXT )')),
+    indent(darkgreen('edges( from INT, to INT, type INT, cost FLOAT )')),
+    indent(darkgreen('facts( left_arg INT rel INT, right_arg INT )')),
+    pause(),
+    indent('Easy -- map and set'),
+  _),
+  pause(),
+  
+  ytable(
+    h('Data Structures For Search'),
+    indent(darkgreen('class cache { def seen_in_search(fact); }')),
+    pause(),
+    indent(darkgreen('class fringe { def push(fact); def pop_lowest_cost(); }')),
+    indent(indent('eeek! A priority queue in RAMCloud?')),
+    indent(indent('Memory-intensive: lots of high-cost nonsense')),
+    indent(indent('')),
+  _),
+_));
+
+//------------------------------------------------------------------------------
+// Pseudocode
+//------------------------------------------------------------------------------
+prez.addSlide(slide('Pseudocode',
+  ytable(
+    xtable(darkgreen('while&nbsp;'), '(time_left) {'),
+    indent(overlay(
+      text('node = <b>fringe</b>.pop_lowest_cost();  // 1 read').level(0, 1),
+      text('node = <b>fringe</b>.pop_lowest_cost();  // <i>can batch?</i>').level(1),
+    _)),
+    indent('if (<b>cache</b>.seen_in_search(node)) {  // 1 read'),
+    indent(indent(darkgreen('continue;'))),
+    indent('}'),
+    indent(overlay(
+      text('if (<b>facts</b>.contains(node)) {  // 1 read').level(0, 1),
+      text('if (<b>facts</b>.contains(node)) {  // <i>can batch?</i>').level(1),
+    _)),
+    indent(indent(xtable(darkgreen('yield&nbsp'), 'node;'))),
+    indent('}'),
+    indent('<b>fringe</b>.pushAll(mutate(node));  // ~150 multi-write'),
+    '}',
+  _),
+
+  ytable(
+    stmt('Naive', '~25$\\mu$s? $\\rightarrow$ 40k nodes / second'),
+    pause(),
+    stmt('A little smarter', '~15$\\mu$s? parallelize over examples?'),
+    pause(),
+    stmt('Even smarter', '???'),
   _),
 _));
 

@@ -143,6 +143,39 @@ Path* BreadthFirstSearch::findPathById(uint64_t id) {
 }
 
 //
+// Class UCSSearch
+//
+UCSSearch::UCSSearch() {
+  this->impl = new priority_queue<Path, vector<Path>, PathCompare>();  // TODO(gabor) binomial_heap_tag
+}
+
+UCSSearch::~UCSSearch() {
+  delete impl;
+}
+  
+void UCSSearch::push(const Path& toAdd) {
+  while (id2path.size() <= toAdd.id) {
+    id2path.push_back(toAdd);
+  }
+  id2path[toAdd.id] = toAdd;
+  impl->push(toAdd);
+}
+
+const Path UCSSearch::pop() {
+  const Path frontElement = impl->top();
+  impl->pop();
+  return frontElement;
+}
+
+bool UCSSearch::isEmpty() {
+  return impl->empty();
+}
+  
+Path* UCSSearch::findPathById(uint64_t id) {
+  return &id2path[id];
+}
+
+//
 // Class CacheStrategy
 //
 
@@ -182,10 +215,6 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
       printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
       std::exit(1);
     }
-    if (time >= timeout) {
-      printf("I suck at logic?");
-      std::exit(1);
-    }
     const Path parent = fringe->pop();
     // Update time
     time += 1;
@@ -216,7 +245,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
-        if (it->type == 9) { continue; } // ignore nearest neighbors
+        if (it->type == 9) { continue; } // TODO(gabor) don't ignore nearest neighbors
         // ... create the mutated fact
         word mutated[parent.factLength];
         for (int i = 0; i < indexToMutate; ++i) {
@@ -231,7 +260,6 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
         // Add the state to the fringe
         if (!cache->isSeen(child)) {
           fringe->push(child);
-        } else {
         }
       }
     }

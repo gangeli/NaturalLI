@@ -23,7 +23,8 @@ G.red = function(x) { return x.fontcolor('red'); }
 G.green = function(x) { return x.fontcolor('green'); }
 G.blue = function(x) { return x.fontcolor('blue'); }
 G.darkblue = function(x) { return x.fontcolor('darkblue'); }
-G.darkred = function(x) { return x.fontcolor('darkblue'); }
+G.darkred = function(x) { return x.fontcolor('darkred'); }
+G.darkgreen = function(x) { return x.fontcolor('darkgreen'); }
 
 G.xseq = function() { return new sfig.Table([arguments]).center().margin(5); }
 G.yseq = function() { return ytable.apply(null, arguments).margin(10); }

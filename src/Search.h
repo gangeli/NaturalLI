@@ -43,6 +43,12 @@ class Path {
   Path* source(SearchType& queue) const;
 };
 
+struct PathCompare {
+  bool operator()(const Path& lhs, const Path& rhs) {
+    return 1 > 2;  // TODO(gabor) implement me!
+  }
+};
+
 /**
  * An interface for the data structure to store the states on the work queue
  * for the search.
@@ -76,6 +82,24 @@ class BreadthFirstSearch : public SearchType {
 
  private:
   queue<Path>* impl;
+  vector<Path> id2path;
+};
+
+/**
+ * Represents a uniform cost search (Djkstra's).
+ */
+class UCSSearch : public SearchType {
+ public:
+  virtual void push(const Path&);
+  virtual const Path pop();
+  virtual bool isEmpty();
+  virtual Path* findPathById(uint64_t id);
+  
+  UCSSearch();
+  ~UCSSearch();
+
+ private:
+  priority_queue<Path, vector<Path>, PathCompare>* impl;
   vector<Path> id2path;
 };
 

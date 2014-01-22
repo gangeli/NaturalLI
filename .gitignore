@@ -1,0 +1,6 @@
+src/org/goobs/truth/Messages.java
+src/Messages.pb.h
+src/Messages.pb.cc
+
+classes/**
+build/**
