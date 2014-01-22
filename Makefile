@@ -10,7 +10,7 @@ GTEST_ROOT=${RAMCLOUD_HOME}/gtest
 # -- VARIABLES --
 # (programs)
 JAVAC=javac
-SCALAC=${SCALA_HOME}/bin/scalac
+SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
 SCALADOC=${SCALA_HOME}/bin/scaladoc
 # (locations)
@@ -32,7 +32,7 @@ LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
 LDFLAGS=-lpq -lramcloud -lprofiler -lprotobuf
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
-_OBJS = Search.o Learn.o FactDB.o Graph.o Postgres.o RamCloudBackend.o Utils.o Natlog.o Messages.pb.o
+_OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o Utils.o Messages.pb.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 

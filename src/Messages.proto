@@ -17,3 +17,14 @@ message Fact {
   optional bool truth        = 10;
   optional double confidence = 11;
 }
+
+message Query {
+  required Fact queryFact    = 1;
+  required bool useRealWorld = 2;
+  repeated Fact knownFact    = 3;
+}
+
+message Inference {
+  required Fact fact        = 1;
+  optional Inference impliedFrom = 2;
+}

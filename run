@@ -13,7 +13,7 @@ val program:List[String] = ("java"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
-	->"org.goobs.truth.scripts.GrokFreebase"
+	->"org.goobs.truth.Client"
 ).toList
 
 using("src/org/goobs/truth/conf/base.conf")
@@ -41,7 +41,8 @@ def cp:String = {
       System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
     ).mkString(":")
   val CUSTOM = List(
-      "lib/corenlp-scala.jar"
+      "lib/corenlp-scala.jar",
+      "lib/protobuf.jar"
     ).mkString(":")
   List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
