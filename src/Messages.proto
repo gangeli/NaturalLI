@@ -25,6 +25,6 @@ message Query {
 }
 
 message Inference {
-  required Fact fact        = 1;
+  required Fact fact             = 1;
   optional Inference impliedFrom = 2;
 }

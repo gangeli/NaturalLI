@@ -25,6 +25,7 @@ DOC=scaladoc
 # (classpaths)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
 CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar
+TEST_CP=${CP}:${LIB}/test/scalatest.jar
 # (c++)
 CC = g++
 INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include
@@ -40,14 +41,15 @@ TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 # -- TARGETS --
 default: ${DIST}/truth.jar ${DIST}/server
 
-test: ${DIST}/test_server
-	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
-
 client: ${DIST}/truth.jar
-	./run
+	${SCALA} -cp ${CP}:${DIST}/client.jar -J-mx4g org.goobs.truth.Client
 
 server: ${DIST}/server
 	${DIST}/server
+
+test: ${DIST}/test_server ${DIST}/test_client.jar
+	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
+	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
 
 clean:
 	rm -rf ${BUILD}
@@ -80,7 +82,7 @@ ${DIST}/server.a: ${OBJS}
 	ar rcs ${DIST}/server.a $^
 
 # (client)
-${DIST}/truth.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/org/goobs/truth/*.java) $(wildcard ${SRC}/org/goobs/truth/scripts/*.scala) $(wildcard ${SRC}/org/goobs/truth/conf/*.conf) ${SRC}/org/goobs/truth/Messages.java
+${DIST}/client.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/org/goobs/truth/*.java) $(wildcard ${SRC}/org/goobs/truth/scripts/*.scala) $(wildcard ${SRC}/org/goobs/truth/conf/*.conf) ${SRC}/org/goobs/truth/Messages.java
 	@mkdir -p ${BUILD}
 	@echo "Compiling (${JAVAC})..."
 	${JAVAC} -d ${BUILD} -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find ${SRC} -name "*.java"`
@@ -88,8 +90,8 @@ ${DIST}/truth.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/
 	@${SCALAC} -feature -deprecation -d ${BUILD} -cp ${CP} `find ${SRC} -name "*.scala"` `find ${SRC} -name "*.java"`
 	cp ${SRC}/org/goobs/truth/conf/* ${BUILD}/
 	@mkdir -p ${DIST}
-	jar cf ${DIST}/truth.jar -C $(BUILD) .
-	jar uf ${DIST}/truth.jar -C $(SRC) .
+	jar cf ${DIST}/client.jar -C $(BUILD) .
+	jar uf ${DIST}/client.jar -C $(SRC) .
 
 # (server)
 ${DIST}/server: ${OBJS} ${BUILD}/InferenceServer.o $(wildcard ${SRC}/*.h)
@@ -115,6 +117,18 @@ ${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TE
 	@mkdir -p ${DIST}
 	${CC} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
 	mv -f *.gcno ${TEST_BUILD}
+
+${DIST}/test_client.jar: ${DIST}/client.jar $(wildcard ${TEST_SRC}/org/goobs/truth/*.scala) $(wildcard ${TEST_SRC}/org/goobs/truth/*.java)
+	@mkdir -p ${TEST_BUILD}
+	@echo "[test] Compiling (${JAVAC})..."
+#	${JAVAC} -d ${TEST_BUILD} -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find ${TEST_SRC} -name "*.java"`
+	@echo "[test] Compiling (${SCALAC})..."
+	@${SCALAC} -feature -deprecation -d ${TEST_BUILD} -cp ${TEST_CP}:${DIST}/client.jar `find ${TEST_SRC} -name "*.scala"` `find ${TEST_SRC} -name "*.java"`
+	@mkdir -p ${DIST}
+	jar cf ${DIST}/test_client.jar -C $(TEST_BUILD) .
+	jar uf ${DIST}/test_client.jar -C $(TEST_SRC) .
+	jar uf ${DIST}/test_client.jar -C $(BUILD) .
+	jar uf ${DIST}/test_client.jar -C $(SRC) .
 
 doc:
 	@echo "Documenting (${SCALADOC})..."
