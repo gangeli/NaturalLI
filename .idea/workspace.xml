@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ddae4285-af07-4dbb-824e-6f570f894f82" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/postgresql.jar" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Makefile" afterPath="$PROJECT_DIR$/Makefile" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" afterPath="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Props.java" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Props.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" afterPath="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/truth.iml" afterPath="$PROJECT_DIR$/truth.iml" />
     </list>
     <ignored path="truth.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -75,10 +66,10 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="NatLogTest.scala" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="NatLogTest.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="1.9243422" vertical-offset="0" max-vertical-offset="1296">
+            <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1296">
               <folding />
             </state>
           </provider>
@@ -87,7 +78,7 @@
       <file leaf-file-name="NatLog.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1152" max-vertical-offset="2430">
+            <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1768" max-vertical-offset="2430">
               <folding />
             </state>
           </provider>
@@ -102,10 +93,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Utils.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="Utils.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="144" column="0" selection-start="5474" selection-end="5474" vertical-scroll-proportion="0.0" vertical-offset="2052" max-vertical-offset="3240">
+            <state line="30" column="98" selection-start="1146" selection-end="1146" vertical-scroll-proportion="0.14802632" vertical-offset="270" max-vertical-offset="3240">
               <folding />
             </state>
           </provider>
@@ -146,9 +137,9 @@
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Props.java" />
         <option value="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" />
-        <option value="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala" />
         <option value="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
       </list>
     </option>
   </component>
@@ -648,20 +639,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="26" selection-start="4679" selection-end="4679" vertical-scroll-proportion="0.0" vertical-offset="1854" max-vertical-offset="2250">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Client.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="25" column="13" selection-start="755" selection-end="755" vertical-scroll-proportion="0.0" vertical-offset="346" max-vertical-offset="972">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/Messages.proto">
       <provider selected="true" editor-type-id="text-editor">
         <state line="28" column="19" selection-start="625" selection-end="625" vertical-scroll-proportion="0.0" vertical-offset="504" max-vertical-offset="648">
@@ -962,23 +939,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
+    <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="144" column="0" selection-start="5474" selection-end="5474" vertical-scroll-proportion="0.0" vertical-offset="2052" max-vertical-offset="3240">
+        <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1296">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1152" max-vertical-offset="2430">
+        <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1768" max-vertical-offset="2430">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala">
+    <entry file="jar://$PROJECT_DIR$/lib/corenlp-scala.jar!/edu/stanford/nlp/Sentence.class">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="1.9243422" vertical-offset="0" max-vertical-offset="1296">
+        <state line="21" column="6" selection-start="1789" selection-end="1789" vertical-scroll-proportion="0.6483705" vertical-offset="0" max-vertical-offset="810">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$PROJECT_DIR$/lib/corenlp-scala.jar!/edu/stanford/nlp/NLPConfig.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="22" column="8" selection-start="869" selection-end="869" vertical-scroll-proportion="0.66442955" vertical-offset="0" max-vertical-offset="630">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="98" selection-start="1146" selection-end="1146" vertical-scroll-proportion="0.14802632" vertical-offset="270" max-vertical-offset="3240">
           <folding />
         </state>
       </provider>
