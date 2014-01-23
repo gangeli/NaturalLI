@@ -7,4 +7,6 @@ import org.scalatest._
  *
  * @author gabor
  */
-abstract class Test extends FunSpec with Matchers with OptionValues with Inside with Inspectors
+abstract class Test extends FunSpec with Matchers with OptionValues with Inside with Inspectors {
+  Props.NATLOG_INDEXER_LAZY = true
+}

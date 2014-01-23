@@ -100,7 +100,8 @@ object IndexFacts {
     }
   }
   def index(rawPhrase:String, doHead:Boolean, allowEmpty:Boolean=false)
-           (implicit wordIndexer:TObjectIntMap[String]) = Utils.index(rawPhrase, doHead, allowEmpty);
+           (implicit wordIndexer:TObjectIntMap[String])
+    = Utils.index(rawPhrase, doHead, allowEmpty)((s:String) => wordIndexer.containsKey(s), (s:String) => wordIndexer.get(s))
 
   var factCumulativeWeight = List( new TLongFloatHashMap )
   

@@ -25,10 +25,10 @@ object NatLog {
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), positiveWeight)
     weights.setCount(bigramUp( FREEBASE_UP, WORDNET_UP ), positiveWeight)
     weights.setCount(bigramUp( FREEBASE_UP, FREEBASE_UP ), positiveWeight)
-    weights.setCount(bigramUp( WORDNET_DOWN, WORDNET_DOWN ), positiveWeight)
-    weights.setCount(bigramUp( WORDNET_DOWN, FREEBASE_DOWN ), positiveWeight)
-    weights.setCount(bigramUp( FREEBASE_DOWN, WORDNET_DOWN ), positiveWeight)
-    weights.setCount(bigramUp( FREEBASE_DOWN, FREEBASE_DOWN ), positiveWeight)
+    weights.setCount(bigramDown( WORDNET_DOWN, WORDNET_DOWN ), positiveWeight)
+    weights.setCount(bigramDown( WORDNET_DOWN, FREEBASE_DOWN ), positiveWeight)
+    weights.setCount(bigramDown( FREEBASE_DOWN, WORDNET_DOWN ), positiveWeight)
+    weights.setCount(bigramDown( FREEBASE_DOWN, FREEBASE_DOWN ), positiveWeight)
     // Set "don't care" weights
     weights.setCount(unigramAny( MORPH_TO_LEMMA ),    0.0)
     weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  0.0)
@@ -65,18 +65,26 @@ object NatLog {
    */
   private def monotonicityMarking(sentence:String):(Int, Int) = {
     val lower = sentence.toLowerCase.replaceAll( """\s+""", " ")
-    if (lower.startsWith("all") ||
-        lower.startsWith("any") ||
-        lower.startsWith("every")    ) {
+    if (lower.startsWith("all ") ||
+        lower.startsWith("any ") ||
+        lower.startsWith("every ")    ) {
       (-1, +1)
-    } else if (lower.startsWith("most") ||
-        lower.startsWith("enough") ||
-        lower.startsWith("lots of")) {
+    } else if (lower.startsWith("most ") ||
+               lower.startsWith("enough ") ||
+               lower.startsWith("few ") ||
+               lower.startsWith("lots of ")) {
       (0, +1)
-    } else if (lower.startsWith("no") ||
-               lower.startsWith("none of")) {
+    } else if (lower.contains(" dont ") ||
+               lower.contains(" don't ") ||
+               lower.contains(" do not ") ||
+               lower.contains(" are not ") ||
+               lower.startsWith("no ") ||
+               lower.startsWith("none of ")) {
       (-1, -1)
-    } else if (lower.startsWith("some")) {
+    } else if (lower.startsWith("some ") ||
+               lower.startsWith("there are ") ||
+               lower.startsWith("there exists ") ||
+               lower.startsWith("there exist ")) {
       (+1, +1)
     } else {
       (-1, +1)  // default to something like "almost all", approximated as "all"
@@ -98,12 +106,17 @@ object NatLog {
     val (arg1Monotonicity, arg2Monotonicity) = monotonicityMarking(leftArg + " " + rel + " " + rightArg)
     // Tokenize
     val words:List[Word] = List((leftArg, arg1Monotonicity), (rel, arg2Monotonicity), (rightArg, arg2Monotonicity)).flatMap{ case (arg:String, monotonicity:Int) =>
-      val option = Utils.index(arg, doHead = false, allowEmpty = false)(Utils.wordIndexer)
+      val option:Option[(Array[Int], Int)] =
+        if (Props.NATLOG_INDEXER_LAZY) {
+          Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet)
+        } else {
+          Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s))
+        }
       if (option.isDefined) {
         for (token <- option.get._1 ) yield {
           Word.newBuilder()
             .setWord(token)
-            .setGloss(Utils.wordGloss(token))
+            .setGloss(if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(token) else Utils.wordGloss(token))
             .setMonotonicity(monotonicity).build()
         }
       } else {

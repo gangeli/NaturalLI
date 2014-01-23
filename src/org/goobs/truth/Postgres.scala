@@ -18,8 +18,8 @@ import edu.stanford.nlp.util.logging.Redwood.Util._
 object Postgres {
 
   def withConnection(callback:Connection=>Unit) = {
-    val uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB + "?characterEncoding=utf8";
-    val psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD);
+    val uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB + "?characterEncoding=utf8"
+    val psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD)
     try {
       psql.setAutoCommit(false)
       callback(psql)
@@ -44,8 +44,47 @@ object Postgres {
     }
   }
 
-  val TABLE_WORD_INTERN:String = "word_indexer";
-  val TABLE_EDGE_TYPE_INTERN:String = "edge_type_indexer";
-  val TABLE_FACTS:String = "fact";
-  val TABLE_EDGES:String = "edge";
+  /**
+   * Lazy indexers, which rather than reading the database into memory issue psql queries
+   * per indexing request.
+   */
+  lazy val (indexerContains, indexerGet, indexerGloss):(String=>Boolean,String=>Int,Int=>String) = {
+    val uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB + "?characterEncoding=utf8"
+    val psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD)
+    val statement = psql.prepareStatement(s"SELECT * FROM $TABLE_WORD_INTERN WHERE gloss=?;")
+    val reverse = psql.prepareStatement(s"SELECT * FROM $TABLE_WORD_INTERN WHERE index=?;")
+
+    (
+      // contains()
+      {(gloss:String) =>
+        statement.setString(1, gloss)
+        val results = statement.executeQuery()
+        results.next()
+      },
+      // indexOf()
+      {(gloss:String) =>
+        statement.setString(1, gloss)
+        val results = statement.executeQuery()
+        if (!results.next()) {
+          throw new NoSuchElementException("No such word in index: " + gloss)
+        }
+        results.getInt("index")
+      },
+      // get()
+      {(index:Int) =>
+        reverse.setInt(1, index)
+        val results = reverse.executeQuery()
+        if (!results.next()) {
+          throw new NoSuchElementException("No such index in indexer: " + index)
+        }
+        results.getString("gloss")
+      }
+    )
+  }
+
+
+  val TABLE_WORD_INTERN:String = "word_indexer"
+  val TABLE_EDGE_TYPE_INTERN:String = "edge_type_indexer"
+  val TABLE_FACTS:String = "fact"
+  val TABLE_EDGES:String = "edge"
 }

@@ -71,7 +71,7 @@ object Utils {
   }
 
   def index(rawPhrase:String, doHead:Boolean=false, allowEmpty:Boolean=false)
-           (implicit wordIndexer:TObjectIntMap[String]) :Option[(Array[Int],Int)] = {
+           (implicit contains:String=>Boolean, wordIndexer:String=>Int) :Option[(Array[Int],Int)] = {
     if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
     var headWord:Option[String] = None
     val phrase:Array[String]
@@ -87,8 +87,8 @@ object Utils {
       // Find largest phrases to index into (case sensitive)
       if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
         val candidate:String = phrase.slice(start, start+length).mkString(" ")
-        if (wordIndexer.containsKey(candidate)) {
-          val index = wordIndexer.get(candidate)
+        if (contains(candidate)) {
+          val index = wordIndexer(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
           found = true
         }
@@ -100,8 +100,8 @@ object Utils {
         else w.substring(0, 1).toUpperCase + w.substring(1) )
           .mkString(" ")
         if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
-          wordIndexer.containsKey(candidate)) {
-          val index = wordIndexer.get(candidate)
+          contains(candidate)) {
+          val index = wordIndexer(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
           found = true
         }
@@ -113,8 +113,8 @@ object Utils {
          start <- 0 to phrase.length - length) {
       if ( (start until (start + length)) forall (indexResult(_) < 0) ) {
         val candidate:String = phrase.slice(start, start+length).mkString(" ")
-        if (wordIndexer.containsKey(candidate.toLowerCase)) {
-          val index = wordIndexer.get(candidate.toLowerCase)
+        if (contains(candidate.toLowerCase)) {
+          val index = wordIndexer(candidate.toLowerCase)
           for (i <- start until start + length) { indexResult(i) = index; }
         }
       }
@@ -123,8 +123,8 @@ object Utils {
     // Find head word index
     val headWordIndexed:Int =
       (for (hw <- headWord) yield {
-        if (wordIndexer.containsKey(hw)) { Some(wordIndexer.get(hw)) }
-        else if (wordIndexer.containsKey(hw.toLowerCase)) { Some(wordIndexer.get(hw.toLowerCase)) }
+        if (contains(hw)) { Some(wordIndexer(hw)) }
+        else if (contains(hw.toLowerCase)) { Some(wordIndexer(hw.toLowerCase)) }
         else { None }
       }).flatten.getOrElse(-1)
 
@@ -138,7 +138,7 @@ object Utils {
         rtn = indexResult(i) :: rtn
       }
     }
-    return Some( (rtn.toArray, headWordIndexed) )
+    Some( (rtn.toArray, headWordIndexed) )
   }
 
   lazy val (wordIndexer, wordGloss):(TObjectIntHashMap[String],Array[String]) = {

@@ -2,7 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ddae4285-af07-4dbb-824e-6f570f894f82" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/Config.h" afterPath="$PROJECT_DIR$/src/Config.h" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/lib/postgresql.jar" />
+      <change type="MOVED" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Makefile" afterPath="$PROJECT_DIR$/Makefile" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" afterPath="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Props.java" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Props.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" afterPath="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" afterPath="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/truth.iml" afterPath="$PROJECT_DIR$/truth.iml" />
     </list>
     <ignored path="truth.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -66,73 +75,19 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="Client.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Client.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="13" selection-start="1058" selection-end="1058" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="972">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="NatLogTest.scala" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="NatLogTest.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="2" selection-start="111" selection-end="111" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="450">
+            <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="1.9243422" vertical-offset="0" max-vertical-offset="1296">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Postgres.cc" pinned="false" current="true" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/Postgres.cc">
+      <file leaf-file-name="NatLog.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="16" column="11" selection-start="403" selection-end="403" vertical-scroll-proportion="0.3140676" vertical-offset="0" max-vertical-offset="2358">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Config.h" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Config.h">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="12" column="19" selection-start="156" selection-end="156" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1152">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Test.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="9" column="27" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="270">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Messages.proto" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/Messages.proto">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="27" column="32" selection-start="605" selection-end="605" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="648">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Utils.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="73" column="65" selection-start="2634" selection-end="2634" vertical-scroll-proportion="0.0" vertical-offset="1314" max-vertical-offset="3420">
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="IndexFacts.scala" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala">
-          <provider selected="true" editor-type-id="text-editor">
-            <state line="103" column="0" selection-start="3599" selection-end="3599" vertical-scroll-proportion="0.0" vertical-offset="1854" max-vertical-offset="6732">
+            <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1152" max-vertical-offset="2430">
               <folding />
             </state>
           </provider>
@@ -141,16 +96,16 @@
       <file leaf-file-name="Postgres.scala" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="37" column="6" selection-start="1033" selection-end="1033" vertical-scroll-proportion="0.0" vertical-offset="666" max-vertical-offset="1026">
+            <state line="73" column="13" selection-start="2451" selection-end="2451" vertical-scroll-proportion="0.0" vertical-offset="972" max-vertical-offset="1656">
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="base.conf" pinned="false" current="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
+      <file leaf-file-name="Utils.scala" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
+            <state line="144" column="0" selection-start="5474" selection-end="5474" vertical-scroll-proportion="0.0" vertical-offset="2052" max-vertical-offset="3240">
               <folding />
             </state>
           </provider>
@@ -177,21 +132,23 @@
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Fact.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/scripts/CreateGraph.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Implicits.scala" />
-        <option value="$PROJECT_DIR$/src/org/goobs/truth/Props.java" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/scripts/BootstrapGraph.scala" />
         <option value="$PROJECT_DIR$/src/Natlog.h" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Fact.proto" />
         <option value="$PROJECT_DIR$/src/Fact.proto" />
-        <option value="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" />
-        <option value="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
-        <option value="$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Learn.scala" />
         <option value="$PROJECT_DIR$/src/org/goobs/truth/Client.scala" />
-        <option value="$PROJECT_DIR$/src/Messages.proto" />
         <option value="$PROJECT_DIR$/test/src/org/goobs/truth/Test/scala.scala" />
-        <option value="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" />
-        <option value="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" />
         <option value="$PROJECT_DIR$/src/Config.h" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala" />
+        <option value="$PROJECT_DIR$/src/Messages.proto" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/Props.java" />
+        <option value="$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/Utils.scala" />
+        <option value="$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala" />
+        <option value="$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala" />
       </list>
     </option>
   </component>
@@ -255,7 +212,6 @@
     </navigator>
     <panes>
       <pane id="Scope" />
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -324,20 +280,6 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="test" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-          </PATH>
-          <PATH>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="truth" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
-              <option name="myItemId" value="truth" />
-              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
-            </PATH_ELEMENT>
-            <PATH_ELEMENT>
               <option name="myItemId" value="src" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
@@ -370,23 +312,32 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="lib" />
+              <option name="myItemId" value="src" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="truth" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="scripts" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
         </subPane>
       </pane>
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="GoToFile.includeJavaFiles" value="false" />
-    <property name="project.structure.last.edited" value="Libraries" />
+    <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="options.splitter.main.proportions" value="0.3" />
     <property name="recentsLimit" value="5" />
     <property name="MemberChooser.sorted" value="false" />
     <property name="options.lastSelected" value="org.jetbrains.plugins.scala.compiler.ScalacConfigurable" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/lib/test" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src" />
     <property name="project.structure.side.proportion" value="0.2" />
     <property name="MemberChooser.copyJavadoc" value="false" />
     <property name="GoToClass.toSaveIncludeLibraries" value="false" />
@@ -408,7 +359,7 @@
       <recent name="$PROJECT_DIR$/src" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.Client">
+  <component name="RunManager" selected="ScalaTest.NatLogTest">
     <configuration default="false" name="Client" type="Application" factoryName="Application" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="org.goobs.truth.Client" />
@@ -429,6 +380,36 @@
       </RunnerSettings>
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Debug" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="NatLogSpec" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true">
+      <module name="truth" />
+      <setting name="path" value="org.goobs.truth.NatLogSpec" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="file://$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <RunnerSettings RunnerId="Run" />
+      <ConfigurationWrapper RunnerId="Run" />
+      <method />
+    </configuration>
+    <configuration default="false" name="NatLogTest" type="ScalaTestRunConfiguration" factoryName="ScalaTest" temporary="true">
+      <module name="truth" />
+      <setting name="path" value="org.goobs.truth.NatLogTest" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="file://$PROJECT_DIR$/" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
       <method />
     </configuration>
@@ -458,14 +439,6 @@
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
-    <configuration default="true" type="Remote" factoryName="Remote">
-      <option name="USE_SOCKET_TRANSPORT" value="true" />
-      <option name="SERVER_MODE" value="false" />
-      <option name="SHMEM_ADDRESS" value="javadebug" />
-      <option name="HOST" value="localhost" />
-      <option name="PORT" value="5005" />
-      <method />
-    </configuration>
     <configuration default="true" type="Specs2RunConfiguration" factoryName="Specs2">
       <module name="" />
       <setting name="path" value="" />
@@ -479,17 +452,12 @@
       <setting name="showProgressMessages" value="true" />
       <method />
     </configuration>
-    <configuration default="true" type="Applet" factoryName="Applet">
-      <module name="" />
-      <option name="MAIN_CLASS_NAME" />
-      <option name="HTML_FILE_NAME" />
-      <option name="HTML_USED" value="false" />
-      <option name="WIDTH" value="400" />
-      <option name="HEIGHT" value="300" />
-      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
-      <option name="VM_PARAMETERS" />
-      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-      <option name="ALTERNATIVE_JRE_PATH" />
+    <configuration default="true" type="Remote" factoryName="Remote">
+      <option name="USE_SOCKET_TRANSPORT" value="true" />
+      <option name="SERVER_MODE" value="false" />
+      <option name="SHMEM_ADDRESS" value="javadebug" />
+      <option name="HOST" value="localhost" />
+      <option name="PORT" value="5005" />
       <method />
     </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
@@ -517,6 +485,19 @@
       <envs />
       <properties />
       <listeners />
+      <method />
+    </configuration>
+    <configuration default="true" type="Applet" factoryName="Applet">
+      <module name="" />
+      <option name="MAIN_CLASS_NAME" />
+      <option name="HTML_FILE_NAME" />
+      <option name="HTML_USED" value="false" />
+      <option name="WIDTH" value="400" />
+      <option name="HEIGHT" value="300" />
+      <option name="POLICY_FILE" value="$APPLICATION_HOME_DIR$/bin/appletviewer.policy" />
+      <option name="VM_PARAMETERS" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
       <method />
     </configuration>
     <configuration default="true" type="Application" factoryName="Application">
@@ -555,19 +536,6 @@
       <patterns />
       <method />
     </configuration>
-    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="package" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
-      <setting name="searchForTest" value="Across module dependencies" />
-      <setting name="testName" value="" />
-      <setting name="testKind" value="Class" />
-      <setting name="showProgressMessages" value="true" />
-      <method />
-    </configuration>
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
       <module name="" />
       <option name="ACTIVITY_CLASS" value="" />
@@ -587,12 +555,29 @@
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
       <method />
     </configuration>
-    <list size="1">
+    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <method />
+    </configuration>
+    <list size="3">
       <item index="0" class="java.lang.String" itemvalue="Application.Client" />
+      <item index="1" class="java.lang.String" itemvalue="ScalaTest.NatLogSpec" />
+      <item index="2" class="java.lang.String" itemvalue="ScalaTest.NatLogTest" />
     </list>
     <recent_temporary>
-      <list size="1">
-        <item index="0" class="java.lang.String" itemvalue="Application.Client" />
+      <list size="3">
+        <item index="0" class="java.lang.String" itemvalue="ScalaTest.NatLogTest" />
+        <item index="1" class="java.lang.String" itemvalue="Application.Client" />
+        <item index="2" class="java.lang.String" itemvalue="ScalaTest.NatLogSpec" />
       </list>
     </recent_temporary>
     <configuration name="&lt;template&gt;" type="WebApp" default="true" selected="false">
@@ -618,7 +603,8 @@
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
-      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32919255" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="SBT Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39958593" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3283582" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
@@ -626,7 +612,7 @@
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.3283582" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.1832265" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.1832265" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
@@ -636,7 +622,6 @@
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.32942432" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Run with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Debug with VisualVM" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
@@ -663,14 +648,7 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Learn.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="19" column="38" selection-start="805" selection-end="805" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="594">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="103" column="26" selection-start="4679" selection-end="4679" vertical-scroll-proportion="0.0" vertical-offset="1854" max-vertical-offset="2250">
           <folding />
@@ -714,9 +692,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Learn.scala">
@@ -726,7 +702,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="97" column="103" selection-start="4304" selection-end="4304" vertical-scroll-proportion="0.0" vertical-offset="1270" max-vertical-offset="2250">
           <folding />
@@ -770,9 +746,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Learn.scala">
@@ -782,7 +756,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="97" column="103" selection-start="4304" selection-end="4304" vertical-scroll-proportion="0.0" vertical-offset="1270" max-vertical-offset="2250">
           <folding />
@@ -826,9 +800,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Learn.scala">
@@ -838,7 +810,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
       <provider selected="true" editor-type-id="text-editor">
         <state line="101" column="38" selection-start="4607" selection-end="4607" vertical-scroll-proportion="0.0" vertical-offset="1818" max-vertical-offset="2250">
           <folding />
@@ -875,9 +847,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="432" />
       </provider>
     </entry>
     <entry file="jar://$PROJECT_DIR$/lib/scripts/sim.jar!/edu/stanford/nlp/Config.scala">
@@ -895,37 +865,9 @@
         <state line="16" column="7" selection-start="380" selection-end="380" vertical-scroll-proportion="0.065789476" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/scripts/BootstrapGraph.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="236" column="10" selection-start="9975" selection-end="9975" vertical-scroll-proportion="-0.875" vertical-offset="0" max-vertical-offset="0" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="37" column="6" selection-start="1033" selection-end="1033" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="0" selection-start="3599" selection-end="3599" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="73" column="65" selection-start="2634" selection-end="2634" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/conf/base.conf">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0">
-          <folding />
-        </state>
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="0" />
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/Search.cc">
@@ -938,9 +880,28 @@
         <state line="5" column="17" selection-start="85" selection-end="85" vertical-scroll-proportion="0.095846646" vertical-offset="0" max-vertical-offset="939" />
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Natlog.scala">
+    <entry file="file://$PROJECT_DIR$/src/Config.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="103" column="26" selection-start="4679" selection-end="4679" vertical-scroll-proportion="0.0" vertical-offset="1216" max-vertical-offset="2196">
+        <state line="12" column="19" selection-start="156" selection-end="156" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1152" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Postgres.cc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="16" column="11" selection-start="403" selection-end="403" vertical-scroll-proportion="0.3140676" vertical-offset="0" max-vertical-offset="2358">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Implicits.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="11" column="7" selection-start="201" selection-end="201" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="558">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Client.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="30" column="13" selection-start="1058" selection-end="1058" vertical-scroll-proportion="0.0" vertical-offset="364" max-vertical-offset="972">
           <folding />
         </state>
       </provider>
@@ -952,44 +913,72 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/Messages.proto">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Messages.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="27" column="32" selection-start="605" selection-end="605" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="648">
+        <state line="5" column="19" selection-start="132" selection-end="132" vertical-scroll-proportion="0.029605264" vertical-offset="54" max-vertical-offset="53352">
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Client.scala">
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/scripts/IndexFacts.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="13" selection-start="1058" selection-end="1058" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="972">
+        <state line="103" column="85" selection-start="3638" selection-end="3638" vertical-scroll-proportion="0.0" vertical-offset="1170" max-vertical-offset="6246">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/scripts/BootstrapGraph.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="48" column="2" selection-start="1275" selection-end="1275" vertical-scroll-proportion="0.0" vertical-offset="144" max-vertical-offset="5886">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/Messages.proto">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="4" column="33" selection-start="91" selection-end="91" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="648">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Props.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="38" column="39" selection-start="1561" selection-end="1561" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1800">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/Test.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="27" selection-start="136" selection-end="136" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="270">
+        <state line="10" column="33" selection-start="240" selection-end="240" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="306">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Postgres.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="73" column="13" selection-start="2451" selection-end="2451" vertical-scroll-proportion="0.0" vertical-offset="972" max-vertical-offset="1656">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="144" column="0" selection-start="5474" selection-end="5474" vertical-scroll-proportion="0.0" vertical-offset="2052" max-vertical-offset="3240">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/NatLog.scala">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="70" column="13" selection-start="3302" selection-end="3302" vertical-scroll-proportion="0.0" vertical-offset="1152" max-vertical-offset="2430">
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/test/src/org/goobs/truth/NatLogTest.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="9" column="2" selection-start="111" selection-end="111" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="450">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Config.h">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="12" column="19" selection-start="156" selection-end="156" vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1152">
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/Postgres.cc">
-      <provider selected="true" editor-type-id="text-editor">
-        <state line="16" column="11" selection-start="403" selection-end="403" vertical-scroll-proportion="0.3140676" vertical-offset="0" max-vertical-offset="2358">
+        <state line="65" column="2" selection-start="4099" selection-end="4099" vertical-scroll-proportion="1.9243422" vertical-offset="0" max-vertical-offset="1296">
           <folding />
         </state>
       </provider>
@@ -1058,7 +1047,7 @@
       </state>
       <state key="ProjectLibrariesConfigurable.UI">
         <settings>
-          <last-edited>lib</last-edited>
+          <last-edited>scala-compiler</last-edited>
           <splitter-proportions>
             <option name="proportions">
               <list>
