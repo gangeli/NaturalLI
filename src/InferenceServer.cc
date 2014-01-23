@@ -72,7 +72,7 @@ void handleConnection(int socket, sockaddr_in* client) {
 		     inet_ntoa(client->sin_addr),
          ntohs(client->sin_port));
   if (shutdown(socket, SHUT_RDWR) != 0) {
-    perror("Failed to accept connection request");
+    perror("Failed to shutdown connection");
     printf("  (");
     switch (errno) {
       case EBADF: printf("The socket argument is not a valid file descriptor"); break;
@@ -131,8 +131,8 @@ int startServer(int port) {
     // Accept an incoming connection
     // (variables)
     int requestSocket;
-    socklen_t requestLength;
 	  struct sockaddr_in* clientAddress = (sockaddr_in*) malloc(sizeof(sockaddr_in));
+    socklen_t requestLength = sizeof(clientAddress);
     // (connect)
 		while ((requestSocket = accept(sock, (struct sockaddr*) clientAddress, &requestLength)) < 0) {
 			// we may break out of accept if the system call was interrupted. In this
@@ -166,6 +166,7 @@ int startServer(int port) {
     printf("[%d] CONNECTION ESTABLISHED: %s port %d\n", requestSocket,
 			     inet_ntoa(clientAddress->sin_addr),
            ntohs(clientAddress->sin_port));
+
     std::thread t(handleConnection, requestSocket, clientAddress);
     t.detach();
 	}
