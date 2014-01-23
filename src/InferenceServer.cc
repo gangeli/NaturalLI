@@ -12,6 +12,7 @@
 #ifndef SERVER_PORT
 #define SERVER_PORT       1337
 #define SERVER_TCP_BUFFER 25
+#define SERVER_READ_SIZE  1024
 #endif
 
 #ifndef ERESTART
@@ -20,78 +21,161 @@
 extern int errno;
 
 /**
+ * Convert a buffer of characters into an integer.
+ */
+uint32_t toInt(char buffer[], uint32_t begin, uint32_t end) {
+  uint32_t outInt = 0;
+  outInt = (outInt << 8) + buffer[begin + 3];
+  outInt = (outInt << 8) + buffer[begin + 2];
+  outInt = (outInt << 8) + buffer[begin + 1];
+  outInt = (outInt << 8) + buffer[begin + 0];
+  return outInt;
+}
+
+/**
  * Handle an incoming connection.
  * This involves reading a query, starting a new inference, and then
  * closing the connection.
  */
-void handleConnection(uint32_t socket, sockaddr_in address) {
+void handleConnection(int socket, sockaddr_in* client) {
   // Read the query
-  printf("[%d] reading query...\n", socket);
+  printf("[%d] Reading query...\n", socket);
+
+  // Read Proto
+  // (read proto size)
+  uint32_t bytesRead = 0;
+  char buffer[SERVER_READ_SIZE];
+  bytesRead = read(socket, buffer, SERVER_READ_SIZE);
+  if (bytesRead < 4) {
+    printf("[%d] Could not read incoming proto size\n", socket); return;
+  }
+  const uint32_t protoSize = toInt(buffer, 0, 4);
+  printf("[%d] Proto of size %d bytes\n", socket, protoSize);
+  // (read proto content)
+  uint32_t totalRead = bytesRead - 4;
+  char protoData[protoSize];
+  memcpy(protoData, &buffer[4], sizeof(char) * (bytesRead - 4));  // copy remaining data
+  while (totalRead < protoSize) {
+    bytesRead = read(socket, buffer, SERVER_READ_SIZE);
+    memcpy(&protoData[totalRead], buffer, sizeof(char) * bytesRead);
+  }
+  printf("[%d] data: %s\n", socket, protoData);
+
+  // Parse Proto
+
+  // Run Search
+
+  // Return Result
+
   // Close the connection
-  shutdown(socket, 2);
-  printf("[%d] CONNECTION CLOSED: %s port %d\n", socket,
-		     inet_ntoa(address.sin_addr),
-         ntohs(address.sin_port));
+  printf("[%d] CONNECTION CLOSING: %s port %d\n", socket,
+		     inet_ntoa(client->sin_addr),
+         ntohs(client->sin_port));
+  if (shutdown(socket, SHUT_RDWR) != 0) {
+    perror("Failed to accept connection request");
+    printf("  (");
+    switch (errno) {
+      case EBADF: printf("The socket argument is not a valid file descriptor"); break;
+      case EINVAL: printf("The socket is not accepting connections"); break;
+      case ENOTCONN: printf("The socket is not connected"); break;
+      case ENOTSOCK: printf("The socket argument does not refer to a socket"); break;
+      case ENOBUFS: printf("No buffer space is available"); break;
+      default: printf("???"); break;
+    }
+    printf(")\n");
+  }
+  free(client);
 }
 
 /**
  * Set up listening on a server port
  */
 int startServer(int port) {
+  // Get hostname, for debugging
+	char hostname[256];
+	gethostname(hostname, 256);
+
   // Create a socket
-  int32_t sock = socket(AF_INET, SOCK_STREAM, 0);
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+		perror("could not create socket");
+    return 1;
+	}
+	int sockoptval = 1;
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
   // Bind the socket
   // (setup the bind)
   struct sockaddr_in address;
-  memset( (char*) &address, 0, sizeof(address) );  // zero the socket
+  memset( (char*) &address, 0, sizeof(address) );  // zero our address
   address.sin_family = AF_INET;
-  address.sin_addr.s_addr = htonl(INADDR_ANY);
   address.sin_port = htons(port);
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
   // (actually perform the bind)
   if (bind(sock, (struct sockaddr*) &address, sizeof(address)) != 0) {
-  	perror("Could not bind socket!");
-    return 1;
+  	perror("Could not bind socket");
+    return 10;
   } else {
-    printf("Opened server socket.\n");
+    printf("Opened server socket (hostname: %s)\n", hostname);
   }
 
   // set the socket for listening (queue backlog of 5)
 	if (listen(sock, SERVER_TCP_BUFFER) < 0) {
-		perror("Could not open port for listening!");
-    return 2;
+		perror("Could not open port for listening");
+    return 100;
 	} else {
     printf("Listening on port %d...\n", port);
   }
 
-  // Allow immediate re-use of the port
-  int32_t sockoptval = 1;
-  setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int32_t));
-
   // loop, accepting connection requests
 	for (;;) {
     // Accept an incoming connection
-    int32_t requestSocket;
+    // (variables)
+    int requestSocket;
     socklen_t requestLength;
-		while ((requestSocket = accept(sock, (struct sockaddr*) &address, &requestLength)) < 0) {
-			// we may break out of accept if the system call
-      // was interrupted. In this case, loop back and
-      // try again
+	  struct sockaddr_in* clientAddress = (sockaddr_in*) malloc(sizeof(sockaddr_in));
+    // (connect)
+		while ((requestSocket = accept(sock, (struct sockaddr*) clientAddress, &requestLength)) < 0) {
+			// we may break out of accept if the system call was interrupted. In this
+      // case, loop back and try again
       if ((errno != ECHILD) && (errno != ERESTART) && (errno != EINTR)) {
         // If we got here, there was a serious problem with the connection
         perror("Failed to accept connection request");
-        return 3;
+        printf("  (");
+        switch (errno) {
+          case EAGAIN: printf("O_NONBLOCK is set for the socket file descriptor and no connections are present to be accepted"); break;
+          case EBADF: printf("The socket argument is not a valid file descriptor"); break;
+          case ECONNABORTED: printf("A connection has been aborted"); break;
+          case EFAULT: printf("The address or address_len parameter can not be accessed or written"); break;
+          case EINTR: printf("The accept() function was interrupted by a signal that was caught before a valid connection arrived"); break;
+          case EINVAL: printf("The socket is not accepting connections"); break;
+          case EMFILE: printf("{OPEN_MAX} file descriptors are currently open in the calling process"); break;
+          case ENFILE: printf("The maximum number of file descriptors in the system are already open"); break;
+          case ENOTSOCK: printf("The socket argument does not refer to a socket"); break;
+          case EOPNOTSUPP: printf("The socket type of the specified socket does not support accepting connections"); break;
+          case ENOBUFS: printf("No buffer space is available"); break;
+          case ENOMEM: printf("There was insufficient memory available to complete the operation"); break;
+          case ENOSR: printf("There was insufficient STREAMS resources available to complete the operation"); break;
+          case EPROTO: printf("A protocol error has occurred; for example, the STREAMS protocol stack has not been initialised"); break;
+          default: printf("???"); break;
+        }
+        printf(")\n");
+        return 1000;
       } 
     }
 		// Connection established
     printf("[%d] CONNECTION ESTABLISHED: %s port %d\n", requestSocket,
-			     inet_ntoa(address.sin_addr),
-           ntohs(address.sin_port));
-    std::thread t(handleConnection, requestSocket, address);
+			     inet_ntoa(clientAddress->sin_addr),
+           ntohs(clientAddress->sin_port));
+    std::thread t(handleConnection, requestSocket, clientAddress);
+    t.detach();
 	}
 
   return 0;
 }
 
+/**
+ * The server's entry point.
+ */
 int main( int argc, char *argv[] ) {
   startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]) );
 //  while (startServer(1337) != 0) { }
