@@ -33,7 +33,7 @@ LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
 LDFLAGS=-lpq -lramcloud -lprofiler -lprotobuf
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
-_OBJS = Search.o FactDB.o Graph.o Postgres.o RamCloudBackend.o Utils.o Messages.pb.o
+_OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Messages.pb.o #RamCloudBackend.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
@@ -73,6 +73,10 @@ ${SRC}/Messages.pb.h: ${SRC}/Messages.proto
 
 ${SRC}/Messages.pb.cc: ${SRC}/Messages.proto
 	protoc -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
+
+${BUILD}/InferenceServer.o: ${SRC}/InferenceServer.cc ${SRC}/Config.h
+	@mkdir -p ${BUILD}
+	${CC} ${CPP_FLAGS} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
 
 ${BUILD}/%.o: ${SRC}/%.cc ${SRC}/%.h ${SRC}/Config.h
 	@mkdir -p ${BUILD}

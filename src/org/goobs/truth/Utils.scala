@@ -28,7 +28,6 @@ object Utils {
   val Roman_Numeral = """^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$""".r
   
   def tokenizeWithCase(phrase:Array[String], headWord:Option[String=>Any]=None):Array[String] = {
-    NLPConfig.truecase.model = "edu/stanford/nlp/models/truecase/truecasing.fast.caseless.qn.ser.gz"
     // Construct a fake sentence
     val offset = 3
     val lowercaseWords = phrase.map( _.toLowerCase )

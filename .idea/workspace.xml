@@ -96,7 +96,7 @@
       <file leaf-file-name="Utils.scala" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="30" column="98" selection-start="1146" selection-end="1146" vertical-scroll-proportion="0.14802632" vertical-offset="270" max-vertical-offset="3240">
+            <state line="40" column="24" selection-start="1543" selection-end="1543" vertical-scroll-proportion="0.44407895" vertical-offset="270" max-vertical-offset="3222">
               <folding />
             </state>
           </provider>
@@ -969,7 +969,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/org/goobs/truth/Utils.scala">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="30" column="98" selection-start="1146" selection-end="1146" vertical-scroll-proportion="0.14802632" vertical-offset="270" max-vertical-offset="3240">
+        <state line="40" column="24" selection-start="1543" selection-end="1543" vertical-scroll-proportion="0.44407895" vertical-offset="270" max-vertical-offset="3222">
           <folding />
         </state>
       </provider>

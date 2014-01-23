@@ -1,5 +1,18 @@
-#include <string>
-#include <cstdio>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
+#include <signal.h>
+#include <netdb.h>
+
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+
+#include <arpa/inet.h>
+
+#include <netinet/in.h>
 
 #include "Config.h"
 #include "Utils.h"
@@ -13,41 +26,12 @@ using namespace std;
 //
 // ENTRY
 //
-int main(int argc, char** argv) {
-  // Populate Data
-  printf("---------------\n");
-  printf("Populating Data\n");
-  FactDB* facts = ReadRamCloudFactDB();
-  if (facts == NULL) {
-    printf("Facts were null; exiting...\n");
-    return 1;
-  }
-  Graph* graph = ReadGraph();
-  if (graph == NULL) {
-    printf("Graph was null; exiting...\n");
-    return 1;
-  }
-  printf("done.\n");
-  printf("---------------\n");
 
-  // Parameterize search
-  SearchType* searchStrategy = new BreadthFirstSearch();
-  CacheStrategy* cache = new RamCloudCacheStrategyFactSeen();
+#define PORT "3490"  // the port users will be connecting to
 
-  // Run search
-  printf("---------------\n");
-  printf("    Search     \n");
-  vector<Path*> paths
-    = Search( graph, facts,
-              &lemursHaveTails()[0], lemursHaveTails().size(),
-              searchStrategy,
-              cache,
-              SEARCH_TIMEOUT   );
+#define BACKLOG 10     // how many pending connections queue will hold
 
-  // Print result
-  for(vector<Path*>::iterator it = paths.begin(); it != paths.end(); ++it) {
-    printf("Path\n----\n%s\n\n", toString(*graph, *searchStrategy, *it).c_str());
-  }
-  printf("done.\n");
-  printf("---------------\n");
+int main(void)
+{
+    return 0;
 }

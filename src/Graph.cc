@@ -2,7 +2,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "InferenceServer.h"
 #include "Graph.h"
 #include "Postgres.h"
 
