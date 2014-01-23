@@ -4,3 +4,5 @@ src/Messages.pb.cc
 
 classes/**
 build/**
+
+.idea/workspace.xml
