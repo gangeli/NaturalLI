@@ -200,10 +200,14 @@ void handleConnection(int socket, sockaddr_in* client,
   // (create search)
   CacheStrategy* cache   = new CacheStrategyNone();
   SearchType*    search  = new BreadthFirstSearch();
-  printf("[%d] running search...\n", socket);
-  std::vector<Path*> result
-    = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
-  printf("[%d] ...finished search; %lu results found\n", socket, result.size());
+  printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
+  std::vector<Path*> result;
+  try {
+    result = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
+    printf("[%d] ...finished search; %lu results found\n", socket, result.size());
+  } catch (...) {
+    printf("[%d] EXCEPTION IN SEARCH (probably Out Of Memory)\n", socket);
+  }
 
   // Return Result
   // (send result)
@@ -316,5 +320,5 @@ int startServer(int port) {
  * The server's entry point.
  */
 int main( int argc, char *argv[] ) {
-  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { }
+  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
 }
