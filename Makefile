@@ -9,6 +9,7 @@ GTEST_ROOT=${RAMCLOUD_HOME}/gtest
 
 # -- VARIABLES --
 # (programs)
+PROTOC?=protoc
 JAVAC=javac
 SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
@@ -27,8 +28,9 @@ JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/clas
 CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar
 TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 # (c++)
+CUSTOM_INCLUDES?=''
 CC = g++
-INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include
+INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include ${CUSTOM_INCLUDES}
 LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
 LDFLAGS=-lpq -lramcloud -lprofiler -lprotobuf
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
@@ -67,10 +69,12 @@ clean:
 # -- BUILD --
 # (dependenceies)
 ${SRC}/org/goobs/truth/Messages.java: ${SRC}/Messages.proto
-	protoc -I=${SRC} --java_out=${SRC}/ ${SRC}/Messages.proto
+	echo "protoc at '${PROTOC}'"
+	${PROTOC} -I=${SRC} --java_out=${SRC}/ ${SRC}/Messages.proto
 
 ${SRC}/Messages.pb.h: ${SRC}/Messages.proto
-	protoc -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
+	echo "protoc at '${PROTOC}'"
+	${PROTOC} -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
 
 ${SRC}/Messages.pb.cc: ${SRC}/Messages.proto
 	protoc -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
