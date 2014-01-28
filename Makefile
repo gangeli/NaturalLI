@@ -1,15 +1,19 @@
 # -------------------
 # LIKELY TO OVERWRITE
 # -------------------
-PG_CONFIG=pg_config
-SCALA_HOME=/home/gabor/programs/scala
-RAMCLOUD_HOME=/home/gabor/workspace/ramcloud
-GTEST_ROOT=${RAMCLOUD_HOME}/gtest
+# In addition, note that protoc must be set up
+# on the machine. This can be done by setting the $PROTOC
+# environment variable, and adding the include path
+# to $CUSTOM_INCLUDES.
+# -------------------
+PG_CONFIG?=pg_config
+SCALA_HOME?=/home/gabor/programs/scala
+RAMCLOUD_HOME?=/home/gabor/workspace/ramcloud
+GTEST_ROOT?=${RAMCLOUD_HOME}/gtest
 # -------------------
 
 # -- VARIABLES --
 # (programs)
-PROTOC?=protoc
 JAVAC=javac
 SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
@@ -25,7 +29,7 @@ TMP=tmp
 DOC=scaladoc
 # (classpaths)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes
-CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar
+CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/typesafe-config.jar
 TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 # (c++)
 CUSTOM_INCLUDES?=''
@@ -77,7 +81,8 @@ ${SRC}/Messages.pb.h: ${SRC}/Messages.proto
 	${PROTOC} -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
 
 ${SRC}/Messages.pb.cc: ${SRC}/Messages.proto
-	protoc -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
+	echo "protoc at '${PROTOC}'"
+	${PROTOC} -I=${SRC} --cpp_out=${SRC}/ ${SRC}/Messages.proto
 
 ${BUILD}/InferenceServer.o: ${SRC}/InferenceServer.cc ${SRC}/Config.h
 	@mkdir -p ${BUILD}
