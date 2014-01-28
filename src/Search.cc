@@ -204,7 +204,8 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 10;
+  const uint32_t tickTime = 1000;
+  printf("started search.\n");
 
   //
   // Search
@@ -218,6 +219,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
     const Path parent = fringe->pop();
     // Update time
     time += 1;
+    printf("search tick %lu; popped %s\n", time, toString(*graph, *fringe, &parent).c_str());
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
@@ -242,6 +244,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
          ++indexToMutate) {  // for each index to mutate...
       const vector<edge>& mutations
         = graph->outgoingEdges(parent.fact[indexToMutate]);
+      printf("  mutating index %d; %lu children\n", indexToMutate, mutations.size());
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
