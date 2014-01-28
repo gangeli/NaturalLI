@@ -21,7 +21,7 @@ object Client {
    */
   def issueQuery(query:Query):Iterable[Inference] = {
     // Set up connection
-    val sock = new Socket("localhost", 1337)
+    val sock = new Socket(Props.SERVER_HOST, Props.SERVER_PORT)
     val toServer = new DataOutputStream(sock.getOutputStream)
     val fromServer = new DataInputStream(sock.getInputStream)
     log("connection established with server.")
@@ -32,6 +32,10 @@ object Client {
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
+    val response = Response.parseFrom(fromServer);
+    if (response.getError) {
+      throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
+    }
     Response.parseFrom(fromServer).getInferenceList
   }
 

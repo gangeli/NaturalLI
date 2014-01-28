@@ -38,6 +38,11 @@ public class Props {
   @Option(name="natlog.indexer.lazy", gloss="If true, do word indexing lazily rather than reading the indexer at once")
   public static boolean NATLOG_INDEXER_LAZY = false;
 
+  @Option(name="server.host", gloss="The hostname for the inference server")
+  public static String SERVER_HOST = "localhost";
+  @Option(name="server.port", gloss="The hostname for the inference server")
+  public static int SERVER_PORT = 1337;
+
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "/home/gabor/workspace/sim/etc/ontology.ser.gz";
   @Option(name="script.distsim.cos", gloss="The path to the cosine similarity nearest neighbors")
