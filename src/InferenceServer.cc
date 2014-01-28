@@ -6,6 +6,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/errno.h>
+#include <sys/resource.h>
 #include <arpa/inet.h>
 
 #include "Messages.pb.h" 
