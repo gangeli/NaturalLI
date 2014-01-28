@@ -248,7 +248,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
-        if (it->type == 9) { continue; } // TODO(gabor) don't ignore nearest neighbors
+        if (it->type > 1) { continue; } // TODO(gabor) don't only do WordNet jumps
         // ... create the mutated fact
         word mutated[parent.factLength];
         for (int i = 0; i < indexToMutate; ++i) {
