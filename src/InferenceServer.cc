@@ -24,32 +24,6 @@
 extern int errno;
 
 /**
- * Convert a buffer of characters into an integer.
- */
-uint32_t toInt(uint8_t buffer[], uint32_t begin, uint32_t end) {
-  uint32_t outInt = 0x0;
-  outInt = (outInt << 8) + buffer[begin + 0];
-  outInt = (outInt << 8) + buffer[begin + 1];
-  outInt = (outInt << 8) + buffer[begin + 2];
-  outInt = (outInt << 8) + buffer[begin + 3];
-  return outInt;
-}
-
-/**
- * Read a given number of bytes from the socket. This method will block until the full
- * length of the sent bytes are read.
- */
-bool readBuffer(int socket, uint64_t bytesToRead, uint8_t buffer[]) {
-  uint64_t totalRead = 0; 
-  while (totalRead < bytesToRead) {
-    int bytesRead = read(socket, &(buffer[totalRead]), (bytesToRead - totalRead));
-    if (bytesRead <= 0) { return false; }
-    totalRead += bytesRead;
-  }
-  return true;
-}
-
-/**
  * Close a given socket connection, either due to the request being completed, or
  * to clean up after a failure.
  */
@@ -80,40 +54,30 @@ void closeConnection(int socket, sockaddr_in* client) {
  * closing the connection.
  */
 void handleConnection(int socket, sockaddr_in* client) {
-  // Read the query
+  // Parse Query
   printf("[%d] Reading query...\n", socket);
-//
-//  // Read Proto
-//  // (read proto size)
-//  uint8_t protoSizeBuffer[4];
-//  if (!readBuffer(socket, 4, (uint8_t*) &protoSizeBuffer)) { closeConnection(socket, client); return; }
-//  const uint32_t protoSize = toInt(protoSizeBuffer, 0, 4);
-//  printf("[%d] Proto of size %u bytes\n", socket, protoSize);
-//  // (read proto content)
-//  uint8_t protoBuffer[protoSize];
-//  if (!readBuffer(socket, protoSize, (uint8_t*) &protoBuffer)) { closeConnection(socket, client); return; }
-////  printf("[%d] data: %s\n", socket, protoBuffer);
-
-  // Parse Proto
   Query query;
   if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
-  printf("[%d] parsed proto.\n", socket);
-  // TODO(gabor)
+  printf("[%d] ...read query.\n", socket);
 
   // Run Search
   // TODO(gabor)
 
   // Return Result
-  uint8_t hasNextBuffer[1];
-  hasNextBuffer[0] = true;
-
-  // (signal no more data)
-  hasNextBuffer[0] = false;
-  write(socket, &hasNextBuffer, 1);
+  // (create proto)
+  const Fact& queryFact = query.queryfact();
+  const Fact& antecedent = query.knownfact(0);
+  Inference antecedentInference;
+  antecedentInference.mutable_fact()->CopyFrom(antecedent);
+  Inference inference;
+  inference.mutable_fact()->CopyFrom(queryFact);
+  inference.mutable_impliedfrom()->CopyFrom(antecedentInference);
+  Response response;
+  response.add_inference()->CopyFrom(inference);
+  // (send proto)
+  response.SerializeToFileDescriptor(socket);
   // (close connection)
   closeConnection(socket, client);
-  // TODO(gabor)
-
 }
 
 /**

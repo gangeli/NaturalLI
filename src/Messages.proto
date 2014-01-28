@@ -28,3 +28,7 @@ message Inference {
   required Fact fact             = 1;
   optional Inference impliedFrom = 2;
 }
+
+message Response {
+  repeated Inference inference  = 1;
+}

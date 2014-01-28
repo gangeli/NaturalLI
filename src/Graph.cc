@@ -5,6 +5,8 @@
 #include "Graph.h"
 #include "Postgres.h"
 
+using namespace std;
+
 /**
  * A simple in-memory stored Graph, with the word indexer and the edge
  * matrix.

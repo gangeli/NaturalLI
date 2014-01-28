@@ -1,6 +1,8 @@
 package org.goobs.truth
 
-import org.goobs.truth.Messages.{Fact, Inference, Query}
+import scala.collection.JavaConversions._
+
+import org.goobs.truth.Messages.{Fact, Inference, Query, Response}
 import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
 
@@ -30,18 +32,7 @@ object Client {
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
-    def readInference:List[Inference] = {
-      val hasMore = fromServer.readBoolean()
-      log(s"server responded; hasMore=$hasMore")
-      if (hasMore) {
-        Inference.parseFrom(fromServer) :: readInference
-      } else {
-        Nil
-      }
-    }
-
-//    List(Inference.newBuilder().setFact(query.getQueryFact).setImpliedFrom(Inference.newBuilder().setFact(query.getKnownFact(0)).build()).build())
-    readInference
+    Response.parseFrom(fromServer).getInferenceList
   }
 
   def main(args:Array[String]):Unit = {
@@ -52,11 +43,11 @@ object Client {
     do {
       println()
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
-      for (antecedent:Fact <- "[have](cat, tail)" /*readLine("antecedent> ") */ match {
+      for (antecedent:Fact <- "[have](some cat, tail)" /*readLine("antecedent> ") */ match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
-        for (consequent:Fact <- "[have](blue cat, tail)" /* readLine("consequent> ") */ match {
+        for (consequent:Fact <- "[have](some animal, tail)" /* readLine("consequent> ") */ match {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {

@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+using namespace std;
+
 const vector<word> lemursHaveTails() {
   vector<word> fact;
   fact.push_back(2479928);

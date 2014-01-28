@@ -22,9 +22,9 @@ struct edge {
  */
 class Graph {
  public:
-  virtual const vector<edge>& outgoingEdges(word) = 0;
+  virtual const std::vector<edge>& outgoingEdges(word) = 0;
   virtual const char* gloss(word) = 0;
-  virtual const vector<word> keys() = 0;
+  virtual const std::vector<word> keys() = 0;
 };
 
 /**

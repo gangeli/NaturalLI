@@ -81,8 +81,8 @@ class BreadthFirstSearch : public SearchType {
   ~BreadthFirstSearch();
 
  private:
-  queue<Path>* impl;
-  vector<Path> id2path;
+  std::queue<Path>* impl;
+  std::vector<Path> id2path;
 };
 
 /**
@@ -99,8 +99,8 @@ class UCSSearch : public SearchType {
   ~UCSSearch();
 
  private:
-  priority_queue<Path, vector<Path>, PathCompare>* impl;
-  vector<Path> id2path;
+  std::priority_queue<Path, std::vector<Path>, PathCompare>* impl;
+  std::vector<Path> id2path;
 };
 
 
@@ -132,7 +132,7 @@ class CacheStrategyNone : public CacheStrategy {
  * Perform a search from the query fact, to any antecedents that can be
  * found by searching through valid edits, insertions, or deletions.
  */
-vector<Path*> Search(Graph*, FactDB*,
+std::vector<Path*> Search(Graph*, FactDB*,
                      const word*, const uint8_t,
                      SearchType*,
                      CacheStrategy*, const uint64_t);
