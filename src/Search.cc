@@ -204,7 +204,7 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 1000;
+  const uint32_t tickTime = 10;
 
   //
   // Search
