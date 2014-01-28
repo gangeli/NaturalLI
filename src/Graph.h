@@ -22,8 +22,11 @@ struct edge {
  */
 class Graph {
  public:
+  /** Get all outgoing edges from the given word */
   virtual const std::vector<edge>& outgoingEdges(word) = 0;
+  /** For debugging, get the string form of the given word */
   virtual const char* gloss(word) = 0;
+  /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() = 0;
 };
 

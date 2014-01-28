@@ -22,6 +22,8 @@ object Learn {
     for (inference <- paths) {
       log(inference.getFact.getGloss + " <- " + inference.getImpliedFrom.getFact.getGloss)
     }
+
+    // TODO(gabor) an actual evaluation function
     1.0
   }
 }

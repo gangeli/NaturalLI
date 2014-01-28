@@ -133,9 +133,9 @@ class CacheStrategyNone : public CacheStrategy {
  * found by searching through valid edits, insertions, or deletions.
  */
 std::vector<Path*> Search(Graph*, FactDB*,
-                     const word*, const uint8_t,
+                     const word* query, const uint8_t queryLength,
                      SearchType*,
-                     CacheStrategy*, const uint64_t);
+                     CacheStrategy*, const uint64_t timeout);
 
 
 

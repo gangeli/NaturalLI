@@ -10,6 +10,7 @@
 
 #include "Messages.pb.h" 
 #include "Search.h" 
+#include "Graph.h" 
 
 
 #ifndef SERVER_PORT
@@ -22,6 +23,71 @@
 #define ERESTART EINTR
 #endif
 extern int errno;
+
+std::mutex factDBReadLock;
+
+/**
+ * A simple user defined knowlege base, to be populated entirely from the query.
+ */
+class UserDefinedFactDB : public FactDB {
+ public:
+  UserDefinedFactDB(Query& query);
+  ~UserDefinedFactDB();
+  
+  virtual const bool contains(const word* query, const uint8_t queryLength);
+ 
+ private:
+  word** contents;
+  uint64_t* lengths;
+  uint64_t size;
+
+};
+
+/**
+ * Create a new user defined knowledge base from a Query protobuf message.
+ */
+UserDefinedFactDB::UserDefinedFactDB(Query& query) {
+  size = query.knownfact_size();
+  contents = (word**) malloc(query.knownfact_size() * sizeof(word*));
+  lengths = (uint64_t*) malloc(query.knownfact_size() * sizeof(uint64_t));
+  for (int i = 0; i < query.knownfact_size(); ++i) {
+    lengths[i] = query.knownfact(i).word_size();
+    contents[i] = (word*) malloc(query.knownfact(i).word_size() * sizeof(word*));
+    for (int k = 0; i < query.knownfact(i).word_size(); ++k) {
+      contents[i][k] = query.knownfact(i).word(k).word();
+    }
+  }
+}
+
+/**
+ * Clean up after ourselves.
+ */
+UserDefinedFactDB::~UserDefinedFactDB() {
+  free(lengths);
+  for (int i = 0; i < size; ++i) { free(contents[i]); }
+  free(contents);
+}
+  
+/**
+ * Determine if this knowledge base contains the given element; implementing the
+ * interface defined in FactDB.
+ */
+const bool UserDefinedFactDB::contains(const word* query, const uint8_t queryLength) {
+  for (int i = 0; i < size; ++i) {             // for each element
+    if (lengths[i] == queryLength) {           // if the lengths match
+      bool found = true;
+      for (int k = 0; k < queryLength; ++k) {  // and every word matches
+        if (query[k] != contents[i][k]) { found = false; }
+      }
+      if (found) { return true; }              // return true
+    }
+  }
+  return false;
+}
+
+
+
+
 
 /**
  * Close a given socket connection, either due to the request being completed, or
@@ -48,35 +114,87 @@ void closeConnection(int socket, sockaddr_in* client) {
   free(client);
 }
 
+
+/**
+ * Convert a (concise) path object into an Inference object to be passed over the wire
+ * to the client.
+ */
+Inference inferenceFromPath(Path* path, SearchType* search) {
+  Fact fact;
+  for (int i = 0; i < path->factLength; ++i) {
+    Word word;
+    word.set_word(path->fact[i]);
+    fact.add_word()->CopyFrom(word);
+  }
+  Inference inference;
+  inference.mutable_fact()->CopyFrom(fact);
+  Path* parent = path->source(*search);
+  if (parent != NULL) {
+    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(parent, search));
+  }
+  return inference;
+}
+
+  
 /**
  * Handle an incoming connection.
  * This involves reading a query, starting a new inference, and then
  * closing the connection.
  */
-void handleConnection(int socket, sockaddr_in* client) {
+void handleConnection(int socket, sockaddr_in* client,
+                      Graph* graph, FactDB** dbOrNull) {
+
   // Parse Query
   printf("[%d] Reading query...\n", socket);
   Query query;
   if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
   printf("[%d] ...read query.\n", socket);
+  if (query.shutdownserver()) {
+    printf("\n");
+    printf("--------------\n");
+    printf("STOPPED SERVER\n");
+    printf("--------------\n");
+    std::exit(0);
+  }
 
   // Run Search
-  // TODO(gabor)
+  // (prepare factdb)
+  FactDB* factDB = *dbOrNull;
+  if (query.userealworld()) {
+    if (factDB == NULL) {
+      // Read the real knowledge base
+      factDBReadLock.lock();
+      *dbOrNull = ReadFactDB();
+      factDBReadLock.unlock();
+      factDB = *dbOrNull;
+    }
+  } else {
+    // Read a dummy knowledge base
+    factDB = new UserDefinedFactDB(query);
+  }
+  // (create query)
+  uint8_t queryLength = query.queryfact().word_size();
+  word queryFact[queryLength];
+  for (int i = 0; i < queryLength; ++i) {
+    queryFact[i] = query.queryfact().word(i).word();
+  }
+  // (create search)
+  CacheStrategy* cache   = new CacheStrategyNone();
+  SearchType*    search  = new BreadthFirstSearch();
+  std::vector<Path*> result
+    = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
 
   // Return Result
-  // (create proto)
-  const Fact& queryFact = query.queryfact();
-  const Fact& antecedent = query.knownfact(0);
-  Inference antecedentInference;
-  antecedentInference.mutable_fact()->CopyFrom(antecedent);
-  Inference inference;
-  inference.mutable_fact()->CopyFrom(queryFact);
-  inference.mutable_impliedfrom()->CopyFrom(antecedentInference);
+  // (send result)
   Response response;
-  response.add_inference()->CopyFrom(inference);
-  // (send proto)
+  for (int i = 0; i < result.size(); ++i) {
+    response.add_inference()->CopyFrom(inferenceFromPath(result[i], search));
+  }
   response.SerializeToFileDescriptor(socket);
   // (close connection)
+  if (!query.userealworld()) { delete factDB; }
+  delete cache;
+  delete search;
   closeConnection(socket, client);
 }
 
@@ -119,6 +237,11 @@ int startServer(int port) {
     printf("Listening on port %d...\n", port);
   }
 
+  // -- Initialize Global Variables --
+  Graph*         graph   = ReadGraph();
+  FactDB*        db      = NULL;  // lazy load me
+  // --                             --
+
   // loop, accepting connection requests
 	for (;;) {
     // Accept an incoming connection
@@ -160,7 +283,7 @@ int startServer(int port) {
 			     inet_ntoa(clientAddress->sin_addr),
            ntohs(clientAddress->sin_port));
 
-    std::thread t(handleConnection, requestSocket, clientAddress);
+    std::thread t(handleConnection, requestSocket, clientAddress, graph, &db);
     t.detach();
 	}
 
@@ -171,10 +294,5 @@ int startServer(int port) {
  * The server's entry point.
  */
 int main( int argc, char *argv[] ) {
-  startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]) );
-//  while (startServer(1337) != 0) { }
-  printf("\n");
-  printf("--------------\n");
-  printf("STOPPED SERVER\n");
-  printf("--------------\n");
+  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { }
 }

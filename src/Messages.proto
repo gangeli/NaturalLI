@@ -22,6 +22,9 @@ message Query {
   required Fact queryFact    = 1;
   required bool useRealWorld = 2;
   repeated Fact knownFact    = 3;
+  optional uint64 timeout    = 4 [ default = 100000 ];
+
+  optional bool shutdownServer = 101 [ default = false ];
 }
 
 message Inference {
