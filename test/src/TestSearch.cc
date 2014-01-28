@@ -7,6 +7,8 @@
 #include "Graph.h"
 #include "FactDB.h"
 
+using namespace std;
+
 //
 // Path
 //

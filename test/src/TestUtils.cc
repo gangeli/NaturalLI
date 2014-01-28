@@ -4,6 +4,8 @@
 
 #include "Utils.h"
 
+using namespace std;
+
 class UtilsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {

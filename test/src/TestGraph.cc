@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "Graph.h"
 
+using namespace std;
 
 class MockGraphTest : public ::testing::Test {
  protected:
