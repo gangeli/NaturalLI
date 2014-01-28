@@ -48,12 +48,12 @@ class UserDefinedFactDB : public FactDB {
  */
 UserDefinedFactDB::UserDefinedFactDB(Query& query) {
   size = query.knownfact_size();
-  contents = (word**) malloc(query.knownfact_size() * sizeof(word*));
-  lengths = (uint64_t*) malloc(query.knownfact_size() * sizeof(uint64_t));
-  for (int i = 0; i < query.knownfact_size(); ++i) {
+  contents = (word**) malloc(size * sizeof(word*));
+  lengths = (uint64_t*) malloc(size * sizeof(uint64_t));
+  for (int i = 0; i < size; ++i) {
     lengths[i] = query.knownfact(i).word_size();
     contents[i] = (word*) malloc(query.knownfact(i).word_size() * sizeof(word*));
-    for (int k = 0; i < query.knownfact(i).word_size(); ++k) {
+    for (int k = 0; k < query.knownfact(i).word_size(); ++k) {
       contents[i][k] = query.knownfact(i).word(k).word();
     }
   }
@@ -168,9 +168,11 @@ void handleConnection(int socket, sockaddr_in* client,
       factDBReadLock.unlock();
       factDB = *dbOrNull;
     }
+    printf("[%d] created real factdb.\n", socket);
   } else {
     // Read a dummy knowledge base
     factDB = new UserDefinedFactDB(query);
+    printf("[%d] created mock factdb.\n", socket);
   }
   // (create query)
   uint8_t queryLength = query.queryfact().word_size();
@@ -178,11 +180,14 @@ void handleConnection(int socket, sockaddr_in* client,
   for (int i = 0; i < queryLength; ++i) {
     queryFact[i] = query.queryfact().word(i).word();
   }
+  printf("[%d] constructed query.\n", socket);
   // (create search)
   CacheStrategy* cache   = new CacheStrategyNone();
   SearchType*    search  = new BreadthFirstSearch();
+  printf("[%d] running search...\n", socket);
   std::vector<Path*> result
     = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
+  printf("[%d] ...finished search; %d results found\n", socket, result.size());
 
   // Return Result
   // (send result)
@@ -229,6 +234,11 @@ int startServer(int port) {
     printf("Opened server socket (hostname: %s)\n", hostname);
   }
 
+  // -- Initialize Global Variables --
+  Graph*         graph   = ReadGraph();
+  FactDB*        db      = NULL;  // lazy load me
+  // --                             --
+
   // set the socket for listening (queue backlog of 5)
 	if (listen(sock, SERVER_TCP_BUFFER) < 0) {
 		perror("Could not open port for listening");
@@ -236,11 +246,6 @@ int startServer(int port) {
 	} else {
     printf("Listening on port %d...\n", port);
   }
-
-  // -- Initialize Global Variables --
-  Graph*         graph   = ReadGraph();
-  FactDB*        db      = NULL;  // lazy load me
-  // --                             --
 
   // loop, accepting connection requests
 	for (;;) {
