@@ -4,6 +4,7 @@
 #include "Config.h"
 #include "Postgres.h"
 
+using namespace std;
 
 // Ensure that we can issue a query
 TEST(PostgresTest, CanIssueQuery) {
