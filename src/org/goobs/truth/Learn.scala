@@ -24,7 +24,7 @@ object Learn {
     }
 
     // TODO(gabor) an actual evaluation function
-    1.0
+    if (paths.size > 0) 1.0 else 0.0
   }
 }
 

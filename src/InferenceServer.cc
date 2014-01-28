@@ -17,6 +17,7 @@
 #define SERVER_PORT       1337
 #define SERVER_TCP_BUFFER 25
 #define SERVER_READ_SIZE  1024
+#define MEM_ENV_VAR "MAXMEM_GB"
 #endif
 
 #ifndef ERESTART
@@ -25,6 +26,20 @@
 extern int errno;
 
 std::mutex factDBReadLock;
+
+/**
+ * Set a memory limit, if defined
+ */
+void setmemlimit() {
+  struct rlimit memlimit;
+  long bytes;
+  if(getenv(MEM_ENV_VAR)!=NULL) {
+    bytes = atol(getenv(MEM_ENV_VAR)) * (1024 * 1024 * 1024);
+    memlimit.rlim_cur = bytes;
+    memlimit.rlim_max = bytes;
+    setrlimit(RLIMIT_AS, &memlimit);
+  }
+}
 
 /**
  * A simple user defined knowlege base, to be populated entirely from the query.
@@ -207,6 +222,7 @@ void handleConnection(int socket, sockaddr_in* client,
  * Set up listening on a server port
  */
 int startServer(int port) {
+  setmemlimit();
   // Get hostname, for debugging
 	char hostname[256];
 	gethostname(hostname, 256);
