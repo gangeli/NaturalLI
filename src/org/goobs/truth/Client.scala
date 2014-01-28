@@ -1,11 +1,16 @@
 package org.goobs.truth
 
-import org.goobs.truth.Messages.{Inference, Query}
+import org.goobs.truth.Messages.{Fact, Inference, Query}
+import java.io.{DataOutputStream, DataInputStream}
+import java.net.Socket
+
+import edu.stanford.nlp.util.logging.Redwood.Util._
 
 /**
  * @author Gabor Angeli
  */
 object Client {
+  Props.NATLOG_INDEXER_LAZY = true
 
   /**
    * Issue a query to the search server, and block until it returns
@@ -13,8 +18,30 @@ object Client {
    * @return The query fact, with a truth value and confidence
    */
   def issueQuery(query:Query):Iterable[Inference] = {
-    // TODO(gabor) implement me!
-    List(Inference.newBuilder().setFact(query.getQueryFact).setImpliedFrom(Inference.newBuilder().setFact(query.getKnownFact(0)).build()).build())
+    // Set up connection
+    val sock = new Socket("localhost", 1337)
+    val toServer = new DataOutputStream(sock.getOutputStream)
+    val fromServer = new DataInputStream(sock.getInputStream)
+    log("connection established with server.")
+
+    // Write query
+    query.writeTo(toServer)
+    log(s"wrote query to server (size ${query.getSerializedSize}); awaiting response...")
+    sock.shutdownOutput()  // signal end of transmission
+
+    // Read response
+    def readInference:List[Inference] = {
+      val hasMore = fromServer.readBoolean()
+      log(s"server responded; hasMore=$hasMore")
+      if (hasMore) {
+        Inference.parseFrom(fromServer) :: readInference
+      } else {
+        Nil
+      }
+    }
+
+//    List(Inference.newBuilder().setFact(query.getQueryFact).setImpliedFrom(Inference.newBuilder().setFact(query.getKnownFact(0)).build()).build())
+    readInference
   }
 
   def main(args:Array[String]):Unit = {
@@ -22,14 +49,14 @@ object Client {
     val weights = NatLog.hardNatlogWeights
 
 
-    while (true) {
+    do {
       println()
-      println("Enter an antecedent and a consequent ase \"[rel](arg1, arg2)\".")
-      for (antecedent <- readLine("antecedent> ") match {
+      println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
+      for (antecedent:Fact <- "[have](cat, tail)" /*readLine("antecedent> ") */ match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
-        for (consequent <- readLine("consequent> ") match {
+        for (consequent:Fact <- "[have](blue cat, tail)" /* readLine("consequent> ") */ match {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
@@ -43,6 +70,6 @@ object Client {
           if (score > 0.5) { println("Valid") } else { println("Invalid") }
         }
       }
-    }
+    } while (false)
   }
 }

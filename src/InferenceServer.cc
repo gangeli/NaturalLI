@@ -8,6 +8,9 @@
 #include <sys/errno.h>
 #include <arpa/inet.h>
 
+#include "Messages.pb.h" 
+#include "Search.h" 
+
 
 #ifndef SERVER_PORT
 #define SERVER_PORT       1337
@@ -23,50 +26,34 @@ extern int errno;
 /**
  * Convert a buffer of characters into an integer.
  */
-uint32_t toInt(char buffer[], uint32_t begin, uint32_t end) {
-  uint32_t outInt = 0;
-  outInt = (outInt << 8) + buffer[begin + 3];
-  outInt = (outInt << 8) + buffer[begin + 2];
-  outInt = (outInt << 8) + buffer[begin + 1];
+uint32_t toInt(uint8_t buffer[], uint32_t begin, uint32_t end) {
+  uint32_t outInt = 0x0;
   outInt = (outInt << 8) + buffer[begin + 0];
+  outInt = (outInt << 8) + buffer[begin + 1];
+  outInt = (outInt << 8) + buffer[begin + 2];
+  outInt = (outInt << 8) + buffer[begin + 3];
   return outInt;
 }
 
 /**
- * Handle an incoming connection.
- * This involves reading a query, starting a new inference, and then
- * closing the connection.
+ * Read a given number of bytes from the socket. This method will block until the full
+ * length of the sent bytes are read.
  */
-void handleConnection(int socket, sockaddr_in* client) {
-  // Read the query
-  printf("[%d] Reading query...\n", socket);
-
-  // Read Proto
-  // (read proto size)
-  uint32_t bytesRead = 0;
-  char buffer[SERVER_READ_SIZE];
-  bytesRead = read(socket, buffer, SERVER_READ_SIZE);
-  if (bytesRead < 4) {
-    printf("[%d] Could not read incoming proto size\n", socket); return;
+bool readBuffer(int socket, uint64_t bytesToRead, uint8_t buffer[]) {
+  uint64_t totalRead = 0; 
+  while (totalRead < bytesToRead) {
+    int bytesRead = read(socket, &(buffer[totalRead]), (bytesToRead - totalRead));
+    if (bytesRead <= 0) { return false; }
+    totalRead += bytesRead;
   }
-  const uint32_t protoSize = toInt(buffer, 0, 4);
-  printf("[%d] Proto of size %d bytes\n", socket, protoSize);
-  // (read proto content)
-  uint32_t totalRead = bytesRead - 4;
-  char protoData[protoSize];
-  memcpy(protoData, &buffer[4], sizeof(char) * (bytesRead - 4));  // copy remaining data
-  while (totalRead < protoSize) {
-    bytesRead = read(socket, buffer, SERVER_READ_SIZE);
-    memcpy(&protoData[totalRead], buffer, sizeof(char) * bytesRead);
-  }
-  printf("[%d] data: %s\n", socket, protoData);
+  return true;
+}
 
-  // Parse Proto
-
-  // Run Search
-
-  // Return Result
-
+/**
+ * Close a given socket connection, either due to the request being completed, or
+ * to clean up after a failure.
+ */
+void closeConnection(int socket, sockaddr_in* client) {
   // Close the connection
   printf("[%d] CONNECTION CLOSING: %s port %d\n", socket,
 		     inet_ntoa(client->sin_addr),
@@ -85,6 +72,48 @@ void handleConnection(int socket, sockaddr_in* client) {
     printf(")\n");
   }
   free(client);
+}
+
+/**
+ * Handle an incoming connection.
+ * This involves reading a query, starting a new inference, and then
+ * closing the connection.
+ */
+void handleConnection(int socket, sockaddr_in* client) {
+  // Read the query
+  printf("[%d] Reading query...\n", socket);
+//
+//  // Read Proto
+//  // (read proto size)
+//  uint8_t protoSizeBuffer[4];
+//  if (!readBuffer(socket, 4, (uint8_t*) &protoSizeBuffer)) { closeConnection(socket, client); return; }
+//  const uint32_t protoSize = toInt(protoSizeBuffer, 0, 4);
+//  printf("[%d] Proto of size %u bytes\n", socket, protoSize);
+//  // (read proto content)
+//  uint8_t protoBuffer[protoSize];
+//  if (!readBuffer(socket, protoSize, (uint8_t*) &protoBuffer)) { closeConnection(socket, client); return; }
+////  printf("[%d] data: %s\n", socket, protoBuffer);
+
+  // Parse Proto
+  Query query;
+  if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
+  printf("[%d] parsed proto.\n", socket);
+  // TODO(gabor)
+
+  // Run Search
+  // TODO(gabor)
+
+  // Return Result
+  uint8_t hasNextBuffer[1];
+  hasNextBuffer[0] = true;
+
+  // (signal no more data)
+  hasNextBuffer[0] = false;
+  write(socket, &hasNextBuffer, 1);
+  // (close connection)
+  closeConnection(socket, client);
+  // TODO(gabor)
+
 }
 
 /**
