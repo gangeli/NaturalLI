@@ -187,7 +187,7 @@ void handleConnection(int socket, sockaddr_in* client,
   printf("[%d] running search...\n", socket);
   std::vector<Path*> result
     = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
-  printf("[%d] ...finished search; %d results found\n", socket, result.size());
+  printf("[%d] ...finished search; %lu results found\n", socket, result.size());
 
   // Return Result
   // (send result)
