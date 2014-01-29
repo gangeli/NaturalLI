@@ -16,40 +16,35 @@ class PathTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     searchType = new BreadthFirstSearch();
+    lemursHaveTails_ = lemursHaveTails();
+    animalsHaveTails_ = animalsHaveTails();
+    catsHaveTails_ = catsHaveTails();
     // Add base path element
-    root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
-    dist1 = new Path(*root, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
-    dist2 = new Path(*dist1, &catsHaveTails()[0], catsHaveTails().size(), 1);
-    // Some paths with explicit ids
-    explicit1 = new Path(10, 0, &lemursHaveTails()[0], lemursHaveTails().size(), 255);
-    explicit2 = new Path(20, 10, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
     // Register paths with search
-    searchType->push(*root);
-    EXPECT_EQ(*root, *searchType->findPathById(root->id));
-    searchType->push(*dist1);
-    EXPECT_EQ(*dist1, *searchType->findPathById(dist1->id));
-    EXPECT_EQ(*root, *searchType->findPathById(root->id));
-    searchType->push(*dist2);
-    EXPECT_EQ(*dist2, *searchType->findPathById(dist2->id));
-    EXPECT_EQ(*root, *searchType->findPathById(root->id));
-    searchType->push(*explicit1);
-    EXPECT_EQ(*explicit1, *searchType->findPathById(explicit1->id));
-    EXPECT_EQ(*root, *searchType->findPathById(root->id));
-    searchType->push(*explicit2);
-    EXPECT_EQ(*explicit2, *searchType->findPathById(explicit2->id));
-    EXPECT_EQ(*root, *searchType->findPathById(root->id));
+    searchType->start(root);
+    EXPECT_EQ(*root, *searchType->root);
+    EXPECT_EQ(*root, *searchType->peek());
+    dist1 = searchType->push(root, 0, 1, 3701, 0, 0);
+    EXPECT_EQ(*dist1, *searchType->peek());
+    EXPECT_EQ(*root, *searchType->root);
+    dist2 = searchType->push(dist1, 0, 1, 27970, 0, 1);
+    EXPECT_EQ(*dist1, *searchType->peek());
+    EXPECT_EQ(*root, *searchType->root);
   }
 
   virtual void TearDown() {
-    delete root, dist1, dist2, explicit1, explicit2, searchType;
+    delete root, dist1, dist2, searchType;
   }
 
-  Path* root;
-  Path* dist1;
-  Path* dist2;
-  Path* explicit1;
-  Path* explicit2;
+  const Path* root;
+  const Path* dist1;
+  const Path* dist2;
   SearchType* searchType;
+
+  std::vector<word> lemursHaveTails_;
+  std::vector<word> animalsHaveTails_;
+  std::vector<word> catsHaveTails_;
 };
 
 
@@ -58,14 +53,6 @@ TEST_F(PathTest, CanCreate) {
   EXPECT_FALSE(root == NULL);
   EXPECT_FALSE(dist1 == NULL);
   EXPECT_FALSE(dist2 == NULL);
-}
-
-// Test path elements made with explicit ids
-TEST_F(PathTest, CanManageIdExplicitly) {
-  EXPECT_FALSE(explicit1 == NULL);
-  EXPECT_FALSE(explicit2 == NULL);
-  EXPECT_TRUE(explicit1->source(*searchType) == NULL);
-  EXPECT_EQ(10, explicit2->sourceId);
 }
 
 // Test path equality
@@ -86,28 +73,27 @@ TEST_F(PathTest, CanCopy) {
 }
 
 // Test getting the source path from a path
-TEST_F(PathTest, GetSource) {
+TEST_F(PathTest, Parent) {
   // Basic null checks
-  EXPECT_TRUE(root->source(*searchType) == NULL);
-  EXPECT_FALSE(dist1->source(*searchType) == NULL);
-  EXPECT_FALSE(dist2->source(*searchType) == NULL);
+  EXPECT_TRUE(root->parent == NULL);
+  EXPECT_FALSE(dist1->parent == NULL);
+  EXPECT_FALSE(dist2->parent == NULL);
 
-  // Sanity checks
-  EXPECT_EQ(root->id, dist1->sourceId);
-  EXPECT_EQ(dist1->id, dist2->sourceId);
+  // Pointer equality
+  EXPECT_EQ(dist1->parent, root);
+  EXPECT_EQ(dist2->parent, dist1);
   
   // Fine-grained equality check
-  EXPECT_EQ(root->id, dist1->source(*searchType)->id);
-  EXPECT_EQ(root->sourceId, dist1->source(*searchType)->sourceId);
-  EXPECT_EQ(root->edgeType, dist1->source(*searchType)->edgeType);
-  ASSERT_EQ(root->factLength, dist1->source(*searchType)->factLength);
+  EXPECT_EQ(root->parent, dist1->parent->parent);
+  EXPECT_EQ(root->edgeType, dist1->parent->edgeType);
+  ASSERT_EQ(root->factLength, dist1->parent->factLength);
   for (int i = 0; i < root->factLength; ++i) {
-    EXPECT_EQ(root->fact[i], dist1->source(*searchType)->fact[i]);
+    EXPECT_EQ(root->fact[i], dist1->parent->fact[i]);
   }
 
   // Comprehensive equality check
-  EXPECT_EQ(*root, *dist1->source(*searchType));
-  EXPECT_EQ(*dist1, *dist2->source(*searchType));
+  EXPECT_EQ(*root, *dist1->parent);
+  EXPECT_EQ(*dist1, *dist2->parent);
 }
 
 
@@ -119,43 +105,43 @@ TEST_F(PathTest, GetSource) {
 class TestName : public ::testing::Test { \
  protected: \
   virtual void SetUp() { \
-    a = new Path(&lemursHaveTails()[0], lemursHaveTails().size()); \
-    b = new Path(*a, &animalsHaveTails()[0], animalsHaveTails().size(), 0); \
-    c = new Path(*b, &catsHaveTails()[0], catsHaveTails().size(), 1); \
+    lemursHaveTails_ = lemursHaveTails(); \
+    animalsHaveTails_ = animalsHaveTails(); \
+    catsHaveTails_ = catsHaveTails(); \
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size()); \
     cache = new CacheStrategyNone(); \
     graph = ReadMockGraph(); \
     facts = ReadMockFactDB(); \
+    EXPECT_TRUE(search.isEmpty()); \
   } \
-  \
+\
   virtual void TearDown() { \
-    delete a, b, c, cache, graph, facts; \
+    delete cache, graph, facts; \
   } \
-  \
+\
   ClassName search; \
-  Path* a; \
-  Path* b; \
-  Path* c; \
+  const Path* root; \
   CacheStrategy* cache; \
   Graph* graph; \
   FactDB* facts; \
+\
+  std::vector<word> lemursHaveTails_; \
+  std::vector<word> animalsHaveTails_; \
+  std::vector<word> catsHaveTails_; \
 }; \
 TEST_F(TestName, IsEmpty) { \
   EXPECT_TRUE(search.isEmpty()); \
 } \
 \
-TEST_F(TestName, Push) { \
+TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
-  search.push(*a); \
+  search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(*b); \
+  search.push(root, 0, 1, 3701, 0, 0); \
   EXPECT_FALSE(search.isEmpty()); \
-} \
-\
-TEST_F(TestName, Pop) { \
-  EXPECT_TRUE(search.isEmpty()); \
-  search.push(*a); \
+  EXPECT_EQ((Path*) NULL, search.pop()->parent); \
   EXPECT_FALSE(search.isEmpty()); \
-  EXPECT_EQ(*a, search.pop()); \
+  EXPECT_EQ(*root, *search.pop()->parent); \
   EXPECT_TRUE(search.isEmpty()); \
 }
 
@@ -167,37 +153,39 @@ InitSearchTypeTests(BreadthFirstSearch, BreadthFirstSearchTest)
 // Make sure breadth first search really is a queue
 TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
-  search.push(*a);
-  search.push(*b);
+  search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  EXPECT_EQ(*a, search.pop());
-  EXPECT_EQ(*b, search.pop());
+  const Path* dist1 = search.push(root, 0, 1, 3701,  0, 0);
+  const Path* dist2 = search.push(root, 0, 1, 27970, 0, 1);
+  ASSERT_FALSE(search.isEmpty());
+  EXPECT_EQ(*root,  *search.pop());
+  ASSERT_FALSE(search.isEmpty());
+  EXPECT_EQ(*dist1, *search.pop());
+  ASSERT_FALSE(search.isEmpty());
+  EXPECT_EQ(*dist2, *search.pop());
   EXPECT_TRUE(search.isEmpty());
 }
 
 TEST_F(BreadthFirstSearchTest, RunBFS) {
-  vector<Path*> result = Search(graph, facts,
-                                &lemursHaveTails()[0], lemursHaveTails().size(),
+  vector<const Path*> result = Search(graph, facts,
+                                &lemursHaveTails_[0], lemursHaveTails_.size(),
                                 &search, cache, 100);
   ASSERT_EQ(1, result.size());
   ASSERT_EQ(3, result[0]->factLength);
   // check root
-  EXPECT_EQ(c->fact[0], result[0] ->fact[0]);
-  EXPECT_EQ(c->fact[1], result[0] ->fact[1]);
-  EXPECT_EQ(c->fact[2], result[0] ->fact[2]);
-  EXPECT_EQ(c->edgeType, result[0]->edgeType);
+  EXPECT_EQ(27970, result[0]->fact[0]);
+  EXPECT_EQ(3844,  result[0]->fact[1]);
+  EXPECT_EQ(14221, result[0]->fact[2]);
   // check path (b)
-  EXPECT_EQ(b->fact[0], result[0] ->source(search)->fact[0]);
-  EXPECT_EQ(b->fact[1], result[0] ->source(search)->fact[1]);
-  EXPECT_EQ(b->fact[2], result[0] ->source(search)->fact[2]);
-  EXPECT_EQ(b->edgeType, result[0]->source(search)->edgeType);
+  EXPECT_EQ(3701, result[0]->parent->fact[0]);
+  EXPECT_EQ(3844,  result[0]->parent->fact[1]);
+  EXPECT_EQ(14221, result[0]->parent->fact[2]);
   // check path (a)
-  EXPECT_EQ(a->fact[0], result[0] ->source(search)->source(search)->fact[0]);
-  EXPECT_EQ(a->fact[1], result[0] ->source(search)->source(search)->fact[1]);
-  EXPECT_EQ(a->fact[2], result[0] ->source(search)->source(search)->fact[2]);
-  EXPECT_EQ(a->edgeType, result[0]->source(search)->source(search)->edgeType);
+  EXPECT_EQ(2479928, result[0]->parent->parent->fact[0]);
+  EXPECT_EQ(3844,    result[0]->parent->parent->fact[1]);
+  EXPECT_EQ(14221,   result[0]->parent->parent->fact[2]);
   // check null root
-  EXPECT_TRUE(result[0]->source(search)->source(search)->source(search) == NULL);
+  EXPECT_TRUE(result[0]->parent->parent->parent == NULL);
 }
 
 
@@ -208,7 +196,10 @@ class CacheStrategyNoneTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Add base path element
-    root = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
+    lemursHaveTails_ = lemursHaveTails();
+    animalsHaveTails_ = animalsHaveTails();
+    catsHaveTails_ = catsHaveTails();
   }
 
   virtual void TearDown() {
@@ -217,6 +208,10 @@ class CacheStrategyNoneTest : public ::testing::Test {
 
   CacheStrategyNone cache;
   Path* root;
+
+  std::vector<word> lemursHaveTails_;
+  std::vector<word> animalsHaveTails_;
+  std::vector<word> catsHaveTails_;
 };
 
 // Make sure that we don't see a node in an empty cache

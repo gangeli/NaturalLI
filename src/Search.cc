@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <set>
+#include <cstring>
 
 #include "Search.h"
 #include "Utils.h"
@@ -20,61 +21,24 @@ inline uint64_t generateUniqueId() {
 //
 // Class Path
 //
-Path::Path(const uint64_t id, const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
-    : edgeType(edgeType), sourceId(source), id(id),
-      factLength(factLength)
-    {
-  for (int i = 0; i < factLength; ++i) {
-    this->fact[i] = fact[i];
-  }
-};
+Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType) 
+    : parent(parentOrNull),
+      fact(fact),
+      factLength(factLength),
+      edgeType(edgeType) { }
 
-Path::Path(const uint64_t source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
-    : edgeType(edgeType), sourceId(source),
-      id(generateUniqueId()),
-      factLength(factLength)
-    {
-  for (int i = 0; i < factLength; ++i) {
-    this->fact[i] = fact[i];
-  }
-};
-
-Path::Path(const Path& source, const word* fact, const uint8_t factLength, const edge_type& edgeType)
-    : edgeType(edgeType), sourceId(source.id),
-      id(generateUniqueId()),
-      factLength(factLength)
-    {
-  for (int i = 0; i < factLength; ++i) {
-    this->fact[i] = fact[i];
-  }
-};
-
-Path::Path(const word* fact, const uint8_t factLength)
-    : edgeType(255), sourceId(0),
-      id(generateUniqueId()),
-      factLength(factLength)
-    {
-  for (int i = 0; i < factLength; ++i) {
-    this->fact[i] = fact[i];
-  }
-};
-
-Path::Path(const Path& copy)
-    : id(copy.id), sourceId(copy.sourceId), edgeType(copy.edgeType),
-      factLength(copy.factLength)
-    {
-  for (int i = 0; i < copy.factLength; ++i) {
-    this->fact[i] = copy.fact[i];
-  }
-};
+Path::Path(const word* fact, uint8_t factLength)
+    : parent(NULL),
+      fact(fact),
+      factLength(factLength),
+      edgeType(255) { }
 
 Path::~Path() {
 };
 
 bool Path::operator==(const Path& other) const {
   // Check metadata
-  if ( !( id == other.id && sourceId == other.sourceId &&
-          edgeType == other.edgeType && factLength == other.factLength ) ) {
+  if ( !( edgeType == other.edgeType && factLength == other.factLength ) ) {
     return false;
   }
   // Check fact content
@@ -87,24 +51,6 @@ bool Path::operator==(const Path& other) const {
   return true;
 }
 
-void Path::operator=(const Path& copy) {
-  this->id = copy.id;
-  this->sourceId = copy.sourceId;
-  this->edgeType = copy.edgeType;
-  this->factLength = copy.factLength;
-  for (int i = 0; i < copy.factLength; ++i) {
-    this->fact[i] = copy.fact[i];
-  }
-}
-
-Path* Path::source(SearchType& queue) const {
-  if (sourceId == 0) {
-    return NULL;
-  } else {
-    return queue.findPathById(sourceId);
-  }
-}
-
 //
 // Class SearchType
 //
@@ -112,67 +58,77 @@ Path* Path::source(SearchType& queue) const {
 //
 // Class BreadthFirstSearch
 //
-BreadthFirstSearch::BreadthFirstSearch() {
-  this->impl = new queue<Path>();
+BreadthFirstSearch::BreadthFirstSearch()
+    : fringeLength(0), fringeCapacity(1024), fringeI(0),
+      poolCapacity(1048576), poolLength(0), poppedRoot(false) {
+  this->fringe = (Path*) malloc(fringeCapacity * sizeof(Path));
+  this->memoryPool = (word*) malloc(poolCapacity * sizeof(word*));
 }
 
 BreadthFirstSearch::~BreadthFirstSearch() {
-  delete impl;
+  free(this->fringe);
+  free(this->memoryPool);
+  delete this->root;
 }
-  
-void BreadthFirstSearch::push(const Path& toAdd) {
-  while (id2path.size() <= toAdd.id) {
-    id2path.push_back(toAdd);
+ 
+const Path* BreadthFirstSearch::push(
+    const Path* parent, uint8_t mutationIndex,
+    uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
+
+  // Allocate new fact
+  // (ensure space)
+  while (poolLength + parent->factLength >= poolCapacity) {
+    word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
+    memcpy(newPool, memoryPool, poolCapacity);
+    free(memoryPool);
+    memoryPool = newPool;
+    poolCapacity = 2 * poolCapacity;
   }
-  id2path[toAdd.id] = toAdd;
-  impl->push(toAdd);
+  // (allocate fact)
+  uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
+  word* mutated = &memoryPool[poolLength];
+  poolLength += mutatedLength;
+  // (mutate fact)
+  memcpy(mutated, parent->fact, mutationIndex * sizeof(word));
+  if (replaceLength > 0) { mutated[mutationIndex] = replace1; }
+  if (replaceLength > 1) { mutated[mutationIndex + 1] = replace2; }
+  memcpy(&(mutated[mutationIndex + replaceLength]),
+         &(parent->fact[mutationIndex + 1]),
+         (parent->factLength - mutationIndex - 1) * sizeof(word));
+
+  // Allocate new path
+  // (ensure space)
+  while (fringeLength >= fringeCapacity) {
+    Path* newFringe = (Path*) malloc(2 * fringeCapacity * sizeof(Path));
+    memcpy(newFringe, fringe, fringeCapacity);
+    free(fringe);
+    fringe = newFringe;
+    fringeCapacity = 2 * fringeCapacity;
+  }
+  // (allocate path)
+  fringeLength += 1;
+  return new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge);
 }
 
-const Path BreadthFirstSearch::pop() {
-  const Path frontElement = impl->front();
-  impl->pop();
-  return frontElement;
+const Path* BreadthFirstSearch::peek() {
+  if (!poppedRoot && this->fringeI == 0) {
+    poppedRoot = true;
+    return root;
+  }
+  return &this->fringe[this->fringeI];
+}
+
+const Path* BreadthFirstSearch::pop() {
+  if (!poppedRoot && this->fringeI == 0) {
+    poppedRoot = true;
+    return root;
+  }
+  this->fringeI += 1;
+  return &this->fringe[this->fringeI - 1];
 }
 
 bool BreadthFirstSearch::isEmpty() {
-  return impl->empty();
-}
-  
-Path* BreadthFirstSearch::findPathById(uint64_t id) {
-  return &id2path[id];
-}
-
-//
-// Class UCSSearch
-//
-UCSSearch::UCSSearch() {
-  this->impl = new priority_queue<Path, vector<Path>, PathCompare>();  // TODO(gabor) binomial_heap_tag
-}
-
-UCSSearch::~UCSSearch() {
-  delete impl;
-}
-  
-void UCSSearch::push(const Path& toAdd) {
-  while (id2path.size() <= toAdd.id) {
-    id2path.push_back(toAdd);
-  }
-  id2path[toAdd.id] = toAdd;
-  impl->push(toAdd);
-}
-
-const Path UCSSearch::pop() {
-  const Path frontElement = impl->top();
-  impl->pop();
-  return frontElement;
-}
-
-bool UCSSearch::isEmpty() {
-  return impl->empty();
-}
-  
-Path* UCSSearch::findPathById(uint64_t id) {
-  return &id2path[id];
+  return root == NULL || (poppedRoot && fringeI >= fringeLength);
 }
 
 //
@@ -191,7 +147,7 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Function search()
 //
-vector<Path*> Search(Graph* graph, FactDB* knownFacts,
+vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
                      const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
                      const uint64_t timeout) {
@@ -199,13 +155,12 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
   // Setup
   //
   // Create a vector for the return value to occupy
-  vector<Path*> responses;
-  // Add start state to the fringe
-  fringe->push(Path(queryFact, queryFactLength));  // I need the memory to not go away
+  vector<const Path*> responses;
+  // Create the start state
+  fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
   const uint32_t tickTime = 10000;
-  printf("started search.\n");
 
   //
   // Search
@@ -216,57 +171,42 @@ vector<Path*> Search(Graph* graph, FactDB* knownFacts,
       printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
       std::exit(1);
     }
-    const Path parent = fringe->pop();
+    const Path* parent = fringe->pop();
     // Update time
     time += 1;
-//    printf("search tick %lu; popped %s\n", time, toString(*graph, *fringe, &parent).c_str());
+//    printf("search tick %lu; popped %s\n", time, toString(*graph, *fringe, parent).c_str());
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
-      printf("[%lu / %lu%s] search tick; %lu paths found\n",
-             time / tickOOM, timeout / tickOOM,
+      printf("[%lu%s / %lu%s] search tick; %lu paths found\n",
+             time / tickOOM,
+             tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
+             timeout / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
              responses.size());
     }
-    // Add the element to the cache
-    cache->add(parent);
 
     // -- Check If Valid --
-    if (knownFacts->contains(parent.fact, parent.factLength)) {
-      Path* result = new Path(parent);
-      printf("> %s\n", toString(*graph, *fringe, result).c_str());
-      responses.push_back(result);
+    if (knownFacts->contains(parent->fact, parent->factLength)) {
+      printf("> %s\n", toString(*graph, *fringe, parent).c_str());
+      responses.push_back(parent);
     }
 
     // -- Mutations --
     for (int indexToMutate = 0;
-         indexToMutate < parent.factLength;
+         indexToMutate < parent->factLength;
          ++indexToMutate) {  // for each index to mutate...
       const vector<edge>& mutations
-        = graph->outgoingEdges(parent.fact[indexToMutate]);
+        = graph->outgoingEdges(parent->fact[indexToMutate]);
 //      printf("  mutating index %d; %lu children\n", indexToMutate, mutations.size());
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
         if (it->type > 1) { continue; } // TODO(gabor) don't only do WordNet jumps
-        // ... create the mutated fact
-        word mutated[parent.factLength];
-        for (int i = 0; i < indexToMutate; ++i) {
-          mutated[i] = parent.fact[i];
-        }
-        mutated[indexToMutate] = it->sink;
-        for (int i = indexToMutate + 1; i < parent.factLength; ++i) {
-          mutated[i] = parent.fact[i];
-        }
-        // Create the corresponding search state
-        Path child(parent, mutated, parent.factLength, it->type);
         // Add the state to the fringe
-        if (!cache->isSeen(child)) {
-          fringe->push(child);
-        }
+        fringe->push(parent, indexToMutate, 1, it->sink, 0, it->type);
       }
     }
-  
   }
 
   printf("Search complete; %lu paths found\n", responses.size());
