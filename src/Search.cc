@@ -88,9 +88,10 @@ void BreadthFirstSearch::push(
     memoryPool = newPool;
     poolCapacity = 2 * poolCapacity;
     // (fix pointers -- and God help me for pointer arithmetic)
-    for (int i = 0; i < fringeLength; ++i) {
+    for (int i = 0; i <fringeLength; ++i) {
       fringe[i].fact = (word*) (startOffset + ((uint64_t) fringe[i].fact));
     }
+    printf("Pool capacity is now %lu\n", poolCapacity);
   }
   // (allocate fact)
   uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
@@ -123,6 +124,7 @@ void BreadthFirstSearch::push(
     if (parent != root) {
       parent = (Path*) (startOffset + ((uint64_t) parent));
     }
+    printf("Fringe capacity is now %lu\n", fringeCapacity);
   }
   // (allocate path)
   fringeLength += 1;
