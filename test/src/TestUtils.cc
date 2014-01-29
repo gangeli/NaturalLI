@@ -14,8 +14,11 @@ class UtilsTest : public ::testing::Test {
     lemursHaveTails_ = lemursHaveTails();
     lemurs = new Path(&lemursHaveTails_[0], lemursHaveTails().size());
     searchType->start(lemurs);
-    animals = searchType->push(lemurs, 0, 1, 3701, 0, 0);
-    cats = searchType->push(animals, 0, 1, 27970, 0, 1);
+    searchType->push(lemurs, 0, 1, 3701, 0, 0);
+    animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
+    searchType->push(animals, 0, 1, 27970, 0, 1);
+    animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
+    cats = ((BreadthFirstSearch*) searchType)->debugGet(1);
     graph = ReadMockGraph();
   }
 
