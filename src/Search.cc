@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <set>
 #include <cstring>
+#include <ctime>
 
 #include "Search.h"
 #include "Utils.h"
@@ -59,8 +60,9 @@ bool Path::operator==(const Path& other) const {
 // Class BreadthFirstSearch
 //
 BreadthFirstSearch::BreadthFirstSearch()
-    : fringeLength(0), fringeCapacity(1024), fringeI(0),
-      poolCapacity(1048576), poolLength(0), poppedRoot(false) {
+    : fringeLength(0), fringeCapacity(1), fringeI(0),
+      poolCapacity(1), poolLength(0), poppedRoot(false),
+      sumOffset(0){
   this->fringe = (Path*) malloc(fringeCapacity * sizeof(Path));
   this->memoryPool = (word*) malloc(poolCapacity * sizeof(word*));
 }
@@ -71,18 +73,24 @@ BreadthFirstSearch::~BreadthFirstSearch() {
   delete this->root;
 }
  
-const Path* BreadthFirstSearch::push(
+void BreadthFirstSearch::push(
     const Path* parent, uint8_t mutationIndex,
     uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
 
   // Allocate new fact
   // (ensure space)
   while (poolLength + parent->factLength >= poolCapacity) {
+    // (re-allocate array)
     word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
-    memcpy(newPool, memoryPool, poolCapacity);
+    uint64_t startOffset = ((uint64_t) newPool) - ((uint64_t) memoryPool);
+    memcpy(newPool, memoryPool, poolCapacity * sizeof(word*));
     free(memoryPool);
     memoryPool = newPool;
     poolCapacity = 2 * poolCapacity;
+    // (fix pointers -- and God help me for pointer arithmetic)
+    for (int i = 0; i < fringeLength; ++i) {
+      fringe[i].fact = (word*) (startOffset + ((uint64_t) fringe[i].fact));
+    }
   }
   // (allocate fact)
   uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
@@ -99,15 +107,26 @@ const Path* BreadthFirstSearch::push(
   // Allocate new path
   // (ensure space)
   while (fringeLength >= fringeCapacity) {
+    // (re-allocate array)
     Path* newFringe = (Path*) malloc(2 * fringeCapacity * sizeof(Path));
-    memcpy(newFringe, fringe, fringeCapacity);
+    uint64_t startOffset = ((uint64_t) newFringe) - ((uint64_t) fringe);
+    memcpy(newFringe, fringe, fringeCapacity * sizeof(Path));
     free(fringe);
     fringe = newFringe;
     fringeCapacity = 2 * fringeCapacity;
+    // (fix pointers -- and God help me for pointer arithmetic)
+    for (int i = 0; i < fringeLength; ++i) {
+      if (fringe[i].parent != root) {
+        fringe[i].parent = (Path*) (startOffset + ((uint64_t) fringe[i].parent));
+      }
+    }
+    if (parent != root) {
+      parent = (Path*) (startOffset + ((uint64_t) parent));
+    }
   }
   // (allocate path)
   fringeLength += 1;
-  return new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge);
+  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge);
 }
 
 const Path* BreadthFirstSearch::peek() {
@@ -161,6 +180,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
   const uint32_t tickTime = 10000;
+  std::clock_t startTime = std::clock();
 
   //
   // Search
@@ -178,12 +198,13 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
-      printf("[%lu%s / %lu%s] search tick; %lu paths found\n",
+      printf("[%lu%s / %lu%s search tick]; %lu paths found (%f ms elapsed)\n",
              time / tickOOM,
-             tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
+             tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              timeout / tickOOM,
-             tickTime < 1000 ? "" : (tickTime < 1000000 ? "k" : (tickTime  < 1000000000 ? "m" : "") ),
-             responses.size());
+             tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
+             responses.size(),
+             1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
     }
 
     // -- Check If Valid --

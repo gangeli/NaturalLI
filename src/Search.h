@@ -51,7 +51,7 @@ struct PathCompare {
  */
 class SearchType {
  public:
-  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
+  virtual void push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
                     edge_type edge) = 0;
   virtual const Path* pop() = 0;
@@ -73,12 +73,19 @@ class SearchType {
  */
 class BreadthFirstSearch : public SearchType {
  public:
-  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
+  virtual void push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
                     edge_type edge);
   virtual const Path* pop();
   virtual const Path* peek();
   virtual bool isEmpty();
+
+  /**
+   * A debug function to get the ith element of the queue.
+   */
+  Path* debugGet(uint64_t i) {
+    return &fringe[i];
+  }
   
   BreadthFirstSearch();
   ~BreadthFirstSearch();
@@ -97,6 +104,9 @@ class BreadthFirstSearch : public SearchType {
   
   // manage 0 element corner case
   bool poppedRoot;
+
+  // handles offsets from memcpy's
+  uint64_t sumOffset;
 };
 
 

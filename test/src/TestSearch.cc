@@ -25,12 +25,16 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    dist1 = searchType->push(root, 0, 1, 3701, 0, 0);
+    searchType->push(root, 0, 1, 3701, 0, 0);
+    dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     EXPECT_EQ(*dist1, *searchType->peek());
     EXPECT_EQ(*root, *searchType->root);
-    dist2 = searchType->push(dist1, 0, 1, 27970, 0, 1);
+    searchType->push(dist1, 0, 1, 27970, 0, 1);
     EXPECT_EQ(*dist1, *searchType->peek());
     EXPECT_EQ(*root, *searchType->root);
+    // Refresh pointers
+    dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
+    dist2 = ((BreadthFirstSearch*) searchType)->debugGet(1);
   }
 
   virtual void TearDown() {
@@ -80,8 +84,8 @@ TEST_F(PathTest, Parent) {
   EXPECT_FALSE(dist2->parent == NULL);
 
   // Pointer equality
-  EXPECT_EQ(dist1->parent, root);
-  EXPECT_EQ(dist2->parent, dist1);
+  EXPECT_EQ(root,  dist1->parent);
+  EXPECT_EQ(dist1, dist2->parent);
   
   // Fine-grained equality check
   EXPECT_EQ(root->parent, dist1->parent->parent);
@@ -155,8 +159,10 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  const Path* dist1 = search.push(root, 0, 1, 3701,  0, 0);
-  const Path* dist2 = search.push(root, 0, 1, 27970, 0, 1);
+  search.push(root, 0, 1, 3701,  0, 0);
+  search.push(root, 0, 1, 27970, 0, 1);
+  const Path* dist1 = search.debugGet(0);
+  const Path* dist2 = search.debugGet(1);
   ASSERT_FALSE(search.isEmpty());
   EXPECT_EQ(*root,  *search.pop());
   ASSERT_FALSE(search.isEmpty());
