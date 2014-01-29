@@ -40,6 +40,6 @@ string toString(Graph& graph, SearchType& searchType, const Path* path) {
   } else {
     return toString(graph, path->fact, path->factLength) +
            "; from\n  " +
-           toString(graph, searchType, path->source(searchType));
+           toString(graph, searchType, path->parent);
   }
 }

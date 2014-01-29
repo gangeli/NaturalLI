@@ -18,29 +18,20 @@ class SearchType;
  */
 class Path {
  public:
-  uint64_t id;
-  uint64_t sourceId;
-  word fact[256];
+  const Path* parent;
+  const word* fact;
   uint8_t factLength;
   edge_type edgeType;
 
-  Path(const uint64_t, const uint64_t, const word*, const uint8_t,
-       const edge_type&);
-  Path(const uint64_t, const word*, const uint8_t, const edge_type&);
-  Path(const Path& source, const word*, const uint8_t, const edge_type&);
-  Path(const word*, const uint8_t);
-  Path(const Path&);
+  /** The canonical constructor -- all fields are specified */
+  Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType);
+  /** A constructor for a root node -- there is no parent, nor edge type */
+  Path(const word* fact, uint8_t factLength);
+  /** The deconstructor -- this should be largely empty */
   ~Path();
 
-  void operator=(const Path& copy);
+  /** Check if this fact is equal to another fact */
   bool operator==(const Path& other) const;
-
-  /**
-   * Returns the actual pointer to the source path.
-   * The implementation of this function depends on the backend being used
-   * (e.g., RamCloud).
-   */
-  Path* source(SearchType& queue) const;
 };
 
 struct PathCompare {
@@ -60,10 +51,20 @@ struct PathCompare {
  */
 class SearchType {
  public:
-  virtual void push(const Path&) = 0;
-  virtual const Path pop() = 0;
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
+                    uint8_t replaceLength, word replace1, word replace2,
+                    edge_type edge) = 0;
+  virtual const Path* pop() = 0;
+  virtual const Path* peek() = 0;
   virtual bool isEmpty() = 0;
-  virtual Path* findPathById(uint64_t id) = 0;
+
+  /** The root of the search */
+  const Path* root;
+  /** Set the root of the search. This class now owns this pointer. */
+  void start(const Path* startState) { root = startState; }
+
+ protected:
+  SearchType() : root(NULL) { } 
 };
 
 /**
@@ -72,35 +73,30 @@ class SearchType {
  */
 class BreadthFirstSearch : public SearchType {
  public:
-  virtual void push(const Path&);
-  virtual const Path pop();
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
+                    uint8_t replaceLength, word replace1, word replace2,
+                    edge_type edge);
+  virtual const Path* pop();
+  virtual const Path* peek();
   virtual bool isEmpty();
-  virtual Path* findPathById(uint64_t id);
   
   BreadthFirstSearch();
   ~BreadthFirstSearch();
 
  private:
-  std::queue<Path>* impl;
-  std::vector<Path> id2path;
-};
-
-/**
- * Represents a uniform cost search (Djkstra's).
- */
-class UCSSearch : public SearchType {
- public:
-  virtual void push(const Path&);
-  virtual const Path pop();
-  virtual bool isEmpty();
-  virtual Path* findPathById(uint64_t id);
+  // manage the queue
+  Path* fringe;
+  uint64_t fringeCapacity;
+  uint64_t fringeLength;
+  uint64_t fringeI;
   
-  UCSSearch();
-  ~UCSSearch();
-
- private:
-  std::priority_queue<Path, std::vector<Path>, PathCompare>* impl;
-  std::vector<Path> id2path;
+  // manage the fact memory pool
+  uint64_t poolCapacity;
+  uint64_t poolLength;
+  word* memoryPool;
+  
+  // manage 0 element corner case
+  bool poppedRoot;
 };
 
 
@@ -131,8 +127,15 @@ class CacheStrategyNone : public CacheStrategy {
 /**
  * Perform a search from the query fact, to any antecedents that can be
  * found by searching through valid edits, insertions, or deletions.
+ *
+ * Note that the Path* elements in the output will only last as long as the
+ * passed-in SearchType, as they are allocated in memory which the SearchType
+ * controls.
+ * A related note is that the caller of this function should (a) not re-use
+ * a SearchType across multiple searches, and (b) delete the SearchType to free
+ * the associated memory.
  */
-std::vector<Path*> Search(Graph*, FactDB*,
+std::vector<const Path*> Search(Graph*, FactDB*,
                      const word* query, const uint8_t queryLength,
                      SearchType*,
                      CacheStrategy*, const uint64_t timeout);

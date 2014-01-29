@@ -11,12 +11,11 @@ class UtilsTest : public ::testing::Test {
   virtual void SetUp() {
     // Add base path element
     searchType = new BreadthFirstSearch();
-    lemurs = new Path(&lemursHaveTails()[0], lemursHaveTails().size());
-    animals = new Path(*lemurs, &animalsHaveTails()[0], animalsHaveTails().size(), 0);
-    cats = new Path(*animals, &catsHaveTails()[0], catsHaveTails().size(), 1);
-    searchType->push(*lemurs);
-    searchType->push(*animals);
-    searchType->push(*cats);
+    lemursHaveTails_ = lemursHaveTails();
+    lemurs = new Path(&lemursHaveTails_[0], lemursHaveTails().size());
+    searchType->start(lemurs);
+    animals = searchType->push(lemurs, 0, 1, 3701, 0, 0);
+    cats = searchType->push(animals, 0, 1, 27970, 0, 1);
     graph = ReadMockGraph();
   }
 
@@ -24,11 +23,12 @@ class UtilsTest : public ::testing::Test {
     delete lemurs, animals, cats;
   }
 
-  Path* lemurs;
-  Path* animals;
-  Path* cats;
+  const Path* lemurs;
+  const Path* animals;
+  const Path* cats;
   Graph* graph;
   SearchType* searchType;
+  std::vector<word> lemursHaveTails_;
 };
 
 TEST_F(UtilsTest, ToStringPhrase) {

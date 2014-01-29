@@ -135,7 +135,7 @@ void closeConnection(int socket, sockaddr_in* client) {
  * Convert a (concise) path object into an Inference object to be passed over the wire
  * to the client.
  */
-Inference inferenceFromPath(Path* path, SearchType* search) {
+Inference inferenceFromPath(const Path* path, const SearchType* search) {
   Fact fact;
   for (int i = 0; i < path->factLength; ++i) {
     Word word;
@@ -144,9 +144,8 @@ Inference inferenceFromPath(Path* path, SearchType* search) {
   }
   Inference inference;
   inference.mutable_fact()->CopyFrom(fact);
-  Path* parent = path->source(*search);
-  if (parent != NULL) {
-    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(parent, search));
+  if (path->parent != NULL) {
+    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, search));
   }
   return inference;
 }
@@ -201,7 +200,7 @@ void handleConnection(int socket, sockaddr_in* client,
   CacheStrategy* cache   = new CacheStrategyNone();
   SearchType*    search  = new BreadthFirstSearch();
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
-  std::vector<Path*> result;
+  std::vector<const Path*> result;
   try {
     result = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.size());
