@@ -78,8 +78,9 @@ void BreadthFirstSearch::push(
     uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
 
   // Allocate new fact
+  uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   // (ensure space)
-  while (poolLength + parent->factLength >= poolCapacity) {
+  while (poolLength + mutatedLength >= poolCapacity) {
     // (re-allocate array)
     word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
     uint64_t startOffset = ((uint64_t) newPool) - ((uint64_t) memoryPool);
@@ -91,19 +92,19 @@ void BreadthFirstSearch::push(
     for (int i = 0; i <fringeLength; ++i) {
       fringe[i].fact = (word*) (startOffset + ((uint64_t) fringe[i].fact));
     }
-    printf("Pool capacity is now %lu\n", poolCapacity);
   }
   // (allocate fact)
-  uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   word* mutated = &memoryPool[poolLength];
   poolLength += mutatedLength;
   // (mutate fact)
   memcpy(mutated, parent->fact, mutationIndex * sizeof(word));
   if (replaceLength > 0) { mutated[mutationIndex] = replace1; }
   if (replaceLength > 1) { mutated[mutationIndex + 1] = replace2; }
-  memcpy(&(mutated[mutationIndex + replaceLength]),
-         &(parent->fact[mutationIndex + 1]),
-         (parent->factLength - mutationIndex - 1) * sizeof(word));
+  if (mutationIndex < parent->factLength - 1) {
+    memcpy(&(mutated[mutationIndex + replaceLength]),
+           &(parent->fact[mutationIndex + 1]),
+           (parent->factLength - mutationIndex - 1) * sizeof(word));
+  }
 
   // Allocate new path
   // (ensure space)
@@ -124,7 +125,6 @@ void BreadthFirstSearch::push(
     if (parent != root) {
       parent = (Path*) (startOffset + ((uint64_t) parent));
     }
-    printf("Fringe capacity is now %lu\n", fringeCapacity);
   }
   // (allocate path)
   fringeLength += 1;
