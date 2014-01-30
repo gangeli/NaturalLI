@@ -226,7 +226,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       for(vector<edge>::const_iterator it = mutations.begin();
           it != mutations.end();
           ++it) {  // for each possible mutation on that index...
-        if (it->type > 1) { continue; } // TODO(gabor) don't only do WordNet jumps
+        if (it->type > 0) { continue; } // TODO(gabor) don't only do WordNet up
         // Add the state to the fringe
         parent = fringe->push(parent, indexToMutate, 1, it->sink, 0, it->type);
       }
