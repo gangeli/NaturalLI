@@ -44,7 +44,7 @@ class RamCloudBreadthFirstSearch : public SearchType {
   RamCloudBreadthFirstSearch();
   ~RamCloudBreadthFirstSearch();
 
-  virtual void push(const Path* parent, uint8_t mutationIndex,
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
                     edge_type edge);
   virtual const Path* pop();

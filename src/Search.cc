@@ -73,7 +73,7 @@ BreadthFirstSearch::~BreadthFirstSearch() {
   delete this->root;
 }
  
-void BreadthFirstSearch::push(
+const Path* BreadthFirstSearch::push(
     const Path* parent, uint8_t mutationIndex,
     uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
 
@@ -129,6 +129,7 @@ void BreadthFirstSearch::push(
   // (allocate path)
   fringeLength += 1;
   new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge);
+  return parent;
 }
 
 const Path* BreadthFirstSearch::peek() {
@@ -181,7 +182,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 10000;
+  const uint32_t tickTime = 100;
   std::clock_t startTime = std::clock();
 
   //
@@ -211,7 +212,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     if (knownFacts->contains(parent->fact, parent->factLength)) {
-      printf("> %s\n", toString(*graph, *fringe, parent).c_str());
+//      printf("> %s\n", toString(*graph, *fringe, parent).c_str());
       responses.push_back(parent);
     }
 
@@ -227,12 +228,12 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
           ++it) {  // for each possible mutation on that index...
         if (it->type > 1) { continue; } // TODO(gabor) don't only do WordNet jumps
         // Add the state to the fringe
-        fringe->push(parent, indexToMutate, 1, it->sink, 0, it->type);
+        parent = fringe->push(parent, indexToMutate, 1, it->sink, 0, it->type);
       }
     }
   }
 
-  printf("Search complete; %lu paths found\n", responses.size());
+//  printf("Search complete; %lu paths found\n", responses.size());
   return responses;
 }
 

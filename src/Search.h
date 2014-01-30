@@ -51,7 +51,12 @@ struct PathCompare {
  */
 class SearchType {
  public:
-  virtual void push(const Path* parent, uint8_t mutationIndex,
+  /**
+   * Push a mutation onto the queue.
+   * The returned path is the (potentially new) pointer to the passed
+   * parent variable, as it may have changed due to allocation moving.
+   */
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
                     edge_type edge) = 0;
   virtual const Path* pop() = 0;
@@ -73,7 +78,7 @@ class SearchType {
  */
 class BreadthFirstSearch : public SearchType {
  public:
-  virtual void push(const Path* parent, uint8_t mutationIndex,
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
                     edge_type edge);
   virtual const Path* pop();

@@ -172,6 +172,39 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
 }
 
+TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
+  // Initialize Search
+  EXPECT_TRUE(search.isEmpty());
+  search.start(root);
+  EXPECT_FALSE(search.isEmpty());
+  // Populate search
+  for (int i = 0; i < 120; ++i) {
+    search.push(root, 0, 1, i, 0, 0);
+  }
+  for (int parent = 0; parent < 100; ++parent) {
+    for (int i = 0; i < 128; ++i) {
+      const Path* p = search.debugGet(parent);
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0);
+    }
+  }
+  // Pop off elements
+  EXPECT_FALSE(search.pop() == NULL);  // pop the root
+  for (int i = 0; i < 120 + 100 * 128; ++i) {
+    ASSERT_FALSE(search.isEmpty());
+    const Path* elem = search.pop();
+    EXPECT_FALSE(elem == NULL);  // we didn't pop off a null element
+    EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
+    EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
+    for (int k = 0; k < elem->factLength; ++k) {
+      EXPECT_GE(elem->fact[k], 0);  // the word is positive (should always be the case anyways)
+      EXPECT_LT(elem->fact[k], 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+    }
+    EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
+  }
+  // Final checks
+  EXPECT_TRUE(search.isEmpty());
+}
+
 TEST_F(BreadthFirstSearchTest, RunBFS) {
   vector<const Path*> result = Search(graph, facts,
                                 &lemursHaveTails_[0], lemursHaveTails_.size(),
