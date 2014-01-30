@@ -4,7 +4,12 @@
 # In addition, note that protoc must be set up
 # on the machine. This can be done by setting the $PROTOC
 # environment variable, and adding the include path
-# to $CUSTOM_INCLUDES.
+# to $CUSTOM_I and $CUSTOM_L.
+#
+# For example:
+#   export CUSTOM_L=='-L/u/nlp/packages/protobuf-2.4.1/lib'
+#   export CUSTOM_I='-I/u/nlp/packages/protobuf-2.4.1/include'
+#   export RAMCLOUD_HOME='/u/angeli/workspace/ramcloud'
 # -------------------
 PG_CONFIG?=pg_config
 SCALA_HOME?=/home/gabor/programs/scala
@@ -34,9 +39,9 @@ TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.j
 # (c++)
 CUSTOM_INCLUDES?=''
 CC = g++
-INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include ${CUSTOM_INCLUDES}
-LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
-LDFLAGS=-lpq -lramcloud -lprofiler -lprotobuf
+INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include ${CUSTOM_I}
+LD_PATH=-L`${PG_CONFIG} --libdir` -Llib ${CUSTOM_L}
+LDFLAGS=-lpq -lramcloud -lprotobuf #-lprofiler
 CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
 # (files)
 _OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Messages.pb.o #RamCloudBackend.o
