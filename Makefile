@@ -31,7 +31,7 @@ CC = g++
 INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include
 LD_PATH=-L`${PG_CONFIG} --libdir` -Llib
 LDFLAGS=-lpq -lramcloud -lprofiler -lprotobuf
-CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x
+CPP_FLAGS=-ggdb -fprofile-arcs -ftest-coverage -std=c++0x -00
 # (files)
 _OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Messages.pb.o #RamCloudBackend.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
