@@ -145,9 +145,13 @@ class MockGraph : public Graph {
   }
   
   virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) {
-    printf("ERROR: cannot call outgoingEdgesFast() on a mock graph\n");
-    std::exit(2);
-    return NULL;
+    vector<edge> edges = outgoingEdges(source);
+    *outputLength = edges.size();
+    edge* rtn = (edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
+    for (int i = 0; i < edges.size(); ++i) { 
+      rtn[i] = edges[i];
+    }
+    return rtn;
   }
 
   virtual const vector<edge> outgoingEdges(word source) {
