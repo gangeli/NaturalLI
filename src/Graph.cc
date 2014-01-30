@@ -14,22 +14,26 @@ using namespace std;
 class InMemoryGraph : public Graph {
  private:
   char** index2gloss;
-  vector<edge>* edges;
+  edge** edges;
+  uint32_t* edgesSizes;
   uint64_t size;
   
  public:
-  InMemoryGraph(char** index2gloss, vector<edge>* edges, uint64_t size)
-    : index2gloss(index2gloss), edges(edges), size(size) { }
+  InMemoryGraph(char** index2gloss, edge** edges, uint32_t* edgesSizes, uint64_t size)
+    : index2gloss(index2gloss), edges(edges), edgesSizes(edgesSizes), size(size) { }
 
   ~InMemoryGraph() {
     for (int i = 0; i < size; ++i) { 
       free(index2gloss[i]);
+      free(edges[i]);
     }
     free(index2gloss);
     free(edges);
+    free(edgesSizes);
   }
 
-  virtual const vector<edge>& outgoingEdges(word source) {
+  virtual const edge* outgoingEdgesFast(word source, uint32_t* size) {
+    *size = edgesSizes[source];
     return edges[source];
   }
 
@@ -73,7 +77,9 @@ Graph* ReadGraph() {
   }
   
   // Read edges
-  vector<edge>* edges = (vector<edge>*) malloc((numWords+1) * sizeof(vector<edge>));
+  edge** edges = (edge**) malloc((numWords+1) * sizeof(edge*));
+  uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
+  for (int i = 0; i < numWords+1; ++i) { edgesSizes[i] = 0; }
   // (query)
   char edgeQuery[127];
   snprintf(edgeQuery, 127, "SELECT * FROM %s;", PG_TABLE_EDGE.c_str());
@@ -86,7 +92,8 @@ Graph* ReadGraph() {
     edge.sink   = atoi(row[1]);
     edge.type   = atoi(row[2]);
     edge.cost   = atof(row[3]);
-    edges[edge.source].push_back(edge);
+    edges[edge.source][edgesSizes[edge.source]] = edge;
+    edgesSizes[edge.source] += 1;
     edgeI += 1;
     if (edgeI % 1000000 == 0) {
       printf("loaded %luM edges\n", edgeI / 1000000);
@@ -96,7 +103,7 @@ Graph* ReadGraph() {
   
   // Finish
   printf("%s\n", "Done reading the graph.");
-  return new InMemoryGraph(index2gloss, edges, numWords);
+  return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
 }
 
 
@@ -136,8 +143,14 @@ class MockGraph : public Graph {
     delete noEdges, lemurEdges, animalEdges, timoneEdges,
            catEdges, haveEdges, tailEdges;
   }
+  
+  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) {
+    printf("ERROR: cannot call outgoingEdgesFast() on a mock graph\n");
+    std::exit(2);
+    return NULL;
+  }
 
-  virtual const vector<edge>& outgoingEdges(word source) {
+  virtual const vector<edge> outgoingEdges(word source) {
     switch (source) {
       case 2479928:  // lemur
         return *lemurEdges;

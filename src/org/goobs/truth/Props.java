@@ -44,7 +44,7 @@ public class Props {
   public static int SERVER_PORT = 1337;
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
-  public static long SEARCH_TIMEOUT = 1000000;
+  public static long SEARCH_TIMEOUT = 100000000;
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "/home/gabor/workspace/sim/etc/ontology.ser.gz";

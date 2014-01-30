@@ -220,15 +220,12 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     for (int indexToMutate = 0;
          indexToMutate < parent->factLength;
          ++indexToMutate) {  // for each index to mutate...
-      const vector<edge>& mutations
-        = graph->outgoingEdges(parent->fact[indexToMutate]);
-//      printf("  mutating index %d; %lu children\n", indexToMutate, mutations.size());
-      for(vector<edge>::const_iterator it = mutations.begin();
-          it != mutations.end();
-          ++it) {  // for each possible mutation on that index...
-        if (it->type > 0) { continue; } // TODO(gabor) don't only do WordNet up
+      uint32_t numMutations = 0;
+      edge* mutations = graph->outgoingEdgesFast(parent->fact[indexToMutate], &numMutations):
+      for (int i = 0; i < numMutations; ++i) {
+        if (it->type > 1) { continue; } // TODO(gabor) don't only do WordNet up
         // Add the state to the fringe
-        parent = fringe->push(parent, indexToMutate, 1, it->sink, 0, it->type);
+        parent = fringe->push(parent, indexToMutate, 1, mutations[i]->sink, 0, mutations[i]->type);
       }
     }
   }

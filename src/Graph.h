@@ -23,11 +23,22 @@ struct edge {
 class Graph {
  public:
   /** Get all outgoing edges from the given word */
-  virtual const std::vector<edge>& outgoingEdges(word) = 0;
+  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) = 0;
   /** For debugging, get the string form of the given word */
   virtual const char* gloss(word) = 0;
   /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() = 0;
+
+  /** A helper to get the outgoing edges in a more reasonable form */
+  virtual const std::vector<edge> outgoingEdges(word source) {
+    std::vector<edge> rtn;
+    uint32_t length = 0;
+    const edge* edges = outgoingEdgesFast(source, &length);
+    for (int i = 0; i < length; ++i) {
+      rtn.push_back(edges[i]);
+    }
+    return rtn;
+  }
 };
 
 /**

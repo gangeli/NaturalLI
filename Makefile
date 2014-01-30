@@ -23,6 +23,7 @@ JAVAC=javac
 SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
 SCALADOC=${SCALA_HOME}/bin/scaladoc
+PROTOC?=protoc
 # (locations)
 SRC=src
 TEST_SRC=test/src
