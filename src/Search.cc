@@ -10,16 +10,6 @@
 using namespace std;
 
 //
-// Static Variables
-//
-uint64_t nextId = 1;
-
-// TODO(gabor) this is not threadsafe
-inline uint64_t generateUniqueId() {
-  nextId++;
-}
-
-//
 // Class Path
 //
 Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,

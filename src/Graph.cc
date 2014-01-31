@@ -79,10 +79,10 @@ Graph* ReadGraph() {
   // Read edges
   struct edge** edges = (struct edge**) malloc((numWords+1) * sizeof(struct edge*));
   uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
-  uint32_t edgeCapacities[numWords+1];
-  for (int i = 0; i < numWords; ++i) {
+  uint32_t* edgeCapacities = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
+  for (uint32_t i = 0; i < numWords; ++i) {
     edgesSizes[i] = 0;
-    edges[i] = (edge*) malloc(32 * sizeof(struct edge));
+    edges[i] = (struct edge*) malloc(32 * sizeof(struct edge));
     edgeCapacities[i] = 32;
   }
   // (query)
@@ -110,6 +110,7 @@ Graph* ReadGraph() {
       printf("loaded %luM edges\n", edgeI / 1000000);
     }
   }
+  free(edgeCapacities);
   
   
   // Finish
@@ -158,7 +159,7 @@ class MockGraph : public Graph {
   virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) {
     vector<edge> edges = outgoingEdges(source);
     *outputLength = edges.size();
-    edge* rtn = (edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
+    edge* rtn = (struct edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
     for (int i = 0; i < edges.size(); ++i) { 
       rtn[i] = edges[i];
     }

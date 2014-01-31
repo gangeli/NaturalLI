@@ -11,7 +11,7 @@
 struct edge {
   word  source;
   word  sink;
-  char  type;
+  uint8_t  type;
   float cost;
 };
 

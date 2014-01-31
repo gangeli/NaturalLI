@@ -11,8 +11,8 @@ using namespace std;
 PGIterator::PGIterator(const char* queryString, uint64_t fetchSize)
     : fetchSize(fetchSize), numResults(0), nextIndex(0) {
   // Define connection
-  char psqlConnectionSpec[127];
-  snprintf(psqlConnectionSpec, 127,
+  char psqlConnectionSpec[512];
+  snprintf(psqlConnectionSpec, 512,
            "host='%s' port='%i' dbname='%s' user='%s' password='%s'",
            PG_HOST.c_str(), PG_PORT, PG_DATABASE.c_str(), PG_USER.c_str(),
            PG_PASSWORD.c_str());
@@ -45,7 +45,7 @@ PGIterator::PGIterator(const char* queryString, uint64_t fetchSize)
          printf("  (cause: <<unknown>>)\n");
          break;
     }
-    exit(2);
+    exit(1);
   }
   
   // Begin transaction
@@ -53,8 +53,8 @@ PGIterator::PGIterator(const char* queryString, uint64_t fetchSize)
   PQclear(this->result);
 
   // Create cursor
-  char cursorQuery[256];
-  snprintf(cursorQuery, 255,
+  char cursorQuery[512];
+  snprintf(cursorQuery, 512,
            "DECLARE c CURSOR FOR %s;",
            queryString);
   this->result = query(cursorQuery);
