@@ -80,10 +80,10 @@ Graph* ReadGraph() {
   struct edge** edges = (struct edge**) malloc((numWords+1) * sizeof(struct edge*));
   uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
   uint32_t* edgeCapacities = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
-  for (uint32_t i = 0; i < numWords; ++i) {
+  for (uint32_t i = 0; i < numWords + 1; ++i) {
     edgesSizes[i] = 0;
-    edges[i] = (struct edge*) malloc(32 * sizeof(struct edge));
-    edgeCapacities[i] = 32;
+    edges[i] = (struct edge*) malloc(4 * sizeof(struct edge));
+    edgeCapacities[i] = 4;
   }
   // (query)
   char edgeQuery[127];
@@ -97,7 +97,7 @@ Graph* ReadGraph() {
     edge.sink   = atoi(row[1]);
     edge.type   = atoi(row[2]);
     edge.cost   = atof(row[3]);
-    if (edgesSizes[edge.source] >= edgeCapacities[edge.source]) {
+    if (edgesSizes[edge.source] >= edgeCapacities[edge.source] - 1) {
       struct edge* newEdges = (struct edge*) malloc(edgeCapacities[edge.source] * 2 * sizeof(struct edge));
       memcpy(newEdges, edges[edge.source], edgeCapacities[edge.source] * sizeof(struct edge));
       free(edges[edge.source]);
