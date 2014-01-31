@@ -23,7 +23,9 @@ class Path {
   /** The actual fact expressed by the node */
   const word* fact;
   /** The length of the fact expressed by the node */
-  uint8_t factLength;
+  const uint8_t factLength;
+  /** The index that was last mutated, or 255 if this is the first element*/
+  const uint8_t lastMutationIndex;
   /**
    * A bitmask for which words can be modified in the fact.
    * An element which is 'fixed' can still be deleted, but cannot be modified
@@ -35,7 +37,7 @@ class Path {
 
   /** The canonical constructor -- all fields are specified */
   Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
-       const uint64_t fixedBitmask[]);
+       const uint64_t fixedBitmask[], const uint8_t lastMutationIndex);
   /** A constructor for a root node -- there is no parent, nor edge type */
   Path(const word* fact, uint8_t factLength);
   /** The deconstructor -- this should be largely empty */

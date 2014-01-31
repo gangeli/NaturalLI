@@ -10,13 +10,34 @@
 using namespace std;
 
 //
+// Utilities
+//
+
+/** Check if element |index| is set in the bitmask */
+inline bool isSetBit(const uint64_t bitmask[], const uint8_t index) {
+  uint8_t bucket = index / 64;
+  uint8_t offset = index % 64;
+  uint64_t mask = 0x1 << offset;
+  return bitmask[bucket] & mask != 0;
+}
+
+/** Set element |index| in the bitmask */
+inline bool setBit(uint64_t bitmask[], const uint8_t index) {
+  uint8_t bucket = index / 64;
+  uint8_t offset = index % 64;
+  uint64_t mask = 0x1 << offset;
+  bitmask[bucket] = bitmask[bucket] | mask;
+}
+
+//
 // Class Path
 //
 Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
-           const uint64_t fixedBitmask[]) 
+           const uint64_t fixedBitmask[], uint8_t lastMutatedIndex) 
     : parent(parentOrNull),
       fact(fact),
       factLength(factLength),
+      lastMutationIndex(lastMutatedIndex),
       edgeType(edgeType),
       fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} { }
 
@@ -24,6 +45,7 @@ Path::Path(const word* fact, uint8_t factLength)
     : parent(NULL),
       fact(fact),
       factLength(factLength),
+      lastMutationIndex(255),
       edgeType(255),
       fixedBitmask{0,0,0,0} { }
 
@@ -101,6 +123,10 @@ const Path* BreadthFirstSearch::push(
 
   // Compute fixed bitmap
   uint64_t fixedBitmask[4];
+  memcpy(fixedBitmask, parent->fixedBitmask, 4 * sizeof(uint64_t));
+  if (mutationIndex != parent->lastMutationIndex) {
+    setBit(fixedBitmask, parent->lastMutationIndex);
+  }
 
   // Allocate new path
   // (ensure space)
@@ -124,7 +150,7 @@ const Path* BreadthFirstSearch::push(
   }
   // (allocate path)
   fringeLength += 1;
-  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge, fixedBitmask);
+  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
   return parent;
 }
 
@@ -137,7 +163,7 @@ const Path* BreadthFirstSearch::peek() {
 }
 
 const Path* BreadthFirstSearch::pop() {
-  if (!poppedRoot && this->fringeI == 0) {
+  if (this.fringeI == 0 && !poppedRoot) {
     poppedRoot = true;
     return root;
   }
@@ -145,8 +171,8 @@ const Path* BreadthFirstSearch::pop() {
   return &this->fringe[this->fringeI - 1];
 }
 
-bool BreadthFirstSearch::isEmpty() {
-  return root == NULL || (poppedRoot && fringeI >= fringeLength);
+inline bool BreadthFirstSearch::isEmpty() {
+  return (fringeI >= fringeLength && poppedRoot) || root == NULL;
 }
 
 //
@@ -187,13 +213,13 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   while (!fringe->isEmpty() && time < timeout) {
     // Get the next element from the fringe
     if (fringe->isEmpty()) {
+      // (fringe is empty -- this should basically never be called)
       printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
       std::exit(1);
     }
     const Path* parent = fringe->pop();
     // Update time
     time += 1;
-//    printf("search tick %lu; popped %s\n", time, toString(*graph, *fringe, parent).c_str());
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
@@ -208,7 +234,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     if (knownFacts->contains(parent->fact, parent->factLength)) {
-//      printf("> %s\n", toString(*graph, *fringe, parent).c_str());
       responses.push_back(parent);
     }
 
@@ -216,6 +241,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     for (int indexToMutate = 0;
          indexToMutate < parent->factLength;
          ++indexToMutate) {  // for each index to mutate...
+      if (isSetBit(parent->fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
       const edge* mutations = graph->outgoingEdgesFast(parent->fact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
@@ -226,7 +252,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
   }
 
-//  printf("Search complete; %lu paths found\n", responses.size());
   return responses;
 }
 
