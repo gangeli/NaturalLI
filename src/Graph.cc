@@ -92,19 +92,20 @@ Graph* ReadGraph() {
   uint64_t edgeI = 0;
   while (edgeIter.hasNext()) {
     PGRow row = edgeIter.next();
-    edge edge;
-    edge.source = atol(row[0]);
-    edge.sink   = atoi(row[1]);
-    edge.type   = atoi(row[2]);
-    edge.cost   = atof(row[3]);
-    if (edgesSizes[edge.source] >= edgeCapacities[edge.source] - 1) {
-      struct edge* newEdges = (struct edge*) malloc(edgeCapacities[edge.source] * 2 * sizeof(struct edge));
-      memcpy(newEdges, edges[edge.source], edgeCapacities[edge.source] * sizeof(struct edge));
-      free(edges[edge.source]);
-      edges[edge.source] = newEdges;
+    edge e;
+    e.source = atol(row[0]);
+    e.sink   = atoi(row[1]);
+    e.type   = atoi(row[2]);
+    e.cost   = atof(row[3]);
+    if (edgesSizes[e.source] >= edgeCapacities[e.source] - 1) {
+      struct edge* newEdges = (struct edge*) malloc(edgeCapacities[e.source] * 2 * sizeof(struct edge));
+      memcpy(newEdges, edges[e.source], edgeCapacities[e.source] * sizeof(struct edge));
+      edgeCapacities[e.source] = 2 * edgeCapacities[e.source];
+      free(edges[e.source]);
+      edges[e.source] = newEdges;
     }
-    edges[edge.source][edgesSizes[edge.source]] = edge;
-    edgesSizes[edge.source] += 1;
+    edges[e.source][edgesSizes[e.source]] = e;
+    edgesSizes[e.source] += 1;
     edgeI += 1;
     if (edgeI % 1000000 == 0) {
       printf("loaded %luM edges\n", edgeI / 1000000);
