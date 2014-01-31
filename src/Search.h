@@ -18,13 +18,24 @@ class SearchType;
  */
 class Path {
  public:
+  /** A pointer to the "parent" of this node -- where the search came from */
   const Path* parent;
+  /** The actual fact expressed by the node */
   const word* fact;
+  /** The length of the fact expressed by the node */
   uint8_t factLength;
+  /**
+   * A bitmask for which words can be modified in the fact.
+   * An element which is 'fixed' can still be deleted, but cannot be modified
+   * any more.
+   */
+  const uint64_t fixedBitmask[4];  // 256 bits
+  /** The type of edge this path was created from */
   edge_type edgeType;
 
   /** The canonical constructor -- all fields are specified */
-  Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType);
+  Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
+       const uint64_t fixedBitmask[]);
   /** A constructor for a root node -- there is no parent, nor edge type */
   Path(const word* fact, uint8_t factLength);
   /** The deconstructor -- this should be largely empty */

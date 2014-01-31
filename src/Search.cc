@@ -22,17 +22,20 @@ inline uint64_t generateUniqueId() {
 //
 // Class Path
 //
-Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType) 
+Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
+           const uint64_t fixedBitmask[]) 
     : parent(parentOrNull),
       fact(fact),
       factLength(factLength),
-      edgeType(edgeType) { }
+      edgeType(edgeType),
+      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} { }
 
 Path::Path(const word* fact, uint8_t factLength)
     : parent(NULL),
       fact(fact),
       factLength(factLength),
-      edgeType(255) { }
+      edgeType(255),
+      fixedBitmask{0,0,0,0} { }
 
 Path::~Path() {
 };
@@ -106,6 +109,9 @@ const Path* BreadthFirstSearch::push(
            (parent->factLength - mutationIndex - 1) * sizeof(word));
   }
 
+  // Compute fixed bitmap
+  uint64_t fixedBitmask[4];
+
   // Allocate new path
   // (ensure space)
   while (fringeLength >= fringeCapacity) {
@@ -128,7 +134,7 @@ const Path* BreadthFirstSearch::push(
   }
   // (allocate path)
   fringeLength += 1;
-  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge);
+  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge, fixedBitmask);
   return parent;
 }
 
