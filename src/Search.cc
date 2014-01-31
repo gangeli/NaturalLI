@@ -163,7 +163,7 @@ const Path* BreadthFirstSearch::peek() {
 }
 
 const Path* BreadthFirstSearch::pop() {
-  if (this.fringeI == 0 && !poppedRoot) {
+  if (this->fringeI == 0 && !poppedRoot) {
     poppedRoot = true;
     return root;
   }
