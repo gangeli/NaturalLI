@@ -95,7 +95,7 @@ const Path* BreadthFirstSearch::push(
   // Allocate new fact
   uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   // (ensure space)
-  while (poolLength + mutatedLength >= poolCapacity) {
+  while (poolLength + mutatedLength >= poolCapacity - 1) {
     // (re-allocate array)
     word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
     uint64_t startOffset = ((uint64_t) newPool) - ((uint64_t) memoryPool);
@@ -130,7 +130,7 @@ const Path* BreadthFirstSearch::push(
 
   // Allocate new path
   // (ensure space)
-  while (fringeLength >= fringeCapacity) {
+  while (fringeLength >= fringeCapacity - 1) {
     // (re-allocate array)
     Path* newFringe = (Path*) malloc(2 * fringeCapacity * sizeof(Path));
     uint64_t startOffset = ((uint64_t) newFringe) - ((uint64_t) fringe);
