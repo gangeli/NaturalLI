@@ -95,9 +95,13 @@ const Path* BreadthFirstSearch::push(
   // Allocate new fact
   uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   // (ensure space)
-  while (poolLength + mutatedLength >= poolCapacity - 1) {
+  while (poolLength + mutatedLength >= poolCapacity) {
     // (re-allocate array)
     word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
+    if (newPool == NULL) { 
+      printf("WARN: could not allocate new fact pool (new length=%lu)]\n", 2*poolCapacity);
+      return NULL;
+    }
     uint64_t startOffset = ((uint64_t) newPool) - ((uint64_t) memoryPool);
     memcpy(newPool, memoryPool, poolCapacity * sizeof(word*));
     free(memoryPool);
@@ -130,9 +134,13 @@ const Path* BreadthFirstSearch::push(
 
   // Allocate new path
   // (ensure space)
-  while (fringeLength >= fringeCapacity - 1) {
+  while (fringeLength >= fringeCapacity) {
     // (re-allocate array)
     Path* newFringe = (Path*) malloc(2 * fringeCapacity * sizeof(Path));
+    if (newFringe == NULL) { 
+      printf("WARN: could not allocate new fringe (new length=%lu)]\n", 2*fringeCapacity);
+      return NULL;
+    }
     uint64_t startOffset = ((uint64_t) newFringe) - ((uint64_t) fringe);
     memcpy(newFringe, fringe, fringeCapacity * sizeof(Path));
     free(fringe);
@@ -149,8 +157,8 @@ const Path* BreadthFirstSearch::push(
     }
   }
   // (allocate path)
+  new(&fringe[fringeLength]) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
   fringeLength += 1;
-  new(&fringe[fringeLength-1]) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
   return parent;
 }
 
@@ -248,6 +256,11 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet up
         // Add the state to the fringe
         parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
+        // Handle errors
+        if (parent == NULL) {
+          printf("Error pushing to stack; returning\n");
+          return responses;
+        }
       }
     }
   }
