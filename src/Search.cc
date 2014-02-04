@@ -14,16 +14,16 @@ using namespace std;
 //
 
 /** Check if element |index| is set in the bitmask */
-inline bool isSetBit(const uint64_t bitmask[], const uint8_t index) {
-  uint8_t bucket = index / 64;
+inline bool isSetBit(const uint64_t bitmask[], const uint8_t& index) {
+  uint8_t bucket = index >> 6;
   uint8_t offset = index % 64;
   uint64_t mask = 0x1 << offset;
   return bitmask[bucket] & mask != 0;
 }
 
 /** Set element |index| in the bitmask */
-inline bool setBit(uint64_t bitmask[], const uint8_t index) {
-  uint8_t bucket = index / 64;
+inline bool setBit(uint64_t bitmask[], const uint8_t& index) {
+  uint8_t bucket = index >> 6;
   uint8_t offset = index % 64;
   uint64_t mask = 0x1 << offset;
   bitmask[bucket] = bitmask[bucket] | mask;
@@ -88,7 +88,7 @@ BreadthFirstSearch::~BreadthFirstSearch() {
   delete this->root;
 }
  
-const Path* BreadthFirstSearch::push(
+inline const Path* BreadthFirstSearch::push(
     const Path* parent, uint8_t mutationIndex,
     uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
 
@@ -170,7 +170,7 @@ const Path* BreadthFirstSearch::peek() {
   return &this->fringe[this->fringeI];
 }
 
-const Path* BreadthFirstSearch::pop() {
+inline const Path* BreadthFirstSearch::pop() {
   if (this->fringeI == 0 && !poppedRoot) {
     poppedRoot = true;
     return root;
@@ -246,12 +246,17 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Mutations --
+    // (variables)
+    uint8_t parentLength = parent->factLength;
+    const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
+    const word* parentFact = parent->fact;
+    // (algorithm)
     for (int indexToMutate = 0;
-         indexToMutate < parent->factLength;
+         indexToMutate < parentLength;
          ++indexToMutate) {  // for each index to mutate...
-      if (isSetBit(parent->fixedBitmask, indexToMutate)) { continue; }
+      if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
-      const edge* mutations = graph->outgoingEdgesFast(parent->fact[indexToMutate], &numMutations);
+      const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
         if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet up
         // Add the state to the fringe
