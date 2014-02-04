@@ -281,6 +281,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         // Flush if necessary (save memory)
         if (queueLength >= 256) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
+          parentFact = parent->fact;
           queueLength = 0;
         }
         // Add the state to the fringe
@@ -296,8 +297,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
           printf("Error pushing to stack; returning\n");
           return responses;
         }
-        // Update pointers
-        parentFact = parent->fact;
       }
     }
     flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
