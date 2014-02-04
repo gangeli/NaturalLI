@@ -205,8 +205,10 @@ inline const Path* flushQueue(SearchType* fringe,
                               const word* sinkArr,
                               const uint8_t* typeArr,
                               const uint8_t queueLength) {
-  for (uint8_t i = 0; i < queueLength; ++i) {
+  uint8_t i = 0;
+  while (parent != NULL) {
     parent = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i]);
+    i += 1;
   }
   return parent;
 }
@@ -281,6 +283,10 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         // Flush if necessary (save memory)
         if (queueLength >= 256) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
+          if (parent == NULL) {
+            printf("Error pushing to stack; returning\n");
+            return responses;
+          }
           parentFact = parent->fact;
           queueLength = 0;
         }
@@ -292,14 +298,12 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         typeArr[queueLength] = mutations[i].type;
         queueLength += 1;
 //        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
-        // Handle errors
-        if (parent == NULL) {
-          printf("Error pushing to stack; returning\n");
-          return responses;
-        }
       }
     }
-    flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
+    if (flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength) == NULL) {
+      printf("Error pushing to stack; returning\n");
+      return responses;
+    }
   }
 
   return responses;
