@@ -199,6 +199,19 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Function search()
 //
+inline const Path* flushQueue(SearchType* fringe,
+                              const Path* parent,
+                              const uint8_t* indexToMutateArr,
+                              const word* sinkArr,
+                              const uint8_t* typeArr,
+                              const uint8_t queueLength) {
+  for (uint8_t i = 0; i < queueLength; ++i) {
+    parent = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i]);
+  }
+  return parent;
+}
+
+
 vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
                      const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
@@ -250,17 +263,34 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
     const word* parentFact = parent->fact;  // note: this can change over the course of the search
+    // (mutation queue)
+    uint8_t indexToMutateArr[256];
+    word sinkArr[256];
+    uint8_t typeArr[256];
+    uint8_t queueLength = 0;
     // (algorithm)
-    for (int indexToMutate = 0;
+    for (uint8_t indexToMutate = 0;
          indexToMutate < parentLength;
          ++indexToMutate) {  // for each index to mutate...
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
+        // Prune edges to add
         if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet up
+        // Flush if necessary (save memory)
+        if (queueLength >= 256) {
+          parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
+          queueLength = 0;
+        }
         // Add the state to the fringe
-        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
+        // These are queued up in order to try to protect the cache; the push() call is
+        // fairly expensive memory-wise.
+        indexToMutateArr[queueLength] = indexToMutate;
+        sinkArr[queueLength] = mutations[i].sink;
+        typeArr[queueLength] = mutations[i].type;
+        queueLength += 1;
+//        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
         // Handle errors
         if (parent == NULL) {
           printf("Error pushing to stack; returning\n");
@@ -270,6 +300,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         parentFact = parent->fact;
       }
     }
+    flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
   }
 
   return responses;
