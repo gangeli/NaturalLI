@@ -249,7 +249,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     // (variables)
     uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
-    const word* parentFact = parent->fact;
+    const word* parentFact = parent->fact;  // note: this can change over the course of the search
     // (algorithm)
     for (int indexToMutate = 0;
          indexToMutate < parentLength;
@@ -266,6 +266,8 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
           printf("Error pushing to stack; returning\n");
           return responses;
         }
+        // Update pointers
+        parentFact = parent->fact;
       }
     }
   }
