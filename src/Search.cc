@@ -248,13 +248,13 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
-      printf("[%lu%s / %lu%s search tick]; %lu paths found (%f ms elapsed)\n",
+      printf("[%lu%s / %lu%s search tick]; %lu paths found (%lu ms elapsed)\n",
              time / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              timeout / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              responses.size(),
-             1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
+             (int) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC)));
     }
 
     // -- Check If Valid --
@@ -299,6 +299,8 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         indexToMutateArr[queueLength] = indexToMutate;
         sinkArr[queueLength] = mutations[i].sink;
         typeArr[queueLength] = mutations[i].type;
+        printf("\tmutation [%d] %d -> %d\n", indexToMutateArr[queueLength],
+               parent->fact[indexToMutateArr[queueLength]], sinkArr[queueLength]);
         queueLength += 1;
 //        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
       }

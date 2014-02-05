@@ -32,7 +32,7 @@ object Client {
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
-    val response = Response.parseFrom(fromServer);
+    val response = Response.parseFrom(fromServer)
     if (response.getError) {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
