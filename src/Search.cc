@@ -206,7 +206,7 @@ inline const Path* flushQueue(SearchType* fringe,
                               const uint8_t* typeArr,
                               const uint8_t queueLength) {
   uint8_t i = 0;
-  while (parent != NULL) {
+  while (parent != NULL && i < queueLength) {
     parent = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i]);
     i += 1;
   }
