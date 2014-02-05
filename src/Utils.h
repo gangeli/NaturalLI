@@ -32,4 +32,9 @@ std::string toString(Graph& graph, const word* fact, const uint8_t factSize);
  */
 std::string toString(Graph& graph, SearchType& searchType, const Path* path);
 
+/**
+ * Print out the edge type being taken.
+ */
+std::string toString(edge_type& edge);
+
 #endif

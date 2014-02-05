@@ -43,3 +43,24 @@ string toString(Graph& graph, SearchType& searchType, const Path* path) {
            toString(graph, searchType, path->parent);
   }
 }
+
+std::string toString(edge_type& edge) {
+  switch (edge) {
+    case WORDNET_UP                   : return "WORDNET_UP";
+    case WORDNET_DOWN                 : return "WORDNET_DOWN";
+    case WORDNET_NOUN_ANTONYM         : return "WORDNET_NOUN_ANTONYM";
+    case WORDNET_VERB_ANTONYM         : return "WORDNET_VERB_ANTONYM";
+    case WORDNET_ADJECTIVE_ANTONYM    : return "WORDNET_ADJECTIVE_ANTONYM";
+    case WORDNET_ADVERB_ANTONYM       : return "WORDNET_ADVERB_ANTONYM";
+    case WORDNET_ADJECTIVE_PERTAINYM  : return "WORDNET_ADJECTIVE_PERTAINYM";
+    case WORDNET_ADVERB_PERTAINYM     : return "WORDNET_ADVERB_PERTAINYM";
+    case WORDNET_ADJECTIVE_RELATED    : return "WORDNET_ADJECTIVE_RELATED";
+    case ANGLE_NN                     : return "ANGLE_NN";
+    case FREEBASE_UP                  : return "FREEBASE_UP";
+    case FREEBASE_DOWN                : return "FREEBASE_DOWN";
+    case MORPH_TO_LEMMA               : return "MORPH_TO_LEMMA";
+    case MORPH_FROM_LEMMA             : return "MORPH_FROM_LEMMA";
+    case MORPH_FUDGE_NUMBER           : return "MORPH_FUDGE_NUMBER";
+    default: return "UNK_EDGE_TYPE";
+  }
+}
