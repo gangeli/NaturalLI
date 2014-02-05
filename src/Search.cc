@@ -199,6 +199,8 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Function search()
 //
+
+// A helper to push elements to the queue en bulk
 inline const Path* flushQueue(SearchType* fringe,
                               const Path* parent,
                               const uint8_t* indexToMutateArr,
@@ -213,7 +215,7 @@ inline const Path* flushQueue(SearchType* fringe,
   return parent;
 }
 
-
+// The main search() function
 vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
                      const word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
@@ -256,6 +258,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
+    printf("Checking %s\n", toString(*graph, parent->fact, parent->factLength).c_str());
     if (knownFacts->contains(parent->fact, parent->factLength)) {
       responses.push_back(parent);
     }
