@@ -258,7 +258,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
-    printf("Checking %s\n", toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("Checking %s\n", toString(*graph, parent->fact, parent->factLength).c_str());
     if (knownFacts->contains(parent->fact, parent->factLength)) {
       responses.push_back(parent);
     }
@@ -282,9 +282,9 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
         // Prune edges to add
-        if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet up
+        if (mutations[i].type != 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
-        if (queueLength >= 256) {
+        if (queueLength >= 255) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
           if (parent == NULL) {
             printf("Error pushing to stack; returning\n");
@@ -299,10 +299,10 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         indexToMutateArr[queueLength] = indexToMutate;
         sinkArr[queueLength] = mutations[i].sink;
         typeArr[queueLength] = mutations[i].type;
-        printf("\tmutation [%d] %s -> %s  (type %s)\n", indexToMutateArr[queueLength],
-               graph->gloss(parent->fact[indexToMutateArr[queueLength]]),
-               graph->gloss(sinkArr[queueLength]),
-               toString(typeArr[queueLength]).c_str());
+//        printf("\tmutation [%d] %s -> %s  (type %s)\n", indexToMutateArr[queueLength],
+//               graph->gloss(parent->fact[indexToMutateArr[queueLength]]),
+//               graph->gloss(sinkArr[queueLength]),
+//               toString(typeArr[queueLength]).c_str());
         queueLength += 1;
 //        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
       }
