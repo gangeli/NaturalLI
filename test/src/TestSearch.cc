@@ -180,10 +180,13 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   // Populate search
   for (int i = 0; i < 120; ++i) {
     search.push(root, 0, 1, i, 0, 0);
+    EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
+    EXPECT_EQ(3, search.debugGet(parent)->factLength);
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
+      EXPECT_EQ(3, search.debugGet(parent)->factLength);
       search.push(p, 0, 1, 1000 * parent + i, 0, 0);
     }
   }
@@ -193,6 +196,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     ASSERT_FALSE(search.isEmpty());
     const Path* elem = search.pop();
     EXPECT_FALSE(elem == NULL);  // we didn't pop off a null element
+    EXPECT_EQ(3, elem->factLength);  // we only did mutations
     EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
     for (int k = 0; k < elem->factLength; ++k) {

@@ -104,8 +104,9 @@ class BreadthFirstSearch : public SearchType {
    * A debug function to get the ith element of the queue.
    */
   const Path* debugGet(uint64_t i) {
+    const uint64_t bucket = i >> POOL_BUCKET_SHIFT;
     const uint64_t offset = i % (0x1 << POOL_BUCKET_SHIFT);
-    return &currentFringe[offset];
+    return &fringe[bucket][offset];
   }
   
   BreadthFirstSearch();
@@ -115,6 +116,7 @@ class BreadthFirstSearch : public SearchType {
   // manage the queue
   Path** fringe;
   Path* currentFringe;
+  Path* currentPopFringe;
   uint64_t fringeCapacity;
   uint64_t fringeLength;
   uint64_t fringeI;
@@ -127,9 +129,6 @@ class BreadthFirstSearch : public SearchType {
   
   // manage 0 element corner case
   bool poppedRoot;
-
-  // handles offsets from memcpy's
-  uint64_t sumOffset;
 
   /**
    * Allocate space for another word in the pool

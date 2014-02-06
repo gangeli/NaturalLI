@@ -39,7 +39,8 @@ Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_
       factLength(factLength),
       lastMutationIndex(lastMutatedIndex),
       edgeType(edgeType),
-      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} { }
+      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} {
+}
 
 Path::Path(const word* fact, uint8_t factLength)
     : parent(NULL),
@@ -78,8 +79,7 @@ bool Path::operator==(const Path& other) const {
 // -- constructor --
 BreadthFirstSearch::BreadthFirstSearch()
     : fringeLength(0), fringeCapacity(1), fringeI(0),
-      poolCapacity(1), poolLength(0), poppedRoot(false),
-      sumOffset(0){
+      poolCapacity(1), poolLength(0), poppedRoot(false) {
   this->fringe = (Path**) malloc(fringeCapacity * sizeof(Path*));
   for (int i = 0; i < fringeCapacity; ++i) {
     this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
@@ -89,7 +89,7 @@ BreadthFirstSearch::BreadthFirstSearch()
   for (int i = 0; i < poolCapacity; ++i) {
     this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
   }
-  this->currentMemoryPool = memoryPool[0];
+  this->currentMemoryPool = this->memoryPool[0];
 }
 
 // -- destructor --
@@ -110,14 +110,11 @@ inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
   const uint64_t startOffset = poolLength % (0x1 << POOL_BUCKET_SHIFT);
   const uint64_t endOffset = startOffset + toAllocateLength;
   const uint64_t newBucket = (poolLength + toAllocateLength) >> POOL_BUCKET_SHIFT;
-  printf("tick (bucket %lu; length=%lu, capacity=%lu, length=%d)\n", newBucket, poolLength, poolCapacity, toAllocateLength);
   if ((startOffset >> POOL_BUCKET_SHIFT) != (endOffset >> POOL_BUCKET_SHIFT)) {  // if we've overflowed the bucket
-    printf("EXPANDING BUCKET (bucket %lu; length=%lu, capacity=%lu, length=%d)\n", newBucket, poolLength, poolCapacity, toAllocateLength);
     // Case: overflowed buffer
     if (newBucket >= poolCapacity) {
       // Case: need more space
       const uint64_t newCapacity = (poolCapacity + 1 + poolCapacity / 3);
-      printf("  NEW MEMORY (%lu)\n", newCapacity);
       word** newPointer = (word**) malloc( newCapacity * sizeof(word*) );
       if (newPointer == NULL) {
         return NULL;
@@ -136,15 +133,15 @@ inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
     return &currentMemoryPool[0];
   } else {
     poolLength += toAllocateLength;
-    return &currentMemoryPool[poolLength - toAllocateLength];
+    return &currentMemoryPool[startOffset];
   }
 }
 
 // -- allocate space for path --
 inline Path* BreadthFirstSearch::allocatePath() {
   const uint64_t bucket = fringeLength >> POOL_BUCKET_SHIFT;
+  const uint64_t offset = fringeLength % (0x1 << POOL_BUCKET_SHIFT);
   if (bucket >= fringeCapacity) {
-    printf("EXPANDING FRINGE (bucket %lu)\n", bucket);
     // Case: need more space
     const uint64_t newCapacity = (fringeCapacity + 1 + fringeCapacity / 3);
     Path** newPointer = (Path**) malloc( newCapacity * sizeof(Path*) );
@@ -158,9 +155,8 @@ inline Path* BreadthFirstSearch::allocatePath() {
       this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
     }
     fringeCapacity = newCapacity;
-    currentFringe = fringe[bucket];
   }
-  const uint64_t offset = fringeLength % (0x1 << POOL_BUCKET_SHIFT);
+  if (offset == 0) { currentFringe = fringe[bucket]; }
   fringeLength += 1;
   return &currentFringe[offset];
 }
@@ -216,8 +212,12 @@ inline const Path* BreadthFirstSearch::pop() {
     return root;
   }
   const uint64_t offset = this->fringeI % (0x1 << POOL_BUCKET_SHIFT);
+  if (offset == 0) {
+    const uint64_t bucket = this->fringeI >> POOL_BUCKET_SHIFT;
+    currentPopFringe = fringe[bucket];
+  }
   this->fringeI += 1;
-  return &this->currentFringe[offset];
+  return &currentPopFringe[offset];
 }
 
 // -- check if the fringe is empty --
@@ -324,7 +324,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
         // Prune edges to add
-        if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet down
+        if (mutations[i].type != 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
