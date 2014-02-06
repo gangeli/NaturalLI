@@ -82,10 +82,11 @@ class SearchType {
   const Path* root;
   /** Set the root of the search. This class now owns this pointer. */
   void start(const Path* startState) { root = startState; }
+  
+  virtual ~SearchType() { }
 
  protected:
   SearchType() : root(NULL) { } 
-  virtual ~SearchType() { }
 };
 
 /**
