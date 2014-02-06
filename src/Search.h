@@ -85,6 +85,7 @@ class SearchType {
 
  protected:
   SearchType() : root(NULL) { } 
+  virtual ~SearchType() { }
 };
 
 /**
@@ -110,7 +111,7 @@ class BreadthFirstSearch : public SearchType {
   }
   
   BreadthFirstSearch();
-  ~BreadthFirstSearch();
+  virtual ~BreadthFirstSearch();
 
  private:
   // manage the queue

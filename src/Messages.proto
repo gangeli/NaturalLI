@@ -44,10 +44,12 @@ message Response {
   optional string    errorMessage = 3;
 }
 
-/** A set of (relatively) dense unlexicalized weights which can be passed back and forth to the server */
-message UnlexicalizedWeights {
+
+/** A set weights which can be passed back and forth to the server */
+message Weights {
   /** There should be |edges| elements in this, according to the indices in EDGE_TYPE */
   repeated double edgeWeight     = 1;
+
   /** There should be |edges|^2 elements in this; the path from edge with index a to edge with
       index b would be |edges|*a + b */
   repeated double edgePairWeight = 2;

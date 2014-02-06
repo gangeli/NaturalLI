@@ -3,7 +3,7 @@ package org.goobs.truth
 import edu.stanford.nlp.stats.Counter
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.EdgeType.EdgeType
-import org.goobs.truth.Messages.Inference
+import org.goobs.truth.Messages.{Weights, Inference}
 
 
 object Learn {
@@ -17,6 +17,10 @@ object Learn {
   def bigramDown(e1:EdgeType, e2:EdgeType):String  = "v" + "::" + e1 + "->" + e2
   def bigramFlat(e1:EdgeType, e2:EdgeType):String  = "-" + "::" + e1 + "->" + e2
   def bigramAny(e1:EdgeType, e2:EdgeType):String   = "*" + "::" + e1 + "->" + e2
+
+  def serializeWeightVector(weights:WeightVector):Weights = {
+    Weights.newBuilder().build()
+  }
 
   def evaluate(paths:Iterable[Inference], weights:WeightVector):Double = {
     def recursivePrint(node:Inference):String = {
