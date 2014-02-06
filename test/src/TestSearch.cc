@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <cfloat>
 
 #include "gtest/gtest.h"
 #include "Config.h"
@@ -138,7 +139,7 @@ TEST_F(TestName, IsEmpty) { \
   EXPECT_TRUE(search.isEmpty()); \
 } \
 \
-TEST_F(TestName, PushpopWithoutScore) { \
+TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
@@ -146,8 +147,28 @@ TEST_F(TestName, PushpopWithoutScore) { \
   EXPECT_FALSE(search.isEmpty()); \
   EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
   EXPECT_FALSE(search.isEmpty()); \
-  EXPECT_EQ(*root, *search.popWithoutScore()->parent); \
+  const Path* path = search.popWithoutScore(); \
+  ASSERT_FALSE(path->parent == NULL); \
+  EXPECT_EQ(*root, *path->parent); \
   EXPECT_TRUE(search.isEmpty()); \
+} \
+\
+TEST_F(TestName, RunToySearch) { \
+  vector<const Path*> result = Search(graph, facts, \
+                                &lemursHaveTails_[0], lemursHaveTails_.size(), \
+                                &search, cache, 100); \
+  ASSERT_EQ(1, result.size()); \
+  ASSERT_EQ(3, result[0]->factLength); \
+  EXPECT_EQ(27970, result[0]->fact[0]); \
+  EXPECT_EQ(3844,  result[0]->fact[1]); \
+  EXPECT_EQ(14221, result[0]->fact[2]); \
+  EXPECT_EQ(3701, result[0]->parent->fact[0]); \
+  EXPECT_EQ(3844,  result[0]->parent->fact[1]); \
+  EXPECT_EQ(14221, result[0]->parent->fact[2]); \
+  EXPECT_EQ(2479928, result[0]->parent->parent->fact[0]); \
+  EXPECT_EQ(3844,    result[0]->parent->parent->fact[1]); \
+  EXPECT_EQ(14221,   result[0]->parent->parent->fact[2]); \
+  EXPECT_TRUE(result[0]->parent->parent->parent == NULL); \
 }
 
 //
@@ -178,7 +199,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  // popWithoutScoreulate search
+  // populate search
   for (int i = 0; i < 120; ++i) {
     search.push(root, 0, 1, i, 0, 0, 0.0f);
     EXPECT_EQ(3, search.debugGet(i)->factLength);
@@ -191,7 +212,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
       search.push(p, 0, 1, 1000 * parent + i, 0, 0, 0.0f);
     }
   }
-  // popWithoutScore off elements
+  // pop off elements
   EXPECT_FALSE(search.popWithoutScore() == NULL);  // popWithoutScore the root
   for (int i = 0; i < 120 + 100 * 128; ++i) {
     ASSERT_FALSE(search.isEmpty());
@@ -210,26 +231,50 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_TRUE(search.isEmpty());
 }
 
-TEST_F(BreadthFirstSearchTest, RunBFS) {
-  vector<const Path*> result = Search(graph, facts,
-                                &lemursHaveTails_[0], lemursHaveTails_.size(),
-                                &search, cache, 100);
-  ASSERT_EQ(1, result.size());
-  ASSERT_EQ(3, result[0]->factLength);
-  // check root
-  EXPECT_EQ(27970, result[0]->fact[0]);
-  EXPECT_EQ(3844,  result[0]->fact[1]);
-  EXPECT_EQ(14221, result[0]->fact[2]);
-  // check path (b)
-  EXPECT_EQ(3701, result[0]->parent->fact[0]);
-  EXPECT_EQ(3844,  result[0]->parent->fact[1]);
-  EXPECT_EQ(14221, result[0]->parent->fact[2]);
-  // check path (a)
-  EXPECT_EQ(2479928, result[0]->parent->parent->fact[0]);
-  EXPECT_EQ(3844,    result[0]->parent->parent->fact[1]);
-  EXPECT_EQ(14221,   result[0]->parent->parent->fact[2]);
-  // check null root
-  EXPECT_TRUE(result[0]->parent->parent->parent == NULL);
+//
+// Uniform Cost Search
+//
+InitSearchTypeTests(UniformCostSearch, UniformCostSearchTest)
+
+TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
+  // Initialize Search
+  EXPECT_TRUE(search.isEmpty());
+  search.start(root);
+  EXPECT_FALSE(search.isEmpty());
+  // populate search
+  for (int i = 0; i < 120; ++i) {
+    search.push(root, 0, 1, i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)) );
+    EXPECT_EQ(3, search.debugGet(i)->factLength);
+  }
+  for (int parent = 0; parent < 100; ++parent) {
+    EXPECT_EQ(3, search.debugGet(parent)->factLength);
+    for (int i = 0; i < 128; ++i) {
+      const Path* p = search.debugGet(parent);
+      EXPECT_EQ(3, search.debugGet(parent)->factLength);
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)) );
+    }
+  }
+  // pop off elements
+  EXPECT_FALSE(search.popWithoutScore() == NULL);  // popWithoutScore the root
+  float lastReturned = 0.0f;
+  for (int i = 0; i < 120 + 100 * 128; ++i) {
+    ASSERT_FALSE(search.isEmpty());
+    const Path* elem;
+    float score = search.pop(&elem);
+    EXPECT_GE(score, lastReturned);  // should always return elements in order
+    lastReturned = score;
+    EXPECT_FALSE(elem == NULL);  // we didn't popWithoutScore off a null element
+    EXPECT_EQ(3, elem->factLength);  // we only did mutations
+    EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
+    EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
+    for (int k = 0; k < elem->factLength; ++k) {
+      EXPECT_GE(elem->fact[k], 0);  // the word is positive (should always be the case anyways)
+      EXPECT_LT(elem->fact[k], 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+    }
+    EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
+  }
+  // Final checks
+  EXPECT_TRUE(search.isEmpty());
 }
 
 

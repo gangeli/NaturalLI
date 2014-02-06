@@ -170,6 +170,10 @@ class UniformCostSearch : public BreadthFirstSearch {
   uint64_t heapCapacity;
   const Path** heap;
   float* costs;
+
+  // Functions for min-heap
+  void bubbleUp(const uint64_t index);
+  void bubbleDown(const uint64_t index);
 };
 
 /**

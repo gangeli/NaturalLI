@@ -94,7 +94,7 @@ BreadthFirstSearch::BreadthFirstSearch()
 
 // -- destructor --
 BreadthFirstSearch::~BreadthFirstSearch() {
-  printf("de-allocating search; %lu MB freed\n",
+  printf("de-allocating BFS; %lu MB freed\n",
     ((fringeCapacity << POOL_BUCKET_SHIFT) + (poolCapacity << POOL_BUCKET_SHIFT)) >> 20);
   for (int i = 0; i < fringeCapacity; ++i) {
     free(this->fringe[i]);
@@ -240,25 +240,66 @@ inline bool BreadthFirstSearch::isEmpty() {
 
 // -- constructor --
 UniformCostSearch::UniformCostSearch() :
-    heapSize(0), heapCapacity(1){
+    heapSize(0), heapCapacity(1024){
   heap = (const Path**) malloc(heapCapacity * sizeof(Path*));
   costs = (float*) malloc(heapCapacity * sizeof(float));
 }
 
 // -- destructor --
 UniformCostSearch::~UniformCostSearch() {
+  printf("de-allocating UCS; %lu MB freed\n", heapSize * (sizeof(Path*) + sizeof(float)));
   free(heap);
   free(costs);
 }
 
+// -- swap() --
+inline void swap(const Path** heap, float* costs, const uint64_t i, const uint64_t j) {
+  const Path* tmpPath = heap[i];
+  float tmpCost = costs[i];
+  heap[i]  = heap[j];
+  costs[i] = costs[j];
+  heap[j]  = tmpPath;
+  costs[j] = tmpCost;
+}
+
 // -- bubbleDown() --
-void bubbleDown(uint64_t index) {
-  // TODO(gabor) implement me
+inline void UniformCostSearch::bubbleDown(const uint64_t index) {
+  const uint64_t leftChild = index << 1;
+  const uint64_t rightChild = (index << 1) + 1;
+  // Default: stay where we are
+  float min = costs[index];
+  uint64_t argmin = index;
+  // Check left child
+  if (leftChild < heapSize) {
+    const float leftMin = costs[leftChild];
+    if (leftMin < min) {
+      min = leftMin;
+      argmin = leftChild;
+    }
+  }
+  // Check right child
+  if (rightChild < heapSize) {
+    const float rightMin = costs[rightChild];
+    if (rightMin < min) {
+      min = rightMin;
+      argmin = rightChild;
+    }
+  }
+  // Bubble
+  if (argmin != index) {
+    swap(heap, costs, argmin, index);
+    bubbleDown(argmin);
+  }
 }
 
 // -- bubbleUp() --
-void bubbleUp(uint64_t index) {
-  // TODO(gabor) implement me
+inline void UniformCostSearch::bubbleUp(const uint64_t index) {
+  if (index == 0) { return; }
+  const uint64_t parent = index >> 1;
+  if (costs[parent] > costs[index]) {
+    swap(heap, costs, parent, index);
+    bubbleUp(parent);
+  }
 }
 
 // -- push() --
@@ -271,7 +312,9 @@ inline const Path* UniformCostSearch::push(const Path* parent, uint8_t mutationI
   if (heapSize >= heapCapacity) {
     uint64_t newCapacity = heapCapacity << 1;
     const Path** newHeap = (const Path**) malloc(newCapacity * sizeof(Path*));
+    if (newHeap == NULL) { return NULL; }
     float* newCosts = (float*) malloc(newCapacity * sizeof(float*));
+    if (newCosts == NULL) { return NULL; }
     memcpy(newHeap, heap, heapCapacity * sizeof(Path*));
     memcpy(newCosts, costs, heapCapacity * sizeof(float));
     free(heap);
@@ -286,11 +329,13 @@ inline const Path* UniformCostSearch::push(const Path* parent, uint8_t mutationI
   // Fix heap
   bubbleUp(heapSize);
   heapSize += 1;
+  // Return
+  return node;
 }
 
 // -- pop() --
 inline float UniformCostSearch::pop(const Path** poppedElement) {
-  if (this->heapSize == 0 && !poppedRoot) {
+  if (!poppedRoot) {
     poppedRoot = true;
     *poppedElement = root;
     return 0.0;
@@ -311,7 +356,7 @@ inline float UniformCostSearch::pop(const Path** poppedElement) {
 
 // -- peek() --
 const Path* UniformCostSearch::peek() {
-  if (this->heapSize == 0 && !poppedRoot) {
+  if (!poppedRoot) {
     return root;
   } else {
     return heap[0];
@@ -393,7 +438,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    printf("popped %s", toString(*graph, *fringe, parent).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -409,7 +453,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
-//    printf("Checking %s\n", toString(*graph, parent->fact, parent->factLength).c_str());
     if (knownFacts->contains(parent->fact, parent->factLength)) {
       responses.push_back(parent);
     }
@@ -450,12 +493,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         sinkArr[queueLength] = mutations[i].sink;
         typeArr[queueLength] = mutations[i].type;
         costArr[queueLength] = computeCost(parent->edgeType, mutations[i], costSoFar);
-//        printf("\tmutation [%d] %s -> %s  (type %s)\n", indexToMutateArr[queueLength],
-//               graph->gloss(parent->fact[indexToMutateArr[queueLength]]),
-//               graph->gloss(sinkArr[queueLength]),
-//               toString(typeArr[queueLength]).c_str());
         queueLength += 1;
-//        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
       }
     }
     if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
@@ -463,7 +501,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       return responses;
     }
   }
-
   return responses;
 }
 
