@@ -12,6 +12,7 @@
 #include "Messages.pb.h" 
 #include "Search.h" 
 #include "Graph.h" 
+#include "Utils.h" 
 
 
 #ifndef SERVER_PORT
@@ -144,7 +145,7 @@ Inference inferenceFromPath(const Path* path, const Graph* graph) {
     word.set_word(path->fact[i]);
     fact.add_word()->CopyFrom(word);
   }
-  fact.mutable_gloss()->CopyFrom(toString(graph, path->fact, path->factLength));
+  fact.set_gloss(toString(*graph, path->fact, path->factLength));
   inference.mutable_fact()->CopyFrom(fact);
   // Return
   if (path->parent != NULL) {
@@ -215,7 +216,7 @@ void handleConnection(int socket, sockaddr_in* client,
   // (send result)
   Response response;
   for (int i = 0; i < result.size(); ++i) {
-    response.add_inference()->CopyFrom(inferenceFromPath(result[i], search));
+    response.add_inference()->CopyFrom(inferenceFromPath(result[i], graph));
   }
   response.SerializeToFileDescriptor(socket);
   // (close connection)

@@ -32,16 +32,16 @@ class InMemoryGraph : public Graph {
     free(edgesSizes);
   }
 
-  virtual const edge* outgoingEdgesFast(word source, uint32_t* size) {
+  virtual const edge* outgoingEdgesFast(word source, uint32_t* size) const {
     *size = edgesSizes[source];
     return edges[source];
   }
 
-  virtual const char* gloss(word word) {
+  virtual const char* gloss(word word) const {
     return index2gloss[word];
   }
   
-  virtual const vector<word> keys() {
+  virtual const vector<word> keys() const {
     vector<word> keys(size);
     for (int i = 0; i < size; ++i) {
       keys[i] = i;
@@ -157,7 +157,7 @@ class MockGraph : public Graph {
            catEdges, haveEdges, tailEdges;
   }
   
-  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) {
+  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) const {
     vector<edge> edges = outgoingEdges(source);
     *outputLength = edges.size();
     edge* rtn = (struct edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
@@ -167,7 +167,7 @@ class MockGraph : public Graph {
     return rtn;
   }
 
-  virtual const vector<edge> outgoingEdges(word source) {
+  virtual const vector<edge> outgoingEdges(word source) const {
     switch (source) {
       case 2479928:  // lemur
         return *lemurEdges;
@@ -186,7 +186,7 @@ class MockGraph : public Graph {
     }
   }
 
-  virtual const char* gloss(word word) {
+  virtual const char* gloss(word word) const {
     switch (word) {
       case 2479928:  // lemur
         return "lemur";
@@ -205,7 +205,7 @@ class MockGraph : public Graph {
     }
   }
   
-  virtual const vector<word> keys() {
+  virtual const vector<word> keys() const {
     vector<word> keys(6);
     keys[0] = 2479928;
     keys[1] = 3701;
