@@ -135,17 +135,20 @@ void closeConnection(int socket, sockaddr_in* client) {
  * Convert a (concise) path object into an Inference object to be passed over the wire
  * to the client.
  */
-Inference inferenceFromPath(const Path* path, const SearchType* search) {
+Inference inferenceFromPath(const Path* path, const Graph* graph) {
+  Inference inference;
+  // Populate fact
   Fact fact;
   for (int i = 0; i < path->factLength; ++i) {
     Word word;
     word.set_word(path->fact[i]);
     fact.add_word()->CopyFrom(word);
   }
-  Inference inference;
+  fact.mutable_gloss()->CopyFrom(toString(graph, path->fact, path->factLength));
   inference.mutable_fact()->CopyFrom(fact);
+  // Return
   if (path->parent != NULL) {
-    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, search));
+    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph));
   }
   return inference;
 }

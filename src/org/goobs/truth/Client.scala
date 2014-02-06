@@ -36,7 +36,7 @@ object Client {
     if (response.getError) {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
-    Response.parseFrom(fromServer).getInferenceList
+    response.getInferenceList
   }
 
   def main(args:Array[String]):Unit = {
@@ -58,7 +58,7 @@ object Client {
           // We have our antecedent and consequent
           val query = Query.newBuilder().setQueryFact(consequent).addKnownFact(antecedent).setUseRealWorld(false).setTimeout(Props.SEARCH_TIMEOUT).build()
           // Execute Query
-          val paths = issueQuery(query)
+          val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
           val score = Learn.evaluate(paths, weights)
           // Debug Print

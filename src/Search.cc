@@ -271,7 +271,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 100;
+  const uint32_t tickTime = 100000;
   std::clock_t startTime = std::clock();
 
   //
@@ -324,7 +324,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
         // Prune edges to add
-        if (mutations[i].type != 1) { continue; } // TODO(gabor) don't only do WordNet down
+        if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
