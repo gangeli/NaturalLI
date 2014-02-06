@@ -1,6 +1,7 @@
 
 option java_package = "org.goobs.truth";
 
+/** A single word in a fact */
 message Word {
   required uint32 word         = 1;
   optional string gloss        = 2;
@@ -9,6 +10,7 @@ message Word {
   optional sint32 monotonicity = 5;
 }
 
+/** A fact, potentially with a marked truth and confidence */
 message Fact {
   repeated Word word         = 1;
   optional string gloss      = 2;
@@ -18,6 +20,8 @@ message Fact {
   optional double confidence = 11;
 }
 
+/** A query to the server; at minimum, it should contain
+    the query fact, and the fact database to use */
 message Query {
   required Fact queryFact    = 1;
   required bool useRealWorld = 2;
@@ -27,13 +31,24 @@ message Query {
   optional bool shutdownServer = 101 [ default = false ];
 }
 
+/** An inference, implementing a linked list of facts corresponding to a reverse inference */
 message Inference {
   required Fact fact             = 1;
   optional Inference impliedFrom = 2;
 }
 
+/** A response from the server, encoding a number of inferences and an optional error message */
 message Response {
   repeated Inference inference    = 1;
   optional bool      error        = 2 [ default = false ];
   optional string    errorMessage = 3;
+}
+
+/** A set of (relatively) dense unlexicalized weights which can be passed back and forth to the server */
+message UnlexicalizedWeights {
+  /** There should be |edges| elements in this, according to the indices in EDGE_TYPE */
+  repeated double edgeWeight     = 1;
+  /** There should be |edges|^2 elements in this; the path from edge with index a to edge with
+      index b would be |edges|*a + b */
+  repeated double edgePairWeight = 2;
 }

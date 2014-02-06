@@ -94,6 +94,8 @@ BreadthFirstSearch::BreadthFirstSearch()
 
 // -- destructor --
 BreadthFirstSearch::~BreadthFirstSearch() {
+  printf("de-allocating search; %lu MB freed\n",
+    ((fringeCapacity << POOL_BUCKET_SHIFT) + (poolCapacity << POOL_BUCKET_SHIFT)) >> 20);
   for (int i = 0; i < fringeCapacity; ++i) {
     free(this->fringe[i]);
   }

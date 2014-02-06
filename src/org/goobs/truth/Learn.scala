@@ -19,8 +19,15 @@ object Learn {
   def bigramAny(e1:EdgeType, e2:EdgeType):String   = "*" + "::" + e1 + "->" + e2
 
   def evaluate(paths:Iterable[Inference], weights:WeightVector):Double = {
+    def recursivePrint(node:Inference):String = {
+      if (node.hasImpliedFrom) {
+        s"${node.getFact.getGloss} <- ${recursivePrint(node.getImpliedFrom)}"
+      } else {
+        s"<${node.getFact.getGloss}>"
+      }
+    }
     for (inference <- paths) {
-      log(inference.getFact.getGloss + " <- " + inference.getImpliedFrom.getFact.getGloss)
+      log(recursivePrint(inference))
     }
 
     // TODO(gabor) an actual evaluation function
