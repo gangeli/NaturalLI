@@ -3,7 +3,7 @@ package org.goobs.truth
 import edu.stanford.nlp.stats.Counter
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.EdgeType.EdgeType
-import org.goobs.truth.Messages.{Weights, Inference}
+import org.goobs.truth.Messages.{UnlexicalizedWeights, Weights, Inference}
 
 
 object Learn {
@@ -18,8 +18,30 @@ object Learn {
   def bigramFlat(e1:EdgeType, e2:EdgeType):String  = "-" + "::" + e1 + "->" + e2
   def bigramAny(e1:EdgeType, e2:EdgeType):String   = "*" + "::" + e1 + "->" + e2
 
-  def serializeWeightVector(weights:WeightVector):Weights = {
-    Weights.newBuilder().build()
+  /**
+   * Serialize a weight vector into a protobuf to send to the server.
+   * @param weights The weight vector to serialize
+   * @return A protobuf message encoding the <b>cost</b> of each weight
+   */
+  def weightsToCosts(weights:WeightVector):Weights = {
+    // Function to set the unlexicalized weights
+    def unlexicalizedWeights(unigram:EdgeType=>String, bigram:(EdgeType,EdgeType)=>String):UnlexicalizedWeights = {
+      val builder = UnlexicalizedWeights.newBuilder()
+      for (from <- EdgeType.values) {
+        builder.addEdgeWeight(-weights.getCount(unigram(from)))
+        for (to <- EdgeType.values) {
+          builder.addEdgeWeight(-weights.getCount(bigram(from, to)))
+        }
+      }
+      builder.build()
+    }
+
+    Weights.newBuilder()
+      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramUp, bigramUp))
+      .setUnlexicalizedMonotoneDown(unlexicalizedWeights(unigramUp, bigramUp))
+      .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(unigramFlat, bigramFlat))
+      .setUnlexicalizedMonotoneAny(unlexicalizedWeights(unigramAny, bigramAny))
+      .build()
   }
 
   def evaluate(paths:Iterable[Inference], weights:WeightVector):Double = {

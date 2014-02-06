@@ -7,7 +7,7 @@
 #include "Graph.h"
 #include "FactDB.h"
 
-#define POOL_BUCKET_SHIFT 4
+#define POOL_BUCKET_SHIFT 20
 
 class SearchType;
 
@@ -67,14 +67,14 @@ struct PathCompare {
 class SearchType {
  public:
   /**
-   * Push a mutation onto the queue.
-   * The returned path is the (potentially new) pointer to the passed
-   * parent variable, as it may have changed due to allocation moving.
+   * Push a mutation onto the queue; the address of this element is
+   * guaranteed to never change.
+   * The returned path is new pushed element.
    */
   virtual const Path* push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge) = 0;
-  virtual const Path* pop() = 0;
+                    edge_type edge, float cost) = 0;
+  virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
   virtual bool isEmpty() = 0;
 
@@ -84,6 +84,15 @@ class SearchType {
   void start(const Path* startState) { root = startState; }
   
   virtual ~SearchType() { }
+  
+  /**
+   * A simple utility to pop an element if you don't care about the score
+   */
+  const Path* popWithoutScore() {
+    const Path* rtn;
+    pop(&rtn);
+    return rtn;
+  }
 
  protected:
   SearchType() : root(NULL) { } 
@@ -97,8 +106,8 @@ class BreadthFirstSearch : public SearchType {
  public:
   virtual const Path* push(const Path* parent, uint8_t mutationIndex,
                     uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge);
-  virtual const Path* pop();
+                    edge_type edge, float cost);
+  virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
 
@@ -114,7 +123,7 @@ class BreadthFirstSearch : public SearchType {
   BreadthFirstSearch();
   virtual ~BreadthFirstSearch();
 
- private:
+ protected:
   // manage the queue
   Path** fringe;
   Path* currentFringe;
@@ -139,6 +148,29 @@ class BreadthFirstSearch : public SearchType {
    inline Path* allocatePath();
 };
 
+/**
+ * Represents a Uniform Cost search, making use of the fundamental storage
+ * mechanism of BFS, but putting a heap on top of it.
+ */
+class UniformCostSearch : public BreadthFirstSearch {
+ public:
+  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
+                    uint8_t replaceLength, word replace1, word replace2,
+                    edge_type edge, float cost);
+  virtual float pop(const Path** poppedElement);
+  virtual const Path* peek();
+  virtual bool isEmpty();
+
+  UniformCostSearch();
+  virtual ~UniformCostSearch();
+ 
+ protected:
+  // Implementation of a min-heap
+  uint64_t heapSize;
+  uint64_t heapCapacity;
+  const Path** heap;
+  float* costs;
+};
 
 /**
  * An interface for the structure used to cache already seen paths.

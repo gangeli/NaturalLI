@@ -78,8 +78,8 @@ bool Path::operator==(const Path& other) const {
 
 // -- constructor --
 BreadthFirstSearch::BreadthFirstSearch()
-    : fringeLength(0), fringeCapacity(1), fringeI(0),
-      poolCapacity(1), poolLength(0), poppedRoot(false) {
+    : fringeLength(0), fringeCapacity(16), fringeI(0),
+      poolCapacity(16), poolLength(0), poppedRoot(false) {
   this->fringe = (Path**) malloc(fringeCapacity * sizeof(Path*));
   for (int i = 0; i < fringeCapacity; ++i) {
     this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
@@ -116,7 +116,7 @@ inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
     // Case: overflowed buffer
     if (newBucket >= poolCapacity) {
       // Case: need more space
-      const uint64_t newCapacity = (poolCapacity + 1 + poolCapacity / 3);
+      const uint64_t newCapacity = poolCapacity << 1;
       word** newPointer = (word**) malloc( newCapacity * sizeof(word*) );
       if (newPointer == NULL) {
         return NULL;
@@ -126,6 +126,9 @@ inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
       memoryPool = newPointer;
       for (int i = poolCapacity; i < newCapacity; ++i) {
         this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
+        if (this->memoryPool[i] == NULL) {
+          return NULL;
+        }
       }
       poolCapacity = newCapacity;
     }
@@ -145,7 +148,7 @@ inline Path* BreadthFirstSearch::allocatePath() {
   const uint64_t offset = fringeLength % (0x1 << POOL_BUCKET_SHIFT);
   if (bucket >= fringeCapacity) {
     // Case: need more space
-    const uint64_t newCapacity = (fringeCapacity + 1 + fringeCapacity / 3);
+    const uint64_t newCapacity = fringeCapacity << 1;
     Path** newPointer = (Path**) malloc( newCapacity * sizeof(Path*) );
     if (newPointer == NULL) {
       return NULL;
@@ -155,6 +158,9 @@ inline Path* BreadthFirstSearch::allocatePath() {
     fringe = newPointer;
     for (int i = fringeCapacity; i < newCapacity; ++i) {
       this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
+      if (this->fringe[i] == NULL) {
+        return NULL;
+      }
     }
     fringeCapacity = newCapacity;
   }
@@ -166,7 +172,8 @@ inline Path* BreadthFirstSearch::allocatePath() {
 // -- push a new element onto the fringe --
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, uint8_t mutationIndex,
-    uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
+    uint8_t replaceLength, word replace1, word replace2, edge_type edge,
+    float cost) {
 
   // Allocate new fact
   const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
@@ -193,14 +200,12 @@ inline const Path* BreadthFirstSearch::push(
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { return NULL; }
-  new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
-  return parent;
+  return new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
 }
 
 // -- peek at the next element --
 const Path* BreadthFirstSearch::peek() {
   if (!poppedRoot && this->fringeI == 0) {
-    poppedRoot = true;
     return root;
   }
   const uint64_t offset = this->fringeI % (0x1 << POOL_BUCKET_SHIFT);
@@ -208,10 +213,11 @@ const Path* BreadthFirstSearch::peek() {
 }
 
 // -- pop the next element --
-inline const Path* BreadthFirstSearch::pop() {
+inline float BreadthFirstSearch::pop(const Path** poppedElement) {
   if (this->fringeI == 0 && !poppedRoot) {
     poppedRoot = true;
-    return root;
+    *poppedElement = root;
+    return 0.0;
   }
   const uint64_t offset = this->fringeI % (0x1 << POOL_BUCKET_SHIFT);
   if (offset == 0) {
@@ -219,13 +225,104 @@ inline const Path* BreadthFirstSearch::pop() {
     currentPopFringe = fringe[bucket];
   }
   this->fringeI += 1;
-  return &currentPopFringe[offset];
+  *poppedElement = &currentPopFringe[offset];
+  return 0.0f;
 }
 
 // -- check if the fringe is empty --
 inline bool BreadthFirstSearch::isEmpty() {
   return (fringeI >= fringeLength && poppedRoot) || root == NULL;
 }
+
+//
+// Class UniformCostSearch
+//
+
+// -- constructor --
+UniformCostSearch::UniformCostSearch() :
+    heapSize(0), heapCapacity(1){
+  heap = (const Path**) malloc(heapCapacity * sizeof(Path*));
+  costs = (float*) malloc(heapCapacity * sizeof(float));
+}
+
+// -- destructor --
+UniformCostSearch::~UniformCostSearch() {
+  free(heap);
+  free(costs);
+}
+
+// -- bubbleDown() --
+void bubbleDown(uint64_t index) {
+  // TODO(gabor) implement me
+}
+
+// -- bubbleUp() --
+void bubbleUp(uint64_t index) {
+  // TODO(gabor) implement me
+}
+
+// -- push() --
+inline const Path* UniformCostSearch::push(const Path* parent, uint8_t mutationIndex,
+                    uint8_t replaceLength, word replace1, word replace2,
+                    edge_type edge, float cost) {
+  // Allocate the node
+  const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost);
+  // Ensure we have space on the heap
+  if (heapSize >= heapCapacity) {
+    uint64_t newCapacity = heapCapacity << 1;
+    const Path** newHeap = (const Path**) malloc(newCapacity * sizeof(Path*));
+    float* newCosts = (float*) malloc(newCapacity * sizeof(float*));
+    memcpy(newHeap, heap, heapCapacity * sizeof(Path*));
+    memcpy(newCosts, costs, heapCapacity * sizeof(float));
+    free(heap);
+    free(costs);
+    heap = newHeap;
+    costs = newCosts;
+    heapCapacity = newCapacity;
+  }
+  // Add the node to the heap
+  heap[heapSize]  = node;
+  costs[heapSize] = cost;
+  // Fix heap
+  bubbleUp(heapSize);
+  heapSize += 1;
+}
+
+// -- pop() --
+inline float UniformCostSearch::pop(const Path** poppedElement) {
+  if (this->heapSize == 0 && !poppedRoot) {
+    poppedRoot = true;
+    *poppedElement = root;
+    return 0.0;
+  }
+  // Pop element
+  *poppedElement = heap[0];
+  float cost = costs[0];
+  // Fix heap
+  heapSize -= 1;
+  if (heapSize > 0) {
+    heap[0] = heap[heapSize];
+    costs[0] = costs[heapSize];
+    bubbleDown(0);
+  }
+  // Return
+  return cost;
+}
+
+// -- peek() --
+const Path* UniformCostSearch::peek() {
+  if (this->heapSize == 0 && !poppedRoot) {
+    return root;
+  } else {
+    return heap[0];
+  }
+}
+
+// -- isEmpty() --
+bool UniformCostSearch::isEmpty() {
+  return (heapSize == 0 && poppedRoot) || root == NULL;
+}
+
 
 //
 // Class CacheStrategy
@@ -245,18 +342,26 @@ void CacheStrategyNone::add(const Path&) { }
 //
 
 // A helper to push elements to the queue en bulk
-inline const Path* flushQueue(SearchType* fringe,
-                              const Path* parent,
-                              const uint8_t* indexToMutateArr,
-                              const word* sinkArr,
-                              const uint8_t* typeArr,
-                              const uint8_t queueLength) {
+inline bool flushQueue(SearchType* fringe,
+                       const Path* parent,
+                       const uint8_t* indexToMutateArr,
+                       const word* sinkArr,
+                       const uint8_t* typeArr,
+                       const float* costArr,
+                       const uint8_t queueLength) {
   uint8_t i = 0;
   while (parent != NULL && i < queueLength) {
-    parent = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i]);
+    if (fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i]) == NULL) {
+      return false;
+    }
     i += 1;
   }
-  return parent;
+  return true;
+}
+
+inline float computeCost(const edge_type& lastEdgeType, const edge& path, float& costSoFar) {
+  // TODO(gabor) implement me
+  return 0.0;
 }
 
 // The main search() function
@@ -286,7 +391,9 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
       std::exit(1);
     }
-    const Path* parent = fringe->pop();
+    const Path* parent;
+    float costSoFar = fringe->pop(&parent);
+    printf("popped %s", toString(*graph, *fringe, parent).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -316,6 +423,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     uint8_t indexToMutateArr[256];
     word sinkArr[256];
     uint8_t typeArr[256];
+    float costArr[256];
     uint8_t queueLength = 0;
     // (algorithm)
     for (uint8_t indexToMutate = 0;
@@ -329,12 +437,10 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
-          parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);
-          if (parent == NULL) {
+          if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
             printf("Error pushing to stack; returning\n");
             return responses;
           }
-          parentFact = parent->fact;
           queueLength = 0;
         }
         // Add the state to the fringe
@@ -343,6 +449,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         indexToMutateArr[queueLength] = indexToMutate;
         sinkArr[queueLength] = mutations[i].sink;
         typeArr[queueLength] = mutations[i].type;
+        costArr[queueLength] = computeCost(parent->edgeType, mutations[i], costSoFar);
 //        printf("\tmutation [%d] %s -> %s  (type %s)\n", indexToMutateArr[queueLength],
 //               graph->gloss(parent->fact[indexToMutateArr[queueLength]]),
 //               graph->gloss(sinkArr[queueLength]),
@@ -351,7 +458,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
 //        parent = fringe->push(parent, indexToMutate, 1, mutations[i].sink, 0, mutations[i].type);
       }
     }
-    if (flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength) == NULL) {
+    if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
       printf("Error pushing to stack; returning\n");
       return responses;
     }

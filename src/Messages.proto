@@ -27,6 +27,7 @@ message Query {
   required bool useRealWorld = 2;
   repeated Fact knownFact    = 3;
   optional uint64 timeout    = 4 [ default = 1000 ];
+  optional Weights weights   = 5;
 
   optional bool shutdownServer = 101 [ default = false ];
 }
@@ -44,9 +45,17 @@ message Response {
   optional string    errorMessage = 3;
 }
 
-
-/** A set weights which can be passed back and forth to the server */
+/** A holistic view of the weights to send to the search component */
 message Weights {
+  optional UnlexicalizedWeights unlexicalizedMonotoneUp   = 1;
+  optional UnlexicalizedWeights unlexicalizedMonotoneDown = 2;
+  optional UnlexicalizedWeights unlexicalizedMonotoneFlat = 3;
+  optional UnlexicalizedWeights unlexicalizedMonotoneAny = 4;
+}
+
+
+/** A set of (relatively) dense unlexicalized weights which can be passed back and forth to the server */
+message UnlexicalizedWeights {
   /** There should be |edges| elements in this, according to the indices in EDGE_TYPE */
   repeated double edgeWeight     = 1;
 

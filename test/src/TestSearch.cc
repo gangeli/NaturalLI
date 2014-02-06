@@ -25,13 +25,14 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    searchType->push(root, 0, 1, 3701, 0, 0);
+    searchType->push(root, 0, 1, 3701, 0, 0, 0.0f);
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
-    EXPECT_EQ(*dist1, *searchType->peek());
     EXPECT_EQ(*root, *searchType->root);
-    searchType->push(dist1, 0, 1, 27970, 0, 1);
-    EXPECT_EQ(*dist1, *searchType->peek());
+    EXPECT_TRUE(searchType->root->parent == NULL);
+    searchType->push(dist1, 0, 1, 27970, 0, 1, 0.0f);
     EXPECT_EQ(*root, *searchType->root);
+    EXPECT_TRUE(searchType->root->parent == NULL);
+    EXPECT_TRUE(searchType->peek()->parent == NULL);
     // Refresh pointers
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     dist2 = ((BreadthFirstSearch*) searchType)->debugGet(1);
@@ -137,15 +138,15 @@ TEST_F(TestName, IsEmpty) { \
   EXPECT_TRUE(search.isEmpty()); \
 } \
 \
-TEST_F(TestName, PushPop) { \
+TEST_F(TestName, PushpopWithoutScore) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(root, 0, 1, 3701, 0, 0); \
+  search.push(root, 0, 1, 3701, 0, 0, 0.0f); \
   EXPECT_FALSE(search.isEmpty()); \
-  EXPECT_EQ((Path*) NULL, search.pop()->parent); \
+  EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
   EXPECT_FALSE(search.isEmpty()); \
-  EXPECT_EQ(*root, *search.pop()->parent); \
+  EXPECT_EQ(*root, *search.popWithoutScore()->parent); \
   EXPECT_TRUE(search.isEmpty()); \
 }
 
@@ -159,16 +160,16 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  search.push(root, 0, 1, 3701,  0, 0);
-  search.push(root, 0, 1, 27970, 0, 1);
+  search.push(root, 0, 1, 3701,  0, 0, 0.0f);
+  search.push(root, 0, 1, 27970, 0, 1, 0.0f);
   const Path* dist1 = search.debugGet(0);
   const Path* dist2 = search.debugGet(1);
   ASSERT_FALSE(search.isEmpty());
-  EXPECT_EQ(*root,  *search.pop());
+  EXPECT_EQ(*root,  *search.popWithoutScore());
   ASSERT_FALSE(search.isEmpty());
-  EXPECT_EQ(*dist1, *search.pop());
+  EXPECT_EQ(*dist1, *search.popWithoutScore());
   ASSERT_FALSE(search.isEmpty());
-  EXPECT_EQ(*dist2, *search.pop());
+  EXPECT_EQ(*dist2, *search.popWithoutScore());
   EXPECT_TRUE(search.isEmpty());
 }
 
@@ -177,9 +178,9 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  // Populate search
+  // popWithoutScoreulate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, i, 0, 0);
+    search.push(root, 0, 1, i, 0, 0, 0.0f);
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -187,15 +188,15 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0);
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, 0.0f);
     }
   }
-  // Pop off elements
-  EXPECT_FALSE(search.pop() == NULL);  // pop the root
+  // popWithoutScore off elements
+  EXPECT_FALSE(search.popWithoutScore() == NULL);  // popWithoutScore the root
   for (int i = 0; i < 120 + 100 * 128; ++i) {
     ASSERT_FALSE(search.isEmpty());
-    const Path* elem = search.pop();
-    EXPECT_FALSE(elem == NULL);  // we didn't pop off a null element
+    const Path* elem = search.popWithoutScore();
+    EXPECT_FALSE(elem == NULL);  // we didn't popWithoutScore off a null element
     EXPECT_EQ(3, elem->factLength);  // we only did mutations
     EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent

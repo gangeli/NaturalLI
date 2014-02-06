@@ -28,7 +28,7 @@ object Client {
 
     // Write query
     query.writeTo(toServer)
-    log(s"wrote query to server (size ${query.getSerializedSize}); awaiting response...")
+    log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
@@ -56,7 +56,13 @@ object Client {
           case _ => println("Could not parse consequent"); None
         }) {
           // We have our antecedent and consequent
-          val query = Query.newBuilder().setQueryFact(consequent).addKnownFact(antecedent).setUseRealWorld(false).setTimeout(Props.SEARCH_TIMEOUT).build()
+          val query = Query.newBuilder()
+            .setQueryFact(consequent)
+            .addKnownFact(antecedent)
+            .setUseRealWorld(false)
+            .setTimeout(Props.SEARCH_TIMEOUT)
+            .setWeights(Learn.weightsToCosts(weights))
+            .build()
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
