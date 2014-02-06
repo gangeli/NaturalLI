@@ -489,11 +489,14 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         // Add the state to the fringe
         // These are queued up in order to try to protect the cache; the push() call is
         // fairly expensive memory-wise.
-        indexToMutateArr[queueLength] = indexToMutate;
-        sinkArr[queueLength] = mutations[i].sink;
-        typeArr[queueLength] = mutations[i].type;
-        costArr[queueLength] = computeCost(parent->edgeType, mutations[i], costSoFar);
-        queueLength += 1;
+        const float cost = computeCost(parent->edgeType, mutations[i], costSoFar);
+        if (cost - costSoFar < 1e10f) {
+          indexToMutateArr[queueLength] = indexToMutate;
+          sinkArr[queueLength] = mutations[i].sink;
+          typeArr[queueLength] = mutations[i].type;
+          costArr[queueLength] = cost;
+          queueLength += 1;
+        }
       }
     }
     if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
