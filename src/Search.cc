@@ -74,47 +74,107 @@ bool Path::operator==(const Path& other) const {
 //
 // Class BreadthFirstSearch
 //
+
+// -- constructor --
 BreadthFirstSearch::BreadthFirstSearch()
     : fringeLength(0), fringeCapacity(1), fringeI(0),
       poolCapacity(1), poolLength(0), poppedRoot(false),
       sumOffset(0){
-  this->fringe = (Path*) malloc(fringeCapacity * sizeof(Path));
-  this->memoryPool = (word*) malloc(poolCapacity * sizeof(word*));
+  this->fringe = (Path**) malloc(fringeCapacity * sizeof(Path*));
+  for (int i = 0; i < fringeCapacity; ++i) {
+    this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
+  }
+  this->currentFringe = this->fringe[0];
+  this->memoryPool = (word**) malloc(poolCapacity * sizeof(word*));
+  for (int i = 0; i < poolCapacity; ++i) {
+    this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
+  }
+  this->currentMemoryPool = memoryPool[0];
 }
 
+// -- destructor --
 BreadthFirstSearch::~BreadthFirstSearch() {
+  for (int i = 0; i < fringeCapacity; ++i) {
+    free(this->fringe[i]);
+  }
   free(this->fringe);
+  for (int i = 0; i < poolCapacity; ++i) {
+    free(this->memoryPool[i]);
+  }
   free(this->memoryPool);
   delete this->root;
 }
- 
+
+// -- allocate space for word --
+inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
+  const uint64_t startOffset = poolLength % (0x1 << POOL_BUCKET_SHIFT);
+  const uint64_t endOffset = startOffset + toAllocateLength;
+  const uint64_t newBucket = (poolLength + toAllocateLength) >> POOL_BUCKET_SHIFT;
+  printf("tick (bucket %lu; length=%lu, capacity=%lu, length=%d)\n", newBucket, poolLength, poolCapacity, toAllocateLength);
+  if ((startOffset >> POOL_BUCKET_SHIFT) != (endOffset >> POOL_BUCKET_SHIFT)) {  // if we've overflowed the bucket
+    printf("EXPANDING BUCKET (bucket %lu; length=%lu, capacity=%lu, length=%d)\n", newBucket, poolLength, poolCapacity, toAllocateLength);
+    // Case: overflowed buffer
+    if (newBucket >= poolCapacity) {
+      // Case: need more space
+      const uint64_t newCapacity = (poolCapacity + 1 + poolCapacity / 3);
+      printf("  NEW MEMORY (%lu)\n", newCapacity);
+      word** newPointer = (word**) malloc( newCapacity * sizeof(word*) );
+      if (newPointer == NULL) {
+        return NULL;
+      }
+      memcpy(newPointer, memoryPool, poolCapacity * sizeof(word*));
+      free (memoryPool);
+      memoryPool = newPointer;
+      for (int i = poolCapacity; i < newCapacity; ++i) {
+        this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
+      }
+      poolCapacity = newCapacity;
+    }
+    // Allocate space at the beginning of the next bucket
+    poolLength = (newBucket << POOL_BUCKET_SHIFT) + toAllocateLength;
+    currentMemoryPool = memoryPool[newBucket];
+    return &currentMemoryPool[0];
+  } else {
+    poolLength += toAllocateLength;
+    return &currentMemoryPool[poolLength - toAllocateLength];
+  }
+}
+
+// -- allocate space for path --
+inline Path* BreadthFirstSearch::allocatePath() {
+  const uint64_t bucket = fringeLength >> POOL_BUCKET_SHIFT;
+  if (bucket >= fringeCapacity) {
+    printf("EXPANDING FRINGE (bucket %lu)\n", bucket);
+    // Case: need more space
+    const uint64_t newCapacity = (fringeCapacity + 1 + fringeCapacity / 3);
+    Path** newPointer = (Path**) malloc( newCapacity * sizeof(Path*) );
+    if (newPointer == NULL) {
+      return NULL;
+    }
+    memcpy(newPointer, fringe, fringeCapacity * sizeof(Path*));
+    free(fringe);
+    fringe = newPointer;
+    for (int i = fringeCapacity; i < newCapacity; ++i) {
+      this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
+    }
+    fringeCapacity = newCapacity;
+    currentFringe = fringe[bucket];
+  }
+  const uint64_t offset = fringeLength % (0x1 << POOL_BUCKET_SHIFT);
+  fringeLength += 1;
+  return &currentFringe[offset];
+}
+
+// -- push a new element onto the fringe --
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, uint8_t mutationIndex,
     uint8_t replaceLength, word replace1, word replace2, edge_type edge) {
 
   // Allocate new fact
-  uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
-  // (ensure space)
-  while (poolLength + mutatedLength >= poolCapacity) {
-    // (re-allocate array)
-    word* newPool = (word*) malloc(2 * poolCapacity * sizeof(word*));
-    if (newPool == NULL) { 
-      printf("WARN: could not allocate new fact pool (new length=%lu)]\n", 2*poolCapacity);
-      return NULL;
-    }
-    uint64_t startOffset = ((uint64_t) newPool) - ((uint64_t) memoryPool);
-    memcpy(newPool, memoryPool, poolCapacity * sizeof(word*));
-    free(memoryPool);
-    memoryPool = newPool;
-    poolCapacity = 2 * poolCapacity;
-    // (fix pointers -- and God help me for pointer arithmetic)
-    for (int i = 0; i <fringeLength; ++i) {
-      fringe[i].fact = (word*) (startOffset + ((uint64_t) fringe[i].fact));
-    }
-  }
+  const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   // (allocate fact)
-  word* mutated = &memoryPool[poolLength];
-  poolLength += mutatedLength;
+  word* mutated = allocateWord(mutatedLength);
+  if (mutated == NULL) { return NULL; }
   // (mutate fact)
   memcpy(mutated, parent->fact, mutationIndex * sizeof(word));
   if (replaceLength > 0) { mutated[mutationIndex] = replace1; }
@@ -133,52 +193,34 @@ inline const Path* BreadthFirstSearch::push(
   }
 
   // Allocate new path
-  // (ensure space)
-  while (fringeLength >= fringeCapacity) {
-    // (re-allocate array)
-    Path* newFringe = (Path*) malloc(2 * fringeCapacity * sizeof(Path));
-    if (newFringe == NULL) { 
-      printf("WARN: could not allocate new fringe (new length=%lu)]\n", 2*fringeCapacity);
-      return NULL;
-    }
-    uint64_t startOffset = ((uint64_t) newFringe) - ((uint64_t) fringe);
-    memcpy(newFringe, fringe, fringeCapacity * sizeof(Path));
-    free(fringe);
-    fringe = newFringe;
-    fringeCapacity = 2 * fringeCapacity;
-    // (fix pointers -- and God help me for pointer arithmetic)
-    for (int i = 0; i < fringeLength; ++i) {
-      if (fringe[i].parent != root) {
-        fringe[i].parent = (Path*) (startOffset + ((uint64_t) fringe[i].parent));
-      }
-    }
-    if (parent != root) {
-      parent = (Path*) (startOffset + ((uint64_t) parent));
-    }
-  }
-  // (allocate path)
-  new(&fringe[fringeLength]) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
-  fringeLength += 1;
+  Path* newPath = allocatePath();
+  if (newPath == NULL) { return NULL; }
+  new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
   return parent;
 }
 
+// -- peek at the next element --
 const Path* BreadthFirstSearch::peek() {
   if (!poppedRoot && this->fringeI == 0) {
     poppedRoot = true;
     return root;
   }
-  return &this->fringe[this->fringeI];
+  const uint64_t offset = this->fringeI % (0x1 << POOL_BUCKET_SHIFT);
+  return &this->currentFringe[offset];
 }
 
+// -- pop the next element --
 inline const Path* BreadthFirstSearch::pop() {
   if (this->fringeI == 0 && !poppedRoot) {
     poppedRoot = true;
     return root;
   }
+  const uint64_t offset = this->fringeI % (0x1 << POOL_BUCKET_SHIFT);
   this->fringeI += 1;
-  return &this->fringe[this->fringeI - 1];
+  return &this->currentFringe[offset];
 }
 
+// -- check if the fringe is empty --
 inline bool BreadthFirstSearch::isEmpty() {
   return (fringeI >= fringeLength && poppedRoot) || root == NULL;
 }
@@ -282,7 +324,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
         // Prune edges to add
-        if (mutations[i].type != 1) { continue; } // TODO(gabor) don't only do WordNet down
+        if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           parent = flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, queueLength);

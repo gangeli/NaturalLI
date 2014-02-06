@@ -7,6 +7,8 @@
 #include "Graph.h"
 #include "FactDB.h"
 
+#define POOL_BUCKET_SHIFT 4
+
 class SearchType;
 
 /**
@@ -101,8 +103,9 @@ class BreadthFirstSearch : public SearchType {
   /**
    * A debug function to get the ith element of the queue.
    */
-  Path* debugGet(uint64_t i) {
-    return &fringe[i];
+  const Path* debugGet(uint64_t i) {
+    const uint64_t offset = i % (0x1 << POOL_BUCKET_SHIFT);
+    return &currentFringe[offset];
   }
   
   BreadthFirstSearch();
@@ -110,7 +113,8 @@ class BreadthFirstSearch : public SearchType {
 
  private:
   // manage the queue
-  Path* fringe;
+  Path** fringe;
+  Path* currentFringe;
   uint64_t fringeCapacity;
   uint64_t fringeLength;
   uint64_t fringeI;
@@ -118,13 +122,20 @@ class BreadthFirstSearch : public SearchType {
   // manage the fact memory pool
   uint64_t poolCapacity;
   uint64_t poolLength;
-  word* memoryPool;
+  word** memoryPool;
+  word* currentMemoryPool;
   
   // manage 0 element corner case
   bool poppedRoot;
 
   // handles offsets from memcpy's
   uint64_t sumOffset;
+
+  /**
+   * Allocate space for another word in the pool
+   */
+   inline word* allocateWord(uint8_t toAllocateLength);
+   inline Path* allocatePath();
 };
 
 
