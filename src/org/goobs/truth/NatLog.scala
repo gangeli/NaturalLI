@@ -30,9 +30,9 @@ object NatLog {
     weights.setCount(bigramDown( FREEBASE_DOWN, WORDNET_DOWN ), positiveWeight)
     weights.setCount(bigramDown( FREEBASE_DOWN, FREEBASE_DOWN ), positiveWeight)
     // Set "don't care" weights
-    weights.setCount(unigramAny( MORPH_TO_LEMMA ),    0.0)
-    weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  0.0)
-    weights.setCount(unigramAny( MORPH_FUDGE_NUMBER), 0.0)
+    weights.setCount(unigramAny( MORPH_TO_LEMMA ),    -0.0)
+    weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  -0.0)
+    weights.setCount(unigramAny( MORPH_FUDGE_NUMBER), -0.0)
     // Set weights we only care about a bit
     weights.setCount(unigramUp(ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
     weights.setCount(unigramDown(ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
@@ -47,7 +47,7 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(0.0, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, Double.NegativeInfinity, Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as

@@ -7,6 +7,8 @@ import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
+import org.goobs.truth.Learn.WeightVector
+import edu.stanford.nlp.stats.ClassicCounter
 
 /**
  * @author Gabor Angeli

@@ -26,10 +26,10 @@ const vector<word> catsHaveTails() {
   return catsHaveTails;
 }
 
-string toString(const Graph& graph, const word* fact, const uint8_t factLength) {
+string toString(const Graph& graph, const tagged_word* fact, const uint8_t factLength) {
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
-    gloss = gloss + (gloss == "" ? "" : " ") + graph.gloss(fact[i]);
+    gloss = gloss + (gloss == "" ? "" : " ") + graph.gloss(getWord(fact[i]));
   }
   return gloss;
 }

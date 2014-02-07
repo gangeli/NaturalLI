@@ -30,9 +30,10 @@ object Learn {
       for (from <- EdgeType.values) {
         builder.addEdgeWeight(-weights.getCount(unigram(from)).toFloat)
         for (to <- EdgeType.values) {
-          builder.addEdgeWeight(-weights.getCount(bigram(from, to)).toFloat)
+          builder.addEdgePairWeight(-weights.getCount(bigram(from, to)).toFloat)
         }
       }
+      println(builder.build())
       builder.build()
     }
 

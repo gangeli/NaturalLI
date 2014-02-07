@@ -493,6 +493,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
+    printf("pop %s\n", toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -548,7 +549,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
             parent->edgeType, mutations[i],
             parent->lastMutationIndex == indexToMutate,
             getMonotonicity(parent->fact[indexToMutate]));
-        if (mutationCost < 1e10f) {
+        if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
           sinkArr[queueLength] = mutations[i].sink;
           typeArr[queueLength] = mutations[i].type;
