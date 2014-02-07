@@ -421,18 +421,19 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
                                        const monotonicity& monotonicity) const {
   if (!available) { return 0.0; }
   // Case: don't care about monotonicity
+  const float pathCost = path.cost == 0.0 ? 1e-5 : path.cost;
   if (path.type > FREEBASE_DOWN) {  // lemma morphs
-    return unigramWeightsAny[path.type] * path.cost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+    return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
   switch (monotonicity) {
     case MONOTONE_UP:
-      return unigramWeightsUp[path.type] * path.cost + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsUp[path.type] * pathCost + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_DOWN:
-      return unigramWeightsDown[path.type] * path.cost + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsDown[path.type] * pathCost + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
       break;
     case MONOTONE_FLAT:
-      return unigramWeightsFlat[path.type] * path.cost + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsFlat[path.type] * pathCost + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
       break;
     default:
       printf("Unknown monotonicity: %d\n", monotonicity);
@@ -488,7 +489,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // Get the next element from the fringe
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
