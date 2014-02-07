@@ -47,7 +47,7 @@ object Learn {
     // Note: flip up and down! The inference inversion happens here.
     Weights.newBuilder()
       .setUnlexicalizedMonotoneDown(unlexicalizedWeights(unigramUp, bigramUp))
-      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramUp, bigramUp))
+      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramDown, bigramDown))
       .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(unigramFlat, bigramFlat))
       .setUnlexicalizedMonotoneAny(unlexicalizedWeights(unigramAny, bigramAny))
       .build()
