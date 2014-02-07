@@ -23,7 +23,7 @@ class Path {
   /** A pointer to the "parent" of this node -- where the search came from */
   const Path* parent;
   /** The actual fact expressed by the node */
-  const word* fact;
+  const tagged_word* fact;
   /** The length of the fact expressed by the node */
   const uint8_t factLength;
   /** The index that was last mutated, or 255 if this is the first element*/
@@ -38,10 +38,10 @@ class Path {
   edge_type edgeType;
 
   /** The canonical constructor -- all fields are specified */
-  Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
+  Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
        const uint64_t fixedBitmask[], const uint8_t lastMutationIndex);
   /** A constructor for a root node -- there is no parent, nor edge type */
-  Path(const word* fact, uint8_t factLength);
+  Path(const tagged_word* fact, uint8_t factLength);
   /** The deconstructor -- this should be largely empty */
   ~Path();
 
@@ -71,9 +71,9 @@ class SearchType {
    * guaranteed to never change.
    * The returned path is new pushed element.
    */
-  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
-                    uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge, float cost) = 0;
+  virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
+    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+    const edge_type& edge, const float& cost) = 0;
   virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
   virtual bool isEmpty() = 0;
@@ -104,9 +104,9 @@ class SearchType {
  */
 class BreadthFirstSearch : public SearchType {
  public:
-  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
-                    uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge, float cost);
+  virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
+    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+    const edge_type& edge, const float& cost);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
@@ -135,8 +135,8 @@ class BreadthFirstSearch : public SearchType {
   // manage the fact memory pool
   uint64_t poolCapacity;
   uint64_t poolLength;
-  word** memoryPool;
-  word* currentMemoryPool;
+  tagged_word** memoryPool;
+  tagged_word* currentMemoryPool;
   
   // manage 0 element corner case
   bool poppedRoot;
@@ -144,7 +144,7 @@ class BreadthFirstSearch : public SearchType {
   /**
    * Allocate space for another word in the pool
    */
-   inline word* allocateWord(uint8_t toAllocateLength);
+   inline tagged_word* allocateWord(uint8_t toAllocateLength);
    inline Path* allocatePath();
 };
 
@@ -154,9 +154,9 @@ class BreadthFirstSearch : public SearchType {
  */
 class UniformCostSearch : public BreadthFirstSearch {
  public:
-  virtual const Path* push(const Path* parent, uint8_t mutationIndex,
-                    uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge, float cost);
+  virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
+    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+    const edge_type& edge, const float& cost);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
@@ -201,6 +201,36 @@ class CacheStrategyNone : public CacheStrategy {
 };
 
 /**
+ * A 
+ */
+class WeightVector {
+ public:
+  WeightVector();
+  WeightVector(
+    float* unigramWeightsUp,   float* bigramWeightsUp,
+    float* unigramWeightsDown, float* bigramWeightsDown,
+    float* unigramWeightsFlat, float* bigramWeightsFlat,
+    float* unigramWeightsAny,  float* bigramWeightsAny);
+  ~WeightVector();
+
+  inline float computeCost(const edge_type& lastEdgeType, const edge& path,
+                           const bool& changingSameWord,
+                           const monotonicity& monotonicity) const;
+ 
+ private:
+  const bool available;
+
+  float* unigramWeightsUp;
+  float* bigramWeightsUp;
+  float* unigramWeightsDown;
+  float* bigramWeightsDown;
+  float* unigramWeightsFlat;
+  float* bigramWeightsFlat;
+  float* unigramWeightsAny;
+  float* bigramWeightsAny;
+};
+
+/**
  * Perform a search from the query fact, to any antecedents that can be
  * found by searching through valid edits, insertions, or deletions.
  *
@@ -212,9 +242,9 @@ class CacheStrategyNone : public CacheStrategy {
  * the associated memory.
  */
 std::vector<const Path*> Search(Graph*, FactDB*,
-                     const word* query, const uint8_t queryLength,
+                     const tagged_word* query, const uint8_t queryLength,
                      SearchType*,
-                     CacheStrategy*, const uint64_t timeout);
+                     CacheStrategy*, const WeightVector* weights, const uint64_t timeout);
 
 
 

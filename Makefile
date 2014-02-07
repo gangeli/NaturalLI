@@ -52,7 +52,7 @@ TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
 # -- TARGETS --
 default: ${DIST}/client.jar ${DIST}/server
-all: ${DIST}/client.jar ${DIST}/server
+all: ${DIST}/client.jar ${DIST}/server ${DIST}/test_client.jar ${DIST}/test_server
 
 client: ${DIST}/client.jar
 	${SCALA} -cp ${CP}:${DIST}/client.jar -J-mx4g org.goobs.truth.Client

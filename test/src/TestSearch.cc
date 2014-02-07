@@ -154,9 +154,10 @@ TEST_F(TestName, PushPop) { \
 } \
 \
 TEST_F(TestName, RunToySearch) { \
+  WeightVector w; \
   vector<const Path*> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), \
-                                &search, cache, 100); \
+                                &search, cache, &w, 100); \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0]->factLength); \
   EXPECT_EQ(27970, result[0]->fact[0]); \

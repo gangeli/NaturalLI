@@ -3,6 +3,7 @@
 
 #include "Postgres.h"
 #include "FactDB.h"
+#include "Utils.h"
 
 
 using namespace std;
@@ -18,14 +19,14 @@ class InMemoryFactDB : public FactDB {
  public:
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
-  virtual const bool contains(const word* query, const uint8_t queryLength) {
+  virtual const bool contains(const tagged_word* query, const uint8_t queryLength) {
     // Variables for hashing
     int64_t hash = 0;
     uint32_t shiftIncr = (64 / queryLength);
     uint32_t shift = 0;
     // Hash fact
     for (int i = 0; i < queryLength; ++i) {
-      hash = hash ^ query[i] << shift;
+      hash = hash ^ getWord(query[i]) << shift;
       shift += shiftIncr;
     }
     // Compute if the fact is contained in the set
@@ -64,11 +65,11 @@ FactDB* ReadFactDB() {
 class MockFactDB : public FactDB {
  public:
   
-  virtual const bool contains(const word* query, const uint8_t queryLength) {
+  virtual const bool contains(const tagged_word* query, const uint8_t queryLength) {
     return queryLength == 3 && 
-      query[0] == 27970 &&
-      query[1] == 3844 &&
-      query[2] == 14221;
+      getWord(query[0]) == 27970 &&
+      getWord(query[1]) == 3844 &&
+      getWord(query[2]) == 14221;
   }
 };
 

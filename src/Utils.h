@@ -37,4 +37,14 @@ std::string toString(const Graph& graph, SearchType& searchType, const Path* pat
  */
 std::string toString(edge_type& edge);
 
+/**
+ * Get the word part of a tagged word.
+ */
+inline word getWord(const tagged_word& w) { return (w << 2) >> 2; }
+
+/**
+ * Get the monotonicity part of a tagged word.
+ */
+inline monotonicity getMonotonicity(const tagged_word& w) { return w >> 30; }
+
 #endif

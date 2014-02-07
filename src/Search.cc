@@ -32,7 +32,7 @@ inline bool setBit(uint64_t bitmask[], const uint8_t& index) {
 //
 // Class Path
 //
-Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_type edgeType,
+Path::Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
            const uint64_t fixedBitmask[], uint8_t lastMutatedIndex) 
     : parent(parentOrNull),
       fact(fact),
@@ -42,7 +42,7 @@ Path::Path(const Path* parentOrNull, const word* fact, uint8_t factLength, edge_
       fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} {
 }
 
-Path::Path(const word* fact, uint8_t factLength)
+Path::Path(const tagged_word* fact, uint8_t factLength)
     : parent(NULL),
       fact(fact),
       factLength(factLength),
@@ -85,9 +85,9 @@ BreadthFirstSearch::BreadthFirstSearch()
     this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
   }
   this->currentFringe = this->fringe[0];
-  this->memoryPool = (word**) malloc(poolCapacity * sizeof(word*));
+  this->memoryPool = (tagged_word**) malloc(poolCapacity * sizeof(tagged_word*));
   for (int i = 0; i < poolCapacity; ++i) {
-    this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
+    this->memoryPool[i] = (tagged_word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(tagged_word) );
   }
   this->currentMemoryPool = this->memoryPool[0];
 }
@@ -95,7 +95,7 @@ BreadthFirstSearch::BreadthFirstSearch()
 // -- destructor --
 BreadthFirstSearch::~BreadthFirstSearch() {
   printf("de-allocating BFS; %lu MB freed\n",
-    ((fringeCapacity << POOL_BUCKET_SHIFT) + (poolCapacity << POOL_BUCKET_SHIFT)) >> 20);
+    ((fringeCapacity << POOL_BUCKET_SHIFT)*sizeof(Path) + (poolCapacity << POOL_BUCKET_SHIFT) * sizeof(word)) >> 20);
   for (int i = 0; i < fringeCapacity; ++i) {
     free(this->fringe[i]);
   }
@@ -108,7 +108,7 @@ BreadthFirstSearch::~BreadthFirstSearch() {
 }
 
 // -- allocate space for word --
-inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
+inline tagged_word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
   const uint64_t startOffset = poolLength % (0x1 << POOL_BUCKET_SHIFT);
   const uint64_t endOffset = startOffset + toAllocateLength;
   const uint64_t newBucket = (poolLength + toAllocateLength) >> POOL_BUCKET_SHIFT;
@@ -117,15 +117,15 @@ inline word* BreadthFirstSearch::allocateWord(uint8_t toAllocateLength) {
     if (newBucket >= poolCapacity) {
       // Case: need more space
       const uint64_t newCapacity = poolCapacity << 1;
-      word** newPointer = (word**) malloc( newCapacity * sizeof(word*) );
+      tagged_word** newPointer = (tagged_word**) malloc( newCapacity * sizeof(tagged_word*) );
       if (newPointer == NULL) {
         return NULL;
       }
-      memcpy(newPointer, memoryPool, poolCapacity * sizeof(word*));
+      memcpy(newPointer, memoryPool, poolCapacity * sizeof(tagged_word*));
       free (memoryPool);
       memoryPool = newPointer;
       for (int i = poolCapacity; i < newCapacity; ++i) {
-        this->memoryPool[i] = (word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
+        this->memoryPool[i] = (tagged_word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(word) );
         if (this->memoryPool[i] == NULL) {
           return NULL;
         }
@@ -171,14 +171,14 @@ inline Path* BreadthFirstSearch::allocatePath() {
 
 // -- push a new element onto the fringe --
 inline const Path* BreadthFirstSearch::push(
-    const Path* parent, uint8_t mutationIndex,
-    uint8_t replaceLength, word replace1, word replace2, edge_type edge,
-    float cost) {
+    const Path* parent, const uint8_t& mutationIndex,
+    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+    const edge_type& edge, const float& cost) {
 
   // Allocate new fact
   const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   // (allocate fact)
-  word* mutated = allocateWord(mutatedLength);
+  tagged_word* mutated = allocateWord(mutatedLength);
   if (mutated == NULL) { return NULL; }
   // (mutate fact)
   memcpy(mutated, parent->fact, mutationIndex * sizeof(word));
@@ -303,9 +303,9 @@ inline void UniformCostSearch::bubbleUp(const uint64_t index) {
 }
 
 // -- push() --
-inline const Path* UniformCostSearch::push(const Path* parent, uint8_t mutationIndex,
-                    uint8_t replaceLength, word replace1, word replace2,
-                    edge_type edge, float cost) {
+inline const Path* UniformCostSearch::push(const Path* parent, const uint8_t& mutationIndex,
+                    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+                    const edge_type& edge, const float& cost) {
   // Allocate the node
   const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost);
   // Ensure we have space on the heap
@@ -382,6 +382,65 @@ bool CacheStrategyNone::isSeen(const Path&) {
 
 void CacheStrategyNone::add(const Path&) { }
 
+// 
+// Class WeightVector
+//
+WeightVector::WeightVector() :
+  available(false),
+  unigramWeightsUp(NULL), bigramWeightsUp(NULL),
+  unigramWeightsDown(NULL), bigramWeightsDown(NULL),
+  unigramWeightsFlat(NULL), bigramWeightsFlat(NULL),
+  unigramWeightsAny(NULL), bigramWeightsAny(NULL) { }
+
+WeightVector::WeightVector(
+  float* unigramWeightsUp, float* bigramWeightsUp,
+  float* unigramWeightsDown, float* bigramWeightsDown,
+  float* unigramWeightsFlat, float* bigramWeightsFlat,
+  float* unigramWeightsAny, float* bigramWeightsAny ) :
+  available(true),
+  unigramWeightsUp(unigramWeightsUp), bigramWeightsUp(bigramWeightsUp),
+  unigramWeightsDown(unigramWeightsDown), bigramWeightsDown(bigramWeightsDown),
+  unigramWeightsFlat(unigramWeightsFlat), bigramWeightsFlat(bigramWeightsFlat),
+  unigramWeightsAny(unigramWeightsAny), bigramWeightsAny(bigramWeightsAny) { }
+  
+WeightVector::~WeightVector() {
+  if (available) {
+    free(unigramWeightsUp);
+    free(bigramWeightsUp);
+    free(unigramWeightsDown);
+    free(bigramWeightsDown);
+    free(unigramWeightsFlat);
+    free(bigramWeightsFlat);
+    free(unigramWeightsAny);
+    free(bigramWeightsAny);
+  }
+}
+
+inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge& path,
+                                       const bool& changingSameWord,
+                                       const monotonicity& monotonicity) const {
+  if (!available) { return 0.0; }
+  // Case: don't care about monotonicity
+  if (path.type > FREEBASE_DOWN) {  // lemma morphs
+    return unigramWeightsAny[path.type] + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+  }
+  // Case: care about monotonicity
+  switch (monotonicity) {
+    case MONOTONE_UP:
+      return unigramWeightsUp[path.type] + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+    case MONOTONE_DOWN:
+      return unigramWeightsDown[path.type] + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      break;
+    case MONOTONE_FLAT:
+      return unigramWeightsFlat[path.type] + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      break;
+    default:
+      printf("Unknown monotonicity: %d\n", monotonicity);
+      std::exit(1);
+      return 0.0f;
+  }
+}
+
 //
 // Function search()
 //
@@ -390,7 +449,7 @@ void CacheStrategyNone::add(const Path&) { }
 inline bool flushQueue(SearchType* fringe,
                        const Path* parent,
                        const uint8_t* indexToMutateArr,
-                       const word* sinkArr,
+                       const tagged_word* sinkArr,
                        const uint8_t* typeArr,
                        const float* costArr,
                        const uint8_t queueLength) {
@@ -404,15 +463,11 @@ inline bool flushQueue(SearchType* fringe,
   return true;
 }
 
-inline float computeCost(const edge_type& lastEdgeType, const edge& path, float& costSoFar) {
-  // TODO(gabor) implement me
-  return 0.0;
-}
-
 // The main search() function
 vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
-                     const word* queryFact, const uint8_t queryFactLength,
+                     const tagged_word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
+                     const WeightVector* weights,
                      const uint64_t timeout) {
   //
   // Setup
@@ -461,7 +516,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     // (variables)
     uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
-    const word* parentFact = parent->fact;  // note: this can change over the course of the search
+    const tagged_word* parentFact = parent->fact;  // note: this can change over the course of the search
     // (mutation queue)
     uint8_t indexToMutateArr[256];
     word sinkArr[256];
@@ -489,12 +544,15 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         // Add the state to the fringe
         // These are queued up in order to try to protect the cache; the push() call is
         // fairly expensive memory-wise.
-        const float cost = computeCost(parent->edgeType, mutations[i], costSoFar);
-        if (cost - costSoFar < 1e10f) {
+        const float mutationCost = weights->computeCost(
+            parent->edgeType, mutations[i],
+            parent->lastMutationIndex == indexToMutate,
+            getMonotonicity(parent->fact[indexToMutate]));
+        if (mutationCost < 1e10f) {
           indexToMutateArr[queueLength] = indexToMutate;
           sinkArr[queueLength] = mutations[i].sink;
           typeArr[queueLength] = mutations[i].type;
-          costArr[queueLength] = cost;
+          costArr[queueLength] = costSoFar + mutationCost;
           queueLength += 1;
         }
       }

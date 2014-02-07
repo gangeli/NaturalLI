@@ -29,6 +29,7 @@ static uint64_t SEARCH_TIMEOUT   = 100000;
 // Typedefs
 //
 typedef uint32_t word;
+typedef uint32_t tagged_word;
 typedef uint8_t edge_type;
 typedef uint8_t monotonicity;
 
@@ -49,6 +50,7 @@ typedef uint8_t monotonicity;
 #define ANGLE_NN                     9
 #define FREEBASE_UP                  10
 #define FREEBASE_DOWN                11
+
 #define MORPH_TO_LEMMA               12
 #define MORPH_FROM_LEMMA             13
 #define MORPH_FUDGE_NUMBER           14

@@ -28,9 +28,9 @@ object Learn {
     def unlexicalizedWeights(unigram:EdgeType=>String, bigram:(EdgeType,EdgeType)=>String):UnlexicalizedWeights = {
       val builder = UnlexicalizedWeights.newBuilder()
       for (from <- EdgeType.values) {
-        builder.addEdgeWeight(-weights.getCount(unigram(from)))
+        builder.addEdgeWeight(-weights.getCount(unigram(from)).toFloat)
         for (to <- EdgeType.values) {
-          builder.addEdgeWeight(-weights.getCount(bigram(from, to)))
+          builder.addEdgeWeight(-weights.getCount(bigram(from, to)).toFloat)
         }
       }
       builder.build()

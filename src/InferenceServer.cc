@@ -51,7 +51,7 @@ class UserDefinedFactDB : public FactDB {
   UserDefinedFactDB(Query& query);
   ~UserDefinedFactDB();
   
-  virtual const bool contains(const word* query, const uint8_t queryLength);
+  virtual const bool contains(const tagged_word* query, const uint8_t queryLength);
  
  private:
   word** contents;
@@ -94,7 +94,7 @@ const bool UserDefinedFactDB::contains(const word* query, const uint8_t queryLen
     if (lengths[i] == queryLength) {           // if the lengths match
       bool found = true;
       for (int k = 0; k < queryLength; ++k) {  // and every word matches
-        if (query[k] != contents[i][k]) { found = false; }
+        if (getWord(query[k]) != contents[i][k]) { found = false; }
       }
       if (found) { return true; }              // return true
     }
@@ -154,6 +154,28 @@ Inference inferenceFromPath(const Path* path, const Graph* graph) {
   return inference;
 }
 
+/**
+ * A simple utility to convert a proto weights file to unigram edge weights
+ */
+float* mkUnigramWeight(const UnlexicalizedWeights& proto) {
+  float* weights = (float*) malloc(proto.edgeweight_size() * sizeof(float));
+  for (int i = 0; i < proto.edgeweight_size(); ++i) {
+    weights[i] = proto.edgeweight(i);
+  }
+  return weights;
+}
+
+/**
+ * A simple utility to convert a proto weights file to bigram edge weights
+ */
+float* mkBigramWeight(const UnlexicalizedWeights& proto) {
+  float* weights = (float*) malloc(proto.edgepairweight_size() * sizeof(float));
+  for (int i = 0; i < proto.edgepairweight_size(); ++i) {
+    weights[i] = proto.edgepairweight(i);
+  }
+  return weights;
+}
+
   
 /**
  * Handle an incoming connection.
@@ -174,6 +196,26 @@ void handleConnection(int socket, sockaddr_in* client,
     printf("STOPPED SERVER\n");
     printf("--------------\n");
     std::exit(0);
+  }
+
+  // Construct weights
+  WeightVector* weights;
+  if (query.has_weights() &&
+      query.weights().has_unlexicalizedmonotoneup() &&
+      query.weights().has_unlexicalizedmonotonedown() &&
+      query.weights().has_unlexicalizedmonotoneflat() &&
+      query.weights().has_unlexicalizedmonotoneany() ) {
+    weights = new WeightVector(
+      mkUnigramWeight(query.weights().unlexicalizedmonotoneup()),
+      mkBigramWeight(query.weights().unlexicalizedmonotoneup()),
+      mkUnigramWeight(query.weights().unlexicalizedmonotonedown()),
+      mkBigramWeight(query.weights().unlexicalizedmonotonedown()),
+      mkUnigramWeight(query.weights().unlexicalizedmonotoneflat()),
+      mkBigramWeight(query.weights().unlexicalizedmonotoneflat()),
+      mkUnigramWeight(query.weights().unlexicalizedmonotoneany()),
+      mkBigramWeight(query.weights().unlexicalizedmonotoneany()));
+  } else {
+    weights = new WeightVector();
   }
 
   // Run Search
@@ -206,7 +248,7 @@ void handleConnection(int socket, sockaddr_in* client,
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   std::vector<const Path*> result;
   try {
-    result = Search(graph, factDB, queryFact, queryLength, search, cache, query.timeout());
+    result = Search(graph, factDB, queryFact, queryLength, search, cache, weights, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.size());
   } catch (...) {
     printf("[%d] EXCEPTION IN SEARCH (probably Out Of Memory)\n", socket);
@@ -223,6 +265,7 @@ void handleConnection(int socket, sockaddr_in* client,
   if (!query.userealworld()) { delete factDB; }
   delete cache;
   delete search;
+  delete weights;
   closeConnection(socket, client);
 }
 
