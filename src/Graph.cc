@@ -89,7 +89,7 @@ Graph* ReadGraph() {
   }
   // (query)
   char edgeQuery[127];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type ASC;", PG_TABLE_EDGE.c_str());
+  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=2 ORDER BY type ASC;", PG_TABLE_EDGE.c_str());
   PGIterator edgeIter = PGIterator(edgeQuery);
   uint64_t edgeI = 0;
   while (edgeIter.hasNext()) {
