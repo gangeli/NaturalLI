@@ -493,7 +493,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     }
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-//    printf("%lu %s\n", time, toString(*graph, parent->fact, parent->factLength).c_str());
+    printf("%lu %s\n", time, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
