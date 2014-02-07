@@ -62,11 +62,11 @@ object Learn {
       }
     }
     for (inference <- paths) {
-      log(recursivePrint(inference))
+      log("" + inference.getScore + " : " + recursivePrint(inference))
     }
 
     // TODO(gabor) an actual evaluation function
-    if (paths.size > 0) 1.0 else 0.0
+    if (paths.size > 0) paths.map{ _.getScore }.max else 0.0
   }
 }
 

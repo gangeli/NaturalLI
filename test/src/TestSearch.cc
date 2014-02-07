@@ -155,21 +155,21 @@ TEST_F(TestName, PushPop) { \
 \
 TEST_F(TestName, RunToySearch) { \
   WeightVector w; \
-  vector<const Path*> result = Search(graph, facts, \
+  vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), \
                                 &search, cache, &w, 100); \
   ASSERT_EQ(1, result.size()); \
-  ASSERT_EQ(3, result[0]->factLength); \
-  EXPECT_EQ(27970, result[0]->fact[0]); \
-  EXPECT_EQ(3844,  result[0]->fact[1]); \
-  EXPECT_EQ(14221, result[0]->fact[2]); \
-  EXPECT_EQ(3701, result[0]->parent->fact[0]); \
-  EXPECT_EQ(3844,  result[0]->parent->fact[1]); \
-  EXPECT_EQ(14221, result[0]->parent->fact[2]); \
-  EXPECT_EQ(2479928, result[0]->parent->parent->fact[0]); \
-  EXPECT_EQ(3844,    result[0]->parent->parent->fact[1]); \
-  EXPECT_EQ(14221,   result[0]->parent->parent->fact[2]); \
-  EXPECT_TRUE(result[0]->parent->parent->parent == NULL); \
+  ASSERT_EQ(3, result[0].path->factLength); \
+  EXPECT_EQ(27970, result[0].path->fact[0]); \
+  EXPECT_EQ(3844,  result[0].path->fact[1]); \
+  EXPECT_EQ(14221, result[0].path->fact[2]); \
+  EXPECT_EQ(3701, result[0].path->parent->fact[0]); \
+  EXPECT_EQ(3844,  result[0].path->parent->fact[1]); \
+  EXPECT_EQ(14221, result[0].path->parent->fact[2]); \
+  EXPECT_EQ(2479928, result[0].path->parent->parent->fact[0]); \
+  EXPECT_EQ(3844,    result[0].path->parent->parent->fact[1]); \
+  EXPECT_EQ(14221,   result[0].path->parent->parent->fact[2]); \
+  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
 }
 
 //

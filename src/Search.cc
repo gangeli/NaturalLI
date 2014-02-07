@@ -422,17 +422,17 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   if (!available) { return 0.0; }
   // Case: don't care about monotonicity
   if (path.type > FREEBASE_DOWN) {  // lemma morphs
-    return unigramWeightsAny[path.type] + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+    return unigramWeightsAny[path.type] * path.cost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
   switch (monotonicity) {
     case MONOTONE_UP:
-      return unigramWeightsUp[path.type] + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsUp[path.type] * path.cost + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_DOWN:
-      return unigramWeightsDown[path.type] + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsDown[path.type] * path.cost + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
       break;
     case MONOTONE_FLAT:
-      return unigramWeightsFlat[path.type] + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      return unigramWeightsFlat[path.type] * path.cost + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
       break;
     default:
       printf("Unknown monotonicity: %d\n", monotonicity);
@@ -464,7 +464,7 @@ inline bool flushQueue(SearchType* fringe,
 }
 
 // The main search() function
-vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
+vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
                      const tagged_word* queryFact, const uint8_t queryFactLength,
                      SearchType* fringe, CacheStrategy* cache,
                      const WeightVector* weights,
@@ -473,7 +473,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   // Setup
   //
   // Create a vector for the return value to occupy
-  vector<const Path*> responses;
+  vector<scored_path> responses;
   // Create the start state
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
@@ -505,7 +505,9 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     if (knownFacts->contains(parent->fact, parent->factLength)) {
-      responses.push_back(parent);
+      responses.push_back(scored_path());
+      responses[responses.size()-1].path = parent;
+      responses[responses.size()-1].cost = costSoFar;
     }
 
     // -- Mutations --

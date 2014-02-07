@@ -15,9 +15,6 @@ message Fact {
   repeated Word word         = 1;
   optional string gloss      = 2;
   optional string toString   = 3;
-
-  optional bool truth        = 10;
-  optional double confidence = 11;
 }
 
 /** A query to the server; at minimum, it should contain
@@ -37,6 +34,8 @@ message Query {
 message Inference {
   required Fact fact             = 1;
   optional Inference impliedFrom = 2;
+
+  optional double score = 11;
 }
 
 /** A response from the server, encoding a number of inferences and an optional error message */
@@ -48,10 +47,12 @@ message Response {
 
 /** A holistic view of the weights to send to the search component */
 message Weights {
-  optional UnlexicalizedWeights unlexicalizedMonotoneUp   = 1;
-  optional UnlexicalizedWeights unlexicalizedMonotoneDown = 2;
-  optional UnlexicalizedWeights unlexicalizedMonotoneFlat = 3;
-  optional UnlexicalizedWeights unlexicalizedMonotoneAny = 4;
+  optional float bias = 1 [ default = 0.0 ];
+
+  optional UnlexicalizedWeights unlexicalizedMonotoneUp   = 11;
+  optional UnlexicalizedWeights unlexicalizedMonotoneDown = 12;
+  optional UnlexicalizedWeights unlexicalizedMonotoneFlat = 13;
+  optional UnlexicalizedWeights unlexicalizedMonotoneAny  = 14;
 }
 
 

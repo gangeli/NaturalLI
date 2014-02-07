@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <thread>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -136,7 +137,7 @@ void closeConnection(int socket, sockaddr_in* client) {
  * Convert a (concise) path object into an Inference object to be passed over the wire
  * to the client.
  */
-Inference inferenceFromPath(const Path* path, const Graph* graph) {
+Inference inferenceFromPath(const Path* path, const Graph* graph, const float& score) {
   Inference inference;
   // Populate fact
   Fact fact;
@@ -149,8 +150,9 @@ Inference inferenceFromPath(const Path* path, const Graph* graph) {
   inference.mutable_fact()->CopyFrom(fact);
   // Return
   if (path->parent != NULL) {
-    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph));
+    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
   }
+  inference.set_score(score);
   return inference;
 }
 
@@ -263,7 +265,7 @@ void handleConnection(int socket, sockaddr_in* client,
   CacheStrategy* cache   = new CacheStrategyNone();
   // (run search)
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
-  std::vector<const Path*> result;
+  std::vector<scored_path> result;
   try {
     result = Search(graph, factDB, queryFact, queryLength, search, cache, weights, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.size());
@@ -271,11 +273,14 @@ void handleConnection(int socket, sockaddr_in* client,
     printf("[%d] EXCEPTION IN SEARCH (probably Out Of Memory)\n", socket);
   }
 
+  // Compute final score
+
   // Return Result
   // (send result)
   Response response;
   for (int i = 0; i < result.size(); ++i) {
-    response.add_inference()->CopyFrom(inferenceFromPath(result[i], graph));
+    double score = exp(-result[i].cost + (query.has_weights() ? query.weights().bias() : 0.0));
+    response.add_inference()->CopyFrom(inferenceFromPath(result[i].path, graph, score));
   }
   response.SerializeToFileDescriptor(socket);
   // (close connection)

@@ -49,6 +49,11 @@ class Path {
   bool operator==(const Path& other) const;
 };
 
+struct scored_path {
+  const Path* path;
+  float cost;
+};
+
 struct PathCompare {
   bool operator()(const Path& lhs, const Path& rhs) {
     return 1 > 2;  // TODO(gabor) implement me!
@@ -245,7 +250,7 @@ class WeightVector {
  * a SearchType across multiple searches, and (b) delete the SearchType to free
  * the associated memory.
  */
-std::vector<const Path*> Search(Graph*, FactDB*,
+std::vector<scored_path> Search(Graph*, FactDB*,
                      const tagged_word* query, const uint8_t queryLength,
                      SearchType*,
                      CacheStrategy*, const WeightVector* weights, const uint64_t timeout);
