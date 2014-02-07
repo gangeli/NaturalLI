@@ -478,7 +478,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 100000;
+  const uint32_t tickTime = 1000;
   std::clock_t startTime = std::clock();
 
   //
@@ -486,11 +486,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   //
   while (!fringe->isEmpty() && time < timeout) {
     // Get the next element from the fringe
-    if (fringe->isEmpty()) {
-      // (fringe is empty -- this should basically never be called)
-      printf("IMPOSSIBLE: the search fringe is empty. This means (a) there are leaf nodes in the graph, and (b) this would have caused a memory leak.\n");
-      std::exit(1);
-    }
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
     printf("%lu %s\n", time, toString(*graph, parent->fact, parent->factLength).c_str());
@@ -520,7 +515,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     const tagged_word* parentFact = parent->fact;  // note: this can change over the course of the search
     // (mutation queue)
     uint8_t indexToMutateArr[256];
-    word sinkArr[256];
+    tagged_word sinkArr[256];
     uint8_t typeArr[256];
     float costArr[256];
     uint8_t queueLength = 0;
@@ -531,6 +526,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
+      const monotonicity parentMonotonicity = getMonotonicity(parentFact[indexToMutate]);
       for (int i = 0; i < numMutations; ++i) {
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
@@ -546,7 +542,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         const float mutationCost = weights->computeCost(
             parent->edgeType, mutations[i],
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate,
-            getMonotonicity(parent->fact[indexToMutate]));
+            parentMonotonicity);
 //        printf("  %s --[%s]--> %s (cost %f)\n",
 //          graph->gloss(mutations[i].source),
 //          toString(mutations[i].type).c_str(),
@@ -554,7 +550,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
 //          mutationCost);
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
-          sinkArr[queueLength] = mutations[i].sink;
+          sinkArr[queueLength] = getTaggedWord(mutations[i].sink, parentMonotonicity);
           typeArr[queueLength] = mutations[i].type;
           costArr[queueLength] = costSoFar + mutationCost;
           queueLength += 1;
