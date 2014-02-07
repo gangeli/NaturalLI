@@ -532,8 +532,6 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
       uint32_t numMutations = 0;
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       for (int i = 0; i < numMutations; ++i) {
-        // Prune edges to add
-        if (mutations[i].type > 1) { continue; } // TODO(gabor) don't only do WordNet down
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
