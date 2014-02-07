@@ -23,9 +23,9 @@ struct edge {
 class Graph {
  public:
   /** Get all outgoing edges from the given word */
-  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) const = 0;
+  virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
-  virtual const char* gloss(word) const = 0;
+  virtual const char* gloss(const tagged_word&) const = 0;
   /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() const = 0;
 

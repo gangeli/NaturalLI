@@ -213,6 +213,10 @@ class WeightVector {
     float* unigramWeightsAny,  float* bigramWeightsAny);
   ~WeightVector();
 
+  /**
+   * Compute the cost of taking a search step, in terms of monotonicity
+   * and the last two edges taken.
+   */
   inline float computeCost(const edge_type& lastEdgeType, const edge& path,
                            const bool& changingSameWord,
                            const monotonicity& monotonicity) const;

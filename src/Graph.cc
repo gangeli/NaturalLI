@@ -4,6 +4,7 @@
 
 #include "Graph.h"
 #include "Postgres.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -32,13 +33,13 @@ class InMemoryGraph : public Graph {
     free(edgesSizes);
   }
 
-  virtual const edge* outgoingEdgesFast(word source, uint32_t* size) const {
-    *size = edgesSizes[source];
-    return edges[source];
+  virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* size) const {
+    *size = edgesSizes[getWord(source)];
+    return edges[getWord(source)];
   }
 
-  virtual const char* gloss(word word) const {
-    return index2gloss[word];
+  virtual const char* gloss(const tagged_word& word) const {
+    return index2gloss[getWord(word)];
   }
   
   virtual const vector<word> keys() const {
@@ -157,7 +158,7 @@ class MockGraph : public Graph {
            catEdges, haveEdges, tailEdges;
   }
   
-  virtual const edge* outgoingEdgesFast(word source, uint32_t* outputLength) const {
+  virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const {
     vector<edge> edges = outgoingEdges(source);
     *outputLength = edges.size();
     edge* rtn = (struct edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
@@ -167,8 +168,9 @@ class MockGraph : public Graph {
     return rtn;
   }
 
-  virtual const vector<edge> outgoingEdges(word source) const {
-    switch (source) {
+  virtual const vector<edge> outgoingEdges(const tagged_word& source) const {
+    const word w = getWord(source);
+    switch (w) {
       case 2479928:  // lemur
         return *lemurEdges;
       case 3701:     // animal
@@ -186,8 +188,9 @@ class MockGraph : public Graph {
     }
   }
 
-  virtual const char* gloss(word word) const {
-    switch (word) {
+  virtual const char* gloss(const tagged_word& taggedWord) const {
+    const word w = getWord(taggedWord);
+    switch (w) {
       case 2479928:  // lemur
         return "lemur";
       case 3701:     // animal
