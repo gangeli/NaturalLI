@@ -35,7 +35,7 @@ std::string toString(const Graph& graph, SearchType& searchType, const Path* pat
 /**
  * Print out the edge type being taken.
  */
-std::string toString(edge_type& edge);
+std::string toString(const edge_type& edge);
 
 /**
  * Get the word part of a tagged word.

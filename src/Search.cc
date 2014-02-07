@@ -549,6 +549,11 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
             parent->edgeType, mutations[i],
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate,
             getMonotonicity(parent->fact[indexToMutate]));
+        printf("  %s --[%s]--> %s (cost %f)\n",
+          graph->gloss(parent->fact[i]),
+          toString(mutations[i].type).c_str(),
+          graph->gloss(mutations[i].sink),
+          mutationCost);
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
           sinkArr[queueLength] = mutations[i].sink;

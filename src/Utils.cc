@@ -48,7 +48,7 @@ string toString(const Graph& graph, SearchType& searchType, const Path* path) {
   }
 }
 
-std::string toString(edge_type& edge) {
+std::string toString(const edge_type& edge) {
   switch (edge) {
     case WORDNET_UP                   : return "WORDNET_UP";
     case WORDNET_DOWN                 : return "WORDNET_DOWN";

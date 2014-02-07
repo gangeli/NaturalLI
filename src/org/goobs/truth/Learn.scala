@@ -20,6 +20,14 @@ object Learn {
 
   /**
    * Serialize a weight vector into a protobuf to send to the server.
+   * Note that the semantics of the serialized weights is different in at least
+   * two ways:
+   *
+   * <ol>
+   *   <li> The weights are now costs -- they are the negative of the passed in weights</li>
+   *   <li> The up and down edges are reversed, as the search is performing reverse inference.
+   * <ol>
+   *
    * @param weights The weight vector to serialize
    * @return A protobuf message encoding the <b>cost</b> of each weight
    */
@@ -36,9 +44,10 @@ object Learn {
       builder.build()
     }
 
+    // Note: flip up and down! The inference inversion happens here.
     Weights.newBuilder()
-      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramUp, bigramUp))
       .setUnlexicalizedMonotoneDown(unlexicalizedWeights(unigramUp, bigramUp))
+      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramUp, bigramUp))
       .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(unigramFlat, bigramFlat))
       .setUnlexicalizedMonotoneAny(unlexicalizedWeights(unigramAny, bigramAny))
       .build()

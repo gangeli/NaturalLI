@@ -30,7 +30,7 @@ class Graph {
   virtual const std::vector<word> keys() const = 0;
 
   /** A helper to get the outgoing edges in a more reasonable form */
-  virtual const std::vector<edge> outgoingEdges(word source) {
+  virtual const std::vector<edge> outgoingEdges(const tagged_word& source) {
     std::vector<edge> rtn;
     uint32_t length = 0;
     const edge* edges = outgoingEdgesFast(source, &length);
