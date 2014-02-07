@@ -62,7 +62,7 @@ object Client {
             .setUseRealWorld(false)
             .setTimeout(Props.SEARCH_TIMEOUT)
             .setWeights(Learn.weightsToCosts(weights))
-            .setSearchType("bfs")
+            .setSearchType("ucs")
             .build()
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
