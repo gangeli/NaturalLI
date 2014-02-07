@@ -33,7 +33,6 @@ object Learn {
           builder.addEdgePairWeight(-weights.getCount(bigram(from, to)).toFloat)
         }
       }
-      println(builder.build())
       builder.build()
     }
 

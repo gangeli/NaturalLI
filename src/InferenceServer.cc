@@ -239,7 +239,9 @@ void handleConnection(int socket, sockaddr_in* client,
   uint8_t queryLength = query.queryfact().word_size();
   word queryFact[queryLength];
   for (int i = 0; i < queryLength; ++i) {
-    queryFact[i] = query.queryfact().word(i).word();
+    queryFact[i] = getTaggedWord(
+      query.queryfact().word(i).word(),
+      query.queryfact().word(i).monotonicity() );
   }
   printf("[%d] constructed query.\n", socket);
   // (create search)

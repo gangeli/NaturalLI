@@ -47,4 +47,9 @@ inline word getWord(const tagged_word& w) { return (w << 2) >> 2; }
  */
 inline monotonicity getMonotonicity(const tagged_word& w) { return w >> 30; }
 
+/**
+ * Create a tagged word from a word and monotonicity
+ */
+inline tagged_word getTaggedWord(const word& w, const monotonicity& m) { return m << 30 | w; }
+
 #endif

@@ -29,7 +29,11 @@ const vector<word> catsHaveTails() {
 string toString(const Graph& graph, const tagged_word* fact, const uint8_t factLength) {
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
-    gloss = gloss + (gloss == "" ? "" : " ") + graph.gloss(getWord(fact[i]));
+    monotonicity m = getMonotonicity(fact[i]);
+    std::string marker = "[-]";
+    if (m == MONOTONE_DOWN) { marker = "[v]"; }
+    if (m == MONOTONE_UP) { marker = "[^]"; }
+    gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(getWord(fact[i]));
   }
   return gloss;
 }
