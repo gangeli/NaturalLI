@@ -245,8 +245,23 @@ void handleConnection(int socket, sockaddr_in* client,
   }
   printf("[%d] constructed query.\n", socket);
   // (create search)
+  SearchType*    search;
+  if (query.searchtype() == "bfs") {
+    printf("[%d] using BFS\n", socket);
+    search = new BreadthFirstSearch();
+  } else if (query.searchtype() == "ucs") {
+    printf("[%d] using UCS\n", socket);
+    search = new UniformCostSearch();
+  } else {
+    // case: could not create this search type
+    printf("[%d] unknown search type: %s\n", socket, query.searchtype().c_str());
+    delete weights;
+    closeConnection(socket, client);
+    return;
+  }
+  // (create cache)
   CacheStrategy* cache   = new CacheStrategyNone();
-  SearchType*    search  = new BreadthFirstSearch();
+  // (run search)
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   std::vector<const Path*> result;
   try {

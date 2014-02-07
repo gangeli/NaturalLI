@@ -30,7 +30,7 @@ string toString(const Graph& graph, const tagged_word* fact, const uint8_t factL
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
     monotonicity m = getMonotonicity(fact[i]);
-    std::string marker = "[-]";
+    std::string marker = "";
     if (m == MONOTONE_DOWN) { marker = "[v]"; }
     if (m == MONOTONE_UP) { marker = "[^]"; }
     gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(getWord(fact[i]));

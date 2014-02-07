@@ -28,6 +28,7 @@ message Query {
   repeated Fact knownFact    = 3;
   optional uint64 timeout    = 4 [ default = 1000 ];
   optional Weights weights   = 5;
+  optional string searchType = 6 [ default = "ucs" ];
 
   optional bool shutdownServer = 101 [ default = false ];
 }
