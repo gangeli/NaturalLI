@@ -34,8 +34,9 @@ class InMemoryGraph : public Graph {
   }
 
   virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* size) const {
-    *size = edgesSizes[getWord(source)];
-    return edges[getWord(source)];
+    const word w = getWord(source);
+    *size = edgesSizes[w];
+    return edges[w];
   }
 
   virtual const char* gloss(const tagged_word& word) const {

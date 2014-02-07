@@ -550,7 +550,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate,
             getMonotonicity(parent->fact[indexToMutate]));
         printf("  %s --[%s]--> %s (cost %f)\n",
-          graph->gloss(parent->fact[i]),
+          graph->gloss(mutations[i].source),
           toString(mutations[i].type).c_str(),
           graph->gloss(mutations[i].sink),
           mutationCost);
