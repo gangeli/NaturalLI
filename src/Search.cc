@@ -478,7 +478,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 1000;
+  const uint32_t tickTime = 100000;
   std::clock_t startTime = std::clock();
 
   //
@@ -488,7 +488,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
     // Get the next element from the fringe
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    printf("%lu %s\n", time, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu %s\n", time, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
