@@ -547,7 +547,7 @@ vector<const Path*> Search(Graph* graph, FactDB* knownFacts,
         // fairly expensive memory-wise.
         const float mutationCost = weights->computeCost(
             parent->edgeType, mutations[i],
-            parent->lastMutationIndex == indexToMutate,
+            parent->parent == NULL || parent->lastMutationIndex == indexToMutate,
             getMonotonicity(parent->fact[indexToMutate]));
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
