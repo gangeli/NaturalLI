@@ -12,20 +12,20 @@ class NatLogTest extends Test {
   describe("Natural Logic Weights") {
     describe("when a hard assignment") {
       it ("should accept Wordnet monotone jumps") {
-        NatLog.hardNatlogWeights.getCount(Learn.unigramUp(EdgeType.WORDNET_UP)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.unigramDown(EdgeType.WORDNET_DOWN)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.WORDNET_UP, EdgeType.WORDNET_UP)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.WORDNET_DOWN, EdgeType.WORDNET_DOWN)) should be >= 0.0
+        NatLog.hardNatlogWeights.getCount(Learn.unigramUp(EdgeType.WORDNET_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.unigramDown(EdgeType.WORDNET_DOWN)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.WORDNET_UP, EdgeType.WORDNET_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.WORDNET_DOWN, EdgeType.WORDNET_DOWN)) should be >= -1.0
       }
       it ("should accept Freebase monotone jumps") {
-        NatLog.hardNatlogWeights.getCount(Learn.unigramUp(EdgeType.FREEBASE_UP)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.unigramDown(EdgeType.FREEBASE_DOWN)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.FREEBASE_UP, EdgeType.FREEBASE_UP)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.FREEBASE_DOWN, EdgeType.FREEBASE_DOWN)) should be >= 0.0
+        NatLog.hardNatlogWeights.getCount(Learn.unigramUp(EdgeType.FREEBASE_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.unigramDown(EdgeType.FREEBASE_DOWN)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.FREEBASE_UP, EdgeType.FREEBASE_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.FREEBASE_DOWN, EdgeType.FREEBASE_DOWN)) should be >= -1.0
       }
       it ("should accept hybrid monotone jumps") {
-        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.WORDNET_UP, EdgeType.FREEBASE_UP)) should be >= 0.0
-        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.FREEBASE_DOWN, EdgeType.WORDNET_DOWN)) should be >= 0.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.WORDNET_UP, EdgeType.FREEBASE_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.FREEBASE_DOWN, EdgeType.WORDNET_DOWN)) should be >= -1.0
       }
       it ("should NOT accept mixed jumps") {
         NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.FREEBASE_UP, EdgeType.FREEBASE_DOWN)) should be < 0.0
