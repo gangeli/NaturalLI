@@ -10,20 +10,20 @@
 //
 static std::string   PG_HOST          = "john0.stanford.edu";
 //static std::string   PG_HOST          = "localhost";
-static uint16_t PG_PORT          = 4243;
+static uint16_t      PG_PORT          = 4243;
 static std::string   PG_DATABASE      = "truth";
 static std::string   PG_USER          = "gabor";
 static std::string   PG_PASSWORD      = "gabor";
 
-static bool     RAMCLOUD_LOADED  = true;
+static bool          RAMCLOUD_LOADED  = true;
 static std::string   RAMCLOUD_HOST    = "0.0.0.0";
-static uint16_t RAMCLOUD_PORT    = 12246;
+static uint16_t      RAMCLOUD_PORT    = 12246;
  
 static std::string   PG_TABLE_WORD    = "word_indexer";
 static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact_partial";
 
-static uint64_t SEARCH_TIMEOUT   = 100000;
+static uint64_t      SEARCH_TIMEOUT   = 100000;
 
 //
 // Typedefs

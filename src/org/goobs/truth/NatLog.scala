@@ -114,10 +114,13 @@ object NatLog {
         }
       if (option.isDefined) {
         for (token <- option.get._1 ) yield {
+          var monotonicityValue = Monotonicity.FLAT
+          if (monotonicity > 0) { monotonicityValue = Monotonicity.UP }
+          if (monotonicity < 0) { monotonicityValue = Monotonicity.DOWN }
           Word.newBuilder()
             .setWord(token)
             .setGloss(if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(token) else Utils.wordGloss(token))
-            .setMonotonicity(monotonicity).build()
+            .setMonotonicity(monotonicityValue).build()
         }
       } else {
         Nil

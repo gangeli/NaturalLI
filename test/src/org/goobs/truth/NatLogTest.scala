@@ -46,22 +46,23 @@ class NatLogTest extends Test {
 
 
   describe("Monotonicity Markings") {
+    import Messages.Monotonicity._
     it ("should mark 'all'") {
-      NatLog.annotate("all cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(-1, -1, 1, 1))
-      NatLog.annotate("every cat", "has", "a tail").getWordList.map( _.getMonotonicity ) should be (List(-1, -1, 1, 1, 1))
+      NatLog.annotate("all cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(DOWN, DOWN, UP, UP))
+      NatLog.annotate("every cat", "has", "a tail").getWordList.map( _.getMonotonicity ) should be (List(DOWN, DOWN, UP, UP, UP))
     }
     it ("should mark 'some'") {
-      NatLog.annotate("some cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(1, 1, 1, 1))
-      NatLog.annotate("there are cats", "which have", "tails").getWordList.map( _.getMonotonicity ) should be (List(1, 1, 1, 1, 1, 1))
-      NatLog.annotate("there exist cats", "which have", "tails").getWordList.map( _.getMonotonicity ) should be (List(1, 1, 1, 1, 1, 1))
+      NatLog.annotate("some cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(UP, UP, UP, UP))
+      NatLog.annotate("there are cats", "which have", "tails").getWordList.map( _.getMonotonicity ) should be (List(UP, UP, UP, UP, UP, UP))
+      NatLog.annotate("there exist cats", "which have", "tails").getWordList.map( _.getMonotonicity ) should be (List(UP, UP, UP, UP, UP, UP))
     }
     it ("should mark 'most'") {
-      NatLog.annotate("few cat", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(0, 0, 1, 1))
-      NatLog.annotate("most cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(0, 0, 1, 1))
+      NatLog.annotate("few cat", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(FLAT, FLAT, UP, UP))
+      NatLog.annotate("most cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(FLAT, FLAT, UP, UP))
     }
     it ("should mark 'no'") {
-      NatLog.annotate("no cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(-1, -1, -1, -1))
-      NatLog.annotate("cat", "dont have", "tails").getWordList.map( _.getMonotonicity ) should be (List(-1, -1, -1, -1))
+      NatLog.annotate("no cats", "have", "tails").getWordList.map( _.getMonotonicity ) should be (List(DOWN, DOWN, DOWN, DOWN))
+      NatLog.annotate("cat", "dont have", "tails").getWordList.map( _.getMonotonicity ) should be (List(DOWN, DOWN, DOWN, DOWN))
     }
   }
 }

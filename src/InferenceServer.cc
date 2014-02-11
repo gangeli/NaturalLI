@@ -241,6 +241,16 @@ void handleConnection(int socket, sockaddr_in* client,
   uint8_t queryLength = query.queryfact().word_size();
   word queryFact[queryLength];
   for (int i = 0; i < queryLength; ++i) {
+    if (query.queryfact().word(i).monotonicity() < MONOTONE_FLAT ||
+        query.queryfact().word(i).monotonicity() > MONOTONE_DOWN) {
+    // case: invalid monotonicity markings
+    printf("[%d] invalid monotonicity marking: %d\n", socket, query.queryfact().word(i).monotonicity());
+    if (!query.userealworld()) { delete factDB; }
+    delete weights;
+    closeConnection(socket, client);
+    return;
+      
+    }
     queryFact[i] = getTaggedWord(
       query.queryfact().word(i).word(),
       query.queryfact().word(i).monotonicity() );
@@ -258,6 +268,7 @@ void handleConnection(int socket, sockaddr_in* client,
     // case: could not create this search type
     printf("[%d] unknown search type: %s\n", socket, query.searchtype().c_str());
     delete weights;
+    if (!query.userealworld()) { delete factDB; }
     closeConnection(socket, client);
     return;
   }
