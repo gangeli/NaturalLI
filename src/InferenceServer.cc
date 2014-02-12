@@ -224,7 +224,7 @@ void handleConnection(int socket, sockaddr_in* client,
   // (prepare factdb)
   FactDB* factDB = *dbOrNull;
   if (query.userealworld()) {
-    if (factDB == NULL) {
+    if (*factDB == NULL) {
       // Read the real knowledge base
       factDBReadLock.lock();
       *dbOrNull = ReadFactDB();
