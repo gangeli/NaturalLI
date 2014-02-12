@@ -523,6 +523,10 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       responses[responses.size()-1].cost = costSoFar;
     }
 
+    // -- Check The Cache --
+    if (cache->isSeen(*parent)) { continue; }
+    cache->add(*parent);
+
     // -- Mutations --
     // (variables)
     uint8_t parentLength = parent->factLength;
