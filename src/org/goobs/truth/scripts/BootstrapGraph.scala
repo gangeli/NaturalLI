@@ -1,14 +1,12 @@
 package org.goobs.truth.scripts
 
 import scala.collection.JavaConversions._
-import scala.collection.mutable.HashMap
 import scala.io.Source
 
 import java.io._
 import java.util.zip.GZIPInputStream
 import java.sql.Connection
 
-import edu.stanford.nlp.io.IOUtils._
 import edu.stanford.nlp.util.HashIndex
 import edu.stanford.nlp.math.SloppyMath.acos
 import edu.stanford.nlp.util.logging.Redwood
@@ -24,6 +22,7 @@ import org.goobs.truth.Postgres._
 import org.goobs.truth.Implicits._
 import org.goobs.truth.EdgeType._
 import org.goobs.truth.Utils._
+import scala.collection.mutable
 
 //
 // SQL prerequisite statements for this script:
@@ -44,7 +43,7 @@ object BootstrapGraph {
   private val logger = Redwood.channels("MKGraph")
   
   val wordIndexer = new HashIndex[String]
-  val normalizedWordCache = new HashMap[String, String]
+  val normalizedWordCache = new mutable.HashMap[String, String]
 
   def indexOf(rawPhrase:String):Int = {
     if (rawPhrase.trim == "") return 0

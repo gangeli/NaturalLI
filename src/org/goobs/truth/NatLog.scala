@@ -10,16 +10,20 @@ object NatLog {
   /**
    * The actual implementing call for soft and hard NatLog weights.
    */
-  def natlogWeights(positiveWeight:Double, negativeWeight:Double, dontCareWeight:Double):WeightVector = {
+  def natlogWeights(jcWeight:Double, positiveWeight:Double, negativeWeight:Double, dontCareWeight:Double):WeightVector = {
     val weights = new ClassicCounter[String]
+    if (jcWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (jcWeight is not)"); }
+    if (positiveWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (positiveWeight is not)"); }
+    if (negativeWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (negativeWeight is not)"); }
+    if (dontCareWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (dontCareWeight is not)"); }
     // Set negative weight
     weights.setDefaultReturnValue(negativeWeight)
     // Set positive weights
     // (unigrams)
-    weights.setCount(unigramUp(   WORDNET_UP    ), positiveWeight)
-    weights.setCount(unigramUp(   FREEBASE_UP   ), positiveWeight)
-    weights.setCount(unigramDown( WORDNET_DOWN  ), positiveWeight)
-    weights.setCount(unigramDown( FREEBASE_DOWN ), positiveWeight)
+    weights.setCount(unigramUp(   WORDNET_UP    ), jcWeight)
+    weights.setCount(unigramUp(   FREEBASE_UP   ), jcWeight)
+    weights.setCount(unigramDown( WORDNET_DOWN  ), jcWeight)
+    weights.setCount(unigramDown( FREEBASE_DOWN ), jcWeight)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), positiveWeight)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), positiveWeight)
@@ -47,7 +51,7 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(-1, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(-1.0, 0.0, Double.NegativeInfinity, Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as
@@ -55,7 +59,7 @@ object NatLog {
    * weights.
    * The goal is to use this to initialize the search.
    */
-  def softNatlogWeights:WeightVector = natlogWeights(1.0, -1.0, -0.25)
+  def softNatlogWeights:WeightVector = natlogWeights(-1.0, 0.0, -1.0, -0.25)
 
   /**
    * Determine the monotonicity of a sentence, according to the quantifier it starts with.
