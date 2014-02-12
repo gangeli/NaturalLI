@@ -1,5 +1,7 @@
 #include "fnv/fnv.h"
 
+#include <cstring>
+
 #include "Bloom.h"
 
 BloomFilter::BloomFilter() {
