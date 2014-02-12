@@ -4,6 +4,7 @@
 
 BloomFilter::BloomFilter() {
   this->bits = (uint64_t*) malloc( (0x1l << 32 >> 6) * sizeof(uint64_t) );
+  memset(this->bits, 0x0, (0x1l << 32 >> 6) * sizeof(uint64_t));
 }
 
 BloomFilter::~BloomFilter() {
