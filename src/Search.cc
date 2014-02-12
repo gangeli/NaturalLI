@@ -490,7 +490,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // Get the next element from the fringe
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {

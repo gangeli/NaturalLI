@@ -47,11 +47,11 @@ object Client {
     do {
       println()
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
-      for (antecedent:Fact <- "[have](some cat, tail)" /*readLine("antecedent> ") */ match {
+      for (antecedent:Fact <- "[have](all animal, tail)" /*readLine("antecedent> ") */ match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
-        for (consequent:Fact <- "[have](some animal, tail)" /* readLine("consequent> ") */ match {
+        for (consequent:Fact <- "[have](all cat, tail)" /* readLine("consequent> ") */ match {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
