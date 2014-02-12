@@ -273,7 +273,7 @@ void handleConnection(int socket, sockaddr_in* client,
     return;
   }
   // (create cache)
-  CacheStrategy* cache   = new CacheStrategyNone();
+  CacheStrategy* cache   = new CacheStrategyBloom();
   // (run search)
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   std::vector<scored_path> result;

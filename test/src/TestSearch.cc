@@ -278,6 +278,54 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
   EXPECT_TRUE(search.isEmpty());
 }
 
+TEST_F(UniformCostSearchTest, DegenerateToBFS) {
+  BreadthFirstSearch bfs;
+  // Initialize Search
+  EXPECT_TRUE(search.isEmpty());
+  EXPECT_TRUE(bfs.isEmpty());
+  search.start(root);
+  root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());  // need a new root so we don't double free
+  bfs.start(root);
+  EXPECT_FALSE(search.isEmpty());
+  EXPECT_FALSE(bfs.isEmpty());
+  // populate search
+  float score = 0.0f;
+  for (int i = 0; i < 120; ++i) {
+    score += 0.1f;
+    search.push(root, 0, 1, i, 0, 0, score);
+    bfs.push(root, 0, 1, i, 0, 0, score);
+  }
+  for (int parent = 0; parent < 100; ++parent) {
+    for (int i = 0; i < 128; ++i) {
+      const Path* p  = search.debugGet(parent);
+      const Path* pBFS = bfs.debugGet(parent);
+      ASSERT_EQ(pBFS->fact[0], p->fact[0]);
+      ASSERT_EQ(pBFS->fact[1], p->fact[1]);
+      ASSERT_EQ(pBFS->fact[2], p->fact[2]);
+      score += 0.1f;
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, score);
+      bfs.push(pBFS, 0, 1, 1000 * parent + i, 0, 0, score);
+    }
+  }
+  // pop off elements
+  EXPECT_FALSE(search.popWithoutScore() == NULL);  // popWithoutScore the root
+  EXPECT_FALSE(bfs.popWithoutScore() == NULL); 
+  for (int i = 0; i < 120 + 100 * 128; ++i) {
+    ASSERT_FALSE(search.isEmpty());
+    ASSERT_FALSE(bfs.isEmpty());
+    const Path* elem = search.popWithoutScore();
+    const Path* elemBFS = bfs.popWithoutScore();
+    EXPECT_FALSE(elem == NULL);  // we didn't popWithoutScore off a null element
+    EXPECT_FALSE(elemBFS == NULL);  // we didn't popWithoutScore off a null element
+    ASSERT_EQ(elemBFS->fact[0], elem->fact[0]);
+    ASSERT_EQ(elemBFS->fact[1], elem->fact[1]);
+    ASSERT_EQ(elemBFS->fact[2], elem->fact[2]);
+  }
+  // Final checks
+  EXPECT_TRUE(search.isEmpty());
+  EXPECT_TRUE(bfs.isEmpty());
+}
+
 
 //
 // Cache Strategy (None)

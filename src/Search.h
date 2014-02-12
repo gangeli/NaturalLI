@@ -6,6 +6,7 @@
 #include "Config.h"
 #include "Graph.h"
 #include "FactDB.h"
+#include "Bloom.h"
 
 #define POOL_BUCKET_SHIFT 20
 
@@ -203,6 +204,18 @@ class CacheStrategyNone : public CacheStrategy {
  public:
   virtual bool isSeen(const Path&);
   virtual void add(const Path&);
+};
+
+/**
+ * Cache seen states in a Bloom filter.
+ */
+class CacheStrategyBloom : public CacheStrategy {
+ public:
+  virtual bool isSeen(const Path&);
+  virtual void add(const Path&);
+ 
+ private:
+  BloomFilter filter;
 };
 
 /**

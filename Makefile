@@ -45,7 +45,7 @@ LD_PATH=-L`${PG_CONFIG} --libdir` -Llib ${CUSTOM_L}
 LDFLAGS=-lpq -lramcloud -lprotobuf #-lprofiler
 CPP_FLAGS=-fprofile-arcs -ftest-coverage -std=c++0x -O3
 # (files)
-_OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Messages.pb.o #RamCloudBackend.o
+_OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Bloom.o Messages.pb.o #RamCloudBackend.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
@@ -65,6 +65,7 @@ test: ${DIST}/test_server ${DIST}/test_client.jar
 	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
 
 clean:
+	$(MAKE) -C ${SRC}/fnv/ clean
 	rm -rf ${BUILD}
 	rm -rf ${TEST_BUILD}
 	rm -f ${DIST}/*
@@ -74,6 +75,14 @@ clean:
 	rm -f java.hprof.txt
 	rm -f *.gcno
 	rm -f *.gcda
+
+
+# -- DEPENDENCIES --
+${SRC}/fnv/longlong.h:
+	$(MAKE) -C ${SRC}/fnv/ longlong.h
+
+${SRC}/fnv/libfnv.a: $(wildcard ${SRC}/fnv/*.c) $(wildcard ${SRC}/fnv/*.h)
+	$(MAKE) -C ${SRC}/fnv/ libfnv.a
 
 
 # -- BUILD --
@@ -94,12 +103,12 @@ ${BUILD}/InferenceServer.o: ${SRC}/InferenceServer.cc ${SRC}/Config.h
 	@mkdir -p ${BUILD}
 	${CC} ${CPP_FLAGS} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
 
-${BUILD}/%.o: ${SRC}/%.cc ${SRC}/%.h ${SRC}/Config.h
+${BUILD}/%.o: ${SRC}/%.cc ${SRC}/%.h ${SRC}/Config.h ${SRC}/fnv/libfnv.a ${SRC}/fnv/longlong.h
 	@mkdir -p ${BUILD}
 	${CC} ${CPP_FLAGS} -c ${INCLUDE} -o $@ $< -c ${CPP_FLAGS}
 
 ${DIST}/server.a: ${OBJS}
-	ar rcs ${DIST}/server.a $^
+	ar rcs ${DIST}/server.a $^ ${SRC}/fnv/libfnv.a 
 
 # (client)
 ${DIST}/client.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}/org/goobs/truth/*.java) $(wildcard ${SRC}/org/goobs/truth/scripts/*.scala) $(wildcard ${SRC}/org/goobs/truth/conf/*.conf) ${SRC}/org/goobs/truth/Messages.java
@@ -114,10 +123,10 @@ ${DIST}/client.jar: $(wildcard ${SRC}/org/goobs/truth/*.scala) $(wildcard ${SRC}
 	jar uf ${DIST}/client.jar -C $(SRC) .
 
 # (server)
-${DIST}/server: ${OBJS} ${BUILD}/InferenceServer.o $(wildcard ${SRC}/*.h)
+${DIST}/server: ${OBJS} ${BUILD}/InferenceServer.o $(wildcard ${SRC}/*.h) ${SRC}/fnv/libfnv.a 
 	@mkdir -p ${DIST}
-	${CC} ${CPP_FLAGS} ${INCLUDE} -o ${DIST}/server $^ `find ${SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS}
-	mv -f *.gcno ${BUILD}
+	${CC} ${CPP_FLAGS} ${INCLUDE} $^ ${SRC}/fnv/libfnv.a ${LD_PATH} ${LDFLAGS} -o ${DIST}/server
+	mv -f *.gcno ${BUILD} || true
 
 
 # -- TEST --
@@ -129,14 +138,14 @@ ${TEST_BUILD}/libgtest_main.a: ${GTEST_ROOT}
 	@mkdir -p ${TEST_BUILD}
 	${CC} ${CPP_FLAGS} -isystem ${GTEST_ROOT}/include -I${GTEST_ROOT} -pthread -c ${GTEST_ROOT}/src/gtest_main.cc -o ${TEST_BUILD}/libgtest_main.a
 
-${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc
+${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc ${SRC}/fnv/fnv.h ${SRC}/fnv/longlong.h
 	@mkdir -p ${TEST_BUILD}
 	${CC} ${CPP_FLAGS} -c ${INCLUDE} -Isrc -o $@ $< -c ${CPP_FLAGS} -lgcov
 
 ${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
-	${CC} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
-	mv -f *.gcno ${TEST_BUILD}
+	${CC} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a ${SRC}/fnv/libfnv.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	mv -f *.gcno ${TEST_BUILD} || true
 
 ${DIST}/test_client.jar: ${DIST}/client.jar $(wildcard ${TEST_SRC}/org/goobs/truth/*.scala) $(wildcard ${TEST_SRC}/org/goobs/truth/*.java)
 	@mkdir -p ${TEST_BUILD}

@@ -382,6 +382,17 @@ bool CacheStrategyNone::isSeen(const Path&) {
 
 void CacheStrategyNone::add(const Path&) { }
 
+//
+// Class CacheStrategyBloom
+//
+bool CacheStrategyBloom::isSeen(const Path& path) {
+  return filter.contains(path.fact, path.factLength);
+}
+
+void CacheStrategyBloom::add(const Path& path) {
+  filter.add(path.fact, path.factLength);
+}
+
 // 
 // Class WeightVector
 //

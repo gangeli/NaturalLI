@@ -51,7 +51,7 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(-1.0, 0.0, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, 0.0, Double.NegativeInfinity, Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as
