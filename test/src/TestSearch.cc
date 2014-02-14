@@ -121,18 +121,20 @@ class TestName : public ::testing::Test { \
     catsHaveTails_ = catsHaveTails(); \
     root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size()); \
     cache = new CacheStrategyNone(); \
+    bloom = new CacheStrategyBloom(); \
     graph = ReadMockGraph(); \
     facts = ReadMockFactDB(); \
     EXPECT_TRUE(search.isEmpty()); \
   } \
 \
   virtual void TearDown() { \
-    delete cache, graph, facts; \
+    delete cache, bloom, graph, facts; \
   } \
 \
   ClassName search; \
   const Path* root; \
   CacheStrategy* cache; \
+  CacheStrategy* bloom; \
   Graph* graph; \
   FactDB* facts; \
 \
@@ -165,6 +167,25 @@ TEST_F(TestName, RunToySearch) { \
   vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), \
                                 &search, cache, &w, 100); \
+  ASSERT_EQ(1, result.size()); \
+  ASSERT_EQ(3, result[0].path->factLength); \
+  EXPECT_EQ(27970, result[0].path->fact[0]); \
+  EXPECT_EQ(3844,  result[0].path->fact[1]); \
+  EXPECT_EQ(14221, result[0].path->fact[2]); \
+  EXPECT_EQ(3701, result[0].path->parent->fact[0]); \
+  EXPECT_EQ(3844,  result[0].path->parent->fact[1]); \
+  EXPECT_EQ(14221, result[0].path->parent->fact[2]); \
+  EXPECT_EQ(2479928, result[0].path->parent->parent->fact[0]); \
+  EXPECT_EQ(3844,    result[0].path->parent->parent->fact[1]); \
+  EXPECT_EQ(14221,   result[0].path->parent->parent->fact[2]); \
+  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
+}\
+\
+TEST_F(TestName, RunToySearchWithCache) { \
+  WeightVector w; \
+  vector<scored_path> result = Search(graph, facts, \
+                                &lemursHaveTails_[0], lemursHaveTails_.size(), \
+                                &search, bloom, &w, 100); \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
   EXPECT_EQ(27970, result[0].path->fact[0]); \
