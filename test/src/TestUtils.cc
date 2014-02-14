@@ -9,21 +9,25 @@ using namespace std;
 class UtilsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    bool outOfMemory = true;
+    cache = new CacheStrategyNone();
     // Add base path element
     searchType = new BreadthFirstSearch();
     lemursHaveTails_ = lemursHaveTails();
     lemurs = new Path(&lemursHaveTails_[0], lemursHaveTails().size());
     searchType->start(lemurs);
-    searchType->push(lemurs, 0, 1, 3701, 0, 0, 0.0f);
+    searchType->push(lemurs, 0, 1, 3701, 0, 0, 0.0f, cache, outOfMemory);
+    ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
-    searchType->push(animals, 0, 1, 27970, 0, 1, 0.0f);
+    searchType->push(animals, 0, 1, 27970, 0, 1, 0.0f, cache, outOfMemory);
+    ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
     cats = ((BreadthFirstSearch*) searchType)->debugGet(1);
     graph = ReadMockGraph();
   }
 
   virtual void TearDown() {
-    delete lemurs, animals, cats;
+    delete lemurs, animals, cats, cache;
   }
 
   const Path* lemurs;
@@ -31,6 +35,7 @@ class UtilsTest : public ::testing::Test {
   const Path* cats;
   Graph* graph;
   SearchType* searchType;
+  CacheStrategy* cache;
   std::vector<word> lemursHaveTails_;
 };
 

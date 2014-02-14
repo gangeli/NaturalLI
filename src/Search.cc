@@ -173,22 +173,29 @@ inline Path* BreadthFirstSearch::allocatePath() {
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost) {
+    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) {
+  outOfMemory = false;
 
   // Allocate new fact
+  // (prototype fact)
   const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
+  tagged_word localMutated[mutatedLength];
+  // (mutate fact)
+  memcpy(localMutated, parent->fact, mutationIndex * sizeof(tagged_word));
+  if (replaceLength > 0) { localMutated[mutationIndex] = replace1; }
+  if (replaceLength > 1) { localMutated[mutationIndex + 1] = replace2; }
+  if (mutationIndex < parent->factLength - 1) {
+    memcpy(&(localMutated[mutationIndex + replaceLength]),
+           &(parent->fact[mutationIndex + 1]),
+           (parent->factLength - mutationIndex - 1) * sizeof(tagged_word));
+  }
+  // (check cache)
+  if (cache->isSeen(localMutated, mutatedLength)) { return NULL; }
   // (allocate fact)
   tagged_word* mutated = allocateWord(mutatedLength);
-  if (mutated == NULL) { return NULL; }
-  // (mutate fact)
-  memcpy(mutated, parent->fact, mutationIndex * sizeof(word));
-  if (replaceLength > 0) { mutated[mutationIndex] = replace1; }
-  if (replaceLength > 1) { mutated[mutationIndex + 1] = replace2; }
-  if (mutationIndex < parent->factLength - 1) {
-    memcpy(&(mutated[mutationIndex + replaceLength]),
-           &(parent->fact[mutationIndex + 1]),
-           (parent->factLength - mutationIndex - 1) * sizeof(word));
-  }
+  if (mutated == NULL) { outOfMemory = true; return NULL; }
+  // (copy local mutated fact to queue)
+  memcpy(mutated, localMutated, mutatedLength * sizeof(tagged_word));
 
   // Compute fixed bitmap
   uint64_t fixedBitmask[4];
@@ -199,7 +206,7 @@ inline const Path* BreadthFirstSearch::push(
 
   // Allocate new path
   Path* newPath = allocatePath();
-  if (newPath == NULL) { return NULL; }
+  if (newPath == NULL) { outOfMemory = true; return NULL; }
   return new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
 }
 
@@ -305,16 +312,17 @@ inline void UniformCostSearch::bubbleUp(const uint64_t index) {
 // -- push() --
 inline const Path* UniformCostSearch::push(const Path* parent, const uint8_t& mutationIndex,
                     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-                    const edge_type& edge, const float& cost) {
+                    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) {
   // Allocate the node
-  const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost);
+  const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost, cache, outOfMemory);
+  if (node == NULL) { return NULL; }
   // Ensure we have space on the heap
   if (heapSize >= heapCapacity) {
     uint64_t newCapacity = heapCapacity << 1;
     const Path** newHeap = (const Path**) malloc(newCapacity * sizeof(Path*));
-    if (newHeap == NULL) { return NULL; }
+    if (newHeap == NULL) { outOfMemory = true; return NULL; }
     float* newCosts = (float*) malloc(newCapacity * sizeof(float*));
-    if (newCosts == NULL) { return NULL; }
+    if (newCosts == NULL) { outOfMemory = true; return NULL; }
     memcpy(newHeap, heap, heapCapacity * sizeof(Path*));
     memcpy(newCosts, costs, heapCapacity * sizeof(float));
     free(heap);
@@ -376,21 +384,21 @@ bool UniformCostSearch::isEmpty() {
 //
 // Class CacheStrategyNone
 //
-bool CacheStrategyNone::isSeen(const Path&) const {
+bool CacheStrategyNone::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
   return false;
 }
 
-void CacheStrategyNone::add(const Path&) { }
+void CacheStrategyNone::add(const tagged_word* fact, const uint8_t& factLength) { }
 
 //
 // Class CacheStrategyBloom
 //
-bool CacheStrategyBloom::isSeen(const Path& path) const {
-  return filter.contains(path.fact, path.factLength);
+bool CacheStrategyBloom::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
+  return filter.contains(fact, factLength);
 }
 
-void CacheStrategyBloom::add(const Path& path) {
-  filter.add(path.fact, path.factLength);
+void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength) {
+  filter.add(fact, factLength);
 }
 
 // 
@@ -470,17 +478,20 @@ inline bool flushQueue(SearchType* fringe,
                        const uint8_t queueLength) {
   uint8_t i = 0;
   while (parent != NULL && i < queueLength) {
-
-    // -- Check The Cache --
-    if (!cache->isSeen(*parent)) {
+    // Actually push (or at least try to)
+    bool outOfMemory = false;
+    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i], cache, outOfMemory);
+    // Catch out of memory
+    if (outOfMemory) {
+      return false;
+    }
+    // Debug
+    if (pushedElement != NULL) {
       printf("  %s --[%s]--> %s (cost %f)\n",
         graph->gloss(parent->fact[indexToMutateArr[i]]),
         toString(typeArr[i]).c_str(),
         graph->gloss(sinkArr[i]),
         costArr[i]);
-      if (fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i]) == NULL) {
-        return false;
-      }
     }
     i += 1;
   }
@@ -512,7 +523,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // -- Get the next element from the fringe --
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    cache->add(*parent);
+    cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
     printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());

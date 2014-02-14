@@ -62,6 +62,42 @@ struct PathCompare {
 };
 
 /**
+ * An interface for the structure used to cache already seen paths.
+ * 
+ * Naively, this amounts to a set of seen facts; however, this can be stored
+ * in varous places, and fact equality can be computed in a number of ways.
+ * 
+ */
+class CacheStrategy {
+ public:
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const = 0;
+  virtual void add(const tagged_word* fact, const uint8_t& factLength) = 0;
+};
+
+/**
+ * The simplest cache strategy -- do not cache any seen states.
+ * This takes no CPU overhead (beyond the function call), and does not require
+ * any memory.
+ */
+class CacheStrategyNone : public CacheStrategy {
+ public:
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const;
+  virtual void add(const tagged_word* fact, const uint8_t& factLength);
+};
+
+/**
+ * Cache seen states in a Bloom filter.
+ */
+class CacheStrategyBloom : public CacheStrategy {
+ public:
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const;
+  virtual void add(const tagged_word* fact, const uint8_t& factLength);
+ 
+ private:
+  BloomFilter filter;
+};
+
+/**
  * An interface for the data structure to store the states on the work queue
  * for the search.
  *
@@ -79,7 +115,7 @@ class SearchType {
    */
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost) = 0;
+    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) = 0;
   virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
   virtual bool isEmpty() = 0;
@@ -112,7 +148,7 @@ class BreadthFirstSearch : public SearchType {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost);
+    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
@@ -162,7 +198,7 @@ class UniformCostSearch : public BreadthFirstSearch {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost);
+    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
@@ -180,42 +216,6 @@ class UniformCostSearch : public BreadthFirstSearch {
   // Functions for min-heap
   void bubbleUp(const uint64_t index);
   void bubbleDown(const uint64_t index);
-};
-
-/**
- * An interface for the structure used to cache already seen paths.
- * 
- * Naively, this amounts to a set of seen facts; however, this can be stored
- * in varous places, and fact equality can be computed in a number of ways.
- * 
- */
-class CacheStrategy {
- public:
-  virtual bool isSeen(const Path&) const = 0;
-  virtual void add(const Path&) = 0;
-};
-
-/**
- * The simplest cache strategy -- do not cache any seen states.
- * This takes no CPU overhead (beyond the function call), and does not require
- * any memory.
- */
-class CacheStrategyNone : public CacheStrategy {
- public:
-  virtual bool isSeen(const Path&) const;
-  virtual void add(const Path&);
-};
-
-/**
- * Cache seen states in a Bloom filter.
- */
-class CacheStrategyBloom : public CacheStrategy {
- public:
-  virtual bool isSeen(const Path&) const;
-  virtual void add(const Path&);
- 
- private:
-  BloomFilter filter;
 };
 
 /**
