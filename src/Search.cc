@@ -486,12 +486,15 @@ inline bool flushQueue(SearchType* fringe,
       return false;
     }
     // Debug
+    printf("  considering: %s --[%s]--> %s (cost %f)\n",
+      graph->gloss(parent->fact[indexToMutateArr[i]]),
+      toString(typeArr[i]).c_str(),
+      graph->gloss(sinkArr[i]),
+      costArr[i]);
     if (pushedElement != NULL) {
-      printf("  %s --[%s]--> %s (cost %f)\n",
-        graph->gloss(parent->fact[indexToMutateArr[i]]),
-        toString(typeArr[i]).c_str(),
-        graph->gloss(sinkArr[i]),
-        costArr[i]);
+      printf("    PUSHED\n");
+    } else {
+      printf("    ignored\n");
     }
     i += 1;
   }
