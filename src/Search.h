@@ -191,7 +191,7 @@ class UniformCostSearch : public BreadthFirstSearch {
  */
 class CacheStrategy {
  public:
-  virtual bool isSeen(const Path&) = 0;
+  virtual bool isSeen(const Path&) const = 0;
   virtual void add(const Path&) = 0;
 };
 
@@ -202,7 +202,7 @@ class CacheStrategy {
  */
 class CacheStrategyNone : public CacheStrategy {
  public:
-  virtual bool isSeen(const Path&);
+  virtual bool isSeen(const Path&) const;
   virtual void add(const Path&);
 };
 
@@ -211,7 +211,7 @@ class CacheStrategyNone : public CacheStrategy {
  */
 class CacheStrategyBloom : public CacheStrategy {
  public:
-  virtual bool isSeen(const Path&);
+  virtual bool isSeen(const Path&) const;
   virtual void add(const Path&);
  
  private:

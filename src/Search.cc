@@ -376,7 +376,7 @@ bool UniformCostSearch::isEmpty() {
 //
 // Class CacheStrategyNone
 //
-bool CacheStrategyNone::isSeen(const Path&) {
+bool CacheStrategyNone::isSeen(const Path&) const {
   return false;
 }
 
@@ -385,7 +385,7 @@ void CacheStrategyNone::add(const Path&) { }
 //
 // Class CacheStrategyBloom
 //
-bool CacheStrategyBloom::isSeen(const Path& path) {
+bool CacheStrategyBloom::isSeen(const Path& path) const {
   return filter.contains(path.fact, path.factLength);
 }
 
@@ -460,6 +460,8 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
 
 // A helper to push elements to the queue en bulk
 inline bool flushQueue(SearchType* fringe,
+                       const Graph* graph,
+                       const CacheStrategy* cache,
                        const Path* parent,
                        const uint8_t* indexToMutateArr,
                        const tagged_word* sinkArr,
@@ -468,8 +470,17 @@ inline bool flushQueue(SearchType* fringe,
                        const uint8_t queueLength) {
   uint8_t i = 0;
   while (parent != NULL && i < queueLength) {
-    if (fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i]) == NULL) {
-      return false;
+
+    // -- Check The Cache --
+    if (!cache->isSeen(*parent)) {
+      printf("  %s --[%s]--> %s (cost %f)\n",
+        graph->gloss(parent->fact[indexToMutateArr[i]]),
+        toString(typeArr[i]).c_str(),
+        graph->gloss(sinkArr[i]),
+        costArr[i]);
+      if (fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i]) == NULL) {
+        return false;
+      }
     }
     i += 1;
   }
@@ -498,10 +509,13 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   // Search
   //
   while (!fringe->isEmpty() && time < timeout) {
-    // Get the next element from the fringe
+    // -- Get the next element from the fringe --
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+    cache->add(*parent);
+
+    // -- Debug Output --
+    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -522,10 +536,6 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       responses[responses.size()-1].path = parent;
       responses[responses.size()-1].cost = costSoFar;
     }
-
-    // -- Check The Cache --
-    if (cache->isSeen(*parent)) { continue; }
-    cache->add(*parent);
 
     // -- Mutations --
     // (variables)
@@ -549,7 +559,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       for (int i = 0; i < numMutations; ++i) {
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
-          if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
+          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
             printf("Error pushing to stack; returning\n");
             return responses;
           }
@@ -562,11 +572,6 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
             parent->edgeType, mutations[i],
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate,
             parentMonotonicity);
-//        printf("  %s --[%s]--> %s (cost %f)\n",
-//          graph->gloss(mutations[i].source),
-//          toString(mutations[i].type).c_str(),
-//          graph->gloss(mutations[i].sink),
-//          mutationCost);
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
           sinkArr[queueLength] = getTaggedWord(mutations[i].sink, parentMonotonicity);
@@ -576,7 +581,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         }
       }
     }
-    if (!flushQueue(fringe, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
+    if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
       printf("Error pushing to stack; returning\n");
       return responses;
     }
