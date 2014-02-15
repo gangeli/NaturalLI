@@ -522,6 +522,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // -- Get the next element from the fringe --
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
+    if (cache->isSeen(parent->fact, parent->factLength)) { continue; }
     cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
