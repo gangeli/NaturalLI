@@ -477,28 +477,24 @@ inline bool flushQueue(SearchType* fringe,
                        const float* costArr,
                        const uint8_t queueLength) {
   uint8_t i = 0;
+  bool outOfMemory = false;
   while (parent != NULL && i < queueLength) {
     // Actually push (or at least try to)
-    bool outOfMemory = false;
     const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i], cache, outOfMemory);
-    // Catch out of memory
-    if (outOfMemory) {
-      return false;
-    }
     // Debug
-    printf("  considering: %s --[%s]--> %s (cost %f)\n",
-      graph->gloss(parent->fact[indexToMutateArr[i]]),
-      toString(typeArr[i]).c_str(),
-      graph->gloss(sinkArr[i]),
-      costArr[i]);
-    if (pushedElement != NULL) {
-      printf("    PUSHED\n");
-    } else {
-      printf("    ignored\n");
-    }
+//    printf("  considering: %s --[%s]--> %s (cost %f)\n",
+//      graph->gloss(parent->fact[indexToMutateArr[i]]),
+//      toString(typeArr[i]).c_str(),
+//      graph->gloss(sinkArr[i]),
+//      costArr[i]);
+//    if (pushedElement != NULL) {
+//      printf("    PUSHED\n");
+//    } else {
+//      printf("    ignored\n");
+//    }
     i += 1;
   }
-  return true;
+  return !outOfMemory;
 }
 
 // The main search() function
