@@ -62,7 +62,7 @@ object Client {
             .setUseRealWorld(false)
             .setTimeout(Props.SEARCH_TIMEOUT)
             .setWeights(Learn.weightsToCosts(weights))
-            .setSearchType("bfs")
+            .setSearchType("ucs")
             .setCacheType("bloom")
             .build()
           // Execute Query
