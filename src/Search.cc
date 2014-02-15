@@ -532,13 +532,14 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
-      printf("[%lu%s / %lu%s search tick]; %lu paths found (%lu ms elapsed)\n",
+      printf("[%lu%s / %lu%s search tick]; %lu paths found (%lu ms elapsed; cost of %f)\n",
              time / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              timeout / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              responses.size(),
-             (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC)));
+             (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC)),
+             costSoFar);
     }
 
     // -- Check If Valid --
