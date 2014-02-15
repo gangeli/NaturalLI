@@ -273,7 +273,18 @@ void handleConnection(int socket, sockaddr_in* client,
     return;
   }
   // (create cache)
-  CacheStrategy* cache   = new CacheStrategyBloom();
+  CacheStrategy* cache;
+  if (query.cachetype() == "none") {
+    cache = new CacheStrategyNone();
+  } else if (query.cachetype() == "bloom") {
+    cache = new CacheStrategyBloom();
+  } else {
+    printf("[%d] unknown cache strategy: %s\n", socket, query.cachetype().c_str());
+    delete weights;
+    if (!query.userealworld()) { delete factDB; }
+    closeConnection(socket, client);
+    return;
+  }
   // (run search)
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   std::vector<scored_path> result;

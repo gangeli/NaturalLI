@@ -32,6 +32,7 @@ message Query {
   optional uint64 timeout    = 4 [ default = 1000 ];
   optional Weights weights   = 5;
   optional string searchType = 6 [ default = "ucs" ];
+  optional string cacheType  = 7 [ default = "none" ];
 
   optional bool shutdownServer = 101 [ default = false ];
 }

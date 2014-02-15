@@ -394,12 +394,11 @@ void CacheStrategyNone::add(const tagged_word* fact, const uint8_t& factLength) 
 // Class CacheStrategyBloom
 //
 bool CacheStrategyBloom::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
-  printf("  %lu %lu %lu %lu (%lu)\n", fact[0], fact[1], fact[2], fact[3], factLength);
-  return filter.contains(fact, factLength);
+  return filter.contains(fact, 4 * ((uint32_t) factLength));
 }
 
 void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength) {
-  filter.add(fact, factLength);
+  filter.add(fact, 4 * ((uint32_t) factLength));
 }
 
 // 
