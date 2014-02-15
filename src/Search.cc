@@ -190,10 +190,10 @@ inline const Path* BreadthFirstSearch::push(
            (parent->factLength - mutationIndex - 1) * sizeof(tagged_word));
   }
   // (check cache)
-  if (cache->isSeen(localMutated, mutatedLength)) { return NULL; }
+  if (cache->isSeen(localMutated, mutatedLength)) { printf("  (is seen)\n"); return NULL; }
   // (allocate fact)
   tagged_word* mutated = allocateWord(mutatedLength);
-  if (mutated == NULL) { outOfMemory = true; return NULL; }
+  if (mutated == NULL) { outOfMemory = true; printf("  (oom)\n"); return NULL; }
   // (copy local mutated fact to queue)
   memcpy(mutated, localMutated, mutatedLength * sizeof(tagged_word));
 
@@ -206,7 +206,7 @@ inline const Path* BreadthFirstSearch::push(
 
   // Allocate new path
   Path* newPath = allocatePath();
-  if (newPath == NULL) { outOfMemory = true; return NULL; }
+  if (newPath == NULL) { outOfMemory = true; printf("  (oom)\n"); return NULL; }
   return new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
 }
 
