@@ -560,14 +560,14 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     float costArr[256];
     uint8_t queueLength = 0;
     // (algorithm)
-    for (uint8_t indexToMutate = parentLength - 1;
-         indexToMutate >= 0;
-         --indexToMutate) {  // for each index to mutate...
+    for (uint8_t indexToMutate = 0;
+         indexToMutate < parentLength;
+         ++indexToMutate) {  // for each index to mutate...
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
       const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
       const monotonicity parentMonotonicity = getMonotonicity(parentFact[indexToMutate]);
-      for (int i = numMutations - 1; i >= 0; --i) {
+      for (int i = 0; i < numMutations; ++i) {
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
