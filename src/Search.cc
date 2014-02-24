@@ -445,16 +445,17 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
     return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
+  printf("%f %f\n", path.type, lastEdgeType);
   switch (monotonicity) {
     case MONOTONE_UP:
       return unigramWeightsUp[path.type] * pathCost
         + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_DOWN:
-      return unigramWeightsDown[path.type] * pathCost + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
-      break;
+      return unigramWeightsDown[path.type] * pathCost
+        + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_FLAT:
-      return unigramWeightsFlat[path.type] * pathCost + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
-      break;
+      return unigramWeightsFlat[path.type] * pathCost
+        + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     default:
       printf("Unknown monotonicity: %d\n", monotonicity);
       std::exit(1);

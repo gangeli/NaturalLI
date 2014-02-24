@@ -52,7 +52,7 @@ object BootstrapGraph {
                                .map( (w:String) => w match {
       case Number(n) => "num_" + n.length
       case _ => w
-    }).mkString(" ");
+    }).mkString(" ")
     val normalized = normalizedWordCache.get(phrase) match {
       case Some(n) => n
       case None =>
@@ -174,7 +174,7 @@ object BootstrapGraph {
 
       // Part 2: Read distsim
       forceTrack("Reading Nearest Neighbors")
-      for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines) {
+      for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines()) {
         val fields = line.split("\t")
         val source:Int = indexOf(fields(0))
         for (i <- 1 until fields.length) {
@@ -197,7 +197,7 @@ object BootstrapGraph {
       val unknownNames = new scala.collection.mutable.HashSet[String]
       forceTrack("Reading File")
       // Pass 1: read edges
-      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines()) {
         val fields = line.split("\t")
         if (fields(1) == "fb:type.object.type" || fields(1) == "fb:common.topic.notable_types") {
           val target = if (fields(2).endsWith(".")) fields(2).substring(0, fields(2).length -1) else fields(2)
@@ -212,7 +212,7 @@ object BootstrapGraph {
       }
       log ("pass 1 complete: read edges")
       // Pass 2: read names
-      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines) {
+      for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines()) {
         val fields = line.split("\t")
         if (fields(1) == "fb:type.object.name" && unknownNames(fields(0)) &&
             (!fields(2).contains("@") || fields(2).endsWith("@en.")) ) {
@@ -259,10 +259,10 @@ object BootstrapGraph {
         }
       }
       log("added lemmas")
-      for (oom <- (2 until 100) if wordIndexer.indexOf("num_" + oom, false) >= 0 &&
-                                   wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
+      for (oom <- 2 until 100 if wordIndexer.indexOf("num_" + oom, false) >= 0 &&
+                                 wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
         val lower = wordIndexer.indexOf("num_" + (oom-1))
-        val higher = wordIndexer.indexOf("num_" + (oom))
+        val higher = wordIndexer.indexOf("num_" + oom)
         fudgeNumber.add( (lower, higher) )
         fudgeNumber.add( (higher, lower) )
       }
@@ -286,7 +286,7 @@ object BootstrapGraph {
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)
           wordInsert.setString(2, word.replaceAll("\u0000", ""))
-          wordInsert.addBatch
+          wordInsert.addBatch()
         }
         wordInsert.executeBatch
         logger.log("saved words")
@@ -298,15 +298,15 @@ object BootstrapGraph {
         }
         logger.log("saved edge types")
         // Save edges
-        var edgeCount = 0;
-        var outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
+        var edgeCount = 0
+        val outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
         def edge(t:EdgeType, source:Int, sink:Int, weight:Double):Unit = {
-          outDegree(source) += 1;
+          outDegree(source) += 1
           edgeInsert.setInt(1, source)
           edgeInsert.setInt(2, sink)
           edgeInsert.setInt(3, t.id)
           edgeInsert.setFloat(4, weight.toFloat)
-          edgeInsert.addBatch
+          edgeInsert.addBatch()
           edgeCount += 1
         }
         // (WordNet edges)
