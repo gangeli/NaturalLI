@@ -438,14 +438,13 @@ WeightVector::~WeightVector() {
 inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge& path,
                                        const bool& changingSameWord,
                                        const monotonicity& monotonicity) const {
-  if (!available) { return 0.0; }
+  if (!available || lastEdgeType == 255) { return 0.0; }
   // Case: don't care about monotonicity
   const float pathCost = path.cost == 0.0 ? 1e-5 : path.cost;
   if (path.type > FREEBASE_DOWN) {  // lemma morphs
     return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
-  fprintf(stderr, "%d %d\n", path.type, lastEdgeType);
   switch (monotonicity) {
     case MONOTONE_UP:
       return unigramWeightsUp[path.type] * pathCost
