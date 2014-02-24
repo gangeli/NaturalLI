@@ -61,12 +61,15 @@ object Learn {
         s"<${node.getFact.getGloss}>"
       }
     }
-    for (inference <- paths) {
-      log("" + inference.getScore + " : " + recursivePrint(inference))
+    def computeCost(node:Inference):Double = {
+      node.getScore + (if (node.hasImpliedFrom) computeCost(node.getImpliedFrom) else 0.0)
     }
-
-    // TODO(gabor) an actual evaluation function
-    if (paths.size > 0) paths.map{ _.getScore }.max else 0.0
+    // Compute noisy or of probabilities
+    1.0 - {for (inference <- paths) yield {
+      val cost = computeCost(inference);
+      log("" + cost + " : " + recursivePrint(inference))
+      1.0 / (1.0 + Math.exp(-cost))
+    }}.foldLeft(1.0){ case (orInverse:Double, prob:Double) => orInverse * (1.0 - prob) }
   }
 }
 
