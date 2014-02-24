@@ -445,7 +445,7 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
     return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
-  fprintf(stderr, "%f %f\n", path.type, lastEdgeType);
+  fprintf(stderr, "%d %d\n", path.type, lastEdgeType);
   switch (monotonicity) {
     case MONOTONE_UP:
       return unigramWeightsUp[path.type] * pathCost
