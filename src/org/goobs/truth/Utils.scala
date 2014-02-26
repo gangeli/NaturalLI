@@ -180,4 +180,7 @@ object EdgeType extends Enumeration {
   val MORPH_TO_LEMMA                 = Value(12, "morph_to_lemma")
   val MORPH_FROM_LEMMA               = Value(13, "morph_from_lemma")
   val MORPH_FUDGE_NUMBER             = Value(14, "morph_fudge_number")
+
+  // Word Sense Disambiguation
+  val SENSE_REMOVE                   = Value(15, "sense_remove")
 }

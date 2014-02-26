@@ -28,7 +28,7 @@ import scala.collection.mutable
 // SQL prerequisite statements for this script:
 // CREATE TABLE word_indexer ( index INTEGER PRIMARY KEY, gloss TEXT);
 // CREATE TABLE edge_type_indexer ( index SMALLINT PRIMARY KEY, gloss TEXT);
-// CREATE TABLE edge ( source INTEGER, sink INTEGER, type SMALLINT, cost REAL );
+// CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );
 //
 
 /**
@@ -74,19 +74,22 @@ object BootstrapGraph {
     new Sentence(withDeletions).words.mkString(" ")
   }
 
-  // ( begin, end, log(P(hyper) / P(hypo)) )
-  val wordnetGraphUp = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
-  val wordnetGraphDown = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
+  // ( begin, beginSense, end, endSense, log(P(hyper) / P(hypo)) )
+  val wordnetGraphUp = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int, Double)]
+  val wordnetGraphDown = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int, Double)]
   
-  // ( begin, end, [1.0] )
-  val wordnetNounAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetVerbAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetAdjAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetAdvAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetAdjPertainym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetAdvPertainym = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  val wordnetAdjSimilar = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
-  
+  // ( begin, beginSense, end, endSense, [1.0] )
+  val wordnetNounAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetVerbAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetAdjAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetAdvAntonym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetAdjPertainym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetAdvPertainym = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+  val wordnetAdjSimilar = new scala.collection.mutable.ArrayBuffer[(Int, Int, Int, Int)]
+
+  // ( begin, sense)
+  val senses = new scala.collection.mutable.ArrayBuffer[(Int, Int)]
+
   // ( begin, end, acos(cos_similarity) / π )
   val angleNearestNeighbors = new scala.collection.mutable.ArrayBuffer[(Int, Int, Double)]
   
@@ -105,15 +108,42 @@ object BootstrapGraph {
     Props.exec(() => {
       indexOf("")
       val wordnet = Ontology.load(Props.SCRIPT_WORDNET_PATH)
+      val jaws    = WordNetDatabase.getFileInstance
 
       // Part 1: Read Wordnet
       // note: we are prohibiting ROOT as a valid node to traverse
       forceTrack("Reading WordNet")
+
+      def getSense(phrase:String, synset:Synset):Int = {
+        val synsets = jaws.getSynsets(phrase)
+        val index = if (synsets == null || synsets.length == 0) {
+          throw new IllegalStateException("Could not find any synsets for phrase: " + phrase)
+        } else {
+          synsets.indexOf(synset)
+        }
+        if (index < 0) {
+          throw new IllegalStateException("Could not find sense for phrase: " + phrase)
+        }
+        if (index >= (0x1 << 5)) {
+          throw new IllegalStateException("Too many senses for phrase: " + phrase)
+        }
+        index
+      }
+
+
       for ((phrase, nodes) <- wordnet.ontology) {
         val phraseAsString:String = phrase.mkString(" ")
-        val source:Int = indexOf(phraseAsString)
+        val sourceWord:Int = indexOf(phraseAsString)
         for (node <- nodes;
              hyper <- node.hypernyms) {
+
+          // Get word sense
+          val sourceSense:Int = getSense(phraseAsString, node.synset)
+          if (sourceSense != 0) {
+            senses.append( (sourceWord, sourceSense) )
+          }
+
+          // Construct Edges
           hyper match {
             case (hyperNode:Ontology.RealNode) =>
               val edgeWeight = scala.math.log(
@@ -122,43 +152,44 @@ object BootstrapGraph {
               // is_a ontology
               for (hyperWord <- hyperNode.synset.getWordForms) {
                 val hyperInt:Int = indexOf(hyperWord)
-                wordnetGraphUp.append( (source, hyperInt, edgeWeight) )
-                wordnetGraphDown.append( (hyperInt, source, edgeWeight) )
+                val hyperSense:Int = getSense(hyperWord, hyperNode.synset)
+                wordnetGraphUp.append( (sourceWord, sourceSense, hyperInt, hyperSense, edgeWeight) )
+                wordnetGraphDown.append( (hyperInt, hyperSense, sourceWord, sourceSense, edgeWeight) )
               }
               // other wordnet relations
               hyperNode.synset match {
                 case (as:NounSynset) =>
                   for (antonym <- as.getAntonyms(phraseAsString)) {
-                    val sink:Int = indexOf(antonym.getWordForm)
-                    wordnetVerbAntonym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(antonym.getWordForm)
+                    wordnetVerbAntonym.append( (sourceWord, sourceSense, sinkWord, getSense(antonym.getWordForm, antonym.getSynset)) )
                   }
                 case (as:VerbSynset) =>
                   for (antonym <- as.getAntonyms(phraseAsString)) {
-                    val sink:Int = indexOf(antonym.getWordForm)
-                    wordnetNounAntonym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(antonym.getWordForm)
+                    wordnetNounAntonym.append( (sourceWord, sourceSense, sinkWord, getSense(antonym.getWordForm, antonym.getSynset)) )
                   }
                 case (as:AdjectiveSynset) =>
                   for (related <- as.getSimilar;
                        wordForm <- related.getWordForms) {
-                    val sink:Int = indexOf(wordForm)
-                    wordnetAdjSimilar.append( (source, sink) )
+                    val sinkWord:Int = indexOf(wordForm)
+                    wordnetAdjSimilar.append( (sourceWord, sourceSense, sinkWord, getSense(wordForm, related)) )
                   }
                   for (pertainym <- as.getPertainyms(phraseAsString)) {
-                    val sink:Int = indexOf(pertainym.getWordForm)
-                    wordnetAdjPertainym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(pertainym.getWordForm)
+                    wordnetAdjPertainym.append( (sourceWord, sourceSense, sinkWord, getSense(pertainym.getWordForm, pertainym.getSynset)) )
                   }
                   for (antonym <- as.getAntonyms(phraseAsString)) {
-                    val sink:Int = indexOf(antonym.getWordForm)
-                    wordnetAdjAntonym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(antonym.getWordForm)
+                    wordnetAdjAntonym.append( (sourceWord, sourceSense, sinkWord, getSense(antonym.getWordForm, antonym.getSynset)) )
                   }
                 case (as:AdverbSynset) =>
                   for (pertainym <- as.getPertainyms(phraseAsString)) {
-                    val sink:Int = indexOf(pertainym.getWordForm)
-                    wordnetAdvPertainym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(pertainym.getWordForm)
+                    wordnetAdvPertainym.append( (sourceWord, sourceSense, sinkWord, getSense(pertainym.getWordForm, pertainym.getSynset)) )
                   }
                   for (antonym <- as.getAntonyms(phraseAsString)) {
-                    val sink:Int = indexOf(antonym.getWordForm)
-                    wordnetAdvAntonym.append( (source, sink) )
+                    val sinkWord:Int = indexOf(antonym.getWordForm)
+                    wordnetAdvAntonym.append( (sourceWord, sourceSense, sinkWord, getSense(antonym.getWordForm, antonym.getSynset)) )
                   }
                 case _ =>
               }
@@ -168,6 +199,8 @@ object BootstrapGraph {
           
         }
       }
+
+      // Finish reading WordNet
       val numWordnetWords = wordIndexer.size
       log("number of words in WordNet: " + numWordnetWords)
       endTrack("Reading WordNet")
@@ -281,7 +314,7 @@ object BootstrapGraph {
           " (index, gloss) VALUES (?, ?);")
         val edgeInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_EDGES +
-          " (source, sink, type, cost) VALUES (?, ?, ?, ?);")
+          " (source, source_sense, sink, sink_sense, type, cost) VALUES (?, ?, ?, ?, ?, ?);")
         // Save words
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)
@@ -300,34 +333,37 @@ object BootstrapGraph {
         // Save edges
         var edgeCount = 0
         val outDegree = (0 until wordIndexer.size).map( x => 0 ).toArray
-        def edge(t:EdgeType, source:Int, sink:Int, weight:Double):Unit = {
+        def edge(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSense:Int, weight:Double):Unit = {
           outDegree(source) += 1
           edgeInsert.setInt(1, source)
-          edgeInsert.setInt(2, sink)
-          edgeInsert.setInt(3, t.id)
-          edgeInsert.setFloat(4, weight.toFloat)
+          edgeInsert.setInt(2, sourceSense)
+          edgeInsert.setInt(3, sink)
+          edgeInsert.setInt(4, sinkSense)
+          edgeInsert.setInt(5, t.id)
+          edgeInsert.setFloat(6, weight.toFloat)
           edgeInsert.addBatch()
           edgeCount += 1
         }
         // (WordNet edges)
-        for ( (source, sink, weight) <- wordnetGraphUp) { edge(WORDNET_UP, source, sink, weight); }; edgeInsert.executeBatch
-        for ( (source, sink, weight) <- wordnetGraphDown) { edge(WORDNET_DOWN, source, sink, weight); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetNounAntonym) { edge(WORDNET_NOUN_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetVerbAntonym) { edge(WORDNET_VERB_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetAdjAntonym) { edge(WORDNET_ADJECTIVE_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetAdvAntonym) { edge(WORDNET_ADVERB_ANTONYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetAdjPertainym) { edge(WORDNET_ADJECTIVE_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetAdvPertainym) { edge(WORDNET_ADVERB_PERTAINYM, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- wordnetAdjSimilar) { edge(WORDNET_ADJECTIVE_RELATED, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense, weight) <- wordnetGraphUp) {   edge(WORDNET_UP,                  source, sourceSense, sink, sinkSense, weight); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense, weight) <- wordnetGraphDown) { edge(WORDNET_DOWN,                source, sourceSense, sink, sinkSense, weight); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetNounAntonym) {      edge(WORDNET_NOUN_ANTONYM,        source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetVerbAntonym) {      edge(WORDNET_VERB_ANTONYM,        source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetAdjAntonym) {       edge(WORDNET_ADJECTIVE_ANTONYM,   source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetAdvAntonym) {       edge(WORDNET_ADVERB_ANTONYM,      source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetAdjPertainym) {     edge(WORDNET_ADJECTIVE_PERTAINYM, source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetAdvPertainym) {     edge(WORDNET_ADVERB_PERTAINYM,    source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense, sink, sinkSense ) <- wordnetAdjSimilar) {       edge(WORDNET_ADJECTIVE_RELATED,   source, sourceSense, sink, sinkSense, 1.0); }; edgeInsert.executeBatch
         // (nearest neighbors edges)
-        for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, sink, weight); }; edgeInsert.executeBatch
+        for ( (source, sink, weight) <- angleNearestNeighbors) { edge(ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, weight); }; edgeInsert.executeBatch
         // (freebase edges)
-        for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- freebaseGraphUp) { edge(FREEBASE_UP, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- freebaseGraphDown) { edge(FREEBASE_DOWN, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
         // (morpha edges)
-        for ( (source, sink) <- word2lemma ) { edge(MORPH_TO_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, sink, 1.0); }; edgeInsert.executeBatch
-        for ( (source, sink) <- fudgeNumber ) { edge(MORPH_FUDGE_NUMBER, source, sink, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- word2lemma ) { edge(MORPH_TO_LEMMA, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sink) <- fudgeNumber ) { edge(MORPH_FUDGE_NUMBER, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense) <- senses) { edge(SENSE_REMOVE, source, sourceSense, source, 0, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
         endTrack("Writing to DB")
 

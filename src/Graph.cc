@@ -96,10 +96,11 @@ Graph* ReadGraph() {
     PGRow row = edgeIter.next();
     edge e;
     word source = atoi(row[0]);
-    e.sink      = atoi(row[1]);
-    e.sense     = atoi(row[2]);
-    e.type      = atoi(row[3]);
-    e.cost      = atof(row[4]);
+    e.sense     = atoi(row[1]);
+    e.sink      = atoi(row[2]);
+        // sink sense: row[3]
+    e.type      = atoi(row[4]);
+    e.cost      = atof(row[5]);
     if (edgesSizes[source] >= edgeCapacities[source] - 1) {
       struct edge* newEdges = (struct edge*) malloc(edgeCapacities[source] * 2 * sizeof(struct edge));
       memcpy(newEdges, edges[source], edgeCapacities[source] * sizeof(struct edge));

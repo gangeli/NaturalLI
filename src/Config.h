@@ -37,7 +37,7 @@ typedef uint8_t monotonicity;
 #define MONOTONE_UP   1
 #define MONOTONE_DOWN 2
 
-#define NUM_EDGE_TYPES 15
+#define NUM_EDGE_TYPES 16
 #define WORDNET_UP                   0
 #define WORDNET_DOWN                 1
 #define WORDNET_NOUN_ANTONYM         2
@@ -54,5 +54,6 @@ typedef uint8_t monotonicity;
 #define MORPH_TO_LEMMA               12
 #define MORPH_FROM_LEMMA             13
 #define MORPH_FUDGE_NUMBER           14
+#define SENSE_REMOVE                 15
 
 #endif
