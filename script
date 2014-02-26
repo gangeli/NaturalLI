@@ -46,5 +46,5 @@ def cp:String = {
       "lib/scripts/jaws.jar",
       "lib/scripts/trove.jar"
     ).mkString(":")
-  List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+  List("dist/client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }

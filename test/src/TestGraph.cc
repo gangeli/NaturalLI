@@ -40,16 +40,13 @@ TEST_F(MockGraphTest, HasCorrectEdgeCounts) {
 
 // Check to make sure the mock graph has the correct edges
 TEST_F(MockGraphTest, HasCorrectEdges) {
-  EXPECT_EQ(2479928, mockGraph->outgoingEdges(2479928)[0].source);
   EXPECT_EQ(16442985, mockGraph->outgoingEdges(2479928)[0].sink);
   EXPECT_EQ(1, mockGraph->outgoingEdges(2479928)[0].type);
   EXPECT_FLOAT_EQ(0.01, mockGraph->outgoingEdges(2479928)[0].cost);
-  EXPECT_EQ(2479928, mockGraph->outgoingEdges(2479928)[1].source);
   EXPECT_EQ(3701, mockGraph->outgoingEdges(2479928)[1].sink);
   EXPECT_EQ(0, mockGraph->outgoingEdges(2479928)[1].type);
   EXPECT_FLOAT_EQ(0.42, mockGraph->outgoingEdges(2479928)[1].cost);
 
-  EXPECT_EQ(3701, mockGraph->outgoingEdges(3701)[0].source);
   EXPECT_EQ(27970, mockGraph->outgoingEdges(3701)[0].sink);
   EXPECT_EQ(1, mockGraph->outgoingEdges(3701)[0].type);
   EXPECT_FLOAT_EQ(42.0, mockGraph->outgoingEdges(3701)[0].cost);

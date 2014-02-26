@@ -9,10 +9,10 @@
  * a potential mutation of a word.
  */
 struct edge {
-  word  source;
-  word  sink;
-  edge_type  type;
-  float cost;
+  word      sink;
+  uint8_t   sense;
+  edge_type type;
+  float     cost;
 };
 
 /**

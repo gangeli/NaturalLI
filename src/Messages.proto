@@ -11,9 +11,8 @@ enum Monotonicity {
 message Word {
   required uint32 word               = 1;
   optional string gloss              = 2;
-  optional string pos                = 3;
-  optional string ner                = 4;
-  optional Monotonicity monotonicity = 5;
+  optional Monotonicity monotonicity = 3;
+  optional uint32 sense              = 4;
 }
 
 /** A fact, potentially with a marked truth and confidence */

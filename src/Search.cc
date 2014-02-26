@@ -553,7 +553,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // (variables)
     uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
-    const tagged_word* parentFact = parent->fact;  // note: this can change over the course of the search
+    const tagged_word* parentFact = parent->fact;
     // (mutation queue)
     uint8_t indexToMutateArr[256];
     tagged_word sinkArr[256];
@@ -566,9 +566,13 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
          ++indexToMutate) {  // for each index to mutate...
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
-      const edge* mutations = graph->outgoingEdgesFast(parentFact[indexToMutate], &numMutations);
-      const monotonicity parentMonotonicity = getMonotonicity(parentFact[indexToMutate]);
+      const tagged_word parentWord = parentFact[indexToMutate];
+      const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
+      const monotonicity parentMonotonicity = getMonotonicity(parentWord);
+      const uint8_t parentSense = getSense(parentWord);
       for (int i = 0; i < numMutations; ++i) {
+        const edge& mutation = mutations[i];
+        if (mutation.sense != parentSense) { continue; }
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
@@ -581,13 +585,13 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         // These are queued up in order to try to protect the cache; the push() call is
         // fairly expensive memory-wise.
         const float mutationCost = weights->computeCost(
-            parent->edgeType, mutations[i],
+            parent->edgeType, mutation,
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
             parentMonotonicity);
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
-          sinkArr[queueLength] = getTaggedWord(mutations[i].sink, parentMonotonicity);
-          typeArr[queueLength] = mutations[i].type;
+          sinkArr[queueLength] = getTaggedWord(mutation.sink, parentMonotonicity);
+          typeArr[queueLength] = mutation.type;
           costArr[queueLength] = costSoFar + mutationCost;
           queueLength += 1;
         }

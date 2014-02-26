@@ -40,7 +40,12 @@ std::string toString(const edge_type& edge);
 /**
  * Get the word part of a tagged word.
  */
-inline word getWord(const tagged_word& w) { return (w << 2) >> 2; }
+inline word getWord(const tagged_word& w) { return (w << 7) >> 7; }
+
+/**
+ * Get the word+sense part of a tagged word.
+ */
+inline word getWordAndSense(const tagged_word& w) { return (w << 2) >> 2; }
 
 /**
  * Get the monotonicity part of a tagged word.
@@ -48,8 +53,20 @@ inline word getWord(const tagged_word& w) { return (w << 2) >> 2; }
 inline monotonicity getMonotonicity(const tagged_word& w) { return w >> 30; }
 
 /**
+ * Get the synset sense of a tagged word.
+ */
+inline monotonicity getSense(const tagged_word& w) { return (w << 2) >> 25; }
+
+/**
  * Create a tagged word from a word and monotonicity
  */
-inline tagged_word getTaggedWord(const word& w, const monotonicity& m) { return m << 30 | w; }
+inline tagged_word getTaggedWord(const word& w, const monotonicity& m) { return (m << 30) | ((w << 7) >> 7); }
+
+/**
+ * Create a tagged word from a word, sense, and monotonicity
+ */
+inline tagged_word getTaggedWord(const word& w, const uint8_t sense, const monotonicity& m) {
+  return (m << 30) | ((sense & 0x20) << 25) | ((w << 7) >> 7);
+}
 
 #endif

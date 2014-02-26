@@ -89,25 +89,26 @@ Graph* ReadGraph() {
   }
   // (query)
   char edgeQuery[127];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 ORDER BY type ASC;", PG_TABLE_EDGE.c_str());
+  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 ORDER BY type, sense ASC;", PG_TABLE_EDGE.c_str());
   PGIterator edgeIter = PGIterator(edgeQuery);
   uint64_t edgeI = 0;
   while (edgeIter.hasNext()) {
     PGRow row = edgeIter.next();
     edge e;
-    e.source = atol(row[0]);
-    e.sink   = atoi(row[1]);
-    e.type   = atoi(row[2]);
-    e.cost   = atof(row[3]);
-    if (edgesSizes[e.source] >= edgeCapacities[e.source] - 1) {
-      struct edge* newEdges = (struct edge*) malloc(edgeCapacities[e.source] * 2 * sizeof(struct edge));
-      memcpy(newEdges, edges[e.source], edgeCapacities[e.source] * sizeof(struct edge));
-      edgeCapacities[e.source] = 2 * edgeCapacities[e.source];
-      free(edges[e.source]);
-      edges[e.source] = newEdges;
+    word source = atoi(row[0]);
+    e.sink      = atoi(row[1]);
+    e.sense     = atoi(row[2]);
+    e.type      = atoi(row[3]);
+    e.cost      = atof(row[4]);
+    if (edgesSizes[source] >= edgeCapacities[source] - 1) {
+      struct edge* newEdges = (struct edge*) malloc(edgeCapacities[source] * 2 * sizeof(struct edge));
+      memcpy(newEdges, edges[source], edgeCapacities[source] * sizeof(struct edge));
+      edgeCapacities[source] = 2 * edgeCapacities[source];
+      free(edges[source]);
+      edges[source] = newEdges;
     }
-    edges[e.source][edgesSizes[e.source]] = e;
-    edgesSizes[e.source] += 1;
+    edges[source][edgesSizes[source]] = e;
+    edgesSizes[source] += 1;
     edgeI += 1;
     if (edgeI % 1000000 == 0) {
       printf("loaded %luM edges\n", edgeI / 1000000);
@@ -129,22 +130,22 @@ class MockGraph : public Graph {
     // Edges out of Lemur
     lemurEdges = new vector<edge>();
     edge lemurToTimone;
-    lemurToTimone.source = 2479928;
     lemurToTimone.sink = 16442985;
+    lemurToTimone.sense = 0;
     lemurToTimone.type = 1;
     lemurToTimone.cost = 0.01;
     lemurEdges->push_back(lemurToTimone);
     edge lemurToAnimal;
-    lemurToAnimal.source = 2479928;
     lemurToAnimal.sink = 3701;
+    lemurToTimone.sense = 0;
     lemurToAnimal.type = 0;
     lemurToAnimal.cost = 0.42;
     lemurEdges->push_back(lemurToAnimal);
     // Edges out of Animal
     animalEdges = new vector<edge>();
     edge animalToCat;
-    animalToCat.source = 3701;
     animalToCat.sink = 27970;
+    lemurToTimone.sense = 0;
     animalToCat.type = 1;
     animalToCat.cost = 42.00;
     animalEdges->push_back(animalToCat);
