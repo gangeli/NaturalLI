@@ -28,12 +28,12 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    searchType->push(root, 0, 1, 3701, 0, 0, 0.0f, cache, outOfMemory);
+    searchType->push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
-    searchType->push(dist1, 0, 1, 27970, 0, 1, 0.0f, cache, outOfMemory);
+    searchType->push(dist1, 0, 1, CAT, 0, WORDNET_UP, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
@@ -151,7 +151,7 @@ TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(root, 0, 1, 3701, 0, 0, 0.0f, cache, outOfMemory); \
+  search.push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, cache, outOfMemory); \
   ASSERT_FALSE(outOfMemory); \
   EXPECT_FALSE(search.isEmpty()); \
   EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
@@ -169,15 +169,15 @@ TEST_F(TestName, RunToySearch) { \
                                 &search, cache, &w, 100); \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
-  EXPECT_EQ(27970, result[0].path->fact[0]); \
-  EXPECT_EQ(3844,  result[0].path->fact[1]); \
-  EXPECT_EQ(14221, result[0].path->fact[2]); \
-  EXPECT_EQ(3701, result[0].path->parent->fact[0]); \
-  EXPECT_EQ(3844,  result[0].path->parent->fact[1]); \
-  EXPECT_EQ(14221, result[0].path->parent->fact[2]); \
-  EXPECT_EQ(2479928, result[0].path->parent->parent->fact[0]); \
-  EXPECT_EQ(3844,    result[0].path->parent->parent->fact[1]); \
-  EXPECT_EQ(14221,   result[0].path->parent->parent->fact[2]); \
+  EXPECT_EQ(CAT, result[0].path->fact[0]); \
+  EXPECT_EQ(HAVE,  result[0].path->fact[1]); \
+  EXPECT_EQ(TAIL, result[0].path->fact[2]); \
+  EXPECT_EQ(ANIMAL, result[0].path->parent->fact[0]); \
+  EXPECT_EQ(HAVE,  result[0].path->parent->fact[1]); \
+  EXPECT_EQ(TAIL, result[0].path->parent->fact[2]); \
+  EXPECT_EQ(LEMUR, result[0].path->parent->parent->fact[0]); \
+  EXPECT_EQ(HAVE,    result[0].path->parent->parent->fact[1]); \
+  EXPECT_EQ(TAIL,   result[0].path->parent->parent->fact[2]); \
   EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
 }\
 \
@@ -188,15 +188,15 @@ TEST_F(TestName, RunToySearchWithCache) { \
                                 &search, bloom, &w, 100); \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
-  EXPECT_EQ(27970, result[0].path->fact[0]); \
-  EXPECT_EQ(3844,  result[0].path->fact[1]); \
-  EXPECT_EQ(14221, result[0].path->fact[2]); \
-  EXPECT_EQ(3701, result[0].path->parent->fact[0]); \
-  EXPECT_EQ(3844,  result[0].path->parent->fact[1]); \
-  EXPECT_EQ(14221, result[0].path->parent->fact[2]); \
-  EXPECT_EQ(2479928, result[0].path->parent->parent->fact[0]); \
-  EXPECT_EQ(3844,    result[0].path->parent->parent->fact[1]); \
-  EXPECT_EQ(14221,   result[0].path->parent->parent->fact[2]); \
+  EXPECT_EQ(CAT, result[0].path->fact[0]); \
+  EXPECT_EQ(HAVE,  result[0].path->fact[1]); \
+  EXPECT_EQ(TAIL, result[0].path->fact[2]); \
+  EXPECT_EQ(ANIMAL, result[0].path->parent->fact[0]); \
+  EXPECT_EQ(HAVE,  result[0].path->parent->fact[1]); \
+  EXPECT_EQ(TAIL, result[0].path->parent->fact[2]); \
+  EXPECT_EQ(LEMUR, result[0].path->parent->parent->fact[0]); \
+  EXPECT_EQ(HAVE,    result[0].path->parent->parent->fact[1]); \
+  EXPECT_EQ(TAIL,   result[0].path->parent->parent->fact[2]); \
   EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
 }
 
@@ -211,8 +211,8 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  search.push(root, 0, 1, 3701,  0, 0, 0.0f, cache, outOfMemory);
-  search.push(root, 0, 1, 27970, 0, 1, 0.0f, cache, outOfMemory);
+  search.push(root, 0, 1, ANIMAL,  0, 0, 0.0f, cache, outOfMemory);
+  search.push(root, 0, 1, CAT, 0, 1, 0.0f, cache, outOfMemory);
   ASSERT_FALSE(outOfMemory);
   const Path* dist1 = search.debugGet(0);
   const Path* dist2 = search.debugGet(1);

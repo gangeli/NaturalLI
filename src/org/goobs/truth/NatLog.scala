@@ -173,7 +173,7 @@ object NatLog {
    */
   def getWordSense(word:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
     val synsets:Array[Synset] = wordnet.getSynsets(word)
-    if (synsets == null) {
+    if (synsets == null || synsets.size == 0) {
       // Case: sensless
       0
     } else {
@@ -189,7 +189,6 @@ object NatLog {
           leskSim + sensePrior + glossPriority
         }
       }
-      log(s"disambiguating $word as '${argmax.getDefinition}'")
       math.min(31, argmaxIndex + 1)
     }
   }
@@ -235,22 +234,21 @@ object NatLog {
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[SynsetType]] = Array.fill[Option[SynsetType]](chunkedWords.size)( None )
-      for (i <- 0 until words.size) {
-        if (!chunkedWords(tokenI).contains(words(i))) {
-          tokenI += 1
-        }
-        if (!chunkedWords(tokenI).contains(words(i))) {
-          throw new IllegalStateException("Could not match word " + words(i) + " with any chunk in " + chunkedWords.mkString(" "))
-        }
-        if (synsetPOS(tokenI) != SynsetType.ALL_TYPES) {
-          synsetPOS(tokenI) = pos(i) match {
-            case NOUN(_) => Some(SynsetType.NOUN)
-            case VERB(_) => Some(SynsetType.VERB)
-            case ADJ(_) =>  Some(SynsetType.ADJECTIVE)
-            case ADV(_) =>  Some(SynsetType.ADVERB)
-            case _ => None
+      for (i <- 0 until chunkedWords.size) {
+        val tokenStart = tokenI
+        val tokenEnd = tokenI + chunkedWords(i).count( p => p == ' ' )  + 1
+        for (k <- tokenStart until tokenEnd) {
+          if (synsetPOS(i) != SynsetType.ALL_TYPES) {
+            synsetPOS(i) = pos(k) match {
+              case NOUN(_) => Some(SynsetType.NOUN)
+              case VERB(_) => Some(SynsetType.VERB)
+              case ADJ(_) =>  Some(SynsetType.ADJECTIVE)
+              case ADV(_) =>  Some(SynsetType.ADVERB)
+              case _ => None
+            }
           }
         }
+        tokenI = tokenEnd
       }
       // (filter unknown)
       synsetPOS

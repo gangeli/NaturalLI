@@ -68,22 +68,22 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     ASSERT_TRUE(results.hasNext());
     PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
-    EXPECT_EQ(string("cephalopod"), string(term[1]));
+    EXPECT_EQ(string("` hood"), string(term[1]));
     // 1: wordnet_up
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("1"), string(term[0]));
-    EXPECT_EQ(string("mollusk"), string(term[1]));
+    EXPECT_EQ(string("vicinity"), string(term[1]));
     // 2: wordnet_noun_antonym
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("2"), string(term[0]));
-    EXPECT_EQ(string("mollusc"), string(term[1]));
+    EXPECT_EQ(string("locality"), string(term[1]));
   }
 }
 
 TEST(PostgresTest, CountQuery) {
-  EXPECT_EQ(18858251,
+  EXPECT_EQ(18902192,
     atoi(PGIterator("SELECT COUNT(*) FROM word_indexer;").next()[0]));
 
 }

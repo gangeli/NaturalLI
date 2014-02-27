@@ -123,7 +123,6 @@ Graph* ReadGraph() {
   return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
 }
 
-
 class MockGraph : public Graph {
  public:
   MockGraph() {
@@ -131,23 +130,23 @@ class MockGraph : public Graph {
     // Edges out of Lemur
     lemurEdges = new vector<edge>();
     edge lemurToTimone;
-    lemurToTimone.sink = 16442985;
+    lemurToTimone.sink = TIMONE;
     lemurToTimone.sense = 0;
-    lemurToTimone.type = 1;
+    lemurToTimone.type = WORDNET_DOWN;
     lemurToTimone.cost = 0.01;
     lemurEdges->push_back(lemurToTimone);
     edge lemurToAnimal;
-    lemurToAnimal.sink = 3701;
+    lemurToAnimal.sink = ANIMAL;
     lemurToTimone.sense = 0;
-    lemurToAnimal.type = 0;
+    lemurToAnimal.type = WORDNET_UP;
     lemurToAnimal.cost = 0.42;
     lemurEdges->push_back(lemurToAnimal);
     // Edges out of Animal
     animalEdges = new vector<edge>();
     edge animalToCat;
-    animalToCat.sink = 27970;
+    animalToCat.sink = CAT;
     lemurToTimone.sense = 0;
-    animalToCat.type = 1;
+    animalToCat.type = WORDNET_DOWN;
     animalToCat.cost = 42.00;
     animalEdges->push_back(animalToCat);
     // Other edges
@@ -174,17 +173,17 @@ class MockGraph : public Graph {
   virtual const vector<edge> outgoingEdges(const tagged_word& source) const {
     const word w = getWord(source);
     switch (w) {
-      case 2479928:  // lemur
+      case LEMUR:  // lemur
         return *lemurEdges;
-      case 3701:     // animal
+      case ANIMAL:     // animal
         return *animalEdges;
-      case 16442985: // timone
+      case TIMONE: // timone
         return *timoneEdges;
-      case 27970:    // cat
+      case CAT:    // cat
         return *catEdges;
-      case 3844:     // have
+      case HAVE:     // have
         return *haveEdges;
-      case 14221:    // tail
+      case TAIL:    // tail
         return *tailEdges;
       default:
         return *noEdges;
@@ -194,17 +193,17 @@ class MockGraph : public Graph {
   virtual const char* gloss(const tagged_word& taggedWord) const {
     const word w = getWord(taggedWord);
     switch (w) {
-      case 2479928:  // lemur
+      case LEMUR:  // lemur
         return "lemur";
-      case 3701:     // animal
+      case ANIMAL:     // animal
         return "animal";
-      case 16442985: // timone
+      case TIMONE: // timone
         return "Timone";
-      case 27970:    // cat
+      case CAT:    // cat
         return "cat";
-      case 3844:     // have
+      case HAVE:     // have
         return "have";
-      case 14221:    // tail
+      case TAIL:    // tail
         return "tail";
       default:
         return "<<unk>>";
@@ -213,12 +212,12 @@ class MockGraph : public Graph {
   
   virtual const vector<word> keys() const {
     vector<word> keys(6);
-    keys[0] = 2479928;
-    keys[1] = 3701;
-    keys[2] = 16442985;
-    keys[3] = 27970;
-    keys[4] = 3844;
-    keys[5] = 14221;
+    keys[0] = LEMUR;
+    keys[1] = ANIMAL;
+    keys[2] = TIMONE;
+    keys[3] = CAT;
+    keys[4] = HAVE;
+    keys[5] = TAIL;
     return keys;
   }
 

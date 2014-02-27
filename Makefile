@@ -10,11 +10,13 @@
 #   export CUSTOM_L=='-L/u/nlp/packages/protobuf-2.4.1/lib'
 #   export CUSTOM_I='-I/u/nlp/packages/protobuf-2.4.1/include'
 #   export RAMCLOUD_HOME='/u/angeli/workspace/ramcloud'
+#   export PROTOC='/u/nlp/packages/protobuf-2.4.1/bin/protoc'
 # -------------------
 PG_CONFIG?=pg_config
 SCALA_HOME?=/home/gabor/programs/scala
 RAMCLOUD_HOME?=/home/gabor/workspace/ramcloud
 GTEST_ROOT?=${RAMCLOUD_HOME}/gtest
+PROTOC?=protoc
 # -------------------
 
 # -- VARIABLES --
@@ -23,7 +25,6 @@ JAVAC=javac
 SCALAC=${SCALA_HOME}/bin/fsc
 SCALA=${SCALA_HOME}/bin/scala
 SCALADOC=${SCALA_HOME}/bin/scaladoc
-PROTOC?=protoc
 # (locations)
 SRC=src
 TEST_SRC=test/src
@@ -61,8 +62,8 @@ server: ${DIST}/server
 	${DIST}/server
 
 test: ${DIST}/test_server ${DIST}/test_client.jar
-	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
-	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
+#	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
+	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
 
 clean:
 	$(MAKE) -C ${SRC}/fnv/ clean

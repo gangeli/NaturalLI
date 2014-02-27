@@ -57,4 +57,11 @@ typedef uint8_t monotonicity;
 #define SENSE_REMOVE                 15
 #define SENSE_ADD                    16
 
+#define LEMUR  2480367
+#define ANIMAL 2730
+#define TIMONE 18828894
+#define CAT    2432
+#define HAVE   3830
+#define TAIL   23480
+
 #endif

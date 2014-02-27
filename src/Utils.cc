@@ -4,25 +4,25 @@ using namespace std;
 
 const vector<word> lemursHaveTails() {
   vector<word> fact;
-  fact.push_back(2479928);
-  fact.push_back(3844);
-  fact.push_back(14221);
+  fact.push_back(LEMUR);
+  fact.push_back(HAVE);
+  fact.push_back(TAIL);
   return fact;
 }
 
 const vector<word> animalsHaveTails() {
   vector<word> animalsHaveTails;
-  animalsHaveTails.push_back(3701);
-  animalsHaveTails.push_back(3844);
-  animalsHaveTails.push_back(14221);
+  animalsHaveTails.push_back(ANIMAL);
+  animalsHaveTails.push_back(HAVE);
+  animalsHaveTails.push_back(TAIL);
   return animalsHaveTails;
 }
 
 const vector<word> catsHaveTails() {
   vector<word> catsHaveTails;
-  catsHaveTails.push_back(27970);
-  catsHaveTails.push_back(3844);
-  catsHaveTails.push_back(14221);
+  catsHaveTails.push_back(CAT);
+  catsHaveTails.push_back(HAVE);
+  catsHaveTails.push_back(TAIL);
   return catsHaveTails;
 }
 

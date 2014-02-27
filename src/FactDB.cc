@@ -67,9 +67,9 @@ class MockFactDB : public FactDB {
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength) {
     return queryLength == 3 && 
-      getWord(query[0]) == 27970 &&
-      getWord(query[1]) == 3844 &&
-      getWord(query[2]) == 14221;
+      getWord(query[0]) == CAT &&
+      getWord(query[1]) == HAVE &&
+      getWord(query[2]) == TAIL;
   }
 };
 
