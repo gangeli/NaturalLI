@@ -157,7 +157,7 @@ object NatLog {
       }
     }
     val maxCost:Double = tokensShort.size * tokensShort.size + 1.0
-    new Search[AlignState](if (approx) GREEDY else cache(UNIFORM_COST))
+    maxCost - new Search[AlignState](if (approx) GREEDY else cache(UNIFORM_COST))
       .best(AlignState(tokensShort.map( x => false ),
       tokensLong.map( x => false ), maxCost)).cost
   }
@@ -184,8 +184,8 @@ object NatLog {
           -1000.0 + synsetIndex.toDouble / 100.0
         } else {
           val leskSim:Double = lesk(synset, sentence.words, approx = true)
-          val sensePrior:Double = -1.1 * synsetsConsidered; synsetsConsidered += 1
-          val glossPriority:Double = 2.1 * math.min(-synset.getWordForms.indexOf(word), 0.0)
+          val sensePrior:Double = -1.01 * synsetsConsidered; synsetsConsidered += 1
+          val glossPriority:Double = 2.01 * math.min(-synset.getWordForms.indexOf(word), 0.0)
           leskSim + sensePrior + glossPriority
         }
       }
@@ -227,26 +227,28 @@ object NatLog {
       val chunkedWords:Array[String] = (tokens._1.toList ::: tokens._2.toList ::: tokens._3.toList).toArray
         .map ( (w:Int) => if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(w) else Utils.wordGloss(w) )
       // (regexps)
-      val NOUN = "N.*".r
-      val VERB = "V.*".r
-      val ADJ  = "J.*".r
-      val ADV  = "R.*".r
+      val NOUN = "(N.*)".r
+      val VERB = "(V.*)".r
+      val ADJ  = "(J.*)".r
+      val ADV  = "(R.*)".r
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[SynsetType]] = Array.fill[Option[SynsetType]](chunkedWords.size)( None )
       for (i <- 0 until chunkedWords.size) {
         val tokenStart = tokenI
-        val tokenEnd = tokenI + chunkedWords(i).count( p => p == ' ' )  + 1
-        for (k <- tokenStart until tokenEnd) {
-          if (synsetPOS(i) != SynsetType.ALL_TYPES) {
-            synsetPOS(i) = pos(k) match {
-              case NOUN(_) => Some(SynsetType.NOUN)
-              case VERB(_) => Some(SynsetType.VERB)
-              case ADJ(_) =>  Some(SynsetType.ADJECTIVE)
-              case ADV(_) =>  Some(SynsetType.ADVERB)
-              case _ => None
-            }
-          }
+        val tokenEnd = tokenI + chunkedWords(i).count( p => p == ' ' ) + 1
+        for (k <- (tokenEnd-1) to tokenStart by -1) {
+          synsetPOS(i) = synsetPOS(i).orElse(pos(k) match {
+            case NOUN(_) =>
+              Some(SynsetType.NOUN)
+            case VERB(_) =>
+              Some(SynsetType.VERB)
+            case ADJ(_) =>
+              Some(SynsetType.ADJECTIVE)
+            case ADV(_) =>
+              Some(SynsetType.ADVERB)
+            case _ => None
+          })
         }
         tokenI = tokenEnd
       }
@@ -264,11 +266,11 @@ object NatLog {
         .setWord(word)
         .setGloss(gloss)
         .setPos(pos match {
-        case Some(SynsetType.NOUN) => "n"
-        case Some(SynsetType.VERB) => "v"
-        case Some(SynsetType.ADJECTIVE) => "j"
-        case Some(SynsetType.ADVERB) => "r"
-        case _ => "?"
+          case Some(SynsetType.NOUN) => "n"
+          case Some(SynsetType.VERB) => "v"
+          case Some(SynsetType.ADJECTIVE) => "j"
+          case Some(SynsetType.ADVERB) => "r"
+          case _ => "?"
         }).setSense(getWordSense(gloss, sentence, pos))
         .setMonotonicity(monotonicityValue).build()
     }

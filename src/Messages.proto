@@ -10,10 +10,10 @@ enum Monotonicity {
 /** A single word in a fact */
 message Word {
   required uint32 word               = 1;
-  optional string gloss              = 2;
-  optional Monotonicity monotonicity = 3;
-  optional string pos                = 4;
-  optional uint32 sense              = 5;
+  optional string gloss              = 2 [default = "unk"];
+  optional Monotonicity monotonicity = 3 [default = FLAT];
+  optional string pos                = 4 [default = "?"];
+  optional uint32 sense              = 5 [default = 0];
 }
 
 /** A fact, potentially with a marked truth and confidence */

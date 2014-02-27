@@ -62,7 +62,7 @@ server: ${DIST}/server
 	${DIST}/server
 
 test: ${DIST}/test_server ${DIST}/test_client.jar
-#	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
+	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
 	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
 
 clean:

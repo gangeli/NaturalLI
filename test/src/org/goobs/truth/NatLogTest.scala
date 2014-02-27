@@ -66,4 +66,15 @@ class NatLogTest extends Test {
       NatLog.annotate("cat", "dont have", "tails").getWordList.map( _.getMonotonicity ) should be (List(DOWN, DOWN, DOWN, DOWN))
     }
   }
+
+  describe("Word Senses") {
+    it ("should get default sense of 'cat'") {
+      NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getPos ) should be (List("?", "n", "v", "n"))
+      NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getSense ) should be (List(0, 1, 2, 1))
+    }
+    it ("should get vehicle senses of 'CAT' with enough evidence") {
+      NatLog.annotate("the cat", "be", "tracked vehicle").getWordList.map( _.getPos ) should be (List("?", "n", "v", "n"))
+      NatLog.annotate("the cat", "be", "tracked vehicle").getWordList.map( _.getSense ) should be (List(0, 6, 2, 1))
+    }
+  }
 }
