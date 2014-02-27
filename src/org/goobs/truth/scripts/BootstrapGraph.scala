@@ -124,7 +124,7 @@ object BootstrapGraph {
         if (index < 0) {
           throw new IllegalStateException("Could not find sense for phrase: " + phrase)
         }
-        if (index >= (0x1 << 5) - 1) {
+        if (index >= (0x1 << 5)) {
           warn("Too many senses for phrase: " + phrase)
           (0x1 << 5) - 1
         } else {
@@ -204,7 +204,7 @@ object BootstrapGraph {
 
       // Finish reading WordNet
       val numWordnetWords = wordIndexer.size
-      log("number of words in WordNet: " + numWordnetWords)
+      logger.log("number of words in WordNet: " + numWordnetWords)
       endTrack("Reading WordNet")
 
       // Part 2: Read distsim
@@ -245,7 +245,7 @@ object BootstrapGraph {
           }
         }
       }
-      log ("pass 1 complete: read edges")
+      logger.log ("pass 1 complete: read edges")
       // Pass 2: read names
       for (line <- Source.fromInputStream(new GZIPInputStream(new BufferedInputStream(new FileInputStream(Props.SCRIPT_FREEBASE_RAW_PATH)))).getLines()) {
         val fields = line.split("\t")
@@ -255,7 +255,7 @@ object BootstrapGraph {
           fbNames.put(fields(0), cleanFBName(name))
         }
       }
-      log ("pass 2 complete: read names")
+      logger.log ("pass 2 complete: read names")
       endTrack("Reading File")
       // Store edges
       forceTrack("Creating Edges")
@@ -276,7 +276,7 @@ object BootstrapGraph {
       }
       endTrack("Creating Edges")
       val numFBWords = wordIndexer.size - numDistSimWords
-      log("number of (new) words in Freebase: " + numFBWords)
+      logger.log("number of (new) words in Freebase: " + numFBWords)
       endTrack("Reading Freebase")
       
       // Part 4: Morphology
@@ -293,7 +293,7 @@ object BootstrapGraph {
           }
         }
       }
-      log("added lemmas")
+      logger.log("added lemmas")
       for (oom <- 2 until 100 if wordIndexer.indexOf("num_" + oom, false) >= 0 &&
                                  wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
         val lower = wordIndexer.indexOf("num_" + (oom-1))
@@ -301,7 +301,7 @@ object BootstrapGraph {
         fudgeNumber.add( (lower, higher) )
         fudgeNumber.add( (higher, lower) )
       }
-      log("added number fudging")
+      logger.log("added number fudging")
       endTrack("Adding Morphology")
 
       // Part 5: Save
