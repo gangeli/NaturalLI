@@ -124,14 +124,14 @@ object BootstrapGraph {
         if (index < 0) {
           throw new IllegalStateException("Could not find sense for phrase: " + phrase)
         }
-        if (index >= (0x1 << 5)) {
+        if (index >= (0x1 << 5) - 1) {
           throw new IllegalStateException("Too many senses for phrase: " + phrase)
         }
-        index
+        index + 1
       }
 
 
-      for ((phrase, nodes) <- wordnet.ontology) {
+      for ((phrase, nodes) <- wordnet.ontology.toArray.sortBy( _._1.toString() )) {
         val phraseAsString:String = phrase.mkString(" ")
         val sourceWord:Int = indexOf(phraseAsString)
         for (node <- nodes;

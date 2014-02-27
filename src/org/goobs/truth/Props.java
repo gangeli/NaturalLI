@@ -47,7 +47,7 @@ public class Props {
   public static long SEARCH_TIMEOUT = 100000000;
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
-  public static String SCRIPT_WORDNET_PATH = "/home/gabor/workspace/sim/etc/ontology.ser.gz";
+  public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";
   @Option(name="script.distsim.cos", gloss="The path to the cosine similarity nearest neighbors")
   public static String SCRIPT_DISTSIM_COS = "/home/gabor/workspace/truth/etc/cosNN.tab";
   @Option(name="script.distsim.jaccard", gloss="The path to the jaccard similarity nearest neighbors")

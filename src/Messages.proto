@@ -12,7 +12,8 @@ message Word {
   required uint32 word               = 1;
   optional string gloss              = 2;
   optional Monotonicity monotonicity = 3;
-  optional uint32 sense              = 4;
+  optional string pos                = 4;
+  optional uint32 sense              = 5;
 }
 
 /** A fact, potentially with a marked truth and confidence */

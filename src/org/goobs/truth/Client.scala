@@ -55,6 +55,8 @@ object Client {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
+          System.out.println(consequent)
+          System.out.println(antecedent)
           // We have our antecedent and consequent
           val query = Query.newBuilder()
             .setQueryFact(consequent)
@@ -66,11 +68,11 @@ object Client {
             .setCacheType("bloom")
             .build()
           // Execute Query
-          val paths:Iterable[Inference] = issueQuery(query)
+//          val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
-          val score = Learn.evaluate(paths, weights)
+//          val score = Learn.evaluate(paths, weights)
           // Debug Print
-          if (score > 0.5) { println("Valid") } else { println("Invalid") }
+//          if (score > 0.5) { println("Valid") } else { println("Invalid") }
         }
       }
     } while (false)
