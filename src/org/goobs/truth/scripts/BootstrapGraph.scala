@@ -125,9 +125,11 @@ object BootstrapGraph {
           throw new IllegalStateException("Could not find sense for phrase: " + phrase)
         }
         if (index >= (0x1 << 5) - 1) {
-          throw new IllegalStateException("Too many senses for phrase: " + phrase)
+          warn("Too many senses for phrase: " + phrase)
+          (0x1 << 5) - 1
+        } else {
+          index + 1
         }
-        index + 1
       }
 
 
