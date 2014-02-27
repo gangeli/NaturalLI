@@ -55,6 +55,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="demo" level="project" />
   </component>
 </module>
 

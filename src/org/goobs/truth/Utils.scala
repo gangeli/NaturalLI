@@ -183,4 +183,5 @@ object EdgeType extends Enumeration {
 
   // Word Sense Disambiguation
   val SENSE_REMOVE                   = Value(15, "sense_remove")
+  val SENSE_ADD                      = Value(16, "sense_add")
 }

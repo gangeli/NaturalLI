@@ -55,5 +55,6 @@ typedef uint8_t monotonicity;
 #define MORPH_FROM_LEMMA             13
 #define MORPH_FUDGE_NUMBER           14
 #define SENSE_REMOVE                 15
+#define SENSE_ADD                    16
 
 #endif

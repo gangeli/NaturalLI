@@ -365,7 +365,9 @@ object BootstrapGraph {
         for ( (source, sink) <- word2lemma ) { edge(MORPH_TO_LEMMA, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- lemma2word ) { edge(MORPH_FROM_LEMMA, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
         for ( (source, sink) <- fudgeNumber ) { edge(MORPH_FUDGE_NUMBER, source, 0, sink, 0, 1.0); }; edgeInsert.executeBatch
+        // (switch senses)
         for ( (source, sourceSense) <- senses) { edge(SENSE_REMOVE, source, sourceSense, source, 0, 1.0); }; edgeInsert.executeBatch
+        for ( (source, sourceSense) <- senses) { edge(SENSE_ADD, source, 0, source, sourceSense, 1.0); }; edgeInsert.executeBatch
         logger.log("saved edges")
         endTrack("Writing to DB")
 

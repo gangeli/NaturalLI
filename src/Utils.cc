@@ -66,6 +66,7 @@ std::string toString(const edge_type& edge) {
     case MORPH_FROM_LEMMA             : return "MORPH_FROM_LEMMA";
     case MORPH_FUDGE_NUMBER           : return "MORPH_FUDGE_NUMBER";
     case SENSE_REMOVE                 : return "SENSE_REMOVE";
+    case SENSE_ADD                    : return "SENSE_ADD";
     default: return "UNK_EDGE_TYPE";
   }
 }

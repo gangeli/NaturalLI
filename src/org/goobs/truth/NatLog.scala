@@ -178,11 +178,15 @@ object NatLog {
       0
     } else {
       // Case: find WordNet sense
+      var synsetsConsidered:Int = 0
       val (argmax, argmaxIndex) = synsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
         if (pos.isDefined && synset.getType != pos.get) {
           -1000.0 + synsetIndex.toDouble / 100.0
         } else {
-          lesk(synset, sentence.words, approx = true) - synsetIndex.toDouble * 1.1
+          val leskSim:Double = lesk(synset, sentence.words, approx = true)
+          val sensePrior:Double = -1.1 * synsetsConsidered; synsetsConsidered += 1
+          val glossPriority:Double = 2.1 * math.min(-synset.getWordForms.indexOf(word), 0.0)
+          leskSim + sensePrior + glossPriority
         }
       }
       log(s"disambiguating $word as '${argmax.getDefinition}'")
@@ -202,7 +206,7 @@ object NatLog {
   def annotate(leftArg:String, rel:String, rightArg:String):Fact = {
     val index:String=>Array[Int] = {(arg:String) =>
       if (Props.NATLOG_INDEXER_LAZY) {
-        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet).map(_._1).getOrElse({ warn(s"could not index$arg"); Array[Int]() })
+        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet).map(_._1).getOrElse({ warn(s"could not index $arg"); Array[Int]() })
       } else {
         Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s)).map(_._1).getOrElse({warn(s"could not index $arg"); Array[Int]() })
       }}

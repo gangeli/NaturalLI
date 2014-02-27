@@ -27,11 +27,27 @@
 
 
 \Section{search}{Search Problem}
-We run a search from each of the three terms in the
-  query fact.
-That is, for each of $a_1$, $r$, $a_2$, we create a
-  search problem as defined below.
-The paths from the result of these searches are used
+We run a search over mutations over specific words of the input candidate
+  consequent.
+The search problem is given a consequent as input.
+This is composed of the following:
+
+\begin{itemize}
+  \item A sentence, tokenized into coherent logical entities.
+        For instance, \textit{dog} and \textit{cat} would be entities;
+          but, so would \textit{George W. Bush} -- despite the latter covering
+          multiple words.
+  \item A monotonicity marking for each of these words.
+        This is one of: upward monotone, downward monotone, or flat (no
+          monotonicity information could be gathered).
+  \item The relevant sense of the word.
+        This is a WordNet synset when it's available; if not, this is
+          set to a special sense denoting no synset.
+        If a WordNet synset is available, it will never be set to the
+          `no synset' category.
+\end{itemize}
+
+The paths from the result of this searches are used
   as features in the learning problem
   (see \refsec{learn}).
 
@@ -44,83 +60,52 @@ The algorithm used is a Uniform Cost Search, leading
   on the order of microseconds to keep pace with
   the memory accesses for the search.
 
-Before delving into the search problem, we define the
-  notion of a \textbf{node}.
-A node is, at a high level, a phrase such as one
-  which would correspond to an argument or a relation.
-It is:
-\begin{itemize}
-\item Case sensitive, but normalized to be either
-      capitalized, all capitals, or all lowercase.
-\item Lemmatized and normalized where appropriate.
-      For instance, \w{has} and \w{had} are the same
-      node. In particular, the ReVerb normalized
-      relation is used.
-\item In the case when the phrase maps exactly to a
-      word form in WordNet, it is the WordNet synset.
-\end{itemize}
+%Before delving into the search problem, we define the
+%  notion of a \textbf{node}.
+%A node is, at a high level, a phrase such as one
+%  which would correspond to an argument or a relation.
+%It is:
+%\begin{itemize}
+%\item Case sensitive, but normalized to be either
+%      capitalized, all capitals, or all lowercase.
+%\item Lemmatized and normalized where appropriate.
+%      For instance, \w{has} and \w{had} are the same
+%      node. In particular, the ReVerb normalized
+%      relation is used.
+%\item In the case when the phrase maps exactly to a
+%      word form in WordNet, it is the WordNet synset.
+%\end{itemize}
+%
+%The definition of the search problem is:
 
-The definition of the search problem is:
-
-\paragraph{State}
-A state is a tuple of the \textit{current} 
-  node, as well as the node that the search
-  directly came from; and, whether the query fact has been
-  following a valid series of steps for natural logic entailment.
-The state space is thus squared with respect to the
-  size of the vocabulary, and is utterly impractical
-  to enumerate directly.
-
-We can denote a state as $(n_{-1}, n)$.
-
-\paragraph{Transitions}
-A valid transition is one between states
-  $(n_{-1}, n)$ and $(n, n_{+1})$, such that in
-  relation to $n$, $n_{+1}$ is one of:
+\Subsection{state}{State}
+A state in the graph is defined as a partial path from the consequent to a
+  valid antecedent.
+That is, a state is primarily parameterized by its candidate fact which may be
+  in the knowledge base.
+In addition, some auxilliary information is also tracked in a search state:
 
 \begin{itemize}
-\item \textbf{Add/Remove a closed class word}.
-      This is a class of transitions denoted by
-      \textit{ins($w$)} or \textit{del($w$)} 
-      where $w$ is the word being added or removed.
-      For example, transitioning from \w{cat} to
-      \w{a cat} or \w{every cat} or visa versa.
-\item \textbf{Add/Remove an adjective}.
-      Similar to above, but with adjectives. These are distinguished
-      from the above in that they have meaning for natural logic
-      entailment.
-\item \textbf{WordNet hypernymy}.
-      This is a class of transitions denoted by
-      \textit{hyper($n$)} or \textit{hypo($n$)},
-      where $n$ denotes the number of levels up or
-      down the tree we are jumping.
-      For example, we could transition from \w{cat}
-      to \w{feline} or to \w{animal}
-\item \textbf{WordNet relations}.
-      This is a class of transitions related to the other
-      WordNet relations (e.g., antonymy), primarily to
-      capture some of the inferences in natlog.
-\item \textbf{Freebase relations}.
-      This is a class of transitions aimed primarily
-      for proper nouns, traversing Freebase relations.
-      These are denoted by \textit{freebase($r$)},
-      where $r$ denotes the freebase relation we
-      have traversed.
-      For example, \w{Barack Obama} could transition
-      to \w{USA} via the \textit{employee\_of}
-      relation.
-\item \textbf{ReVerb relation}.
-      As in the Freebase case, we can move along a
-      ReVerb relation, denoted as \textit{reverb($r$)}.
-\item \textbf{Acronym and de-acronym}.
-      Expanding or creating an acronym,denoted by
-      \textit{acronym} and \textit{deacronym}.
-\item \textbf{Nearest neighbor similarity}.
-      The fallback is to search for nearest neighbors in similarity space.
-      This is, roughly, the equivalent of the CoNLL paper.
+  \item The fact this fact mutated from.
+        This is necessary to reconstruct the final path.
+  \item The monotonicity marking of each word in the fact.
+        This is necessary for the weights, to ensure that monotonicity is
+          respected.
+  \item The synset of each word in the fact.
+        This is necessary to compute the valid mutations of that edge, according
+          to the WordNet hierarchy.
+  \item A bitmask denoting whether a word has been modified in the past.
+        This is set when a word has been modified, and then another word is
+          subsequently modified.
+        This ensures that edits on a word are contiguous.
+        We do not edit a particualr word, and then edit another word, and then
+          perform more edits on the initial word.
 \end{itemize}
 
-\paragraph{Weights}
+\Subsection{weights}{Weights}
+\todo{This section is now wrong}
+We can denote a state transition as $(n_{-1}, n)$ -- 
+  corresponding to a state $n$ and the previous state $n-1$.
 The weight of a transition from $(n_{-1},n)$ to
   $(n,n_{+1})$ is given by appealing to the
   transitions between $n_{-1}$ and $n$, and between
@@ -179,19 +164,71 @@ This decomposition is important, as it allows our
   for facts as we learn what patterns entail
   ``good'' support.
 
-\paragraph{Start State}
-The start state is the relevant word from the fact
-  we are beginning from, normalized to a valid node
-  (i.e., lemmatized, properly cased, etc.).
-For example, the search from $a_1$ of \w{cats have tails}
-  would be \w{cat}.
+%\Subsection{boundaries}{Start and Terminal States}
+%The start state is the relevant word from the fact
+%  we are beginning from, normalized to a valid node
+%  (i.e., lemmatized, properly cased, etc.).
+%For example, the search from $a_1$ of \w{cats have tails}
+%  would be \w{cat}.
+%
+%The terminal state of the search is any node which
+%  is attached to a known fact on the correct term.
+%For example, a search ffrom $a_1$ of \w{cats have tails}
+%  would finish at \w{dog} if there is a fact in the
+%  database such as \w{dogs have tails}.
 
-\paragraph{Terminal State}
-The terminal state of the search is any node which
-  is attached to a known fact on the correct term.
-For example, a search ffrom $a_1$ of \w{cats have tails}
-  would finish at \w{dog} if there is a fact in the
-  database such as \w{dogs have tails}.
+
+\Subsection{transitions}{Transitions}
+A valid transition is one between states
+  $(n_{-1}, n)$ and $(n, n_{+1})$, such that in
+  relation to $n$, $n_{+1}$ is one of:
+
+\begin{itemize}
+\item \textbf{Add/Remove a quantifier}.
+      This is a class of transitions denoted by
+      \textit{ins($w$)} or \textit{del($w$)} 
+      where $w$ is the word being added or removed.
+      For example, transitioning from \w{cat} to
+      \w{a cat} or \w{every cat} or visa versa.
+\item \textbf{Add/Remove an adjective}.
+      Similar to above, but with adjectives. These are distinguished
+      from the above in that they have meaning for natural logic
+      entailment.
+      \todo{how do we make this efficient?}
+\item \textbf{WordNet hypernymy}.
+      This is a class of transitions denoted by
+      \textit{hyper} or \textit{hypo},
+      For example, we could transition from \w{cat}
+      to \w{feline} and eventually to \w{animal}
+\item \textbf{WordNet relations}.
+      This is a class of transitions related to the other
+      WordNet relations (e.g., antonymy), primarily to
+      capture some of the inferences in natlog.
+\item \textbf{Freebase relations}.
+      This is a class of transitions aimed primarily
+      for proper nouns, traversing Freebase relations.
+      These are denoted by \textit{freebase($r$)},
+      where $r$ denotes the freebase relation we
+      have traversed.
+      For example, \w{Barack Obama} could transition
+      to \w{USA} via the \textit{employee\_of}
+      relation.
+\item \textbf{ReVerb relation}.
+      As in the Freebase case, we can move along a
+      ReVerb relation, denoted as \textit{reverb($r$)}.
+\item \textbf{Acronym and de-acronym}.
+      Expanding or creating an acronym,denoted by
+      \textit{acronym} and \textit{deacronym}.
+\item \textbf{Nearest neighbor similarity}.
+      The fallback is to search for nearest neighbors in similarity space.
+      This is, roughly, the equivalent of the CoNLL paper.
+\item \textbf{Drop sense}. Drop the sense of a word -- this is necessary to
+      begin operating in nearest neighbors space, or even with Freebase, etc.
+      relations.
+\item \textbf{Infer sense}. Go from a sense-less word to one of its word senses.
+      For example, chosing a particular sense for \textit{cat} from the
+        initially senseless definition.
+\end{itemize}
 
 \Section{learn}{Learning Problem}
 
