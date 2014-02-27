@@ -3,11 +3,10 @@ exec scala -cp qry.jar "$0" "$@"
 !#
 import Qry._
 
-
 val program:List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx4G"
+	-"Xmx100G"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
@@ -42,9 +41,9 @@ def cp:String = {
     ).mkString(":")
   val CUSTOM = List(
       "lib/corenlp-scala.jar",
+      "lib/trove.jar",
       "lib/scripts/sim.jar",
-      "lib/scripts/jaws.jar",
-      "lib/scripts/trove.jar"
+      "lib/scripts/jaws.jar"
     ).mkString(":")
   List("dist/client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
