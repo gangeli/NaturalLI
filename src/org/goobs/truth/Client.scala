@@ -2,11 +2,13 @@ package org.goobs.truth
 
 import scala.collection.JavaConversions._
 
-import org.goobs.truth.Messages.{Fact, Inference, Query, Response}
+import org.goobs.truth.Messages._
+import Monotonicity._
 import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
+import scala.Some
 
 /**
  * @author Gabor Angeli
@@ -55,8 +57,18 @@ object Client {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
-          System.out.println(consequent)
-          System.out.println(antecedent)
+          // Explain query
+          println(consequent.getWordList.map( w =>
+            s"consequent: [${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
+          ).mkString(" "))
+          println(consequent.getWordList.map{ w =>
+            val synsets = NatLog.wordnet.getSynsets(w.getGloss)
+            if (synsets == null || synsets.size == 0) {
+              s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
+            } else {
+              s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
+            }
+          }.mkString("\n"))
           // We have our antecedent and consequent
           val query = Query.newBuilder()
             .setQueryFact(consequent)
@@ -68,11 +80,11 @@ object Client {
             .setCacheType("bloom")
             .build()
           // Execute Query
-//          val paths:Iterable[Inference] = issueQuery(query)
+          val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
-//          val score = Learn.evaluate(paths, weights)
+          val score = Learn.evaluate(paths, weights)
           // Debug Print
-//          if (score > 0.5) { println("Valid") } else { println("Invalid") }
+          if (score > 0.5) { println("Valid") } else { println("Invalid") }
         }
       }
     } while (false)

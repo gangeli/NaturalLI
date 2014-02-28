@@ -89,7 +89,7 @@ Graph* ReadGraph() {
   }
   // (query)
   char edgeQuery[127];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 ORDER BY type, sense ASC;", PG_TABLE_EDGE.c_str());
+  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
   PGIterator edgeIter = PGIterator(edgeQuery);
   uint64_t edgeI = 0;
   while (edgeIter.hasNext()) {
@@ -116,6 +116,7 @@ Graph* ReadGraph() {
     }
   }
   free(edgeCapacities);
+  printf("%s edges loaded.\n", edgeI);
   
   
   // Finish
