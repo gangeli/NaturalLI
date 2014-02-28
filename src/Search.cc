@@ -526,7 +526,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
-//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -604,6 +604,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       return responses;
     }
   }
+  printf("end search; %d tics yielded %d results\n", time, responses.size());
   return responses;
 }
 
