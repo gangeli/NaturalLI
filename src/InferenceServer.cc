@@ -253,6 +253,7 @@ void handleConnection(int socket, sockaddr_in* client,
     }
     queryFact[i] = getTaggedWord(
       query.queryfact().word(i).word(),
+      query.queryfact().word(i).sense(),
       query.queryfact().word(i).monotonicity() );
   }
   printf("[%d] constructed query.\n", socket);
