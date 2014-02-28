@@ -592,7 +592,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
             parentMonotonicity);
         if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
-          sinkArr[queueLength] = getTaggedWord(mutation.sink, parentMonotonicity);
+          sinkArr[queueLength] = getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity);
           typeArr[queueLength] = mutation.type;
           costArr[queueLength] = costSoFar + mutationCost;
           queueLength += 1;
@@ -604,7 +604,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       return responses;
     }
   }
-  printf("end search; %d tics yielded %d results\n", time, responses.size());
+  printf("end search; %d ticks yielded %d results\n", time, responses.size());
   return responses;
 }
 
