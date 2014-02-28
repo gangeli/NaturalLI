@@ -76,8 +76,8 @@ object Client {
             .setUseRealWorld(false)
             .setTimeout(Props.SEARCH_TIMEOUT)
             .setWeights(Learn.weightsToCosts(weights))
-            .setSearchType("ucs")
-            .setCacheType("bloom")
+            .setSearchType("bfs")
+//            .setCacheType("bloom")
             .build()
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
