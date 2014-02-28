@@ -43,23 +43,22 @@ object Client {
 
   def main(args:Array[String]):Unit = {
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
-    val weights = NatLog.hardNatlogWeights
-
+    val weights = NatLog.softNatlogWeights
 
     do {
       println()
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
-      for (antecedent:Fact <- "[have](all animal, tail)" /*readLine("antecedent> ") */ match {
+      for (antecedent:Fact <- /*"[have](all animal, tail)"*/ readLine("antecedent> ") match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
-        for (consequent:Fact <- "[have](all cat, tail)" /* readLine("consequent> ") */ match {
+        for (consequent:Fact <- /*"[have](all cat, tail)"*/ readLine("consequent> ") match {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
           // Explain query
-          println(consequent.getWordList.map( w =>
-            s"consequent: [${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
+          println("consequent: " + consequent.getWordList.map( w =>
+            s"${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
           ).mkString(" "))
           println(consequent.getWordList.map{ w =>
             val synsets = NatLog.wordnet.getSynsets(w.getGloss)
@@ -87,6 +86,6 @@ object Client {
           if (score > 0.5) { println("Valid") } else { println("Invalid") }
         }
       }
-    } while (false)
+    } while (true)
   }
 }

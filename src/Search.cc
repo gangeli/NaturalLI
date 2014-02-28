@@ -512,7 +512,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
-  const uint32_t tickTime = 100000;
+  const uint32_t tickTime = 10000;
   std::clock_t startTime = std::clock();
 
   //
@@ -532,7 +532,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     if (time % tickTime == 0) {
       const uint32_t tickOOM
         = tickTime < 1000 ? 1 : (tickTime < 1000000 ? 1000 : (tickTime  < 1000000000 ? 1000000 : 1) );
-      printf("[%lu%s / %lu%s search tick]; %lu paths found (%lu ms elapsed; cost of %f)\n",
+      printf("[%lu%s / %lu%s search tick]; %lu paths found (%lu ms elapsed; cost@%f)\n",
              time / tickOOM,
              tickTime < 1000 ? "" : (tickTime < 999999 ? "k" : (tickTime  < 999999999 ? "m" : "") ),
              timeout / tickOOM,

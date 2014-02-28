@@ -17,40 +17,43 @@ object NatLog {
   /**
    * The actual implementing call for soft and hard NatLog weights.
    */
-  def natlogWeights(jcWeight:Double, positiveWeight:Double, negativeWeight:Double, dontCareWeight:Double):WeightVector = {
+  def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
+                    morphology:Double, wsd:Double, default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
-    if (jcWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (jcWeight is not)"); }
-    if (positiveWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (positiveWeight is not)"); }
-    if (negativeWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (negativeWeight is not)"); }
-    if (dontCareWeight > 0) { throw new IllegalArgumentException("Weights must always be negative (dontCareWeight is not)"); }
+    if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
+    if (similarity > 0) { throw new IllegalArgumentException("Weights must always be negative (similarity is not)"); }
+    if (wordnet > 0) { throw new IllegalArgumentException("Weights must always be negative (wordnet is not)"); }
+    if (morphology > 0) { throw new IllegalArgumentException("Weights must always be negative (morphology is not)"); }
+    if (wsd > 0) { throw new IllegalArgumentException("Weights must always be negative (wsd is not)"); }
+    if (default > 0) { throw new IllegalArgumentException("Weights must always be negative (default is not)"); }
     // Set negative weight
-    weights.setDefaultReturnValue(negativeWeight)
+    weights.setDefaultReturnValue(default)
     // Set positive weights
     // (unigrams)
-    weights.setCount(unigramUp(   WORDNET_UP    ), jcWeight)
-    weights.setCount(unigramUp(   FREEBASE_UP   ), jcWeight)
-    weights.setCount(unigramDown( WORDNET_DOWN  ), jcWeight)
-    weights.setCount(unigramDown( FREEBASE_DOWN ), jcWeight)
+    weights.setCount(unigramUp(   WORDNET_UP    ), wordnet)
+    weights.setCount(unigramUp(   FREEBASE_UP   ), wordnet)
+    weights.setCount(unigramDown( WORDNET_DOWN  ), wordnet)
+    weights.setCount(unigramDown( FREEBASE_DOWN ), wordnet)
     // (bigrams)
-    weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), positiveWeight)
-    weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), positiveWeight)
-    weights.setCount(bigramUp( FREEBASE_UP, WORDNET_UP ), positiveWeight)
-    weights.setCount(bigramUp( FREEBASE_UP, FREEBASE_UP ), positiveWeight)
-    weights.setCount(bigramDown( WORDNET_DOWN, WORDNET_DOWN ), positiveWeight)
-    weights.setCount(bigramDown( WORDNET_DOWN, FREEBASE_DOWN ), positiveWeight)
-    weights.setCount(bigramDown( FREEBASE_DOWN, WORDNET_DOWN ), positiveWeight)
-    weights.setCount(bigramDown( FREEBASE_DOWN, FREEBASE_DOWN ), positiveWeight)
+    weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
+    weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)
+    weights.setCount(bigramUp( FREEBASE_UP, WORDNET_UP ), strictNatLog)
+    weights.setCount(bigramUp( FREEBASE_UP, FREEBASE_UP ), strictNatLog)
+    weights.setCount(bigramDown( WORDNET_DOWN, WORDNET_DOWN ), strictNatLog)
+    weights.setCount(bigramDown( WORDNET_DOWN, FREEBASE_DOWN ), strictNatLog)
+    weights.setCount(bigramDown( FREEBASE_DOWN, WORDNET_DOWN ), strictNatLog)
+    weights.setCount(bigramDown( FREEBASE_DOWN, FREEBASE_DOWN ), strictNatLog)
     // Set "don't care" weights
-    weights.setCount(unigramAny( MORPH_TO_LEMMA ),    -0.0)
-    weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  -0.0)
-    weights.setCount(unigramAny( MORPH_FUDGE_NUMBER), -0.0)
+    weights.setCount(unigramAny( MORPH_TO_LEMMA ),    morphology)
+    weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  morphology)
+    weights.setCount(unigramAny( MORPH_FUDGE_NUMBER), morphology)
     // Set weights we only care about a bit
-    weights.setCount(unigramUp(ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
-    weights.setCount(unigramDown(ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
-    weights.setCount(unigramFlat(ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
-    weights.setCount(bigramUp(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
-    weights.setCount(bigramDown(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
-    weights.setCount(bigramFlat(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), dontCareWeight)
+    weights.setCount(unigramUp(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(unigramDown(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(unigramFlat(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(bigramUp(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(bigramDown(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(bigramFlat(ANGLE_NEAREST_NEIGHBORS, ANGLE_NEAREST_NEIGHBORS), similarity)
     // Return
     weights
   }
@@ -58,7 +61,7 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(-1.0, 0.0, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, Double.NegativeInfinity, -1.0, -1.0, Double.NegativeInfinity, Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as
@@ -66,7 +69,7 @@ object NatLog {
    * weights.
    * The goal is to use this to initialize the search.
    */
-  def softNatlogWeights:WeightVector = natlogWeights(-1.0, 0.0, -1.0, -0.25)
+  def softNatlogWeights:WeightVector = natlogWeights(-0.01, -1.0, -1.0, -0.1, -0.5, -1.0)
 
   /**
    * Determine the monotonicity of a sentence, according to the quantifier it starts with.
@@ -179,7 +182,7 @@ object NatLog {
     } else {
       // Case: find WordNet sense
       var synsetsConsidered:Int = 0
-      val (argmax, argmaxIndex) = synsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
+      val (_, argmaxIndex) = synsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
         if (pos.isDefined && synset.getType != pos.get) {
           -1000.0 + synsetIndex.toDouble / 100.0
         } else {
@@ -220,7 +223,6 @@ object NatLog {
 
     // POS tag
     val sentence:Sentence = Sentence(leftArg + " " + rel + " " + rightArg)
-    val words:Array[String] = sentence.words
     val pos:Array[Option[SynsetType]] = {
       // (get variables)
       val pos:Array[String] = sentence.pos

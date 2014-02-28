@@ -33,15 +33,6 @@ class NatLogTest extends Test {
         NatLog.hardNatlogWeights.getCount(Learn.bigramUp(EdgeType.WORDNET_UP, EdgeType.FREEBASE_DOWN)) should be < 0.0
         NatLog.hardNatlogWeights.getCount(Learn.bigramDown(EdgeType.FREEBASE_DOWN, EdgeType.WORDNET_UP)) should be < 0.0
       }
-      it ("should respect passed weights") {
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.bigramUp(EdgeType.FREEBASE_UP, EdgeType.FREEBASE_UP)) should be (0.0)
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.bigramUp(EdgeType.FREEBASE_UP, EdgeType.FREEBASE_DOWN)) should be (-2.0)
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.unigramUp(EdgeType.WORDNET_UP)) should be (-1.0)
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.unigramUp(EdgeType.ANGLE_NEAREST_NEIGHBORS)) should be (-1.25)
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.unigramDown(EdgeType.ANGLE_NEAREST_NEIGHBORS)) should be (-1.25)
-        NatLog.natlogWeights(-1.0, 0.0, -2.0, -1.25).getCount(Learn.unigramFlat(EdgeType.ANGLE_NEAREST_NEIGHBORS)) should be (-1.25)
-
-      }
     }
   }
 
