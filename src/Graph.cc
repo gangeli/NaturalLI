@@ -116,7 +116,7 @@ Graph* ReadGraph() {
     }
   }
   free(edgeCapacities);
-  printf("%s edges loaded.\n", edgeI);
+  printf("%d edges loaded.\n", edgeI);
   
   
   // Finish

@@ -26,9 +26,16 @@ import scala.collection.mutable
 
 //
 // SQL prerequisite statements for this script:
+// -----
 // CREATE TABLE word_indexer ( index INTEGER PRIMARY KEY, gloss TEXT);
 // CREATE TABLE edge_type_indexer ( index SMALLINT PRIMARY KEY, gloss TEXT);
 // CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );
+//
+// SQL post-requisite statements on completion of this script:
+// -----
+// CREATE INDEX word_indexer_gloss ON word_indexer(gloss);
+// CREATE INDEX edge_outgoing ON edge (source, source_sense);
+// CREATE INDEX edge_type ON edge (type);
 //
 
 /**
