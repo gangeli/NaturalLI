@@ -564,6 +564,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     for (uint8_t indexToMutate = 0;
          indexToMutate < parentLength;
          ++indexToMutate) {  // for each index to mutate...
+      printf("  mutating index %d\n", indexToMutate);
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
       uint32_t numMutations = 0;
       const tagged_word parentWord = parentFact[indexToMutate];
@@ -572,7 +573,10 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       const uint8_t parentSense = getSense(parentWord);
       for (int i = 0; i < numMutations; ++i) {
         const edge& mutation = mutations[i];
-        if (mutation.sense != parentSense) { continue; }
+        if (mutation.sense != parentSense) {
+          printf("    bad sense: %d but wanted %d\n", mutation.sense, parentSense);
+          continue;
+        }
         // Flush if necessary (save memory)
         if (queueLength >= 255) {
           if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
@@ -594,6 +598,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
           typeArr[queueLength] = mutation.type;
           costArr[queueLength] = costSoFar + mutationCost;
           queueLength += 1;
+          printf("    pushing!\n");
         }
       }
     }
