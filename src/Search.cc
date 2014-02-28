@@ -526,7 +526,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
-    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -604,7 +604,10 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       return responses;
     }
   }
-  printf("end search; %d ticks yielded %d results\n", time, responses.size());
+
+  // Return
+  uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
+  printf("end search (%lu ms); %d ticks yielded %lu results\n", searchTimeMS, time, responses.size());
   return responses;
 }
 
