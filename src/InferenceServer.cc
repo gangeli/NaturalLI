@@ -415,6 +415,5 @@ int startServer(int port) {
  * The server's entry point.
  */
 int main( int argc, char *argv[] ) {
-//  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
-  ReadFactTrie();
+  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
 }
