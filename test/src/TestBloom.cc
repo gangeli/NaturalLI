@@ -40,7 +40,7 @@ TEST_F(BloomTest, FewFalsePositives) {
   // Populate the filter
   uint32_t buffer[4]{ 0x0, 0x0, 0x0, 0x0 };
   for (uint16_t a = 0; a < incr; ++a) {
-    printf("Populate Pass; high bit: %u\n", a);
+//    printf("Populate Pass; high bit: %u\n", a);
     buffer[0] = a;
     for (uint16_t b = 0; b < incr; ++b) {
       buffer[1] = b;
@@ -50,7 +50,7 @@ TEST_F(BloomTest, FewFalsePositives) {
           buffer[3] = d;
           filter.add(buffer, 4);
           if (!filter.contains(buffer, 4)) {
-            printf("a=%u b=%u c=%u d=%u\n", a, b, c, d);
+//            printf("a=%u b=%u c=%u d=%u\n", a, b, c, d);
           }
           ASSERT_TRUE(filter.contains(buffer, 4));  // crash early
         }
@@ -59,7 +59,7 @@ TEST_F(BloomTest, FewFalsePositives) {
   }
   // Make sure we have no false negatives
   for (uint16_t a = 0; a < incr; ++a) {
-    printf("False Negative Pass; high bit: %u\n", a);
+//    printf("False Negative Pass; high bit: %u\n", a);
     buffer[0] = a;
     for (uint16_t b = 0; b < incr; ++b) {
       buffer[1] = b;
@@ -75,7 +75,7 @@ TEST_F(BloomTest, FewFalsePositives) {
   // Make sure we have few false positives
   uint32_t falsePositives = 0;
   for (uint16_t a = incr; a < 2*incr; ++a) {
-    printf("False Positive Pass; high bit: %u\n", a);
+//    printf("False Positive Pass; high bit: %u\n", a);
     buffer[0] = a;
     for (uint16_t b = incr; b < 2*incr; ++b) {
       buffer[1] = b;

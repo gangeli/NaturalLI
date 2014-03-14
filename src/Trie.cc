@@ -1,5 +1,6 @@
 #include "Trie.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <string>
@@ -45,8 +46,38 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
 }
 
 
+void TrieFactDB::add(word* elements, uint8_t length) {
+  // Register fact
+  facts.add(elements, length);
+  // Register completion
+  word buffer[256];
+  memcpy(buffer, elements, length * sizeof(word));
+  sort(buffer, buffer + length);
+  completions.add(buffer, length);
+}
 
-Trie* ReadFactTrie() {
+const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
+                                tagged_word* canInsert, uint8_t* canInsertLength) {
+  // Check containment
+  uint8_t length = 0;
+  const bool contains = facts.contains(query, queryLength, NULL, &length);
+  // Populate children
+  if (*canInsertLength > 0) {
+    // Create sorted query
+    word buffer[256];
+    for (int i = 0; i < queryLength; ++i) {
+      buffer[i] = getWord(query[i]);
+    }
+    sort(buffer, buffer + queryLength);
+    // Check completions
+    completions.contains(buffer, queryLength, canInsert, canInsertLength);
+  }
+  // Return
+  return contains;
+}
+
+
+FactDB* ReadFactTrie() {
   printf("Reading facts...\n");
   // Read facts
   Trie* facts = new Trie();

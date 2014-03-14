@@ -10,7 +10,7 @@ class Trie;
 class Trie : public FactDB {
  public:
   /** {@inheritDoc} */
-  void add(word* elements, uint8_t length);
+  virtual void add(word* elements, uint8_t length);
 
   /** {@inheritDoc} */
   virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
@@ -32,9 +32,29 @@ class Trie : public FactDB {
   inline bool isLeaf() { return leaf; }
 };
 
+class TrieFactDB : public Trie {
+ public:
+  /** {@inheritDoc} */
+  virtual void add(word* elements, uint8_t length);
+
+  /** {@inheritDoc} */
+  virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
+                              tagged_word* canInsert, uint8_t* canInsertLength);
+  
+  /** {@inheritDoc} */
+  bool contains(const tagged_word* words, const uint8_t wordLength) {
+    uint8_t length = 0;
+    return contains(words, wordLength, NULL, &length);
+  }
+
+ private:
+  Trie facts;
+  Trie completions;
+};
+
 /**
  * Read in the known database of facts as a Trie.
  */
-Trie* ReadFactTrie();
+FactDB* ReadFactTrie();
 
 #endif
