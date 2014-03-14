@@ -50,9 +50,10 @@ void setmemlimit() {
 class UserDefinedFactDB : public FactDB {
  public:
   UserDefinedFactDB(Query& query);
-  ~UserDefinedFactDB();
+  virtual ~UserDefinedFactDB();
   
-  virtual const bool contains(const tagged_word* query, const uint8_t queryLength);
+  virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
+                              tagged_word* canInsert, uint8_t* canInsertLength);
  
  private:
   word** contents;
@@ -90,7 +91,9 @@ UserDefinedFactDB::~UserDefinedFactDB() {
  * Determine if this knowledge base contains the given element; implementing the
  * interface defined in FactDB.
  */
-const bool UserDefinedFactDB::contains(const word* query, const uint8_t queryLength) {
+const bool UserDefinedFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
+                                       tagged_word* canInsert, uint8_t* canInsertLength) {
+  *canInsertLength = 0;
   for (int i = 0; i < size; ++i) {             // for each element
     if (lengths[i] == queryLength) {           // if the lengths match
       bool found = true;

@@ -116,7 +116,7 @@ Graph* ReadGraph() {
     }
   }
   free(edgeCapacities);
-  printf("%d edges loaded.\n", edgeI);
+  printf("%lu edges loaded.\n", edgeI);
   
   
   // Finish
@@ -157,8 +157,13 @@ class MockGraph : public Graph {
     tailEdges = new vector<edge>();
   }
   ~MockGraph() {
-    delete noEdges, lemurEdges, animalEdges, timoneEdges,
-           catEdges, haveEdges, tailEdges;
+    delete noEdges;
+    delete lemurEdges;
+    delete animalEdges;
+    delete timoneEdges;
+    delete catEdges;
+    delete haveEdges;
+    delete tailEdges;
   }
   
   virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const {

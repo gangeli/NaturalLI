@@ -19,7 +19,9 @@ class InMemoryFactDB : public FactDB {
  public:
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
-  virtual const bool contains(const tagged_word* query, const uint8_t queryLength) {
+  virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
+                              tagged_word* output, uint8_t* outputLength) {
+    *outputLength = 0;
     // Variables for hashing
     int64_t hash = 0;
     uint32_t shiftIncr = (64 / queryLength);
@@ -41,7 +43,7 @@ FactDB* ReadFactDB() {
   set<int64_t> facts;
   // (query)
   char factQuery[127];
-  snprintf(factQuery, 127, "SELECT id FROM %s LIMIT 1000000000;", PG_TABLE_FACT.c_str());
+  snprintf(factQuery, 127, "SELECT gloss, weight FROM %s;", PG_TABLE_FACT.c_str());
   PGIterator iter = PGIterator(factQuery);
   uint64_t i = 0;
   while (iter.hasNext()) {
@@ -65,7 +67,9 @@ FactDB* ReadFactDB() {
 class MockFactDB : public FactDB {
  public:
   
-  virtual const bool contains(const tagged_word* query, const uint8_t queryLength) {
+  virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
+                              tagged_word* output, uint8_t* outputLength) {
+    *outputLength = 0;
     return queryLength == 3 && 
       getWord(query[0]) == CAT &&
       getWord(query[1]) == HAVE &&

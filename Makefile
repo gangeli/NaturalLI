@@ -40,20 +40,20 @@ CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaw
 TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 # (c++)
 CUSTOM_INCLUDES?=''
-CC = g++
+CC=g++
 INCLUDE=-I`${PG_CONFIG} --includedir` -I${RAMCLOUD_HOME}/src -I${RAMCLOUD_HOME}/obj.master -I${RAMCLOUD_HOME}/logcabin -I${GTEST_ROOT}/include ${CUSTOM_I}
 LD_PATH=-L`${PG_CONFIG} --libdir` -Llib ${CUSTOM_L}
 LDFLAGS=-lpq -lramcloud -lprotobuf #-lprofiler
 CPP_FLAGS=-fprofile-arcs -ftest-coverage -std=c++0x -O3
 # (files)
-_OBJS = Search.o FactDB.o Graph.o Postgres.o Utils.o Bloom.o Messages.pb.o #RamCloudBackend.o
+_OBJS = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o Bloom.o Messages.pb.o #RamCloudBackend.o
 OBJS = $(patsubst %,${BUILD}/%,${_OBJS})
 TEST_OBJS = $(patsubst %,${TEST_BUILD}/Test%,${_OBJS})
 
 
 # -- TARGETS --
-default: ${DIST}/client.jar ${DIST}/server
-all: ${DIST}/client.jar ${DIST}/server ${DIST}/test_client.jar ${DIST}/test_server
+default: ${DIST}/server ${DIST}/client.jar
+all: ${DIST}/server ${DIST}/client.jar ${DIST}/test_client.jar ${DIST}/test_server
 
 client: ${DIST}/client.jar
 	${SCALA} -cp ${CP}:${DIST}/client.jar -J-mx4g org.goobs.truth.Client

@@ -55,12 +55,6 @@ struct scored_path {
   float cost;
 };
 
-struct PathCompare {
-  bool operator()(const Path& lhs, const Path& rhs) {
-    return 1 > 2;  // TODO(gabor) implement me!
-  }
-};
-
 /**
  * An interface for the structure used to cache already seen paths.
  * 
@@ -70,6 +64,8 @@ struct PathCompare {
  */
 class CacheStrategy {
  public:
+  virtual ~CacheStrategy() { }
+
   virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const = 0;
   virtual void add(const tagged_word* fact, const uint8_t& factLength) = 0;
 };

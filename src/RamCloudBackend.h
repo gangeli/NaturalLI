@@ -66,7 +66,8 @@ class RamCloudFactDB : public FactDB {
  public:
   RamCloudFactDB();
   ~RamCloudFactDB();
-  virtual const bool contains(const word*, const uint8_t wordLength);
+  virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
+                              tagged_word* canInsert, uint8_t* canInsertLength);
 
  private:
   const char* factTableName;

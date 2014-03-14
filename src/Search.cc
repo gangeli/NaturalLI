@@ -18,11 +18,11 @@ inline bool isSetBit(const uint64_t bitmask[], const uint8_t& index) {
   uint8_t bucket = index >> 6;
   uint8_t offset = index % 64;
   uint64_t mask = 0x1 << offset;
-  return bitmask[bucket] & mask != 0;
+  return (bitmask[bucket] & mask) != 0;
 }
 
 /** Set element |index| in the bitmask */
-inline bool setBit(uint64_t bitmask[], const uint8_t& index) {
+inline void setBit(uint64_t bitmask[], const uint8_t& index) {
   uint8_t bucket = index >> 6;
   uint8_t offset = index % 64;
   uint64_t mask = 0x1 << offset;
@@ -607,7 +607,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
 
   // Return
   uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
-  printf("end search (%lu ms); %d ticks yielded %lu results\n", searchTimeMS, time, responses.size());
+  printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
   return responses;
 }
 
