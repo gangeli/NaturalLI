@@ -67,6 +67,8 @@ std::string toString(const edge_type& edge) {
     case MORPH_FUDGE_NUMBER           : return "MORPH_FUDGE_NUMBER";
     case SENSE_REMOVE                 : return "SENSE_REMOVE";
     case SENSE_ADD                    : return "SENSE_ADD";
+    case WORD_ADD                     : return "WORD_ADD";
+    case WORD_REMOVE                  : return "WORD_REMOVE";
     default: return "UNK_EDGE_TYPE";
   }
 }

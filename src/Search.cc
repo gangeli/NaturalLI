@@ -7,6 +7,8 @@
 #include "Search.h"
 #include "Utils.h"
 
+#define NUM_WORDS_CAN_INSERT 64
+
 using namespace std;
 
 //
@@ -514,6 +516,9 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   uint64_t time = 0;
   const uint32_t tickTime = 10000;
   std::clock_t startTime = std::clock();
+  // Initialize add-able words
+  uint8_t numWordsCanInsert = NUM_WORDS_CAN_INSERT;
+  word    wordsCanInsert[NUM_WORDS_CAN_INSERT];
 
   //
   // Search
@@ -543,7 +548,8 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
-    if (knownFacts->contains(parent->fact, parent->factLength)) {
+    numWordsCanInsert = NUM_WORDS_CAN_INSERT;
+    if (knownFacts->contains(parent->fact, parent->factLength, wordsCanInsert, &numWordsCanInsert)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path = parent;
       responses[responses.size()-1].cost = costSoFar;
@@ -565,6 +571,8 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
          indexToMutate < parentLength;
          ++indexToMutate) {  // for each index to mutate...
       if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
+
+      // -- Do mutations --
       uint32_t numMutations = 0;
       const tagged_word parentWord = parentFact[indexToMutate];
       const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
@@ -598,6 +606,12 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
           queueLength += 1;
         }
       }
+      
+      // -- Do insertions --
+      // TODO(gabor)
+      
+      // -- Do deletions --
+      // TODO(gabor)
     }
     if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
       printf("Error pushing to stack; returning\n");
