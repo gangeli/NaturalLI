@@ -35,12 +35,6 @@ class FactDB {
   }
 };
 
-/**
- * Read in the known database of facts.
- * Depending on various flags, the particular implementation of a FactDB
- * may vary (e.g., in memory, RamCloud, etc).
- */
-FactDB* ReadFactDB();
 
 /**
  * Read in a mock database of facts.

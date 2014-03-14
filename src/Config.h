@@ -21,9 +21,10 @@ static uint16_t      RAMCLOUD_PORT    = 12246;
  
 static std::string   PG_TABLE_WORD    = "word_indexer";
 static std::string   PG_TABLE_EDGE    = "edge";
-static std::string   PG_TABLE_FACT    = "fact_partial";
+static std::string   PG_TABLE_FACT    = "fact";
 
 static uint64_t      SEARCH_TIMEOUT   = 100000;
+static uint32_t      MIN_FACT_COUNT   = 5;
 
 //
 // Typedefs

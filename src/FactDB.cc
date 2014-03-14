@@ -1,5 +1,5 @@
-#include <set>
 #include <cstdlib>
+#include <set>
 
 #include "Postgres.h"
 #include "FactDB.h"

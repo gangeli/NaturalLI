@@ -23,14 +23,18 @@ class Trie : public FactDB {
   }
 
  private:
-  uint32_t data;
+  bool leaf;
   std::map<word,Trie> children;
 
-  inline void setIsLeaf(bool isLeaf) {
-    data = ((isLeaf ? 0x1 : 0x0) << 31) | data;
+  inline void setIsLeaf(bool leaf) {
+    this->leaf = leaf;
   }
-  inline word getWord() { return (data << 1) >> 1; }
-  inline bool isLeaf() { return (data >> 31) != 0; }
+  inline bool isLeaf() { return leaf; }
 };
+
+/**
+ * Read in the known database of facts as a Trie.
+ */
+Trie* ReadFactTrie();
 
 #endif

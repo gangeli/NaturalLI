@@ -13,6 +13,7 @@
 #include "Messages.pb.h" 
 #include "Search.h" 
 #include "Graph.h" 
+#include "Trie.h" 
 #include "Utils.h" 
 
 
@@ -230,7 +231,7 @@ void handleConnection(int socket, sockaddr_in* client,
     if (factDB == NULL) {
       // Read the real knowledge base
       factDBReadLock.lock();
-      *dbOrNull = ReadFactDB();
+      *dbOrNull = ReadFactTrie();
       factDBReadLock.unlock();
       factDB = *dbOrNull;
     }
@@ -414,5 +415,6 @@ int startServer(int port) {
  * The server's entry point.
  */
 int main( int argc, char *argv[] ) {
-  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
+//  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
+  ReadFactTrie();
 }
