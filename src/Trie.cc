@@ -116,6 +116,6 @@ FactDB* ReadFactTrie() {
   }
 
   // Return
-  printf("%s\n", "Done reading the fact database.");
+  printf("Done reading the fact database (%lu facts read)\n", i);
   return facts;
 }

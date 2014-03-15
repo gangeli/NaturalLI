@@ -48,7 +48,7 @@ object Client {
     do {
       println()
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
-      for (antecedent:Fact <- /*"[have](all animal, tail)"*/ readLine("antecedent> ") match {
+      for (antecedent:Fact <- "[have](all animal, tail)" /*readLine("antecedent> ")*/ match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
@@ -72,7 +72,7 @@ object Client {
           val query = Query.newBuilder()
             .setQueryFact(consequent)
             .addKnownFact(antecedent)
-            .setUseRealWorld(false)
+            .setUseRealWorld(true)
             .setTimeout(Props.SEARCH_TIMEOUT)
             .setWeights(Learn.weightsToCosts(weights))
             .setSearchType("ucs")
