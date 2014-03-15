@@ -1,0 +1,7 @@
+export PG_CONFIG=/u/nlp/packages/pgsql/bin/pg_config
+export SCALA_HOME=/u/angeli/programs/scala
+export RAMCLOUD_HOME=/u/angeli/workspace/ramcloud
+export PROTOC=/u/nlp/packages/protobuf-2.4.1/bin/protoc
+
+export CUSTOM_L='-L/u/nlp/packages/protobuf-2.4.1/lib'
+export CUSTOM_I='-I/u/nlp/packages/protobuf-2.4.1/include'
