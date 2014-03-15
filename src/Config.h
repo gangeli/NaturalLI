@@ -24,7 +24,7 @@ static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact";
 
 static uint64_t      SEARCH_TIMEOUT   = 100000;
-static uint32_t      MIN_FACT_COUNT   = 2;
+static uint32_t      MIN_FACT_COUNT   = 1;
 
 //
 // Typedefs
