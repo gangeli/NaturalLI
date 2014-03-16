@@ -4,6 +4,7 @@
 #include <map>
 
 #include "Config.h"
+#include "Bloom.h"
 #include "FactDB.h"
 
 class Trie;
@@ -48,7 +49,7 @@ class TrieFactDB : public Trie {
   }
 
  private:
-  Trie facts;
+  BloomFilter facts;
   Trie completions;
 };
 
