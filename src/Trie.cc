@@ -108,7 +108,7 @@ FactDB* ReadFactTrie() {
       if (bufferLength == 255) { break; }
     }
     // Add fact
-    facts->add(buffer, bufferLength);
+//    facts->add(buffer, bufferLength);
     // Debug
     i += 1;
     if (i % 10000000 == 0) {
