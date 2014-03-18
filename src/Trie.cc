@@ -81,7 +81,7 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
 FactDB* ReadFactTrie() {
   printf("Reading facts...\n");
   // Read facts
-  Trie* facts = new Trie();
+  TrieFactDB* facts = new TrieFactDB();
   // (query)
   char factQuery[127];
   snprintf(factQuery, 127, "SELECT gloss, weight FROM %s ORDER BY weight DESC;", PG_TABLE_FACT.c_str());
