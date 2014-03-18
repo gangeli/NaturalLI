@@ -58,7 +58,7 @@ object Client {
         }) {
           // Explain query
           println("consequent: " + consequent.getWordList.map( w =>
-            s"${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
+            s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
           ).mkString(" "))
           println(consequent.getWordList.map{ w =>
             val synsets = NatLog.wordnet.getSynsets(w.getGloss)
