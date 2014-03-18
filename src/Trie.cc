@@ -46,14 +46,16 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
 }
 
 
-void TrieFactDB::add(word* elements, uint8_t length) {
+void TrieFactDB::add(word* elements, uint8_t length, uint32_t weight) {
   // Register fact
   facts.add(elements, length);
   // Register completion
-  word buffer[256];
-  memcpy(buffer, elements, length * sizeof(word));
-  sort(buffer, buffer + length);
-  completions.add(buffer, length);
+  if (weight >= MIN_COMPLETION_W) {
+    word buffer[256];
+    memcpy(buffer, elements, length * sizeof(word));
+    sort(buffer, buffer + length);
+    completions.add(buffer, length);
+  }
 }
 
 const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
