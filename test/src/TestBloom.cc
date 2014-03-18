@@ -7,12 +7,14 @@
 class BloomTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    filter = new BloomFilter();
   }
 
   virtual void TearDown() {
+    delete filter;
   }
   
-  BloomFilter filter;
+  BloomFilter* filter;
 
 };
 
@@ -20,17 +22,17 @@ class BloomTest : public ::testing::Test {
 TEST_F(BloomTest, Basics) {
   // Some random case
   uint32_t buffer[4]{ 0x1, 0x3, 0x345, 0x45656 };
-  filter.add(buffer, 4);
-  EXPECT_TRUE(filter.contains(buffer, 4));
+  filter->add(buffer, 4);
+  EXPECT_TRUE(filter->contains(buffer, 4));
   buffer[0] = 0x2;
-  EXPECT_FALSE(filter.contains(buffer, 4));
+  EXPECT_FALSE(filter->contains(buffer, 4));
 }
 
 // Some regression tests from the false positives set
 TEST_F(BloomTest, Regressions) {
   uint32_t buffer[4]{ 0x2, 0x0, 0x0, 0x0 };
-  filter.add(buffer, 4);
-  EXPECT_TRUE(filter.contains(buffer, 4));
+  filter->add(buffer, 4);
+  EXPECT_TRUE(filter->contains(buffer, 4));
 }
 
 // Make sure we don't have too many overlaps
@@ -48,11 +50,11 @@ TEST_F(BloomTest, FewFalsePositives) {
         buffer[2] = c;
         for (uint16_t d = 0; d < incr; ++d) {
           buffer[3] = d;
-          filter.add(buffer, 4);
-          if (!filter.contains(buffer, 4)) {
+          filter->add(buffer, 4);
+          if (!filter->contains(buffer, 4)) {
 //            printf("a=%u b=%u c=%u d=%u\n", a, b, c, d);
           }
-          ASSERT_TRUE(filter.contains(buffer, 4));  // crash early
+          ASSERT_TRUE(filter->contains(buffer, 4));  // crash early
         }
       }
     }
@@ -67,7 +69,7 @@ TEST_F(BloomTest, FewFalsePositives) {
         buffer[2] = c;
         for (uint16_t d = 0; d < incr; ++d) {
           buffer[3] = d;
-          EXPECT_TRUE(filter.contains(buffer, 4));
+          EXPECT_TRUE(filter->contains(buffer, 4));
         }
       }
     }
@@ -83,7 +85,7 @@ TEST_F(BloomTest, FewFalsePositives) {
         buffer[2] = c;
         for (uint16_t d = incr; d < 2*incr; ++d) {
           buffer[3] = d;
-          if (filter.contains(buffer, 4)) { falsePositives += 1; }
+          if (filter->contains(buffer, 4)) { falsePositives += 1; }
         }
       }
     }
