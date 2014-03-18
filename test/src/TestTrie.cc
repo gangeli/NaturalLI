@@ -12,6 +12,7 @@ class TrieTest : public ::testing::Test {
 
   virtual void TearDown() {
     delete trie;
+    delete db;
   }
   
   Trie* trie;

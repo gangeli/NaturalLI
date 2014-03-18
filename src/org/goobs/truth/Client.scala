@@ -83,7 +83,7 @@ object Client {
           // Evaluate Query
           val score = Learn.evaluate(paths, weights)
           // Debug Print
-          if (score > 0.5) { println("Valid") } else { println("Invalid") }
+          if (score > 0.5) { println("\033[32mVALID\033[0m") } else { println("\033[31mINVALID\033[0m") }
         }
       }
     } while (true)
