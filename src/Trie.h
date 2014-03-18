@@ -40,7 +40,7 @@ class TrieFactDB : public Trie {
 
   /** {@inheritDoc} */
   virtual void add(word* elements, uint8_t length) {
-    add(elements, length, 1);
+    add(elements, length, MIN_COMPLETION_W);
   }
 
   /** {@inheritDoc} */
