@@ -35,8 +35,13 @@ class Trie : public FactDB {
 
 class TrieFactDB : public Trie {
  public:
+  /** Add a fact with a given weight */
+  virtual void add(word* elements, uint8_t length, uint32_t weight);
+
   /** {@inheritDoc} */
-  virtual void add(word* elements, uint8_t length);
+  virtual void add(word* elements, uint8_t length) {
+    add(elements, length, 1);
+  }
 
   /** {@inheritDoc} */
   virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
