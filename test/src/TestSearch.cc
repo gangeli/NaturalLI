@@ -44,7 +44,8 @@ class PathTest : public ::testing::Test {
   }
 
   virtual void TearDown() {
-    delete root, dist1, dist2, searchType, cache;
+    delete searchType;
+    delete cache;
   }
 
   const Path* root;
@@ -128,7 +129,10 @@ class TestName : public ::testing::Test { \
   } \
 \
   virtual void TearDown() { \
-    delete cache, bloom, graph, facts; \
+    delete cache; \
+    delete bloom; \
+    delete graph; \
+    delete facts; \
   } \
 \
   ClassName search; \
@@ -403,6 +407,7 @@ TEST_F(CacheStrategyNoneTest, AddHasNoEffect) {
 class CacheStrategyBloomTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    cache = new CacheStrategyBloom();
     // Add base path element
     root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
     lemursHaveTails_ = lemursHaveTails();
@@ -412,9 +417,10 @@ class CacheStrategyBloomTest : public ::testing::Test {
 
   virtual void TearDown() {
     delete root;
+    delete cache;
   }
 
-  CacheStrategyBloom cache;
+  CacheStrategyBloom* cache;
   Path* root;
 
   std::vector<word> lemursHaveTails_;
@@ -424,12 +430,12 @@ class CacheStrategyBloomTest : public ::testing::Test {
 
 // Make sure that we don't see a node in an empty cache
 TEST_F(CacheStrategyBloomTest, NotSeenByDefault) {
-  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength));
 }
 
 // Make sure adding a node registers it as seen
 TEST_F(CacheStrategyBloomTest, AddingImpliesSeen) {
-  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength));
-  cache.add(root->fact, root->factLength);
-  EXPECT_TRUE(cache.isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength));
+  cache->add(root->fact, root->factLength);
+  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength));
 }

@@ -482,7 +482,7 @@ inline bool flushQueue(SearchType* fringe,
   bool outOfMemory = false;
   while (parent != NULL && i < queueLength) {
     // Actually push (or at least try to)
-    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], 1, sinkArr[i], 0, typeArr[i], costArr[i], cache, outOfMemory);
+    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], sinkArr[i] == 0 ? 0 : 1, sinkArr[i], 0, typeArr[i], costArr[i], cache, outOfMemory);
     // Debug
 //    printf("  considering: %s --[%s]--> %s (cost %f)\n",
 //      graph->gloss(parent->fact[indexToMutateArr[i]]),
@@ -498,6 +498,7 @@ inline bool flushQueue(SearchType* fringe,
   }
   return !outOfMemory;
 }
+
 
 // The main search() function
 vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
@@ -607,11 +608,38 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         }
       }
       
+      // -- Do deletion --
+      // Compute the deletion cost
+      edge deletion;
+      deletion.sink  = 0;  // Sets the operation as a deletion
+      deletion.sense = 0;
+      deletion.type  = WORD_REMOVE;
+      deletion.cost  = 1.0;
+      const float deletionCost = weights->computeCost(
+          parent->edgeType, deletion,
+          parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
+          parentMonotonicity);
+      // Add the edge
+      if (deletionCost < 1e10) {
+        // Flush if necessary (save memory)
+        if (queueLength >= 255) {
+          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
+            printf("Error pushing to stack; returning\n");
+            return responses;
+          }
+          queueLength = 0;
+        }
+        // Do add
+        indexToMutateArr[queueLength] = indexToMutate;
+        sinkArr[queueLength] = 0;
+        typeArr[queueLength] = WORD_REMOVE;
+        costArr[queueLength] = costSoFar + deletionCost;
+        queueLength += 1;
+      }
+      
       // -- Do insertions --
       // TODO(gabor)
       
-      // -- Do deletions --
-      // TODO(gabor)
     }
     if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
       printf("Error pushing to stack; returning\n");
