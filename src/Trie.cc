@@ -50,12 +50,12 @@ void TrieFactDB::add(word* elements, uint8_t length, uint32_t weight) {
   // Register fact
   facts.add(elements, length);
   // Register completion
-//  if (weight >= MIN_COMPLETION_W) {
-//    word buffer[256];
-//    memcpy(buffer, elements, length * sizeof(word));
-//    sort(buffer, buffer + length);
-//    completions.add(buffer, length);
-//  }
+  if (weight >= MIN_COMPLETION_W) {
+    word buffer[256];
+    memcpy(buffer, elements, length * sizeof(word));
+    sort(buffer, buffer + length);
+    completions.add(buffer, length);
+  }
 }
 
 const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
@@ -108,7 +108,7 @@ FactDB* ReadFactTrie() {
       if (bufferLength == 255) { break; }
     }
     // Add fact
-    facts->add(buffer, bufferLength);
+    facts->add(buffer, bufferLength, weight);
     // Debug
     i += 1;
     if (i % 10000000 == 0) {
