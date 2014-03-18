@@ -5,3 +5,11 @@ export PROTOC=/u/nlp/packages/protobuf-2.4.1/bin/protoc
 
 export CUSTOM_L='-L/u/nlp/packages/protobuf-2.4.1/lib'
 export CUSTOM_I='-I/u/nlp/packages/protobuf-2.4.1/include'
+
+for file in `find lib -name "*.jar"`; do
+  CLASSPATH="$CLASSPATH:$file"
+done
+
+function client() {
+  scala -J-mx1g -cp $CLASSPATH:dist/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Client
+}

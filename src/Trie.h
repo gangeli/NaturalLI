@@ -54,7 +54,7 @@ class TrieFactDB : public Trie {
   }
 
  private:
-  BloomFilter facts;
+  Trie facts;
   Trie completions;
 };
 

@@ -60,9 +60,9 @@ void TrieFactDB::add(word* elements, uint8_t length, uint32_t weight) {
 
 const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
                                 tagged_word* canInsert, uint8_t* canInsertLength) {
-  // Check containment
-  const bool contains = facts.contains(query, queryLength);
-  // Populate children
+  bool maybeContains = false;
+  // Check children
+  // Also, check for bag-of-words containment
   if (*canInsertLength > 0) {
     // Create sorted query
     word buffer[256];
@@ -71,10 +71,14 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
     }
     sort(buffer, buffer + queryLength);
     // Check completions
-    completions.contains(buffer, queryLength, canInsert, canInsertLength);
+    maybeContains = completions.contains(buffer, queryLength, canInsert, canInsertLength);
   }
-  // Return
-  return contains;
+  // Check ordered containment
+  if (maybeContains) {
+    return facts.contains(query, queryLength);
+  } else {
+    return false;
+  }
 }
 
 
