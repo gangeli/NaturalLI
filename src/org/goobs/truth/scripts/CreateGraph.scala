@@ -51,7 +51,7 @@ object CreateGraph {
    * @param rawPhrase The raw phrase to i
    * @return The index of that phrase, starting with 0
    */
-  def indexOf(rawPhrase:String):Int = {
+  def indexOf(rawPhrase:String, trustCase:Boolean = true):Int = {
     if (rawPhrase.trim == "") return 0
     val phrase = rawPhrase.trim.toLowerCase.split("""\s+""")
       .map( (w:String) => w match {
@@ -61,7 +61,7 @@ object CreateGraph {
     val normalized = normalizedWordCache.get(phrase) match {
       case Some(n) => n
       case None =>
-        val n = tokenizeWithCase(phrase).mkString(" ")
+        val n = if (trustCase) phrase else tokenizeWithCase(phrase).mkString(" ")
         normalizedWordCache(phrase) = n
         n
     }
@@ -116,9 +116,13 @@ object CreateGraph {
         //
         println("[10] WordNet Edges")
         for ((phrase:Seq[String], nodes:Set[Ontology.RealNode]) <- wordnet.ontology.toArray.sortBy( _._1.toString() )) {
-          val phraseGloss = phrase.mkString(" ")
-          val index:Int = indexOf(phraseGloss)
           for (node:Ontology.RealNode <- nodes) {
+            val (phraseGloss:String, trustCase:Boolean) = {
+              val gloss = phrase.mkString(" ")
+              val wordForms = node.synset.getWordForms.filter( _.toLowerCase == gloss )
+              if (wordForms.length > 0) (wordForms(0), true) else (gloss, false)
+            }
+            val index:Int = indexOf(phraseGloss, trustCase)
             val sense:Int = getSense(phraseGloss, node.synset)
 
             // Add hyper/hypo-nyms
@@ -215,6 +219,12 @@ object CreateGraph {
             }
           }
         }
+
+
+        //
+        // Misc.
+        //
+        println("[50] Misc.")
         // Fudge Numbers
         for (oom <- 2 until 100 if wordIndexer.indexOf("num_" + oom, false) >= 0 && wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
           val lower = wordIndexer.indexOf("num_" + (oom-1))
@@ -222,11 +232,20 @@ object CreateGraph {
           edge(EdgeType.MORPH_FUDGE_NUMBER, lower, 0, higher, 0, 1.0)
           edge(EdgeType.MORPH_FUDGE_NUMBER, higher, 0, lower, 0, 1.0)
         }
+        // Fudge senses
+        for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
+          val synsets = jaws.getSynsets(word)
+          for (sense <- 1 to math.min(31, if (synsets != null) synsets.length else 0)) {
+            edge(EdgeType.SENSE_ADD, index, 0, index, sense, 1.0)
+            edge(EdgeType.SENSE_REMOVE, index, sense, index, 0, 1.0)
+
+          }
+        }
 
         //
         // Flushing to DB
         //
-        println("[50] Flushing")
+        println("[60] Flushing")
         println("  words...")
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)
