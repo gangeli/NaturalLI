@@ -24,11 +24,11 @@ static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact";
 
 /** The maximum number of elements to pop off the queue for a search */
-static uint64_t      SEARCH_TIMEOUT   = 100000;
+#define SEARCH_TIMEOUT   100000
 /** The minimum count for a fact to be seen to be added to the KB */
-static uint32_t      MIN_FACT_COUNT   = 2;
+#define MIN_FACT_COUNT   2
 /** The minimum count for a fact to be seen to be added as a possible completion */
-static uint32_t      MIN_COMPLETION_W = 2;
+#define MIN_COMPLETION_W 2
 
 //
 // Typedefs

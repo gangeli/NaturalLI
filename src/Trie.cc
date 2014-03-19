@@ -74,7 +74,8 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
     maybeContains = completions.contains(buffer, queryLength, canInsert, canInsertLength);
   }
   // Check ordered containment
-  if (maybeContains) {
+  printf("%d\n", MIN_COMPLETION_W);
+  if (maybeContains || MIN_COMPLETION_W > 1) {
     return facts.contains(query, queryLength);
   } else {
     return false;
