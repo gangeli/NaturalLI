@@ -29,7 +29,7 @@ TEST(PostgresTest, SELECT_ONE_CanGetResults) {
 TEST(PostgresTest, EdgeTypeIndexerHasCorrectEntries) {
   for (uint32_t skip = 1; skip < 4; ++skip) {
     PGIterator results = PGIterator(
-        "SELECT * FROM edge_type_indexer;",
+        "SELECT * FROM edge_type;",
         skip);
     // 0: wordnet_up
     ASSERT_TRUE(results.hasNext());
@@ -62,13 +62,13 @@ TEST(PostgresTest, EdgeTypeIndexerHasCorrectEntries) {
 TEST(PostgresTest, WordIndexerHasCorrectEntries) {
   for (uint32_t skip = 1; skip < 4; ++skip) {
     PGIterator results = PGIterator(
-        "SELECT * FROM word_indexer ORDER BY index ASC LIMIT 10;",
+        "SELECT * FROM word ORDER BY index ASC LIMIT 10;",
         skip);
     // 0: wordnet_up
     ASSERT_TRUE(results.hasNext());
     PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
-    EXPECT_EQ(string("` hood"), string(term[1]));
+    EXPECT_EQ(string("'hood"), string(term[1]));
     // 1: wordnet_up
     ASSERT_TRUE(results.hasNext());
     term = results.next();
@@ -83,7 +83,7 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
 }
 
 TEST(PostgresTest, CountQuery) {
-  EXPECT_EQ(17,
-    atoi(PGIterator("SELECT COUNT(*) FROM edge_type_indexer;").next()[0]));
+  EXPECT_EQ(25,
+    atoi(PGIterator("SELECT COUNT(*) FROM edge_type;").next()[0]));
 
 }
