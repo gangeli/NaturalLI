@@ -46,7 +46,7 @@ object Client {
     val weights = NatLog.softNatlogWeights
 
     do {
-      println()
+      println("")
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
       for (antecedent:Fact <- /*"[have](all animal, tail)"*/ readLine("antecedent> ") match {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
@@ -81,9 +81,9 @@ object Client {
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
-          val score = Learn.evaluate(paths, weights)
+          val prob = Learn.evaluate(paths, weights)
           // Debug Print
-          if (score > 0.5) { println("\033[32mVALID\033[0m") } else { println("\033[31mINVALID\033[0m") }
+          if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
         }
       }
     } while (true)

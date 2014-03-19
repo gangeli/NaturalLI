@@ -8,17 +8,20 @@ class TrieTest : public ::testing::Test {
   virtual void SetUp() {
     trie = new Trie();
     db = new TrieFactDB();
+    savedMinFactCount = MIN_FACT_COUNT;
   }
 
   virtual void TearDown() {
     delete trie;
     delete db;
+    MIN_FACT_COUNT = savedMinFactCount;
   }
   
   Trie* trie;
   TrieFactDB* db;
   uint32_t buffer[32];
   word outBuffer[256];
+  uint32_t savedMinFactCount;
 
 };
 
