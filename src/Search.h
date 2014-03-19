@@ -22,25 +22,28 @@ class SearchType;
 class Path {
  public:
   /** A pointer to the "parent" of this node -- where the search came from */
-  const Path* parent;
+  const Path* parent;               // 8 bytes
   /** The actual fact expressed by the node */
-  const tagged_word* fact;
+  const tagged_word* fact;          // 4 bytes
   /** The length of the fact expressed by the node */
-  const uint8_t factLength;
+  const uint8_t factLength;         // 1 byte
   /** The index that was last mutated, or 255 if this is the first element*/
-  const uint8_t lastMutationIndex;
+  const uint8_t lastMutationIndex;  // 1 byte
+  /** The type of edge this path was created from */
+  edge_type edgeType;               // 1 byte
+  /** The type of edge this path was created from */
+  const inference_state inferState; // 1 byte
   /**
    * A bitmask for which words can be modified in the fact.
    * An element which is 'fixed' can still be deleted, but cannot be modified
    * any more.
    */
-  const uint64_t fixedBitmask[4];  // 256 bits
-  /** The type of edge this path was created from */
-  edge_type edgeType;
+  const uint64_t fixedBitmask[4];  // 32 bytes (256 bits)
 
   /** The canonical constructor -- all fields are specified */
   Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-       const uint64_t fixedBitmask[], const uint8_t lastMutationIndex);
+       const uint64_t fixedBitmask[], const uint8_t lastMutationIndex,
+       const inference_state inferState);
   /** A constructor for a root node -- there is no parent, nor edge type */
   Path(const tagged_word* fact, uint8_t factLength);
   /** The deconstructor -- this should be largely empty */
@@ -111,7 +114,9 @@ class SearchType {
    */
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) = 0;
+    const edge_type& edge, const float& cost, 
+    const inference_state localInference,
+    const CacheStrategy* cache, bool& outOfMemory) = 0;
   virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
   virtual bool isEmpty() = 0;
@@ -144,7 +149,9 @@ class BreadthFirstSearch : public SearchType {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory);
+    const edge_type& edge, const float& cost, 
+    const inference_state localInference,
+    const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
@@ -194,7 +201,9 @@ class UniformCostSearch : public BreadthFirstSearch {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory);
+    const edge_type& edge, const float& cost, 
+    const inference_state localInference,
+    const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();

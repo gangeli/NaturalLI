@@ -28,12 +28,12 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    searchType->push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, cache, outOfMemory);
+    searchType->push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
-    searchType->push(dist1, 0, 1, CAT, 0, WORDNET_UP, 0.0f, cache, outOfMemory);
+    searchType->push(dist1, 0, 1, CAT, 0, WORDNET_UP, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
@@ -155,7 +155,7 @@ TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, cache, outOfMemory); \
+  search.push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory); \
   ASSERT_FALSE(outOfMemory); \
   EXPECT_FALSE(search.isEmpty()); \
   EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
@@ -215,8 +215,8 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  search.push(root, 0, 1, ANIMAL,  0, 0, 0.0f, cache, outOfMemory);
-  search.push(root, 0, 1, CAT, 0, 1, 0.0f, cache, outOfMemory);
+  search.push(root, 0, 1, ANIMAL,  0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+  search.push(root, 0, 1, CAT, 0, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
   ASSERT_FALSE(outOfMemory);
   const Path* dist1 = search.debugGet(0);
   const Path* dist2 = search.debugGet(1);
@@ -237,7 +237,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, i, 0, 0, 0.0f, cache, outOfMemory);
+    search.push(root, 0, 1, i, 0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -245,7 +245,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, 0.0f, cache, outOfMemory);
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     }
   }
   // pop off elements
@@ -280,7 +280,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
+    search.push(root, 0, 1, i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -288,7 +288,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
     }
   }
   // pop off elements
@@ -329,8 +329,8 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
   float score = 0.0f;
   for (int i = 0; i < 120; ++i) {
     score += 0.1f;
-    search.push(root, 0, 1, i, 0, 0, score, cache, outOfMemory);
-    bfs.push(root, 0, 1, i, 0, 0, score, cache, outOfMemory);
+    search.push(root, 0, 1, i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+    bfs.push(root, 0, 1, i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
   }
   for (int parent = 0; parent < 100; ++parent) {
     for (int i = 0; i < 128; ++i) {
@@ -340,8 +340,8 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
       ASSERT_EQ(pBFS->fact[1], p->fact[1]);
       ASSERT_EQ(pBFS->fact[2], p->fact[2]);
       score += 0.1f;
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, score, cache, outOfMemory);
-      bfs.push(pBFS, 0, 1, 1000 * parent + i, 0, 0, score, cache, outOfMemory);
+      search.push(p, 0, 1, 1000 * parent + i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+      bfs.push(pBFS, 0, 1, 1000 * parent + i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
     }
   }
   // pop off elements

@@ -35,13 +35,15 @@ inline void setBit(uint64_t bitmask[], const uint8_t& index) {
 // Class Path
 //
 Path::Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-           const uint64_t fixedBitmask[], uint8_t lastMutatedIndex) 
+           const uint64_t fixedBitmask[], uint8_t lastMutatedIndex,
+           const inference_state inferState) 
     : parent(parentOrNull),
       fact(fact),
       factLength(factLength),
       lastMutationIndex(lastMutatedIndex),
       edgeType(edgeType),
-      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]} {
+      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]},
+      inferState(inferState) {
 }
 
 Path::Path(const tagged_word* fact, uint8_t factLength)
@@ -50,7 +52,8 @@ Path::Path(const tagged_word* fact, uint8_t factLength)
       factLength(factLength),
       lastMutationIndex(255),
       edgeType(255),
-      fixedBitmask{0,0,0,0} { }
+      fixedBitmask{0,0,0,0},
+      inferState(INFER_EQUIVALENT) { }
 
 Path::~Path() {
 };
@@ -171,11 +174,18 @@ inline Path* BreadthFirstSearch::allocatePath() {
   return &currentFringe[offset];
 }
 
+inline const inference_state compose(const inference_state& current,
+                                     const inference_state& transition) {
+  // TODO(gabor) work out transitions
+  return current;
+}
+
 // -- push a new element onto the fringe --
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) {
+    const edge_type& edge, const float& cost, const inference_state localInference,
+    const CacheStrategy* cache, bool& outOfMemory) {
   outOfMemory = false;
 
   // Allocate new fact
@@ -209,7 +219,9 @@ inline const Path* BreadthFirstSearch::push(
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
-  return new(newPath) Path(parent, mutated, mutatedLength, edge, fixedBitmask, mutationIndex);
+  return new(newPath) Path(parent, mutated, mutatedLength, edge, 
+                           fixedBitmask, mutationIndex,
+                           compose(parent->inferState, localInference));
 }
 
 // -- peek at the next element --
@@ -314,9 +326,11 @@ inline void UniformCostSearch::bubbleUp(const uint64_t index) {
 // -- push() --
 inline const Path* UniformCostSearch::push(const Path* parent, const uint8_t& mutationIndex,
                     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-                    const edge_type& edge, const float& cost, const CacheStrategy* cache, bool& outOfMemory) {
+                    const edge_type& edge, const float& cost, 
+                    const inference_state localInference,
+                    const CacheStrategy* cache, bool& outOfMemory) {
   // Allocate the node
-  const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost, cache, outOfMemory);
+  const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost, localInference, cache, outOfMemory);
   if (node == NULL) { return NULL; }
   // Ensure we have space on the heap
   if (heapSize >= heapCapacity) {
@@ -482,7 +496,9 @@ inline bool flushQueue(SearchType* fringe,
   bool outOfMemory = false;
   while (parent != NULL && i < queueLength) {
     // Actually push (or at least try to)
-    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], sinkArr[i] == 0 ? 0 : 1, sinkArr[i], 0, typeArr[i], costArr[i], cache, outOfMemory);
+    // TODO(gabor) work out the local inference state
+    const inference_state localInference = INFER_EQUIVALENT;
+    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], sinkArr[i] == 0 ? 0 : 1, sinkArr[i], 0, typeArr[i], costArr[i], localInference, cache, outOfMemory);
     // Debug
 //    printf("  considering: %s --[%s]--> %s (cost %f)\n",
 //      graph->gloss(parent->fact[indexToMutateArr[i]]),
@@ -608,37 +624,8 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         }
       }
       
-      // -- Do deletion --
-      // Compute the deletion cost
-      edge deletion;
-      deletion.sink  = 0;  // Sets the operation as a deletion
-      deletion.sense = 0;
-      deletion.type  = WORD_REMOVE;
-      deletion.cost  = 1.0;
-      const float deletionCost = weights->computeCost(
-          parent->edgeType, deletion,
-          parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
-          parentMonotonicity);
-      // Add the edge
-      if (deletionCost < 1e10) {
-        // Flush if necessary (save memory)
-        if (queueLength >= 255) {
-          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
-            printf("Error pushing to stack; returning\n");
-            return responses;
-          }
-          queueLength = 0;
-        }
-        // Do add
-        indexToMutateArr[queueLength] = indexToMutate;
-        sinkArr[queueLength] = 0;
-        typeArr[queueLength] = WORD_REMOVE;
-        costArr[queueLength] = costSoFar + deletionCost;
-        queueLength += 1;
-      }
-      
       // -- Do insertions --
-      // TODO(gabor)
+      // TODO(gabor) do insertions
       
     }
     if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {

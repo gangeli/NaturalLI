@@ -176,15 +176,24 @@ object EdgeType extends Enumeration {
   val FREEBASE_UP                    = Value(10, "freebase_up")
   val FREEBASE_DOWN                  = Value(11, "freebase_down")
 
-  val WORD_ADD                       = Value(12, "word_add")
-  val WORD_REMOVE                    = Value(13, "word_remove")
+  val ADD_NOUN                       = Value(12, "add_noun")
+  val ADD_VERB                       = Value(13, "add_verb")
+  val ADD_ADJ                        = Value(14, "add_adj")
+  val ADD_ADV                        = Value(15, "add_adv")
+  val DEL_NOUN                       = Value(16, "del_noun")
+  val DEL_VERB                       = Value(17, "del_verb")
+  val DEL_ADJ                        = Value(18, "del_adj")
+  val DEL_ADV                        = Value(19, "del_adv")
 
+  // --------
+  // NOTE: Everything under here is monotonicity agnostic
+  // --------
   // Could in theory be subdivided: tense, plurality, etc.
-  val MORPH_TO_LEMMA                 = Value(14, "morph_to_lemma")
-  val MORPH_FROM_LEMMA               = Value(15, "morph_from_lemma")
-  val MORPH_FUDGE_NUMBER             = Value(16, "morph_fudge_number")
+  val MORPH_TO_LEMMA                 = Value(20, "morph_to_lemma")
+  val MORPH_FROM_LEMMA               = Value(21, "morph_from_lemma")
+  val MORPH_FUDGE_NUMBER             = Value(22, "morph_fudge_number")
 
   // Word Sense Disambiguation
-  val SENSE_REMOVE                   = Value(17, "sense_remove")
-  val SENSE_ADD                      = Value(18, "sense_add")
+  val SENSE_REMOVE                   = Value(23, "sense_remove")
+  val SENSE_ADD                      = Value(24, "sense_add")
 }

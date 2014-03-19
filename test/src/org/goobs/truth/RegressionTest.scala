@@ -5,7 +5,7 @@ import org.goobs.truth.Messages.Query
 import edu.stanford.nlp.io.IOUtils
 
 /**
- * A regression test for
+ * A regression test for the inference engine
  *
  * @author gabor
  */
