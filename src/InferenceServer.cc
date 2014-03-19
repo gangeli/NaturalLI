@@ -362,6 +362,7 @@ int startServer(int port) {
 	} else {
     printf("Listening on port %d...\n", port);
   }
+  fflush(stdout);
 
   // loop, accepting connection requests
 	for (;;) {

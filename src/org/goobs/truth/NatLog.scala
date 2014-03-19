@@ -66,7 +66,7 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, Double.NegativeInfinity, -1.0, -1.0, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, Double.NegativeInfinity, -0.01, -0.1, Double.NegativeInfinity, Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as
@@ -74,7 +74,7 @@ object NatLog {
    * weights.
    * The goal is to use this to initialize the search.
    */
-  def softNatlogWeights:WeightVector = natlogWeights(-0.01, -1.0, -1.0, -0.1, -0.5, -1.0)
+  def softNatlogWeights:WeightVector = natlogWeights(-0.01, -1.0, -0.1, -0.01, -0.5, -1.0)
 
   /**
    * Determine the monotonicity of a sentence, according to the quantifier it starts with.

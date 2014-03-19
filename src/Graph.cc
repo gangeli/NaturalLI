@@ -56,13 +56,14 @@ class InMemoryGraph : public Graph {
 
 Graph* ReadGraph() {
   printf("Reading graph...\n");
+  char wordQuery[127];
+  snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD.c_str());
   const uint32_t numWords
-    = atoi(PGIterator("SELECT COUNT(*) FROM word_indexer;").next()[0]);
+    = atoi(PGIterator(wordQuery).next()[0]);
 
   // Read words
   char** index2gloss = (char**) malloc( numWords * sizeof(char*) );
   // (query)
-  char wordQuery[127];
   snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
   PGIterator words = PGIterator(wordQuery);
   uint64_t wordI = 0;

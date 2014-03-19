@@ -45,6 +45,7 @@ import scala.collection.mutable
  *
  * @author Gabor Angeli
  */
+@Deprecated
 object BootstrapGraph {
   
   private val logger = Redwood.channels("MKGraph")
