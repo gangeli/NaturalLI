@@ -92,7 +92,7 @@ object CreateGraph {
         psql.setAutoCommit(true)
         val wordInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_WORD_INTERN +
-            " (index, gloss, pos) VALUES (?, ?, ?);")
+            " (index, gloss) VALUES (?, ?);")
         val edgeTypeInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_EDGE_TYPE_INTERN +
             " (index, gloss) VALUES (?, ?);")
