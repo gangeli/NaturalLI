@@ -19,7 +19,7 @@ static bool          RAMCLOUD_LOADED  = true;
 static std::string   RAMCLOUD_HOST    = "0.0.0.0";
 static uint16_t      RAMCLOUD_PORT    = 12246;
  
-static std::string   PG_TABLE_WORD    = "word_indexer";
+static std::string   PG_TABLE_WORD    = "word";
 static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact";
 
@@ -37,6 +37,7 @@ typedef uint32_t word;
 typedef uint32_t tagged_word;
 typedef uint8_t edge_type;
 typedef uint8_t monotonicity;
+typedef uint8_t inference_state;
 
 #define MONOTONE_FLAT 0
 #define MONOTONE_UP   1
@@ -56,14 +57,29 @@ typedef uint8_t monotonicity;
 #define FREEBASE_UP                  10
 #define FREEBASE_DOWN                11
 
-#define WORD_ADD                     12
-#define WORD_REMOVE                  13
+#define ADD_NOUN                     12
+#define ADD_VERB                     13
+#define ADD_ADJ                      14
+#define ADD_ADV                      15
+#define DEL_NOUN                     16
+#define DEL_VERB                     17
+#define DEL_ADJ                      18
+#define DEL_ADV                      19
 
-#define MORPH_TO_LEMMA               14
-#define MORPH_FROM_LEMMA             15
-#define MORPH_FUDGE_NUMBER           16
-#define SENSE_REMOVE                 17
-#define SENSE_ADD                    18
+#define MORPH_TO_LEMMA               20
+#define MORPH_FROM_LEMMA             21
+#define MORPH_FUDGE_NUMBER           22
+#define SENSE_REMOVE                 23
+#define SENSE_ADD                    24
+
+
+#define INFER_EQUIVALENT         0
+#define INFER_FORWARD_ENTAILMENT 1
+#define INFER_REVERSE_ENTAILMENT 2
+#define INFER_NEGATION           3
+#define INFER_ALTERNATION        4
+#define INFER_COVER              5
+#define INFER_INDEPENDENCE       6
 
 #define LEMUR  2480367
 #define ANIMAL 2730
