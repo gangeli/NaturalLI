@@ -71,8 +71,8 @@ object NatLog {
     strictNatLog = -0.0,
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
-    insertionOrDeletion = -0.1,
-    morphology = -1.0,
+    insertionOrDeletion = -0.05,
+    morphology = -0.1,
     wsd = Double.NegativeInfinity,
     default = Double.NegativeInfinity)
 

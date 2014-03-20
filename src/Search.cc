@@ -454,23 +454,27 @@ WeightVector::~WeightVector() {
 inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge& path,
                                        const bool& changingSameWord,
                                        const monotonicity& monotonicity) const {
-  if (!available || lastEdgeType == 255) { return 0.0; }
+  if (!available) { return 0.0; }
   // Case: don't care about monotonicity
-  const float pathCost = path.cost == 0.0 ? 1e-5 : path.cost;
+  const float pathCost = path.cost == 0.0 ? 1e-10 : path.cost;
   if (path.type > FREEBASE_DOWN) {  // lemma morphs
     return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
+  float upCost, downCost, flatCost;
   switch (monotonicity) {
     case MONOTONE_UP:
-      return unigramWeightsUp[path.type] * pathCost
-        + (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      upCost = unigramWeightsUp[path.type] * pathCost;
+      return lastEdgeType == 255 ? upCost : upCost + 
+          (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_DOWN:
-      return unigramWeightsDown[path.type] * pathCost
-        + (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      downCost = unigramWeightsDown[path.type] * pathCost;
+      return lastEdgeType == 255 ? downCost : downCost +
+          (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_FLAT:
-      return unigramWeightsFlat[path.type] * pathCost
-        + (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+      flatCost = unigramWeightsFlat[path.type] * pathCost;
+      return lastEdgeType == 255 ? flatCost : flatCost +
+          (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     default:
       printf("Unknown monotonicity: %d\n", monotonicity);
       std::exit(1);
@@ -499,17 +503,6 @@ inline bool flushQueue(SearchType* fringe,
     // TODO(gabor) work out the local inference state
     const inference_state localInference = INFER_EQUIVALENT;
     const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], sinkArr[i] == 0 ? 0 : 1, sinkArr[i], 0, typeArr[i], costArr[i], localInference, cache, outOfMemory);
-    // Debug
-//    printf("  considering: %s --[%s]--> %s (cost %f)\n",
-//      graph->gloss(parent->fact[indexToMutateArr[i]]),
-//      toString(typeArr[i]).c_str(),
-//      graph->gloss(sinkArr[i]),
-//      costArr[i]);
-//    if (pushedElement != NULL) {
-//      printf("    PUSHED\n");
-//    } else {
-//      printf("    ignored\n");
-//    }
     i += 1;
   }
   return !outOfMemory;
@@ -617,7 +610,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
             parent->edgeType, mutation,
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
             parentMonotonicity);
-        if (mutationCost < 1e10) {
+        if (mutationCost < 9e6) {
           indexToMutateArr[queueLength] = indexToMutate;
           sinkArr[queueLength] = getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity);
           typeArr[queueLength] = mutation.type;

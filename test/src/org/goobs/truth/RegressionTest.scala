@@ -18,6 +18,7 @@ object RegressionTest {
   Props.NATLOG_INDEXER_LAZY = true
   Props.SERVER_HOST = "localhost"
   Props.SERVER_PORT = 41337
+  Props.SEARCH_TIMEOUT = 10000
 
   def runClient():Unit = {
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r

@@ -35,9 +35,9 @@ object Learn {
     // Function to set the unlexicalized weights
     def unlexicalizedWeights(unigram:EdgeType=>String, bigram:(EdgeType,EdgeType)=>String):UnlexicalizedWeights = {
       val builder = UnlexicalizedWeights.newBuilder()
-      for (from <- EdgeType.values) {
+      for (from <- EdgeType.values.toArray.sortWith({ (a:EdgeType.Value, b:EdgeType.Value) => a.id < b.id })) {
         builder.addEdgeWeight(-weights.getCount(unigram(from)).toFloat)
-        for (to <- EdgeType.values) {
+        for (to <- EdgeType.values.toArray.sortWith({ (a:EdgeType.Value, b:EdgeType.Value) => a.id < b.id })) {
           builder.addEdgePairWeight(-weights.getCount(bigram(from, to)).toFloat)
         }
       }
