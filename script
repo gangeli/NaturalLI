@@ -1,5 +1,5 @@
 #!/bin/bash
-exec scala -cp qry.jar "$0" "$@"
+exec scala -cp qry.jar:dist/test_client.jar:dist/client.jar "$0" "$@"
 !#
 import Qry._
 
@@ -12,7 +12,7 @@ val program:List[String] = ("java"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
-	->s"org.goobs.truth.scripts.${args(0)}"
+	->guessClassOrElse("org.goobs.truth.RegressionTest")
 ).toList
 
 using("src/org/goobs/truth/conf/script.conf")
@@ -47,4 +47,21 @@ def cp:String = {
       "lib/protobuf.jar"
     ).mkString(":")
   List("dist/client.jar", "dist/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+}
+
+def guessClassOrElse(default:String):String = {
+  def tryLoad(clazz:String):Option[String] = {
+    try {
+      Class.forName(clazz); Some(clazz)
+    } catch {
+      case (e:ClassNotFoundException) => None
+    }
+  }
+  (args.foldLeft( None.asInstanceOf[Option[String]] ){ case (soFar:Option[String], arg:String) =>
+    soFar.orElse(tryLoad(arg))
+      .orElse(tryLoad("org" + arg))
+      .orElse(tryLoad("org.goobs." + arg))
+      .orElse(tryLoad("org.goobs.truth." + arg))
+      .orElse(tryLoad("org.goobs.truth.scripts." + arg))
+  }).getOrElse(default)
 }

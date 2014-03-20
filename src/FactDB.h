@@ -9,6 +9,8 @@
  */
 class FactDB {
  public:
+  virtual ~FactDB() {}
+
   /**
    * Check if the fact database contains this fact.
    * If it contains the fact, a list of possible insertable facts is

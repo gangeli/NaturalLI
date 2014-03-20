@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <exception>
 #include <thread>
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -198,6 +199,11 @@ void handleConnection(int socket, sockaddr_in* client,
   if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
   printf("[%d] ...read query.\n", socket);
   if (query.shutdownserver()) {
+    // Clean up memory (for Valgrind)
+    delete graph;
+    delete *dbOrNull;
+    closeConnection(socket, client);
+    // Exit
     printf("\n");
     printf("--------------\n");
     printf("STOPPED SERVER\n");
@@ -297,8 +303,8 @@ void handleConnection(int socket, sockaddr_in* client,
   try {
     result = Search(graph, factDB, queryFact, queryLength, search, cache, weights, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.size());
-  } catch (...) {
-    printf("[%d] EXCEPTION IN SEARCH (probably Out Of Memory)\n", socket);
+  } catch (std::exception& e) {
+    printf("%s\n", e.what());
   }
 
   // Compute final score

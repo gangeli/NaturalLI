@@ -548,7 +548,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
-    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -587,7 +587,9 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     for (uint8_t indexToMutate = 0;
          indexToMutate < parentLength;
          ++indexToMutate) {  // for each index to mutate...
-      if (isSetBit(fixedBitmask, indexToMutate)) { continue; }
+      if (isSetBit(fixedBitmask, indexToMutate)) { 
+        continue;
+      }
 
       // -- Do mutations --
       uint32_t numMutations = 0;

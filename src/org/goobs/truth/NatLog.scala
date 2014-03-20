@@ -8,7 +8,7 @@ import org.goobs.truth.Messages._
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import edu.stanford.nlp.Sentence
 import edu.smu.tspell.wordnet.{Synset, WordNetDatabase, SynsetType}
-import org.goobs.sim.{SearchState, Search}
+import scala.collection.mutable
 
 
 object NatLog {
@@ -125,13 +125,12 @@ object NatLog {
     }
   }
 
-   /**
-    * Compute the Lesk overlap between a synset and a sentence.
-    * For example, the value given the sentences [a, b, c, d] and [a, c, d, e]
-    * would be 1^2 2^2 = 5 (for 'a' and 'c d').
-    */
-  def lesk(a:Synset, b:Array[String], approx:Boolean=true):Double = {
-    import Search._
+  /**
+   * Compute the Lesk overlap between a synset and a sentence.
+   * For example, the value given the sentences [a, b, c, d] and [a, c, d, e]
+   * would be 1^2 2^2 = 5 (for 'a' and 'c d').
+   */
+  def lesk(a:Synset, b:Array[String]):Double = {
     def allEqual(a:Array[String], startA:Int,
                  b:Array[String], startB:Int, length:Int):Boolean = {
       (0 until length).forall{ (i:Int) => a(startA + i) == b(startB + i) }
@@ -146,43 +145,22 @@ object NatLog {
     = b.map( _.toLowerCase )
     val tokensShort = if (tokensA.length < tokensB.length) tokensA else tokensB
     val tokensLong = if (tokensA.length < tokensB.length) tokensB else tokensA
-    // (possible alignments)
-    var candidates = List[((Array[Boolean],Array[Boolean])=>Boolean,
-      AlignState=>AlignState)]()
-    for( length <- 1 to tokensB.length;
-         shortStart <- 0 to tokensShort.length - length;
-         longStart <- 0 to tokensLong.length - length ) {
-      if (allEqual(tokensShort, shortStart,
-        tokensLong, longStart, length) ) {
-        val candidate = (
-          (shortMask:Array[Boolean], longMask:Array[Boolean]) => {
-            allFalse(shortMask, shortStart, shortStart + length) &&
-              allFalse(longMask, longStart, longStart + length)
-          },
-          (old:AlignState) => {
-            val newShortMask = old.shortMask.map( x => x )
-            val newLongMask = old.longMask.map( x => x )
-            for( i <- shortStart until shortStart + length ) newShortMask(i) = true
-            for( i <- longStart until longStart + length ) newLongMask(i) = true
-            new AlignState(newShortMask, newLongMask, old.cost - length * length)
-          }
-          )
-        candidates = candidate :: candidates
+    val mask:Array[Boolean]  = tokensShort.map{ _ => false }
+
+    // Run greedy lesk
+    var sum:Int = 0
+    for (length <- tokensShort.length to 1 by -1;
+         shortStart <- 0 to (tokensShort.length - length);
+         longStart <- 0 to (tokensLong.length - length)) {
+      if (allFalse(mask, shortStart, shortStart + length) &&
+        allEqual(tokensShort, shortStart, tokensLong, longStart, length)) {
+        for (i <- shortStart until shortStart + length) { mask(i) = true }
+        sum += length * length
       }
     }
-    // (search)
-    case class AlignState(shortMask:Array[Boolean],
-                          longMask:Array[Boolean],
-                          override val cost:Double) extends SearchState {
-      override def children:List[AlignState] = {
-        candidates.filter( _._1(shortMask, longMask) )
-          .map( _._2(this) )
-      }
-    }
-    val maxCost:Double = tokensShort.size * tokensShort.size + 1.0
-    maxCost - new Search[AlignState](if (approx) GREEDY else cache(UNIFORM_COST))
-      .best(AlignState(tokensShort.map( x => false ),
-      tokensLong.map( x => false ), maxCost)).cost
+
+    // Return
+    sum
   }
 
   /**
@@ -201,14 +179,15 @@ object NatLog {
       0
     } else {
       // Case: find WordNet sense
-      var synsetsConsidered:Int = 0
+      val synsetsConsidered:mutable.HashSet[Synset] = new mutable.HashSet[Synset]
       val (_, argmaxIndex) = synsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
         if (pos.isDefined && synset.getType != pos.get) {
           -1000.0 + synsetIndex.toDouble / 100.0
         } else {
-          val leskSim:Double = lesk(synset, sentence.words, approx = true)
-          val sensePrior:Double = -1.01 * synsetsConsidered; synsetsConsidered += 1
+          val leskSim: Double = math.max(0, lesk(synset, sentence.words.filter(_ != word)) - 1)
+          val sensePrior:Double = -1.01 * synsetsConsidered.size
           val glossPriority:Double = 2.01 * math.min(-synset.getWordForms.indexOf(word), 0.0)
+          synsetsConsidered += synset
           leskSim + sensePrior + glossPriority
         }
       }
@@ -242,7 +221,7 @@ object NatLog {
       (tokens._1.map{ (_, arg1Monotonicity) }.toList ::: tokens._2.map{ (_, arg2Monotonicity) }.toList ::: tokens._3.map{ (_, arg2Monotonicity) }.toList).toArray
 
     // POS tag
-    val sentence:Sentence = Sentence(leftArg + " " + rel + " " + rightArg)
+    val sentence:Sentence = Sentence((leftArg + " " + rel + " " + rightArg).split("""\s+"""))
     val pos:Array[Option[SynsetType]] = {
       // (get variables)
       val pos:Array[String] = sentence.pos

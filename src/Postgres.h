@@ -11,13 +11,17 @@
 class PGRow {
  public:
   PGRow(pg_result *result, uint64_t index)
-    : result(result), index(index) { }
+    : result(result), index(index), mockElems(NULL) { }
   
-  char* operator[] (uint64_t index);
+  PGRow(const char** elems) : result(NULL), index(0), mockElems(elems){ }
+  
+  virtual const char* operator[] (uint64_t index);
 
  private:
   pg_result *result;
   uint64_t index;
+  /** Exclusively for unit tests, so that we can mock a PSQL connection */
+  const char** mockElems;
 };
 
 /**
@@ -28,12 +32,13 @@ class PGRow {
 class PGIterator {
  public:
   PGIterator(const char* query, uint64_t fetchSize = 1000000);
-  ~PGIterator();
+  virtual ~PGIterator();
 
-  bool hasNext();
-  PGRow next();
+  virtual bool hasNext();
+  virtual PGRow next();
  
  private:
+  bool connected;
   pg_conn *psql;
   pg_result *result;
   uint64_t fetchSize;

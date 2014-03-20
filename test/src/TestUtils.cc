@@ -28,7 +28,8 @@ class UtilsTest : public ::testing::Test {
   }
 
   virtual void TearDown() {
-    delete lemurs, animals, cats, cache;
+    delete cache;
+    delete graph;
   }
 
   const Path* lemurs;

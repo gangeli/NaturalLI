@@ -9,64 +9,69 @@ using namespace std;
 // PGIterator
 //
 PGIterator::PGIterator(const char* queryString, uint64_t fetchSize)
-    : fetchSize(fetchSize), numResults(0), nextIndex(0) {
-  // Define connection
-  char psqlConnectionSpec[512];
-  snprintf(psqlConnectionSpec, 512,
-           "host='%s' port='%i' dbname='%s' user='%s' password='%s'",
-           PG_HOST.c_str(), PG_PORT, PG_DATABASE.c_str(), PG_USER.c_str(),
-           PG_PASSWORD.c_str());
-  this->psql = PQconnectdb(psqlConnectionSpec);
-  if (this->psql == NULL || PQstatus(psql) != CONNECTION_OK) {
-    printf("could not connect to postgresql server at %s\n", psqlConnectionSpec);
-    switch(PQstatus(this->psql)) {
-      case CONNECTION_STARTED:
-         printf("  (cause: CONNECTION_STARTED)\n");
-         break;
-      case CONNECTION_MADE:
-         printf("  (cause: CONNECTION_MADE)\n");
-         break;
-      case CONNECTION_AWAITING_RESPONSE:
-         printf("  (cause: CONNECTION_AWAITING_RESPONSE)\n");
-         break;
-      case CONNECTION_AUTH_OK:
-         printf("  (cause: CONNECTION_AUTH_OK)\n");
-         break;
-      case CONNECTION_SSL_STARTUP:
-         printf("  (cause: CONNECTION_SSL_STARTUP)\n");
-         break;
-      case CONNECTION_SETENV:
-         printf("  (cause: CONNECTION_SETENV)\n");
-         break;
-      case CONNECTION_BAD:
-         printf("  (cause: CONNECTION_BAD)\n");
-         break;
-      default:
-         printf("  (cause: <<unknown>>)\n");
-         break;
+    : fetchSize(fetchSize), numResults(0), nextIndex(0), connected(false) {
+  if (queryString != NULL) {
+    // Define connection
+    char psqlConnectionSpec[512];
+    snprintf(psqlConnectionSpec, 512,
+             "host='%s' port='%i' dbname='%s' user='%s' password='%s'",
+             PG_HOST.c_str(), PG_PORT, PG_DATABASE.c_str(), PG_USER.c_str(),
+             PG_PASSWORD.c_str());
+    this->psql = PQconnectdb(psqlConnectionSpec);
+    if (this->psql == NULL || PQstatus(psql) != CONNECTION_OK) {
+      printf("could not connect to postgresql server at %s\n", psqlConnectionSpec);
+      switch(PQstatus(this->psql)) {
+        case CONNECTION_STARTED:
+           printf("  (cause: CONNECTION_STARTED)\n");
+           break;
+        case CONNECTION_MADE:
+           printf("  (cause: CONNECTION_MADE)\n");
+           break;
+        case CONNECTION_AWAITING_RESPONSE:
+           printf("  (cause: CONNECTION_AWAITING_RESPONSE)\n");
+           break;
+        case CONNECTION_AUTH_OK:
+           printf("  (cause: CONNECTION_AUTH_OK)\n");
+           break;
+        case CONNECTION_SSL_STARTUP:
+           printf("  (cause: CONNECTION_SSL_STARTUP)\n");
+           break;
+        case CONNECTION_SETENV:
+           printf("  (cause: CONNECTION_SETENV)\n");
+           break;
+        case CONNECTION_BAD:
+           printf("  (cause: CONNECTION_BAD)\n");
+           break;
+        default:
+           printf("  (cause: <<unknown>>)\n");
+           break;
+      }
+      exit(1);
     }
-    exit(1);
+    
+    // Begin transaction
+    this->connected = true;
+    this->result = query("BEGIN;");
+    PQclear(this->result);
+
+    // Create cursor
+    char cursorQuery[512];
+    snprintf(cursorQuery, 512,
+             "DECLARE c CURSOR FOR %s;",
+             queryString);
+    this->result = query(cursorQuery);
+    PQclear(this->result);
+
+    // Null results in preperation for iteration
+    this->result = NULL;
   }
-  
-  // Begin transaction
-  this->result = query("BEGIN;");
-  PQclear(this->result);
-
-  // Create cursor
-  char cursorQuery[512];
-  snprintf(cursorQuery, 512,
-           "DECLARE c CURSOR FOR %s;",
-           queryString);
-  this->result = query(cursorQuery);
-  PQclear(this->result);
-
-  // Null results in preperation for iteration
-  this->result = NULL;
 }
 
 PGIterator::~PGIterator() {
-  PQclear(this->result);
-  PQfinish(this->psql);
+  if (this->connected) {
+    PQclear(this->result);
+    PQfinish(this->psql);
+  }
 }
 
 pg_result* PGIterator::query(const char* query) {
@@ -114,7 +119,10 @@ PGRow PGIterator::next() {
 //
 // PGRow
 //
-char* PGRow::operator[](uint64_t index) {
+const char* PGRow::operator[](uint64_t index) {
+  if (mockElems != NULL) {
+    return mockElems[index];
+  }
   if (PQgetisnull(result, this->index, index)) {
     return NULL;
   } else {

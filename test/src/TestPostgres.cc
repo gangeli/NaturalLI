@@ -64,20 +64,25 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     PGIterator results = PGIterator(
         "SELECT * FROM word ORDER BY index ASC LIMIT 10;",
         skip);
-    // 0: wordnet_up
+    // 0: none
     ASSERT_TRUE(results.hasNext());
     PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
-    EXPECT_EQ(string("'hood"), string(term[1]));
-    // 1: wordnet_up
+    EXPECT_EQ(string("__none__"), string(term[1]));
+    // 1: 'hood
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("1"), string(term[0]));
-    EXPECT_EQ(string("vicinity"), string(term[1]));
-    // 2: wordnet_noun_antonym
+    EXPECT_EQ(string("'hood"), string(term[1]));
+    // 2: vicinity
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("2"), string(term[0]));
+    EXPECT_EQ(string("vicinity"), string(term[1]));
+    // 3: locality
+    ASSERT_TRUE(results.hasNext());
+    term = results.next();
+    EXPECT_EQ(string("3"), string(term[0]));
     EXPECT_EQ(string("locality"), string(term[1]));
   }
 }

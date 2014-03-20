@@ -88,4 +88,11 @@ typedef uint8_t inference_state;
 #define HAVE   3830
 #define TAIL   23480
 
+#define LEMUR_STR  "2480367"
+#define ANIMAL_STR "2730"
+#define TIMONE_STR "18828894"
+#define CAT_STR    "2432"
+#define HAVE_STR   "3830"
+#define TAIL_STR   "23480"
+
 #endif

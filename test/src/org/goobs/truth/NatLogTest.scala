@@ -1,6 +1,7 @@
 package org.goobs.truth
 
 import scala.collection.JavaConversions._
+import edu.smu.tspell.wordnet.WordNetDatabase
 
 /**
  * Tests for various NatLog functionalities
@@ -58,14 +59,28 @@ class NatLogTest extends Test {
     }
   }
 
+  describe("Lesk") {
+    it ("should be perfect for exact string matches") {
+      NatLog.lesk(WordNetDatabase.getFileInstance.getSynsets("cat")(0), "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats".split("""\s+""")) should be (225.0)
+    }
+    it ("should be reasonable for multi-word overlaps") {
+      NatLog.lesk(WordNetDatabase.getFileInstance.getSynsets("cat")(5), "cat be tracked vehicle".split("""\s+""")) should be (4.0)
+      NatLog.lesk(WordNetDatabase.getFileInstance.getSynsets("cat")(5), "cat be large tracked vehicle".split("""\s+""")) should be (9.0)
+    }
+  }
+
   describe("Word Senses") {
     it ("should get default sense of 'cat'") {
       NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getPos ) should be (List("?", "n", "v", "n"))
       NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getSense ) should be (List(0, 1, 2, 1))
     }
     it ("should get vehicle senses of 'CAT' with enough evidence") {
-      NatLog.annotate("the cat", "be", "tracked vehicle").getWordList.map( _.getPos ) should be (List("?", "n", "v", "n"))
-      NatLog.annotate("the cat", "be", "tracked vehicle").getWordList.map( _.getSense ) should be (List(0, 6, 2, 1))
+      NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getPos ) should be (List("?", "n", "v", "j", "n"))
+      NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getSense ) should be (List(0, 6, 2, 2, 1))
+    }
+    it ("should get right sense of 'tail'") {
+      NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ) should be (List(1, 1, 2, 1))
+      NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ) should be (List(1, 1, 2, 1))
     }
   }
 }

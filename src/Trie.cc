@@ -74,7 +74,6 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
     maybeContains = completions.contains(buffer, queryLength, canInsert, canInsertLength);
   }
   // Check ordered containment
-  printf("%d\n", MIN_COMPLETION_W);
   if (maybeContains || MIN_COMPLETION_W > 1) {
     return facts.contains(query, queryLength);
   } else {
@@ -97,12 +96,11 @@ FactDB* ReadFactTrie() {
   while (iter.hasNext()) {
     // Get fact
     PGRow row = iter.next();
-    char* gloss = row[0];
+    const char* gloss = row[0];
     uint32_t weight = atoi(row[1]);
     if (weight < MIN_FACT_COUNT) { break; }
     // Parse fact
     uint32_t glossLength = strnlen(gloss, 1024);
-    gloss[glossLength - 1] = '\0';
     stringstream stream (&gloss[1]);
     bufferLength = 0;
     while( stream.good() ) {

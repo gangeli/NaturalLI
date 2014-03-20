@@ -8,6 +8,27 @@
 
 using namespace std;
 
+class MockPGIterator : public PGIterator {
+ public:
+  MockPGIterator(const uint32_t size, const PGRow* rows) :
+    PGIterator(NULL, 0),
+    size(size), rows(rows), index(0) { }
+
+  virtual bool hasNext()  {
+    return index < size;
+  }
+
+  virtual PGRow next() {
+    index += 1;
+    return rows[index - 1];
+  }
+
+ private:
+  const uint32_t size;
+  const PGRow* rows;
+  uint32_t index;
+};
+
 /**
  * A simple in-memory stored Graph, with the word indexer and the edge
  * matrix.
@@ -25,7 +46,9 @@ class InMemoryGraph : public Graph {
 
   ~InMemoryGraph() {
     for (int i = 0; i < size; ++i) { 
-      free(index2gloss[i]);
+      if (index2gloss[i] != NULL) {
+        free(index2gloss[i]);
+      }
       free(edges[i]);
     }
     free(index2gloss);
@@ -40,7 +63,12 @@ class InMemoryGraph : public Graph {
   }
 
   virtual const char* gloss(const tagged_word& word) const {
-    return index2gloss[getWord(word)];
+    const uint32_t w = getWord(word);
+    if (index2gloss[w] == NULL) {
+      return "<UNK>";
+    } else {
+      return index2gloss[getWord(word)];
+    }
   }
   
   virtual const vector<word> keys() const {
@@ -52,26 +80,31 @@ class InMemoryGraph : public Graph {
   }
 };
 
-
-
-Graph* ReadGraph() {
-  printf("Reading graph...\n");
-  char wordQuery[127];
-  snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD.c_str());
-  const uint32_t numWords
-    = atoi(PGIterator(wordQuery).next()[0]);
-
+//
+// Read Any Graph
+//
+Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edgeIter, bool mock) {
   // Read words
   char** index2gloss = (char**) malloc( numWords * sizeof(char*) );
-  // (query)
-  snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
-  PGIterator words = PGIterator(wordQuery);
+  memset(index2gloss, 0, numWords * sizeof(char*));
   uint64_t wordI = 0;
-  while (words.hasNext()) {
-    PGRow row = words.next();
+  while (wordIter->hasNext()) {
+    // Get word
+    PGRow row = wordIter->next();
     size_t len = strlen(row[1]);
-    char* gloss = (char*) malloc( len * sizeof(char) );
-    strncpy(gloss, row[1], len);
+    char* gloss = (char*) malloc( len * sizeof(char) + 1 );
+    // Strip out Unicode
+    // Really, this is lossy, but who cares it's all indexed anyways...
+    uint32_t target = 0;
+    for (uint32_t i = 0; i < len; ++i) {
+      const char& c = row[1][i];
+      if (32 <= c && c < 127) {
+        gloss[target] = c;
+        target += 1;
+      }
+    }
+    gloss[target] = '\0';
+    // Set gloss
     index2gloss[atoi(row[0])] = gloss;
     wordI += 1;
     if (wordI % 1000000 == 0) {
@@ -80,21 +113,19 @@ Graph* ReadGraph() {
   }
   
   // Read edges
+  // (initialize variables)
   struct edge** edges = (struct edge**) malloc((numWords+1) * sizeof(struct edge*));
   uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
+  memset(edgesSizes, 0, numWords * sizeof(uint32_t));
   uint32_t* edgeCapacities = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
-  for (uint32_t i = 0; i < numWords + 1; ++i) {
-    edgesSizes[i] = 0;
+  for (uint32_t i = 0; i < numWords; ++i) {
     edges[i] = (struct edge*) malloc(4 * sizeof(struct edge));
     edgeCapacities[i] = 4;
   }
-  // (query)
-  char edgeQuery[127];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
-  PGIterator edgeIter = PGIterator(edgeQuery);
   uint64_t edgeI = 0;
-  while (edgeIter.hasNext()) {
-    PGRow row = edgeIter.next();
+  // (iterate over rows in DB)
+  while (edgeIter->hasNext()) {
+    PGRow row = edgeIter->next();
     edge e;
     word source = atoi(row[0]);
     e.sense     = atoi(row[1]);
@@ -125,119 +156,47 @@ Graph* ReadGraph() {
   return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
 }
 
-class MockGraph : public Graph {
- public:
-  MockGraph() {
-    noEdges = new vector<edge>();
-    // Edges out of Lemur
-    lemurEdges = new vector<edge>();
-    edge lemurToTimone;
-    lemurToTimone.sink = TIMONE;
-    lemurToTimone.sense = 0;
-    lemurToTimone.type = WORDNET_DOWN;
-    lemurToTimone.cost = 0.01;
-    lemurEdges->push_back(lemurToTimone);
-    edge lemurToAnimal;
-    lemurToAnimal.sink = ANIMAL;
-    lemurToTimone.sense = 0;
-    lemurToAnimal.type = WORDNET_UP;
-    lemurToAnimal.cost = 0.42;
-    lemurEdges->push_back(lemurToAnimal);
-    // Edges out of Animal
-    animalEdges = new vector<edge>();
-    edge animalToCat;
-    animalToCat.sink = CAT;
-    lemurToTimone.sense = 0;
-    animalToCat.type = WORDNET_DOWN;
-    animalToCat.cost = 42.00;
-    animalEdges->push_back(animalToCat);
-    // Other edges
-    timoneEdges = new vector<edge>();
-    catEdges = new vector<edge>();
-    haveEdges = new vector<edge>();
-    tailEdges = new vector<edge>();
-  }
-  ~MockGraph() {
-    delete noEdges;
-    delete lemurEdges;
-    delete animalEdges;
-    delete timoneEdges;
-    delete catEdges;
-    delete haveEdges;
-    delete tailEdges;
-  }
+
+//
+// Read Real Graph
+//
+Graph* ReadGraph() {
+  printf("Reading graph...\n");
+  // Words
+  char wordQuery[127];
+  snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD.c_str());
+  const uint32_t numWords
+    = atoi(PGIterator(wordQuery).next()[0]);
+  snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
+  PGIterator wordIter = PGIterator(wordQuery);
   
-  virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const {
-    vector<edge> edges = outgoingEdges(source);
-    *outputLength = edges.size();
-    edge* rtn = (struct edge*) malloc( edges.size() * sizeof(edge) );  // WARNING: memory leak
-    for (int i = 0; i < edges.size(); ++i) { 
-      rtn[i] = edges[i];
-    }
-    return rtn;
-  }
+  // Edges
+  char edgeQuery[127];
+  // TODO(gabor) load all edge types, eventually
+  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 OR type=18 OR type=19 OR type=14 OR type=15 ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
+  PGIterator edgeIter = PGIterator(edgeQuery);
 
-  virtual const vector<edge> outgoingEdges(const tagged_word& source) const {
-    const word w = getWord(source);
-    switch (w) {
-      case LEMUR:  // lemur
-        return *lemurEdges;
-      case ANIMAL:     // animal
-        return *animalEdges;
-      case TIMONE: // timone
-        return *timoneEdges;
-      case CAT:    // cat
-        return *catEdges;
-      case HAVE:     // have
-        return *haveEdges;
-      case TAIL:    // tail
-        return *tailEdges;
-      default:
-        return *noEdges;
-    }
-  }
+  return readGraph(numWords, &wordIter, &edgeIter, false);
+}
 
-  virtual const char* gloss(const tagged_word& taggedWord) const {
-    const word w = getWord(taggedWord);
-    switch (w) {
-      case LEMUR:  // lemur
-        return "lemur";
-      case ANIMAL:     // animal
-        return "animal";
-      case TIMONE: // timone
-        return "Timone";
-      case CAT:    // cat
-        return "cat";
-      case HAVE:     // have
-        return "have";
-      case TAIL:    // tail
-        return "tail";
-      default:
-        return "<<unk>>";
-    }
-  }
-  
-  virtual const vector<word> keys() const {
-    vector<word> keys(6);
-    keys[0] = LEMUR;
-    keys[1] = ANIMAL;
-    keys[2] = TIMONE;
-    keys[3] = CAT;
-    keys[4] = HAVE;
-    keys[5] = TAIL;
-    return keys;
-  }
-
- private:
-  vector<edge>* noEdges;
-  vector<edge>* lemurEdges;
-  vector<edge>* animalEdges;
-  vector<edge>* timoneEdges;
-  vector<edge>* catEdges;
-  vector<edge>* haveEdges;
-  vector<edge>* tailEdges;
-};
-
+//
+// Read Dummy Graph
+//
 Graph* ReadMockGraph() {
-  return new MockGraph();
+  const char* lemur[]  {LEMUR_STR,  "lemur" };  PGRow lemurRow(lemur);
+  const char* animal[] {ANIMAL_STR, "animal" }; PGRow animalRow(animal);
+  const char* timone[] {TIMONE_STR, "Timone" }; PGRow timoneRow(timone);
+  const char* cat[]    {CAT_STR,    "cat" };    PGRow catRow(cat);
+  const char* have[]   {HAVE_STR,   "have" };   PGRow haveRow(have);
+  const char* tail[]   {TAIL_STR,   "tail" };   PGRow tailRow(tail);
+  PGRow words[]   { lemurRow, animalRow, timoneRow, catRow, haveRow, tailRow };
+  MockPGIterator wordIter(6, words);
+  
+  const char* lemur2timone[]{LEMUR_STR,  "0", TIMONE_STR, "0", "1", "0.01"  }; PGRow lemur2timoneRow(lemur2timone);
+  const char* lemur2animal[]{LEMUR_STR,  "0", ANIMAL_STR, "0", "0", "0.42"  }; PGRow lemur2animalRow(lemur2animal);
+  const char* animal2cat[]{  ANIMAL_STR, "0", CAT_STR,    "0", "1", "42.00" }; PGRow animal2catRow(animal2cat);
+  PGRow edges[]{ lemur2timoneRow, lemur2animalRow, animal2catRow };
+  MockPGIterator edgeIter(3, edges);
+  
+  return readGraph(19000000, &wordIter, &edgeIter, true);
 }

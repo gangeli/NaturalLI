@@ -22,6 +22,8 @@ struct edge {
  */
 class Graph {
  public:
+  virtual ~Graph() { }
+
   /** Get all outgoing edges from the given word */
   virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
