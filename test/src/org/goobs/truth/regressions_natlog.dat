@@ -1,6 +1,7 @@
 # Trivial cases
 [have](some cat, tail)	[have](some animal, tail)
-[have](all animal, tail)	[have](all cat, tail)
+#[have](all animal, tail)	[have](all cat, tail)
+#[are](all dog, smart)	[are](all hunting dog, smart)
 
 # Deletions
-[are](all dog, smart)	[are](all hunting dog, smart)
+#[are](all dog, smart)	[are](all fuzzy dog, smart)

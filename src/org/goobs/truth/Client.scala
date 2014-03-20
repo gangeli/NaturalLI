@@ -15,6 +15,20 @@ import scala.Some
  */
 object Client {
   Props.NATLOG_INDEXER_LAZY = true
+  
+  def explain(fact:Fact, tag:String="fact"):Unit = {
+    log(tag + ": " + fact.getWordList.map( w =>
+      s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
+    ).mkString(" "))
+    log(fact.getWordList.map{ w =>
+      val synsets = NatLog.wordnet.getSynsets(w.getGloss)
+      if (synsets == null || synsets.size == 0) {
+        s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
+      } else {
+        s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
+      }
+    }.mkString("\n"))
+  }
 
   /**
    * Issue a query to the search server, and block until it returns
@@ -52,22 +66,12 @@ object Client {
             case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
             case _ => println("Could not parse antecedent"); None
           }) {
+        explain(antecedent, "antecedent")
         for (consequent:Fact <- /*"[have](all cat, tail)"*/ readLine("consequent> ") match {
           case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
           case _ => println("Could not parse consequent"); None
         }) {
-          // Explain query
-          println("consequent: " + consequent.getWordList.map( w =>
-            s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
-          ).mkString(" "))
-          println(consequent.getWordList.map{ w =>
-            val synsets = NatLog.wordnet.getSynsets(w.getGloss)
-            if (synsets == null || synsets.size == 0) {
-              s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
-            } else {
-              s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
-            }
-          }.mkString("\n"))
+          explain(consequent, "consequent")
           // We have our antecedent and consequent
           val query = Query.newBuilder()
             .setQueryFact(consequent)

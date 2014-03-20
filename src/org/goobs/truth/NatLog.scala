@@ -18,6 +18,7 @@ object NatLog {
    * The actual implementing call for soft and hard NatLog weights.
    */
   def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
+                    insertionOrDeletion:Double,
                     morphology:Double, wsd:Double, default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
@@ -35,10 +36,10 @@ object NatLog {
     weights.setCount(unigramDown( WORDNET_DOWN  ), wordnet)
     weights.setCount(unigramDown( FREEBASE_DOWN ), wordnet)
     // (additions/deletions)
-    weights.setCount(unigramDown( ADD_ADJ      ), wordnet)
-    weights.setCount(unigramUp(   DEL_ADJ      ), wordnet)
-    weights.setCount(unigramDown( ADD_ADV      ), wordnet)
-    weights.setCount(unigramUp(   DEL_ADV      ), wordnet)
+    weights.setCount(unigramDown( ADD_ADJ      ), insertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_ADJ      ), insertionOrDeletion)
+    weights.setCount(unigramDown( ADD_ADV      ), insertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_ADV      ), insertionOrDeletion)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)
@@ -66,7 +67,14 @@ object NatLog {
   /**
    * The naive NatLog hard constraint weights
    */
-  def hardNatlogWeights:WeightVector = natlogWeights(-0.0, Double.NegativeInfinity, -0.01, -0.1, Double.NegativeInfinity, Double.NegativeInfinity)
+  def hardNatlogWeights:WeightVector = natlogWeights(
+    strictNatLog = -0.0,
+    similarity = Double.NegativeInfinity,
+    wordnet = -0.01,
+    insertionOrDeletion = -0.1,
+    morphology = -1.0,
+    wsd = Double.NegativeInfinity,
+    default = Double.NegativeInfinity)
 
   /**
    * A soft initialization to NatLog weights; this is the same as
@@ -74,7 +82,14 @@ object NatLog {
    * weights.
    * The goal is to use this to initialize the search.
    */
-  def softNatlogWeights:WeightVector = natlogWeights(-0.01, -1.0, -0.1, -0.01, -0.5, -1.0)
+  def softNatlogWeights:WeightVector = natlogWeights(
+    strictNatLog = -0.01,
+    similarity = -1.0,
+    wordnet = -0.1,
+    insertionOrDeletion = -0.1,
+    morphology = -0.01,
+    wsd = -0.5,
+    default = -2.0)
 
   /**
    * Determine the monotonicity of a sentence, according to the quantifier it starts with.

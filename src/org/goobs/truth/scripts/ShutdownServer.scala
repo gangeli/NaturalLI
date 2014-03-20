@@ -6,6 +6,8 @@ import java.io.DataOutputStream
 import org.goobs.truth.Props
 import org.goobs.truth.Messages._
 
+import edu.stanford.nlp.util.logging.Redwood.Util._
+
 /**
  * Assue a simple shutdown request to the inference server.
  *
@@ -25,7 +27,7 @@ object ShutdownServer {
       query.writeTo(toServer)
       sock.shutdownOutput()  // signal end of transmission
     } catch {
-      case (e:ConnectException) => println("WARNING: could not connect to server")
+      case (e:ConnectException) => warn("[shutdown]: could not connect to server")
     }
   }
 

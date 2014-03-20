@@ -2,8 +2,10 @@ package org.goobs.truth
 
 import org.goobs.truth.Messages.Fact
 import org.goobs.truth.Messages.Query
-import edu.stanford.nlp.io.IOUtils
+
 import edu.stanford.nlp.util.Execution
+import edu.stanford.nlp.io.IOUtils
+import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.scripts.ShutdownServer
 
 /**
@@ -25,6 +27,11 @@ object RegressionTest {
     var line:String = reader.readLine()
     while ( line != null ) {
       if (!line.trim.equals("") && !line.trim.startsWith("#")) {
+        // Print example
+        System.err.flush()
+        log("")
+        log(BOLD, ">>> RUNNING " + line)
+
         // Parse Line
         val facts = line.split("\t").map {
           case INPUT(rel, subj, obj) => NatLog.annotate(subj, rel, obj)
@@ -32,8 +39,10 @@ object RegressionTest {
         }
 
         // Issue Query
+        Client.explain(facts.last, "consequent")
         val score:Double = Learn.evaluate(Client.issueQuery(
           facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
+            Client.explain(fact, "antecedent")
             builder.addKnownFact(fact)
           }.setQueryFact(facts.last)
             .setUseRealWorld(false)
@@ -64,10 +73,14 @@ object RegressionTest {
 
     import scala.sys.process._
     List[String]("""make""", "-j" + Execution.threads,  """dist/server""").!
+    var running = false
     val retval:Int = List[String]("""dist/server""", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
       println(line)
-      if (line.startsWith("Listening on port")) {
-        runClient()
+      if (line.startsWith("Listening on port") && !running) {
+        running = true
+        new Thread(new Runnable {
+          override def run(): Unit = runClient()
+        }).start()
       }
     }
 
