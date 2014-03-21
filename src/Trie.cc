@@ -121,7 +121,7 @@ FactDB* ReadFactTrie() {
   // Read valid insertions
   printf("Reading valid insertions...\n");
   // (query)
-  snprintf(query, 127, "SELECT DISTINCT ON(sink) sink, type FROM %s ORDER BY type WHERE source=0 AND sink<>0;", PG_TABLE_EDGE.c_str());
+  snprintf(query, 127, "SELECT DISTINCT (sink) sink, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
   PGIterator iter = PGIterator(query);
   uint32_t numValidInsertions = 0;
   while (iter.hasNext()) {
