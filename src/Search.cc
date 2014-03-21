@@ -7,6 +7,7 @@
 #include "Search.h"
 #include "Utils.h"
 
+#define PUSH_BATCH_SIZE 64
 #define NUM_WORDS_CAN_INSERT 64
 
 using namespace std;
@@ -194,8 +195,12 @@ inline const Path* BreadthFirstSearch::push(
   tagged_word localMutated[mutatedLength];
   // (mutate fact)
   memcpy(localMutated, parent->fact, mutationIndex * sizeof(tagged_word));
-  if (replaceLength > 0) { localMutated[mutationIndex] = replace1; }
-  if (replaceLength > 1) { localMutated[mutationIndex + 1] = replace2; }
+  if (replaceLength > 1) { 
+    localMutated[mutationIndex] = replace2;      // insert before
+    localMutated[mutationIndex + 1] = replace1;
+  } else if (replaceLength > 0) {
+    localMutated[mutationIndex] = replace1;
+  }
   if (mutationIndex < parent->factLength - 1) {
     memcpy(&(localMutated[mutationIndex + replaceLength]),
            &(parent->fact[mutationIndex + 1]),
@@ -211,9 +216,27 @@ inline const Path* BreadthFirstSearch::push(
 
   // Compute fixed bitmap
   uint64_t fixedBitmask[4];
-  memcpy(fixedBitmask, parent->fixedBitmask, 4 * sizeof(uint64_t));
-  if (mutationIndex != parent->lastMutationIndex) {
-    setBit(fixedBitmask, parent->lastMutationIndex);
+  if (replaceLength == 1) {
+    // Simple case: a mutation
+    memcpy(fixedBitmask, parent->fixedBitmask, 4 * sizeof(uint64_t));
+    if (mutationIndex != parent->lastMutationIndex) {
+      setBit(fixedBitmask, parent->lastMutationIndex);
+    }
+  } else {
+    // More complex case: insertion or deletion
+    memset(fixedBitmask, 0x0, 4 * sizeof(uint64_t));
+    for (uint32_t i = 0; i < mutationIndex; ++i) {
+      if (isSetBit(parent->fixedBitmask, i)) { setBit(fixedBitmask, i); }
+    }
+    for (uint32_t i = mutationIndex + replaceLength; i < mutatedLength; ++i) {
+      if (isSetBit(parent->fixedBitmask, i)) { setBit(fixedBitmask, i); }
+    }
+    // (fix the last mutated element)
+    if (parent->lastMutationIndex < mutationIndex) {
+      setBit(fixedBitmask, parent->lastMutationIndex);
+    } else if (parent->lastMutationIndex >= mutationIndex) {
+      setBit(fixedBitmask, parent->lastMutationIndex + 1);
+    }
   }
 
   // Allocate new path
@@ -457,8 +480,10 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   if (!available) { return 0.0; }
   // Case: don't care about monotonicity
   const float pathCost = path.cost == 0.0 ? 1e-10 : path.cost;
-  if (path.type > FREEBASE_DOWN) {  // lemma morphs
-    return unigramWeightsAny[path.type] * pathCost + (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
+  if (path.type >= MORPH_TO_LEMMA) {  // lemma morphs
+    const float anyCost = unigramWeightsUp[path.type] * pathCost;
+    return lastEdgeType == 255 ? anyCost : anyCost + 
+        (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
   float upCost, downCost, flatCost;
@@ -492,6 +517,7 @@ inline bool flushQueue(SearchType* fringe,
                        const CacheStrategy* cache,
                        const Path* parent,
                        const uint8_t* indexToMutateArr,
+                       const tagged_word* insertArr,
                        const tagged_word* sinkArr,
                        const uint8_t* typeArr,
                        const float* costArr,
@@ -502,12 +528,36 @@ inline bool flushQueue(SearchType* fringe,
     // Actually push (or at least try to)
     // TODO(gabor) work out the local inference state
     const inference_state localInference = INFER_EQUIVALENT;
-    const Path* pushedElement = fringe->push(parent, indexToMutateArr[i], sinkArr[i] == 0 ? 0 : 1, sinkArr[i], 0, typeArr[i], costArr[i], localInference, cache, outOfMemory);
+
+    // Compute elements to insert
+    // (default)
+    uint8_t replaceLength = 1;
+    tagged_word replace1 = sinkArr[i];
+    tagged_word replace2 = 0;
+    if (getWord(sinkArr[i]) == 0) {
+      // (delete)
+      replaceLength = 0;
+    } else if (getWord(insertArr[i]) != 0) {
+      // (insert)
+      replaceLength = 2;
+      replace1      = insertArr[i];
+      replace2      = sinkArr[i];
+    }
+
+    // Do push
+    const Path* pushedElement = fringe->push(
+        parent, 
+        indexToMutateArr[i], 
+        replaceLength, replace1, replace2,
+        typeArr[i], 
+        costArr[i], 
+        localInference, 
+        cache, 
+        outOfMemory);
     i += 1;
   }
   return !outOfMemory;
 }
-
 
 // The main search() function
 vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
@@ -527,8 +577,9 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   const uint32_t tickTime = 10000;
   std::clock_t startTime = std::clock();
   // Initialize add-able words
-  uint8_t numWordsCanInsert = NUM_WORDS_CAN_INSERT;
-  word    wordsCanInsert[NUM_WORDS_CAN_INSERT];
+  uint8_t   numWordsCanInsert = NUM_WORDS_CAN_INSERT;
+  word      wordsCanInsert[NUM_WORDS_CAN_INSERT];
+  edge_type edgesCanInsert[NUM_WORDS_CAN_INSERT];
 
   //
   // Search
@@ -559,36 +610,73 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     numWordsCanInsert = NUM_WORDS_CAN_INSERT;
-    if (knownFacts->contains(parent->fact, parent->factLength, wordsCanInsert, &numWordsCanInsert)) {
+    if (knownFacts->contains(parent->fact, parent->factLength, wordsCanInsert, edgesCanInsert, &numWordsCanInsert)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path = parent;
       responses[responses.size()-1].cost = costSoFar;
     }
 
-    // -- Mutations --
+    // -- Push Children --
     // (variables)
-    uint8_t parentLength = parent->factLength;
+    const uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
     const tagged_word* parentFact = parent->fact;
     // (mutation queue)
-    uint8_t indexToMutateArr[256];
-    tagged_word sinkArr[256];
-    uint8_t typeArr[256];
-    float costArr[256];
+    uint8_t indexToMutateArr[PUSH_BATCH_SIZE];
+    tagged_word sinkArr[PUSH_BATCH_SIZE];
+    tagged_word insertArr[PUSH_BATCH_SIZE];
+    uint8_t typeArr[PUSH_BATCH_SIZE];
+    float costArr[PUSH_BATCH_SIZE];
     uint8_t queueLength = 0;
     // (algorithm)
     for (uint8_t indexToMutate = 0;
-         indexToMutate < parentLength;
+         indexToMutate <= parentLength;
          ++indexToMutate) {  // for each index to mutate...
+      // -- A bit of overhead --
       if (isSetBit(fixedBitmask, indexToMutate)) { 
         continue;
       }
+      const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
+      const monotonicity parentMonotonicity = getMonotonicity(parentWord);
+      
+      // -- Do insertions --
+      for (uint32_t i = 0; i < numWordsCanInsert; ++i) {
+        // Introduce new word with sense 0 and neighbor's monotonicity
+        const tagged_word toInsert = getTaggedWord(wordsCanInsert[i], getMonotonicity(parentWord));
+        edge insertion;
+        insertion.sink  = wordsCanInsert[i];
+        insertion.sense = 0;
+        insertion.type  = edgesCanInsert[i];
+        insertion.cost  = 1.0;
+        // Flush if necessary (save memory)
+        if (queueLength >= PUSH_BATCH_SIZE - 1) {
+          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
+            printf("Error pushing to stack; returning\n");
+            return responses;
+          }
+          queueLength = 0;
+        }
+        // Add the state to the fringe
+        // These are queued up in order to try to protect the cache; the push() call is
+        // fairly expensive memory-wise.
+        const float insertionCost = weights->computeCost(
+            parent->edgeType, insertion,
+            false,
+            parentMonotonicity);
+        if (insertionCost < 1e10) {
+          indexToMutateArr[queueLength] = indexToMutate;
+          insertArr[queueLength]        = toInsert;
+          sinkArr[queueLength]          = parentWord;
+          typeArr[queueLength]          = insertion.type;
+          costArr[queueLength]          = costSoFar + insertionCost;
+          queueLength += 1;
+        }
+      }
+      if (indexToMutate == parentLength) { continue; }
 
       // -- Do mutations --
       uint32_t numMutations = 0;
-      const tagged_word parentWord = parentFact[indexToMutate];
       const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
-      const monotonicity parentMonotonicity = getMonotonicity(parentWord);
       const uint8_t parentSense = getSense(parentWord);
       for (int i = 0; i < numMutations; ++i) {
         const edge& mutation = mutations[i];
@@ -596,8 +684,8 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
           continue;
         }
         // Flush if necessary (save memory)
-        if (queueLength >= 255) {
-          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
+        if (queueLength >= PUSH_BATCH_SIZE - 1) {
+          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
             printf("Error pushing to stack; returning\n");
             return responses;
           }
@@ -610,20 +698,17 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
             parent->edgeType, mutation,
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
             parentMonotonicity);
-        if (mutationCost < 9e6) {
+        if (mutationCost < 1e10) {
           indexToMutateArr[queueLength] = indexToMutate;
-          sinkArr[queueLength] = getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity);
-          typeArr[queueLength] = mutation.type;
-          costArr[queueLength] = costSoFar + mutationCost;
+          insertArr[queueLength] = 0;
+          sinkArr[queueLength]   = getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity);
+          typeArr[queueLength]   = mutation.type;
+          costArr[queueLength]   = costSoFar + mutationCost;
           queueLength += 1;
         }
       }
-      
-      // -- Do insertions --
-      // TODO(gabor) do insertions
-      
     }
-    if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, sinkArr, typeArr, costArr, queueLength)) {
+    if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
       printf("Error pushing to stack; returning\n");
       return responses;
     }

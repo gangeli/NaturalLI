@@ -1,3 +1,9 @@
+/*
+TODO
+  - Can't insert a word that already exists in the phrase (some smart dog is smart -> some dog is smart doesn't work)
+  - Should not only sort in Trie completion, but also deduplicate (smart dog is smart -> "smart dog is", not "smart smart dog is")
+*/
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -45,71 +51,39 @@ void setmemlimit() {
     setrlimit(RLIMIT_AS, &memlimit);
   }
 }
-
-/**
- * A simple user defined knowlege base, to be populated entirely from the query.
- */
-class UserDefinedFactDB : public FactDB {
- public:
-  UserDefinedFactDB(Query& query);
-  virtual ~UserDefinedFactDB();
   
-  virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
-                              tagged_word* canInsert, uint8_t* canInsertLength);
- 
- private:
-  word** contents;
-  uint64_t* lengths;
-  uint64_t size;
-
-};
 
 /**
- * Create a new user defined knowledge base from a Query protobuf message.
+ * Create a very simple FactDB based on an input query.
  */
-UserDefinedFactDB::UserDefinedFactDB(Query& query) {
-  size = query.knownfact_size();
-  contents = (word**) malloc(size * sizeof(word*));
-  lengths = (uint64_t*) malloc(size * sizeof(uint64_t));
-  for (int i = 0; i < size; ++i) {
-    lengths[i] = query.knownfact(i).word_size();
-    contents[i] = (word*) malloc(query.knownfact(i).word_size() * sizeof(word*));
-    for (int k = 0; k < query.knownfact(i).word_size(); ++k) {
-      contents[i][k] = query.knownfact(i).word(k).word();
-    }
-  }
-}
-
-/**
- * Clean up after ourselves.
- */
-UserDefinedFactDB::~UserDefinedFactDB() {
-  free(lengths);
-  for (int i = 0; i < size; ++i) { free(contents[i]); }
-  free(contents);
-}
-  
-/**
- * Determine if this knowledge base contains the given element; implementing the
- * interface defined in FactDB.
- */
-const bool UserDefinedFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
-                                       tagged_word* canInsert, uint8_t* canInsertLength) {
-  *canInsertLength = 0;
-  for (int i = 0; i < size; ++i) {             // for each element
-    if (lengths[i] == queryLength) {           // if the lengths match
-      bool found = true;
-      for (int k = 0; k < queryLength; ++k) {  // and every word matches
-        if (getWord(query[k]) != contents[i][k]) { found = false; }
+FactDB* makeFactDB(Query& query) {
+  TrieFactDB* facts = new TrieFactDB();
+  uint32_t size = query.knownfact_size();
+  for (int factI = 0; factI < size; ++factI) {
+    uint32_t factLength = query.knownfact(factI).word_size();
+    word fact[factLength];
+    for (int wordI = 0; wordI < factLength; ++wordI) {
+      // Add word to fact
+      fact[wordI] = query.knownfact(factI).word(wordI).word();
+      // Register this word as a possible insertion
+      if (query.knownfact(factI).word(wordI).has_pos()) {
+        const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
+        if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
+          facts->addValidInsertion(fact[wordI], ADD_NOUN);
+        } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
+          facts->addValidInsertion(fact[wordI], ADD_VERB);
+        } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
+          facts->addValidInsertion(fact[wordI], ADD_ADJ);
+        } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
+          facts->addValidInsertion(fact[wordI], ADD_ADV);
+        }
       }
-      if (found) { return true; }              // return true
     }
+    // Add the fact
+    facts->add(fact, factLength);
   }
-  return false;
+  return facts;
 }
-
-
-
 
 
 /**
@@ -245,7 +219,7 @@ void handleConnection(int socket, sockaddr_in* client,
     printf("[%d] created real factdb.\n", socket);
   } else {
     // Read a dummy knowledge base
-    factDB = new UserDefinedFactDB(query);
+    factDB = makeFactDB(query);
     printf("[%d] created mock factdb.\n", socket);
   }
   // (create query)

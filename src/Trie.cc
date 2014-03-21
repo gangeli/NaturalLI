@@ -18,9 +18,19 @@ void Trie::add(word* elements, uint8_t length) {
     children[elements[0]].add( &elements[1], length - 1);
   }
 }
+  
+void Trie::add(word* elements, edge_type* edges, uint8_t length) {
+  if (length == 0) { 
+    setIsLeaf(true);
+  } else {
+    children[elements[0]].add( &elements[1], &edges[1], length - 1);
+    children[elements[0]].setEdgeType(edges[0]);
+  }
+}
 
 const bool Trie::contains(const tagged_word* query, const uint8_t queryLength, 
-                          tagged_word* canInsert, uint8_t* canInsertLength) {
+                          tagged_word* canInsert, edge_type* canInsertEdge,
+                          uint8_t* canInsertLength) {
   if (queryLength == 0) {
     if (*canInsertLength > 0) {
       uint8_t i = 0;
@@ -28,6 +38,7 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
            iter != children.end();
            ++iter) {
         canInsert[i] = iter->first;
+        canInsertEdge[i] = iter->second.getEdgeType();
         i += 1;
         if (i > *canInsertLength) { break; }
       }
@@ -37,12 +48,36 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
   } else {
     map<word,Trie>::iterator iter = children.find( getWord(query[0]) );
     if (iter == children.end()) {
+      *canInsertLength = 0;
       return false;
     } else {
       Trie& child = iter->second;
-      return child.contains(&query[1], queryLength - 1, canInsert, canInsertLength);
+      return child.contains(&query[1], queryLength - 1, canInsert, canInsertEdge, canInsertLength);
     }
   }
+}
+
+const uint8_t TrieFactDB::filterAndSort(const tagged_word* elements, uint8_t length, word* buffer,
+                                        edge_type* edges) {
+  uint8_t filteredLength = 0;
+  for (int i = 0; i < length; ++i) {
+    const word w = getWord(elements[i]);
+    unordered_map<word,edge_type>::iterator it = this->validInsertions.find(w);
+    if (it != this->validInsertions.end()) {
+      buffer[filteredLength] = w;
+      filteredLength += 1;
+    }
+  }
+  // Sort
+  sort(buffer, buffer + filteredLength);
+  // Fill edges
+  for (int i = 0; i < filteredLength; ++i) {
+    unordered_map<word,edge_type>::iterator it = this->validInsertions.find(buffer[i]);
+    if (it != this->validInsertions.end()) {
+      edges[i] = it->second;
+    }
+  }
+  return filteredLength;
 }
 
 
@@ -52,28 +87,27 @@ void TrieFactDB::add(word* elements, uint8_t length, uint32_t weight) {
   // Register completion
   if (weight >= MIN_COMPLETION_W) {
     word buffer[256];
-    memcpy(buffer, elements, length * sizeof(word));
-    sort(buffer, buffer + length);
-    completions.add(buffer, length);
+    edge_type edges[256];
+    const uint8_t filteredLength = filterAndSort(elements, length, buffer, edges);
+    completions.add(buffer, edges, filteredLength);
   }
+}
+  
+void TrieFactDB::addValidInsertion(const word& word, const edge_type& edge) {
+  this->validInsertions[word] = edge;
 }
 
 const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
-                                tagged_word* canInsert, uint8_t* canInsertLength) {
+                                tagged_word* canInsert, edge_type* canInsertEdge, 
+                                uint8_t* canInsertLength) {
   // Check children
-  // Also, check for bag-of-words containment
   if (*canInsertLength > 0) {
     // Create sorted query
     word buffer[256];
-    for (int i = 0; i < queryLength; ++i) {
-      buffer[i] = getWord(query[i]);
-    }
-    sort(buffer, buffer + queryLength);
+    edge_type edges[256];
+    const uint8_t filteredLength = filterAndSort(query, queryLength, buffer, edges);
     // Check completions
-    if (!completions.contains(buffer, queryLength, canInsert, canInsertLength) &&
-        MIN_COMPLETION_W <= 1) {  // note: don't change this order; completions.contains() mutates canInsert
-      return false;
-    }
+    completions.contains(buffer, filteredLength, canInsert, canInsertEdge, canInsertLength);
   }
   // Check ordered containment
   return facts.contains(query, queryLength);
@@ -81,13 +115,29 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
 
 
 FactDB* ReadFactTrie() {
-  printf("Reading facts...\n");
-  // Read facts
   TrieFactDB* facts = new TrieFactDB();
+  char query[127];
+
+  // Read valid insertions
+  printf("Reading valid insertions...\n");
   // (query)
-  char factQuery[127];
-  snprintf(factQuery, 127, "SELECT gloss, weight FROM %s ORDER BY weight DESC;", PG_TABLE_FACT.c_str());
-  PGIterator iter = PGIterator(factQuery);
+  snprintf(query, 127, "SELECT DISTINCT ON(sink) sink, type FROM %s ORDER BY type WHERE source=0 AND sink<>0;", PG_TABLE_EDGE.c_str());
+  PGIterator iter = PGIterator(query);
+  uint32_t numValidInsertions = 0;
+  while (iter.hasNext()) {
+    // Get fact
+    PGRow row = iter.next();
+    facts->addValidInsertion(atoi(row[0]), atoi(row[1]));
+    numValidInsertions += 1;
+  }
+  printf("  Done. Can insert %u facts", numValidInsertions);
+
+
+  // Read facts
+  printf("Reading facts...\n");
+  // (query)
+  snprintf(query, 127, "SELECT gloss, weight FROM %s ORDER BY weight DESC;", PG_TABLE_FACT.c_str());
+  iter = PGIterator(query);
   uint64_t i = 0;
   word buffer[256];
   uint8_t bufferLength;
@@ -113,11 +163,11 @@ FactDB* ReadFactTrie() {
     // Debug
     i += 1;
     if (i % 10000000 == 0) {
-      printf("loaded %luM facts\n", i / 1000000);
+      printf("  loaded %luM facts\n", i / 1000000);
     }
   }
 
   // Return
-  printf("Done reading the fact database (%lu facts read)\n", i);
+  printf("  Done reading the fact database (%lu facts read)\n", i);
   return facts;
 }

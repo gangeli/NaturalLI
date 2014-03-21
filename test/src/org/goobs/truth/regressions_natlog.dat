@@ -4,4 +4,7 @@
 [are](all dog, smart)	[are](all hunting dog, smart)
 
 # Deletions
-[are](all dog, smart)	[are](all fuzzy dog, smart)
+[are](all dog, smart)	[are](all furry dog, smart)
+
+# Insertions
+[are](some furry dog, smart)	[are](some dog, smart)

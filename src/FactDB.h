@@ -25,7 +25,7 @@ class FactDB {
    * @return True if the fact is in the database.
    */
   virtual const bool contains(const tagged_word* words, const uint8_t wordLength, 
-                              tagged_word* canInsert, uint8_t* canInsertLength) = 0;
+                              tagged_word* canInsert, edge_type* canInsertEdge, uint8_t* canInsertLength) = 0;
 
   /**
    * A helper for checking containment, ignoring the result of
@@ -33,7 +33,7 @@ class FactDB {
    */
   bool contains(const tagged_word* words, const uint8_t wordLength) {
     uint8_t length = 0;
-    return contains(words, wordLength, NULL, &length);
+    return contains(words, wordLength, NULL, NULL, &length);
   }
 };
 

@@ -20,7 +20,8 @@ class InMemoryFactDB : public FactDB {
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              tagged_word* output, uint8_t* outputLength) {
+                              tagged_word* output, edge_type* canInsertEdge,
+                              uint8_t* outputLength) {
     *outputLength = 0;
     // Variables for hashing
     int64_t hash = 0;
@@ -68,7 +69,8 @@ class MockFactDB : public FactDB {
  public:
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              tagged_word* output, uint8_t* outputLength) {
+                              tagged_word* output, edge_type* canInsertEdge,
+                              uint8_t* outputLength) {
     *outputLength = 0;
     return queryLength == 3 && 
       getWord(query[0]) == CAT &&
