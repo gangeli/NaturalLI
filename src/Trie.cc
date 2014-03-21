@@ -122,22 +122,22 @@ FactDB* ReadFactTrie() {
   printf("Reading valid insertions...\n");
   // (query)
   snprintf(query, 127, "SELECT DISTINCT (sink) sink, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
-  PGIterator iter = PGIterator(query);
+  PGIterator wordIter = PGIterator(query);
   uint32_t numValidInsertions = 0;
-  while (iter.hasNext()) {
+  while (wordIter.hasNext()) {
     // Get fact
-    PGRow row = iter.next();
+    PGRow row = wordIter.next();
     facts->addValidInsertion(atoi(row[0]), atoi(row[1]));
     numValidInsertions += 1;
   }
-  printf("  Done. Can insert %u facts", numValidInsertions);
+  printf("  Done. Can insert %u words\n", numValidInsertions);
 
 
   // Read facts
   printf("Reading facts...\n");
   // (query)
   snprintf(query, 127, "SELECT gloss, weight FROM %s ORDER BY weight DESC;", PG_TABLE_FACT.c_str());
-  iter = PGIterator(query);
+  PGIterator iter = PGIterator(query);
   uint64_t i = 0;
   word buffer[256];
   uint8_t bufferLength;
