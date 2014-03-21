@@ -16,5 +16,8 @@ valgrind --leak-check=yes dist/test_server
 sleep 120
 make test
 
+echo "-- COVERAGE --"
+gcovr -x -r src -e ".+\.test\.cc" > build/coverage.xml
+
 echo "SUCCESS!"
 exit 0
