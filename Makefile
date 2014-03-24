@@ -65,6 +65,9 @@ server: ${DIST}/server
 test: ${DIST}/test_server ${DIST}/test_client.jar
 	${DIST}/test_server --gtest_output=xml:build/test.junit.xml
 	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R ${DIST}/test_client.jar -o -w org.goobs.truth
+
+itest: ${DIST}/itest_server ${DIST}/test_client.jar
+	${DIST}/itest_server --gtest_output=xml:build/itest.junit.xml
 	${SCALA} -cp ${TEST_CP}:${DIST}/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
 
 clean:
@@ -148,6 +151,11 @@ ${TEST_BUILD}/%.o: ${TEST_SRC}/%.cc ${SRC}/fnv/fnv.h ${SRC}/fnv/longlong.h
 ${DIST}/test_server: ${DIST}/server.a ${TEST_OBJS} ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
 	@mkdir -p ${DIST}
 	${CXX} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a ${SRC}/fnv/libfnv.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/test_server
+	mv -f *.gcno ${TEST_BUILD} || true
+
+${DIST}/itest_server: ${DIST}/server.a test/src/ITest.cc ${TEST_BUILD}/libgtest.a ${TEST_BUILD}/libgtest_main.a $(wildcard ${SRC}/*.h)
+	@mkdir -p ${DIST}
+	${CXX} ${CPP_FLAGS} ${INCLUDE} -Isrc $^ ${DIST}/server.a ${SRC}/fnv/libfnv.a `find ${TEST_SRC} -name "*.h"` ${LD_PATH} ${LDFLAGS} -pthread -o ${DIST}/itest_server
 	mv -f *.gcno ${TEST_BUILD} || true
 
 ${DIST}/test_client.jar: ${DIST}/client.jar $(wildcard ${TEST_SRC}/org/goobs/truth/*.scala) $(wildcard ${TEST_SRC}/org/goobs/truth/*.java)

@@ -15,6 +15,7 @@ echo "-- TESTS --"
 valgrind --leak-check=yes dist/test_server
 sleep 120
 make test
+make itest
 
 echo "-- COVERAGE --"
 gcovr -x -r src -e ".+\.test\.cc" > build/coverage.xml

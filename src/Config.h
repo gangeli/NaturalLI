@@ -1,9 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#define NDEBUG
+
 #include <string>
 #include <stdint.h>
 #include <vector>
+#include <assert.h>
 
 //
 // Configuration
