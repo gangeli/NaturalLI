@@ -14,7 +14,8 @@ make all
 
 echo "-- TEST --"
 make check
-test/src/itest_server
+test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 make java_test
 
 echo "-- COVERAGE --"
