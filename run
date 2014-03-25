@@ -1,22 +1,21 @@
 #!/bin/bash
-exec scala -cp qry.jar "$0" "$@"
+exec scala -cp qry.jar:dist/test_client.jar:dist/client.jar "$0" "$@"
 !#
 import Qry._
-
 
 val program:List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx10G"
+	-"Xmx65G"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
-	->"org.goobs.truth.Client"
+	->guessClassOrElse("org.goobs.truth.RegressionTest")
 ).toList
 
-using("src/org/goobs/truth/conf/base.conf")
+using("src/org/goobs/truth/conf/script.conf")
 
 submit(program
 )
@@ -42,7 +41,27 @@ def cp:String = {
     ).mkString(":")
   val CUSTOM = List(
       "lib/corenlp-scala.jar",
+      "lib/trove.jar",
+      "lib/scripts/sim.jar",
+      "lib/scripts/jaws.jar",
       "lib/protobuf.jar"
     ).mkString(":")
-  List("dist/truth.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+  List("dist/client.jar", "dist/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+}
+
+def guessClassOrElse(default:String):String = {
+  def tryLoad(clazz:String):Option[String] = {
+    try {
+      Class.forName(clazz); Some(clazz)
+    } catch {
+      case (e:ClassNotFoundException) => None
+    }
+  }
+  (args.foldLeft( None.asInstanceOf[Option[String]] ){ case (soFar:Option[String], arg:String) =>
+    soFar.orElse(tryLoad(arg))
+      .orElse(tryLoad("org" + arg))
+      .orElse(tryLoad("org.goobs." + arg))
+      .orElse(tryLoad("org.goobs.truth." + arg))
+      .orElse(tryLoad("org.goobs.truth.scripts." + arg))
+  }).getOrElse(default)
 }

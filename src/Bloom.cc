@@ -1,6 +1,7 @@
 #include "fnv/fnv.h"
 
 #include <cstring>
+#include <stdlib.h>
 
 #include "Bloom.h"
 
