@@ -6,7 +6,6 @@ AC_CONFIG_MACRO_DIR([m4])
 m4_include([m4/ax_lib_postgresql.m4])
 m4_include([m4/ax_compile_stdcxx_0x.m4])
 m4_include([m4/ax_cxx_header_unordered_map.m4])
-m4_include([m4/ax_check_java_home.m4])
 
 AC_CONFIG_HEADERS(config.h)
 
@@ -50,6 +49,18 @@ AM_CONDITIONAL([HAVE_PROTOBUF],  [test "$have_protobuf" = "yes"])
 if test -z "$have_protobuf"; then
   AC_MSG_ERROR([fatal: could not find the protobuf library])
 fi
+AC_ARG_WITH([protoc],
+    [AS_HELP_STRING([--with-protoc=PATH],
+        [location of the protocol buffer home; protoc should be located at bin/protoc ])],
+    [PROTO_CFLAGS="-I$withval/include"
+     PROTO_LDFLAGS="-L$withval/lib"
+     PROTOC="$withval/bin/protoc"],
+    [PROTO_CFLAGS=
+     PROTO_LDFLAGS=
+     PROTOC='protoc'])
+AC_SUBST([PROTO_CFLAGS])
+AC_SUBST([PROTO_LDFLAGS])
+AC_SUBST([PROTOC])
 
 # (gtest)
 GTEST_VERSION="1.7.0"
@@ -69,22 +80,6 @@ AC_SUBST([GTEST_CPPFLAGS])
 AC_SUBST([GTEST_CXXFLAGS])
 AC_SUBST([GTEST_LDFLAGS])
 AC_SUBST([GTEST_LIBS])
-
-
-
-echo "---CHECKS FOR PROGRAMS---"
-AC_ARG_WITH([protoc],
-    [AS_HELP_STRING([--with-protoc=PATH],
-        [location of the protocol buffer home; protoc should be located at bin/protoc ])],
-    [PROTO_CFLAGS="$withval/include"
-     PROTO_LDFLAGS="$withval/lib"
-     PROTOC="$withval/bin/protoc"],
-    [PROTO_CFLAGS=
-     PROTO_LDFLAGS=
-     PROTOC='protoc'])
-AC_SUBST([PROTO_CFLAGS])
-AC_SUBST([PROTO_LDFLAGS])
-AC_SUBST([PROTOC])
 
 echo "---CHECKS FOR HEADERS---"
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
