@@ -8,7 +8,7 @@ rm lib/stanford-corenlp-*
 ln -s $HOME/stanford-corenlp-* lib/
 
 echo "-- MAKE --"
-./configure --with-scala /home/gabor/programs/scala
+./configure --with-scala=/home/gabor/programs/scala
 make clean
 make all
 

@@ -7,6 +7,7 @@ clean-local:
 	rm -f *.gcda
 	rm -f src/client.jar
 	rm -f test/test_client.jar
+	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 LIB=$(realpath lib)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:lib/stanford-corenlp-caseless-models-current.jar:lib/stanford-corenlp-models-current.jar

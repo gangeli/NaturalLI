@@ -18,7 +18,7 @@ server_SOURCES=[ \
   FactDB.h  Postgres.h     Trie.h \
   ]
 
-server_CXXFLAGS=-std=c++0x -pthread -stdlib=libstdc++ ${POSTGRESQL_CFLAGS}
+server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS}
 server_LDADD=${POSTGRESQL_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if DEBUG
   server_CXXFLAGS+= -O0 -ggdb
