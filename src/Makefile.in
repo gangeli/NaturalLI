@@ -62,6 +62,9 @@ am_server_OBJECTS = server-Bloom.$(OBJEXT) \
 server_OBJECTS = $(am_server_OBJECTS)
 am__DEPENDENCIES_1 =
 server_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+server_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(server_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -275,8 +278,8 @@ server_SOURCES = [ \
   FactDB.h  Postgres.h     Trie.h \
   ]
 
-server_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} $(am__append_1) \
-	$(am__append_3)
+server_CXXFLAGS = -std=c++0x -pthread -stdlib=libstdc++ \
+	${POSTGRESQL_CFLAGS} $(am__append_1) $(am__append_3)
 server_LDADD = ${POSTGRESQL_LDFLAGS} -lprotobuf -Lfnv -lfnv32 \
 	$(am__append_2)
 all: $(BUILT_SOURCES)
@@ -359,7 +362,7 @@ clean-binPROGRAMS:
 	rm -f $$list
 server$(EXEEXT): $(server_OBJECTS) $(server_DEPENDENCIES) $(EXTRA_server_DEPENDENCIES) 
 	@rm -f server$(EXEEXT)
-	$(CXXLINK) $(server_OBJECTS) $(server_LDADD) $(LIBS)
+	$(server_LINK) $(server_OBJECTS) $(server_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -399,130 +402,130 @@ distclean-compile:
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
 server-Bloom.o: Bloom.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Bloom.o -MD -MP -MF $(DEPDIR)/server-Bloom.Tpo -c -o server-Bloom.o `test -f 'Bloom.cc' || echo '$(srcdir)/'`Bloom.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Bloom.o -MD -MP -MF $(DEPDIR)/server-Bloom.Tpo -c -o server-Bloom.o `test -f 'Bloom.cc' || echo '$(srcdir)/'`Bloom.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Bloom.Tpo $(DEPDIR)/server-Bloom.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Bloom.cc' object='server-Bloom.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Bloom.o `test -f 'Bloom.cc' || echo '$(srcdir)/'`Bloom.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Bloom.o `test -f 'Bloom.cc' || echo '$(srcdir)/'`Bloom.cc
 
 server-Bloom.obj: Bloom.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Bloom.obj -MD -MP -MF $(DEPDIR)/server-Bloom.Tpo -c -o server-Bloom.obj `if test -f 'Bloom.cc'; then $(CYGPATH_W) 'Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/Bloom.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Bloom.obj -MD -MP -MF $(DEPDIR)/server-Bloom.Tpo -c -o server-Bloom.obj `if test -f 'Bloom.cc'; then $(CYGPATH_W) 'Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/Bloom.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Bloom.Tpo $(DEPDIR)/server-Bloom.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Bloom.cc' object='server-Bloom.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Bloom.obj `if test -f 'Bloom.cc'; then $(CYGPATH_W) 'Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/Bloom.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Bloom.obj `if test -f 'Bloom.cc'; then $(CYGPATH_W) 'Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/Bloom.cc'; fi`
 
 server-Messages.pb.o: Messages.pb.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Messages.pb.o -MD -MP -MF $(DEPDIR)/server-Messages.pb.Tpo -c -o server-Messages.pb.o `test -f 'Messages.pb.cc' || echo '$(srcdir)/'`Messages.pb.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Messages.pb.o -MD -MP -MF $(DEPDIR)/server-Messages.pb.Tpo -c -o server-Messages.pb.o `test -f 'Messages.pb.cc' || echo '$(srcdir)/'`Messages.pb.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Messages.pb.Tpo $(DEPDIR)/server-Messages.pb.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Messages.pb.cc' object='server-Messages.pb.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Messages.pb.o `test -f 'Messages.pb.cc' || echo '$(srcdir)/'`Messages.pb.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Messages.pb.o `test -f 'Messages.pb.cc' || echo '$(srcdir)/'`Messages.pb.cc
 
 server-Messages.pb.obj: Messages.pb.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Messages.pb.obj -MD -MP -MF $(DEPDIR)/server-Messages.pb.Tpo -c -o server-Messages.pb.obj `if test -f 'Messages.pb.cc'; then $(CYGPATH_W) 'Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/Messages.pb.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Messages.pb.obj -MD -MP -MF $(DEPDIR)/server-Messages.pb.Tpo -c -o server-Messages.pb.obj `if test -f 'Messages.pb.cc'; then $(CYGPATH_W) 'Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/Messages.pb.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Messages.pb.Tpo $(DEPDIR)/server-Messages.pb.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Messages.pb.cc' object='server-Messages.pb.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Messages.pb.obj `if test -f 'Messages.pb.cc'; then $(CYGPATH_W) 'Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/Messages.pb.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Messages.pb.obj `if test -f 'Messages.pb.cc'; then $(CYGPATH_W) 'Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/Messages.pb.cc'; fi`
 
 server-Trie.o: Trie.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Trie.o -MD -MP -MF $(DEPDIR)/server-Trie.Tpo -c -o server-Trie.o `test -f 'Trie.cc' || echo '$(srcdir)/'`Trie.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Trie.o -MD -MP -MF $(DEPDIR)/server-Trie.Tpo -c -o server-Trie.o `test -f 'Trie.cc' || echo '$(srcdir)/'`Trie.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Trie.Tpo $(DEPDIR)/server-Trie.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Trie.cc' object='server-Trie.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Trie.o `test -f 'Trie.cc' || echo '$(srcdir)/'`Trie.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Trie.o `test -f 'Trie.cc' || echo '$(srcdir)/'`Trie.cc
 
 server-Trie.obj: Trie.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Trie.obj -MD -MP -MF $(DEPDIR)/server-Trie.Tpo -c -o server-Trie.obj `if test -f 'Trie.cc'; then $(CYGPATH_W) 'Trie.cc'; else $(CYGPATH_W) '$(srcdir)/Trie.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Trie.obj -MD -MP -MF $(DEPDIR)/server-Trie.Tpo -c -o server-Trie.obj `if test -f 'Trie.cc'; then $(CYGPATH_W) 'Trie.cc'; else $(CYGPATH_W) '$(srcdir)/Trie.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Trie.Tpo $(DEPDIR)/server-Trie.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Trie.cc' object='server-Trie.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Trie.obj `if test -f 'Trie.cc'; then $(CYGPATH_W) 'Trie.cc'; else $(CYGPATH_W) '$(srcdir)/Trie.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Trie.obj `if test -f 'Trie.cc'; then $(CYGPATH_W) 'Trie.cc'; else $(CYGPATH_W) '$(srcdir)/Trie.cc'; fi`
 
 server-FactDB.o: FactDB.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-FactDB.o -MD -MP -MF $(DEPDIR)/server-FactDB.Tpo -c -o server-FactDB.o `test -f 'FactDB.cc' || echo '$(srcdir)/'`FactDB.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-FactDB.o -MD -MP -MF $(DEPDIR)/server-FactDB.Tpo -c -o server-FactDB.o `test -f 'FactDB.cc' || echo '$(srcdir)/'`FactDB.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-FactDB.Tpo $(DEPDIR)/server-FactDB.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FactDB.cc' object='server-FactDB.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-FactDB.o `test -f 'FactDB.cc' || echo '$(srcdir)/'`FactDB.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-FactDB.o `test -f 'FactDB.cc' || echo '$(srcdir)/'`FactDB.cc
 
 server-FactDB.obj: FactDB.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-FactDB.obj -MD -MP -MF $(DEPDIR)/server-FactDB.Tpo -c -o server-FactDB.obj `if test -f 'FactDB.cc'; then $(CYGPATH_W) 'FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/FactDB.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-FactDB.obj -MD -MP -MF $(DEPDIR)/server-FactDB.Tpo -c -o server-FactDB.obj `if test -f 'FactDB.cc'; then $(CYGPATH_W) 'FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/FactDB.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-FactDB.Tpo $(DEPDIR)/server-FactDB.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='FactDB.cc' object='server-FactDB.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-FactDB.obj `if test -f 'FactDB.cc'; then $(CYGPATH_W) 'FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/FactDB.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-FactDB.obj `if test -f 'FactDB.cc'; then $(CYGPATH_W) 'FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/FactDB.cc'; fi`
 
 server-Postgres.o: Postgres.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Postgres.o -MD -MP -MF $(DEPDIR)/server-Postgres.Tpo -c -o server-Postgres.o `test -f 'Postgres.cc' || echo '$(srcdir)/'`Postgres.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Postgres.o -MD -MP -MF $(DEPDIR)/server-Postgres.Tpo -c -o server-Postgres.o `test -f 'Postgres.cc' || echo '$(srcdir)/'`Postgres.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Postgres.Tpo $(DEPDIR)/server-Postgres.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Postgres.cc' object='server-Postgres.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Postgres.o `test -f 'Postgres.cc' || echo '$(srcdir)/'`Postgres.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Postgres.o `test -f 'Postgres.cc' || echo '$(srcdir)/'`Postgres.cc
 
 server-Postgres.obj: Postgres.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Postgres.obj -MD -MP -MF $(DEPDIR)/server-Postgres.Tpo -c -o server-Postgres.obj `if test -f 'Postgres.cc'; then $(CYGPATH_W) 'Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/Postgres.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Postgres.obj -MD -MP -MF $(DEPDIR)/server-Postgres.Tpo -c -o server-Postgres.obj `if test -f 'Postgres.cc'; then $(CYGPATH_W) 'Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/Postgres.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Postgres.Tpo $(DEPDIR)/server-Postgres.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Postgres.cc' object='server-Postgres.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Postgres.obj `if test -f 'Postgres.cc'; then $(CYGPATH_W) 'Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/Postgres.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Postgres.obj `if test -f 'Postgres.cc'; then $(CYGPATH_W) 'Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/Postgres.cc'; fi`
 
 server-Utils.o: Utils.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Utils.o -MD -MP -MF $(DEPDIR)/server-Utils.Tpo -c -o server-Utils.o `test -f 'Utils.cc' || echo '$(srcdir)/'`Utils.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Utils.o -MD -MP -MF $(DEPDIR)/server-Utils.Tpo -c -o server-Utils.o `test -f 'Utils.cc' || echo '$(srcdir)/'`Utils.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Utils.Tpo $(DEPDIR)/server-Utils.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Utils.cc' object='server-Utils.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Utils.o `test -f 'Utils.cc' || echo '$(srcdir)/'`Utils.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Utils.o `test -f 'Utils.cc' || echo '$(srcdir)/'`Utils.cc
 
 server-Utils.obj: Utils.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Utils.obj -MD -MP -MF $(DEPDIR)/server-Utils.Tpo -c -o server-Utils.obj `if test -f 'Utils.cc'; then $(CYGPATH_W) 'Utils.cc'; else $(CYGPATH_W) '$(srcdir)/Utils.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Utils.obj -MD -MP -MF $(DEPDIR)/server-Utils.Tpo -c -o server-Utils.obj `if test -f 'Utils.cc'; then $(CYGPATH_W) 'Utils.cc'; else $(CYGPATH_W) '$(srcdir)/Utils.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Utils.Tpo $(DEPDIR)/server-Utils.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Utils.cc' object='server-Utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Utils.obj `if test -f 'Utils.cc'; then $(CYGPATH_W) 'Utils.cc'; else $(CYGPATH_W) '$(srcdir)/Utils.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Utils.obj `if test -f 'Utils.cc'; then $(CYGPATH_W) 'Utils.cc'; else $(CYGPATH_W) '$(srcdir)/Utils.cc'; fi`
 
 server-Graph.o: Graph.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Graph.o -MD -MP -MF $(DEPDIR)/server-Graph.Tpo -c -o server-Graph.o `test -f 'Graph.cc' || echo '$(srcdir)/'`Graph.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Graph.o -MD -MP -MF $(DEPDIR)/server-Graph.Tpo -c -o server-Graph.o `test -f 'Graph.cc' || echo '$(srcdir)/'`Graph.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Graph.Tpo $(DEPDIR)/server-Graph.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Graph.cc' object='server-Graph.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Graph.o `test -f 'Graph.cc' || echo '$(srcdir)/'`Graph.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Graph.o `test -f 'Graph.cc' || echo '$(srcdir)/'`Graph.cc
 
 server-Graph.obj: Graph.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Graph.obj -MD -MP -MF $(DEPDIR)/server-Graph.Tpo -c -o server-Graph.obj `if test -f 'Graph.cc'; then $(CYGPATH_W) 'Graph.cc'; else $(CYGPATH_W) '$(srcdir)/Graph.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Graph.obj -MD -MP -MF $(DEPDIR)/server-Graph.Tpo -c -o server-Graph.obj `if test -f 'Graph.cc'; then $(CYGPATH_W) 'Graph.cc'; else $(CYGPATH_W) '$(srcdir)/Graph.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Graph.Tpo $(DEPDIR)/server-Graph.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Graph.cc' object='server-Graph.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Graph.obj `if test -f 'Graph.cc'; then $(CYGPATH_W) 'Graph.cc'; else $(CYGPATH_W) '$(srcdir)/Graph.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Graph.obj `if test -f 'Graph.cc'; then $(CYGPATH_W) 'Graph.cc'; else $(CYGPATH_W) '$(srcdir)/Graph.cc'; fi`
 
 server-InferenceServer.o: InferenceServer.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-InferenceServer.o -MD -MP -MF $(DEPDIR)/server-InferenceServer.Tpo -c -o server-InferenceServer.o `test -f 'InferenceServer.cc' || echo '$(srcdir)/'`InferenceServer.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-InferenceServer.o -MD -MP -MF $(DEPDIR)/server-InferenceServer.Tpo -c -o server-InferenceServer.o `test -f 'InferenceServer.cc' || echo '$(srcdir)/'`InferenceServer.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-InferenceServer.Tpo $(DEPDIR)/server-InferenceServer.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='InferenceServer.cc' object='server-InferenceServer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-InferenceServer.o `test -f 'InferenceServer.cc' || echo '$(srcdir)/'`InferenceServer.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-InferenceServer.o `test -f 'InferenceServer.cc' || echo '$(srcdir)/'`InferenceServer.cc
 
 server-InferenceServer.obj: InferenceServer.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-InferenceServer.obj -MD -MP -MF $(DEPDIR)/server-InferenceServer.Tpo -c -o server-InferenceServer.obj `if test -f 'InferenceServer.cc'; then $(CYGPATH_W) 'InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/InferenceServer.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-InferenceServer.obj -MD -MP -MF $(DEPDIR)/server-InferenceServer.Tpo -c -o server-InferenceServer.obj `if test -f 'InferenceServer.cc'; then $(CYGPATH_W) 'InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/InferenceServer.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-InferenceServer.Tpo $(DEPDIR)/server-InferenceServer.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='InferenceServer.cc' object='server-InferenceServer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-InferenceServer.obj `if test -f 'InferenceServer.cc'; then $(CYGPATH_W) 'InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/InferenceServer.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-InferenceServer.obj `if test -f 'InferenceServer.cc'; then $(CYGPATH_W) 'InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/InferenceServer.cc'; fi`
 
 server-Search.o: Search.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Search.o -MD -MP -MF $(DEPDIR)/server-Search.Tpo -c -o server-Search.o `test -f 'Search.cc' || echo '$(srcdir)/'`Search.cc
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Search.o -MD -MP -MF $(DEPDIR)/server-Search.Tpo -c -o server-Search.o `test -f 'Search.cc' || echo '$(srcdir)/'`Search.cc
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Search.Tpo $(DEPDIR)/server-Search.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Search.cc' object='server-Search.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Search.o `test -f 'Search.cc' || echo '$(srcdir)/'`Search.cc
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Search.o `test -f 'Search.cc' || echo '$(srcdir)/'`Search.cc
 
 server-Search.obj: Search.cc
-@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server-Search.obj -MD -MP -MF $(DEPDIR)/server-Search.Tpo -c -o server-Search.obj `if test -f 'Search.cc'; then $(CYGPATH_W) 'Search.cc'; else $(CYGPATH_W) '$(srcdir)/Search.cc'; fi`
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -MT server-Search.obj -MD -MP -MF $(DEPDIR)/server-Search.Tpo -c -o server-Search.obj `if test -f 'Search.cc'; then $(CYGPATH_W) 'Search.cc'; else $(CYGPATH_W) '$(srcdir)/Search.cc'; fi`
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server-Search.Tpo $(DEPDIR)/server-Search.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='Search.cc' object='server-Search.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(server_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server-Search.obj `if test -f 'Search.cc'; then $(CYGPATH_W) 'Search.cc'; else $(CYGPATH_W) '$(srcdir)/Search.cc'; fi`
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(server_CXXFLAGS) $(CXXFLAGS) -c -o server-Search.obj `if test -f 'Search.cc'; then $(CYGPATH_W) 'Search.cc'; else $(CYGPATH_W) '$(srcdir)/Search.cc'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

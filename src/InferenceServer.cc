@@ -10,12 +10,14 @@ TODO
 #include <cmath>
 #include <exception>
 #include <thread>
+#include <mutex>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/errno.h>
 #include <sys/resource.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
 #include "Messages.pb.h" 
 #include "Search.h" 

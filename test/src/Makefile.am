@@ -7,12 +7,12 @@ check_PROGRAMS = test_server itest_server
 
 MAIN_SRC=../../src
 
-AM_CPPFLAGS = ${GTEST_CXXFLAGS} \
-              -std=c++0x ${POSTGRESQL_CFLAGS} \
+AM_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} \
               -isystem gtest/include -I${MAIN_SRC} ${GTEST_CPPFLAGS}
-AM_LDFLAGS =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 \
-              ${GTEST_LDFLAGS} ${GTEST_LIBS} \
-              -Lgtest/lib -lgtest gtest/gtest_main.o
+AM_CXXFLAGS = ${GTEST_CXXFLAGS} -std=c++0x
+AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 \
+               ${GTEST_LDFLAGS} ${GTEST_LIBS} \
+               -Lgtest/lib -lgtest gtest/gtest_main.o
 
 _OBJS = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
         Bloom.o Messages.pb.o

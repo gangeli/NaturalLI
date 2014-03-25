@@ -18,13 +18,13 @@ server_SOURCES=[ \
   FactDB.h  Postgres.h     Trie.h \
   ]
 
-server_CPPFLAGS=-std=c++0x ${POSTGRESQL_CFLAGS}
+server_CXXFLAGS=-std=c++0x -pthread -stdlib=libstdc++ ${POSTGRESQL_CFLAGS}
 server_LDADD=${POSTGRESQL_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if DEBUG
-  server_CPPFLAGS+= -O0 -ggdb
+  server_CXXFLAGS+= -O0 -ggdb
   server_LDADD+=-lprofiler
 else
-  server_CPPFLAGS+= -O3
+  server_CXXFLAGS+= -O3
 endif
 
 client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java
