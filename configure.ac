@@ -1,6 +1,6 @@
 AC_PREREQ([2.68])
 AC_INIT([hello], [0.1], [angeli@stanford.edu])
-AM_INIT_AUTOMAKE([1.10 -Wall foreign])
+AM_INIT_AUTOMAKE([-Wall foreign])
 
 AC_CONFIG_MACRO_DIR([m4])
 m4_include([m4/ax_lib_postgresql.m4])
