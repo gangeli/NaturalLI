@@ -34,8 +34,8 @@ longlong.h:
 BUILT_SOURCES = longlong.h
 
 lib_LTLIBRARIES=libfnv64.la libfnv32.la
-libfnv64_la_SOURCES=[ fnv.h hash_64a.c ]
-libfnv32_la_SOURCES=[ fnv.h hash_32a.c ]
+libfnv64_la_SOURCES=[ fnv.h hash_64a.c longlong.h ]
+libfnv32_la_SOURCES=[ fnv.h hash_32a.c longlong.h ]
 
 clean-local:
 	rm longlong.h

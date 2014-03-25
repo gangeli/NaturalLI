@@ -24,9 +24,15 @@
       <sourceFolder url="file://$MODULE_DIR$/lib" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/lib/test" type="java-test-resource" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
+      <excludeFolder url="file://$MODULE_DIR$/autom4te.cache" />
       <excludeFolder url="file://$MODULE_DIR$/dist" />
       <excludeFolder url="file://$MODULE_DIR$/etc" />
+      <excludeFolder url="file://$MODULE_DIR$/m4" />
       <excludeFolder url="file://$MODULE_DIR$/pub" />
+      <excludeFolder url="file://$MODULE_DIR$/src/.deps" />
+      <excludeFolder url="file://$MODULE_DIR$/src/fnv" />
+      <excludeFolder url="file://$MODULE_DIR$/test/src/.deps" />
+      <excludeFolder url="file://$MODULE_DIR$/test/src/gtest" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

@@ -8,14 +8,14 @@ rm lib/stanford-corenlp-*
 ln -s $HOME/stanford-corenlp-* lib/
 
 echo "-- MAKE --"
+./configure
 make clean
 make all
 
-echo "-- TESTS --"
-valgrind --leak-check=yes dist/test_server
-sleep 120
-make test
-make itest
+echo "-- TEST --"
+make check
+test/server/itest_server
+make java_test
 
 echo "-- COVERAGE --"
 gcovr -x -r src -e ".+\.test\.cc" > build/coverage.xml

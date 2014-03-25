@@ -2868,15 +2868,6 @@ fi
  VERSION='0.1'
 
 
-cat >>confdefs.h <<_ACEOF
-#define PACKAGE "$PACKAGE"
-_ACEOF
-
-
-cat >>confdefs.h <<_ACEOF
-#define VERSION "$VERSION"
-_ACEOF
-
 # Some tools Automake needs.
 
 ACLOCAL=${ACLOCAL-"${am_missing_run}aclocal-${am__api_version}"}
