@@ -15,7 +15,6 @@
 
 
 
-
 pkgdatadir = $(datadir)/hello
 pkgincludedir = $(includedir)/hello
 pkglibdir = $(libdir)/hello
@@ -34,17 +33,18 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = x86_64-unknown-linux-gnu
 host_triplet = x86_64-unknown-linux-gnu
-bin_PROGRAMS = truth$(EXEEXT)
-am__append_1 = -O0 -ggdb
-am__append_2 = -lprofiler
-#am__append_3 = -O3
 subdir = .
 DIST_COMMON = $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/configure config.guess config.sub depcomp \
 	install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_postgresql.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+	$(top_srcdir)/m4/ax_compile_stdcxx_0x.m4 \
+	$(top_srcdir)/m4/ax_cxx_header_unordered_map.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -54,40 +54,8 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-PROGRAMS = $(bin_PROGRAMS)
-am_truth_OBJECTS = truth-Bloom.$(OBJEXT) truth-Messages.pb.$(OBJEXT) \
-	truth-Trie.$(OBJEXT) truth-FactDB.$(OBJEXT) \
-	truth-Postgres.$(OBJEXT) truth-Utils.$(OBJEXT) \
-	truth-Graph.$(OBJEXT) truth-InferenceServer.$(OBJEXT) \
-	truth-Search.$(OBJEXT)
-truth_OBJECTS = $(am_truth_OBJECTS)
-am__DEPENDENCIES_1 =
-truth_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-DEFAULT_INCLUDES = -I.
-depcomp = $(SHELL) $(top_srcdir)/depcomp
-am__depfiles_maybe = depfiles
-am__mv = mv -f
-CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-CXXLD = $(CXX)
-CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
-	$(LDFLAGS) -o $@
-SOURCES = $(truth_SOURCES)
-DIST_SOURCES = $(truth_SOURCES)
+SOURCES =
+DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -143,12 +111,12 @@ distuninstallcheck_listfiles = find . -type f -print
 am__distuninstallcheck_listfiles = $(distuninstallcheck_listfiles) \
   | sed 's|^\./|$(prefix)/|' | grep -v '$(infodir)/dir$$'
 distcleancheck_listfiles = find . -type f -print
-ACLOCAL = ${SHELL} /home/gabor/workspace/truth/missing --run aclocal-1.11
+ACLOCAL = ${SHELL} /home/gabor/workspace/truth2/missing --run aclocal-1.11
 AMTAR = $${TAR-tar}
 AR = ar
-AUTOCONF = ${SHELL} /home/gabor/workspace/truth/missing --run autoconf
-AUTOHEADER = ${SHELL} /home/gabor/workspace/truth/missing --run autoheader
-AUTOMAKE = ${SHELL} /home/gabor/workspace/truth/missing --run automake-1.11
+AUTOCONF = ${SHELL} /home/gabor/workspace/truth2/missing --run autoconf
+AUTOHEADER = ${SHELL} /home/gabor/workspace/truth2/missing --run autoheader
+AUTOMAKE = ${SHELL} /home/gabor/workspace/truth2/missing --run automake-1.11
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
@@ -185,7 +153,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
 LTLIBOBJS = 
-MAKEINFO = ${SHELL} /home/gabor/workspace/truth/missing --run makeinfo
+MAKEINFO = ${SHELL} /home/gabor/workspace/truth2/missing --run makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /bin/mkdir -p
 NM = /usr/bin/nm -B
@@ -211,16 +179,17 @@ POSTGRESQL_LDFLAGS = -L/home/gabor/programs/psql/lib -lpq
 POSTGRESQL_VERSION = 8.4.9
 PROTOBUF_CFLAGS = 
 PROTOBUF_LIBS = 
+PROTOC = protoc
 RANLIB = ranlib
 SED = /bin/sed
 SET_MAKE = 
 SHELL = /bin/bash
 STRIP = strip
 VERSION = 0.1
-abs_builddir = /home/gabor/workspace/truth
-abs_srcdir = /home/gabor/workspace/truth
-abs_top_builddir = /home/gabor/workspace/truth
-abs_top_srcdir = /home/gabor/workspace/truth
+abs_builddir = /home/gabor/workspace/truth2
+abs_srcdir = /home/gabor/workspace/truth2
+abs_top_builddir = /home/gabor/workspace/truth2
+abs_top_srcdir = /home/gabor/workspace/truth2
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -250,7 +219,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/gabor/workspace/truth/install-sh
+install_sh = ${SHELL} /home/gabor/workspace/truth2/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -270,26 +239,12 @@ target_alias =
 top_build_prefix = 
 top_builddir = .
 top_srcdir = .
-SUBDIRS = src/fnv
+SUBDIRS = src
 ACLOCAL_AMFLAGS = -I m4
-truth_SOURCES = [ \
-  src/Bloom.cc            src/Messages.pb.cc      src/Trie.cc \
-  src/FactDB.cc           src/Postgres.cc         src/Utils.cc \
-  src/Graph.cc            src/InferenceServer.cc  src/Search.cc \
-  src/Bloom.h   src/Graph.h        src/Utils.h \
-  src/Config.h  src/Messages.pb.h  src/Search.h \
-  src/FactDB.h  src/Postgres.h     src/Trie.h \
-  ]
-
-truth_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} $(am__append_1) \
-	$(am__append_3)
-truth_LDADD = ${POSTGRESQL_LDFLAGS} -lprotobuf -Lsrc/fnv -lfnv32 \
-	$(am__append_2)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
-.SUFFIXES: .cc .lo .o .obj
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
@@ -339,215 +294,6 @@ $(srcdir)/config.h.in:  $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-install-binPROGRAMS: $(bin_PROGRAMS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
-	for p in $$list; do echo "$$p $$p"; done | \
-	sed 's/$(EXEEXT)$$//' | \
-	while read p p1; do if test -f $$p || test -f $$p1; \
-	  then echo "$$p"; echo "$$p"; else :; fi; \
-	done | \
-	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
-	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
-	sed 'N;N;N;s,\n, ,g' | \
-	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
-	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
-	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
-	    else { print "f", $$3 "/" $$4, $$1; } } \
-	  END { for (d in files) print "f", d, files[d] }' | \
-	while read type dir files; do \
-	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
-	    test -z "$$files" || { \
-	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
-	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
-	    } \
-	; done
-
-uninstall-binPROGRAMS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
-	files=`for p in $$list; do echo "$$p"; done | \
-	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
-	      -e 's/$$/$(EXEEXT)/' `; \
-	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(bindir)" && rm -f $$files
-
-clean-binPROGRAMS:
-	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
-	echo " rm -f" $$list; \
-	rm -f $$list || exit $$?; \
-	test -n "$(EXEEXT)" || exit 0; \
-	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
-	echo " rm -f" $$list; \
-	rm -f $$list
-truth$(EXEEXT): $(truth_OBJECTS) $(truth_DEPENDENCIES) $(EXTRA_truth_DEPENDENCIES) 
-	@rm -f truth$(EXEEXT)
-	$(CXXLINK) $(truth_OBJECTS) $(truth_LDADD) $(LIBS)
-
-mostlyclean-compile:
-	-rm -f *.$(OBJEXT)
-
-distclean-compile:
-	-rm -f *.tab.c
-
-include ./$(DEPDIR)/truth-Bloom.Po
-include ./$(DEPDIR)/truth-FactDB.Po
-include ./$(DEPDIR)/truth-Graph.Po
-include ./$(DEPDIR)/truth-InferenceServer.Po
-include ./$(DEPDIR)/truth-Messages.pb.Po
-include ./$(DEPDIR)/truth-Postgres.Po
-include ./$(DEPDIR)/truth-Search.Po
-include ./$(DEPDIR)/truth-Trie.Po
-include ./$(DEPDIR)/truth-Utils.Po
-
-.cc.o:
-	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ $<
-
-.cc.obj:
-	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-#	source='$<' object='$@' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
-
-.cc.lo:
-	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-#	source='$<' object='$@' libtool=yes \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(LTCXXCOMPILE) -c -o $@ $<
-
-truth-Bloom.o: src/Bloom.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Bloom.o -MD -MP -MF $(DEPDIR)/truth-Bloom.Tpo -c -o truth-Bloom.o `test -f 'src/Bloom.cc' || echo '$(srcdir)/'`src/Bloom.cc
-	$(am__mv) $(DEPDIR)/truth-Bloom.Tpo $(DEPDIR)/truth-Bloom.Po
-#	source='src/Bloom.cc' object='truth-Bloom.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Bloom.o `test -f 'src/Bloom.cc' || echo '$(srcdir)/'`src/Bloom.cc
-
-truth-Bloom.obj: src/Bloom.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Bloom.obj -MD -MP -MF $(DEPDIR)/truth-Bloom.Tpo -c -o truth-Bloom.obj `if test -f 'src/Bloom.cc'; then $(CYGPATH_W) 'src/Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/src/Bloom.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Bloom.Tpo $(DEPDIR)/truth-Bloom.Po
-#	source='src/Bloom.cc' object='truth-Bloom.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Bloom.obj `if test -f 'src/Bloom.cc'; then $(CYGPATH_W) 'src/Bloom.cc'; else $(CYGPATH_W) '$(srcdir)/src/Bloom.cc'; fi`
-
-truth-Messages.pb.o: src/Messages.pb.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Messages.pb.o -MD -MP -MF $(DEPDIR)/truth-Messages.pb.Tpo -c -o truth-Messages.pb.o `test -f 'src/Messages.pb.cc' || echo '$(srcdir)/'`src/Messages.pb.cc
-	$(am__mv) $(DEPDIR)/truth-Messages.pb.Tpo $(DEPDIR)/truth-Messages.pb.Po
-#	source='src/Messages.pb.cc' object='truth-Messages.pb.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Messages.pb.o `test -f 'src/Messages.pb.cc' || echo '$(srcdir)/'`src/Messages.pb.cc
-
-truth-Messages.pb.obj: src/Messages.pb.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Messages.pb.obj -MD -MP -MF $(DEPDIR)/truth-Messages.pb.Tpo -c -o truth-Messages.pb.obj `if test -f 'src/Messages.pb.cc'; then $(CYGPATH_W) 'src/Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/src/Messages.pb.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Messages.pb.Tpo $(DEPDIR)/truth-Messages.pb.Po
-#	source='src/Messages.pb.cc' object='truth-Messages.pb.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Messages.pb.obj `if test -f 'src/Messages.pb.cc'; then $(CYGPATH_W) 'src/Messages.pb.cc'; else $(CYGPATH_W) '$(srcdir)/src/Messages.pb.cc'; fi`
-
-truth-Trie.o: src/Trie.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Trie.o -MD -MP -MF $(DEPDIR)/truth-Trie.Tpo -c -o truth-Trie.o `test -f 'src/Trie.cc' || echo '$(srcdir)/'`src/Trie.cc
-	$(am__mv) $(DEPDIR)/truth-Trie.Tpo $(DEPDIR)/truth-Trie.Po
-#	source='src/Trie.cc' object='truth-Trie.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Trie.o `test -f 'src/Trie.cc' || echo '$(srcdir)/'`src/Trie.cc
-
-truth-Trie.obj: src/Trie.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Trie.obj -MD -MP -MF $(DEPDIR)/truth-Trie.Tpo -c -o truth-Trie.obj `if test -f 'src/Trie.cc'; then $(CYGPATH_W) 'src/Trie.cc'; else $(CYGPATH_W) '$(srcdir)/src/Trie.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Trie.Tpo $(DEPDIR)/truth-Trie.Po
-#	source='src/Trie.cc' object='truth-Trie.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Trie.obj `if test -f 'src/Trie.cc'; then $(CYGPATH_W) 'src/Trie.cc'; else $(CYGPATH_W) '$(srcdir)/src/Trie.cc'; fi`
-
-truth-FactDB.o: src/FactDB.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-FactDB.o -MD -MP -MF $(DEPDIR)/truth-FactDB.Tpo -c -o truth-FactDB.o `test -f 'src/FactDB.cc' || echo '$(srcdir)/'`src/FactDB.cc
-	$(am__mv) $(DEPDIR)/truth-FactDB.Tpo $(DEPDIR)/truth-FactDB.Po
-#	source='src/FactDB.cc' object='truth-FactDB.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-FactDB.o `test -f 'src/FactDB.cc' || echo '$(srcdir)/'`src/FactDB.cc
-
-truth-FactDB.obj: src/FactDB.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-FactDB.obj -MD -MP -MF $(DEPDIR)/truth-FactDB.Tpo -c -o truth-FactDB.obj `if test -f 'src/FactDB.cc'; then $(CYGPATH_W) 'src/FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/src/FactDB.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-FactDB.Tpo $(DEPDIR)/truth-FactDB.Po
-#	source='src/FactDB.cc' object='truth-FactDB.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-FactDB.obj `if test -f 'src/FactDB.cc'; then $(CYGPATH_W) 'src/FactDB.cc'; else $(CYGPATH_W) '$(srcdir)/src/FactDB.cc'; fi`
-
-truth-Postgres.o: src/Postgres.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Postgres.o -MD -MP -MF $(DEPDIR)/truth-Postgres.Tpo -c -o truth-Postgres.o `test -f 'src/Postgres.cc' || echo '$(srcdir)/'`src/Postgres.cc
-	$(am__mv) $(DEPDIR)/truth-Postgres.Tpo $(DEPDIR)/truth-Postgres.Po
-#	source='src/Postgres.cc' object='truth-Postgres.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Postgres.o `test -f 'src/Postgres.cc' || echo '$(srcdir)/'`src/Postgres.cc
-
-truth-Postgres.obj: src/Postgres.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Postgres.obj -MD -MP -MF $(DEPDIR)/truth-Postgres.Tpo -c -o truth-Postgres.obj `if test -f 'src/Postgres.cc'; then $(CYGPATH_W) 'src/Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/src/Postgres.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Postgres.Tpo $(DEPDIR)/truth-Postgres.Po
-#	source='src/Postgres.cc' object='truth-Postgres.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Postgres.obj `if test -f 'src/Postgres.cc'; then $(CYGPATH_W) 'src/Postgres.cc'; else $(CYGPATH_W) '$(srcdir)/src/Postgres.cc'; fi`
-
-truth-Utils.o: src/Utils.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Utils.o -MD -MP -MF $(DEPDIR)/truth-Utils.Tpo -c -o truth-Utils.o `test -f 'src/Utils.cc' || echo '$(srcdir)/'`src/Utils.cc
-	$(am__mv) $(DEPDIR)/truth-Utils.Tpo $(DEPDIR)/truth-Utils.Po
-#	source='src/Utils.cc' object='truth-Utils.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Utils.o `test -f 'src/Utils.cc' || echo '$(srcdir)/'`src/Utils.cc
-
-truth-Utils.obj: src/Utils.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Utils.obj -MD -MP -MF $(DEPDIR)/truth-Utils.Tpo -c -o truth-Utils.obj `if test -f 'src/Utils.cc'; then $(CYGPATH_W) 'src/Utils.cc'; else $(CYGPATH_W) '$(srcdir)/src/Utils.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Utils.Tpo $(DEPDIR)/truth-Utils.Po
-#	source='src/Utils.cc' object='truth-Utils.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Utils.obj `if test -f 'src/Utils.cc'; then $(CYGPATH_W) 'src/Utils.cc'; else $(CYGPATH_W) '$(srcdir)/src/Utils.cc'; fi`
-
-truth-Graph.o: src/Graph.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Graph.o -MD -MP -MF $(DEPDIR)/truth-Graph.Tpo -c -o truth-Graph.o `test -f 'src/Graph.cc' || echo '$(srcdir)/'`src/Graph.cc
-	$(am__mv) $(DEPDIR)/truth-Graph.Tpo $(DEPDIR)/truth-Graph.Po
-#	source='src/Graph.cc' object='truth-Graph.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Graph.o `test -f 'src/Graph.cc' || echo '$(srcdir)/'`src/Graph.cc
-
-truth-Graph.obj: src/Graph.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Graph.obj -MD -MP -MF $(DEPDIR)/truth-Graph.Tpo -c -o truth-Graph.obj `if test -f 'src/Graph.cc'; then $(CYGPATH_W) 'src/Graph.cc'; else $(CYGPATH_W) '$(srcdir)/src/Graph.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Graph.Tpo $(DEPDIR)/truth-Graph.Po
-#	source='src/Graph.cc' object='truth-Graph.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Graph.obj `if test -f 'src/Graph.cc'; then $(CYGPATH_W) 'src/Graph.cc'; else $(CYGPATH_W) '$(srcdir)/src/Graph.cc'; fi`
-
-truth-InferenceServer.o: src/InferenceServer.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-InferenceServer.o -MD -MP -MF $(DEPDIR)/truth-InferenceServer.Tpo -c -o truth-InferenceServer.o `test -f 'src/InferenceServer.cc' || echo '$(srcdir)/'`src/InferenceServer.cc
-	$(am__mv) $(DEPDIR)/truth-InferenceServer.Tpo $(DEPDIR)/truth-InferenceServer.Po
-#	source='src/InferenceServer.cc' object='truth-InferenceServer.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-InferenceServer.o `test -f 'src/InferenceServer.cc' || echo '$(srcdir)/'`src/InferenceServer.cc
-
-truth-InferenceServer.obj: src/InferenceServer.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-InferenceServer.obj -MD -MP -MF $(DEPDIR)/truth-InferenceServer.Tpo -c -o truth-InferenceServer.obj `if test -f 'src/InferenceServer.cc'; then $(CYGPATH_W) 'src/InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/src/InferenceServer.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-InferenceServer.Tpo $(DEPDIR)/truth-InferenceServer.Po
-#	source='src/InferenceServer.cc' object='truth-InferenceServer.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-InferenceServer.obj `if test -f 'src/InferenceServer.cc'; then $(CYGPATH_W) 'src/InferenceServer.cc'; else $(CYGPATH_W) '$(srcdir)/src/InferenceServer.cc'; fi`
-
-truth-Search.o: src/Search.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Search.o -MD -MP -MF $(DEPDIR)/truth-Search.Tpo -c -o truth-Search.o `test -f 'src/Search.cc' || echo '$(srcdir)/'`src/Search.cc
-	$(am__mv) $(DEPDIR)/truth-Search.Tpo $(DEPDIR)/truth-Search.Po
-#	source='src/Search.cc' object='truth-Search.o' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Search.o `test -f 'src/Search.cc' || echo '$(srcdir)/'`src/Search.cc
-
-truth-Search.obj: src/Search.cc
-	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT truth-Search.obj -MD -MP -MF $(DEPDIR)/truth-Search.Tpo -c -o truth-Search.obj `if test -f 'src/Search.cc'; then $(CYGPATH_W) 'src/Search.cc'; else $(CYGPATH_W) '$(srcdir)/src/Search.cc'; fi`
-	$(am__mv) $(DEPDIR)/truth-Search.Tpo $(DEPDIR)/truth-Search.Po
-#	source='src/Search.cc' object='truth-Search.obj' libtool=no \
-#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
-#	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(truth_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o truth-Search.obj `if test -f 'src/Search.cc'; then $(CYGPATH_W) 'src/Search.cc'; else $(CYGPATH_W) '$(srcdir)/src/Search.cc'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -885,12 +631,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(PROGRAMS) config.h
+all-am: Makefile config.h
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -923,14 +666,13 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
-distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags
+distclean-am: clean-am distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags
 
 dvi: dvi-recursive
 
@@ -950,7 +692,7 @@ install-dvi: install-dvi-recursive
 
 install-dvi-am:
 
-install-exec-am: install-binPROGRAMS
+install-exec-am:
 
 install-html: install-html-recursive
 
@@ -975,14 +717,12 @@ installcheck-am:
 maintainer-clean: maintainer-clean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-recursive
 
-mostlyclean-am: mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool
+mostlyclean-am: mostlyclean-generic mostlyclean-libtool
 
 pdf: pdf-recursive
 
@@ -992,30 +732,33 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS
+uninstall-am:
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all \
 	ctags-recursive install-am install-strip tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am am--refresh check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool ctags ctags-recursive dist \
-	dist-all dist-bzip2 dist-gzip dist-lzip dist-lzma dist-shar \
-	dist-tarZ dist-xz dist-zip distcheck distclean \
-	distclean-compile distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binPROGRAMS install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS
+	all all-am am--refresh check check-am clean clean-generic \
+	clean-libtool clean-local ctags ctags-recursive dist dist-all \
+	dist-bzip2 dist-gzip dist-lzip dist-lzma dist-shar dist-tarZ \
+	dist-xz dist-zip distcheck distclean distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am
 
+
+clean-local:
+	rm -f java.hprof.txt
+	rm -f rm -f *.gcno
+	rm -f rm -f *.gcda
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

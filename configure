@@ -617,6 +617,7 @@ LTLIBOBJS
 DEBUG_FALSE
 DEBUG_TRUE
 LIBOBJS
+PROTOC
 HAVE_PROTOBUF_FALSE
 HAVE_PROTOBUF_TRUE
 PROTOBUF_LIBS
@@ -755,6 +756,7 @@ with_gnu_ld
 with_sysroot
 enable_libtool_lock
 with_postgresql
+with_protoc
 enable_debug
 '
       ac_precious_vars='build_alias
@@ -1414,6 +1416,8 @@ Optional Packages:
                         (or the compiler's sysroot if not specified).
   --with-postgresql=[ARG] use PostgreSQL library [default=yes], optionally
                           specify path to pg_config
+  --with-protoc=PATH      location of the protoc protocol buffer compiler
+                          binary, defaults to protoc
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -2930,6 +2934,54 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 #   warranty.
 
 #serial 9
+
+
+
+# AC_COMPILE_STDCXX_OX
+
+
+# ===============================================================================
+#  http://www.gnu.org/software/autoconf-archive/ax_cxx_header_unordered_map.html
+# ===============================================================================
+#
+# SYNOPSIS
+#
+#   AX_CXX_HEADER_UNORDERED_MAP
+#
+# DESCRIPTION
+#
+#   Check whether the C++ include <unordered_map> exists and define
+#   HAVE_UNORDERED_MAP if it does.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Benjamin Kosnik <bkoz@redhat.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 6
+
+# This is what autoupdate's m4 run will expand.  It fires
+# the warning (with _au_warn_XXX), outputs it into the
+# updated configure.ac (with AC_DIAGNOSE), and then outputs
+# the replacement expansion.
+
+
+# This is an auxiliary macro that is also run when
+# autoupdate runs m4.  It simply calls m4_warning, but
+# we need a wrapper so that each warning is emitted only
+# once.  We break the quoting in m4_warning's argument in
+# order to expand this macro's arguments, not AU_DEFUN's.
+
+
+# Finally, this is the expansion that is picked up by
+# autoconf.  It tells the user to run autoupdate, and
+# then outputs the replacement expansion.  We do not care
+# about autoupdate's warning because that contains
+# information on what to do *after* running autoupdate.
 
 
 
@@ -8359,6 +8411,10 @@ _lt_linker_boilerplate=`cat conftest.err`
 $RM -r conftest*
 
 
+## CAVEAT EMPTOR:
+## There is no encapsulation within the following macros, do not change
+## the running order or otherwise move them around unless you know exactly
+## what you are doing...
 if test -n "$compiler"; then
 
 lt_prog_compiler_no_builtin_flag=
@@ -15468,17 +15524,24 @@ if test -z "$have_protobuf"; then
   as_fn_error $? "fatal: could not find the protobuf library" "$LINENO" 5
 fi
 
-echo "---CHECKS FO HEADERS---"
+echo "---CHECKS FOR PROGRAMS---"
 
-ac_fn_cxx_check_header_mongrel "$LINENO" "algorithm" "ac_cv_header_algorithm" "$ac_includes_default"
-if test "x$ac_cv_header_algorithm" = xyes; then :
-
+# Check whether --with-protoc was given.
+if test "${with_protoc+set}" = set; then :
+  withval=$with_protoc; PROTOC="$withval"
 else
-  echo "could not find required header!"; exit -1
+  PROTOC='protoc'
 fi
 
 
-for ac_header in cstdlib stdlib.h
+
+echo "---CHECKS FOR HEADERS---"
+
+for ac_header in algorithm arpa/inet.h assert.h cmath cstdio \
+                  cstdlib cstring ctime exception map netinet/in.h \
+                  queue set sstream stdio.h stdlib.h string \
+                  sys/errno.h sys/resource.h sys/socket.h sys/types.h \
+                  vector
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_cxx_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -15559,60 +15622,232 @@ fi
 
 
 
-#include <stdlib.h>
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if g++ supports C++0x features without additional flags" >&5
+$as_echo_n "checking if g++ supports C++0x features without additional flags... " >&6; }
+if ${ac_cv_cxx_compile_cxx0x_native+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
 
-#include <algorithm>
-#include <arpa/inet.h>
-#include <assert.h>
-#include "Bloom.h"
-#include <cmath>
-#include "Config.h"
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <ctime>
-#include <exception>
-#include "FactDB.h"
-#include "fnv/fnv.h"
-#include <google/protobuf/descriptor.h>
-#include <google/protobuf/extension_set.h>
-#include <google/protobuf/generated_message_reflection.h>
-#include <google/protobuf/generated_message_util.h>
-#include <google/protobuf/io/coded_stream.h>
-#include <google/protobuf/reflection_ops.h>
-#include <google/protobuf/repeated_field.h>
-#include <google/protobuf/stubs/common.h>
-#include <google/protobuf/stubs/once.h>
-#include <google/protobuf/wire_format.h>
-#include <google/protobuf/wire_format_lite_inl.h>
-#include "Graph.h"
-#include "Graph.h"
-#include "libpq-fe.h"
-#include <map>
-#include "Messages.pb.h"
-#include "Messages.pb.h"
-#include <netinet/in.h>
-#include "Postgres.h"
-#include <queue>
-#include "Search.h"
-#include "Search.h"
-#include <set>
-#include <sstream>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <sys/errno.h>
-#include <sys/resource.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <thread>
-#include "Trie.h"
-#include "Trie.h"
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  template <typename T>
+    struct check
+    {
+      static_assert(sizeof(int) <= sizeof(T), "not big enough");
+    };
+
+    typedef check<check<bool>> right_angle_brackets;
+
+    int a;
+    decltype(a) b;
+
+    typedef check<int> check_type;
+    check_type c;
+    check_type&& cr = c;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_cxx_compile_cxx0x_native=yes
+else
+  ac_cv_cxx_compile_cxx0x_native=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cxx_compile_cxx0x_native" >&5
+$as_echo "$ac_cv_cxx_compile_cxx0x_native" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if g++ supports C++0x features with -std=c++0x" >&5
+$as_echo_n "checking if g++ supports C++0x features with -std=c++0x... " >&6; }
+if ${ac_cv_cxx_compile_cxx0x_cxx+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=c++0x"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  template <typename T>
+    struct check
+    {
+      static_assert(sizeof(int) <= sizeof(T), "not big enough");
+    };
+
+    typedef check<check<bool>> right_angle_brackets;
+
+    int a;
+    decltype(a) b;
+
+    typedef check<int> check_type;
+    check_type c;
+    check_type&& cr = c;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_cxx_compile_cxx0x_cxx=yes
+else
+  ac_cv_cxx_compile_cxx0x_cxx=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cxx_compile_cxx0x_cxx" >&5
+$as_echo "$ac_cv_cxx_compile_cxx0x_cxx" >&6; }
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if g++ supports C++0x features with -std=gnu++0x" >&5
+$as_echo_n "checking if g++ supports C++0x features with -std=gnu++0x... " >&6; }
+if ${ac_cv_cxx_compile_cxx0x_gxx+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  template <typename T>
+    struct check
+    {
+      static_assert(sizeof(int) <= sizeof(T), "not big enough");
+    };
+
+    typedef check<check<bool>> right_angle_brackets;
+
+    int a;
+    decltype(a) b;
+
+    typedef check<int> check_type;
+    check_type c;
+    check_type&& cr = c;
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_cxx_compile_cxx0x_gxx=yes
+else
+  ac_cv_cxx_compile_cxx0x_gxx=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cxx_compile_cxx0x_gxx" >&5
+$as_echo "$ac_cv_cxx_compile_cxx0x_gxx" >&6; }
+
+  if test "$ac_cv_cxx_compile_cxx0x_native" = yes ||
+     test "$ac_cv_cxx_compile_cxx0x_cxx" = yes ||
+     test "$ac_cv_cxx_compile_cxx0x_gxx" = yes; then
+
+$as_echo "#define HAVE_STDCXX_0X /**/" >>confdefs.h
+
+  fi
+
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for unordered_map" >&5
+$as_echo_n "checking for unordered_map... " >&6; }
+if ${ax_cv_cxx_unordered_map+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  ac_save_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS -std=gnu++0x"
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 #include <unordered_map>
-#include "Utils.h"
-#include "Utils.h"
-#include <vector>
+int
+main ()
+{
+using std::unordered_map;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ax_cv_cxx_unordered_map=yes
+else
+  ax_cv_cxx_unordered_map=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+  CXXFLAGS="$ac_save_CXXFLAGS"
+  ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_cxx_unordered_map" >&5
+$as_echo "$ax_cv_cxx_unordered_map" >&6; }
+  if test "$ax_cv_cxx_unordered_map" = yes; then
+
+$as_echo "#define HAVE_UNORDERED_MAP /**/" >>confdefs.h
+
+  fi
+
 
 echo "---CUSTOM FLAGS---"
 # optionally enable debugging
@@ -15636,7 +15871,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile src/fnv/Makefile"
+ac_config_files="$ac_config_files Makefile src/Makefile src/fnv/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -16758,6 +16993,7 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/fnv/Makefile") CONFIG_FILES="$CONFIG_FILES src/fnv/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
