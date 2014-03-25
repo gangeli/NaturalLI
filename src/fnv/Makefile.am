@@ -38,4 +38,4 @@ libfnv64_la_SOURCES=[ fnv.h hash_64a.c ]
 libfnv32_la_SOURCES=[ fnv.h hash_32a.c ]
 
 clean-local:
-	rm -f longlong.h
+	rm longlong.h

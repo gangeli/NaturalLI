@@ -14,7 +14,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -34,8 +33,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = src/fnv
-DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+subdir = test/src/gtest
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_postgresql.m4 \
 	$(top_srcdir)/m4/ax_compile_stdcxx_0x.m4 \
@@ -48,56 +47,29 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  test -z "$$files" \
-    || { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-    || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-         $(am__cd) "$$dir" && rm -f $$files; }; \
-  }
-am__installdirs = "$(DESTDIR)$(libdir)"
-LTLIBRARIES = $(lib_LTLIBRARIES)
-libfnv32_la_LIBADD =
-am_libfnv32_la_OBJECTS = hash_32a.lo
-libfnv32_la_OBJECTS = $(am_libfnv32_la_OBJECTS)
-libfnv64_la_LIBADD =
-am_libfnv64_la_OBJECTS = hash_64a.lo
-libfnv64_la_OBJECTS = $(am_libfnv64_la_OBJECTS)
+lib_libgtest_la_LIBADD =
+am_lib_libgtest_la_OBJECTS = gtest-all.lo
+lib_libgtest_la_OBJECTS = $(am_lib_libgtest_la_OBJECTS)
+am__dirstamp = $(am__leading_dot)dirstamp
+lib_libgtest_main_la_DEPENDENCIES = lib/libgtest.la
+am_lib_libgtest_main_la_OBJECTS = gtest_main.lo
+lib_libgtest_main_la_OBJECTS = $(am_lib_libgtest_main_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
-COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
-	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-LTCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
-CCLD = $(CC)
-LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(libfnv32_la_SOURCES) $(libfnv64_la_SOURCES)
-DIST_SOURCES = $(libfnv32_la_SOURCES) $(libfnv64_la_SOURCES)
+SOURCES = $(lib_libgtest_la_SOURCES) $(lib_libgtest_main_la_SOURCES)
+DIST_SOURCES = $(lib_libgtest_la_SOURCES) \
+	$(lib_libgtest_main_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -238,15 +210,62 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-BUILT_SOURCES = longlong.h
-lib_LTLIBRARIES = libfnv64.la libfnv32.la
-libfnv64_la_SOURCES = [ fnv.h hash_64a.c ]
-libfnv32_la_SOURCES = [ fnv.h hash_32a.c ]
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+
+# Nonstandard package files for distribution
+EXTRA_DIST = include/gtest/gtest-param-test.h.pump \
+	include/gtest/internal/gtest-param-util-generated.h.pump \
+	include/gtest/internal/gtest-tuple.h.pump \
+	include/gtest/internal/gtest-type-util.h.pump $(GTEST_SRC)
+
+# gtest source files that we don't compile directly.  They are
+# #included by gtest-all.cc.
+GTEST_SRC = \
+  src/gtest-death-test.cc \
+  src/gtest-filepath.cc \
+  src/gtest-internal-inl.h \
+  src/gtest-port.cc \
+  src/gtest-printers.cc \
+  src/gtest-test-part.cc \
+  src/gtest-typed-test.cc \
+  src/gtest.cc \
+  include/gtest/internal/gtest-param-util-generated.h \
+  include/gtest/internal/gtest-type-util.h \
+  include/gtest/internal/gtest-param-util.h \
+  include/gtest/internal/gtest-port.h \
+  include/gtest/internal/gtest-linked_ptr.h \
+  include/gtest/internal/gtest-internal.h \
+  include/gtest/internal/gtest-death-test-internal.h \
+  include/gtest/internal/gtest-filepath.h \
+  include/gtest/internal/gtest-string.h \
+  include/gtest/internal/gtest-tuple.h \
+  include/gtest/gtest.h \
+  include/gtest/gtest-typed-test.h \
+  include/gtest/gtest-message.h \
+  include/gtest/gtest-test-part.h \
+  include/gtest/gtest_pred_impl.h \
+  include/gtest/gtest-printers.h \
+  include/gtest/gtest-death-test.h \
+  include/gtest/gtest-param-test.h \
+  include/gtest/gtest-spi.h \
+  include/gtest/gtest_prod.h 
+
+
+# We define the global AM_CPPFLAGS as everything we compile includes from these
+# directories.
+AM_CPPFLAGS = -isystem $(srcdir)/include -I$(srcdir) $(GTEST_CPPFLAGS)
+AM_CXXFLAGS = $(GTEST_CXXFLAGS)
+AM_LDFLAGS = $(GTEST_LDFLAGS)
+LDADD = $(GTEST_LIBS)
+
+# Build rules for libraries.
+check_LTLIBRARIES = lib/libgtest.la lib/libgtest_main.la
+lib_libgtest_la_SOURCES = src/gtest-all.cc
+lib_libgtest_main_la_SOURCES = src/gtest_main.cc
+lib_libgtest_main_la_LIBADD = lib/libgtest.la
+all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .cc .lo .o .obj
 $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -256,9 +275,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign src/fnv/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign test/src/gtest/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign src/fnv/Makefile
+	  $(AUTOMAKE) --foreign test/src/gtest/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -277,41 +296,22 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(libdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(libdir)"; \
-	}
 
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LTLIBRARIES)'; test -n "$(libdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$f"; \
-	done
-
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+clean-checkLTLIBRARIES:
+	-test -z "$(check_LTLIBRARIES)" || rm -f $(check_LTLIBRARIES)
+	@list='$(check_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-libfnv32.la: $(libfnv32_la_OBJECTS) $(libfnv32_la_DEPENDENCIES) $(EXTRA_libfnv32_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libfnv32_la_OBJECTS) $(libfnv32_la_LIBADD) $(LIBS)
-libfnv64.la: $(libfnv64_la_OBJECTS) $(libfnv64_la_DEPENDENCIES) $(EXTRA_libfnv64_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libfnv64_la_OBJECTS) $(libfnv64_la_LIBADD) $(LIBS)
+lib/$(am__dirstamp):
+	@$(MKDIR_P) lib
+	@: > lib/$(am__dirstamp)
+lib/libgtest.la: $(lib_libgtest_la_OBJECTS) $(lib_libgtest_la_DEPENDENCIES) $(EXTRA_lib_libgtest_la_DEPENDENCIES) lib/$(am__dirstamp)
+	$(CXXLINK)  $(lib_libgtest_la_OBJECTS) $(lib_libgtest_la_LIBADD) $(LIBS)
+lib/libgtest_main.la: $(lib_libgtest_main_la_OBJECTS) $(lib_libgtest_main_la_DEPENDENCIES) $(EXTRA_lib_libgtest_main_la_DEPENDENCIES) lib/$(am__dirstamp)
+	$(CXXLINK)  $(lib_libgtest_main_la_OBJECTS) $(lib_libgtest_main_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -319,35 +319,50 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash_32a.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hash_64a.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtest-all.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/gtest_main.Plo@am__quote@
 
-.c.o:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+.cc.o:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ $<
 
-.c.obj:
-@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+.cc.obj:
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
-.c.lo:
-@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+.cc.lo:
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+gtest-all.lo: src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gtest-all.lo -MD -MP -MF $(DEPDIR)/gtest-all.Tpo -c -o gtest-all.lo `test -f 'src/gtest-all.cc' || echo '$(srcdir)/'`src/gtest-all.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/gtest-all.Tpo $(DEPDIR)/gtest-all.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/gtest-all.cc' object='gtest-all.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gtest-all.lo `test -f 'src/gtest-all.cc' || echo '$(srcdir)/'`src/gtest-all.cc
+
+gtest_main.lo: src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT gtest_main.lo -MD -MP -MF $(DEPDIR)/gtest_main.Tpo -c -o gtest_main.lo `test -f 'src/gtest_main.cc' || echo '$(srcdir)/'`src/gtest_main.cc
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/gtest_main.Tpo $(DEPDIR)/gtest_main.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='src/gtest_main.cc' object='gtest_main.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o gtest_main.lo `test -f 'src/gtest_main.cc' || echo '$(srcdir)/'`src/gtest_main.cc
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf lib/.libs lib/_libs
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -432,15 +447,11 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_LTLIBRARIES)
+check: check-am
+all-am: Makefile
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -466,14 +477,14 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f lib/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool clean-local \
+clean-am: clean-checkLTLIBRARIES clean-generic clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -500,7 +511,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-libLTLIBRARIES
+install-exec-am:
 
 install-html: install-html-am
 
@@ -540,59 +551,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libLTLIBRARIES
+uninstall-am:
 
-.MAKE: all check install install-am install-strip
+.MAKE: check-am install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool clean-local ctags distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-pdf install-pdf-am \
+.PHONY: CTAGS GTAGS all all-am check check-am clean \
+	clean-checkLTLIBRARIES clean-generic clean-libtool ctags \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-libLTLIBRARIES
+	tags uninstall uninstall-am
 
-longlong.h:
-	-@rm -f have_ulong64 have_ulong64.o ll_tmp longlong.h
-	@echo 'forming longlong.h'
-	@echo '/*' > longlong.h
-	@echo ' * DO NOT EDIT -- generated by the Makefile' >> longlong.h
-	@echo ' */' >> longlong.h
-	@echo '' >> longlong.h
-	@echo '#if !defined(__LONGLONG_H__)' >> longlong.h
-	@echo '#define __LONGLONG_H__' >> longlong.h
-	@echo '' >> longlong.h
-	@echo '/* do we have/want to use a long long type? */' >> longlong.h
-	-@rm -f have_ulong64.o have_ulong64
-	-@${CC} ${CFLAGS} have_ulong64.c -c 2>/dev/null; true
-	-@${CC} ${CFLAGS} have_ulong64.o -o have_ulong64 2>/dev/null; true
-	-@${SHELL} -c "./have_ulong64 > ll_tmp 2>/dev/null" \
-	    >/dev/null 2>&1; true
-	-@if [ -s ll_tmp ]; then \
-	    cat ll_tmp >> longlong.h; \
-	else \
-	    echo '#undef HAVE_64BIT_LONG_LONG	/* no */' >> longlong.h; \
-	fi
-	@echo '' >> longlong.h
-	@echo '/*' >> longlong.h
-	@echo ' * NO64BIT_LONG_LONG undef HAVE_64BIT_LONG_LONG' >> longlong.h
-	@echo ' */' >> longlong.h
-	@echo '#if defined(NO64BIT_LONG_LONG)' >> longlong.h
-	@echo '#undef HAVE_64BIT_LONG_LONG' >> longlong.h
-	@echo '#endif /* NO64BIT_LONG_LONG */' >> longlong.h
-	@echo '' >> longlong.h
-	@echo '#endif /* !__LONGLONG_H__ */' >> longlong.h
-	-@rm -f have_ulong64 have_ulong64.o ll_tmp
-	@echo 'longlong.h formed'
-
-clean-local:
-	rm longlong.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
