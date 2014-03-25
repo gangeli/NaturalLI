@@ -17,7 +17,12 @@ AC_LANG(C++)
 LT_INIT([disable-shared])
 
 # (java)
-AX_CHECK_JDK_HOME
+AC_SUBST(JDK_HOME)
+AC_ARG_WITH([java],
+  [AS_HELP_STRING([--with-java=dir],[The JDK home directory])],
+  [JDK_HOME="$with_java"],
+  [AC_MSG_NOTICE([a custom java path can be specified using --with-java])]
+)
 AC_CHECK_PROG([javac_found],["javac"],[yes],[no],["$JDK_HOME/bin"])
 if test "x$javac_found" != "xyes"; then
   AC_MSG_ERROR([could not find javac compiler])
@@ -26,7 +31,7 @@ fi
 # (scala)
 AC_SUBST(SCALA_HOME)
 AC_ARG_WITH([scala],
-  [AS_HELP_STRING([--with-scala=dir],[directory containing scala])],
+  [AS_HELP_STRING([--with-scala=dir],[The scala home directory])],
   [SCALA_HOME="$with_scala"],
   [AC_MSG_NOTICE([a custom scala path can be specified using --with-scala])]
 )
@@ -70,9 +75,15 @@ AC_SUBST([GTEST_LIBS])
 echo "---CHECKS FOR PROGRAMS---"
 AC_ARG_WITH([protoc],
     [AS_HELP_STRING([--with-protoc=PATH],
-        [location of the protoc protocol buffer compiler binary, defaults to protoc])],
-    [PROTOC="$withval"],
-    [PROTOC='protoc'])
+        [location of the protocol buffer home; protoc should be located at bin/protoc ])],
+    [PROTO_CFLAGS="$withval/include"
+     PROTO_LDFLAGS="$withval/lib"
+     PROTOC="$withval/bin/protoc"],
+    [PROTO_CFLAGS=
+     PROTO_LDFLAGS=
+     PROTOC='protoc'])
+AC_SUBST([PROTO_CFLAGS])
+AC_SUBST([PROTO_LDFLAGS])
 AC_SUBST([PROTOC])
 
 echo "---CHECKS FOR HEADERS---"

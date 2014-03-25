@@ -7,6 +7,9 @@ Messages.pb.h Messages.pb.cc: Messages.proto
 org/goobs/truth/Messages.java: Messages.proto
 	${PROTOC} -I=. --java_out=. Messages.proto
 
+clean-local:
+	rm -f Messages.pb.cc Messages.pb.h org/goobs/truth/Messages.java
+
 BUILT_SOURCES = Messages.proto
 
 server_SOURCES=[ \
@@ -18,8 +21,8 @@ server_SOURCES=[ \
   FactDB.h  Postgres.h     Trie.h \
   ]
 
-server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS}
-server_LDADD=${POSTGRESQL_LDFLAGS} -lprotobuf -Lfnv -lfnv32
+server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
+server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if DEBUG
   server_CXXFLAGS+= -O0 -ggdb
   server_LDADD+=-lprofiler
