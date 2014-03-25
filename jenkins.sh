@@ -14,7 +14,7 @@ make all
 
 echo "-- TEST --"
 make check
-test/server/itest_server
+test/src/itest_server
 make java_test
 
 echo "-- COVERAGE --"

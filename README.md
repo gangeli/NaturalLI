@@ -1,7 +1,7 @@
 
 
 Compilation
-===========
+-----------
 
 If you're an optimist, the following might even work:
     
