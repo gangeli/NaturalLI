@@ -231,3 +231,21 @@ TEST_F(TrieTest, FactDBEdgeCompletion) {
   EXPECT_EQ(2, edgeBuffer[1]);
   EXPECT_EQ(3, edgeBuffer[2]);
 }
+
+//// Make sure we can complete facts with duplicate words
+//TEST_F(TrieTest, FactDBCompletionDuplicateWord) {
+//  db->addValidInsertion(1, DEL_NOUN);
+//  db->addValidInsertion(2, DEL_NOUN);
+//  db->addValidInsertion(3, DEL_NOUN);
+//  buffer[0] = 1; buffer[1] = 2; buffer[2] = 1;
+//  db->add(buffer, 3);
+//  
+//  // Test that {1, 2} are proposed from 1
+//  uint8_t outLength = 255;
+//  outBuffer[0] = 0; outBuffer[1] = 0; outBuffer[2] = 0; outBuffer[3] = 0;
+//  buffer[0] = 1;
+//  EXPECT_FALSE(db->contains(buffer, 1, outBuffer, edgeBuffer, &outLength));
+//  EXPECT_EQ(2, outLength);
+//  EXPECT_EQ(1, outBuffer[0]);
+//  EXPECT_EQ(2, outBuffer[1]);
+//}
