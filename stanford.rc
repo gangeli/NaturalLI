@@ -11,5 +11,5 @@ for file in `find lib -name "*.jar"`; do
 done
 
 function client() {
-  make dist/client.jar && scala -J-mx1g -cp $CLASSPATH:dist/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Client
+  make -C src client.jar && scala -J-mx1g -cp $CLASSPATH:src/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Client
 }
