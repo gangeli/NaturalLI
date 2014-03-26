@@ -115,7 +115,6 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
 
 
 FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
-  printf("facts to read: %lu\n", maxFactsToRead);
   TrieFactDB* facts = new TrieFactDB();
   char query[127];
 

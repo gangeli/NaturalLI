@@ -92,6 +92,7 @@ class TrieFactDB : public Trie {
 FactDB* ReadFactTrie(const uint64_t maxFactsToRead);
 
 /** Read all facts in the database; @see ReadFactTrie(uint64_t) */
-inline FactDB* ReadFactTrie() { return ReadFactTrie(std::numeric_limits<uint64_t>::max()); }
+//inline FactDB* ReadFactTrie() { return ReadFactTrie(std::numeric_limits<uint64_t>::max()); }
+inline FactDB* ReadFactTrie() { return ReadFactTrie(1000000); }
 
 #endif
