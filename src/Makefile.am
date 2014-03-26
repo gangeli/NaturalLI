@@ -22,10 +22,8 @@ server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
 server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
 server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if DEBUG
-  server_CXXFLAGS+= -O0 -ggdb
-  server_LDADD+=-lprofiler
-else
-  server_CXXFLAGS+= -O3
+  server_CXXFLAGS += -O0 -ggdb
+  server_LDADD += -lprofiler
 endif
 
 client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java

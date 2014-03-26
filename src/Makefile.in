@@ -37,7 +37,6 @@ host_triplet = @host@
 bin_PROGRAMS = server$(EXEEXT)
 @DEBUG_TRUE@am__append_1 = -O0 -ggdb
 @DEBUG_TRUE@am__append_2 = -lprofiler
-@DEBUG_FALSE@am__append_3 = -O3
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -279,7 +278,7 @@ server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.h  Postgres.h     Trie.h
 
 server_CXXFLAGS = -std=c++0x -pthread ${POSTGRESQL_CFLAGS} \
-	${PROTO_CFLAGS} $(am__append_1) $(am__append_3)
+	${PROTO_CFLAGS} $(am__append_1)
 server_LDADD = ${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv \
 	-lfnv32 $(am__append_2)
 all: $(BUILT_SOURCES)
