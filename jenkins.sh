@@ -10,10 +10,9 @@ ln -s $HOME/stanford-corenlp-* lib/
 echo "-- MAKE --"
 ./configure --with-scala=/home/gabor/programs/scala --with-java=/usr/lib/jvm/java-7-oracle
 make clean
-make -j4 all
+make -j4 all check TESTS_ENVIRONMENT=true 
 
 echo "-- TEST --"
-make -j4 check
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 make java_test

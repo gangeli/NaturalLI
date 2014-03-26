@@ -144,15 +144,15 @@ Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edge
     edgesSizes[source] += 1;
     edgeI += 1;
     if (edgeI % 1000000 == 0) {
-      printf("loaded %luM edges\n", edgeI / 1000000);
+      printf("  loaded %luM edges\n", edgeI / 1000000);
     }
   }
   free(edgeCapacities);
-  printf("%lu edges loaded.\n", edgeI);
+  printf("  %lu edges loaded.\n", edgeI);
   
   
   // Finish
-  printf("%s\n", "Done reading the graph.");
+  printf("%s\n", "  done reading the graph.");
   return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
 }
 

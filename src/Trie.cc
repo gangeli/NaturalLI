@@ -114,7 +114,7 @@ const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLen
 }
 
 
-FactDB* ReadFactTrie() {
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
   TrieFactDB* facts = new TrieFactDB();
   char query[127];
 
@@ -136,7 +136,10 @@ FactDB* ReadFactTrie() {
   // Read facts
   printf("Reading facts...\n");
   // (query)
-  snprintf(query, 127, "SELECT gloss, weight FROM %s ORDER BY weight DESC;", PG_TABLE_FACT.c_str());
+  snprintf(query, 127,
+           "SELECT gloss, weight FROM %s ORDER BY weight DESC LIMIT %lu;",
+           PG_TABLE_FACT.c_str(),
+           maxFactsToRead);
   PGIterator iter = PGIterator(query);
   uint64_t i = 0;
   word buffer[256];
@@ -168,6 +171,6 @@ FactDB* ReadFactTrie() {
   }
 
   // Return
-  printf("  Done reading the fact database (%lu facts read)\n", i);
+  printf("  done reading the fact database (%lu facts read)\n", i);
   return facts;
 }

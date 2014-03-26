@@ -241,8 +241,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 BUILT_SOURCES = longlong.h
 lib_LTLIBRARIES = libfnv64.la libfnv32.la
-libfnv64_la_SOURCES = [ fnv.h hash_64a.c longlong.h ]
-libfnv32_la_SOURCES = [ fnv.h hash_32a.c longlong.h ]
+libfnv64_la_SOURCES = fnv.h hash_64a.c longlong.h
+libfnv32_la_SOURCES = fnv.h hash_32a.c longlong.h
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 

@@ -21,8 +21,8 @@ client:
 
 test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard test/src/org/goobs/truth/*.java)
 	$(MAKE) -C src client.jar
-	@echo "[test] Compiling (${JAVAC})..."
-	@echo "[test] Compiling (${SCALAC})..."
+	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
+	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d test/src -cp ${TEST_CP}:src/client.jar `find test/src -name "*.scala"` `find test/src -name "*.java"`
 	jar cf test/test_client.jar -C test/src .
 	jar uf test/test_client.jar -C src .

@@ -194,13 +194,34 @@ inline const Path* BreadthFirstSearch::push(
   const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
   tagged_word localMutated[mutatedLength];
   // (mutate fact)
+  // Care should be taken in this code.
+  // 1. Copy everything before mutation index
   memcpy(localMutated, parent->fact, mutationIndex * sizeof(tagged_word));
-  if (replaceLength > 1) { 
-    localMutated[mutationIndex] = replace2;      // insert before
-    localMutated[mutationIndex + 1] = replace1;
-  } else if (replaceLength > 0) {
-    localMutated[mutationIndex] = replace1;
+  // 2. Do replacement
+  switch (replaceLength) {
+    case 0:
+      // we deleted something; do nothing
+      break;
+    case 1:
+      localMutated[mutationIndex] = replace1;
+      break;
+    case 2:
+      if (mutationIndex == parent->factLength) {
+        // special case where we are inserting to the end of the fact
+        localMutated[mutationIndex - 1] = replace2;
+        localMutated[mutationIndex] = replace1;
+      } else {
+        // standard case; shift everything to the right and insert at the index
+        localMutated[mutationIndex] = replace2;
+        localMutated[mutationIndex + 1] = replace1;
+      }
+      break;
+    default:
+      printf("Can only have a replace length of 0, 1, or 2; replace length is %u", replaceLength);
+      std::exit(1);
+      break;
   }
+  // 3. Copy everything after the mutation zone
   if (mutationIndex < parent->factLength - 1) {
     memcpy(&(localMutated[mutationIndex + replaceLength]),
            &(parent->fact[mutationIndex + 1]),
@@ -208,7 +229,7 @@ inline const Path* BreadthFirstSearch::push(
   }
   // (check cache)
   if (cache->isSeen(localMutated, mutatedLength)) { return NULL; }
-  // (allocate fact)
+  // (allocate fact -- we do this here to avoid allocating cache hits)
   tagged_word* mutated = allocateWord(mutatedLength);
   if (mutated == NULL) { outOfMemory = true; return NULL; }
   // (copy local mutated fact to queue)
@@ -640,36 +661,38 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       const monotonicity parentMonotonicity = getMonotonicity(parentWord);
       
       // -- Do insertions --
-      for (uint32_t i = 0; i < numWordsCanInsert; ++i) {
-        // Introduce new word with sense 0 and neighbor's monotonicity
-        const tagged_word toInsert = getTaggedWord(wordsCanInsert[i], getMonotonicity(parentWord));
-        edge insertion;
-        insertion.sink  = wordsCanInsert[i];
-        insertion.sense = 0;
-        insertion.type  = edgesCanInsert[i];
-        insertion.cost  = 1.0;
-        // Flush if necessary (save memory)
-        if (queueLength >= PUSH_BATCH_SIZE - 1) {
-          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
-            printf("Error pushing to stack; returning\n");
-            return responses;
+      if (parentLength < MAX_FACT_LENGTH) {
+        for (uint32_t i = 0; i < numWordsCanInsert; ++i) {
+          // Introduce new word with sense 0 and neighbor's monotonicity
+          const tagged_word toInsert = getTaggedWord(wordsCanInsert[i], getMonotonicity(parentWord));
+          edge insertion;
+          insertion.sink  = wordsCanInsert[i];
+          insertion.sense = 0;
+          insertion.type  = edgesCanInsert[i];
+          insertion.cost  = 1.0;
+          // Flush if necessary (save memory)
+          if (queueLength >= PUSH_BATCH_SIZE - 1) {
+            if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
+              printf("Error pushing to stack; returning\n");
+              return responses;
+            }
+            queueLength = 0;
           }
-          queueLength = 0;
-        }
-        // Add the state to the fringe
-        // These are queued up in order to try to protect the cache; the push() call is
-        // fairly expensive memory-wise.
-        const float insertionCost = weights->computeCost(
-            parent->edgeType, insertion,
-            false,
-            parentMonotonicity);
-        if (insertionCost < 1e10) {
-          indexToMutateArr[queueLength] = indexToMutate;
-          insertArr[queueLength]        = toInsert;
-          sinkArr[queueLength]          = parentWord;
-          typeArr[queueLength]          = insertion.type;
-          costArr[queueLength]          = costSoFar + insertionCost;
-          queueLength += 1;
+          // Add the state to the fringe
+          // These are queued up in order to try to protect the cache; the push() call is
+          // fairly expensive memory-wise.
+          const float insertionCost = weights->computeCost(
+              parent->edgeType, insertion,
+              false,
+              parentMonotonicity);
+          if (insertionCost < 1e10) {
+            indexToMutateArr[queueLength] = indexToMutate;
+            insertArr[queueLength]        = toInsert;
+            sinkArr[queueLength]          = parentWord;
+            typeArr[queueLength]          = insertion.type;
+            costArr[queueLength]          = costSoFar + insertionCost;
+            queueLength += 1;
+          }
         }
       }
       if (indexToMutate == parentLength) { continue; }

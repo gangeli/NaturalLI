@@ -12,14 +12,12 @@ clean-local:
 
 BUILT_SOURCES = Messages.proto
 
-server_SOURCES=[ \
-  Bloom.cc  Messages.pb.cc      Trie.cc \
-  FactDB.cc Postgres.cc         Utils.cc \
-  Graph.cc  InferenceServer.cc  Search.cc \
-  Bloom.h   Graph.h        Utils.h \
-  Config.h  Messages.pb.h  Search.h \
-  FactDB.h  Postgres.h     Trie.h \
-  ]
+server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
+                 FactDB.cc Postgres.cc         Utils.cc \
+                 Graph.cc  InferenceServer.cc  Search.cc \
+                 Bloom.h   Graph.h        Utils.h \
+                 Config.h  Messages.pb.h  Search.h \
+                 FactDB.h  Postgres.h     Trie.h
 
 server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
 server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32

@@ -2,6 +2,7 @@
 #define TRIE_H
 
 #include <map>
+#include <limits>
 #include <unordered_map>
 
 #include "Config.h"
@@ -85,7 +86,12 @@ class TrieFactDB : public Trie {
 
 /**
  * Read in the known database of facts as a Trie.
+ * @param maxFactsToRead Cap the number of facts read to this amount, 
+ *        ordered by the fact's weight in the database
  */
-FactDB* ReadFactTrie();
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead);
+
+/** Read all facts in the database; @see ReadFactTrie(uint64_t) */
+inline FactDB* ReadFactTrie() { return ReadFactTrie(std::numeric_limits<uint64_t>::max()); }
 
 #endif

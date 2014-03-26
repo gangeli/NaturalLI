@@ -255,6 +255,13 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = gtest
+_OBJS_SPEC = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
+             Bloom.o Messages.pb.o
+
+OBJ_NAMES = $(patsubst %,server-%,${_OBJS_SPEC})
+OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
+_TEST_OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
+TEST_SRC = $(patsubst %.o,%.cc,${_TEST_OBJS})
 MAIN_SRC = ../../src
 AM_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} \
               -isystem gtest/include -I${MAIN_SRC} ${GTEST_CPPFLAGS}
@@ -264,20 +271,12 @@ AM_LDFLAGS = ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 \
                ${GTEST_LDFLAGS} ${GTEST_LIBS} \
                -Lgtest/lib -lgtest gtest/gtest_main.o
 
-_OBJS = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
-        Bloom.o Messages.pb.o
-
-OBJS = $(patsubst %,${MAIN_SRC}/server-%,${_OBJS})
-_TEST_OBJS = $(patsubst %,${MAIN_SRC}/server-%,${_OBJS})
-TEST_OBJS = $(patsubst %.o,%.cc,${_TEST_OBJS})
-test_server_SOURCES = [ \
-  TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
-  TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
-  TestMessages.pb.cc  TestUtils.cc \
-  ]
+test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
+                      TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
+                      TestMessages.pb.cc  TestUtils.cc
 
 test_server_LDADD = ${OBJS}
-itest_server_SOURCES = [ ITest.cc ]
+itest_server_SOURCES = ITest.cc
 itest_server_LDADD = ${OBJS}
 all: all-recursive
 
@@ -785,6 +784,9 @@ uninstall-am:
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-recursive uninstall uninstall-am
 
+
+${MAIN_SRC}/%.o: ${MAIN_SRC}/%.cc ${MAIN_SRC}/%.h
+	$(MAKE) -C ${MAIN_SRC} $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -9,7 +9,7 @@
 #include <assert.h>
 
 //
-// Configuration
+// Configuration (TODO(gabor) should really be set in ./configure script)
 //
 static std::string   PG_HOST          = "john0.stanford.edu";
 static uint16_t      PG_PORT          = 4243;
@@ -24,6 +24,8 @@ static uint16_t      RAMCLOUD_PORT    = 12246;
 static std::string   PG_TABLE_WORD    = "word";
 static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact";
+
+static uint8_t       MAX_FACT_LENGTH  = 255;
 
 //
 // Typedefs
