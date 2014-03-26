@@ -1,5 +1,5 @@
 #!/bin/bash
-exec scala -cp qry.jar:dist/test_client.jar:dist/client.jar "$0" "$@"
+exec scala -cp qry.jar:test/test_client.jar:src/client.jar "$0" "$@"
 !#
 import Qry._
 
@@ -12,7 +12,7 @@ val program:List[String] = ("java"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
-	->guessClassOrElse("org.goobs.truth.RegressionTest")
+	->guessClassOrElse("org.goobs.truth.Client")
 ).toList
 
 using("src/org/goobs/truth/conf/script.conf")
@@ -46,7 +46,7 @@ def cp:String = {
       "lib/scripts/jaws.jar",
       "lib/protobuf.jar"
     ).mkString(":")
-  List("dist/client.jar", "dist/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+  List("src/client.jar", "test/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
 
 def guessClassOrElse(default:String):String = {
