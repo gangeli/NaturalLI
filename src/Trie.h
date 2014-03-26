@@ -89,7 +89,7 @@ class TrieFactDB : public Trie {
  * @param maxFactsToRead Cap the number of facts read to this amount, 
  *        ordered by the fact's weight in the database
  */
-FactDB* ReadFactTrie(const uint64_t& maxFactsToRead);
+FactDB* ReadFactTrie(const uint64_t maxFactsToRead);
 
 /** Read all facts in the database; @see ReadFactTrie(uint64_t) */
 inline FactDB* ReadFactTrie() { return ReadFactTrie(std::numeric_limits<uint64_t>::max()); }
