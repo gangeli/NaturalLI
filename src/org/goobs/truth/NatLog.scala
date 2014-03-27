@@ -98,7 +98,7 @@ object NatLog {
     insertionOrDeletion = -0.1,
     unknownInsertionOrDeletion = -0.25,
     morphology = -0.01,
-    wsd = -0.5,
+    wsd = -0.2,
     default = -2.0)
 
   /**

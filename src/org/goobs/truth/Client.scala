@@ -77,7 +77,7 @@ object Client {
             .setQueryFact(consequent)
             .addKnownFact(antecedent)
             .setUseRealWorld(true)
-            .setTimeout(100000)
+            .setTimeout(1000000)
             .setWeights(Learn.weightsToCosts(weights))
             .setSearchType("ucs")
             .setCacheType("bloom")

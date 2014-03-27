@@ -52,7 +52,8 @@ import org.goobs.truth.Utils._
  *
  * @author Gabor Angeli
  */
-object IndexFacts {
+@Deprecated
+object IndexFactsToPostgres {
   import scala.language.implicitConversions
   
   private val logger = Redwood.channels("Facts")
