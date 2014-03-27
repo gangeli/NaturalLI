@@ -15,6 +15,8 @@ using namespace std;
  * not going to either segfault or return an invalid edge.
  */
 TEST(TrieFactDB, CompletionsValid) {
+  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+
   FactDB* db   = ReadFactTrie(1000000);
   Graph* graph = ReadGraph();
   uint64_t numWords = graph->keys().size();
@@ -37,13 +39,15 @@ TEST(TrieFactDB, CompletionsValid) {
         tagged_word word = getTaggedWord(w, s, m);
         canInsertLength = 255;
         // Issue the query
-        db->contains(&word, 1, canInsert, canInsertType, &canInsertLength);
+        db->contains(&word, 1, edges);
         // Make sure the response [insertable facts] is valid
-        for (uint32_t i = 0; i < canInsertLength; ++i) {
-          EXPECT_LT(canInsertType[i], NUM_EDGE_TYPES);
-          EXPECT_LT(canInsert[i], numWords);
-          EXPECT_EQ(0, getSense(canInsert[i]));
-          EXPECT_EQ(MONOTONE_FLAT, getMonotonicity(canInsert[i]));
+        for (uint32_t i = 0; i < 2; ++i) {
+          for (uint32_t k = 0; k < edges[i].size(); ++k) {
+            EXPECT_LT(edges[i][k].type, NUM_EDGE_TYPES);
+            EXPECT_LT(edges[i][k].sink, numWords);
+            EXPECT_EQ(0, getSense(edges[i][k].sink));
+            EXPECT_EQ(MONOTONE_FLAT, getMonotonicity(edges[i][k].sink));
+          }
         }
         // Update whether any edges were found
         if (canInsertLength > 0) { wordHasCompletion = true; }

@@ -779,7 +779,7 @@ client:
 	$(MAKE) -C src client.jar
 	${SCALA_HOME}/bin/scala -cp ${CP}:src/client.jar -J-mx4g org.goobs.truth.Client
 
-test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard test/src/org/goobs/truth/*.java)
+test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard test/src/org/goobs/truth/*.java) $(wildcard test/src/org/goobs/truth/*.dat)
 	$(MAKE) -C src client.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
 	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."

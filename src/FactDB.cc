@@ -11,6 +11,7 @@ using namespace std;
 /**
  * A simple fact database, which simply stores [the hash of]
  * all the facts in memory.
+ * Note that this database does not support insertions!
  */
 class InMemoryFactDB : public FactDB {
  private:
@@ -20,9 +21,10 @@ class InMemoryFactDB : public FactDB {
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              tagged_word* output, edge_type* canInsertEdge,
-                              uint8_t* outputLength) {
-    *outputLength = 0;
+                              vector<edge>* insertions) {
+    for (uint32_t i = 0; i <= queryLength; ++i) {
+      insertions[i] = vector<edge>();
+    }
     // Variables for hashing
     int64_t hash = 0;
     uint32_t shiftIncr = (64 / queryLength);
@@ -69,9 +71,10 @@ class MockFactDB : public FactDB {
  public:
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              tagged_word* output, edge_type* canInsertEdge,
-                              uint8_t* outputLength) {
-    *outputLength = 0;
+                              std::vector<edge>* insertions) {
+    for (uint32_t i = 0; i <= queryLength; ++i) {
+      insertions[i] = vector<edge>();
+    }
     return queryLength == 3 && 
       getWord(query[0]) == CAT &&
       getWord(query[1]) == HAVE &&

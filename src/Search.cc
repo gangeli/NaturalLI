@@ -184,7 +184,7 @@ inline const inference_state compose(const inference_state& current,
 // -- push a new element onto the fringe --
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, const uint8_t& mutationIndex,
-    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+    const uint8_t& replaceLength, const tagged_word& sink, const tagged_word& toInsert,
     const edge_type& edge, const float& cost, const inference_state localInference,
     const CacheStrategy* cache, bool& outOfMemory) {
   outOfMemory = false;
@@ -203,17 +203,17 @@ inline const Path* BreadthFirstSearch::push(
       // we deleted something; do nothing
       break;
     case 1:
-      localMutated[mutationIndex] = replace1;
+      localMutated[mutationIndex] = sink;
       break;
     case 2:
       if (mutationIndex == parent->factLength) {
         // special case where we are inserting to the end of the fact
-        localMutated[mutationIndex - 1] = replace2;
-        localMutated[mutationIndex] = replace1;
+        localMutated[mutationIndex - 1] = toInsert;
+        localMutated[mutationIndex] = sink;
       } else {
         // standard case; shift everything to the right and insert at the index
-        localMutated[mutationIndex] = replace2;
-        localMutated[mutationIndex + 1] = replace1;
+        localMutated[mutationIndex] = toInsert;
+        localMutated[mutationIndex + 1] = sink;
       }
       break;
     default:
@@ -529,63 +529,13 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
 }
 
 //
-// Function search()
+// Function Search()
 //
-
-// A helper to push elements to the queue en bulk
-inline bool flushQueue(SearchType* fringe,
-                       const Graph* graph,
-                       const CacheStrategy* cache,
-                       const Path* parent,
-                       const uint8_t* indexToMutateArr,
-                       const tagged_word* insertArr,
-                       const tagged_word* sinkArr,
-                       const uint8_t* typeArr,
-                       const float* costArr,
-                       const uint8_t queueLength) {
-  uint8_t i = 0;
-  bool outOfMemory = false;
-  while (parent != NULL && i < queueLength) {
-    // Actually push (or at least try to)
-    // TODO(gabor) work out the local inference state
-    const inference_state localInference = INFER_EQUIVALENT;
-
-    // Compute elements to insert
-    // (default)
-    uint8_t replaceLength = 1;
-    tagged_word replace1 = sinkArr[i];
-    tagged_word replace2 = 0;
-    if (getWord(sinkArr[i]) == 0) {
-      // (delete)
-      replaceLength = 0;
-    } else if (getWord(insertArr[i]) != 0) {
-      // (insert)
-      replaceLength = 2;
-      replace1      = insertArr[i];
-      replace2      = sinkArr[i];
-    }
-
-    // Do push
-    const Path* pushedElement = fringe->push(
-        parent, 
-        indexToMutateArr[i], 
-        replaceLength, replace1, replace2,
-        typeArr[i], 
-        costArr[i], 
-        localInference, 
-        cache, 
-        outOfMemory);
-    i += 1;
-  }
-  return !outOfMemory;
-}
-
-// The main search() function
 vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
-                     const tagged_word* queryFact, const uint8_t queryFactLength,
-                     SearchType* fringe, CacheStrategy* cache,
-                     const WeightVector* weights,
-                     const uint64_t timeout) {
+                           const tagged_word* queryFact, const uint8_t queryFactLength,
+                           SearchType* fringe, CacheStrategy* cache,
+                           const WeightVector* weights,
+                           const uint64_t timeout) {
   //
   // Setup
   //
@@ -598,9 +548,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   const uint32_t tickTime = 10000;
   std::clock_t startTime = std::clock();
   // Initialize add-able words
-  uint8_t   numWordsCanInsert = NUM_WORDS_CAN_INSERT;
-  word      wordsCanInsert[NUM_WORDS_CAN_INSERT];
-  edge_type edgesCanInsert[NUM_WORDS_CAN_INSERT];
+  vector<edge> inserts[MAX_FACT_LENGTH + 1];
 
   //
   // Search
@@ -630,8 +578,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
-    numWordsCanInsert = NUM_WORDS_CAN_INSERT;
-    if (knownFacts->contains(parent->fact, parent->factLength, wordsCanInsert, edgesCanInsert, &numWordsCanInsert)) {
+    if (knownFacts->contains(parent->fact, parent->factLength, inserts)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path = parent;
       responses[responses.size()-1].cost = costSoFar;
@@ -661,37 +608,21 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       const monotonicity parentMonotonicity = getMonotonicity(parentWord);
       
       // -- Do insertions --
+      vector<edge>& insertionsAtThisIndex = inserts[indexToMutate];
       if (parentLength < MAX_FACT_LENGTH) {
-        for (uint32_t i = 0; i < numWordsCanInsert; ++i) {
+        for(vector<edge>::iterator it = insertionsAtThisIndex.begin(); it != insertionsAtThisIndex.end(); ++it) {
           // Introduce new word with sense 0 and neighbor's monotonicity
-          const tagged_word toInsert = getTaggedWord(wordsCanInsert[i], getMonotonicity(parentWord));
-          edge insertion;
-          insertion.sink  = wordsCanInsert[i];
-          insertion.sense = 0;
-          insertion.type  = edgesCanInsert[i];
-          insertion.cost  = 1.0;
-          // Flush if necessary (save memory)
-          if (queueLength >= PUSH_BATCH_SIZE - 1) {
-            if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
-              printf("Error pushing to stack; returning\n");
-              return responses;
-            }
-            queueLength = 0;
-          }
+          edge& insertion = *it;
           // Add the state to the fringe
-          // These are queued up in order to try to protect the cache; the push() call is
-          // fairly expensive memory-wise.
           const float insertionCost = weights->computeCost(
-              parent->edgeType, insertion,
-              false,
-              parentMonotonicity);
+              parent->edgeType, insertion, false, parentMonotonicity);
           if (insertionCost < 1e10) {
-            indexToMutateArr[queueLength] = indexToMutate;
-            insertArr[queueLength]        = toInsert;
-            sinkArr[queueLength]          = parentWord;
-            typeArr[queueLength]          = insertion.type;
-            costArr[queueLength]          = costSoFar + insertionCost;
-            queueLength += 1;
+            // push insertion
+            bool oom = false;
+            fringe->push(parent, indexToMutate,
+              2, parentWord, getTaggedWord(insertion.sink, insertion.sense, parentMonotonicity),
+              insertion.type, costSoFar + insertionCost, INFER_FORWARD_ENTAILMENT, cache, oom);
+            if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
           }
         }
       }
@@ -706,34 +637,21 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         if (mutation.sense != parentSense) {
           continue;
         }
-        // Flush if necessary (save memory)
-        if (queueLength >= PUSH_BATCH_SIZE - 1) {
-          if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
-            printf("Error pushing to stack; returning\n");
-            return responses;
-          }
-          queueLength = 0;
-        }
         // Add the state to the fringe
-        // These are queued up in order to try to protect the cache; the push() call is
-        // fairly expensive memory-wise.
         const float mutationCost = weights->computeCost(
             parent->edgeType, mutation,
             parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
             parentMonotonicity);
         if (mutationCost < 1e10) {
-          indexToMutateArr[queueLength] = indexToMutate;
-          insertArr[queueLength] = 0;
-          sinkArr[queueLength]   = getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity);
-          typeArr[queueLength]   = mutation.type;
-          costArr[queueLength]   = costSoFar + mutationCost;
-          queueLength += 1;
+          // push mutation[/deletion]
+          bool oom = false;
+          fringe->push(parent, indexToMutate,
+            mutation.sink == 0 ? 0 : 1,
+            getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), 0,
+            mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
+          if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
         }
       }
-    }
-    if (!flushQueue(fringe, graph, cache, parent, indexToMutateArr, insertArr, sinkArr, typeArr, costArr, queueLength)) {
-      printf("Error pushing to stack; returning\n");
-      return responses;
     }
   }
 

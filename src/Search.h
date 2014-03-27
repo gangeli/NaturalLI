@@ -38,7 +38,7 @@ class Path {
    * An element which is 'fixed' can still be deleted, but cannot be modified
    * any more.
    */
-  const uint64_t fixedBitmask[4];  // 32 bytes (256 bits)
+  const uint64_t fixedBitmask[MAX_FACT_LENGTH_IN_LONG_WORDS];
 
   /** The canonical constructor -- all fields are specified */
   Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,

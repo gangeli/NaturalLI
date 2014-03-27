@@ -71,10 +71,12 @@ std::string toString(const edge_type& edge) {
     case ADD_VERB                     : return "ADD_VERB";
     case ADD_ADJ                      : return "ADD_ADJ";
     case ADD_ADV                      : return "ADD_ADV";
+    case ADD_OTHER                    : return "ADD_?";
     case DEL_NOUN                     : return "DEL_NOUN";
     case DEL_VERB                     : return "DEL_VERB";
     case DEL_ADJ                      : return "DEL_ADJ";
     case DEL_ADV                      : return "DEL_ADV";
+    case DEL_OTHER                    : return "DEL_?";
     default: return "UNK_EDGE_TYPE";
   }
 }

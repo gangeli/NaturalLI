@@ -25,7 +25,8 @@ static std::string   PG_TABLE_WORD    = "word";
 static std::string   PG_TABLE_EDGE    = "edge";
 static std::string   PG_TABLE_FACT    = "fact";
 
-static uint8_t       MAX_FACT_LENGTH  = 255;
+#define MAX_FACT_LENGTH                 255
+#define MAX_FACT_LENGTH_IN_LONG_WORDS   4
 
 //
 // Typedefs
@@ -43,8 +44,6 @@ typedef uint8_t inference_state;
 #define SEARCH_TIMEOUT   100000
 /** The minimum count for a fact to be seen to be added to the KB */
 #define MIN_FACT_COUNT   1
-/** The minimum count for a fact to be seen to be added as a possible completion */
-#define MIN_COMPLETION_W 1
 
 // Monotonicities
 #define MONOTONE_FLAT 0
@@ -65,22 +64,25 @@ typedef uint8_t inference_state;
 #define FREEBASE_UP                  10
 #define FREEBASE_DOWN                11
 
+#define EDGE_ADDS_BEGIN              12  // should be the same as the first ADD_X item
 #define ADD_NOUN                     12
 #define ADD_VERB                     13
 #define ADD_ADJ                      14
 #define ADD_ADV                      15
-#define DEL_NOUN                     16
-#define DEL_VERB                     17
-#define DEL_ADJ                      18
-#define DEL_ADV                      19
+#define ADD_OTHER                    16  // NOTE: never have more than 8 insertion types. @see Trie.h
+#define DEL_NOUN                     17
+#define DEL_VERB                     18
+#define DEL_ADJ                      19
+#define DEL_ADV                      20
+#define DEL_OTHER                    21
 
-#define MORPH_TO_LEMMA               20
-#define MORPH_FROM_LEMMA             21
-#define MORPH_FUDGE_NUMBER           22
-#define SENSE_REMOVE                 23
-#define SENSE_ADD                    24
+#define MORPH_TO_LEMMA               22
+#define MORPH_FROM_LEMMA             23
+#define MORPH_FUDGE_NUMBER           24
+#define SENSE_REMOVE                 25
+#define SENSE_ADD                    26
 
-#define NUM_EDGE_TYPES               25
+#define NUM_EDGE_TYPES               27
 
 
 // Inference States

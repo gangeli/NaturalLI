@@ -1,9 +1,3 @@
-/*
-TODO
-  - Can't insert a word that already exists in the phrase (some smart dog is smart -> some dog is smart doesn't work)
-  - Should not only sort in Trie completion, but also deduplicate (smart dog is smart -> "smart dog is", not "smart smart dog is")
-*/
-
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -59,7 +53,7 @@ void setmemlimit() {
  * Create a very simple FactDB based on an input query.
  */
 FactDB* makeFactDB(Query& query) {
-  TrieFactDB* facts = new TrieFactDB();
+  Trie* facts = new Trie();
   uint32_t size = query.knownfact_size();
   for (int factI = 0; factI < size; ++factI) {
     uint32_t factLength = query.knownfact(factI).word_size();
@@ -67,19 +61,6 @@ FactDB* makeFactDB(Query& query) {
     for (int wordI = 0; wordI < factLength; ++wordI) {
       // Add word to fact
       fact[wordI] = query.knownfact(factI).word(wordI).word();
-      // Register this word as a possible insertion
-      if (query.knownfact(factI).word(wordI).has_pos()) {
-        const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
-        if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
-          facts->addValidInsertion(fact[wordI], ADD_NOUN);
-        } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
-          facts->addValidInsertion(fact[wordI], ADD_VERB);
-        } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
-          facts->addValidInsertion(fact[wordI], ADD_ADJ);
-        } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
-          facts->addValidInsertion(fact[wordI], ADD_ADV);
-        }
-      }
     }
     // Add the fact
     facts->add(fact, factLength);

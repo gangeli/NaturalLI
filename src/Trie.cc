@@ -11,123 +11,93 @@
 
 using namespace std;
 
-void Trie::add(word* elements, uint8_t length) {
-  if (length == 0) { 
-    setIsLeaf(true);
+//
+// Trie::add
+//
+void Trie::add(edge* elements, uint8_t length) {
+  // Corner cases
+  if (length == 0) { return; }  // this case shouldn't actually happen normally...
+  // Register child
+  Trie& child = children[elements[0].sink];
+  // Register information about child
+  child.registerEdge(elements[0]);
+  // Recursive call
+  if (length == 1) {
+    child.isLeaf = true;  // Mark this as a leaf node
   } else {
-    children[elements[0]].add( &elements[1], length - 1);
-  }
-}
-  
-void Trie::add(word* elements, edge_type* edges, uint8_t length) {
-  if (length == 0) { 
-    setIsLeaf(true);
-  } else {
-    children[elements[0]].add( &elements[1], &edges[1], length - 1);
-    children[elements[0]].setEdgeType(edges[0]);
+    child.add(&(elements[1]), length - 1);
   }
 }
 
-const bool Trie::contains(const tagged_word* query, const uint8_t queryLength, 
-                          tagged_word* canInsert, edge_type* canInsertEdge,
-                          uint8_t* canInsertLength) {
+//
+// Trie::contains
+//
+const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
+                          vector<edge>* insertions) {
+  insertions[0] = vector<edge>();
+  
   if (queryLength == 0) {
-    if (*canInsertLength > 0) {
-      uint8_t i = 0;
-      for (map<word,Trie>::iterator iter = children.begin(); 
-           iter != children.end();
-           ++iter) {
-        canInsert[i] = iter->first;
-        canInsertEdge[i] = iter->second.getEdgeType();
-        i += 1;
-        if (i > *canInsertLength) { break; }
-      }
-      *canInsertLength = i;
-    }
-    return isLeaf();
-  } else {
-    map<word,Trie>::iterator iter = children.find( getWord(query[0]) );
-    if (iter == children.end()) {
-      *canInsertLength = 0;
-      return false;
-    } else {
+    // Case: we're at the end of the query
+    // ... add all possible completions
+    map<word,Trie>::iterator iter;
+    for (iter = children.begin(); iter != children.end(); ++iter) {
       Trie& child = iter->second;
-      return child.contains(&query[1], queryLength - 1, canInsert, canInsertEdge, canInsertLength);
+      edge buffer[4];
+      uint8_t numEdges = child.getEdges(buffer);
+      for (int i = 0; i < numEdges; ++i) {
+        buffer[i].sink = iter->first;
+        insertions[i].push_back(buffer[i]);
+      }
     }
-  }
-}
-
-const uint8_t TrieFactDB::filterAndSort(const tagged_word* elements, uint8_t length, word* buffer,
-                                        edge_type* edges) {
-  uint8_t filteredLength = 0;
-  for (int i = 0; i < length; ++i) {
-    const word w = getWord(elements[i]);
-    unordered_map<word,edge_type>::iterator it = this->validInsertions.find(w);
-    if (it != this->validInsertions.end()) {
-      buffer[filteredLength] = w;
-      filteredLength += 1;
+    // ... return whether the fact exists
+    return isLeaf;
+  } else {
+    // Case: we're in the middle of the query
+    bool contains = false;
+    for (map<word,Trie>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+      if (iter->first == getWord(query[0])) {
+        // ... check recursive containment
+        contains = iter->second.contains(&(query[1]), queryLength - 1, &(insertions[1]));
+      } else {
+        // ... add insertions
+        edge buffer[4];
+        uint8_t numEdges = iter->second.getEdges(buffer);
+        for (int i = 0; i < numEdges; ++i) {
+          buffer[i].sink = iter->first;
+          insertions[i].push_back(buffer[i]);
+        }
+      }
     }
-  }
-  // Sort
-  sort(buffer, buffer + filteredLength);
-  // Fill edges
-  for (int i = 0; i < filteredLength; ++i) {
-    unordered_map<word,edge_type>::iterator it = this->validInsertions.find(buffer[i]);
-    if (it != this->validInsertions.end()) {
-      edges[i] = it->second;
-    }
-  }
-  return filteredLength;
-}
-
-
-void TrieFactDB::add(word* elements, uint8_t length, uint32_t weight) {
-  // Register fact
-  facts.add(elements, length);
-  // Register completion
-  if (weight >= MIN_COMPLETION_W) {
-    word buffer[256];
-    edge_type edges[256];
-    const uint8_t filteredLength = filterAndSort(elements, length, buffer, edges);
-    completions.add(buffer, edges, filteredLength);
+    return contains;
   }
 }
-  
-void TrieFactDB::addValidInsertion(const word& word, const edge_type& edge) {
-  this->validInsertions[word] = edge;
-}
-
-const bool TrieFactDB::contains(const tagged_word* query, const uint8_t queryLength, 
-                                tagged_word* canInsert, edge_type* canInsertEdge, 
-                                uint8_t* canInsertLength) {
-  // Check children
-  if (*canInsertLength > 0) {
-    // Create sorted query
-    word buffer[256];
-    edge_type edges[256];
-    const uint8_t filteredLength = filterAndSort(query, queryLength, buffer, edges);
-    // Check completions
-    completions.contains(buffer, filteredLength, canInsert, canInsertEdge, canInsertLength);
-  }
-  // Check ordered containment
-  return facts.contains(query, queryLength);
-}
 
 
+//
+// ReadFactTrie
+//
 FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
-  TrieFactDB* facts = new TrieFactDB();
+  Trie* facts = new Trie();
   char query[127];
 
   // Read valid insertions
   printf("Reading valid insertions...\n");
+  unordered_map<word,vector<edge>> word2senses;
   // (query)
-  snprintf(query, 127, "SELECT DISTINCT (sink) sink, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
+  snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
   PGIterator wordIter = PGIterator(query);
   uint32_t numValidInsertions = 0;
   while (wordIter.hasNext()) {
     // Get fact
     PGRow row = wordIter.next();
-    facts->addValidInsertion(atoi(row[0]), atoi(row[1]));
+    // Create edge
+    edge e;
+    e.sink  = atoi(row[0]);
+    e.sense = atoi(row[1]);
+    e.type  = atoi(row[2]);
+    e.cost  = 1.0f;
+    // Register edge
+    word2senses[e.sink].push_back(e);
     numValidInsertions += 1;
   }
   printf("  Done. Can insert %u words\n", numValidInsertions);
@@ -148,7 +118,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
   }
   PGIterator iter = PGIterator(query);
   uint64_t i = 0;
-  word buffer[256];
+  edge buffer[256];
   uint8_t bufferLength;
   while (iter.hasNext()) {
     // Get fact
@@ -161,14 +131,37 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     stringstream stream (&gloss[1]);
     bufferLength = 0;
     while( stream.good() ) {
+      // Parse the word
       string substr;
       getline( stream, substr, ',' );
-      buffer[bufferLength] = atoi(substr.c_str());
-      bufferLength += 1;
-      if (bufferLength == 255) { break; }
+      word w = atoi(substr.c_str());
+      // Register the word
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
+      if (iter == word2senses.end() || iter->second.size() == 0) {
+        buffer[bufferLength].sink  = w;
+        buffer[bufferLength].sense = 0;
+        buffer[bufferLength].type  = 0;
+        buffer[bufferLength].cost  = 1.0f;
+      } else {
+        buffer[bufferLength] = iter->second[0];
+      }
+      if (bufferLength >= MAX_FACT_LENGTH) { break; }
     }
     // Add fact
-    facts->add(buffer, bufferLength, weight);
+    if (weight >= MIN_FACT_COUNT) {
+      // Add 'canonical' version
+      facts->add(buffer, bufferLength);
+      // Add word sense variants
+      for (int i = 0; i < bufferLength; ++i) {
+        unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
+        if (iter != word2senses.end() && iter->second.size() > 1) {
+          for (int sense = 1; sense < iter->second.size(); ++sense) {
+            buffer[i] = iter->second[sense];
+            facts->add(buffer, bufferLength);
+          }
+        }
+      }
+    }
     // Debug
     i += 1;
     if (i % 10000000 == 0) {
