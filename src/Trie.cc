@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <unordered_map>
 
 #include "Utils.h"
 #include "Postgres.h"
@@ -103,7 +104,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
 
   // Read valid insertions
   printf("Reading valid insertions...\n");
-  btree_map<word,vector<edge>> word2senses;
+  unordered_map<word,vector<edge>> word2senses;
   // (query)
   snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
   PGIterator wordIter = PGIterator(query);
@@ -157,7 +158,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       getline( stream, substr, ',' );
       word w = atoi(substr.c_str());
       // Register the word
-      btree_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
       if (iter == word2senses.end() || iter->second.size() == 0) {
         buffer[bufferLength].sink  = w;
         buffer[bufferLength].sense = 0;
@@ -174,7 +175,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       facts->add(buffer, bufferLength);
       // Add word sense variants
       for (int i = 0; i < bufferLength; ++i) {
-        btree_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
+        unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
         if (iter != word2senses.end() && iter->second.size() > 1) {
           for (int sense = 1; sense < iter->second.size(); ++sense) {
             buffer[i] = iter->second[sense];
