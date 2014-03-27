@@ -96,7 +96,7 @@ object NatLog {
     similarity = -1.0,
     wordnet = -0.1,
     insertionOrDeletion = -0.1,
-    unknownInsertionOrDeletion = -0.1,
+    unknownInsertionOrDeletion = -0.25,
     morphology = -0.01,
     wsd = -0.5,
     default = -2.0)

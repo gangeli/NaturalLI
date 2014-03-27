@@ -103,7 +103,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
   char query[127];
 
   // Read valid insertions
-  printf("Reading valid insertions...\n");
+  printf("Reading registered insertions...\n");
   unordered_map<word,vector<edge>> word2senses;
   // (query)
   snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
@@ -122,7 +122,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     word2senses[e.sink].push_back(e);
     numValidInsertions += 1;
   }
-  printf("  Done. Can insert %u words\n", numValidInsertions);
+  printf("  Done. %u words have sense tags\n", numValidInsertions);
 
 
   // Read facts

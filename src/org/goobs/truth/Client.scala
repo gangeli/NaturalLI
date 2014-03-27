@@ -76,7 +76,7 @@ object Client {
           val query = Query.newBuilder()
             .setQueryFact(consequent)
             .addKnownFact(antecedent)
-            .setUseRealWorld(false)
+            .setUseRealWorld(true)
             .setTimeout(100000)
             .setWeights(Learn.weightsToCosts(weights))
             .setSearchType("ucs")

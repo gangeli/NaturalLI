@@ -15,8 +15,10 @@ export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scri
 export TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
 
-client:
+src/client.jar:
 	$(MAKE) -C src client.jar
+
+client: src/client.jar
 	${SCALA_HOME}/bin/scala -cp ${CP}:src/client.jar -J-mx4g org.goobs.truth.Client
 
 test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard test/src/org/goobs/truth/*.java) $(wildcard test/src/org/goobs/truth/*.dat)

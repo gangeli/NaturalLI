@@ -173,7 +173,7 @@ Graph* ReadGraph() {
   // Edges
   char edgeQuery[127];
   // TODO(gabor) load all edge types, eventually
-  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type=1 OR type=0 OR type=18 OR type=19 OR type=14 OR type=15 ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
+  snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
   PGIterator edgeIter = PGIterator(edgeQuery);
 
   return readGraph(numWords, &wordIter, &edgeIter, false);
