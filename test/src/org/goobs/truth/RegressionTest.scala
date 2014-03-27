@@ -55,7 +55,7 @@ object RegressionTest {
 
         // Check Validity
         if (score < 0.5) {
-          err(RED,"SHOULD BE VALID (score=" + score + ": " + line)
+          err(RED,"SHOULD BE VALID (score=" + score + "): " + line)
           exitStatus += 1
         }
       }

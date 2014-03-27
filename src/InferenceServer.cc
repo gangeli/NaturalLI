@@ -57,10 +57,35 @@ FactDB* makeFactDB(Query& query) {
   uint32_t size = query.knownfact_size();
   for (int factI = 0; factI < size; ++factI) {
     uint32_t factLength = query.knownfact(factI).word_size();
-    word fact[factLength];
+    edge fact[factLength];
     for (int wordI = 0; wordI < factLength; ++wordI) {
-      // Add word to fact
-      fact[wordI] = query.knownfact(factI).word(wordI).word();
+      Word word = query.knownfact(factI).word(wordI);
+      // Set the word
+      fact[wordI].sink = word.word();
+      // Set the sense
+      if (word.has_sense()) {
+        fact[wordI].sense = word.sense();
+      } else {
+        fact[wordI].sense = 0;
+      }
+      // Set the edge type
+      if (query.knownfact(factI).word(wordI).has_pos()) {
+        const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
+        if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
+          fact[wordI].type = ADD_NOUN;
+        } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
+          fact[wordI].type = ADD_VERB;
+        } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
+          fact[wordI].type = ADD_ADJ;
+        } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
+          fact[wordI].type = ADD_ADV;
+        } else {
+          fact[wordI].type = ADD_OTHER;
+        }
+      } else {
+        fact[wordI].type = ADD_OTHER;
+      }
+      fact[wordI].cost = 1.0f;  // not really relevant...
     }
     // Add the fact
     facts->add(fact, factLength);

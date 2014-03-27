@@ -7,9 +7,6 @@
 #include "Search.h"
 #include "Utils.h"
 
-#define PUSH_BATCH_SIZE 64
-#define NUM_WORDS_CAN_INSERT 64
-
 using namespace std;
 
 //
@@ -208,8 +205,8 @@ inline const Path* BreadthFirstSearch::push(
     case 2:
       if (mutationIndex == parent->factLength) {
         // special case where we are inserting to the end of the fact
-        localMutated[mutationIndex - 1] = toInsert;
-        localMutated[mutationIndex] = sink;
+        localMutated[mutatedLength - 2] = sink;
+        localMutated[mutatedLength - 1] = toInsert;
       } else {
         // standard case; shift everything to the right and insert at the index
         localMutated[mutationIndex] = toInsert;
@@ -561,7 +558,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     cache->add(parent->fact, parent->factLength);
 
     // -- Debug Output --
-    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -589,19 +586,12 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     const uint8_t parentLength = parent->factLength;
     const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
     const tagged_word* parentFact = parent->fact;
-    // (mutation queue)
-    uint8_t indexToMutateArr[PUSH_BATCH_SIZE];
-    tagged_word sinkArr[PUSH_BATCH_SIZE];
-    tagged_word insertArr[PUSH_BATCH_SIZE];
-    uint8_t typeArr[PUSH_BATCH_SIZE];
-    float costArr[PUSH_BATCH_SIZE];
-    uint8_t queueLength = 0;
     // (algorithm)
     for (uint8_t indexToMutate = 0;
          indexToMutate <= parentLength;
          ++indexToMutate) {  // for each index to mutate...
       // -- A bit of overhead --
-      if (isSetBit(fixedBitmask, indexToMutate)) { 
+      if (indexToMutate < parentLength && isSetBit(fixedBitmask, indexToMutate)) { 
         continue;
       }
       const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
@@ -611,7 +601,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
       vector<edge>& insertionsAtThisIndex = inserts[indexToMutate];
       if (parentLength < MAX_FACT_LENGTH) {
         for(vector<edge>::iterator it = insertionsAtThisIndex.begin(); it != insertionsAtThisIndex.end(); ++it) {
-          // Introduce new word with sense 0 and neighbor's monotonicity
+          // Introduce new word with neighbor's monotonicity
           edge& insertion = *it;
           // Add the state to the fringe
           const float insertionCost = weights->computeCost(

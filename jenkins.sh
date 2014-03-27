@@ -2,6 +2,7 @@
 #
 
 set -e
+export MAXMEM_GB=6
 
 echo "-- SETUP --"
 rm lib/stanford-corenlp-*

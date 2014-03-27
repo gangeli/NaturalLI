@@ -4,11 +4,12 @@
 [are](all dog, smart)	[are](all hunting dog, smart)
 
 # Insertions (deletions in search)
-[are](some furry dog, smart)	[are](some dog, smart)
+[are](all dog, smart)	[are](all furry dog, smart)
 [are](no good drinks, gin)	[are](no good drinks, gin sour)
 
 # Deletions (insertions in search)
-[are](all dog, smart)	[are](all furry dog, smart)
-#[are](some good sour drinks, gin)	[are](some good drinks, gin)
-#[are](some good drinks, gin sour)	[are](some good drinks, gin)
+[are](some furry dog, smart)	[are](some dog, smart)
+[are](some good sour drinks, gin)	[are](some good drinks, gin)
+[are](some good drinks, gin sour)	[are](some good drinks, gin)
 [is](some smart dog, smart)	[is](some dog, smart)
+

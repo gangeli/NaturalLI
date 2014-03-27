@@ -25,7 +25,8 @@ class TrieTest : public ::testing::Test {
       uint8_t fact2Length, uint32_t fact21, uint32_t fact22, uint32_t fact23,
       uint8_t queryLength, uint32_t factq1, uint32_t factq2,
       uint8_t insert1Length, uint32_t insert11, uint32_t insert12, uint32_t insert13,
-      uint8_t insert2Length, uint32_t insert21, uint32_t insert22, uint32_t insert23) {
+      uint8_t insert2Length, uint32_t insert21, uint32_t insert22, uint32_t insert23,
+      uint8_t insert3Length, uint32_t insert31, uint32_t insert32, uint32_t insert33) {
 
     std::vector<edge> edges[MAX_FACT_LENGTH + 1];
 
@@ -55,26 +56,28 @@ class TrieTest : public ::testing::Test {
     if (insert1Length > 0) { EXPECT_EQ(insert11, edges[0][0].sink); }
     if (insert1Length > 1) { EXPECT_EQ(insert12, edges[0][1].sink); }
     if (insert1Length > 2) { EXPECT_EQ(insert13, edges[0][2].sink); }
+    for (uint32_t i = 0; i < insert1Length; ++i) {
+      EXPECT_EQ(0, edges[0][i].sense);
+      EXPECT_EQ(ADD_OTHER, edges[0][i].type);
+    }
     EXPECT_EQ(insert2Length, edges[1].size());
     if (insert2Length > 0) { EXPECT_EQ(insert21, edges[1][0].sink); }
     if (insert2Length > 1) { EXPECT_EQ(insert22, edges[1][1].sink); }
     if (insert2Length > 2) { EXPECT_EQ(insert23, edges[1][2].sink); }
+    for (uint32_t i = 0; i < insert2Length; ++i) {
+      EXPECT_EQ(0, edges[1][i].sense);
+      EXPECT_EQ(ADD_OTHER, edges[1][i].type);
+    }
+    EXPECT_EQ(insert3Length, edges[2].size());
+    if (insert3Length > 0) { EXPECT_EQ(insert31, edges[2][0].sink); }
+    if (insert3Length > 1) { EXPECT_EQ(insert32, edges[2][1].sink); }
+    if (insert3Length > 2) { EXPECT_EQ(insert33, edges[2][2].sink); }
+    for (uint32_t i = 0; i < insert3Length; ++i) {
+      EXPECT_EQ(0, edges[2][i].sense);
+      EXPECT_EQ(ADD_OTHER, edges[2][i].type);
+    }
   }
 };
-
-// Test children return
-TEST_F(TrieTest, SimpleEdgeCompletion) {
-  // insert [1, 2]; complete 1 with [2]
-  testCompletion(
-    // Entries
-    2,     1,   2,   255,
-    0,     255, 255, 255,
-    // Query
-    1,     1,   255,
-    // Checks
-    0,     255, 255, 255,
-    1,     2,   255, 255);
-}
 
 // Make sure we can add to the Trie
 TEST_F(TrieTest, CanAdd) {
@@ -159,158 +162,58 @@ TEST_F(TrieTest, FactDBCanAddContainsDepth2) {
 }
 
 
+// Test children return
+TEST_F(TrieTest, CompletionSimpleEdge) {
+  testCompletion(
+    // Entries
+    2,     1,   2,   255,
+    0,     255, 255, 255,
+    // Query
+    1,     1,   255,
+    // Checks
+    0,     255, 255, 255,
+    1,     2,   255, 255,
+    0,     255, 255, 255);
+}
 
-//// Make sure we can complete facts in the DB
-//TEST_F(TrieTest, FactDBCompletion) {
-//  trie->addValidInsertion(1, DEL_NOUN);
-//  trie->addValidInsertion(2, DEL_NOUN);
-//  trie->addValidInsertion(3, DEL_NOUN);
-//  trie->addValidInsertion(4, DEL_NOUN);
-//  trie->addValidInsertion(5, DEL_NOUN);
-//  // Add {2, 3, 4, 5} to co-occur with 1
-//  buffer[0] = 1; buffer[1] = 2;
-//  trie->add(buffer, 2);
-//  buffer[0] = 1; buffer[1] = 3;
-//  trie->add(buffer, 2);
-//  buffer[0] = 4; buffer[1] = 1;
-//  trie->add(buffer, 2);
-//  buffer[0] = 5; buffer[1] = 2; buffer[2] = 1;
-//  trie->add(buffer, 3);
-//  
-//  // Test that {2, 3, 4, 5} are proposed from 1
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0;
-//  outBuffer[1] = 0;
-//  outBuffer[2] = 0;
-//  outBuffer[3] = 0;
-//  buffer[0] = 1;
-//  EXPECT_FALSE(trie->contains(buffer, 1, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(3, outLength);
-//  EXPECT_EQ(2, outBuffer[0]);
-//  EXPECT_EQ(3, outBuffer[1]);
-//  EXPECT_EQ(4, outBuffer[2]);
-//}
-//
-//// Make sure we can complete facts in the DB
-//TEST_F(TrieTest, FactDBCompletionNoMatch) {
-//  // Add {2, 3, 4, 5} to co-occur with 1
-//  buffer[0] = 1; buffer[1] = 2;
-//  trie->add(buffer, 2);
-//  buffer[0] = 1; buffer[1] = 3;
-//  trie->add(buffer, 2);
-//  buffer[0] = 4; buffer[1] = 1;
-//  trie->add(buffer, 2);
-//  buffer[0] = 5; buffer[1] = 2; buffer[2] = 1;
-//  trie->add(buffer, 3);
-//  
-//  // Test that nothing is proposed from 6
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0;
-//  outBuffer[1] = 0;
-//  outBuffer[2] = 0;
-//  outBuffer[3] = 0;
-//  buffer[0] = 6;
-//  EXPECT_FALSE(trie->contains(buffer, 1, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(0, outLength);
-//  
-//  buffer[0] = 6;
-//  buffer[1] = 3;
-//  outLength = 255;
-//  EXPECT_FALSE(trie->contains(buffer, 2, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(0, outLength);
-//}
-//
-//// Make sure we can get the correct edges from the DB
-//TEST_F(TrieTest, FactDBEdgeCompletion) {
-//  trie->addValidInsertion(1, 0);
-//  trie->addValidInsertion(2, 1);
-//  trie->addValidInsertion(3, 2);
-//  trie->addValidInsertion(4, 3);
-//  trie->addValidInsertion(5, 4);
-//  void addValidInsertion(const word& word, const edge_type& type);
-//  // Add {2, 3, 4, 5} to co-occur with 1
-//  buffer[0] = 1; buffer[1] = 2;
-//  trie->add(buffer, 2);
-//  buffer[0] = 1; buffer[1] = 3;
-//  trie->add(buffer, 2);
-//  buffer[0] = 4; buffer[1] = 1;
-//  trie->add(buffer, 2);
-//  buffer[0] = 5; buffer[1] = 2; buffer[2] = 1;
-//  trie->add(buffer, 3);
-//  
-//  // Test that {2, 3, 4, 5} are proposed from 1
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0;
-//  outBuffer[1] = 0;
-//  outBuffer[2] = 0;
-//  outBuffer[3] = 0;
-//  edgeBuffer[0] = 0;
-//  edgeBuffer[1] = 0;
-//  edgeBuffer[2] = 0;
-//  edgeBuffer[3] = 0;
-//  buffer[0] = 1;
-//  EXPECT_FALSE(trie->contains(buffer, 1, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(3, outLength);
-//  EXPECT_EQ(2, outBuffer[0]);
-//  EXPECT_EQ(3, outBuffer[1]);
-//  EXPECT_EQ(4, outBuffer[2]);
-//  EXPECT_EQ(1, edgeBuffer[0]);
-//  EXPECT_EQ(2, edgeBuffer[1]);
-//  EXPECT_EQ(3, edgeBuffer[2]);
-//}
-//
-//// Make sure we can complete facts with duplicate words
-//TEST_F(TrieTest, FactDBCompletionDuplicateWord) {
-//  trie->addValidInsertion(1, DEL_NOUN);
-//  trie->addValidInsertion(2, DEL_NOUN);
-//  trie->addValidInsertion(3, DEL_NOUN);
-//  buffer[0] = 1; buffer[1] = 2; buffer[2] = 1;
-//  trie->add(buffer, 2);
-//  trie->add(buffer, 3);
-//  
-//  // Test that {1, 2} are proposed from 1
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0; outBuffer[1] = 0; outBuffer[2] = 0; outBuffer[3] = 0;
-//  buffer[0] = 1;
-//  EXPECT_FALSE(trie->contains(buffer, 1, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(1, outLength);
-//  EXPECT_EQ(2, outBuffer[0]);
-//}
-//
-//// Some smart dog is smart -> some dog is smart
-//TEST_F(TrieTest, FactDBCompletionDuplicateWordRegression) {
-//  trie->addValidInsertion(1, DEL_NOUN); // some
-//  trie->addValidInsertion(2, DEL_NOUN); // smart
-//  trie->addValidInsertion(3, DEL_NOUN); // dog
-//  trie->addValidInsertion(4, DEL_NOUN); // is
-//  buffer[0] = 1; buffer[1] = 2; buffer[2] = 3; buffer[3] = 4; buffer[4] = 2;
-//  trie->add(buffer, 5);
-//  
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0; outBuffer[1] = 0; outBuffer[2] = 0; outBuffer[3] = 0;
-//  buffer[0] = 1;
-//  buffer[1] = 3;
-//  buffer[2] = 4;
-//  buffer[3] = 2;
-//  EXPECT_FALSE(trie->contains(buffer, 4, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(1, outLength);
-//  EXPECT_EQ(2, outBuffer[0]);
-//}
-//
-//// Make sure we can complete a fact that's one away from being correct
-//TEST_F(TrieTest, FactDBCompletionOffByOne) {
-//  trie->addValidInsertion(1, DEL_NOUN);
-//  trie->addValidInsertion(2, DEL_NOUN);
-//  trie->addValidInsertion(3, DEL_NOUN);
-//  buffer[0] = 1; buffer[1] = 2; buffer[2] = 3;
-//  trie->add(buffer, 3);
-//  
-//  // Test that {1, 2} are proposed from 1
-//  uint8_t outLength = 255;
-//  outBuffer[0] = 0; outBuffer[1] = 0; outBuffer[2] = 0; outBuffer[3] = 0;
-//  buffer[0] = 1;
-//  buffer[1] = 3;
-//  EXPECT_FALSE(trie->contains(buffer, 2, outBuffer, edgeBuffer, &outLength));
-//  EXPECT_EQ(1, outLength);
-//  EXPECT_EQ(2, outBuffer[0]);
-//}
+// Test insert at end of fact
+TEST_F(TrieTest, CompletionAtEndOfFact) {
+  testCompletion(
+    // Entries
+    3,     1,   2,   3,
+    3,     1,   2,   4,
+    // Query
+    2,     1,   2,
+    // Checks
+    0,     255, 255, 255,
+    0,     255, 255, 255,
+    2,     3,   4,   255);
+}
+
+// Test duplicate children
+TEST_F(TrieTest, CompletionDuplicateLexicalEntry) {
+  testCompletion(
+    // Entries
+    3,     1,   2,   1,
+    0,     255, 255, 255,
+    // Query
+    2,     1,   2,
+    // Checks
+    0,     255, 255, 255,
+    0,     255, 255, 255,
+    1,     1,   255, 255);
+}
+
+// Test missing begin
+TEST_F(TrieTest, CompletionFromStart) {
+  testCompletion(
+    // Entries
+    3,     2,   2,   1,
+    1,     3,   255, 255,
+    // Query
+    0,     255, 255,
+    // Checks
+    2,     2,   3,   255,
+    0,     255, 255, 255,
+    0,     255, 255, 255);
+}

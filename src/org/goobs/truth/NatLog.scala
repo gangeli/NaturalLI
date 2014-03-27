@@ -19,6 +19,7 @@ object NatLog {
    */
   def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
                     insertionOrDeletion:Double,
+                    unknownInsertionOrDeletion:Double,
                     morphology:Double, wsd:Double, default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
@@ -40,6 +41,13 @@ object NatLog {
     weights.setCount(unigramUp(   DEL_ADJ      ), insertionOrDeletion)
     weights.setCount(unigramDown( ADD_ADV      ), insertionOrDeletion)
     weights.setCount(unigramUp(   DEL_ADV      ), insertionOrDeletion)
+    // (more fishy insertions or deletions)
+    weights.setCount(unigramDown( ADD_NOUN      ), unknownInsertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_NOUN      ), unknownInsertionOrDeletion)
+    weights.setCount(unigramDown( ADD_VERB      ), unknownInsertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_VERB      ), unknownInsertionOrDeletion)
+    weights.setCount(unigramDown( ADD_OTHER     ), unknownInsertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_OTHER     ), unknownInsertionOrDeletion)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)
@@ -72,6 +80,7 @@ object NatLog {
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
     insertionOrDeletion = -0.05,
+    unknownInsertionOrDeletion = -0.5,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     default = Double.NegativeInfinity)
@@ -87,6 +96,7 @@ object NatLog {
     similarity = -1.0,
     wordnet = -0.1,
     insertionOrDeletion = -0.1,
+    unknownInsertionOrDeletion = -0.1,
     morphology = -0.01,
     wsd = -0.5,
     default = -2.0)

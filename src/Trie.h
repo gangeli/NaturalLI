@@ -2,8 +2,7 @@
 #define TRIE_H
 
 #include <limits>
-#include <map>
-#include <unordered_map>
+#include "btree_map.h"
 #include <vector>
 
 #include "Config.h"
@@ -29,8 +28,8 @@ class Trie;
  */
 class Trie : public FactDB {
  public:
-  virtual ~Trie() {}
   Trie() : data(0), isLeaf(false) { }
+  virtual ~Trie();
 
   /**
    * Like the vanilla add() method, but also keep track of the edge
@@ -65,7 +64,7 @@ class Trie : public FactDB {
 
  private:
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
-  std::map<word,Trie> children;
+  btree::btree_map<word,Trie*> children;
   /** A compact representation of the data to be stored at this node of the Trie. */
   uint32_t data;
   /** A marker for whether this node is a leaf node */

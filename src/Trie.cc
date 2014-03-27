@@ -10,6 +10,16 @@
 #include "Postgres.h"
 
 using namespace std;
+using namespace btree;
+
+//
+// Trie::~Trie
+//
+Trie::~Trie() {
+  for (btree_map<word,Trie*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+    delete iter->second;
+  }
+}
 
 //
 // Trie::add
@@ -18,14 +28,21 @@ void Trie::add(edge* elements, uint8_t length) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
-  Trie& child = children[elements[0].sink];
+  btree_map<word,Trie*>::iterator childIter = children.find( getWord(elements[0].sink) );
+  Trie* child = NULL;
+  if (childIter == children.end()) {
+    child = new Trie();
+    children[getWord(elements[0].sink)] = child;
+  } else {
+    child = childIter->second;
+  }
   // Register information about child
-  child.registerEdge(elements[0]);
+  child->registerEdge(elements[0]);
   // Recursive call
   if (length == 1) {
-    child.isLeaf = true;  // Mark this as a leaf node
+    child->isLeaf = true;  // Mark this as a leaf node
   } else {
-    child.add(&(elements[1]), length - 1);
+    child->add(&(elements[1]), length - 1);
   }
 }
 
@@ -38,37 +55,41 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
   
   if (queryLength == 0) {
     // Case: we're at the end of the query
-    // ... add all possible completions
-    map<word,Trie>::iterator iter;
-    for (iter = children.begin(); iter != children.end(); ++iter) {
-      Trie& child = iter->second;
-      edge buffer[4];
-      uint8_t numEdges = child.getEdges(buffer);
-      for (int i = 0; i < numEdges; ++i) {
-        buffer[i].sink = iter->first;
-        insertions[i].push_back(buffer[i]);
-      }
-    }
-    // ... return whether the fact exists
-    return isLeaf;
-  } else {
-    // Case: we're in the middle of the query
-    bool contains = false;
-    for (map<word,Trie>::iterator iter = children.begin(); iter != children.end(); ++iter) {
-      if (iter->first == getWord(query[0])) {
-        // ... check recursive containment
-        contains = iter->second.contains(&(query[1]), queryLength - 1, &(insertions[1]));
-      } else {
-        // ... add insertions
+    if (!isLeaf) {
+      // ... add all possible completions
+      btree_map<word,Trie*>::iterator iter;
+      for (iter = children.begin(); iter != children.end(); ++iter) {
+        Trie* child = iter->second;
         edge buffer[4];
-        uint8_t numEdges = iter->second.getEdges(buffer);
+        uint8_t numEdges = child->getEdges(buffer);
         for (int i = 0; i < numEdges; ++i) {
           buffer[i].sink = iter->first;
           insertions[i].push_back(buffer[i]);
         }
       }
     }
-    return contains;
+    // ... return whether the fact exists
+    return isLeaf;
+  } else {
+    // Case: we're in the middle of the query
+    btree_map<word,Trie*>::iterator childIter = children.find( getWord(query[0]) );
+    if (childIter == children.end()) {
+      // ... end of prefix match; add candidates
+      for (btree_map<word,Trie*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+        Trie* child = iter->second;
+        if (child->children.size() > 0) {
+          edge buffer[4];
+          uint8_t numEdges = child->getEdges(buffer);
+          for (int i = 0; i < numEdges; ++i) {
+            buffer[i].sink = iter->first;
+            insertions[i].push_back(buffer[i]);
+          }
+        }
+      }
+      return false;
+    } else {
+      return childIter->second->contains(&(query[1]), queryLength - 1, &(insertions[1]));
+    }
   }
 }
 
@@ -82,7 +103,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
 
   // Read valid insertions
   printf("Reading valid insertions...\n");
-  unordered_map<word,vector<edge>> word2senses;
+  btree_map<word,vector<edge>> word2senses;
   // (query)
   snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
   PGIterator wordIter = PGIterator(query);
@@ -136,7 +157,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       getline( stream, substr, ',' );
       word w = atoi(substr.c_str());
       // Register the word
-      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
+      btree_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
       if (iter == word2senses.end() || iter->second.size() == 0) {
         buffer[bufferLength].sink  = w;
         buffer[bufferLength].sense = 0;
@@ -153,7 +174,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       facts->add(buffer, bufferLength);
       // Add word sense variants
       for (int i = 0; i < bufferLength; ++i) {
-        unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
+        btree_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
         if (iter != word2senses.end() && iter->second.size() > 1) {
           for (int sense = 1; sense < iter->second.size(); ++sense) {
             buffer[i] = iter->second[sense];
