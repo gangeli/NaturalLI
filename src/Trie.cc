@@ -71,14 +71,17 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
   
   if (queryLength == 0) {
     // Case: we're at the end of the query
-    if (!isLeaf && !tooManyChildren) {
-      // ... add all possible completions
-      btree_map<word,Trie*>::const_iterator iter;
-      for (iter = children.begin(); iter != children.end(); ++iter) {
-        const Trie* child = iter->second;
-        if (child->isLeaf) {
-          // only add if this completes a fact.
-          addCompletion(child, iter->first, insertions[0]);
+    if (!isLeaf) {
+      if (!tooManyChildren) {
+        // sub-case: add all children
+        btree_map<word,Trie*>::const_iterator iter;
+        for (iter = children.begin(); iter != children.end(); ++iter) {
+          addCompletion(iter->second, iter->first, insertions[0]);
+        }
+      } else {
+        // sub-case: too many children; only add completions
+        for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
+          addCompletion(iter->second, iter->first, insertions[0]);
         }
       }
     }

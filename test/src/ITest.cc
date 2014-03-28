@@ -122,9 +122,9 @@ TEST(TrieITest, CompletionsValid) {
 
   // Make sure we're not taking too long
   // 1,500,000 ticks per containment check
-  EXPECT_LT(endTime-beginTime, 6000l * numWordsToConsider * 8l * 3l);
+  EXPECT_LT(endTime-beginTime, 7000l * numWordsToConsider * 8l * 3l);
   // ...or too short (else we should update the test)
-  EXPECT_GT(endTime-beginTime, 4000l * numWordsToConsider * 8l * 3l);
+  EXPECT_GT(endTime-beginTime, 5000l * numWordsToConsider * 8l * 3l);
 
   delete db;
   delete graph;
