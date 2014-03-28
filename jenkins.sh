@@ -21,5 +21,8 @@ make java_test
 echo "-- COVERAGE --"
 gcovr -x -r src -e ".+\.test\.cc" > build/coverage.xml
 
+echo "-- Document --"
+doxygen doxygen.conf
+
 echo "SUCCESS!"
 exit 0

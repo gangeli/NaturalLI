@@ -25,10 +25,10 @@ class FactDB {
    * If it contains the fact, a list of possible insertable facts is
    * returned.
    *
-   * @param words             The fact to look up.
-   * @param wordLength        The length of the word array to look up.
-   * @output insertions       The edges we can insert at each index. The size of this array should be
-   *                          one more than the size of the |words| array.
+   * @param words      The fact to look up.
+   * @param wordLength The length of the word array to look up.
+   * @param insertions [Output] The edges we can insert at each index. The size of this array should be
+   *                            one more than the size of the |words| array.
    *
    * @return True if the fact is in the database.
    */
@@ -38,6 +38,11 @@ class FactDB {
   /**
    * A helper for checking containment, ignoring the result of
    * the next words which could be inserted.
+   *
+   * @param words      The query to check.
+   * @param wordLength The size of the query
+   *
+   * @return True if the given query exists in the database.
    */
   bool contains(const tagged_word* words, const uint8_t wordLength) const {
     std::vector<edge> edges[MAX_FACT_LENGTH + 1];
