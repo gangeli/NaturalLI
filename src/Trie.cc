@@ -29,11 +29,12 @@ void Trie::add(edge* elements, uint8_t length) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
-  btree_map<word,Trie*>::iterator childIter = children.find( getWord(elements[0].sink) );
+  word w = getWord(elements[0].sink);
+  btree_map<word,Trie*>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
     child = new Trie();
-    children[getWord(elements[0].sink)] = child;
+    children[w] = child;
   } else {
     child = childIter->second;
   }
@@ -41,9 +42,22 @@ void Trie::add(edge* elements, uint8_t length) {
   child->registerEdge(elements[0]);
   // Recursive call
   if (length == 1) {
-    child->isLeaf = true;  // Mark this as a leaf node
+    child->isLeaf = true;    // Mark this as a leaf node
+    completions[w] = child;  // register a completion
   } else {
     child->add(&(elements[1]), length - 1);
+  }
+}
+
+//
+// Trie::addCompletion
+//
+inline void Trie::addCompletion(const Trie* child, const word& sink, vector<edge>& insertion) const {
+  edge buffer[4];
+  uint8_t numEdges = child->getEdges(buffer);
+  for (int i = 0; i < numEdges; ++i) {
+    buffer[i].sink = sink;
+    insertion.push_back(buffer[i]);
   }
 }
 
@@ -51,21 +65,20 @@ void Trie::add(edge* elements, uint8_t length) {
 // Trie::contains
 //
 const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
-                          vector<edge>* insertions) {
+                          vector<edge>* insertions) const {
   insertions[0] = vector<edge>();
+  const bool tooManyChildren = (children.size() > MAX_COMPLETIONS);
   
   if (queryLength == 0) {
     // Case: we're at the end of the query
-    if (!isLeaf) {
+    if (!isLeaf && !tooManyChildren) {
       // ... add all possible completions
-      btree_map<word,Trie*>::iterator iter;
+      btree_map<word,Trie*>::const_iterator iter;
       for (iter = children.begin(); iter != children.end(); ++iter) {
-        Trie* child = iter->second;
-        edge buffer[4];
-        uint8_t numEdges = child->getEdges(buffer);
-        for (int i = 0; i < numEdges; ++i) {
-          buffer[i].sink = iter->first;
-          insertions[i].push_back(buffer[i]);
+        const Trie* child = iter->second;
+        if (child->isLeaf) {
+          // only add if this completes a fact.
+          addCompletion(child, iter->first, insertions[0]);
         }
       }
     }
@@ -73,18 +86,38 @@ const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
     return isLeaf;
   } else {
     // Case: we're in the middle of the query
-    btree_map<word,Trie*>::iterator childIter = children.find( getWord(query[0]) );
+    btree_map<word,Trie*>::const_iterator childIter = children.find( getWord(query[0]) );
     if (childIter == children.end()) {
       // ... end of prefix match; add candidates
-      for (btree_map<word,Trie*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
-        Trie* child = iter->second;
-        if (child->children.size() > 0) {
-          edge buffer[4];
-          uint8_t numEdges = child->getEdges(buffer);
-          for (int i = 0; i < numEdges; ++i) {
-            buffer[i].sink = iter->first;
-            insertions[i].push_back(buffer[i]);
+      if (children.size() <= MAX_COMPLETION_SCAN) {
+        if (children.size() > 100) {
+          printf("  %lu\n", children.size());
+        }
+        // case: we can do a sequential scan through the children
+        for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
+          const Trie* child = iter->second;
+          if (!tooManyChildren) {
+            // sub-case: few children; add them all
+            if (child->isLeaf || child->children.size() > 0) {
+              addCompletion(child, iter->first, insertions[0]);
+            }
+          } else if (child->isLeaf) {
+            // sub-case: adding this would complete a fact, so always add it
+            addCompletion(child, iter->first, insertions[0]);
+          } else {
+            btree_map<word,Trie*>::const_iterator grandChildIter = child->children.find( getWord(query[0]) );
+            if (grandChildIter != child->children.end()) {
+              // sub-case: many children, but we can try to add skip-grams.
+              addCompletion(child, iter->first, insertions[0]);
+            } else {
+              // sub-case: we're dropping these insertions :(
+            }
           }
+        }
+      } else {
+        // case: way too many children; only add completions.
+        for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
+          addCompletion(iter->second, iter->first, insertions[0]);
         }
       }
       return false;
@@ -149,7 +182,6 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     uint32_t weight = atoi(row[1]);
     if (weight < MIN_FACT_COUNT) { break; }
     // Parse fact
-    uint32_t glossLength = strnlen(gloss, 1024);
     stringstream stream (&gloss[1]);
     bufferLength = 0;
     while( stream.good() ) {
@@ -158,7 +190,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       getline( stream, substr, ',' );
       word w = atoi(substr.c_str());
       // Register the word
-      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[bufferLength].sink );
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( w );
       if (iter == word2senses.end() || iter->second.size() == 0) {
         buffer[bufferLength].sink  = w;
         buffer[bufferLength].sense = 0;
@@ -168,19 +200,18 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
         buffer[bufferLength] = iter->second[0];
       }
       if (bufferLength >= MAX_FACT_LENGTH) { break; }
+      bufferLength += 1;
     }
     // Add fact
-    if (weight >= MIN_FACT_COUNT) {
-      // Add 'canonical' version
-      facts->add(buffer, bufferLength);
-      // Add word sense variants
-      for (int i = 0; i < bufferLength; ++i) {
-        unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
-        if (iter != word2senses.end() && iter->second.size() > 1) {
-          for (int sense = 1; sense < iter->second.size(); ++sense) {
-            buffer[i] = iter->second[sense];
-            facts->add(buffer, bufferLength);
-          }
+    // Add 'canonical' version
+    facts->add(buffer, bufferLength);
+    // Add word sense variants
+    for (int i = 0; i < bufferLength; ++i) {
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
+      if (iter != word2senses.end() && iter->second.size() > 1) {
+        for (int sense = 1; sense < iter->second.size(); ++sense) {
+          buffer[i] = iter->second[sense];
+          facts->add(buffer, bufferLength);
         }
       }
     }

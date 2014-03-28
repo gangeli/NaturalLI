@@ -27,6 +27,8 @@ static std::string   PG_TABLE_FACT    = "fact";
 
 #define MAX_FACT_LENGTH                 255
 #define MAX_FACT_LENGTH_IN_LONG_WORDS   4
+#define MAX_COMPLETIONS                 25
+#define MAX_COMPLETION_SCAN             100
 
 //
 // Typedefs

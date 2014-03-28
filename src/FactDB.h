@@ -33,13 +33,13 @@ class FactDB {
    * @return True if the fact is in the database.
    */
   virtual const bool contains(const tagged_word* words, const uint8_t wordLength,
-                              std::vector<edge>* insertions) = 0;
+                              std::vector<edge>* insertions) const = 0;
 
   /**
    * A helper for checking containment, ignoring the result of
    * the next words which could be inserted.
    */
-  bool contains(const tagged_word* words, const uint8_t wordLength) {
+  bool contains(const tagged_word* words, const uint8_t wordLength) const {
     std::vector<edge> edges[MAX_FACT_LENGTH + 1];
     return contains(words, wordLength, edges);
   }
@@ -52,5 +52,10 @@ class FactDB {
  * Also note that this database does not support insertions.
  */
 FactDB* ReadMockFactDB();
+
+/**
+ * No funny business -- just read facts from the database
+ */
+std::vector<std::vector<word>> ReadLiteralFacts(uint64_t count);
 
 #endif

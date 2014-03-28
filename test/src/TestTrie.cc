@@ -217,3 +217,101 @@ TEST_F(TrieTest, CompletionFromStart) {
     0,     255, 255, 255,
     0,     255, 255, 255);
 }
+
+// Make sure we don't add too many completions on accident
+TEST_F(TrieTest, CompletionLimitEndOfQuery) {
+  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+
+  // Add lots of facts rooted at [1]
+  buffer[0] = 1;
+  buffer[2] = 9000;
+  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
+    buffer[1] = i;
+    trie->add(buffer, 3);
+    EXPECT_TRUE(trie->contains(buffer, 3));
+    EXPECT_FALSE(trie->contains(buffer, 2));
+    EXPECT_FALSE(trie->contains(buffer, 1));
+    EXPECT_FALSE(trie->contains(buffer, 0));
+  }
+
+  // -- Case 1: only added up to MAX_COMPLETIONS
+  // Get completions for query: [1]
+  EXPECT_FALSE(trie->contains(buffer, 1, edges));
+  // Sanity checks
+  EXPECT_EQ(0, edges[0].size());
+  EXPECT_EQ(MAX_COMPLETIONS, edges[1].size());
+
+  // -- Case 2: added more than MAX_COMPLETIONS
+  buffer[1] = MAX_COMPLETIONS;
+  trie->add(buffer, 3);
+  // Get completions for query: [1]
+  EXPECT_FALSE(trie->contains(buffer, 1, edges));
+  // Sanity checks
+  EXPECT_EQ(0, edges[0].size());
+  EXPECT_EQ(0, edges[1].size());
+}
+
+// Make sure we don't add too many completions on accident
+TEST_F(TrieTest, CompletionLimitBeginningOfQuery) {
+  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+
+  buffer[1] = 9000;
+  // Add lots of facts rooted at []
+  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
+    buffer[0] = i;
+    trie->add(buffer, 2);
+    EXPECT_TRUE(trie->contains(buffer, 2));
+    EXPECT_FALSE(trie->contains(buffer, 1));
+    EXPECT_FALSE(trie->contains(buffer, 0));
+  }
+
+  // -- Case 1: only added up to MAX_COMPLETIONS
+  // Get completions for query: []
+  EXPECT_FALSE(trie->contains(buffer, 0, edges));
+  // Sanity checks
+  EXPECT_EQ(MAX_COMPLETIONS, edges[0].size());
+
+  // -- Case 2: added more than MAX_COMPLETIONS
+  buffer[0] = MAX_COMPLETIONS;
+  trie->add(buffer, 2);
+  // Get completions for query: []
+  EXPECT_FALSE(trie->contains(buffer, 0, edges));
+  // Sanity checks
+  EXPECT_EQ(0, edges[0].size());
+}
+
+// Make sure we can add skip-grams
+TEST_F(TrieTest, CompletionLimitSkipGram) {
+  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+
+  // Add lots of facts rooted at []
+  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
+    buffer[0] = i;
+    buffer[1] = i + 1;
+    trie->add(buffer, 2);
+    EXPECT_TRUE(trie->contains(buffer, 2));
+    EXPECT_FALSE(trie->contains(buffer, 1));
+    EXPECT_FALSE(trie->contains(buffer, 0));
+  }
+
+  // -- Case 1: only added up to MAX_COMPLETIONS
+  // Get completions for query: []
+  EXPECT_FALSE(trie->contains(buffer, 0, edges));
+  // Sanity checks
+  EXPECT_EQ(MAX_COMPLETIONS, edges[0].size());
+
+  // -- Case 2: added more than MAX_COMPLETIONS
+  buffer[0] = MAX_COMPLETIONS;
+  buffer[1] = MAX_COMPLETIONS + 1;
+  trie->add(buffer, 2);
+  // Get completions for query: []
+  EXPECT_FALSE(trie->contains(buffer, 0, edges));
+  // Sanity checks
+  EXPECT_EQ(0, edges[0].size());
+  
+  // -- Case 3: querying skip-gram
+  buffer[0] = MAX_COMPLETIONS + 1;
+  EXPECT_FALSE(trie->contains(buffer, 1, edges));
+  ASSERT_EQ(1, edges[0].size());
+  EXPECT_EQ(MAX_COMPLETIONS, edges[0][0].sink);
+}

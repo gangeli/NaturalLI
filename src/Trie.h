@@ -3,6 +3,7 @@
 
 #include <limits>
 #include "btree_map.h"
+#include "btree_set.h"
 #include <vector>
 
 #include "Config.h"
@@ -54,17 +55,21 @@ class Trie : public FactDB {
 
   /** {@inheritDoc} */
   virtual const bool contains(const tagged_word* words, const uint8_t wordLength,
-                              std::vector<edge>* insertions);
+                              std::vector<edge>* insertions) const;
   
   /** {@inheritDoc} */
-  bool contains(const tagged_word* words, const uint8_t wordLength) {
+  bool contains(const tagged_word* words, const uint8_t wordLength) const {
     std::vector<edge> edges[MAX_FACT_LENGTH + 1];
     return contains(words, wordLength, edges);
   }
 
  private:
+  inline void addCompletion(const Trie* child, const word& sink, std::vector<edge>& insertion) const;
+
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
   btree::btree_map<word,Trie*> children;
+  /** A utility structure for words from here which would complete a fact */
+  btree::btree_map<word,Trie*> completions;
   /** A compact representation of the data to be stored at this node of the Trie. */
   uint32_t data;
   /** A marker for whether this node is a leaf node */
@@ -84,7 +89,7 @@ class Trie : public FactDB {
   }
 
   /** Get the edge types we can insert */
-  inline uint8_t getEdges(edge* buffer) {
+  inline uint8_t getEdges(edge* buffer) const {
     const uint32_t bitmask = 0xFF;
     uint8_t size = 0;
     for (uint8_t shift = 0; shift < 32; (shift += 8)) {  

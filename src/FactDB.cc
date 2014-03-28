@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <set>
+#include <sstream>
 
 #include "Postgres.h"
 #include "FactDB.h"
@@ -21,7 +22,7 @@ class InMemoryFactDB : public FactDB {
   InMemoryFactDB(set<int64_t>& contents) : contents(contents) { }
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              vector<edge>* insertions) {
+                              vector<edge>* insertions) const {
     for (uint32_t i = 0; i <= queryLength; ++i) {
       insertions[i] = vector<edge>();
     }
@@ -71,7 +72,7 @@ class MockFactDB : public FactDB {
  public:
   
   virtual const bool contains(const tagged_word* query, const uint8_t queryLength,
-                              std::vector<edge>* insertions) {
+                              std::vector<edge>* insertions) const {
     for (uint32_t i = 0; i <= queryLength; ++i) {
       insertions[i] = vector<edge>();
     }
@@ -85,3 +86,33 @@ class MockFactDB : public FactDB {
 FactDB* ReadMockFactDB() {
   return new MockFactDB();
 }
+
+//
+// ReadLiteralFacts
+//
+vector<vector<word>> ReadLiteralFacts(uint64_t count) {
+  vector<vector<word>> facts;
+  char query[128];
+  snprintf(query, 127,
+           "SELECT gloss, weight FROM %s ORDER BY weight DESC LIMIT %lu;",
+           PG_TABLE_FACT.c_str(), count);
+  PGIterator iter = PGIterator(query);
+  
+  while (iter.hasNext()) {
+    PGRow row = iter.next();
+    const char* gloss = row[0];
+    stringstream stream (&gloss[1]);
+    vector<word> fact;
+    while( stream.good() ) {
+      string substr;
+      getline( stream, substr, ',' );
+      word w = atoi(substr.c_str());
+      fact.push_back(w);
+    }
+    facts.push_back(fact);
+  }
+  return facts;
+}
+
+
+

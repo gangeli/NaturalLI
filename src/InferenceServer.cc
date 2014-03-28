@@ -24,7 +24,7 @@
 #define SERVER_PORT       1337
 #define SERVER_TCP_BUFFER 25
 #define SERVER_READ_SIZE  1024
-#define MEM_ENV_VAR "MAXMEM_GB"
+#define MEM_ENV_VAR       "MAXMEM_GB"
 #endif
 
 #ifndef ERESTART
