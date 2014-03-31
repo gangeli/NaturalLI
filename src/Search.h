@@ -224,7 +224,9 @@ class UniformCostSearch : public BreadthFirstSearch {
 };
 
 /**
- * A 
+ * A weight vector.
+ * This is a more interpretable representation of the weights passed from
+ * the client, with an emphasis for fast computation.
  */
 class WeightVector {
  public:

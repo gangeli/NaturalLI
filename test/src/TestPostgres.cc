@@ -88,7 +88,7 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
 }
 
 TEST(PostgresTest, CountQuery) {
-  EXPECT_EQ(25,
+  EXPECT_EQ(27,
     atoi(PGIterator("SELECT COUNT(*) FROM edge_type;").next()[0]));
 
 }
