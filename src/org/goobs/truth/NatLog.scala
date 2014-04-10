@@ -4,12 +4,11 @@ import Learn._
 import org.goobs.truth.EdgeType._
 import edu.stanford.nlp.stats.ClassicCounter
 import org.goobs.truth.Messages._
-
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import edu.stanford.nlp.Sentence
+import edu.stanford.nlp.{natlog, Sentence}
 import edu.smu.tspell.wordnet.{Synset, WordNetDatabase, SynsetType}
 import scala.collection.mutable
-
+import edu.stanford.nlp.natlog.GaborMono
 
 object NatLog {
   lazy val wordnet:WordNetDatabase = WordNetDatabase.getFileInstance
@@ -102,40 +101,6 @@ object NatLog {
     default = -2.0)
 
   /**
-   * Determine the monotonicity of a sentence, according to the quantifier it starts with.
-   * @param sentence The sentence, in surface form. It should start with the quantifier (for now).
-   * @return A pair of integers, one for each of the two quantifier arguments, for positive (>0), negative (<0) or flat(=0)
-   *         monotonicity.
-   */
-  private def monotonicityMarking(sentence:String):(Int, Int) = {
-    val lower = sentence.toLowerCase.replaceAll( """\s+""", " ")
-    if (lower.startsWith("all ") ||
-        lower.startsWith("any ") ||
-        lower.startsWith("every ")    ) {
-      (-1, +1)
-    } else if (lower.startsWith("most ") ||
-               lower.startsWith("enough ") ||
-               lower.startsWith("few ") ||
-               lower.startsWith("lots of ")) {
-      (0, +1)
-    } else if (lower.contains(" dont ") ||
-               lower.contains(" don't ") ||
-               lower.contains(" do not ") ||
-               lower.contains(" are not ") ||
-               lower.startsWith("no ") ||
-               lower.startsWith("none of ")) {
-      (-1, -1)
-    } else if (lower.startsWith("some ") ||
-               lower.startsWith("there are ") ||
-               lower.startsWith("there exists ") ||
-               lower.startsWith("there exist ")) {
-      (+1, +1)
-    } else {
-      (-1, +1)  // default to something like "almost all", approximated as "all"
-    }
-  }
-
-  /**
    * Compute the Lesk overlap between a synset and a sentence.
    * For example, the value given the sentences [a, b, c, d] and [a, c, d, e]
    * would be 1^2 2^2 = 5 (for 'a' and 'c d').
@@ -205,38 +170,31 @@ object NatLog {
     }
   }
 
-  /**
-   * Annotate a given fact according to monotonicity (and possibly other flags).
-   * This output is ready to send as a query to the search server.
-   *
-   * @param leftArg Arg 1 of the triple.
-   * @param rel The plain-text relation of the triple
-   * @param rightArg Arg 2 of the triple.
-   * @return An annotated query fact, marked with monotonicity.
-   */
-  def annotate(leftArg:String, rel:String, rightArg:String):Fact = {
-    val index:String=>Array[Int] = {(arg:String) =>
-      if (Props.NATLOG_INDEXER_LAZY) {
-        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet).map(_._1).getOrElse({ warn(s"could not index $arg"); Array[Int]() })
-      } else {
-        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s)).map(_._1).getOrElse({warn(s"could not index $arg"); Array[Int]() })
-      }}
-
-    // Compute Monotonicity
-    val (arg1Monotonicity, arg2Monotonicity) = monotonicityMarking(leftArg + " " + rel + " " + rightArg)
+  private def annotate(inputSentence:Sentence, gloss:String):Fact = {
+    // Enforce punctuation (for parser, primarily)
+    val sentence = if (inputSentence.word.last != "." && inputSentence.word.last != "?" && inputSentence.word.last != "!") {
+      new Sentence(inputSentence.toString() + ".")
+    } else { inputSentence }
 
     // Tokenize
-    val tokens:(Array[Int], Array[Int], Array[Int]) = (index(leftArg), index(rel), index(rightArg))
-    val monotoneTaggedTokens:Array[(Int, Int)] =
-      (tokens._1.map{ (_, arg1Monotonicity) }.toList ::: tokens._2.map{ (_, arg2Monotonicity) }.toList ::: tokens._3.map{ (_, arg2Monotonicity) }.toList).toArray
+    val index:String=>Array[Int] = {(arg:String) =>
+      if (Props.NATLOG_INDEXER_LAZY) {
+        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet)._1
+      } else {
+        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s))._1
+      }}
+    val tokens = index(sentence.words.mkString(" "))
 
     // POS tag
-    val sentence:Sentence = Sentence((leftArg + " " + rel + " " + rightArg).split("""\s+"""))
-    val pos:Array[Option[SynsetType]] = {
+    val (pos, monotone):(Array[Option[SynsetType]], Array[Monotonicity]) = {
       // (get variables)
       val pos:Array[String] = sentence.pos
-      val chunkedWords:Array[String] = (tokens._1.toList ::: tokens._2.toList ::: tokens._3.toList).toArray
-        .map ( (w:Int) => if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(w) else Utils.wordGloss(w) )
+      val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.parse).map {
+        case natlog.Monotonicity.UP => Monotonicity.UP
+        case natlog.Monotonicity.DOWN => Monotonicity.DOWN
+        case natlog.Monotonicity.NON => Monotonicity.FLAT
+      }
+      val chunkedWords:Array[String] = tokens.map ( (w:Int) => if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(w) else Utils.wordGloss(w) )
       // (regexps)
       val NOUN = "(N.*)".r
       val VERB = "(V.*)".r
@@ -245,6 +203,7 @@ object NatLog {
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[SynsetType]] = Array.fill[Option[SynsetType]](chunkedWords.size)( None )
+      val synsetMonotone:Array[Option[Monotonicity]] = Array.fill[Option[Monotonicity]](chunkedWords.size)( None )
       for (i <- 0 until chunkedWords.size) {
         val tokenStart = tokenI
         val tokenEnd = tokenI + chunkedWords(i).count( p => p == ' ' ) + 1
@@ -260,37 +219,111 @@ object NatLog {
               Some(SynsetType.ADVERB)
             case _ => None
           })
+          synsetMonotone(i) = synsetMonotone(i).orElse(Some(monotonicity(i)))
         }
         tokenI = tokenEnd
       }
       // (filter unknown)
-      synsetPOS
+      (synsetPOS, synsetMonotone.map {
+        case Some(x) => x
+        case None => Monotonicity.FLAT
+      })
     }
 
     // Create Protobuf Words
-    val protoWords = monotoneTaggedTokens.zip(pos).map{ case ((word:Int, monotonicity:Int), pos:Option[SynsetType]) =>
-      var monotonicityValue = Monotonicity.FLAT
-      if (monotonicity > 0) { monotonicityValue = Monotonicity.UP }
-      if (monotonicity < 0) { monotonicityValue = Monotonicity.DOWN }
-      val gloss = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(word) else Utils.wordGloss(word)
-      Word.newBuilder()
-        .setWord(word)
-        .setGloss(gloss)
-        .setPos(pos match {
+    val protoWords:Seq[Word] = tokens.zip(monotone).zip(pos).map {
+      case ((word: Int, monotonicity: Monotonicity), pos: Option[SynsetType]) =>
+        val gloss = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(word) else Utils.wordGloss(word)
+        Word.newBuilder()
+          .setWord(word)
+          .setGloss(gloss)
+          .setPos(pos match {
           case Some(SynsetType.NOUN) => "n"
           case Some(SynsetType.VERB) => "v"
           case Some(SynsetType.ADJECTIVE) => "j"
           case Some(SynsetType.ADVERB) => "r"
           case _ => "?"
         }).setSense(getWordSense(gloss, sentence, pos))
-        .setMonotonicity(monotonicityValue).build()
-    }
+          .setMonotonicity(monotonicity).build()
+    }.dropRight(1)  // drop period at the end
 
     // Create Protobuf Fact
     val fact: Fact.Builder = Fact.newBuilder()
     for (word <- protoWords) { fact.addWord(word) }
-    fact.setGloss(leftArg + " " + rel + " " + rightArg)
-        .setToString("[" + rel + "](" + leftArg + ", " + rightArg + ")")
-        .build()
+    fact.setGloss(sentence.toString())
+      .setToString(gloss)
+      .build()
+
+  }
+
+  /**
+   * Annotate a given fact according to monotonicity (and possibly other flags).
+   * This output is ready to send as a query to the search server.
+   *
+   * @param leftArg Arg 1 of the triple.
+   * @param rel The plain-text relation of the triple
+   * @param rightArg Arg 2 of the triple.
+   * @return An annotated query fact, marked with monotonicity.
+   */
+  def annotate(leftArg:String, rel:String, rightArg:String):Fact = {
+    val sentence:Sentence = new Sentence(leftArg + " " + rel + " " + rightArg)
+    annotate(sentence, "[" + rel + "](" + leftArg + ", " + rightArg + ")")
+  }
+
+  /**
+   * An instantiation of the Ollie processing pipeline; this is only called on demand
+   * to avoid loading models.
+   */
+  lazy val ollie:(String=>Iterable[(String, String, String)]) = {
+    import java.io._
+    import java.net._
+    import scala.sys.process._
+
+    // Ollie Daemon
+    val ollie = new Thread() {
+      override def run() {
+        log("starting Ollie (server)...")
+        List("java", "-mx1g", "-XX:+UseConcMarkSweepGC", "-jar", Props.NATLOG_OLLIE_JAR.getPath,
+          "--encoding", "UTF8", "--threshold", "0.0", "--malt-model", Props.NATLOG_OLLIE_MALT_PATH.getPath,
+          "--ignore-errors", "--output-format", "tabbed", "--server", Props.NATLOG_OLLIE_PORT.toString) ! ProcessLogger( log("ollie", _) )
+      }
+    }
+    ollie.setDaemon(true)
+    ollie.start()
+
+    // Wait for connection
+    var connected:Boolean = false
+    while (!connected) {
+      try {
+        new Socket("localhost", Props.NATLOG_OLLIE_PORT).close()
+        connected = true
+      } catch {
+        case (e:java.net.ConnectException) => Thread.sleep(1000)
+      }
+    }
+    log("connection valid to Ollie.")
+
+    // Ollie function
+    (input: String) => {
+      val socket = new Socket("localhost", Props.NATLOG_OLLIE_PORT)
+      // Write request
+      new PrintWriter(socket.getOutputStream).print(input)
+      socket.getOutputStream.flush()
+      socket.shutdownOutput()
+      // Read response
+      val response = scala.io.Source.fromInputStream(socket.getInputStream).getLines().map{ (line:String) =>
+        println("## " + line)
+        val fields = line.substring(2).split("\t")
+        (fields(1), fields(2), fields(3))
+      }.toList
+      // Clean up and return
+      socket.close()
+      response
+    }
+  }
+
+  def annotate(query:String):Iterable[Fact] = {
+    val sentence:Sentence = new Sentence(query)
+    Seq(annotate(sentence, query))
   }
 }

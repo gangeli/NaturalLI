@@ -11,10 +11,15 @@ import org.goobs.truth.Postgres.{slurpTable, TABLE_WORD_INTERN}
 import gnu.trove.map.hash.TObjectIntHashMap
 import java.sql.ResultSet
 import gnu.trove.map.TObjectIntMap
+import gnu.trove.procedure.TObjectIntProcedure
 
 object Utils {
   NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
   private val logger = Redwood.channels("Utils")
+
+  // Note: match these with CreateGraph's index creation
+  val WORD_NONE:String = "__none__"
+  val WORD_UNK:String  = "__unk__"
 
   def pos2synsetType(pos:String):SynsetType = pos match {
     case r"""[Nn].*""" => SynsetType.NOUN
@@ -70,8 +75,8 @@ object Utils {
   }
 
   def index(rawPhrase:String, doHead:Boolean=false, allowEmpty:Boolean=false)
-           (implicit contains:String=>Boolean, wordIndexer:String=>Int) :Option[(Array[Int],Int)] = {
-    if (!allowEmpty && rawPhrase.trim.equals("")) { return None }
+           (implicit contains:String=>Boolean, wordIndexer:String=>Int) :(Array[Int],Int) = {
+    if (!allowEmpty && rawPhrase.trim.equals("")) { return (Array[Int](), 0) }
     var headWord:Option[String] = None
     val phrase:Array[String]
     = if (doHead && Props.SCRIPT_REVERB_HEAD_DO) tokenizeWithCase(rawPhrase, (hw:String) => headWord = Some(hw))
@@ -131,13 +136,13 @@ object Utils {
     var lastElem:Int = -999
     var rtn = List[Int]()
     for (i <- indexResult.length - 1 to 0 by -1) {
-      if (indexResult(i) < 0) { return None }
+      if (indexResult(i) < 0) { indexResult(i) = wordIndexer(WORD_UNK) }
       if (indexResult(i) != lastElem) {
         lastElem = indexResult(i)
         rtn = indexResult(i) :: rtn
       }
     }
-    Some( (rtn.toArray, headWordIndexed) )
+    (rtn.toArray, headWordIndexed)
   }
 
   lazy val (wordIndexer, wordGloss):(TObjectIntHashMap[String],Array[String]) = {
@@ -153,9 +158,22 @@ object Utils {
         logger.log("read " + (count / 1000000) + "M words; " + (Runtime.getRuntime.freeMemory / 1000000) + " MB of memory free")
       }
     })
+    log("read " + count + " words")
     endTrack("Reading Word Index")
-    (wordIndexer, wordIndexer.keys(new Array[String](wordIndexer.size())))
+    val reverseIndex = new Array[String](wordIndexer.size())
+    wordIndexer.forEachEntry(new TObjectIntProcedure[String] {
+      override def execute(p1: String, p2: Int): Boolean = { reverseIndex(p2) = p1; true }
+    })
+    (wordIndexer, reverseIndex)
   }
+
+}
+
+object TruthValue extends Enumeration {
+  type TruthValue = Value
+  val TRUE    = Value(0,  "true")
+  val FALSE   = Value(1,  "false")
+  val UNKNOWN = Value(2,  "unknown")
 
 }
 

@@ -82,7 +82,8 @@ object CreateGraph {
     Props.exec(fn2execInput1(() => {
       // Some global stuff
       println("Started")
-      wordIndexer.indexOf("__none__", true)
+      wordIndexer.indexOf(Utils.WORD_NONE, true)
+      wordIndexer.indexOf(Utils.WORD_UNK,  true)
       implicit val jaws = WordNetDatabase.getFileInstance
       val wordnet       = Ontology.load(Props.SCRIPT_WORDNET_PATH)
 

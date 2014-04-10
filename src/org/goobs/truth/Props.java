@@ -24,8 +24,6 @@ public class Props {
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = "john0";
-  @Option(name="psql.host.tunnels", gloss="A list of hosts which don't have direct access, but tunnel through localhost")
-  public static String[] PSQL_HOST_TUNNELS = new String[]{"hal".intern()};
   @Option(name="psql.port", gloss="The port at which postgres is running")
   public static int PSQL_PORT = 4243;
   @Option(name="psql.db", gloss="The database name")
@@ -46,14 +44,20 @@ public class Props {
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;
 
+  @Option(name="natlog.ollie.jar", gloss="The path to the Ollie *.jar file")
+  public static File NATLOG_OLLIE_JAR = new File("etc/ollie.jar");
+  @Option(name="natlog.ollie.port", gloss="The port to start an Ollie server on")
+  public static int NATLOG_OLLIE_PORT = 4299;
+  @Option(name="natlog.ollie.malt.path", gloss="The path to the Malt parser serialized model")
+  public static File NATLOG_OLLIE_MALT_PATH = new File("etc/engmalt.linear-1.7.mco");
+
+  @Option(name="data.fracas.path", gloss="The path to the FraCaS test suite")
+  public static File DATA_FRACAS_PATH = new File("etc/fracas.xml");
+
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";
   @Option(name="script.distsim.cos", gloss="The path to the cosine similarity nearest neighbors")
   public static String SCRIPT_DISTSIM_COS = "/home/gabor/workspace/truth/etc/cosNN.tab";
-  @Option(name="script.distsim.jaccard", gloss="The path to the jaccard similarity nearest neighbors")
-  public static String SCRIPT_DISTSIM_JACCARD = "/home/gabor/workspace/truth/etc/cosNN.tab";
-  @Option(name="script.distsim.hellinger", gloss="The path to the hellinger similarity nearest neighbors")
-  public static String SCRIPT_DISTSIM_HELLINGER = "/home/gabor/workspace/truth/etc/cosNN.tab";
 
   @Option(name="script.reverb.raw.dir", gloss="The raw directory where Reverb outputs are stored")
   public static File SCRIPT_REVERB_RAW_DIR = new File("/scr/nlp/data/openie/output/reverb1.4/clueweb_english");
