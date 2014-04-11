@@ -103,11 +103,19 @@ object Utils {
           .map( (w:String) => if (w.length <= 1) w.toUpperCase
         else w.substring(0, 1).toUpperCase + w.substring(1) )
           .mkString(" ")
-        if (rawPhrase.contains(candidate) &&  // not _technically_ sufficent, but close enough
+        if (rawPhrase.contains(candidate) &&  // not _technically_ sufficient, but close enough
           contains(candidate)) {
           val index = wordIndexer(candidate)
           for (i <- start until start + length) { indexResult(i) = index; }
           found = true
+        }
+        if (!found) {
+          // Try to lower-case
+          if (contains(candidate.toLowerCase)) {
+            val index = wordIndexer(candidate.toLowerCase)
+            for (i <- start until start + length) { indexResult(i) = index; }
+            found = true
+          }
         }
       }
     }

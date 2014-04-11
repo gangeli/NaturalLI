@@ -147,9 +147,9 @@ object NatLog {
    * @return The most likely Synset; if no information is present to disambiguate, this should return the
    *         first synset that matches the POS tag.
    */
-  def getWordSense(word:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
+  def getWordSense(word:String, ner:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
     val synsets:Array[Synset] = wordnet.getSynsets(word)
-    if (synsets == null || synsets.size == 0) {
+    if (synsets == null || synsets.size == 0 || !pos.isDefined || ner != "O") {
       // Case: sensless
       0
     } else {
@@ -172,7 +172,7 @@ object NatLog {
 
   private def annotate(inputSentence:Sentence, gloss:String):Fact = {
     if (inputSentence.length == 0) {
-      return Fact.newBuilder().setGloss("").setToString("<EMPTY FACT>").build();
+      return Fact.newBuilder().setGloss("").setToString("<EMPTY FACT>").build()
     }
     // Enforce punctuation (for parser, primarily)
     val sentence = if (inputSentence.word.last != "." && inputSentence.word.last != "?" && inputSentence.word.last != "!") {
@@ -189,9 +189,10 @@ object NatLog {
     val tokens = index(sentence.words.mkString(" "))
 
     // POS tag
-    val (pos, monotone):(Array[Option[SynsetType]], Array[Monotonicity]) = {
+    val (pos, ner, monotone):(Array[Option[SynsetType]], Array[String], Array[Monotonicity]) = {
       // (get variables)
       val pos:Array[String] = sentence.pos
+      val ner:Array[String] = sentence.ner
       val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.parse).map {
         case natlog.Monotonicity.UP => Monotonicity.UP
         case natlog.Monotonicity.DOWN => Monotonicity.DOWN
@@ -206,6 +207,7 @@ object NatLog {
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[SynsetType]] = Array.fill[Option[SynsetType]](chunkedWords.size)( None )
+      val synsetNER:Array[String] = Array.fill[String](chunkedWords.size)( "O" )
       val synsetMonotone:Array[Option[Monotonicity]] = Array.fill[Option[Monotonicity]](chunkedWords.size)( None )
       for (i <- 0 until chunkedWords.size) {
         val tokenStart = tokenI
@@ -222,20 +224,21 @@ object NatLog {
               Some(SynsetType.ADVERB)
             case _ => None
           })
-          synsetMonotone(i) = synsetMonotone(i).orElse(Some(monotonicity(i)))
+          synsetMonotone(i) = synsetMonotone(i).orElse(Some(monotonicity(k)))
+          synsetNER(i) = ner(k)
         }
         tokenI = tokenEnd
       }
       // (filter unknown)
-      (synsetPOS, synsetMonotone.map {
+      (synsetPOS, synsetNER, synsetMonotone.map {
         case Some(x) => x
         case None => Monotonicity.FLAT
       })
     }
 
     // Create Protobuf Words
-    val protoWords:Seq[Word] = tokens.zip(monotone).zip(pos).map {
-      case ((word: Int, monotonicity: Monotonicity), pos: Option[SynsetType]) =>
+    val protoWords:Seq[Word] = tokens.zip(monotone).zip(ner).zip(pos).map {
+      case (((word: Int, monotonicity: Monotonicity), ner:String), pos: Option[SynsetType]) =>
         val gloss = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(word) else Utils.wordGloss(word)
         Word.newBuilder()
           .setWord(word)
@@ -246,7 +249,7 @@ object NatLog {
           case Some(SynsetType.ADJECTIVE) => "j"
           case Some(SynsetType.ADVERB) => "r"
           case _ => "?"
-        }).setSense(getWordSense(gloss, sentence, pos))
+        }).setSense(getWordSense(gloss, ner, sentence, pos))
           .setMonotonicity(monotonicity).build()
     }.dropRight(1)  // drop period at the end
 
