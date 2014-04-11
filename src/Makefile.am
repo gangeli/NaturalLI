@@ -32,4 +32,3 @@ client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.jav
 	@echo "Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
 	jar cf client.jar -C . .
-	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
