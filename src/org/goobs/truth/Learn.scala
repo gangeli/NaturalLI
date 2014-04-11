@@ -65,6 +65,8 @@ object Learn {
       // TODO(gabor) compute a more real score
       node.getScore
     }
+    // Special case for no paths
+    if (paths.isEmpty) { return 0.5 }
     // Compute noisy or of probabilities
     1.0 - {for (inference <- paths) yield {
       val prob = computeProb(inference);

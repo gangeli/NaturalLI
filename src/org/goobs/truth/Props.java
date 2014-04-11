@@ -39,7 +39,7 @@ public class Props {
   @Option(name="server.host", gloss="The hostname for the inference server")
   public static String SERVER_HOST = "localhost";
   @Option(name="server.port", gloss="The hostname for the inference server")
-  public static int SERVER_PORT = 1234;
+  public static int SERVER_PORT = 1337;
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;

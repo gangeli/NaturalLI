@@ -70,23 +70,7 @@ object RegressionTest {
   }
 
   def main(args:Array[String]) {
-    ShutdownServer.shutdown()
-
-    import scala.sys.process._
-    List[String]("""make""", "-j" + Execution.threads).!
-    var running = false
-    val retval:Int = List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
-      println(line)
-      if (line.startsWith("Listening on port") && !running) {
-        running = true
-        new Thread(new Runnable {
-          override def run(): Unit = runClient()
-        }).start()
-      }
-    }
-
-    System.exit(retval)
-
+    System.exit(Client.startMockServer(() => runClient()))
   }
 
 }

@@ -9,6 +9,8 @@ import java.net.Socket
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import scala.Some
+import org.goobs.truth.scripts.ShutdownServer
+import edu.stanford.nlp.util.Execution
 
 /**
  * @author Gabor Angeli
@@ -53,6 +55,24 @@ object Client {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
     response.getInferenceList
+  }
+
+  def startMockServer(callback:()=>Any):Int = {
+    ShutdownServer.shutdown()
+
+    import scala.sys.process._
+    List[String]("""make""", "-j" + Execution.threads).!
+    var running = false
+    List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
+      println(line)
+      if (line.startsWith("Listening on port") && !running) {
+        running = true
+        new Thread(new Runnable {
+          override def run(): Unit = callback()
+        }).start()
+      }
+    }
+
   }
 
   def main(args:Array[String]):Unit = {
