@@ -12,6 +12,11 @@ import org.goobs.truth.TruthValue._
  * a stream of training examples from an input location (specified with a String)
  */
 trait DataSource {
+  /**
+   * Read queries from the specified abstract path.
+   * @param path The path to read the queries from. The meaning of this path can vary depending on the particular extractor.
+   * @return A stream of examples, annotated with their truth value.
+   */
   def read(path:String):Stream[(Query.Builder,TruthValue)]
 }
 
@@ -19,48 +24,48 @@ trait DataSource {
  * Read examples from the FraCaS test suite found at: http://www-nlp.stanford.edu/~wcmac/downloads/fracas.xml
  */
 object FraCaS extends DataSource {
+  /**
+   * A filter for selecting queries which have only a single antecedent
+   */
+  val isSingleAntecedent:((Query.Builder, TruthValue)) => Boolean = {
+    case (query: Query.Builder, truth: TruthValue) => query.getKnownFactCount == 1
+  }
+
+  /**
+   * A filter for selecting queries which are considered "valid" for NatLog inference
+   */
+  val isApplicable:((Query.Builder, TruthValue)) => Boolean = {
+    case (query: Query.Builder, truth: TruthValue) =>
+      isSingleAntecedent( (query, truth) ) &&
+        (query.getId match {
+          case x if   0 to  80 contains x => true
+          case x if 197 to 219 contains x => true
+          case x if 220 to 250 contains x => true
+          case _ => false
+        })
+  }
 
   override def read(xmlPath:String):Stream[(Query.Builder,TruthValue)] = {
     // Parse XML
     val xml = scala.xml.XML.loadFile(xmlPath)
-    (xml \ "problem").toStream.map { problem => (
-      Query.newBuilder()
+    (xml \ "problem").par.toStream.map { problem =>
+      (Query.newBuilder()
         // Antecedents
         .addAllKnownFact((problem \ "p").flatMap ( x => NatLog.annotate(x.text) ))
         // Consequent
-        .setQueryFact(NatLog.annotate((problem \ "h").head.text).head),
+        .setQueryFact(NatLog.annotate((problem \ "h").head.text).head)
+        .setId((problem \ "@id").text.toInt),
         // Gold annotation
-        (problem \ "a").head.text.trim match {
-            // Variants of YES
-          case "Yes"          => TRUE
-          case "?Yes"         => TRUE
-          case "Many"         => TRUE
-          case "At most two"  => TRUE
-          case "Yes, on one reading"                 => TRUE
-          case "Yes, on one reading of the premise"  => TRUE
-          case "Yes, on one possible reading"        => TRUE
-          case "Yes, on one possible reading/parse"  => TRUE
-          case "??: Yes for a mouse; ?? No for an animal" => TRUE
-          case "Yes (for a former university student)" => TRUE
-          case "Yes, if both commissioners are female; otherwise there are more than two commissioners." => TRUE
-          case "Yes, on a distributive reading of &quot;Smith and Jones&quot;." => TRUE
-          case "Yes, on a distributive reading of the question." => TRUE
-            // Variants of NO
-          case "No"              => FALSE
-          case "No, just one"    => FALSE
-          case "Not many"        => FALSE
-          case "No / don't know" => FALSE
-            // Variants of UNKNOWN
-          case "Don't know"   => UNKNOWN
-          case "Don't know, on one reading of the premise" => UNKNOWN
-          case "Don't know, on one reading" => UNKNOWN
-          case "Don't know, on one possible reading" => UNKNOWN
-          case ""             => UNKNOWN
+        (problem \ "@fracas_answer").text.trim match {
+          case "Yes"     => TRUE
+          case "No"      => FALSE
+          case "unknown" => UNKNOWN
+          case "undef"   => INVALID
           case _     =>
             fail("Unknown answer: " + (problem \ "a"))
             UNKNOWN
         }
-    )}
+    )}.filter{ case (query, truth) => query.getQueryFact.getWordCount > 0 && query.getKnownFactCount > 0 && truth != INVALID}
   }
 
 }

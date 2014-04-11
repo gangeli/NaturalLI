@@ -205,7 +205,7 @@ object CreateGraph {
         // Lemmas
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           if (!word.contains(" ")) {
-            val lemmas = Sentence(word).lemma
+            val lemmas = new Sentence(word).lemma
             if (lemmas.length == 1 && lemmas(0) != word) {
               val lemmaIndex = indexOf(lemmas(0))
               if (lemmaIndex != index) {

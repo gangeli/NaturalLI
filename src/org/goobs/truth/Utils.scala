@@ -174,6 +174,7 @@ object TruthValue extends Enumeration {
   val TRUE    = Value(0,  "true")
   val FALSE   = Value(1,  "false")
   val UNKNOWN = Value(2,  "unknown")
+  val INVALID = Value(3,  "invalid")
 
 }
 

@@ -171,6 +171,9 @@ object NatLog {
   }
 
   private def annotate(inputSentence:Sentence, gloss:String):Fact = {
+    if (inputSentence.length == 0) {
+      return Fact.newBuilder().setGloss("").setToString("<EMPTY FACT>").build();
+    }
     // Enforce punctuation (for parser, primarily)
     val sentence = if (inputSentence.word.last != "." && inputSentence.word.last != "?" && inputSentence.word.last != "!") {
       new Sentence(inputSentence.toString() + ".")

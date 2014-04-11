@@ -34,6 +34,8 @@ message Query {
   optional string searchType = 6 [ default = "ucs" ];
   optional string cacheType  = 7 [ default = "none" ];
 
+  optional uint32 id         = 50;
+
   optional bool shutdownServer = 101 [ default = false ];
 }
 

@@ -19,6 +19,7 @@ class NatLogTest extends Test {
   }
 
   describe("Natural Logic Weights") {
+    Props.NATLOG_INDEXER_LAZY = false
     describe("when a hard assignment") {
       it ("should accept Wordnet monotone jumps") {
         NatLog.hardNatlogWeights.getCount(Learn.unigramUp(EdgeType.WORDNET_UP)) should be >= -1.0
@@ -47,6 +48,7 @@ class NatLogTest extends Test {
 
 
   describe("Monotonicity Markings") {
+    Props.NATLOG_INDEXER_LAZY = false
     import Messages.Monotonicity._
     it ("should mark 'all'") {
       NatLog.annotate("all cats", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(DOWN, DOWN, UP, UP))
@@ -82,6 +84,7 @@ class NatLogTest extends Test {
   }
 
   describe("Lesk") {
+    Props.NATLOG_INDEXER_LAZY = false
     it ("should be perfect for exact string matches") {
       NatLog.lesk(WordNetDatabase.getFileInstance.getSynsets("cat")(0), "feline mammal usually having thick soft fur and no ability to roar: domestic cats; wildcats".split("""\s+""")) should be (225.0)
     }
@@ -92,6 +95,7 @@ class NatLogTest extends Test {
   }
 
   describe("Word Senses") {
+    Props.NATLOG_INDEXER_LAZY = false
     it ("should get default sense of 'cat'") {
       NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getPos ).toList should be (List("?", "n", "v", "n"))
       NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
