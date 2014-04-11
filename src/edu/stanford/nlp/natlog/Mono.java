@@ -3,7 +3,7 @@ package edu.stanford.nlp.natlog;
 import edu.stanford.nlp.trees.Tree;
 
 /**
- * TODO(gabor) JavaDoc
+ * An interface for making the monotonicities on a sentence.
  *
  * @author Gabor Angeli
  */

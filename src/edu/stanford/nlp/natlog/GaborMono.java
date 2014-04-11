@@ -238,7 +238,7 @@ public class GaborMono implements Mono {
     // Collect Tree -> Span mapping
     SpanFinder spans = new SpanFinder(tree);
 
-    //
+    // Variables of interest
     Monotonicity[] monoMarks = new Monotonicity[tree.yield().size()];
     Arrays.fill(monoMarks, Monotonicity.DEFAULT);
     Monotonicity[] quantifierMarks = new Monotonicity[tree.yield().size()];

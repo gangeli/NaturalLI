@@ -74,12 +74,12 @@ class NatLogTest extends Test {
     }
     it ("should work on 'Every job that involves a giant squid is dangerous'") {
       NatLog.annotate("every job that involves a giant squid is dangerous").head.getWordList.map( _.getMonotonicity ).toList should be (
-        List(DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP))
+        List(DOWN, DOWN, DOWN, DOWN, DOWN, DOWN, UP, UP))
     }
     it ("should work on 'Not every job that involves a giant squid is safe'") {
       new Sentence("not every job that involves a giant squid is safe").words.length should be (10)
       NatLog.annotate("not every job that involves a giant squid is safe").head.getWordList.map( _.getMonotonicity ).toList should be (
-        List(DOWN, UP, UP, UP, UP, UP, UP, UP, DOWN))
+        List(DOWN, UP, UP, UP, UP, UP, UP, DOWN, DOWN))
     }
   }
 
@@ -105,8 +105,8 @@ class NatLogTest extends Test {
       NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getSense ).toList should be (List(0, 6, 2, 2, 1))
     }
     it ("should get right sense of 'tail'") {
-      NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(1, 1, 2, 1))
-      NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ).toList should be (List(1, 1, 2, 1))
+      NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
+      NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
     }
   }
 }
