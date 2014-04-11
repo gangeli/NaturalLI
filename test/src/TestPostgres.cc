@@ -60,7 +60,7 @@ TEST(PostgresTest, EdgeTypeIndexerHasCorrectEntries) {
 
 // Test gloss
 TEST(PostgresTest, WordIndexerHasCorrectEntries) {
-  for (uint32_t skip = 1; skip < 4; ++skip) {
+  for (uint32_t skip = 1; skip < 5; ++skip) {
     PGIterator results = PGIterator(
         "SELECT * FROM word ORDER BY index ASC LIMIT 10;",
         skip);
@@ -69,20 +69,24 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
     EXPECT_EQ(string("__none__"), string(term[1]));
+    ASSERT_TRUE(results.hasNext());
+    PGRow term = results.next();
+    EXPECT_EQ(string("1"), string(term[0]));
+    EXPECT_EQ(string("__unk__"), string(term[1]));
     // 1: 'hood
     ASSERT_TRUE(results.hasNext());
     term = results.next();
-    EXPECT_EQ(string("1"), string(term[0]));
+    EXPECT_EQ(string("2"), string(term[0]));
     EXPECT_EQ(string("'hood"), string(term[1]));
     // 2: vicinity
     ASSERT_TRUE(results.hasNext());
     term = results.next();
-    EXPECT_EQ(string("2"), string(term[0]));
+    EXPECT_EQ(string("3"), string(term[0]));
     EXPECT_EQ(string("vicinity"), string(term[1]));
     // 3: locality
     ASSERT_TRUE(results.hasNext());
     term = results.next();
-    EXPECT_EQ(string("3"), string(term[0]));
+    EXPECT_EQ(string("4"), string(term[0]));
     EXPECT_EQ(string("locality"), string(term[1]));
   }
 }
