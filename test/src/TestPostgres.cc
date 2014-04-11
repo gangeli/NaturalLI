@@ -69,8 +69,9 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     PGRow term = results.next();
     EXPECT_EQ(string("0"), string(term[0]));
     EXPECT_EQ(string("__none__"), string(term[1]));
+    // 1: none
     ASSERT_TRUE(results.hasNext());
-    PGRow term = results.next();
+    term = results.next();
     EXPECT_EQ(string("1"), string(term[0]));
     EXPECT_EQ(string("__unk__"), string(term[1]));
     // 1: 'hood
