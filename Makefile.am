@@ -12,7 +12,7 @@ clean-local:
 LIB=$(realpath lib)
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:lib/stanford-corenlp-caseless-models-current.jar:lib/stanford-corenlp-models-current.jar
 export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/typesafe-config.jar:${LIB}/demo/gson.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar
-export TEST_CP=${CP}:src/client.jar:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
+export TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
 
 src/client.jar:
@@ -29,9 +29,9 @@ test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard te
 	jar cf test/test_client.jar -C test/src .
 	jar uf test/test_client.jar -C src .
 
-java_test: test/test_client.jar
+java_test: src/client.jar test/test_client.jar
 	$(MAKE)
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
+	${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
+	${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
 
 server: src/truth

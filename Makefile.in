@@ -789,10 +789,10 @@ test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard te
 	jar cf test/test_client.jar -C test/src .
 	jar uf test/test_client.jar -C src .
 
-java_test: test/test_client.jar
+java_test: src/client.jar test/test_client.jar
 	$(MAKE)
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
+	${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
+	${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
 
 server: src/truth
 
