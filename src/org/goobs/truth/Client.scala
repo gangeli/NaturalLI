@@ -24,7 +24,7 @@ object Client {
     ).mkString(" "))
     log(fact.getWordList.map{ w =>
       val synsets = NatLog.wordnet.getSynsets(w.getGloss)
-      if (synsets == null || synsets.size == 0) {
+      if (synsets == null || synsets.size == 0 || w.getSense == 0) {
         s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
       } else {
         s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
