@@ -52,9 +52,9 @@ TEST(TrieITest, FactsAppearInRealFactDB) {
   printf("Checking containment...\n");
   uint32_t numContains = 0;
   for (vector<vector<word>>::iterator it = facts.begin(); it != facts.end(); ++it) {
-    word fact[it->size()];
+    tagged_word fact[it->size()];
     for (int i = 0; i < it->size(); ++i) {
-      fact[i] = (*it)[i];
+      fact[i] = getTaggedWord((*it)[i], 0, 0);
     }
     bool contains = db->contains(fact, it->size());
     EXPECT_TRUE(contains);
@@ -103,8 +103,7 @@ TEST(TrieITest, CompletionsValid) {
           if (edges[i].sink == 0) { break; }
           EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
           EXPECT_LT(edges[i].sink, numWords);
-          EXPECT_EQ(0, getSense(edges[i].sink));
-          EXPECT_EQ(MONOTONE_FLAT, getMonotonicity(edges[i].sink));
+          EXPECT_EQ(0, edges[i].sense);
           wordHasCompletion = true;
         }
       }
@@ -140,7 +139,7 @@ TEST(GraphITest, AllEdgesValid) {
   vector<word> keys = graph->keys();
   for (int w = 0; w < keys.size(); ++w) {
     uint32_t numEdges = 0;
-    const edge* edges = graph->outgoingEdgesFast(w, &numEdges);
+    const edge* edges = graph->outgoingEdgesFast(getTaggedWord(w, 0, 0), &numEdges);
     for (uint32_t i = 0; i < numEdges; ++i) {
       ASSERT_LT(edges[i].sink, keys.size());
       ASSERT_GE(edges[i].cost, 0.0);

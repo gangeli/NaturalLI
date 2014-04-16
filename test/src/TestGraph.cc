@@ -40,14 +40,14 @@ TEST_F(MockGraphTest, HasCorrectEdgeCounts) {
 
 // Check to make sure the mock graph has the correct edges
 TEST_F(MockGraphTest, HasCorrectEdges) {
-  EXPECT_EQ(TIMONE, mockGraph->outgoingEdges(LEMUR)[0].sink);
+  EXPECT_EQ(TIMONE.word, mockGraph->outgoingEdges(LEMUR)[0].sink);
   EXPECT_EQ(WORDNET_DOWN, mockGraph->outgoingEdges(LEMUR)[0].type);
   EXPECT_FLOAT_EQ(0.01, mockGraph->outgoingEdges(LEMUR)[0].cost);
-  EXPECT_EQ(ANIMAL, mockGraph->outgoingEdges(LEMUR)[1].sink);
+  EXPECT_EQ(ANIMAL.word, mockGraph->outgoingEdges(LEMUR)[1].sink);
   EXPECT_EQ(WORDNET_UP, mockGraph->outgoingEdges(LEMUR)[1].type);
   EXPECT_FLOAT_EQ(0.42, mockGraph->outgoingEdges(LEMUR)[1].cost);
 
-  EXPECT_EQ(CAT, mockGraph->outgoingEdges(ANIMAL)[0].sink);
+  EXPECT_EQ(CAT.word, mockGraph->outgoingEdges(ANIMAL)[0].sink);
   EXPECT_EQ(WORDNET_DOWN, mockGraph->outgoingEdges(ANIMAL)[0].type);
   EXPECT_FLOAT_EQ(42.0, mockGraph->outgoingEdges(ANIMAL)[0].cost);
 

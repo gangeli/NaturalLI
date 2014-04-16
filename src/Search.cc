@@ -5,7 +5,6 @@
 #include <ctime>
 
 #include "Search.h"
-#include "Utils.h"
 
 using namespace std;
 
@@ -424,11 +423,19 @@ void CacheStrategyNone::add(const tagged_word* fact, const uint8_t& factLength) 
 // Class CacheStrategyBloom
 //
 bool CacheStrategyBloom::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
-  return filter.contains(fact, 4 * ((uint32_t) factLength));
+  word words[factLength];
+  for (uint32_t i = 0; i < factLength; ++i) {
+    words[i] = fact[i].word;
+  }
+  return filter.contains(words, 4 * ((uint32_t) factLength));
 }
 
 void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength) {
-  filter.add(fact, 4 * ((uint32_t) factLength));
+  word words[factLength];
+  for (uint32_t i = 0; i < factLength; ++i) {
+    words[i] = fact[i].word;
+  }
+  filter.add(words, 4 * ((uint32_t) factLength));
 }
 
 // 
@@ -528,7 +535,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   const Path* root;
   float initialCost = fringe->pop(&root);
   for (uint32_t index = 0; index < root->factLength; ++index) {
-    fringe->push(root, index, 1, root->fact[index], 0,
+    fringe->push(root, index, 1, root->fact[index], NULL_WORD,
       root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
       cache, oom);
     if (oom) { printf("Error pushing initial states (!?); returning\n"); return responses; }
@@ -574,7 +581,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     const tagged_word* parentFact = parent->fact;
     const uint8_t indexToMutate = parent->lastMutationIndex;
     const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
-    const monotonicity parentMonotonicity = getMonotonicity(parentWord);
+    const monotonicity parentMonotonicity = parentWord.monotonicity;
     // Do insertions
     if (parentLength < MAX_FACT_LENGTH) {
       for (uint8_t insertI = 0; insertI < MAX_COMPLETIONS; ++insertI) {
@@ -597,7 +604,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // Do mutations
     uint32_t numMutations = 0;
     const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
-    const uint8_t parentSense = getSense(parentWord);
+    const uint8_t parentSense = parentWord.sense;
     for (int i = 0; i < numMutations; ++i) {
       const edge& mutation = mutations[i];
       if (mutation.sense != parentSense) {
@@ -612,7 +619,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
         // push mutation[/deletion]
         fringe->push(parent, indexToMutate,
           mutation.sink == 0 ? 0 : 1,
-          getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), 0,
+          getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), NULL_WORD,
           mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
         if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
       }

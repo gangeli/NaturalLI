@@ -15,8 +15,8 @@ PGIterator::PGIterator(const char* queryString, uint64_t fetchSize)
     char psqlConnectionSpec[512];
     snprintf(psqlConnectionSpec, 512,
              "host='%s' port='%i' dbname='%s' user='%s' password='%s'",
-             PG_HOST.c_str(), PG_PORT, PG_DATABASE.c_str(), PG_USER.c_str(),
-             PG_PASSWORD.c_str());
+             PG_HOST, PG_PORT, PG_DATABASE, PG_USER,
+             PG_PASSWORD);
     this->psql = PQconnectdb(psqlConnectionSpec);
     if (this->psql == NULL || PQstatus(psql) != CONNECTION_OK) {
       printf("could not connect to postgresql server at %s\n", psqlConnectionSpec);

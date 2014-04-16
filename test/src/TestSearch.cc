@@ -3,12 +3,15 @@
 
 #include "gtest/gtest.h"
 #include "Config.h"
+#include "Types.h"
 #include "Utils.h"
 #include "Search.h"
 #include "Graph.h"
 #include "FactDB.h"
 
 using namespace std;
+
+
 
 //
 // Path
@@ -28,12 +31,12 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    searchType->push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
-    searchType->push(dist1, 0, 1, CAT, 0, WORDNET_UP, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(dist1, 0, 1, CAT, NULL_WORD, WORDNET_UP, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
@@ -54,9 +57,9 @@ class PathTest : public ::testing::Test {
   SearchType* searchType;
   CacheStrategy* cache;
 
-  std::vector<word> lemursHaveTails_;
-  std::vector<word> animalsHaveTails_;
-  std::vector<word> catsHaveTails_;
+  std::vector<tagged_word> lemursHaveTails_;
+  std::vector<tagged_word> animalsHaveTails_;
+  std::vector<tagged_word> catsHaveTails_;
 };
 
 
@@ -142,9 +145,9 @@ class TestName : public ::testing::Test { \
   Graph* graph; \
   FactDB* facts; \
 \
-  std::vector<word> lemursHaveTails_; \
-  std::vector<word> animalsHaveTails_; \
-  std::vector<word> catsHaveTails_; \
+  std::vector<tagged_word> lemursHaveTails_; \
+  std::vector<tagged_word> animalsHaveTails_; \
+  std::vector<tagged_word> catsHaveTails_; \
 }; \
 TEST_F(TestName, IsEmpty) { \
   EXPECT_TRUE(search.isEmpty()); \
@@ -155,7 +158,7 @@ TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(root, 0, 1, ANIMAL, 0, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory); \
+  search.push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_DOWN, 0.0f, INFER_EQUIVALENT, cache, outOfMemory); \
   ASSERT_FALSE(outOfMemory); \
   EXPECT_FALSE(search.isEmpty()); \
   EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
@@ -217,8 +220,8 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  search.push(root, 0, 1, ANIMAL,  0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
-  search.push(root, 0, 1, CAT, 0, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+  search.push(root, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+  search.push(root, 0, 1, CAT, NULL_WORD, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
   ASSERT_FALSE(outOfMemory);
   const Path* dist1 = search.debugGet(0);
   const Path* dist2 = search.debugGet(1);
@@ -239,7 +242,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, i, 0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -247,7 +250,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     }
   }
   // pop off elements
@@ -260,8 +263,8 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
     for (int k = 0; k < elem->factLength; ++k) {
-      EXPECT_GE(elem->fact[k], 0);  // the word is positive (should always be the case anyways)
-      EXPECT_LT(elem->fact[k], 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+      EXPECT_GE(elem->fact[k].word, 0);  // the word is positive (should always be the case anyways)
+      EXPECT_LT(elem->fact[k].word, 120000);  // the word is within bounds (hopefully catches memory corruption errors)
     }
     EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
   }
@@ -282,7 +285,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
+    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -290,7 +293,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
+      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), INFER_EQUIVALENT, cache, outOfMemory );
     }
   }
   // pop off elements
@@ -307,8 +310,8 @@ TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
     EXPECT_FALSE(elem->fact == NULL);  // the element's fact is not null
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
     for (int k = 0; k < elem->factLength; ++k) {
-      EXPECT_GE(elem->fact[k], 0);  // the word is positive (should always be the case anyways)
-      EXPECT_LT(elem->fact[k], 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+      EXPECT_GE(elem->fact[k].word, 0);  // the word is positive (should always be the case anyways)
+      EXPECT_LT(elem->fact[k].word, 120000);  // the word is within bounds (hopefully catches memory corruption errors)
     }
     EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
   }
@@ -331,8 +334,8 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
   float score = 0.0f;
   for (int i = 0; i < 120; ++i) {
     score += 0.1f;
-    search.push(root, 0, 1, i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
-    bfs.push(root, 0, 1, i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+    bfs.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
   }
   for (int parent = 0; parent < 100; ++parent) {
     for (int i = 0; i < 128; ++i) {
@@ -342,8 +345,8 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
       ASSERT_EQ(pBFS->fact[1], p->fact[1]);
       ASSERT_EQ(pBFS->fact[2], p->fact[2]);
       score += 0.1f;
-      search.push(p, 0, 1, 1000 * parent + i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
-      bfs.push(pBFS, 0, 1, 1000 * parent + i, 0, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
+      bfs.push(pBFS, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, score, INFER_EQUIVALENT, cache, outOfMemory);
     }
   }
   // pop off elements
@@ -386,9 +389,9 @@ class CacheStrategyNoneTest : public ::testing::Test {
   CacheStrategyNone cache;
   Path* root;
 
-  std::vector<word> lemursHaveTails_;
-  std::vector<word> animalsHaveTails_;
-  std::vector<word> catsHaveTails_;
+  std::vector<tagged_word> lemursHaveTails_;
+  std::vector<tagged_word> animalsHaveTails_;
+  std::vector<tagged_word> catsHaveTails_;
 };
 
 // Make sure that we don't see a node in an empty cache
@@ -425,9 +428,9 @@ class CacheStrategyBloomTest : public ::testing::Test {
   CacheStrategyBloom* cache;
   Path* root;
 
-  std::vector<word> lemursHaveTails_;
-  std::vector<word> animalsHaveTails_;
-  std::vector<word> catsHaveTails_;
+  std::vector<tagged_word> lemursHaveTails_;
+  std::vector<tagged_word> animalsHaveTails_;
+  std::vector<tagged_word> catsHaveTails_;
 };
 
 // Make sure that we don't see a node in an empty cache

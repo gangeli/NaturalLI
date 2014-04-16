@@ -4,6 +4,7 @@
 #include <queue>
 
 #include "Config.h"
+#include "Types.h"
 #include "Graph.h"
 #include "FactDB.h"
 #include "Bloom.h"

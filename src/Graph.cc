@@ -4,7 +4,6 @@
 
 #include "Graph.h"
 #include "Postgres.h"
-#include "Utils.h"
 
 using namespace std;
 
@@ -57,17 +56,17 @@ class InMemoryGraph : public Graph {
   }
 
   virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* size) const {
-    const word w = getWord(source);
+    const word w = source.word;
     *size = edgesSizes[w];
     return edges[w];
   }
 
   virtual const char* gloss(const tagged_word& word) const {
-    const uint32_t w = getWord(word);
+    const uint32_t w = word.word;
     if (index2gloss[w] == NULL) {
       return "<UNK>";
     } else {
-      return index2gloss[getWord(word)];
+      return index2gloss[word.word];
     }
   }
   
@@ -164,15 +163,15 @@ Graph* ReadGraph() {
   printf("Reading graph...\n");
   // Words
   char wordQuery[127];
-  snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD.c_str());
+  snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD);
   const uint32_t numWords
     = atoi(PGIterator(wordQuery).next()[0]);
-  snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD.c_str());
+  snprintf(wordQuery, 127, "SELECT * FROM %s;", PG_TABLE_WORD);
   PGIterator wordIter = PGIterator(wordQuery);
   
   // Edges
   char edgeQuery[127];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type, source_sense ASC;", PG_TABLE_EDGE.c_str());
+  snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type, source_sense ASC;", PG_TABLE_EDGE);
   PGIterator edgeIter = PGIterator(edgeQuery);
 
   return readGraph(numWords, &wordIter, &edgeIter, false);

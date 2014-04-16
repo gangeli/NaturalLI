@@ -9,33 +9,24 @@
 //
 // Configuration (TODO(gabor) should really be set in ./configure script)
 //
-static std::string   PG_HOST          = "john0.stanford.edu";
-static uint16_t      PG_PORT          = 4243;
-static std::string   PG_DATABASE      = "truth";
-static std::string   PG_USER          = "gabor";
-static std::string   PG_PASSWORD      = "gabor";
+#define PG_HOST          "john0.stanford.edu"
+#define PG_PORT          4243
+#define PG_DATABASE      "truth"
+#define PG_USER          "gabor"
+#define PG_PASSWORD      "gabor"
 
-static bool          RAMCLOUD_LOADED  = true;
-static std::string   RAMCLOUD_HOST    = "0.0.0.0";
-static uint16_t      RAMCLOUD_PORT    = 12246;
- 
-static std::string   PG_TABLE_WORD    = "word";
-static std::string   PG_TABLE_EDGE    = "edge";
-static std::string   PG_TABLE_FACT    = "fact";
+#define RAMCLOUD_LOADED  true
+#define RAMCLOUD_HOST    "0.0.0.0"
+#define RAMCLOUD_PORT    12246
+
+#define PG_TABLE_WORD    "word"
+#define PG_TABLE_EDGE    "edge"
+#define PG_TABLE_FACT    "fact"
 
 #define MAX_FACT_LENGTH                 255
 #define MAX_FACT_LENGTH_IN_LONG_WORDS   4
 #define MAX_COMPLETIONS                 25
 #define MAX_COMPLETION_SCAN             100
-
-//
-// Typedefs
-//
-typedef uint32_t word;
-typedef uint32_t tagged_word;
-typedef uint8_t edge_type;
-typedef uint8_t monotonicity;
-typedef uint8_t inference_state;
 
 //
 // Static Defines
@@ -95,12 +86,13 @@ typedef uint8_t inference_state;
 #define INFER_INDEPENDENCE       6
 
 // Static Data
-#define LEMUR  2480367
-#define ANIMAL 2730
-#define TIMONE 18828894
-#define CAT    2432
-#define HAVE   3830
-#define TAIL   23480
+#define NULL_WORD getTaggedWord(0, 0, 0)
+#define LEMUR     getTaggedWord(2480367, 0, 0)
+#define ANIMAL    getTaggedWord(2730, 0, 0)
+#define TIMONE    getTaggedWord(18828894, 0, 0)
+#define CAT       getTaggedWord(2432, 0, 0)
+#define HAVE      getTaggedWord(3830, 0, 0)
+#define TAIL      getTaggedWord(23480, 0, 0)
 // (static data as strings)
 #define LEMUR_STR  "2480367"
 #define ANIMAL_STR "2730"

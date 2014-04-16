@@ -7,7 +7,6 @@
 #include <sstream>
 #include <unordered_map>
 
-#include "Utils.h"
 #include "Postgres.h"
 
 using namespace std;
@@ -29,7 +28,7 @@ void Trie::add(edge* elements, uint8_t length) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
-  const word w = getWord(elements[0].sink);
+  const word w = elements[0].sink;
   const btree_map<word,Trie*>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
@@ -40,7 +39,7 @@ void Trie::add(edge* elements, uint8_t length) {
   }
   // Register skip-gram
   if (length > 1) {
-    const word grandChildW = getWord(elements[1].sink);
+    const word grandChildW = elements[1].sink;
     skipGrams[grandChildW].push_back(w);
   }
   // Register information about child
@@ -89,7 +88,7 @@ const bool Trie::contains(const tagged_word* query,
   if (mutationIndex == -1) {
     if (queryLength > 0) {
       // Case: add anything that leads into the second term
-      btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( getWord(query[0]) );
+      btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( query[0].word );
       if (skipGramIter != skipGrams.end()) {
         for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
           btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
@@ -153,7 +152,7 @@ const bool Trie::containsImpl(const tagged_word* query,
     return isLeaf;
   } else {
     // Case: we're in the middle of the query
-    btree_map<word,Trie*>::const_iterator childIter = children.find( getWord(query[0]) );
+    btree_map<word,Trie*>::const_iterator childIter = children.find( query[0].word );
     if (childIter == children.end()) {
       // Mark that there are no insertions
       if (mutationIndex > 0) { insertions[0].sink = 0; }
@@ -182,7 +181,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
   printf("Reading registered insertions...\n");
   unordered_map<word,vector<edge>> word2senses;
   // (query)
-  snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE.c_str());
+  snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE);
   PGIterator wordIter = PGIterator(query);
   uint32_t numValidInsertions = 0;
   while (wordIter.hasNext()) {
@@ -207,11 +206,11 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
   if (maxFactsToRead == std::numeric_limits<uint64_t>::max()) {
     snprintf(query, 127,
              "SELECT gloss, weight FROM %s ORDER BY weight DESC;",
-             PG_TABLE_FACT.c_str());
+             PG_TABLE_FACT);
   } else {
     snprintf(query, 127,
              "SELECT gloss, weight FROM %s ORDER BY weight DESC LIMIT %lu;",
-             PG_TABLE_FACT.c_str(),
+             PG_TABLE_FACT,
              maxFactsToRead);
   }
   PGIterator iter = PGIterator(query);

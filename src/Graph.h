@@ -2,18 +2,8 @@
 #define GRAPH_H
 
 #include "Config.h"
+#include "Types.h"
 #include <vector>
-
-/**
- * A simple representation of an Edge in the graph -- that is,
- * a potential mutation of a word.
- */
-struct edge {
-  word      sink;
-  uint8_t   sense;
-  edge_type type;
-  float     cost;
-};
 
 /**
  * Represents the mutation graph, along with the word indexer.

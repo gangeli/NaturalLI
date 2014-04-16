@@ -3,6 +3,8 @@
 #include "gtest/gtest.h"
 #include "Trie.h"
 
+inline tagged_word getTaggedWord(word w) { return getTaggedWord(w, 0, 0); }
+
 class TrieTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
@@ -14,7 +16,7 @@ class TrieTest : public ::testing::Test {
   }
   
   Trie* trie;
-  uint32_t buffer[32];
+  tagged_word buffer[32];
   word outBuffer[256];
   edge_type edgeBuffer[256];
   uint32_t savedMinFactCount;
@@ -29,24 +31,24 @@ class TrieTest : public ::testing::Test {
     edge edges[MAX_COMPLETIONS];
 
     // Add fact 2
-    if (fact1Length > 0) { buffer[0] = fact11; }
-    if (fact1Length > 1) { buffer[1] = fact12; }
-    if (fact1Length > 2) { buffer[2] = fact13; }
+    if (fact1Length > 0) { buffer[0] = getTaggedWord(fact11); }
+    if (fact1Length > 1) { buffer[1] = getTaggedWord(fact12); }
+    if (fact1Length > 2) { buffer[2] = getTaggedWord(fact13); }
     trie->add(buffer, fact1Length);
     EXPECT_TRUE(trie->contains(buffer, fact1Length));
     
     // Add fact 2
-    if (fact2Length > 0) { buffer[0] = fact21; }
-    if (fact2Length > 1) { buffer[1] = fact22; }
-    if (fact2Length > 2) { buffer[2] = fact23; }
+    if (fact2Length > 0) { buffer[0] = getTaggedWord(fact21); }
+    if (fact2Length > 1) { buffer[1] = getTaggedWord(fact22); }
+    if (fact2Length > 2) { buffer[2] = getTaggedWord(fact23); }
     trie->add(buffer, fact2Length);
     if (fact2Length > 0) {
       EXPECT_TRUE(trie->contains(buffer, fact2Length));
     }
 
     // Issue children query
-    if (queryLength > 0) { buffer[0] = factq1; }
-    if (queryLength > 1) { buffer[1] = factq2; }
+    if (queryLength > 0) { buffer[0] = getTaggedWord(factq1); }
+    if (queryLength > 1) { buffer[1] = getTaggedWord(factq2); }
     edges[0].sink = 0;
     edges[1].sink = 0;
     edges[2].sink = 0;
@@ -61,21 +63,21 @@ class TrieTest : public ::testing::Test {
 
 // Make sure we can add to the Trie
 TEST_F(TrieTest, CanAdd) {
-  buffer[0] = 42;
+  buffer[0] = getTaggedWord(42);
   trie->add(buffer, 1);
 }
 
 // Make sure we can add/contains depth 1
 TEST_F(TrieTest, CanAddContainsDepth1) {
-  buffer[0] = 42;
+  buffer[0] = getTaggedWord(42);
   trie->add(buffer, 1);
   EXPECT_TRUE(trie->contains(buffer, 1));
 }
 
 // Make sure we can add/contains depth 2
 TEST_F(TrieTest, CanAddContainsDepth2) {
-  buffer[0] = 42;
-  buffer[1] = 43;
+  buffer[0] = getTaggedWord(42);
+  buffer[1] = getTaggedWord(43);
   // Full string
   trie->add(buffer, 2);
   EXPECT_TRUE(trie->contains(buffer, 2));
@@ -88,27 +90,27 @@ TEST_F(TrieTest, CanAddContainsDepth2) {
 
 // A silly toy trie
 TEST_F(TrieTest, ToyExample) {
-  buffer[0] = 42;
-  buffer[1] = 43;
+  buffer[0] = getTaggedWord(42);
+  buffer[1] = getTaggedWord(43);
   trie->add(buffer, 2);
-  buffer[1] = 44;
+  buffer[1] = getTaggedWord(44);
   trie->add(buffer, 2);
-  buffer[0] = 7;
+  buffer[0] = getTaggedWord(7);
   trie->add(buffer, 2);
   // Some tests
-  buffer[0] = 42; buffer[1] = 43;
+  buffer[0] = getTaggedWord(42); buffer[1] = getTaggedWord(43);
   EXPECT_TRUE(trie->contains(buffer, 2));
-  buffer[0] = 7; buffer[1] = 44;
+  buffer[0] = getTaggedWord(7); buffer[1] = getTaggedWord(44);
   EXPECT_TRUE(trie->contains(buffer, 2));
-  buffer[0] = 42; buffer[1] = 44;
+  buffer[0] = getTaggedWord(42); buffer[1] = getTaggedWord(44);
   EXPECT_TRUE(trie->contains(buffer, 2));
   // Some false tests
-  buffer[0] = 7; buffer[1] = 42;
+  buffer[0] = getTaggedWord(7); buffer[1] = getTaggedWord(42);
   EXPECT_FALSE(trie->contains(buffer, 2));
-  buffer[0] = 42; buffer[1] = 7;
+  buffer[0] = getTaggedWord(42); buffer[1] = getTaggedWord(7);
   EXPECT_FALSE(trie->contains(buffer, 2));
   // Some tricks
-  buffer[0] = 42; buffer[1] = 43; buffer[2] = 43;
+  buffer[0] = getTaggedWord(42); buffer[1] = getTaggedWord(43); buffer[2] = getTaggedWord(43);
   EXPECT_FALSE(trie->contains(buffer, 3));
   EXPECT_FALSE(trie->contains(buffer, 0));
   EXPECT_FALSE(trie->contains(buffer, 1));
@@ -116,21 +118,21 @@ TEST_F(TrieTest, ToyExample) {
 
 // Make sure we can add to the Trie
 TEST_F(TrieTest, FactDBCanAdd) {
-  buffer[0] = 42;
+  buffer[0] = getTaggedWord(42);
   trie->add(buffer, 1);
 }
 
 // Make sure we can add/contains depth 1
 TEST_F(TrieTest, FactDBCanAddContainsDepth1) {
-  buffer[0] = 42;
+  buffer[0] = getTaggedWord(42);
   trie->add(buffer, 1);
   EXPECT_TRUE(trie->contains(buffer, 1));
 }
 
 // Make sure we can add/contains depth 2
 TEST_F(TrieTest, FactDBCanAddContainsDepth2) {
-  buffer[0] = 42;
-  buffer[1] = 43;
+  buffer[0] = getTaggedWord(42);
+  buffer[1] = getTaggedWord(43);
   // Full string
   trie->add(buffer, 2);
   EXPECT_TRUE(trie->contains(buffer, 2));

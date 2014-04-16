@@ -131,7 +131,7 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   Fact fact;
   for (int i = 0; i < path->factLength; ++i) {
     Word word;
-    word.set_word(path->fact[i]);
+    word.set_word(path->fact[i].word);
     fact.add_word()->CopyFrom(word);
   }
   fact.set_gloss(toString(*graph, path->fact, path->factLength));
@@ -232,7 +232,7 @@ void handleConnection(int socket, sockaddr_in* client,
   }
   // (create query)
   uint8_t queryLength = query.queryfact().word_size();
-  word queryFact[queryLength];
+  tagged_word queryFact[queryLength];
   for (int i = 0; i < queryLength; ++i) {
     if (query.queryfact().word(i).monotonicity() < MONOTONE_FLAT ||
         query.queryfact().word(i).monotonicity() > MONOTONE_DOWN) {

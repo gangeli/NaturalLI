@@ -39,12 +39,12 @@ class Trie : public FactDB {
   virtual void add(edge* elements, uint8_t length);
   
   /** {@inheritDoc} */
-  virtual void add(word* elements, uint8_t length) {
+  virtual void add(tagged_word* elements, uint8_t length) {
     edge edges[length];
     for (int i = 0; i < length; ++i) {
       edge e;
-      e.sink  = elements[i];
-      e.sense = 0;
+      e.sink  = elements[i].word;
+      e.sense = elements[i].sense;
       e.type  = ADD_OTHER;
       e.cost  = 1.0f;
       edges[i] = e;

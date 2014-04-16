@@ -4,7 +4,6 @@
 
 #include "Postgres.h"
 #include "FactDB.h"
-#include "Utils.h"
 
 
 using namespace std;
@@ -32,7 +31,7 @@ class InMemoryFactDB : public FactDB {
     uint32_t shift = 0;
     // Hash fact
     for (int i = 0; i < queryLength; ++i) {
-      hash = hash ^ getWord(query[i]) << shift;
+      hash = hash ^ query[i].word << shift;
       shift += shiftIncr;
     }
     // Compute if the fact is contained in the set
@@ -47,7 +46,7 @@ FactDB* ReadFactDB() {
   set<int64_t> facts;
   // (query)
   char factQuery[127];
-  snprintf(factQuery, 127, "SELECT gloss, weight FROM %s;", PG_TABLE_FACT.c_str());
+  snprintf(factQuery, 127, "SELECT gloss, weight FROM %s;", PG_TABLE_FACT);
   PGIterator iter = PGIterator(factQuery);
   uint64_t i = 0;
   while (iter.hasNext()) {
@@ -77,9 +76,9 @@ class MockFactDB : public FactDB {
                               edge* insertions) const {
     insertions[0].sink = 0;
     return queryLength == 3 && 
-      getWord(query[0]) == CAT &&
-      getWord(query[1]) == HAVE &&
-      getWord(query[2]) == TAIL;
+      query[0].word == CAT.word &&
+      query[1].word == HAVE.word &&
+      query[2].word == TAIL.word;
   }
 };
 
@@ -95,7 +94,7 @@ vector<vector<word>> ReadLiteralFacts(uint64_t count) {
   char query[128];
   snprintf(query, 127,
            "SELECT gloss, weight FROM %s ORDER BY weight DESC LIMIT %lu;",
-           PG_TABLE_FACT.c_str(), count);
+           PG_TABLE_FACT, count);
   PGIterator iter = PGIterator(query);
   
   while (iter.hasNext()) {

@@ -2,38 +2,38 @@
 
 using namespace std;
 
-const vector<word> lemursHaveTails() {
-  vector<word> fact;
+const vector<tagged_word> lemursHaveTails() {
+  vector<tagged_word> fact;
   fact.push_back(LEMUR);
   fact.push_back(HAVE);
   fact.push_back(TAIL);
   return fact;
 }
 
-const vector<word> animalsHaveTails() {
-  vector<word> animalsHaveTails;
-  animalsHaveTails.push_back(ANIMAL);
-  animalsHaveTails.push_back(HAVE);
-  animalsHaveTails.push_back(TAIL);
-  return animalsHaveTails;
+const vector<tagged_word> animalsHaveTails() {
+  vector<tagged_word> animals;
+  animals.push_back(ANIMAL);
+  animals.push_back(HAVE);
+  animals.push_back(TAIL);
+  return animals;
 }
 
-const vector<word> catsHaveTails() {
-  vector<word> catsHaveTails;
-  catsHaveTails.push_back(CAT);
-  catsHaveTails.push_back(HAVE);
-  catsHaveTails.push_back(TAIL);
-  return catsHaveTails;
+const vector<tagged_word> catsHaveTails() {
+  vector<tagged_word> cats;
+  cats.push_back(CAT);
+  cats.push_back(HAVE);
+  cats.push_back(TAIL);
+  return cats;
 }
 
 string toString(const Graph& graph, const tagged_word* fact, const uint8_t factLength) {
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
-    monotonicity m = getMonotonicity(fact[i]);
+    monotonicity m = fact[i].monotonicity;
     std::string marker = "";
     if (m == MONOTONE_DOWN) { marker = "[v]"; }
     if (m == MONOTONE_UP) { marker = "[^]"; }
-    gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(getWord(fact[i]));
+    gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(fact[i]);
   }
   return gloss;
 }

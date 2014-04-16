@@ -3,6 +3,7 @@
 
 #include "gtest/gtest.h"
 
+#include "Types.h"
 #include "Utils.h"
 
 using namespace std;
@@ -17,10 +18,10 @@ class UtilsTest : public ::testing::Test {
     lemursHaveTails_ = lemursHaveTails();
     lemurs = new Path(&lemursHaveTails_[0], lemursHaveTails().size());
     searchType->start(lemurs);
-    searchType->push(lemurs, 0, 1, ANIMAL, 0, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(lemurs, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
-    searchType->push(animals, 0, 1, CAT, 0, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(animals, 0, 1, CAT, NULL_WORD, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
     cats = ((BreadthFirstSearch*) searchType)->debugGet(1);
@@ -38,7 +39,7 @@ class UtilsTest : public ::testing::Test {
   Graph* graph;
   SearchType* searchType;
   CacheStrategy* cache;
-  std::vector<word> lemursHaveTails_;
+  std::vector<tagged_word> lemursHaveTails_;
 };
 
 TEST_F(UtilsTest, ToStringPhrase) {
@@ -54,23 +55,4 @@ TEST_F(UtilsTest, ToStringPath) {
             toString(*graph, *searchType, animals));
   EXPECT_EQ(string("cat have tail; from\n  animal have tail; from\n  lemur have tail; from\n  <start>"),
             toString(*graph, *searchType, cats));
-}
-
-TEST_F(UtilsTest, TaggedWord) {
-  for (int monotonicity = 0; monotonicity < 4; ++monotonicity) {
-    for (int sense = 0; sense < 32; ++sense) {
-      for (int word = 0; word < 1000; ++word) {
-        tagged_word w = getTaggedWord(word, sense, monotonicity);
-        ASSERT_EQ(monotonicity, getMonotonicity(w));
-        ASSERT_EQ(sense, getSense(w));
-        ASSERT_EQ(word, getWord(w));
-      }
-      for (int word = (0x1 << 25) - 1; word >= (0x1 << 25) - 1000; --word) {
-        tagged_word w = getTaggedWord(word, sense, monotonicity);
-        ASSERT_EQ(monotonicity, getMonotonicity(w));
-        ASSERT_EQ(sense, getSense(w));
-        ASSERT_EQ(word, getWord(w));
-      }
-    }
-  }
 }
