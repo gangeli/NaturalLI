@@ -1,7 +1,7 @@
 #ifndef FACT_DB_H
 #define FACT_DB_H
 
-#include "Config.h"
+#include <config.h>
 #include "Graph.h"
 #include <vector>
 

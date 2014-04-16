@@ -1,5 +1,9 @@
 #include "Utils.h"
 
+#include <string>
+
+#include "Types.h"
+
 using namespace std;
 
 const vector<tagged_word> lemursHaveTails() {
@@ -30,7 +34,7 @@ string toString(const Graph& graph, const tagged_word* fact, const uint8_t factL
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {
     monotonicity m = fact[i].monotonicity;
-    std::string marker = "";
+    string marker = "";
     if (m == MONOTONE_DOWN) { marker = "[v]"; }
     if (m == MONOTONE_UP) { marker = "[^]"; }
     gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(fact[i]);
@@ -48,7 +52,7 @@ string toString(const Graph& graph, SearchType& searchType, const Path* path) {
   }
 }
 
-std::string toString(const edge_type& edge) {
+string toString(const edge_type& edge) {
   switch (edge) {
     case WORDNET_UP                   : return "WORDNET_UP";
     case WORDNET_DOWN                 : return "WORDNET_DOWN";

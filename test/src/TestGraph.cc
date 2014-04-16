@@ -1,7 +1,7 @@
 #include <limits.h>
 
+#include <config.h>
 #include "gtest/gtest.h"
-#include "Config.h"
 #include "Graph.h"
 
 using namespace std;

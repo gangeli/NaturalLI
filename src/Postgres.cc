@@ -3,8 +3,6 @@
 
 #include "Postgres.h"
 
-using namespace std;
-
 //
 // PGIterator
 //

@@ -1,8 +1,9 @@
 #include <limits.h>
 
+#include <config.h>
 #include "gtest/gtest.h"
-#include "Config.h"
 #include "Postgres.h"
+#include "Types.h"
 
 using namespace std;
 

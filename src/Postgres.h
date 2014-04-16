@@ -3,7 +3,8 @@
 
 #include "libpq-fe.h"
 
-#include "Config.h"
+#include <config.h>
+#include <stdint.h>
 
 /**
  * Represents a single row of a database query result.

@@ -2,8 +2,9 @@
 #define SEARCH_H
 
 #include <queue>
+#include <stdint.h>
 
-#include "Config.h"
+#include <config.h>
 #include "Types.h"
 #include "Graph.h"
 #include "FactDB.h"

@@ -2,6 +2,8 @@
 
 #include <cstring>
 #include <stdlib.h>
+#include <config.h>
+#include <stdint.h>
 
 #include "Bloom.h"
 

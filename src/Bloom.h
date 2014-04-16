@@ -1,7 +1,7 @@
 #ifndef BLOOM_H
 #define BLOOM_H
 
-#include "Config.h"
+#include <config.h>
 
 /**
  * A fixed 4 giga-bit bloom filter

@@ -107,6 +107,20 @@
    */
 #undef LT_OBJDIR
 
+/* The maximum number of completions to propose when inserting words */
+#undef MAX_COMPLETIONS
+
+/* The maximum length of a fact; this is used in various fixed-length arrays
+   */
+#undef MAX_FACT_LENGTH
+
+/* The minimum number of times we should see a fact before we add it to the
+   fact database */
+#undef MIN_FACT_COUNT
+
+/* Disable debugging (for efficiency) */
+#undef NDEBUG
+
 /* Define to the address where bug reports for this package should be sent. */
 #undef PACKAGE_BUGREPORT
 
@@ -124,6 +138,34 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* The database to connect to */
+#undef PG_DATABASE
+
+/* The hostname of the database to connect to */
+#undef PG_HOST
+
+/* The password to use for the database connection */
+#undef PG_PASSWORD
+
+/* The port on which postgres is running */
+#undef PG_PORT
+
+/* The table in which the graph edges are stored */
+#undef PG_TABLE_EDGE
+
+/* The table in which the facts are stored */
+#undef PG_TABLE_FACT
+
+/* The table in which the word indexer is stored */
+#undef PG_TABLE_WORD
+
+/* The username to use for the database connection */
+#undef PG_USER
+
+/* The maximum number of elements to pop off the queue for a search (if no
+   such value is provided in the query) */
+#undef SEARCH_TIMEOUT
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

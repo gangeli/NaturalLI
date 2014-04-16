@@ -614,6 +614,8 @@ ac_includes_default="\
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
+NDEBUG_FALSE
+NDEBUG_TRUE
 DEBUG_FALSE
 DEBUG_TRUE
 LIBOBJS
@@ -16018,6 +16020,83 @@ else
   DEBUG_FALSE=
 fi
 
+ if test x"$debug" = x"false"; then
+  NDEBUG_TRUE=
+  NDEBUG_FALSE='#'
+else
+  NDEBUG_TRUE='#'
+  NDEBUG_FALSE=
+fi
+
+if test x"$debug" = x"false"; then
+
+$as_echo "#define NDEBUG 1" >>confdefs.h
+
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_HOST "${PGHOST:=john0.stanford.edu}"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_PORT ${PGPORT:=4243}
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_DATABASE "${DBNAME:=truth}"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_USER "${PGUSER:=gabor}"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_PASSWORD "${PGPASSWORD:=gabor}"
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_TABLE_WORD "${PG_TABLE_WORD:=word}"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_TABLE_EDGE "${PG_TABLE_EDGE:=edge}"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define PG_TABLE_FACT "${PG_TABLE_FACT:=fact}"
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define MAX_FACT_LENGTH ${MAX_FACT_LENGTH:=255}
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define MAX_COMPLETIONS ${MAX_COMPLETIONS:=25}
+_ACEOF
+
+
+
+cat >>confdefs.h <<_ACEOF
+#define SEARCH_TIMEOUT ${SEARCH_TIMEOUT:=100000}
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define MIN_FACT_COUNT ${MIN_FACT_COUNT:=1}
+_ACEOF
+
 
 ac_config_files="$ac_config_files Makefile src/Makefile src/fnv/Makefile test/src/Makefile test/src/gtest/Makefile"
 
@@ -16156,6 +16235,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${DEBUG_TRUE}" && test -z "${DEBUG_FALSE}"; then
   as_fn_error $? "conditional \"DEBUG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${NDEBUG_TRUE}" && test -z "${NDEBUG_FALSE}"; then
+  as_fn_error $? "conditional \"NDEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 

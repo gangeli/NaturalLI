@@ -2,8 +2,8 @@
 #include <vector>
 #include <stdint.h>
 
+#include <config.h>
 #include "gtest/gtest.h"
-#include "Config.h"
 #include "Graph.h"
 #include "FactDB.h"
 #include "Trie.h"
@@ -85,6 +85,7 @@ TEST(TrieITest, CompletionsValid) {
 
   // Unigrams
   uint32_t numCompletions = 0;
+  uint32_t numNonzeroSense = 0;
   uint32_t numWordsToConsider = NUM_WORDS_TO_CONSIDER;
   if (numWords < NUM_WORDS_TO_CONSIDER) { numWordsToConsider = numWords; }
   printf("Considering %u start words\n", numWordsToConsider);
@@ -92,6 +93,7 @@ TEST(TrieITest, CompletionsValid) {
   // (loop starts here)
   for (word w = 0; w < numWordsToConsider; ++w) {  // for each word...
     bool wordHasCompletion = false;
+    bool wordHasNonzeroSense = false;
     for (uint32_t s = 0; s < 8; ++s) {  // for each word sense...
       for (monotonicity m = 0; m < 3; ++m) {  // for each monotonicity mark (shouldn't matter)...
         // Set up the query
@@ -103,7 +105,10 @@ TEST(TrieITest, CompletionsValid) {
           if (edges[i].sink == 0) { break; }
           EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
           EXPECT_LT(edges[i].sink, numWords);
-          EXPECT_EQ(0, edges[i].sense);
+          EXPECT_LT(edges[i].sense, 32);
+          if (edges[i].sense > 0) {
+            wordHasNonzeroSense = true;
+          }
           wordHasCompletion = true;
         }
       }
@@ -111,12 +116,16 @@ TEST(TrieITest, CompletionsValid) {
     if (wordHasCompletion) {
       numCompletions += 1;
     }
+    if (wordHasNonzeroSense) {
+      numNonzeroSense += 1;
+    }
   }
   uint64_t endTime = rdtsc();
-  printf("%u inputs have some completion [took %lu CPU ticks]\n", numCompletions, (endTime-beginTime));
+  printf("%u inputs have some completion (%u with non-null sense) [took %lu CPU ticks]\n", numCompletions, numNonzeroSense, (endTime-beginTime));
 
   // Make sure we have some completions
   EXPECT_GT(numCompletions, 0);
+  EXPECT_GT(numNonzeroSense, 0);
 
 //  // Make sure we're not taking too long
 //  // 1,500,000 ticks per containment check

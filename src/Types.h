@@ -1,40 +1,14 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef TYPES_H
+#define TYPES_H
 
-#include <string>
-#include <stdint.h>
 #include <vector>
-#include <assert.h>
+#include <stdint.h>
+
+#include <config.h>
 
 //
-// Configuration (TODO(gabor) should really be set in ./configure script)
+// Definitions / Enums
 //
-#define PG_HOST          "john0.stanford.edu"
-#define PG_PORT          4243
-#define PG_DATABASE      "truth"
-#define PG_USER          "gabor"
-#define PG_PASSWORD      "gabor"
-
-#define RAMCLOUD_LOADED  true
-#define RAMCLOUD_HOST    "0.0.0.0"
-#define RAMCLOUD_PORT    12246
-
-#define PG_TABLE_WORD    "word"
-#define PG_TABLE_EDGE    "edge"
-#define PG_TABLE_FACT    "fact"
-
-#define MAX_FACT_LENGTH                 255
-#define MAX_FACT_LENGTH_IN_LONG_WORDS   4
-#define MAX_COMPLETIONS                 25
-#define MAX_COMPLETION_SCAN             100
-
-//
-// Static Defines
-//
-/** The maximum number of elements to pop off the queue for a search */
-#define SEARCH_TIMEOUT   100000
-/** The minimum count for a fact to be seen to be added to the KB */
-#define MIN_FACT_COUNT   1
 
 // Monotonicities
 #define MONOTONE_FLAT 0
@@ -61,6 +35,7 @@
 #define ADD_ADJ                      14
 #define ADD_ADV                      15
 #define ADD_OTHER                    16  // NOTE: never have more than 8 insertion types. @see Trie.h
+
 #define DEL_NOUN                     17
 #define DEL_VERB                     18
 #define DEL_ADJ                      19
@@ -100,5 +75,74 @@
 #define CAT_STR    "2432"
 #define HAVE_STR   "3830"
 #define TAIL_STR   "23480"
+
+//
+// Typedefs
+//
+
+/** 
+ * A representation of a word, tagged with various bits of
+ * metadata
+ */
+typedef struct {
+  uint32_t monotonicity:2,
+           sense:5,
+           word:25;
+}__attribute__((packed)) tagged_word;
+
+/** The == operator for two tagged words */
+inline bool operator==(const tagged_word& lhs, const tagged_word& rhs) {
+  return lhs.word == rhs.word && lhs.sense == rhs.sense && lhs.monotonicity == rhs.monotonicity;
+}
+
+/** The != operator for two tagged words */
+inline bool operator!=(const tagged_word& lhs, const tagged_word& rhs) {
+  return !(lhs == rhs);
+}
+
+/** A simple helper for a word, untagged with type information */
+typedef uint32_t word;
+
+/** A simple helper for a monotonicity */
+typedef uint8_t monotonicity;
+
+/** An edge type -- for example, WORDNET_UP */
+typedef uint8_t edge_type;
+
+/** The current inference state */
+typedef uint8_t inference_state;
+
+/**
+ * A simple representation of an Edge in the graph -- that is,
+ * a potential mutation of a word.
+ */
+struct edge {
+  word      sink;
+  uint8_t   sense;
+  edge_type type;
+  float     cost;
+};
+
+/**
+ * Create a tagged word from a word and monotonicity
+ */
+inline tagged_word getTaggedWord(const word& w, const uint32_t& monotonicity) {
+  tagged_word out;
+  out.word = w;
+  out.sense = 0;
+  out.monotonicity = monotonicity;
+  return out;
+}
+
+/**
+ * Create a tagged word from a word, sense, and monotonicity
+ */
+inline tagged_word getTaggedWord(const word& w, const uint32_t sense, const uint32_t& monotonicity) {
+  tagged_word out;
+  out.word = w;
+  out.sense = sense;
+  out.monotonicity = monotonicity;
+  return out;
+}
 
 #endif

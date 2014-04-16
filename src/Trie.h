@@ -6,11 +6,21 @@
 #include "btree_set.h"
 #include <vector>
 
-#include "Config.h"
+#include <config.h>
 #include "Bloom.h"
 #include "FactDB.h"
 
 class Trie;
+
+typedef struct {
+  uint8_t sense:5,
+          type:3;
+}__attribute__((packed)) packed_edge;
+
+typedef struct {
+  packed_edge validInsertions[4];
+  uint8_t numValidInsertions;
+} trie_data;
 
 /**
  * A Trie implementation of a fact database.
@@ -29,7 +39,9 @@ class Trie;
  */
 class Trie : public FactDB {
  public:
-  Trie() : data(0), isLeaf(false) { }
+  Trie() : isLeaf(false) { 
+    data.numValidInsertions = 0;
+  }
   virtual ~Trie();
 
   /**
@@ -85,42 +97,35 @@ class Trie : public FactDB {
   btree::btree_map<word,std::vector<word>> skipGrams;
 
   /** A compact representation of the data to be stored at this node of the Trie. */
-  uint32_t data;
+  trie_data data;
 
   /** A marker for whether this node is a leaf node */
   bool     isLeaf;
 
   /** Register a new edge type to insert */
   inline void registerEdge(edge e) {
-    uint8_t type = e.type - EDGE_ADDS_BEGIN;
-    const uint32_t bitmask = 0xFF;
-    for (uint8_t shift = 0; shift < 32; (shift += 8)) {  
-      if ((data & (bitmask << shift)) == 0) {
-        data = data | ( (e.sense | (type << 5)) << shift);
-        return;
-      }
-    }
     // Don't register more than 4 senses. This seems like a reasonable limitation...
+    assert (data.numValidInsertions <= 4);
+    if (data.numValidInsertions == 4) { return; }
+    // Set the new sense
+    data.validInsertions[data.numValidInsertions].type = e.type - EDGE_ADDS_BEGIN;
+    data.validInsertions[data.numValidInsertions].sense = e.sense;
+    assert (data.validInsertions[data.numValidInsertions].type  < 8);
+    assert (data.validInsertions[data.numValidInsertions].sense < 32);
+    data.numValidInsertions += 1;
   }
 
   /** Get the edge types we can insert */
   inline uint8_t getEdges(edge* buffer) const {
-    const uint32_t bitmask = 0xFF;
-    uint8_t size = 0;
-    for (uint8_t shift = 0; shift < 32; (shift += 8)) {  
-      if ((data & (bitmask << shift)) == 0) {
-        return size;
-      } else {
-        edge e;
-        uint32_t localData = ((data >> shift) & 0xFF);
-        e.sense = (localData & 0x1F);
-        e.type  = (localData >> 5) + EDGE_ADDS_BEGIN;
-        e.cost  = 1.0f;
-        buffer[size] = e;
-        size += 1;
-      }
+    for (uint8_t i = 0; i < data.numValidInsertions; ++i) {
+      buffer[i].type  = data.validInsertions[i].type + EDGE_ADDS_BEGIN;
+      buffer[i].sense = data.validInsertions[i].sense;
+      buffer[i].cost  = 1.0f;
+      assert (buffer[i].type  >= EDGE_ADDS_BEGIN);
+      assert (buffer[i].type  <  EDGE_ADDS_BEGIN + 8);
+      assert (buffer[i].sense <  32);
     }
-    return size;
+    return data.numValidInsertions;
   }
 };
 

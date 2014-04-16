@@ -68,8 +68,8 @@ inline void Trie::addCompletion(const Trie* child, const word& sink,
   } else {
     // case: write to temporary buffer and copy over
     edge buffer[4];
-    uint8_t numEdges = min( MAX_COMPLETIONS - index,
-                            child->getEdges(buffer) );
+    uint8_t bufferedEdges = child->getEdges(buffer);
+    uint8_t numEdges = min( MAX_COMPLETIONS - index, bufferedEdges );
     for (int i = 0; i < numEdges; ++i) { buffer[i].sink = sink; }
     memcpy(&(insertion[index]), buffer, numEdges * sizeof(edge));
     index += numEdges;
@@ -85,6 +85,7 @@ const bool Trie::contains(const tagged_word* query,
                           const int16_t& mutationIndex,
                           edge* insertions) const {
   uint32_t mutableIndex = 0;
+  bool contains;
   if (mutationIndex == -1) {
     if (queryLength > 0) {
       // Case: add anything that leads into the second term
@@ -107,10 +108,16 @@ const bool Trie::contains(const tagged_word* query,
         }
       }
     }
-    return containsImpl(query, queryLength, -9000, insertions, mutableIndex);  // already added completions
+    contains =  containsImpl(query, queryLength, -9000, insertions, mutableIndex);  // already added completions
   } else {
-    return containsImpl(query, queryLength, mutationIndex, insertions, mutableIndex);
+    contains = containsImpl(query, queryLength, mutationIndex, insertions, mutableIndex);
   }
+
+  // Return
+  if (mutableIndex < MAX_COMPLETIONS) {
+    insertions[mutableIndex].sink = 0;
+  }
+  return contains;
 }
 
 //
@@ -140,10 +147,6 @@ const bool Trie::containsImpl(const tagged_word* query,
         if (mutableIndex >= MAX_COMPLETIONS) { break; }
       }
     }
-    // Null terminate the insertions.
-    if (mutableIndex < MAX_COMPLETIONS) {
-      insertions[mutableIndex].sink = 0;
-    }
   }
   
   // -- Part 2: Check containment --
@@ -154,8 +157,6 @@ const bool Trie::containsImpl(const tagged_word* query,
     // Case: we're in the middle of the query
     btree_map<word,Trie*>::const_iterator childIter = children.find( query[0].word );
     if (childIter == children.end()) {
-      // Mark that there are no insertions
-      if (mutationIndex > 0) { insertions[0].sink = 0; }
       // Return false
       return false;
     } else {

@@ -102,6 +102,26 @@ AS_HELP_STRING([--enable-debug],
 esac],
 [debug=false])
 AM_CONDITIONAL(DEBUG, test x"$debug" = x"true")
+AM_CONDITIONAL(NDEBUG, test x"$debug" = x"false")
+if test x"$debug" = x"false"; then  
+  AC_DEFINE(NDEBUG, 1, [Disable debugging (for efficiency)])
+fi
+
+AC_DEFINE_UNQUOTED(PG_HOST,         "${PGHOST:=john0.stanford.edu}", [The hostname of the database to connect to])
+AC_DEFINE_UNQUOTED(PG_PORT,         ${PGPORT:=4243}, [The port on which postgres is running])
+AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=truth}", [The database to connect to])
+AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=gabor}", [The username to use for the database connection])
+AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=gabor}", [The password to use for the database connection])
+
+AC_DEFINE_UNQUOTED(PG_TABLE_WORD,   "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,   "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_FACT,   "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
+
+AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
+AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=25},  [The maximum number of completions to propose when inserting words])
+
+AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,  ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
+AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,  ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
 
 AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile \
                  test/src/Makefile test/src/gtest/Makefile ])

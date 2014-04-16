@@ -1,8 +1,8 @@
 #include <limits.h>
 #include <cfloat>
 
+#include <config.h>
 #include "gtest/gtest.h"
-#include "Config.h"
 #include "Types.h"
 #include "Utils.h"
 #include "Search.h"

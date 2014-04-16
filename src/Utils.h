@@ -2,8 +2,9 @@
 #define UTILS_H
 
 #include <vector>
+#include <string>
 
-#include "Config.h"
+#include <config.h>
 #include "Types.h"
 #include "Graph.h"
 #include "Search.h"
