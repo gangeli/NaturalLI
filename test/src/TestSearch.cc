@@ -182,7 +182,8 @@ TEST_F(TestName, RunToySearch) { \
   EXPECT_EQ(LEMUR, result[0].path->parent->parent->fact[0]); \
   EXPECT_EQ(HAVE,    result[0].path->parent->parent->fact[1]); \
   EXPECT_EQ(TAIL,   result[0].path->parent->parent->fact[2]); \
-  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
+  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL || \
+              result[0].path->parent->parent->parent->parent == NULL); \
 }\
 \
 TEST_F(TestName, RunToySearchWithCache) { \
@@ -201,7 +202,8 @@ TEST_F(TestName, RunToySearchWithCache) { \
   EXPECT_EQ(LEMUR, result[0].path->parent->parent->fact[0]); \
   EXPECT_EQ(HAVE,    result[0].path->parent->parent->fact[1]); \
   EXPECT_EQ(TAIL,   result[0].path->parent->parent->fact[2]); \
-  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL); \
+  EXPECT_TRUE(result[0].path->parent->parent->parent == NULL || \
+              result[0].path->parent->parent->parent->parent == NULL); \
 }
 
 //

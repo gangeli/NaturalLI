@@ -29,14 +29,19 @@ void Trie::add(edge* elements, uint8_t length) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
-  word w = getWord(elements[0].sink);
-  btree_map<word,Trie*>::iterator childIter = children.find( w );
+  const word w = getWord(elements[0].sink);
+  const btree_map<word,Trie*>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
     child = new Trie();
     children[w] = child;
   } else {
     child = childIter->second;
+  }
+  // Register skip-gram
+  if (length > 1) {
+    const word grandChildW = getWord(elements[1].sink);
+    skipGrams[grandChildW].push_back(w);
   }
   // Register information about child
   child->registerEdge(elements[0]);
@@ -49,83 +54,118 @@ void Trie::add(edge* elements, uint8_t length) {
   }
 }
 
+inline uint8_t min(const uint8_t& a, const uint8_t b) { return a < b ? a : b; }
+
 //
 // Trie::addCompletion
 //
-inline void Trie::addCompletion(const Trie* child, const word& sink, vector<edge>& insertion) const {
-  edge buffer[4];
-  uint8_t numEdges = child->getEdges(buffer);
-  for (int i = 0; i < numEdges; ++i) {
-    buffer[i].sink = sink;
-    insertion.push_back(buffer[i]);
+inline void Trie::addCompletion(const Trie* child, const word& sink,
+                                edge* insertion, uint32_t& index) const {
+  if (index < MAX_COMPLETIONS - 4) {
+    // case: write directly to insertion buffer
+    uint8_t numEdges = child->getEdges(&(insertion[index]));
+    for (int i = 0; i < numEdges; ++i) { insertion[index + i].sink = sink; }
+    index += numEdges;
+  } else {
+    // case: write to temporary buffer and copy over
+    edge buffer[4];
+    uint8_t numEdges = min( MAX_COMPLETIONS - index,
+                            child->getEdges(buffer) );
+    for (int i = 0; i < numEdges; ++i) { buffer[i].sink = sink; }
+    memcpy(&(insertion[index]), buffer, numEdges * sizeof(edge));
+    index += numEdges;
+  }
+}
+
+
+//
+// Trie::containsImpl
+//
+const bool Trie::contains(const tagged_word* query, 
+                          const uint8_t& queryLength,
+                          const int16_t& mutationIndex,
+                          edge* insertions) const {
+  uint32_t mutableIndex = 0;
+  if (mutationIndex == -1) {
+    if (queryLength > 0) {
+      // Case: add anything that leads into the second term
+      btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( getWord(query[0]) );
+      if (skipGramIter != skipGrams.end()) {
+        for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
+          btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
+          if (childIter != children.end()) {
+            addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
+          }
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      }
+    } else {
+      // Case: add any single-term completions
+      for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
+        if (iter->second->isLeaf) {
+          addCompletion(iter->second, iter->first, insertions, mutableIndex);
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      }
+    }
+    return containsImpl(query, queryLength, -9000, insertions, mutableIndex);  // already added completions
+  } else {
+    return containsImpl(query, queryLength, mutationIndex, insertions, mutableIndex);
   }
 }
 
 //
-// Trie::contains
+// Trie::containsImpl
 //
-const bool Trie::contains(const tagged_word* query, const uint8_t queryLength,
-                          vector<edge>* insertions) const {
-  insertions[0] = vector<edge>();
-  const bool tooManyChildren = (children.size() > MAX_COMPLETIONS);
-  
-  if (queryLength == 0) {
-    // Case: we're at the end of the query
-    if (!isLeaf) {
-      if (!tooManyChildren) {
-        // sub-case: add all children
-        btree_map<word,Trie*>::const_iterator iter;
-        for (iter = children.begin(); iter != children.end(); ++iter) {
-          addCompletion(iter->second, iter->first, insertions[0]);
-        }
-      } else {
-        // sub-case: too many children; only add completions
-        for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
-          addCompletion(iter->second, iter->first, insertions[0]);
-        }
+const bool Trie::containsImpl(const tagged_word* query, 
+                              const uint8_t& queryLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions,
+                              uint32_t& mutableIndex) const {
+  assert (queryLength > mutationIndex);
+
+  // -- Part 1: Fill in completions --
+  if (mutationIndex == -1) {
+    const bool tooManyChildren = (children.size() > MAX_COMPLETIONS);
+    if (!tooManyChildren) {
+      // sub-case: add all children
+      btree_map<word,Trie*>::const_iterator iter;
+      for (iter = children.begin(); iter != children.end(); ++iter) {
+        addCompletion(iter->second, iter->first, insertions, mutableIndex);
+        if (mutableIndex >= MAX_COMPLETIONS) { break; }
+      }
+    } else {
+      // sub-case: too many children; only add completions
+      for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
+        addCompletion(iter->second, iter->first, insertions, mutableIndex);
+        if (mutableIndex >= MAX_COMPLETIONS) { break; }
       }
     }
-    // ... return whether the fact exists
+    // Null terminate the insertions.
+    if (mutableIndex < MAX_COMPLETIONS) {
+      insertions[mutableIndex].sink = 0;
+    }
+  }
+  
+  // -- Part 2: Check containment --
+  if (queryLength == 0) {
+    // return whether the fact exists
     return isLeaf;
   } else {
     // Case: we're in the middle of the query
     btree_map<word,Trie*>::const_iterator childIter = children.find( getWord(query[0]) );
     if (childIter == children.end()) {
-      // ... end of prefix match; add candidates
-      if (children.size() <= MAX_COMPLETION_SCAN) {
-        if (children.size() > 100) {
-          printf("  %lu\n", children.size());
-        }
-        // case: we can do a sequential scan through the children
-        for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
-          const Trie* child = iter->second;
-          if (!tooManyChildren) {
-            // sub-case: few children; add them all
-            if (child->isLeaf || child->children.size() > 0) {
-              addCompletion(child, iter->first, insertions[0]);
-            }
-          } else if (child->isLeaf) {
-            // sub-case: adding this would complete a fact, so always add it
-            addCompletion(child, iter->first, insertions[0]);
-          } else {
-            btree_map<word,Trie*>::const_iterator grandChildIter = child->children.find( getWord(query[0]) );
-            if (grandChildIter != child->children.end()) {
-              // sub-case: many children, but we can try to add skip-grams.
-              addCompletion(child, iter->first, insertions[0]);
-            } else {
-              // sub-case: we're dropping these insertions :(
-            }
-          }
-        }
-      } else {
-        // case: way too many children; only add completions.
-        for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
-          addCompletion(iter->second, iter->first, insertions[0]);
-        }
-      }
+      // Mark that there are no insertions
+      if (mutationIndex > 0) { insertions[0].sink = 0; }
+      // Return false
       return false;
     } else {
-      return childIter->second->contains(&(query[1]), queryLength - 1, &(insertions[1]));
+      // Check the child
+      return childIter->second->containsImpl(&(query[1]), 
+                                             queryLength - 1,
+                                             mutationIndex - 1,
+                                             insertions,
+                                             mutableIndex);
     }
   }
 }

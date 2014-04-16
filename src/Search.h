@@ -33,16 +33,10 @@ class Path {
   edge_type edgeType;               // 1 byte
   /** The type of edge this path was created from */
   const inference_state inferState; // 1 byte
-  /**
-   * A bitmask for which words can be modified in the fact.
-   * An element which is 'fixed' can still be deleted, but cannot be modified
-   * any more.
-   */
-  const uint64_t fixedBitmask[MAX_FACT_LENGTH_IN_LONG_WORDS];
 
   /** The canonical constructor -- all fields are specified */
   Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-       const uint64_t fixedBitmask[], const uint8_t lastMutationIndex,
+       const uint8_t lastMutationIndex,
        const inference_state inferState);
   /** A constructor for a root node -- there is no parent, nor edge type */
   Path(const tagged_word* fact, uint8_t factLength);

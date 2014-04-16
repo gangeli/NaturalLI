@@ -54,24 +54,39 @@ class Trie : public FactDB {
 
 
   /** {@inheritDoc} */
-  virtual const bool contains(const tagged_word* words, const uint8_t wordLength,
-                              std::vector<edge>* insertions) const;
+  virtual const bool contains(const tagged_word* words,
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const;
   
   /** {@inheritDoc} */
   bool contains(const tagged_word* words, const uint8_t wordLength) const {
-    std::vector<edge> edges[MAX_FACT_LENGTH + 1];
-    return contains(words, wordLength, edges);
+    edge edges[MAX_COMPLETIONS];
+    return contains(words, wordLength, wordLength - 1, edges);
   }
 
  private:
-  inline void addCompletion(const Trie* child, const word& sink, std::vector<edge>& insertion) const;
+  inline void addCompletion(const Trie* child, const word& sink,
+                            edge* insertion, uint32_t& index) const;
+  
+  const bool containsImpl(const tagged_word* words,
+                          const uint8_t& wordLength,
+                          const int16_t& mutationIndex,
+                          edge* insertions,
+                          uint32_t& mutableIndex) const;
 
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
   btree::btree_map<word,Trie*> children;
+
   /** A utility structure for words from here which would complete a fact */
   btree::btree_map<word,Trie*> completions;
+
+  /** A map from grandchild to valid child values. */
+  btree::btree_map<word,std::vector<word>> skipGrams;
+
   /** A compact representation of the data to be stored at this node of the Trie. */
   uint32_t data;
+
   /** A marker for whether this node is a leaf node */
   bool     isLeaf;
 

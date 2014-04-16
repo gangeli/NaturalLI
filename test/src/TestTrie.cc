@@ -24,11 +24,9 @@ class TrieTest : public ::testing::Test {
       uint8_t fact1Length, uint32_t fact11, uint32_t fact12, uint32_t fact13,
       uint8_t fact2Length, uint32_t fact21, uint32_t fact22, uint32_t fact23,
       uint8_t queryLength, uint32_t factq1, uint32_t factq2,
-      uint8_t insert1Length, uint32_t insert11, uint32_t insert12, uint32_t insert13,
-      uint8_t insert2Length, uint32_t insert21, uint32_t insert22, uint32_t insert23,
-      uint8_t insert3Length, uint32_t insert31, uint32_t insert32, uint32_t insert33) {
+      int16_t index, uint32_t insert1, uint32_t insert2, uint32_t insert3) {
 
-    std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+    edge edges[MAX_COMPLETIONS];
 
     // Add fact 2
     if (fact1Length > 0) { buffer[0] = fact11; }
@@ -49,33 +47,15 @@ class TrieTest : public ::testing::Test {
     // Issue children query
     if (queryLength > 0) { buffer[0] = factq1; }
     if (queryLength > 1) { buffer[1] = factq2; }
-    EXPECT_FALSE(trie->contains(buffer, queryLength, edges));
+    edges[0].sink = 0;
+    edges[1].sink = 0;
+    edges[2].sink = 0;
+    EXPECT_FALSE(trie->contains(buffer, queryLength, index, edges));
 
     // Run assertions
-    EXPECT_EQ(insert1Length, edges[0].size());
-    if (insert1Length > 0) { EXPECT_EQ(insert11, edges[0][0].sink); }
-    if (insert1Length > 1) { EXPECT_EQ(insert12, edges[0][1].sink); }
-    if (insert1Length > 2) { EXPECT_EQ(insert13, edges[0][2].sink); }
-    for (uint32_t i = 0; i < insert1Length; ++i) {
-      EXPECT_EQ(0, edges[0][i].sense);
-      EXPECT_EQ(ADD_OTHER, edges[0][i].type);
-    }
-    EXPECT_EQ(insert2Length, edges[1].size());
-    if (insert2Length > 0) { EXPECT_EQ(insert21, edges[1][0].sink); }
-    if (insert2Length > 1) { EXPECT_EQ(insert22, edges[1][1].sink); }
-    if (insert2Length > 2) { EXPECT_EQ(insert23, edges[1][2].sink); }
-    for (uint32_t i = 0; i < insert2Length; ++i) {
-      EXPECT_EQ(0, edges[1][i].sense);
-      EXPECT_EQ(ADD_OTHER, edges[1][i].type);
-    }
-    EXPECT_EQ(insert3Length, edges[2].size());
-    if (insert3Length > 0) { EXPECT_EQ(insert31, edges[2][0].sink); }
-    if (insert3Length > 1) { EXPECT_EQ(insert32, edges[2][1].sink); }
-    if (insert3Length > 2) { EXPECT_EQ(insert33, edges[2][2].sink); }
-    for (uint32_t i = 0; i < insert3Length; ++i) {
-      EXPECT_EQ(0, edges[2][i].sense);
-      EXPECT_EQ(ADD_OTHER, edges[2][i].type);
-    }
+    EXPECT_EQ(insert1, edges[0].sink);
+    EXPECT_EQ(insert2, edges[1].sink);
+    EXPECT_EQ(insert3, edges[2].sink);
   }
 };
 
@@ -166,152 +146,63 @@ TEST_F(TrieTest, FactDBCanAddContainsDepth2) {
 TEST_F(TrieTest, CompletionSimpleEdge) {
   testCompletion(
     // Entries
-    2,     1,   2,   255,
-    0,     255, 255, 255,
+    2,     1,   2,   255,  // fact 1
+    0,     255, 255, 255,  // fact 2
     // Query
-    1,     1,   255,
+    1,     1,   255,       // query fact
+    0,                     // completion index
     // Checks
-    0,     255, 255, 255,
-    1,     2,   255, 255,
-    0,     255, 255, 255);
+    2, 0, 0);              // valid sinks
 }
 
 // Test insert at end of fact
 TEST_F(TrieTest, CompletionAtEndOfFact) {
   testCompletion(
     // Entries
-    3,     1,   2,   3,
-    3,     1,   2,   4,
-    // Query
-    2,     1,   2,
-    // Checks
-    0,     255, 255, 255,
-    0,     255, 255, 255,
-    2,     3,   4,   255);
+    3,     1,   2,   3,  // fact 1
+    3,     1,   2,   4,  // fact 2
+    // Query                                 
+    2,     1,   2,       // query fact
+    1,                   // completion index                    
+    // Checks            
+    3, 4, 0);            // valid sinks
 }
 
 // Test duplicate children
 TEST_F(TrieTest, CompletionDuplicateLexicalEntry) {
   testCompletion(
     // Entries
-    3,     1,   2,   1,
-    0,     255, 255, 255,
-    // Query
-    2,     1,   2,
-    // Checks
-    0,     255, 255, 255,
-    0,     255, 255, 255,
-    1,     1,   255, 255);
+    3,     1,   2,   1,    // fact 1
+    0,     255, 255, 255,  // fact 2
+    // Query                                    
+    2,     1,   2,         // query fact
+    1,                     // completion index                     
+    // Checks              
+    1, 0, 0);              // valid sinks
 }
 
 // Test missing begin
 TEST_F(TrieTest, CompletionFromStart) {
   testCompletion(
     // Entries
-    3,     2,   2,   1,
-    1,     3,   255, 255,
-    // Query
-    0,     255, 255,
-    // Checks
-    2,     2,   3,   255,
-    0,     255, 255, 255,
-    0,     255, 255, 255);
+    3,     2,   2,   1,    // fact 1
+    1,     3,   255, 255,  // fact 2
+    // Query                                    
+    1,     2,   255,       // query fact
+    -1,                    // completion index                     
+    // Checks              
+    2, 0, 0);              // valid sinks
 }
 
-// Make sure we don't add too many completions on accident
-TEST_F(TrieTest, CompletionLimitEndOfQuery) {
-  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
-
-  // Add lots of facts rooted at [1]
-  buffer[0] = 1;
-  buffer[2] = 9000;
-  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
-    buffer[1] = i;
-    trie->add(buffer, 3);
-    EXPECT_TRUE(trie->contains(buffer, 3));
-    EXPECT_FALSE(trie->contains(buffer, 2));
-    EXPECT_FALSE(trie->contains(buffer, 1));
-    EXPECT_FALSE(trie->contains(buffer, 0));
-  }
-
-  // -- Case 1: only added up to MAX_COMPLETIONS
-  // Get completions for query: [1]
-  EXPECT_FALSE(trie->contains(buffer, 1, edges));
-  // Sanity checks
-  EXPECT_EQ(0, edges[0].size());
-  EXPECT_EQ(MAX_COMPLETIONS, edges[1].size());
-
-  // -- Case 2: added more than MAX_COMPLETIONS
-  buffer[1] = MAX_COMPLETIONS;
-  trie->add(buffer, 3);
-  // Get completions for query: [1]
-  EXPECT_FALSE(trie->contains(buffer, 1, edges));
-  // Sanity checks
-  EXPECT_EQ(0, edges[0].size());
-  EXPECT_EQ(0, edges[1].size());
-}
-
-// Make sure we don't add too many completions on accident
-TEST_F(TrieTest, CompletionLimitBeginningOfQuery) {
-  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
-
-  buffer[1] = 9000;
-  // Add lots of facts rooted at []
-  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
-    buffer[0] = i;
-    trie->add(buffer, 2);
-    EXPECT_TRUE(trie->contains(buffer, 2));
-    EXPECT_FALSE(trie->contains(buffer, 1));
-    EXPECT_FALSE(trie->contains(buffer, 0));
-  }
-
-  // -- Case 1: only added up to MAX_COMPLETIONS
-  // Get completions for query: []
-  EXPECT_FALSE(trie->contains(buffer, 0, edges));
-  // Sanity checks
-  EXPECT_EQ(MAX_COMPLETIONS, edges[0].size());
-
-  // -- Case 2: added more than MAX_COMPLETIONS
-  buffer[0] = MAX_COMPLETIONS;
-  trie->add(buffer, 2);
-  // Get completions for query: []
-  EXPECT_FALSE(trie->contains(buffer, 0, edges));
-  // Sanity checks
-  EXPECT_EQ(0, edges[0].size());
-}
-
-// Make sure we can add skip-grams
-TEST_F(TrieTest, CompletionLimitSkipGram) {
-  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
-
-  // Add lots of facts rooted at []
-  for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
-    buffer[0] = i;
-    buffer[1] = i + 1;
-    trie->add(buffer, 2);
-    EXPECT_TRUE(trie->contains(buffer, 2));
-    EXPECT_FALSE(trie->contains(buffer, 1));
-    EXPECT_FALSE(trie->contains(buffer, 0));
-  }
-
-  // -- Case 1: only added up to MAX_COMPLETIONS
-  // Get completions for query: []
-  EXPECT_FALSE(trie->contains(buffer, 0, edges));
-  // Sanity checks
-  EXPECT_EQ(MAX_COMPLETIONS, edges[0].size());
-
-  // -- Case 2: added more than MAX_COMPLETIONS
-  buffer[0] = MAX_COMPLETIONS;
-  buffer[1] = MAX_COMPLETIONS + 1;
-  trie->add(buffer, 2);
-  // Get completions for query: []
-  EXPECT_FALSE(trie->contains(buffer, 0, edges));
-  // Sanity checks
-  EXPECT_EQ(0, edges[0].size());
-  
-  // -- Case 3: querying skip-gram
-  buffer[0] = MAX_COMPLETIONS + 1;
-  EXPECT_FALSE(trie->contains(buffer, 1, edges));
-  ASSERT_EQ(1, edges[0].size());
-  EXPECT_EQ(MAX_COMPLETIONS, edges[0][0].sink);
+// Test missing begin
+TEST_F(TrieTest, CompletionFromEmptyQuery) {
+  testCompletion(
+    // Entries
+    3,     2,   2,   1,    // fact 1
+    1,     3,   255, 255,  // fact 2
+    // Query                                    
+    0,   255,   255,       // query fact
+    -1,                    // completion index                     
+    // Checks              
+    3, 0, 0);              // valid sinks
 }

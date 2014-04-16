@@ -73,7 +73,7 @@ TEST(TrieITest, FactsAppearInRealFactDB) {
  * not going to either segfault or return an invalid edge.
  */
 TEST(TrieITest, CompletionsValid) {
-  std::vector<edge> edges[MAX_FACT_LENGTH + 1];
+  edge edges[MAX_COMPLETIONS];
 
   FactDB* db   = ReadFactTrie(NUM_FACTS_TO_CHECK);
   Graph* graph = ReadGraph();
@@ -97,16 +97,15 @@ TEST(TrieITest, CompletionsValid) {
         // Set up the query
         tagged_word word = getTaggedWord(w, s, m);
         // Issue the query
-        db->contains(&word, 1, edges);
+        db->contains(&word, 1, 0, edges);
         // Make sure the response [insertable facts] is valid
-        for (uint32_t i = 1; i < 2; ++i) {
-          for (uint32_t k = 0; k < edges[i].size(); ++k) {
-            EXPECT_LT(edges[i][k].type, NUM_EDGE_TYPES);
-            EXPECT_LT(edges[i][k].sink, numWords);
-            EXPECT_EQ(0, getSense(edges[i][k].sink));
-            EXPECT_EQ(MONOTONE_FLAT, getMonotonicity(edges[i][k].sink));
-            wordHasCompletion = true;
-          }
+        for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
+          if (edges[i].sink == 0) { break; }
+          EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
+          EXPECT_LT(edges[i].sink, numWords);
+          EXPECT_EQ(0, getSense(edges[i].sink));
+          EXPECT_EQ(MONOTONE_FLAT, getMonotonicity(edges[i].sink));
+          wordHasCompletion = true;
         }
       }
     }

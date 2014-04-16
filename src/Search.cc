@@ -33,14 +33,13 @@ inline void setBit(uint64_t bitmask[], const uint8_t& index) {
 // Class Path
 //
 Path::Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-           const uint64_t fixedBitmask[], uint8_t lastMutatedIndex,
+           uint8_t lastMutatedIndex,
            const inference_state inferState) 
     : parent(parentOrNull),
       fact(fact),
       factLength(factLength),
       lastMutationIndex(lastMutatedIndex),
       edgeType(edgeType),
-      fixedBitmask{fixedBitmask[0], fixedBitmask[1], fixedBitmask[2], fixedBitmask[3]},
       inferState(inferState) {
 }
 
@@ -48,9 +47,8 @@ Path::Path(const tagged_word* fact, uint8_t factLength)
     : parent(NULL),
       fact(fact),
       factLength(factLength),
-      lastMutationIndex(255),
+      lastMutationIndex(0),
       edgeType(255),
-      fixedBitmask{0,0,0,0},
       inferState(INFER_EQUIVALENT) { }
 
 Path::~Path() {
@@ -208,9 +206,9 @@ inline const Path* BreadthFirstSearch::push(
         localMutated[mutatedLength - 2] = sink;
         localMutated[mutatedLength - 1] = toInsert;
       } else {
-        // standard case; shift everything to the right and insert at the index
-        localMutated[mutationIndex] = toInsert;
-        localMutated[mutationIndex + 1] = sink;
+        // standard case
+        localMutated[mutationIndex]     = sink;
+        localMutated[mutationIndex + 1] = toInsert;
       }
       break;
     default:
@@ -232,36 +230,11 @@ inline const Path* BreadthFirstSearch::push(
   // (copy local mutated fact to queue)
   memcpy(mutated, localMutated, mutatedLength * sizeof(tagged_word));
 
-  // Compute fixed bitmap
-  uint64_t fixedBitmask[4];
-  if (replaceLength == 1) {
-    // Simple case: a mutation
-    memcpy(fixedBitmask, parent->fixedBitmask, 4 * sizeof(uint64_t));
-    if (mutationIndex != parent->lastMutationIndex) {
-      setBit(fixedBitmask, parent->lastMutationIndex);
-    }
-  } else {
-    // More complex case: insertion or deletion
-    memset(fixedBitmask, 0x0, 4 * sizeof(uint64_t));
-    for (uint32_t i = 0; i < mutationIndex; ++i) {
-      if (isSetBit(parent->fixedBitmask, i)) { setBit(fixedBitmask, i); }
-    }
-    for (uint32_t i = mutationIndex + replaceLength; i < mutatedLength; ++i) {
-      if (isSetBit(parent->fixedBitmask, i)) { setBit(fixedBitmask, i); }
-    }
-    // (fix the last mutated element)
-    if (parent->lastMutationIndex < mutationIndex) {
-      setBit(fixedBitmask, parent->lastMutationIndex);
-    } else if (parent->lastMutationIndex >= mutationIndex) {
-      setBit(fixedBitmask, parent->lastMutationIndex + 1);
-    }
-  }
-
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
   return new(newPath) Path(parent, mutated, mutatedLength, edge, 
-                           fixedBitmask, mutationIndex,
+                           replaceLength == 2 ? mutationIndex + 1 : mutationIndex,  // If we inserted, shift focus to newly inserted word.
                            compose(parent->inferState, localInference));
 }
 
@@ -536,16 +509,30 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   //
   // Setup
   //
+  // -- Initialize state --
   // Create a vector for the return value to occupy
   vector<scored_path> responses;
-  // Create the start state
-  fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
   // Initialize timer (number of elements popped from the fringe)
   uint64_t time = 0;
   const uint32_t tickTime = 10000;
   std::clock_t startTime = std::clock();
+  bool oom = false;
   // Initialize add-able words
-  vector<edge> inserts[MAX_FACT_LENGTH + 1];
+  edge inserts[MAX_COMPLETIONS];
+  for (int i = 0; i < MAX_COMPLETIONS; ++i) { inserts[i].sink = 0; }
+  
+  // -- Initialize fringe--
+  // Create the start state
+  fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
+  // Add initial hard-to-get-to states
+  const Path* root;
+  float initialCost = fringe->pop(&root);
+  for (uint32_t index = 0; index < root->factLength; ++index) {
+    fringe->push(root, index, 1, root->fact[index], 0,
+      root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
+      cache, oom);
+    if (oom) { printf("Error pushing initial states (!?); returning\n"); return responses; }
+  }
 
   //
   // Search
@@ -575,7 +562,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
-    if (knownFacts->contains(parent->fact, parent->factLength, inserts)) {
+    if (knownFacts->contains(parent->fact, parent->factLength, parent->lastMutationIndex, inserts)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path = parent;
       responses[responses.size()-1].cost = costSoFar;
@@ -584,68 +571,57 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // -- Push Children --
     // (variables)
     const uint8_t parentLength = parent->factLength;
-    const uint64_t fixedBitmask[4] = { parent->fixedBitmask[0], parent->fixedBitmask[1], parent->fixedBitmask[2], parent->fixedBitmask[3] };
     const tagged_word* parentFact = parent->fact;
-    // (algorithm)
-    for (uint8_t indexToMutate = 0;
-         indexToMutate <= parentLength;
-         ++indexToMutate) {  // for each index to mutate...
-      // -- A bit of overhead --
-      if (indexToMutate < parentLength && isSetBit(fixedBitmask, indexToMutate)) { 
-        continue;
-      }
-      const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
-      const monotonicity parentMonotonicity = getMonotonicity(parentWord);
-      
-      // -- Do insertions --
-      vector<edge>& insertionsAtThisIndex = inserts[indexToMutate];
-      if (parentLength < MAX_FACT_LENGTH) {
-        for(vector<edge>::iterator it = insertionsAtThisIndex.begin(); it != insertionsAtThisIndex.end(); ++it) {
-          // Introduce new word with neighbor's monotonicity
-          edge& insertion = *it;
-          // Add the state to the fringe
-          const float insertionCost = weights->computeCost(
-              parent->edgeType, insertion, false, parentMonotonicity);
-          if (insertionCost < 1e10) {
-            // push insertion
-            bool oom = false;
-            fringe->push(parent, indexToMutate,
-              2, parentWord, getTaggedWord(insertion.sink, insertion.sense, parentMonotonicity),
-              insertion.type, costSoFar + insertionCost, INFER_FORWARD_ENTAILMENT, cache, oom);
-            if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
-          }
-        }
-      }
-      if (indexToMutate == parentLength) { continue; }
-
-      // -- Do mutations --
-      uint32_t numMutations = 0;
-      const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
-      const uint8_t parentSense = getSense(parentWord);
-      for (int i = 0; i < numMutations; ++i) {
-        const edge& mutation = mutations[i];
-        if (mutation.sense != parentSense) {
-          continue;
-        }
+    const uint8_t indexToMutate = parent->lastMutationIndex;
+    const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
+    const monotonicity parentMonotonicity = getMonotonicity(parentWord);
+    // Do insertions
+    if (parentLength < MAX_FACT_LENGTH) {
+      for (uint8_t insertI = 0; insertI < MAX_COMPLETIONS; ++insertI) {
+        // Make sure the insert exists
+        if (inserts[insertI].sink == 0) { break; }
+        const edge& insertion = inserts[insertI];
         // Add the state to the fringe
-        const float mutationCost = weights->computeCost(
-            parent->edgeType, mutation,
-            parent->parent == NULL || parent->lastMutationIndex == indexToMutate || parent->edgeType == 255,
-            parentMonotonicity);
-        if (mutationCost < 1e10) {
-          // push mutation[/deletion]
-          bool oom = false;
+        const float insertionCost = weights->computeCost(
+            parent->edgeType, insertion, false, parentMonotonicity);
+        if (insertionCost < 1e10) {
+          // push insertion
           fringe->push(parent, indexToMutate,
-            mutation.sink == 0 ? 0 : 1,
-            getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), 0,
-            mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
+            2, parentWord, getTaggedWord(insertion.sink, insertion.sense, parentMonotonicity),
+            insertion.type, costSoFar + insertionCost, INFER_FORWARD_ENTAILMENT, cache, oom);
           if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
         }
       }
     }
+
+    // Do mutations
+    uint32_t numMutations = 0;
+    const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
+    const uint8_t parentSense = getSense(parentWord);
+    for (int i = 0; i < numMutations; ++i) {
+      const edge& mutation = mutations[i];
+      if (mutation.sense != parentSense) {
+        continue;
+      }
+      // Add the state to the fringe
+      const float mutationCost = weights->computeCost(
+          parent->edgeType, mutation,
+          parent->parent == NULL || parent->edgeType == 255,
+          parentMonotonicity);
+      if (mutationCost < 1e10) {
+        // push mutation[/deletion]
+        fringe->push(parent, indexToMutate,
+          mutation.sink == 0 ? 0 : 1,
+          getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), 0,
+          mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
+        if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
+      }
+    }
   }
 
+  //
   // Return
+  //
   uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
   printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
   return responses;

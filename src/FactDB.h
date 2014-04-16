@@ -25,15 +25,17 @@ class FactDB {
    * If it contains the fact, a list of possible insertable facts is
    * returned.
    *
-   * @param words      The fact to look up.
-   * @param wordLength The length of the word array to look up.
-   * @param insertions [Output] The edges we can insert at each index. The size of this array should be
-   *                            one more than the size of the |words| array.
+   * @param words         The fact to look up.
+   * @param wordLength    The length of the word array to look up.
+   * @param mutationIndex The index we are mutating; this is primarly for populating the insertions.
+   * @param insertions    [Output] The edges we can insert after the mutation index.
    *
    * @return True if the fact is in the database.
    */
-  virtual const bool contains(const tagged_word* words, const uint8_t wordLength,
-                              std::vector<edge>* insertions) const = 0;
+  virtual const bool contains(const tagged_word* words, 
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const = 0;
 
   /**
    * A helper for checking containment, ignoring the result of
@@ -45,8 +47,8 @@ class FactDB {
    * @return True if the given query exists in the database.
    */
   bool contains(const tagged_word* words, const uint8_t wordLength) const {
-    std::vector<edge> edges[MAX_FACT_LENGTH + 1];
-    return contains(words, wordLength, edges);
+    edge edges[MAX_COMPLETIONS];
+    return contains(words, wordLength, wordLength - 1, edges);
   }
 };
 
