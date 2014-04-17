@@ -1,4 +1,4 @@
-AC_PREREQ([2.68])
+AC_PREREQ([2.62])
 AC_INIT([hello], [0.1], [angeli@stanford.edu])
 AM_INIT_AUTOMAKE([-Wall no-define foreign])
 

@@ -45,6 +45,7 @@ message Inference {
   optional Inference impliedFrom = 2;
 
   optional double score = 11;
+  optional uint64 ticks = 12;
 }
 
 /** A response from the server, encoding a number of inferences and an optional error message */
@@ -52,6 +53,7 @@ message Response {
   repeated Inference inference    = 1;
   optional bool      error        = 2 [ default = false ];
   optional string    errorMessage = 3;
+  optional uint64    totalTicks   = 4;
 }
 
 /** A holistic view of the weights to send to the search component */

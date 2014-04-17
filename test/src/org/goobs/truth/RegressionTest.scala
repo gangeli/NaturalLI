@@ -3,7 +3,6 @@ package org.goobs.truth
 import org.goobs.truth.Messages.Fact
 import org.goobs.truth.Messages.Query
 
-import edu.stanford.nlp.util.Execution
 import edu.stanford.nlp.io.IOUtils
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.scripts.ShutdownServer
@@ -29,9 +28,7 @@ object RegressionTest {
     while ( line != null ) {
       if (!line.trim.equals("") && !line.trim.startsWith("#")) {
         // Print example
-        System.err.flush()
-        log("")
-        log(BOLD, ">>> RUNNING " + line)
+        startTrack("Running " + line)
 
         // Parse Line
         val facts = line.split("\t").map {
@@ -54,10 +51,11 @@ object RegressionTest {
             .build()), NatLog.hardNatlogWeights)
 
         // Check Validity
-        if (score < 0.5) {
+        if (score <= 0.5) {
           err(RED,"SHOULD BE VALID (score=" + score + "): " + line)
           exitStatus += 1
         }
+        endTrack("Running " + line)
       }
 
       line = reader.readLine()

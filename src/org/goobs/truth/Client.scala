@@ -54,17 +54,18 @@ object Client {
     if (response.getError) {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
+    log(s"server returned ${response.getInferenceCount} paths after ${response.getTotalTicks} ticks.")
     response.getInferenceList
   }
 
-  def startMockServer(callback:()=>Any):Int = {
+  def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
     ShutdownServer.shutdown()
 
     import scala.sys.process._
-    List[String]("""make""", "-j" + Execution.threads).!
+    List[String]("""make""", "-j" + Execution.threads) ! ProcessLogger { line => log(line) }
     var running = false
     List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
-      println(line)
+      if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
         running = true
         new Thread(new Runnable {

@@ -5,6 +5,7 @@ import org.goobs.truth.Learn.WeightVector
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import java.text.DecimalFormat
+import org.goobs.truth.scripts.ShutdownServer
 
 /**
  * TODO(gabor) JavaDoc
@@ -14,7 +15,7 @@ import java.text.DecimalFormat
 object Test {
 
   case class Accuracy(name:String, shouldTake:Datum=>Boolean, var correct:Int = 0, var total:Int = 0) {
-    override def toString:String = "Accuracy[" + name + "]: " + new DecimalFormat("0.00%").format(correct.toDouble / total.toDouble)
+    override def toString:String = "Accuracy[" + name + "]: " + new DecimalFormat("0.00%").format(correct.toDouble / total.toDouble) + "  = " + correct + " / " + total
   }
 
 
@@ -61,10 +62,14 @@ object Test {
     // Print
     startTrack("Scores")
     for (view <- accuracies) {
-      log(BLUE, view)
+      log(BLUE, BOLD, view)
     }
     endTrack("Scores")
     endTrack("Evaluating")
+
+    forceTrack("Shutting down server")
+    ShutdownServer.shutdown()
+    endTrack("Shutting down server")
   }
 }
 

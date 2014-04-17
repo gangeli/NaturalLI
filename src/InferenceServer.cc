@@ -281,10 +281,10 @@ void handleConnection(int socket, sockaddr_in* client,
   }
   // (run search)
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
-  std::vector<scored_path> result;
+  search_response result;
   try {
     result = Search(graph, factDB, queryFact, queryLength, search, cache, weights, query.timeout());
-    printf("[%d] ...finished search; %lu results found\n", socket, result.size());
+    printf("[%d] ...finished search; %lu results found\n", socket, result.paths.size());
   } catch (std::exception& e) {
     printf("%s\n", e.what());
   }
@@ -294,9 +294,10 @@ void handleConnection(int socket, sockaddr_in* client,
   // Return Result
   // (send result)
   Response response;
-  for (int i = 0; i < result.size(); ++i) {
-    double score = exp(-result[i].cost + (query.has_weights() ? query.weights().bias() : 0.0));
-    response.add_inference()->CopyFrom(inferenceFromPath(result[i].path, graph, score));
+  for (int i = 0; i < result.paths.size(); ++i) {
+    double score = exp(-result.paths[i].cost + (query.has_weights() ? query.weights().bias() : 0.0));
+    response.add_inference()->CopyFrom(inferenceFromPath(result.paths[i].path, graph, score));
+    response.set_totalticks(result.totalTicks);
   }
   response.SerializeToFileDescriptor(socket);
   // (close connection)

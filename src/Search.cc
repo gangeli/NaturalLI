@@ -505,14 +505,25 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   }
 }
 
+/**
+ * A simple little function to create a new search response.
+ */
+inline search_response mkResponse(const vector<scored_path>& paths, 
+                          const uint64_t& numTicks) {
+  search_response rtn;
+  rtn.paths = paths;
+  rtn.totalTicks = numTicks;
+  return rtn;
+}
+
 //
 // Function Search()
 //
-vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
-                           const tagged_word* queryFact, const uint8_t queryFactLength,
-                           SearchType* fringe, CacheStrategy* cache,
-                           const WeightVector* weights,
-                           const uint64_t timeout) {
+search_response Search(Graph* graph, FactDB* knownFacts,
+                       const tagged_word* queryFact, const uint8_t queryFactLength,
+                       SearchType* fringe, CacheStrategy* cache,
+                       const WeightVector* weights,
+                       const uint64_t timeout) {
   //
   // Setup
   //
@@ -538,7 +549,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     fringe->push(root, index, 1, root->fact[index], NULL_WORD,
       root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
       cache, oom);
-    if (oom) { printf("Error pushing initial states (!?); returning\n"); return responses; }
+    if (oom) { printf("Error pushing initial states (!?); returning\n"); return mkResponse(responses, time); }
   }
 
   //
@@ -571,8 +582,9 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
     // -- Check If Valid --
     if (knownFacts->contains(parent->fact, parent->factLength, parent->lastMutationIndex, inserts)) {
       responses.push_back(scored_path());
-      responses[responses.size()-1].path = parent;
-      responses[responses.size()-1].cost = costSoFar;
+      responses[responses.size()-1].path     = parent;
+      responses[responses.size()-1].cost     = costSoFar;
+      responses[responses.size()-1].numTicks = time;
     }
 
     // -- Push Children --
@@ -596,7 +608,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
           fringe->push(parent, indexToMutate,
             2, parentWord, getTaggedWord(insertion.sink, insertion.sense, parentMonotonicity),
             insertion.type, costSoFar + insertionCost, INFER_FORWARD_ENTAILMENT, cache, oom);
-          if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
+          if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
         }
       }
     }
@@ -621,7 +633,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
           mutation.sink == 0 ? 0 : 1,
           getTaggedWord(mutation.sink, mutation.sense, parentMonotonicity), NULL_WORD,
           mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
-        if (oom) { printf("Error pushing to stack; returning\n"); return responses; }
+        if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
       }
     }
   }
@@ -631,7 +643,7 @@ vector<scored_path> Search(Graph* graph, FactDB* knownFacts,
   //
   uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
   printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
-  return responses;
+  return mkResponse(responses, time);
 }
 
 

@@ -49,9 +49,27 @@ class Path {
   bool operator==(const Path& other) const;
 };
 
+/**
+ * A scored path, consisting of the path (with backpointers) along with
+ * some metadata.
+ */
 struct scored_path {
+  /** The path, as a list of backpointers from the last element popped off the search. */
   const Path* path;
+  /** The cost of this path, as returned from the search. */
   float cost;
+  /** The number of ticks at which this path was encountered. */
+  uint64_t numTicks;
+};
+
+/**
+ *
+ */
+struct search_response {
+  /** The set of paths collected by the search. */
+  std::vector<scored_path> paths;
+  /** The total number of ticks the search ran for */
+  uint64_t totalTicks;
 };
 
 /**
@@ -266,10 +284,10 @@ class WeightVector {
  * a SearchType across multiple searches, and (b) delete the SearchType to free
  * the associated memory.
  */
-std::vector<scored_path> Search(Graph*, FactDB*,
-                     const tagged_word* query, const uint8_t queryLength,
-                     SearchType*,
-                     CacheStrategy*, const WeightVector* weights, const uint64_t timeout);
+search_response Search(Graph*, FactDB*,
+                       const tagged_word* query, const uint8_t queryLength,
+                       SearchType*,
+                       CacheStrategy*, const WeightVector* weights, const uint64_t timeout);
 
 
 
