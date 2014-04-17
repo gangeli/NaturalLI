@@ -173,7 +173,7 @@ TEST_F(TestName, RunToySearch) { \
   WeightVector w; \
   vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), \
-                                &search, cache, &w, 100); \
+                                &search, cache, &w, 100).paths; \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
   EXPECT_EQ(CAT, result[0].path->fact[0]); \
@@ -193,7 +193,7 @@ TEST_F(TestName, RunToySearchWithCache) { \
   WeightVector w; \
   vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), \
-                                &search, bloom, &w, 100); \
+                                &search, bloom, &w, 100).paths; \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
   EXPECT_EQ(CAT, result[0].path->fact[0]); \
@@ -396,14 +396,14 @@ class CacheStrategyNoneTest : public ::testing::Test {
 
 // Make sure that we don't see a node in an empty cache
 TEST_F(CacheStrategyNoneTest, AlwaysNotSeen) {
-  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength, 0));
 }
 
 // Make sure adding a node to the noop cache has no effect
 TEST_F(CacheStrategyNoneTest, AddHasNoEffect) {
-  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength));
-  cache.add(root->fact, root->factLength);
-  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength, 0));
+  cache.add(root->fact, root->factLength, 0);
+  EXPECT_FALSE(cache.isSeen(root->fact, root->factLength, 0));
 }
 
 //
@@ -435,12 +435,24 @@ class CacheStrategyBloomTest : public ::testing::Test {
 
 // Make sure that we don't see a node in an empty cache
 TEST_F(CacheStrategyBloomTest, NotSeenByDefault) {
-  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength, 0));
 }
 
 // Make sure adding a node registers it as seen
 TEST_F(CacheStrategyBloomTest, AddingImpliesSeen) {
-  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength));
-  cache->add(root->fact, root->factLength);
-  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength));
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength, 0));
+  cache->add(root->fact, root->factLength, 0);
+  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength, 0));
+}
+
+
+// Make sure the additional flags are respected in the cache
+TEST_F(CacheStrategyBloomTest, CheckAdditionalFlags) {
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength, 0));
+  cache->add(root->fact, root->factLength, 1);
+  EXPECT_FALSE(cache->isSeen(root->fact, root->factLength, 0));
+  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength, 1));
+  cache->add(root->fact, root->factLength, 0);
+  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength, 0));
+  EXPECT_TRUE(cache->isSeen(root->fact, root->factLength, 1));
 }

@@ -11,6 +11,9 @@
 [have](all animal, tail)	[have](all cat, tail)
 [are](all dog, smart)	[are](all hunting dog, smart)
 
+# Simultaneous mutations
+[have](no imaginary animal, appendage)	[have](no imaginary cat, tail)
+
 # Trivial Insertions (deletions in search)
 [are](all dog, smart)	[are](all furry dog, smart)
 [are](no good drinks, gin)	[are](no good drinks, gin sour)
@@ -20,4 +23,3 @@
 [are](some good sour drinks, gin)	[are](some good drinks, gin)
 [are](some good drinks, gin sour)	[are](some good drinks, gin)
 [is](some smart dog, smart)	[is](some dog, smart)
-

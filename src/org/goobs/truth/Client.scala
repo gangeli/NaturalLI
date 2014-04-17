@@ -62,14 +62,24 @@ object Client {
     ShutdownServer.shutdown()
 
     import scala.sys.process._
-    List[String]("""make""", "-j" + Execution.threads) ! ProcessLogger { line => log(line) }
+    startTrack("Making server")
+    val couldMake = List[String]("""make""", "-j" + Execution.threads) ! ProcessLogger { line => log(line) }
+    endTrack("Making server")
+    if (couldMake != 0) { return -1 }
     var running = false
+    startTrack("Starting Server")
     List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
       if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
         running = true
+        endTrack("Starting Server")
         new Thread(new Runnable {
-          override def run(): Unit = callback()
+          override def run(): Unit = {
+            callback()
+            forceTrack("Shutting down server")
+            ShutdownServer.shutdown()
+            endTrack("Shutting down server")
+          }
         }).start()
       }
     }

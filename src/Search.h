@@ -83,8 +83,27 @@ class CacheStrategy {
  public:
   virtual ~CacheStrategy() { }
 
-  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const = 0;
-  virtual void add(const tagged_word* fact, const uint8_t& factLength) = 0;
+  /**
+   * Return whether the given fact is in the cache.
+   *
+   * @param fact The fact to query, as an array of tagged words.
+   *        Note that semantically the monotonicity tags of the fact should not matter.
+   * @param factLength The length of the fact array.
+   * @param additionalFlags Additional flags to include in the cache. Notably, the mutation index.
+   */
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength,
+                      const uint32_t& additionalFlags) const = 0;
+  
+  /**
+   * Add the given fact to the cache.
+   *
+   * @param fact The fact to query, as an array of tagged words.
+   *        Note that semantically the monotonicity tags of the fact should not matter.
+   * @param factLength The length of the fact array.
+   * @param additionalFlags Additional flags to include in the cache. Notably, the mutation index.
+   */
+  virtual void add(const tagged_word* fact, const uint8_t& factLength,
+                   const uint32_t& additionalFlags) = 0;
 };
 
 /**
@@ -94,8 +113,12 @@ class CacheStrategy {
  */
 class CacheStrategyNone : public CacheStrategy {
  public:
-  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const;
-  virtual void add(const tagged_word* fact, const uint8_t& factLength);
+  /** {@inheritDoc} */
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength,
+                      const uint32_t& additionalFlags) const;
+  /** {@inheritDoc} */
+  virtual void add(const tagged_word* fact, const uint8_t& factLength,
+                   const uint32_t& additionalFlags);
 };
 
 /**
@@ -103,8 +126,12 @@ class CacheStrategyNone : public CacheStrategy {
  */
 class CacheStrategyBloom : public CacheStrategy {
  public:
-  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength) const;
-  virtual void add(const tagged_word* fact, const uint8_t& factLength);
+  /** {@inheritDoc} */
+  virtual bool isSeen(const tagged_word* fact, const uint8_t& factLength,
+                      const uint32_t& additionalFlags) const;
+  /** {@inheritDoc} */
+  virtual void add(const tagged_word* fact, const uint8_t& factLength,
+                   const uint32_t& additionalFlags);
  
  private:
   BloomFilter filter;

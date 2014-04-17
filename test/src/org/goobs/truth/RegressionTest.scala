@@ -5,7 +5,6 @@ import org.goobs.truth.Messages.Query
 
 import edu.stanford.nlp.io.IOUtils
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import org.goobs.truth.scripts.ShutdownServer
 
 /**
  * A regression test for the inference engine
@@ -19,7 +18,8 @@ object RegressionTest {
   Props.SERVER_PORT = 41337
   Props.SEARCH_TIMEOUT = 10000
 
-  def runClient():Unit = {
+  def runClient():Int = {
+    startTrack("Regression Test")
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
     var exitStatus = 0
 
@@ -60,15 +60,20 @@ object RegressionTest {
 
       line = reader.readLine()
     }
+    endTrack("Regression Test")
 
-    ShutdownServer.shutdown()
-
-    System.exit(exitStatus)
-
+    exitStatus
   }
 
   def main(args:Array[String]) {
-    System.exit(Client.startMockServer(() => runClient()))
+    var exitStatus:Int = 0
+    Client.startMockServer(() => exitStatus = runClient())
+    if (exitStatus == 0) {
+      log(GREEN, "TESTS PASS")
+    } else {
+      log(RED, "FAILED " + exitStatus + " TESTS")
+    }
+    System.exit(exitStatus)
   }
 
 }

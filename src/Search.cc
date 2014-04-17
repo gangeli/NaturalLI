@@ -3,8 +3,12 @@
 #include <set>
 #include <cstring>
 #include <ctime>
+#include <assert.h>
 
 #include "Search.h"
+#include "Utils.h"
+
+#define NULL_EDGE_TYPE 255
 
 using namespace std;
 
@@ -47,7 +51,7 @@ Path::Path(const tagged_word* fact, uint8_t factLength)
       fact(fact),
       factLength(factLength),
       lastMutationIndex(0),
-      edgeType(255),
+      edgeType(NULL_EDGE_TYPE),
       inferState(INFER_EQUIVALENT) { }
 
 Path::~Path() {
@@ -215,14 +219,36 @@ inline const Path* BreadthFirstSearch::push(
       std::exit(1);
       break;
   }
-  // 3. Copy everything after the mutation zone
+
+  // 3. Calculate the new mutation index
+  uint8_t newMutationIndex;
+  switch (replaceLength) {
+    case 2:
+      // on inserts, shift focus to new word
+      newMutationIndex = mutationIndex + 1;
+      break;
+    case 0:
+      if (mutationIndex >= mutatedLength) {
+        // make sure we don't overflow the end of the fact
+        newMutationIndex = mutatedLength - 1;
+      } else {
+        newMutationIndex = mutationIndex;
+      }
+      break;
+    default:
+      // by default, don't 
+      newMutationIndex = mutationIndex;
+      break;
+  }
+
+  // 4. Copy everything after the mutation zone
   if (mutationIndex < parent->factLength - 1) {
     memcpy(&(localMutated[mutationIndex + replaceLength]),
            &(parent->fact[mutationIndex + 1]),
            (parent->factLength - mutationIndex - 1) * sizeof(tagged_word));
   }
   // (check cache)
-  if (cache->isSeen(localMutated, mutatedLength)) { return NULL; }
+  if (cache->isSeen(localMutated, mutatedLength, newMutationIndex)) { return NULL; }
   // (allocate fact -- we do this here to avoid allocating cache hits)
   tagged_word* mutated = allocateWord(mutatedLength);
   if (mutated == NULL) { outOfMemory = true; return NULL; }
@@ -233,7 +259,7 @@ inline const Path* BreadthFirstSearch::push(
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
   return new(newPath) Path(parent, mutated, mutatedLength, edge, 
-                           replaceLength == 2 ? mutationIndex + 1 : mutationIndex,  // If we inserted, shift focus to newly inserted word.
+                           newMutationIndex,
                            compose(parent->inferState, localInference));
 }
 
@@ -413,29 +439,35 @@ bool UniformCostSearch::isEmpty() {
 //
 // Class CacheStrategyNone
 //
-bool CacheStrategyNone::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
+bool CacheStrategyNone::isSeen(const tagged_word* fact, const uint8_t& factLength,
+                               const uint32_t& additionalFlags) const {
   return false;
 }
 
-void CacheStrategyNone::add(const tagged_word* fact, const uint8_t& factLength) { }
+void CacheStrategyNone::add(const tagged_word* fact, const uint8_t& factLength,
+                            const uint32_t& additionalFlags) { }
 
 //
 // Class CacheStrategyBloom
 //
-bool CacheStrategyBloom::isSeen(const tagged_word* fact, const uint8_t& factLength) const {
-  word words[factLength];
+bool CacheStrategyBloom::isSeen(const tagged_word* fact, const uint8_t& factLength,
+                                const uint32_t& additionalFlags) const {
+  word words[factLength + 1];
+  words[0] = additionalFlags;
   for (uint32_t i = 0; i < factLength; ++i) {
-    words[i] = fact[i].word;
+    words[i + 1] = fact[i].word;
   }
-  return filter.contains(words, 4 * ((uint32_t) factLength));
+  return filter.contains(words, 4 * ((uint32_t) factLength + 1));
 }
 
-void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength) {
-  word words[factLength];
+void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength,
+                             const uint32_t& additionalFlags) {
+  word words[factLength + 1];
+  words[0] = additionalFlags;
   for (uint32_t i = 0; i < factLength; ++i) {
-    words[i] = fact[i].word;
+    words[i + 1] = fact[i].word;
   }
-  filter.add(words, 4 * ((uint32_t) factLength));
+  filter.add(words, 4 * ((uint32_t) factLength + 1));
 }
 
 // 
@@ -542,15 +574,17 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   // -- Initialize fringe--
   // Create the start state
   fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
-  // Add initial hard-to-get-to states
-  const Path* root;
-  float initialCost = fringe->pop(&root);
-  for (uint32_t index = 0; index < root->factLength; ++index) {
-    fringe->push(root, index, 1, root->fact[index], NULL_WORD,
-      root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
-      cache, oom);
-    if (oom) { printf("Error pushing initial states (!?); returning\n"); return mkResponse(responses, time); }
-  }
+//  // Add initial hard-to-get-to states
+//  const Path* root;
+//  float initialCost = fringe->pop(&root);
+//  CacheStrategyNone noCache;
+//  for (uint32_t index = 0; index < root->factLength; ++index) {
+//    fringe->push(root, index, 1, root->fact[index], NULL_WORD,
+//      root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
+//      &noCache, oom);
+//    if (oom) { printf("Error pushing initial states (!?); returning\n"); return mkResponse(responses, time); }
+//  }
+//  assert (!fringe->isEmpty());
 
   //
   // Search
@@ -559,11 +593,13 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     // -- Get the next element from the fringe --
     const Path* parent;
     float costSoFar = fringe->pop(&parent);
-    if (cache->isSeen(parent->fact, parent->factLength)) { continue; }
-    cache->add(parent->fact, parent->factLength);
+    if (cache->isSeen(parent->fact, parent->factLength, parent->lastMutationIndex)) {
+      continue;
+    }
+    cache->add(parent->fact, parent->factLength, parent->lastMutationIndex);
 
     // -- Debug Output --
-//    printf("%lu [%f] %s\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str());
+//    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -580,11 +616,13 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     }
 
     // -- Check If Valid --
+    bool isCorrectFact = false;
     if (knownFacts->contains(parent->fact, parent->factLength, parent->lastMutationIndex, inserts)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path     = parent;
       responses[responses.size()-1].cost     = costSoFar;
       responses[responses.size()-1].numTicks = time;
+      isCorrectFact = true;
     }
 
     // -- Push Children --
@@ -635,6 +673,14 @@ search_response Search(Graph* graph, FactDB* knownFacts,
           mutation.type, costSoFar + mutationCost, INFER_FORWARD_ENTAILMENT, cache, oom);
         if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
       }
+    }
+        
+    // Do index shift
+    if (parent->lastMutationIndex < parentLength - 1 && !isCorrectFact) {
+      fringe->push(parent, indexToMutate + 1, 1,
+        parent->fact[parent->lastMutationIndex + 1], NULL_WORD,
+        NULL_EDGE_TYPE, costSoFar, INFER_FORWARD_ENTAILMENT, cache, oom);
+      if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
     }
   }
 
