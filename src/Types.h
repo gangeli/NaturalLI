@@ -48,7 +48,12 @@
 #define SENSE_REMOVE                 25
 #define SENSE_ADD                    26
 
-#define NUM_EDGE_TYPES               27
+#define QUANTIFIER_WEAKEN            27
+#define QUANTIFIER_NEGATE            28
+#define QUANTIFIER_STRENGTHEN        29
+#define QUANTIFIER_REWORD            30
+
+#define NUM_EDGE_TYPES               31
 
 
 // Inference States

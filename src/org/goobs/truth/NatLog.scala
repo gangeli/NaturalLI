@@ -40,13 +40,13 @@ object NatLog {
     weights.setCount(unigramUp(   DEL_ADJ      ), insertionOrDeletion)
     weights.setCount(unigramDown( ADD_ADV      ), insertionOrDeletion)
     weights.setCount(unigramUp(   DEL_ADV      ), insertionOrDeletion)
+    weights.setCount(unigramDown( ADD_NOUN      ), insertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_NOUN      ), insertionOrDeletion)
+    weights.setCount(unigramDown( ADD_OTHER     ), insertionOrDeletion)
+    weights.setCount(unigramUp(   DEL_OTHER     ), insertionOrDeletion)
     // (more fishy insertions or deletions)
-    weights.setCount(unigramDown( ADD_NOUN      ), unknownInsertionOrDeletion)
-    weights.setCount(unigramUp(   DEL_NOUN      ), unknownInsertionOrDeletion)
     weights.setCount(unigramDown( ADD_VERB      ), unknownInsertionOrDeletion)
     weights.setCount(unigramUp(   DEL_VERB      ), unknownInsertionOrDeletion)
-    weights.setCount(unigramDown( ADD_OTHER     ), unknownInsertionOrDeletion)
-    weights.setCount(unigramUp(   DEL_OTHER     ), unknownInsertionOrDeletion)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)
@@ -78,8 +78,8 @@ object NatLog {
     strictNatLog = -0.0,
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
-    insertionOrDeletion = -0.05,
-    unknownInsertionOrDeletion = -0.5,
+    insertionOrDeletion = -0.01,
+    unknownInsertionOrDeletion = -0.25,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     default = Double.NegativeInfinity)

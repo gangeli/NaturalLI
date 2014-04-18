@@ -35,8 +35,9 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = server$(EXEEXT)
-@DEBUG_TRUE@am__append_1 = -O0 -ggdb
-@DEBUG_TRUE@am__append_2 = -lprofiler
+@HAVE_TCMALLOC_TRUE@am__append_1 = -ltcmalloc
+@DEBUG_TRUE@am__append_2 = -O0 -ggdb
+@DEBUG_TRUE@am__append_3 = -lprofiler
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -63,7 +64,7 @@ am_server_OBJECTS = server-Bloom.$(OBJEXT) \
 server_OBJECTS = $(am_server_OBJECTS)
 am__DEPENDENCIES_1 =
 server_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 server_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(server_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -281,9 +282,9 @@ server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.h  Postgres.h     Trie.h
 
 server_CXXFLAGS = -std=c++0x -pthread ${POSTGRESQL_CFLAGS} \
-	${PROTO_CFLAGS} $(am__append_1)
+	${PROTO_CFLAGS} $(am__append_2)
 server_LDADD = ${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv \
-	-lfnv32 -ltcmalloc $(am__append_2)
+	-lfnv32 $(am__append_1) $(am__append_3)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

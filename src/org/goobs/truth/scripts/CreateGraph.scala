@@ -45,6 +45,8 @@ object CreateGraph {
   val normalizedWordCache = new mutable.HashMap[String, String]
   /** A regular expression for numbers */
   val NUMBER = """^([0-9]+)$""".r
+  /** POS cache; a mapping from a word to its most likely POS tag */
+  val posCache = new mutable.HashMap[Int, Char]
 
   /**
    * Index a phrase to an integer, respecting various relevant transformations
@@ -52,6 +54,7 @@ object CreateGraph {
    * @return The index of that phrase, starting with 0
    */
   def indexOf(rawPhrase:String, trustCase:Boolean = true):Int = {
+    // Normalize phrase
     if (rawPhrase.trim == "") return 0
     val phrase = rawPhrase.trim.toLowerCase.split("""\s+""")
       .map( (w:String) => w match {
@@ -65,7 +68,15 @@ object CreateGraph {
         normalizedWordCache(phrase) = n
         n
     }
-    wordIndexer.indexOf(normalized, true)
+    // Index phrase
+    val index:Int = wordIndexer.indexOf(normalized, true)
+    // Get most common POS of phrase
+    if (!posCache.contains(index)) {
+      val pos:Character = new Sentence(rawPhrase).pos.map( _.charAt(0) ).groupBy(identity).maxBy(_._2.size)._1
+      posCache(index) = pos
+    }
+    // Return index of phrase
+    index
   }
 
   def getSense(phrase:String, synset:Synset)(implicit jaws:WordNetDatabase):Int = {
@@ -74,7 +85,7 @@ object CreateGraph {
     if (index < 0) {
       throw new IllegalStateException("Unknown synset: " + synset)
     }
-    if (index > 30) 31 else index + 1
+    if (index > 30) 0 else index + 1
   }
 
   def main(args:Array[String]) = {
@@ -199,14 +210,55 @@ object CreateGraph {
         }
 
         //
+        // Senseless Insertions/Deletions
+        //
+        println("[30] Senseless insert/delete")
+        for ( (index, pos) <- posCache) {
+          pos match {
+            case 'N' =>
+              edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
+              edge(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
+            case 'V' =>
+              edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+              edge(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
+            case 'J' =>
+              edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
+              edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
+            case 'R' =>
+              edge(EdgeType.DEL_ADV, index, 0, 0, 0, 1.0)
+              edge(EdgeType.ADD_ADV, 0, 0, index, 0, 1.0)
+            case _ =>
+              edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
+              edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
+          }
+        }
+
+        //
         // Quantifier Replacement
         //
-        println("[30] Quantifier Replacement")
+        println("[40] Quantifier Replacement")
+        for ( source <- Quantifier.values()) {
+          val sourceIndexed:Int = indexOf(source.surfaceForm.mkString(" "))
+          for (sink <- Quantifier.values()) {
+            val sinkIndexed:Int = indexOf(sink.surfaceForm.mkString(" "))
+            if (sourceIndexed != sinkIndexed) {
+              if (source.closestMeaning.partialOrder == sink.closestMeaning.partialOrder) {
+                edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              } else if (source.closestMeaning.partialOrder == -sink.closestMeaning.partialOrder) {
+                edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              } else if (source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
+                edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              } else if (source.closestMeaning.partialOrder > sink.closestMeaning.partialOrder) {
+                edge(EdgeType.QUANTIFIER_WEAKEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              }
+            }
+          }
+        }
 
         //
         // Morphology
         //
-        println("[40] Morphology")
+        println("[50] Morphology")
         // Lemmas
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           if (!word.contains(" ")) {
@@ -229,7 +281,7 @@ object CreateGraph {
         //
         // Misc.
         //
-        println("[50] Misc.")
+        println("[60] Misc.")
         // Fudge Numbers
         for (oom <- 2 until 100 if wordIndexer.indexOf("num_" + oom, false) >= 0 && wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
           val lower = wordIndexer.indexOf("num_" + (oom-1))
@@ -250,7 +302,7 @@ object CreateGraph {
         //
         // Flushing to DB
         //
-        println("[60] Flushing")
+        println("[70] Flushing")
         println("  words...")
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           wordInsert.setInt(1, index)

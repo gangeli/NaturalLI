@@ -88,14 +88,22 @@ const bool Trie::contains(const tagged_word* query,
   bool contains;
   if (mutationIndex == -1) {
     if (queryLength > 0) {
-      // Case: add anything that leads into the second term
       btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( query[0].word );
       if (skipGramIter != skipGrams.end()) {
+        // Case: add anything that leads into the second term
         for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
           btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
           if (childIter != children.end()) {
             addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
           }
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      } else {
+        // Case: we're kind of shit out of luck. We're inserting into the
+        //       beginning of the sentence, but with no valid skip-grams.
+        //       So, let's just add some starting words and pray.
+        for (btree_map<word,Trie*>::const_iterator childIter = children.begin(); childIter != children.end(); ++childIter) {
+          addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
           if (mutableIndex >= MAX_COMPLETIONS) { break; }
         }
       }

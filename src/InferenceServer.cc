@@ -297,8 +297,8 @@ void handleConnection(int socket, sockaddr_in* client,
   for (int i = 0; i < result.paths.size(); ++i) {
     double score = exp(-result.paths[i].cost + (query.has_weights() ? query.weights().bias() : 0.0));
     response.add_inference()->CopyFrom(inferenceFromPath(result.paths[i].path, graph, score));
-    response.set_totalticks(result.totalTicks);
   }
+  response.set_totalticks(result.totalTicks);
   response.SerializeToFileDescriptor(socket);
   // (close connection)
   if (!query.userealworld()) { delete factDB; }

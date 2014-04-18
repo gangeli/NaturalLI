@@ -43,6 +43,10 @@ echo "---CHECKS FOR LIBRARIES---"
 # (postgresql)
 AX_LIB_POSTGRESQL([8.4.9])
 
+# (tcmalloc -- if available)
+AC_CHECK_LIB([tcmalloc], [malloc], [have_tcmalloc=yes], [have_tcmalloc=no])
+AM_CONDITIONAL([HAVE_TCMALLOC],  [test "$have_tcmalloc" = "yes"])
+
 # (protobuf)
 PKG_CHECK_MODULES([PROTOBUF], [libprotobuf], [have_protobuf=yes], [have_protobuf=no])
 AM_CONDITIONAL([HAVE_PROTOBUF],  [test "$have_protobuf" = "yes"])
@@ -87,7 +91,6 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   queue set sstream stdio.h stdlib.h string \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
                   vector ])
-AC_FUNC_MALLOC
 AX_CXX_HEADER_UNORDERED_MAP
 
 echo "---CUSTOM FLAGS---"

@@ -81,6 +81,10 @@ string toString(const edge_type& edge) {
     case DEL_ADJ                      : return "DEL_ADJ";
     case DEL_ADV                      : return "DEL_ADV";
     case DEL_OTHER                    : return "DEL_?";
+    case QUANTIFIER_WEAKEN            : return "QUANTIFIER_WEAKEN";
+    case QUANTIFIER_NEGATE            : return "QUANTIFIER_NEGATE";
+    case QUANTIFIER_STRENGTHEN        : return "QUANTIFIER_STRENGTHEN";
+    case QUANTIFIER_REWORD            : return "QUANTIFIER_REWORD";
     default: return "UNK_EDGE_TYPE";
   }
 }

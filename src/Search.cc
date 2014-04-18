@@ -225,7 +225,11 @@ inline const Path* BreadthFirstSearch::push(
   switch (replaceLength) {
     case 2:
       // on inserts, shift focus to new word
-      newMutationIndex = mutationIndex + 1;
+      if (sink.word != parent->fact[mutationIndex].word) {
+        newMutationIndex = mutationIndex;
+      } else {
+        newMutationIndex = mutationIndex + 1;
+      }
       break;
     case 0:
       if (mutationIndex >= mutatedLength) {
@@ -592,11 +596,13 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   while (!fringe->isEmpty() && time < timeout) {
     // -- Get the next element from the fringe --
     const Path* parent;
-    float costSoFar = fringe->pop(&parent);
-    if (cache->isSeen(parent->fact, parent->factLength, parent->lastMutationIndex)) {
+    const float costSoFar = fringe->pop(&parent);
+    if (cache->isSeen(parent->fact, parent->factLength,
+        parent->lastMutationIndex)) {
       continue;
     }
-    cache->add(parent->fact, parent->factLength, parent->lastMutationIndex);
+    cache->add(parent->fact, parent->factLength, 
+               parent->lastMutationIndex);
 
     // -- Debug Output --
 //    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
@@ -617,7 +623,8 @@ search_response Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     bool isCorrectFact = false;
-    if (knownFacts->contains(parent->fact, parent->factLength, parent->lastMutationIndex, inserts)) {
+    if (knownFacts->contains(parent->fact, parent->factLength,
+                             parent->lastMutationIndex, inserts)) {
       responses.push_back(scored_path());
       responses[responses.size()-1].path     = parent;
       responses[responses.size()-1].cost     = costSoFar;
@@ -627,12 +634,13 @@ search_response Search(Graph* graph, FactDB* knownFacts,
 
     // -- Push Children --
     // (variables)
-    const uint8_t parentLength = parent->factLength;
+    const uint8_t& parentLength = parent->factLength;
     const tagged_word* parentFact = parent->fact;
-    const uint8_t indexToMutate = parent->lastMutationIndex;
-    const tagged_word parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
-    const monotonicity parentMonotonicity = parentWord.monotonicity;
-    // Do insertions
+    const uint8_t& indexToMutate = parent->lastMutationIndex;
+    const tagged_word& parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
+    const monotonicity& parentMonotonicity = parentWord.monotonicity;
+
+    // Do post-insertions
     if (parentLength < MAX_FACT_LENGTH) {
       for (uint8_t insertI = 0; insertI < MAX_COMPLETIONS; ++insertI) {
         // Make sure the insert exists
@@ -640,7 +648,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
         const edge& insertion = inserts[insertI];
         // Add the state to the fringe
         const float insertionCost = weights->computeCost(
-            parent->edgeType, insertion, false, parentMonotonicity);
+            NULL_EDGE_TYPE, insertion, false, parentMonotonicity);
         if (insertionCost < 1e10) {
           // push insertion
           fringe->push(parent, indexToMutate,
@@ -651,10 +659,33 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       }
     }
 
+    // Do pre-insertions (for index=0 only)
+    if (parent->lastMutationIndex == 0 && parentLength < MAX_FACT_LENGTH) {
+      // Re-check insertions (though only to depth 1, for efficiency)
+      // NOTE: This must be after post-insertions, else inserts gets overwritten!
+      knownFacts->contains(parent->fact, 1, -1, inserts);
+      // Actually execute insertions
+      for (uint8_t insertI = 0; insertI < MAX_COMPLETIONS; ++insertI) {
+        // Make sure the insert exists
+        if (inserts[insertI].sink == 0) { break; }
+        const edge& insertion = inserts[insertI];
+        // Add the state to the fringe
+        const float insertionCost = weights->computeCost(
+            NULL_EDGE_TYPE, insertion, false, parentMonotonicity);
+        if (insertionCost < 1e10) {
+          // push insertion
+          fringe->push(parent, 0,
+            2, getTaggedWord(insertion.sink, insertion.sense, parentMonotonicity), parentWord,
+            insertion.type, costSoFar + insertionCost, INFER_FORWARD_ENTAILMENT, cache, oom);
+          if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
+        }
+      }
+    }
+
     // Do mutations
     uint32_t numMutations = 0;
     const edge* mutations = graph->outgoingEdgesFast(parentWord, &numMutations);
-    const uint8_t parentSense = parentWord.sense;
+    const uint8_t& parentSense = parentWord.sense;
     for (int i = 0; i < numMutations; ++i) {
       const edge& mutation = mutations[i];
       if (mutation.sense != parentSense) {
@@ -687,7 +718,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   //
   // Return
   //
-  uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
+  const uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
   printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
   return mkResponse(responses, time);
 }

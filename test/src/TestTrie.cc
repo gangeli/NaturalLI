@@ -196,7 +196,7 @@ TEST_F(TrieTest, CompletionFromStart) {
     2, 0, 0);              // valid sinks
 }
 
-// Test missing begin
+// Test missing begin (empty query)
 TEST_F(TrieTest, CompletionFromEmptyQuery) {
   testCompletion(
     // Entries
@@ -207,4 +207,17 @@ TEST_F(TrieTest, CompletionFromEmptyQuery) {
     -1,                    // completion index                     
     // Checks              
     3, 0, 0);              // valid sinks
+}
+
+// Test missing begin (no skips)
+TEST_F(TrieTest, CompletionFromNoSkipGrams) {
+  testCompletion(
+    // Entries
+    3,     2,   2,   1,    // fact 1
+    1,     3,   255, 255,  // fact 2
+    // Query                                    
+    2,   100,   101,       // query fact
+    -1,                    // completion index                     
+    // Checks              
+    2, 3, 0);              // valid sinks
 }

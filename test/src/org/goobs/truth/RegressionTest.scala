@@ -5,6 +5,7 @@ import org.goobs.truth.Messages.Query
 
 import edu.stanford.nlp.io.IOUtils
 import edu.stanford.nlp.util.logging.Redwood.Util._
+import org.goobs.truth.TruthValue.TruthValue
 
 /**
  * A regression test for the inference engine
@@ -26,12 +27,18 @@ object RegressionTest {
     val reader = IOUtils.getBufferedReaderFromClasspathOrFileSystem("org/goobs/truth/regressions_natlog.dat")
     var line:String = reader.readLine()
     while ( line != null ) {
-      if (!line.trim.equals("") && !line.trim.startsWith("#")) {
+      line = line.replaceAll("\\s*#.*", "")
+      if (!line.trim.equals("")) {
         // Print example
         startTrack("Running " + line)
 
         // Parse Line
-        val facts = line.split("\t").map {
+        val truth:TruthValue = line.charAt(0) match {
+          case '✔' => TruthValue.TRUE
+          case '✘' => TruthValue.FALSE
+          case '?' => TruthValue.UNKNOWN
+        }
+        val facts:Seq[Fact] = line.substring(1).split("\t").map {
           case INPUT(rel, subj, obj) => NatLog.annotate(subj, rel, obj)
           case _ => throw new IllegalArgumentException("Could not parse fact: " + line)
         }
@@ -51,9 +58,22 @@ object RegressionTest {
             .build()), NatLog.hardNatlogWeights)
 
         // Check Validity
-        if (score <= 0.5) {
-          err(RED,"SHOULD BE VALID (score=" + score + "): " + line)
-          exitStatus += 1
+        truth match {
+          case TruthValue.TRUE =>
+            if (score < 0.6) {
+              err(RED,"SHOULD BE VALID (score=" + score + "): " + line)
+              exitStatus += 1
+            }
+          case TruthValue.UNKNOWN =>
+            if (score >= 0.6 || score <= 0.4) {
+              err(RED,"SHOULD BE UNKNOWN (score=" + score + "): " + line)
+              exitStatus += 1
+            }
+          case TruthValue.FALSE =>
+            if (score > 0.4) {
+              err(RED,"SHOULD BE FALSE (score=" + score + "): " + line)
+              exitStatus += 1
+            }
         }
         endTrack("Running " + line)
       }
@@ -67,7 +87,7 @@ object RegressionTest {
 
   def main(args:Array[String]) {
     var exitStatus:Int = 0
-    Client.startMockServer(() => exitStatus = runClient())
+    Client.startMockServer(() => exitStatus = runClient(), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")
     } else {

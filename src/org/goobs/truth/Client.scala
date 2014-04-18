@@ -50,32 +50,51 @@ object Client {
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
-    val response = Response.parseFrom(fromServer)
+    val response:Response = Response.parseFrom(fromServer)
     if (response.getError) {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
-    log(s"server returned ${response.getInferenceCount} paths after ${response.getTotalTicks} ticks.")
+    log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
     response.getInferenceList
   }
 
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
     ShutdownServer.shutdown()
 
+    // Pre-fetch the annotators while the server spins up
+    val cache = new Thread() {
+      override def run() { NatLog.annotate("all models like to be cached"); }
+    }
+    cache.setDaemon(true)
+    cache.start()
+
+    // Make the server
     import scala.sys.process._
     startTrack("Making server")
     val couldMake = List[String]("""make""", "-j" + Execution.threads) ! ProcessLogger { line => log(line) }
     endTrack("Making server")
     if (couldMake != 0) { return -1 }
+
+    // Run the server
     var running = false
     startTrack("Starting Server")
     List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
       if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
+        // Server is initialized -- we can start doing client-side stuff
         running = true
         endTrack("Starting Server")
         new Thread(new Runnable {
           override def run(): Unit = {
+            // Finish loading the annotators
+            cache.join()
+
+            // Call the callback
+            // vvv
             callback()
+            // ^^^
+
+            // Shutdown the server
             forceTrack("Shutting down server")
             ShutdownServer.shutdown()
             endTrack("Shutting down server")

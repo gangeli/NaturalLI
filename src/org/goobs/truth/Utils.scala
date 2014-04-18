@@ -62,11 +62,11 @@ object Utils {
   }
   
   def tokenizeWithCase(phrase:String):Array[String] = {
-    tokenizeWithCase(Sentence(phrase).words, None)
+    tokenizeWithCase(Sentence(phrase).lemma, None)
   }
   
   def tokenizeWithCase(phrase:String, headWord:String=>Any):Array[String] = {
-    tokenizeWithCase(Sentence(phrase).words, Some(headWord))
+    tokenizeWithCase(Sentence(phrase).lemma, Some(headWord))
   }
 
   def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
@@ -226,4 +226,10 @@ object EdgeType extends Enumeration {
   // Word Sense Disambiguation
   val SENSE_REMOVE                   = Value(25, "sense_remove")
   val SENSE_ADD                      = Value(26, "sense_add")
+
+  // Word Sense Disambiguation
+  val QUANTIFIER_WEAKEN              = Value(27, "quantifier_weaken")
+  val QUANTIFIER_NEGATE              = Value(28, "quantifier_negate")
+  val QUANTIFIER_STRENGTHEN          = Value(29, "quantifier_strengthen")
+  val QUANTIFIER_REWORD              = Value(30, "quantifier_reword")
 }

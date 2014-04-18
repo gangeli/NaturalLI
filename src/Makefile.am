@@ -20,7 +20,10 @@ server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.h  Postgres.h     Trie.h
 
 server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
-server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -ltcmalloc
+server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
+if HAVE_TCMALLOC
+  server_LDADD += -ltcmalloc
+endif
 if DEBUG
   server_CXXFLAGS += -O0 -ggdb
   server_LDADD += -lprofiler
