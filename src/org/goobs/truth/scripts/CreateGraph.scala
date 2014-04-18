@@ -64,7 +64,7 @@ object CreateGraph {
     val normalized = normalizedWordCache.get(phrase) match {
       case Some(n) => n
       case None =>
-        val n = if (trustCase) phrase else tokenizeWithCase(phrase).mkString(" ")
+        val n = if (trustCase) new Sentence(phrase).lemma.mkString(" ") else tokenizeWithCase(phrase).mkString(" ")
         normalizedWordCache(phrase) = n
         n
     }
@@ -89,7 +89,6 @@ object CreateGraph {
   }
 
   def main(args:Array[String]) = {
-    edu.stanford.nlp.NLPConfig.caseless  // set caseless models
     Props.exec(fn2execInput1(() => {
       // Some global stuff
       println("Started")
@@ -259,23 +258,23 @@ object CreateGraph {
         // Morphology
         //
         println("[50] Morphology")
-        // Lemmas
-        for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
-          if (!word.contains(" ")) {
-            val lemmas = new Sentence(word).lemma
-            if (lemmas.length == 1 && lemmas(0) != word) {
-              val lemmaIndex = indexOf(lemmas(0))
-              if (lemmaIndex != index) {
-                // Add lemma (one per sense)
-                val synsets = jaws.getSynsets(word)
-                for (sense <- 0 to math.min(31, if (synsets != null) synsets.length else 0)) {
-                  edge(EdgeType.MORPH_TO_LEMMA, index, sense, lemmaIndex, sense, 1.0)
-                  edge(EdgeType.MORPH_FROM_LEMMA, lemmaIndex, sense, index, sense, 1.0)
-                }
-              }
-            }
-          }
-        }
+////        Lemmas
+//        for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
+//          if (!word.contains(" ")) {
+//            val lemmas = new Sentence(word).lemma
+//            if (lemmas.length == 1 && lemmas(0) != word) {
+//              val lemmaIndex = indexOf(lemmas(0))
+//              if (lemmaIndex != index) {
+//                // Add lemma (one per sense)
+//                val synsets = jaws.getSynsets(word)
+//                for (sense <- 0 to math.min(31, if (synsets != null) synsets.length else 0)) {
+//                  edge(EdgeType.MORPH_TO_LEMMA, index, sense, lemmaIndex, sense, 1.0)
+//                  edge(EdgeType.MORPH_FROM_LEMMA, lemmaIndex, sense, index, sense, 1.0)
+//                }
+//              }
+//            }
+//          }
+//        }
 
 
         //
