@@ -79,7 +79,7 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("2"), string(term[0]));
-    EXPECT_EQ(string("'hood"), string(term[1]));
+    EXPECT_EQ(string("` hood"), string(term[1]));
     // 2: vicinity
     ASSERT_TRUE(results.hasNext());
     term = results.next();
