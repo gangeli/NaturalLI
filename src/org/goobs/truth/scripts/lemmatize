@@ -1,0 +1,18 @@
+#!/bin/bash
+exec scala -J-Xmx256m -classpath corenlp-scala.jar:${JAVANLP_HOME}/projects/core/classes:/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar "$0" "$@"
+!#
+
+/*
+ * NOTE: You should make sure the following are in you classpath in the line above:
+ *  - corenlp-scala.jar (git@github.com:gangeli/CoreNLP-Scala.git)
+ *  - CoreNLP (http://nlp.stanford.edu/software/corenlp.shtml)
+ *  - CoreNLP caseless models (http://nlp.stanford.edu/software/corenlp.shtml#caseless)
+ */
+
+import edu.stanford.nlp.Sentence
+
+edu.stanford.nlp.NLPConfig.caseless
+
+for (line <- io.Source.stdin.getLines()) {
+  println( new Sentence(line).lemma.mkString(" ") )
+}

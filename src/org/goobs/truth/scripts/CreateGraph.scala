@@ -26,7 +26,7 @@ import edu.stanford.nlp.Sentence
 // CREATE TABLE edge_type ( index SMALLINT PRIMARY KEY, gloss TEXT );
 // CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );
 //
-// SQL post-requisite statements on completion of this script:
+// SQL post-requisite statements on completion of this script (only the first is crucial):
 // -----
 // CREATE INDEX word_gloss ON word_indexer(gloss);
 // CREATE INDEX edge_outgoing ON edge (source, source_sense);

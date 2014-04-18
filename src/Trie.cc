@@ -257,11 +257,11 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     // Add 'canonical' version
     facts->add(buffer, bufferLength);
     // Add word sense variants
-    for (int i = 0; i < bufferLength; ++i) {
-      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[i].sink );
+    for (uint32_t k = 0; k < bufferLength; ++k) {
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].sink );
       if (iter != word2senses.end() && iter->second.size() > 1) {
-        for (int sense = 1; sense < iter->second.size(); ++sense) {
-          buffer[i] = iter->second[sense];
+        for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
+          buffer[k] = iter->second[sense];
           facts->add(buffer, bufferLength);
         }
       }
