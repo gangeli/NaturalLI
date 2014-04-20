@@ -21,6 +21,13 @@ object Utils {
   val WORD_NONE:String = "__none__"
   val WORD_UNK:String  = "__unk__"
 
+  def mkUNK(identifier:Int):String = {
+    if (identifier >= 10 || identifier < 0) {
+      throw new IllegalArgumentException("Can only instantiate up to 10 UNK types")
+    }
+    "__unk[" + identifier + "]__"
+  }
+
   def pos2synsetType(pos:String):SynsetType = pos match {
     case r"""[Nn].*""" => SynsetType.NOUN
     case r"""[Vv].*""" => SynsetType.VERB

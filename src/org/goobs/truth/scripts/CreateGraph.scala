@@ -94,6 +94,10 @@ object CreateGraph {
       println("Started")
       wordIndexer.indexOf(Utils.WORD_NONE, true)
       wordIndexer.indexOf(Utils.WORD_UNK,  true)
+      for (i <- 0 until 10) {
+        wordIndexer.indexOf(Utils.mkUNK(i),  true)
+
+      }
       implicit val jaws = WordNetDatabase.getFileInstance
       val wordnet       = Ontology.load(Props.SCRIPT_WORDNET_PATH)
 
