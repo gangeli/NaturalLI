@@ -16,6 +16,11 @@
 #define MONOTONE_DOWN 2
 
 // Graph Edges
+// READ BEFORE YOU CHANGE:
+//  - These must match the edge types in Utils.scala
+//  - These should also be reflected in the toString in Utils.cc
+//  - Remember to update EDGE_ADDS_BEGIN, MONOTONE_INDEPENDENT_BEGIN and NUM_EDGE_TYPES
+//  - Pay attention to inline notes!
 #define WORDNET_UP                   0
 #define WORDNET_DOWN                 1
 #define WORDNET_NOUN_ANTONYM         2
@@ -34,26 +39,31 @@
 #define ADD_VERB                     13
 #define ADD_ADJ                      14
 #define ADD_ADV                      15
-#define ADD_OTHER                    16  // NOTE: never have more than 8 insertion types. @see Trie.h
+#define ADD_EXISTENTIAL              16
+#define ADD_QUANTIFIER_OTHER         17
+#define ADD_UNIVERSAL                18
+#define ADD_OTHER                    19  // NOTE: never have more than 8 insertion types. @see Trie.h
 
-#define DEL_NOUN                     17
-#define DEL_VERB                     18
-#define DEL_ADJ                      19
-#define DEL_ADV                      20
-#define DEL_OTHER                    21
+#define DEL_NOUN                     20
+#define DEL_VERB                     21
+#define DEL_ADJ                      22
+#define DEL_ADV                      23
+#define DEL_EXISTENTIAL              24
+#define DEL_QUANTIFIER_OTHER         25
+#define DEL_UNIVERSAL                26
+#define DEL_OTHER                    27
 
-#define MORPH_TO_LEMMA               22
-#define MORPH_FROM_LEMMA             23
-#define MORPH_FUDGE_NUMBER           24
-#define SENSE_REMOVE                 25
-#define SENSE_ADD                    26
+#define QUANTIFIER_WEAKEN            28
+#define QUANTIFIER_NEGATE            29
+#define QUANTIFIER_STRENGTHEN        30
+#define MONOTONE_INDEPENDENT_BEGIN   31  // should be the same as the first index after which monotonicity doesn't matter
+#define QUANTIFIER_REWORD            31
 
-#define QUANTIFIER_WEAKEN            27
-#define QUANTIFIER_NEGATE            28
-#define QUANTIFIER_STRENGTHEN        29
-#define QUANTIFIER_REWORD            30
+#define MORPH_FUDGE_NUMBER           32
+#define SENSE_REMOVE                 33
+#define SENSE_ADD                    34
 
-#define NUM_EDGE_TYPES               31
+#define NUM_EDGE_TYPES               35
 
 
 // Inference States
@@ -67,19 +77,19 @@
 
 // Static Data
 #define NULL_WORD getTaggedWord(0, 0, 0)
-#define LEMUR     getTaggedWord(2480367, 0, 0)
-#define ANIMAL    getTaggedWord(2730, 0, 0)
-#define TIMONE    getTaggedWord(18828894, 0, 0)
-#define CAT       getTaggedWord(2432, 0, 0)
-#define HAVE      getTaggedWord(3830, 0, 0)
-#define TAIL      getTaggedWord(23480, 0, 0)
+#define LEMUR     getTaggedWord(11853, 0, 0)
+#define ANIMAL    getTaggedWord(3595, 0, 0)
+#define POTTO     getTaggedWord(112126, 0, 0)
+#define CAT       getTaggedWord(3253, 0, 0)
+#define HAVE      getTaggedWord(1255, 0, 0)
+#define TAIL      getTaggedWord(26802, 0, 0)
 // (static data as strings)
-#define LEMUR_STR  "2480367"
-#define ANIMAL_STR "2730"
-#define TIMONE_STR "18828894"
-#define CAT_STR    "2432"
-#define HAVE_STR   "3830"
-#define TAIL_STR   "23480"
+#define LEMUR_STR  "11853"
+#define ANIMAL_STR "3595"
+#define POTTO_STR  "112126"
+#define CAT_STR    "3253"
+#define HAVE_STR   "1255"
+#define TAIL_STR   "26802"
 
 //
 // Typedefs
@@ -127,6 +137,10 @@ struct edge {
   edge_type type;
   float     cost;
 };
+
+//
+// Some Utilities
+//
 
 /**
  * Create a tagged word from a word and monotonicity

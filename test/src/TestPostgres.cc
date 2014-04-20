@@ -93,6 +93,26 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
   }
 }
 
+inline void checkWordIndex(const string& gloss, uint32_t expected) {
+  char buffer[128];
+  sprintf(buffer, "SELECT index FROM word WHERE gloss='%s';",
+          gloss.c_str());
+  PGIterator results = PGIterator(buffer);
+  ASSERT_TRUE(results.hasNext());
+  PGRow term = results.next();
+  EXPECT_EQ(expected, atoi(term[0]));
+}
+
+// Test gloss
+TEST(PostgresTest, WordIndexerMatchesDefineTags) {
+  checkWordIndex("lemur",  LEMUR.word);
+  checkWordIndex("animal", ANIMAL.word);
+  checkWordIndex("potto",  POTTO.word);
+  checkWordIndex("cat",    CAT.word);
+  checkWordIndex("have",   HAVE.word);
+  checkWordIndex("tail",   TAIL.word);
+}
+
 TEST(PostgresTest, CountQuery) {
   EXPECT_EQ(NUM_EDGE_TYPES,
     atoi(PGIterator("SELECT COUNT(*) FROM edge_type;").next()[0]));

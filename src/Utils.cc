@@ -66,8 +66,6 @@ string toString(const edge_type& edge) {
     case ANGLE_NN                     : return "ANGLE_NN";
     case FREEBASE_UP                  : return "FREEBASE_UP";
     case FREEBASE_DOWN                : return "FREEBASE_DOWN";
-    case MORPH_TO_LEMMA               : return "MORPH_TO_LEMMA";
-    case MORPH_FROM_LEMMA             : return "MORPH_FROM_LEMMA";
     case MORPH_FUDGE_NUMBER           : return "MORPH_FUDGE_NUMBER";
     case SENSE_REMOVE                 : return "SENSE_REMOVE";
     case SENSE_ADD                    : return "SENSE_ADD";
@@ -75,11 +73,17 @@ string toString(const edge_type& edge) {
     case ADD_VERB                     : return "ADD_VERB";
     case ADD_ADJ                      : return "ADD_ADJ";
     case ADD_ADV                      : return "ADD_ADV";
+    case ADD_EXISTENTIAL              : return "ADD_EXISTENTIAL";
+    case ADD_QUANTIFIER_OTHER         : return "ADD_QUANTIFIER_OTHER";
+    case ADD_UNIVERSAL                : return "ADD_UNIVERSAL";
     case ADD_OTHER                    : return "ADD_?";
     case DEL_NOUN                     : return "DEL_NOUN";
     case DEL_VERB                     : return "DEL_VERB";
     case DEL_ADJ                      : return "DEL_ADJ";
     case DEL_ADV                      : return "DEL_ADV";
+    case DEL_EXISTENTIAL              : return "DEL_EXISTENTIAL";
+    case DEL_QUANTIFIER_OTHER         : return "DEL_QUANTIFIER_OTHER";
+    case DEL_UNIVERSAL                : return "DEL_UNIVERSAL";
     case DEL_OTHER                    : return "DEL_?";
     case QUANTIFIER_WEAKEN            : return "QUANTIFIER_WEAKEN";
     case QUANTIFIER_NEGATE            : return "QUANTIFIER_NEGATE";

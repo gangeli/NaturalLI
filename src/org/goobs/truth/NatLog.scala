@@ -19,7 +19,8 @@ object NatLog {
   def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
                     insertionOrDeletion:Double,
                     unknownInsertionOrDeletion:Double,
-                    morphology:Double, wsd:Double, default:Double):WeightVector = {
+                    morphology:Double, wsd:Double,
+                    okQuantifier:Double, default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
     if (similarity > 0) { throw new IllegalArgumentException("Weights must always be negative (similarity is not)"); }
@@ -47,6 +48,10 @@ object NatLog {
     // (more fishy insertions or deletions)
     weights.setCount(unigramDown( ADD_VERB      ), unknownInsertionOrDeletion)
     weights.setCount(unigramUp(   DEL_VERB      ), unknownInsertionOrDeletion)
+    // (ok quantifier swaps)
+    weights.setCount(unigramUp( QUANTIFIER_WEAKEN ), okQuantifier)
+    weights.setCount(unigramDown( QUANTIFIER_STRENGTHEN ), okQuantifier)
+    weights.setCount(unigramAny( QUANTIFIER_REWORD ), okQuantifier)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)
@@ -57,8 +62,6 @@ object NatLog {
     weights.setCount(bigramDown( FREEBASE_DOWN, WORDNET_DOWN ), strictNatLog)
     weights.setCount(bigramDown( FREEBASE_DOWN, FREEBASE_DOWN ), strictNatLog)
     // Set "don't care" weights
-    weights.setCount(unigramAny( MORPH_TO_LEMMA ),    morphology)
-    weights.setCount(unigramAny( MORPH_FROM_LEMMA ),  morphology)
     weights.setCount(unigramAny( MORPH_FUDGE_NUMBER), morphology)
     // Set weights we only care about a bit
     weights.setCount(unigramUp(ANGLE_NEAREST_NEIGHBORS), similarity)
@@ -82,6 +85,7 @@ object NatLog {
     unknownInsertionOrDeletion = -0.25,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
+    okQuantifier = -0.01,
     default = Double.NegativeInfinity)
 
   /**
@@ -98,6 +102,7 @@ object NatLog {
     unknownInsertionOrDeletion = -0.25,
     morphology = -0.01,
     wsd = -0.2,
+    okQuantifier = -0.01,
     default = -2.0)
 
   /**

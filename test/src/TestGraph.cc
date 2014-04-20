@@ -24,7 +24,7 @@ class MockGraphTest : public ::testing::Test {
 // the mock graph.
 TEST_F(MockGraphTest, HasVocabulary) {
   EXPECT_EQ("lemur",  string(mockGraph->gloss(LEMUR)));
-  EXPECT_EQ("Timone", string(mockGraph->gloss(TIMONE)));
+  EXPECT_EQ("potto", string(mockGraph->gloss(POTTO)));
   EXPECT_EQ("animal", string(mockGraph->gloss(ANIMAL)));
   EXPECT_EQ("cat",    string(mockGraph->gloss(CAT)));
   EXPECT_EQ("have",   string(mockGraph->gloss(HAVE)));
@@ -40,7 +40,7 @@ TEST_F(MockGraphTest, HasCorrectEdgeCounts) {
 
 // Check to make sure the mock graph has the correct edges
 TEST_F(MockGraphTest, HasCorrectEdges) {
-  EXPECT_EQ(TIMONE.word, mockGraph->outgoingEdges(LEMUR)[0].sink);
+  EXPECT_EQ(POTTO.word, mockGraph->outgoingEdges(LEMUR)[0].sink);
   EXPECT_EQ(WORDNET_DOWN, mockGraph->outgoingEdges(LEMUR)[0].type);
   EXPECT_FLOAT_EQ(0.01, mockGraph->outgoingEdges(LEMUR)[0].cost);
   EXPECT_EQ(ANIMAL.word, mockGraph->outgoingEdges(LEMUR)[1].sink);

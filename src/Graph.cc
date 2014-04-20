@@ -183,18 +183,18 @@ Graph* ReadGraph() {
 Graph* ReadMockGraph() {
   const char* lemur[]  {LEMUR_STR,  "lemur" };  PGRow lemurRow(lemur);
   const char* animal[] {ANIMAL_STR, "animal" }; PGRow animalRow(animal);
-  const char* timone[] {TIMONE_STR, "Timone" }; PGRow timoneRow(timone);
+  const char* potto[]  {POTTO_STR,  "potto" }; PGRow pottoRow(potto);
   const char* cat[]    {CAT_STR,    "cat" };    PGRow catRow(cat);
   const char* have[]   {HAVE_STR,   "have" };   PGRow haveRow(have);
   const char* tail[]   {TAIL_STR,   "tail" };   PGRow tailRow(tail);
-  PGRow words[]   { lemurRow, animalRow, timoneRow, catRow, haveRow, tailRow };
+  PGRow words[]   { lemurRow, animalRow, pottoRow, catRow, haveRow, tailRow };
   MockPGIterator wordIter(6, words);
   
-  const char* lemur2timone[]{LEMUR_STR,  "0", TIMONE_STR, "0", "1", "0.01"  }; PGRow lemur2timoneRow(lemur2timone);
+  const char* lemur2potto[]{LEMUR_STR,  "0", POTTO_STR, "0", "1", "0.01"  }; PGRow lemur2pottoRow(lemur2potto);
   const char* lemur2animal[]{LEMUR_STR,  "0", ANIMAL_STR, "0", "0", "0.42"  }; PGRow lemur2animalRow(lemur2animal);
   const char* animal2cat[]{  ANIMAL_STR, "0", CAT_STR,    "0", "1", "42.00" }; PGRow animal2catRow(animal2cat);
-  PGRow edges[]{ lemur2timoneRow, lemur2animalRow, animal2catRow };
+  PGRow edges[]{ lemur2pottoRow, lemur2animalRow, animal2catRow };
   MockPGIterator edgeIter(3, edges);
   
-  return readGraph(19000000, &wordIter, &edgeIter, true);
+  return readGraph(200000, &wordIter, &edgeIter, true);
 }

@@ -207,29 +207,33 @@ object EdgeType extends Enumeration {
   val ADD_VERB                       = Value(13, "add_verb")
   val ADD_ADJ                        = Value(14, "add_adj")
   val ADD_ADV                        = Value(15, "add_adv")
-  val ADD_OTHER                      = Value(16, "add_?")
+  val ADD_EXISTENTIAL                = Value(16, "add_existential")
+  val ADD_QUANTIFIER_OTHER           = Value(17, "add_quantifier_other")
+  val ADD_UNIVERSAL                  = Value(18, "add_universal")
+  val ADD_OTHER                      = Value(19, "add_?")
 
-  val DEL_NOUN                       = Value(17, "del_noun")
-  val DEL_VERB                       = Value(18, "del_verb")
-  val DEL_ADJ                        = Value(19, "del_adj")
-  val DEL_ADV                        = Value(20, "del_adv")
-  val DEL_OTHER                      = Value(21, "del_?")
+  val DEL_NOUN                       = Value(20, "del_noun")
+  val DEL_VERB                       = Value(21, "del_verb")
+  val DEL_ADJ                        = Value(22, "del_adj")
+  val DEL_ADV                        = Value(23, "del_adv")
+  val DEL_EXISTENTIAL                = Value(24, "del_existential")
+  val DEL_QUANTIFIER_OTHER           = Value(25, "del_quantifier_other")
+  val DEL_UNIVERSAL                  = Value(26, "del_universal")
+  val DEL_OTHER                      = Value(27, "del_?")
 
+  // Quantifiers
+  val QUANTIFIER_WEAKEN              = Value(28, "quantifier_weaken")
+  val QUANTIFIER_NEGATE              = Value(29, "quantifier_negate")
+  val QUANTIFIER_STRENGTHEN          = Value(30, "quantifier_strengthen")
   // --------
   // NOTE: Everything under here is monotonicity agnostic
   // --------
+  val QUANTIFIER_REWORD              = Value(31, "quantifier_reword")
+
   // Could in theory be subdivided: tense, plurality, etc.
-  val MORPH_TO_LEMMA                 = Value(22, "morph_to_lemma")
-  val MORPH_FROM_LEMMA               = Value(23, "morph_from_lemma")
-  val MORPH_FUDGE_NUMBER             = Value(24, "morph_fudge_number")
+  val MORPH_FUDGE_NUMBER             = Value(32, "morph_fudge_number")
 
   // Word Sense Disambiguation
-  val SENSE_REMOVE                   = Value(25, "sense_remove")
-  val SENSE_ADD                      = Value(26, "sense_add")
-
-  // Word Sense Disambiguation
-  val QUANTIFIER_WEAKEN              = Value(27, "quantifier_weaken")
-  val QUANTIFIER_NEGATE              = Value(28, "quantifier_negate")
-  val QUANTIFIER_STRENGTHEN          = Value(29, "quantifier_strengthen")
-  val QUANTIFIER_REWORD              = Value(30, "quantifier_reword")
+  val SENSE_REMOVE                   = Value(33, "sense_remove")
+  val SENSE_ADD                      = Value(34, "sense_add")
 }

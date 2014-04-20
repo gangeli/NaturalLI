@@ -32,10 +32,10 @@
 ## Less trivial deletions
 ✔[which are](there are some cats, smart)	[are](some cats, smart)
 ✔[which are](there are some cats, smart)	[is](some cat, smart)
-#
+
 ## Unknown words
 #✔[is fooer than](john, bill)	[is fooer than](john, bill)
 #?[is fooer than](john, bill)	[is bazer than](john, bill)
-#
-## Neat inferences
-#✔[have](all cats, tails)	[has](some blue cat, a tail)
+
+# Neat inferences
+✔[have](all cats, tails)	[has](some blue cat, a tail)

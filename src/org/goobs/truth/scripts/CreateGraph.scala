@@ -237,6 +237,7 @@ object CreateGraph {
         //
         println("[40] Quantifier Replacement")
         for ( source <- Quantifier.values()) {
+          // Allow swapping
           val sourceIndexed:Int = indexOf(source.surfaceForm.mkString(" "))
           for (sink <- Quantifier.values()) {
             val sinkIndexed:Int = indexOf(sink.surfaceForm.mkString(" "))
@@ -252,12 +253,24 @@ object CreateGraph {
               }
             }
           }
+          // Allow insertion/deletion
+          source.closestMeaning match {
+            case Quantifier.LogicalQuantifier.FORALL =>
+              edge(EdgeType.ADD_UNIVERSAL, 0, 0, sourceIndexed, 0, 1.0)
+              edge(EdgeType.DEL_UNIVERSAL, sourceIndexed, 0, 0, 0, 1.0)
+            case Quantifier.LogicalQuantifier.EXISTS =>
+              edge(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
+              edge(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
+            case _ =>
+              edge(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
+              edge(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
+          }
         }
 
         //
         // Morphology
         //
-        println("[50] Morphology")
+        println("[50] Morphology (skipping)")
 ////        Lemmas
 //        for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
 //          if (!word.contains(" ")) {
