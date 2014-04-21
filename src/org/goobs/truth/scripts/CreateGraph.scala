@@ -213,34 +213,10 @@ object CreateGraph {
         }
 
         //
-        // Senseless Insertions/Deletions
-        //
-        println("[30] Senseless insert/delete")
-        for ( (index, pos) <- posCache) {
-          pos match {
-            case 'N' =>
-              edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
-              edge(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
-            case 'V' =>
-              edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
-              edge(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
-            case 'J' =>
-              edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
-              edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
-            case 'R' =>
-              edge(EdgeType.DEL_ADV, index, 0, 0, 0, 1.0)
-              edge(EdgeType.ADD_ADV, 0, 0, index, 0, 1.0)
-            case _ =>
-              edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
-              edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
-          }
-        }
-
-        //
         // Quantifier Replacement
         //
-        println("[40] Quantifier Replacement")
-        for ( source <- Quantifier.values()) {
+        println("[30] Quantifier Replacement")
+        val quantifiers: Set[Int] = (for ( source <- Quantifier.values()) yield {
           // Allow swapping
           val sourceIndexed:Int = indexOf(source.surfaceForm.mkString(" "))
           for (sink <- Quantifier.values()) {
@@ -254,6 +230,8 @@ object CreateGraph {
                 edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               } else if (source.closestMeaning.partialOrder > sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_WEAKEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              } else {
+                throw new IllegalStateException("This case should be impossible...")
               }
             }
           }
@@ -265,9 +243,36 @@ object CreateGraph {
             case Quantifier.LogicalQuantifier.EXISTS =>
               edge(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
               edge(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
-            case _ =>
+            case Quantifier.LogicalQuantifier.MOST =>  // TODO(gabor) we really should handle "not" somewhere too
               edge(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
               edge(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
+          }
+          sourceIndexed
+        }).toSet
+
+        //
+        // Senseless Insertions/Deletions
+        //
+        println("[40] Senseless insert/delete")
+        for ( (index, pos) <- posCache) {
+          if (!quantifiers.contains(index)) {
+            pos match {
+              case 'N' =>
+                edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
+                edge(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
+              case 'V' =>
+                edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+                edge(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
+              case 'J' =>
+                edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
+                edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
+              case 'R' =>
+                edge(EdgeType.DEL_ADV, index, 0, 0, 0, 1.0)
+                edge(EdgeType.ADD_ADV, 0, 0, index, 0, 1.0)
+              case _ =>
+                edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
+                edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
+            }
           }
         }
 
