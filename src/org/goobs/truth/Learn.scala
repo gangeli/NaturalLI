@@ -56,7 +56,7 @@ object Learn {
   def evaluate(paths:Iterable[Inference], weights:WeightVector):Double = {
     def recursivePrint(node:Inference):String = {
       if (node.hasImpliedFrom) {
-        s"${node.getFact.getGloss} <- ${recursivePrint(node.getImpliedFrom)}"
+        s"${node.getFact.getGloss} <-[${EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)}]- ${recursivePrint(node.getImpliedFrom)}"
       } else {
         s"<${node.getFact.getGloss}>"
       }

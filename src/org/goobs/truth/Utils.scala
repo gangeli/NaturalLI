@@ -1,5 +1,7 @@
 package org.goobs.truth
 
+import scala.collection.mutable
+
 import edu.stanford.nlp._
 import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
@@ -10,7 +12,6 @@ import org.goobs.truth.Implicits._
 import org.goobs.truth.Postgres.{slurpTable, TABLE_WORD_INTERN}
 import gnu.trove.map.hash.TObjectIntHashMap
 import java.sql.ResultSet
-import gnu.trove.map.TObjectIntMap
 import gnu.trove.procedure.TObjectIntProcedure
 
 object Utils {
@@ -26,6 +27,24 @@ object Utils {
       throw new IllegalArgumentException("Can only instantiate up to 10 UNK types")
     }
     "__unk[" + identifier + "]__"
+  }
+
+  /**
+   * Creates a new unknown word provider.
+   * This hsould be created on every (antecedent, consequent) pair to ensure that
+   * the antecedents and consequents map to the same unknown word if the words
+   * are equal.
+   */
+  def newUnkProvider:String=>String = {
+    val unkMapping = new mutable.HashMap[String, Int]
+    (w:String) => {
+      unkMapping.get(w) match {
+        case Some(index) => Utils.mkUNK(index)
+        case None =>
+          unkMapping(w) = unkMapping.size
+          Utils.mkUNK(unkMapping(w))
+      }
+    }
   }
 
   def pos2synsetType(pos:String):SynsetType = pos match {
@@ -82,7 +101,7 @@ object Utils {
   }
 
   def index(rawPhrase:String, doHead:Boolean=false, allowEmpty:Boolean=false)
-           (implicit contains:String=>Boolean, wordIndexer:String=>Int) :(Array[Int],Int) = {
+           (implicit contains:String=>Boolean, wordIndexer:String=>Int, unkProvider:String=>String) :(Array[Int],Int) = {
     if (!allowEmpty && rawPhrase.trim.equals("")) { return (Array[Int](), 0) }
     var headWord:Option[String] = None
     val phrase:Array[String]
@@ -151,7 +170,7 @@ object Utils {
     var lastElem:Int = -999
     var rtn = List[Int]()
     for (i <- indexResult.length - 1 to 0 by -1) {
-      if (indexResult(i) < 0) { indexResult(i) = wordIndexer(WORD_UNK) }
+      if (indexResult(i) < 0) { indexResult(i) = wordIndexer(unkProvider(phrase(i))) }
       if (indexResult(i) != lastElem) {
         lastElem = indexResult(i)
         rtn = indexResult(i) :: rtn
@@ -228,13 +247,14 @@ object EdgeType extends Enumeration {
   val DEL_UNIVERSAL                  = Value(26, "del_universal")
   val DEL_OTHER                      = Value(27, "del_?")
 
+  // --------
+  // NOTE: Everything under here is monotonicity agnostic
+  // --------
+
   // Quantifiers
   val QUANTIFIER_WEAKEN              = Value(28, "quantifier_weaken")
   val QUANTIFIER_NEGATE              = Value(29, "quantifier_negate")
   val QUANTIFIER_STRENGTHEN          = Value(30, "quantifier_strengthen")
-  // --------
-  // NOTE: Everything under here is monotonicity agnostic
-  // --------
   val QUANTIFIER_REWORD              = Value(31, "quantifier_reword")
 
   // Could in theory be subdivided: tense, plurality, etc.

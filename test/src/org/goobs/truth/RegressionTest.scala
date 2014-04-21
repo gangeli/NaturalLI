@@ -30,16 +30,20 @@ object RegressionTest {
       line = line.replaceAll("\\s*#.*", "")
       if (!line.trim.equals("")) {
         // Print example
-        startTrack("Running " + line)
+        startTrack(BOLD, "Running " + line)
 
         // Parse Line
+        // (truth value)
         val truth:TruthValue = line.charAt(0) match {
           case '✔' => TruthValue.TRUE
           case '✘' => TruthValue.FALSE
           case '?' => TruthValue.UNKNOWN
         }
+        // (unk mapping)
+        val unkProvider = Utils.newUnkProvider
+        // (parse fact
         val facts:Seq[Fact] = line.substring(1).split("\t").map {
-          case INPUT(rel, subj, obj) => NatLog.annotate(subj, rel, obj)
+          case INPUT(rel, subj, obj) => NatLog.annotate(subj, rel, obj, unkProvider)
           case _ => throw new IllegalArgumentException("Could not parse fact: " + line)
         }
 
@@ -51,7 +55,7 @@ object RegressionTest {
             builder.addKnownFact(fact)
           }.setQueryFact(facts.last)
             .setUseRealWorld(false)
-            .setTimeout(Props.SEARCH_TIMEOUT)
+            .setTimeout(10000)
             .setWeights(Learn.weightsToCosts(NatLog.hardNatlogWeights))
             .setSearchType("ucs")
             .setCacheType("bloom")

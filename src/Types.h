@@ -53,10 +53,10 @@
 #define DEL_UNIVERSAL                26
 #define DEL_OTHER                    27
 
+#define MONOTONE_INDEPENDENT_BEGIN   28  // should be the same as the first index after which monotonicity doesn't matter
 #define QUANTIFIER_WEAKEN            28
 #define QUANTIFIER_NEGATE            29
 #define QUANTIFIER_STRENGTHEN        30
-#define MONOTONE_INDEPENDENT_BEGIN   31  // should be the same as the first index after which monotonicity doesn't matter
 #define QUANTIFIER_REWORD            31
 
 #define MORPH_FUDGE_NUMBER           32

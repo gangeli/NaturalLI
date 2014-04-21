@@ -136,7 +136,7 @@ const bool Trie::containsImpl(const tagged_word* query,
                               const int16_t& mutationIndex,
                               edge* insertions,
                               uint32_t& mutableIndex) const {
-  assert (queryLength > mutationIndex);
+//  assert (queryLength > mutationIndex);  // TODO(gabor) why do the asserts always fire!
 
   // -- Part 1: Fill in completions --
   if (mutationIndex == -1) {

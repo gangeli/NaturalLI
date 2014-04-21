@@ -71,7 +71,9 @@ FactDB* makeFactDB(Query& query) {
       // Set the edge type
       if (query.knownfact(factI).word(wordI).has_pos()) {
         const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
-        if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
+        if (posTag != NULL && (posTag[0] == 'q' || posTag[0] == 'Q')) {
+          fact[wordI].type = ADD_NOUN;
+        } else if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
           fact[wordI].type = ADD_NOUN;
         } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
           fact[wordI].type = ADD_VERB;
@@ -139,6 +141,7 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   // Return
   if (path->parent != NULL) {
     inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
+    inference.set_incomingedgetype(path->edgeType);
   }
   inference.set_score(score);
   return inference;

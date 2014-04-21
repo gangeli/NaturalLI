@@ -515,7 +515,7 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   // Case: don't care about monotonicity
   const float pathCost = path.cost == 0.0 ? 1e-10 : path.cost;
   if (path.type >= MONOTONE_INDEPENDENT_BEGIN) {  // lemma morphs
-    const float anyCost = unigramWeightsUp[path.type] * pathCost;
+    const float anyCost = unigramWeightsAny[path.type] * pathCost;
     return lastEdgeType == 255 ? anyCost : anyCost + 
         (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }

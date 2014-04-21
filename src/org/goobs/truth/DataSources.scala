@@ -7,7 +7,6 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue._
 
 
-
 object DataSource {
   type Datum = (Query.Builder, TruthValue)
   type DataStream = Stream[Datum]
@@ -57,11 +56,12 @@ object FraCaS extends DataSource {
     // Parse XML
     val xml = scala.xml.XML.loadFile(xmlPath)
     (xml \ "problem").par.toStream.map { problem =>
+      val unkProvider = Utils.newUnkProvider
       (Query.newBuilder()
         // Antecedents
-        .addAllKnownFact((problem \ "p").flatMap ( x => NatLog.annotate(x.text) ))
+        .addAllKnownFact((problem \ "p").flatMap ( x => NatLog.annotate(x.text, unkProvider) ))
         // Consequent
-        .setQueryFact(NatLog.annotate((problem \ "h").head.text).head)
+        .setQueryFact(NatLog.annotate((problem \ "h").head.text, unkProvider).head)
         .setId((problem \ "@id").text.toInt),
         // Gold annotation
         (problem \ "@fracas_answer").text.trim match {
@@ -79,8 +79,8 @@ object FraCaS extends DataSource {
   def main(args:Array[String]):Unit = {
     System.exit(Client.startMockServer(() =>
       Test.evaluate(read(Props.DATA_FRACAS_PATH.getPath), NatLog.hardNatlogWeights,
-        List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ))
-    ))
+        List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) )),
+    printOut = true))
   }
 
 }

@@ -53,8 +53,8 @@ object NatLog {
     weights.setCount(unigramDown( ADD_VERB      ), unknownInsertionOrDeletion)
     weights.setCount(unigramUp(   DEL_VERB      ), unknownInsertionOrDeletion)
     // (ok quantifier swaps)
-    weights.setCount(unigramUp( QUANTIFIER_WEAKEN ), okQuantifier)
-    weights.setCount(unigramDown( QUANTIFIER_STRENGTHEN ), okQuantifier)
+    weights.setCount(unigramAny( QUANTIFIER_WEAKEN ), okQuantifier)
+    weights.setCount(unigramAny( QUANTIFIER_STRENGTHEN ), okQuantifier)
     weights.setCount(unigramAny( QUANTIFIER_REWORD ), okQuantifier)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
@@ -158,7 +158,7 @@ object NatLog {
    */
   def getWordSense(word:String, ner:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
     val synsets:Array[Synset] = wordnet.getSynsets(word)
-    if (synsets == null || synsets.size == 0 || !pos.isDefined || ner != "O") {
+    if (synsets == null || synsets.size == 0 || !pos.isDefined || ner != "O" || Quantifier.quantifierGlosses.contains(word)) {
       // Case: sensless
       0
     } else {
@@ -179,7 +179,7 @@ object NatLog {
     }
   }
 
-  private def annotate(inputSentence:Sentence, gloss:String):Fact = {
+  private def annotate(inputSentence:Sentence, gloss:String, unkProvider:String=>String=(x:String)=>Utils.WORD_UNK):Fact = {
     if (inputSentence.length == 0) {
       return Fact.newBuilder().setGloss("").setToString("<EMPTY FACT>").build()
     }
@@ -191,14 +191,14 @@ object NatLog {
     // Tokenize
     val index:String=>Array[Int] = {(arg:String) =>
       if (Props.NATLOG_INDEXER_LAZY) {
-        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet)._1
+        Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet, unkProvider)._1
       } else {
-        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s))._1
+        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s), unkProvider)._1
       }}
     val tokens = index(sentence.words.mkString(" "))
 
     // POS tag
-    val (pos, ner, monotone):(Array[Option[SynsetType]], Array[String], Array[Monotonicity]) = {
+    val (pos, ner, monotone):(Array[Option[String]], Array[String], Array[Monotonicity]) = {
       // (get variables)
       val pos:Array[String] = sentence.pos
       val ner:Array[String] = sentence.ner
@@ -215,22 +215,21 @@ object NatLog {
       val ADV  = "(R.*)".r
       // (find synset POS)
       var tokenI = 0
-      val synsetPOS:Array[Option[SynsetType]] = Array.fill[Option[SynsetType]](chunkedWords.size)( None )
+      val synsetPOS:Array[Option[String]] = Array.fill[Option[String]](chunkedWords.size)( None )
       val synsetNER:Array[String] = Array.fill[String](chunkedWords.size)( "O" )
       val synsetMonotone:Array[Option[Monotonicity]] = Array.fill[Option[Monotonicity]](chunkedWords.size)( None )
       for (i <- 0 until chunkedWords.size) {
         val tokenStart = tokenI
-        val tokenEnd = tokenI + chunkedWords(i).count( p => p == ' ' ) + 1
-        for (k <- (tokenEnd-1) to tokenStart by -1) {
+        val tokenEnd = tokenI + chunkedWords(i).replaceAll("\\s+", " ").count( p => p == ' ' ) + 1
+        if (Quantifier.quantifierGlosses.contains(chunkedWords(i))) {
+          synsetPOS(i) = Some("Q")
+        }
+        for (k <- math.min(tokenEnd - 1, pos.length - 1) to tokenStart by -1) {
           synsetPOS(i) = synsetPOS(i).orElse(pos(k) match {
-            case NOUN(_) =>
-              Some(SynsetType.NOUN)
-            case VERB(_) =>
-              Some(SynsetType.VERB)
-            case ADJ(_) =>
-              Some(SynsetType.ADJECTIVE)
-            case ADV(_) =>
-              Some(SynsetType.ADVERB)
+            case NOUN(_) => Some("N")
+            case VERB(_) => Some("V")
+            case ADJ(_) => Some("J")
+            case ADV(_) => Some("R")
             case _ => None
           })
           synsetMonotone(i) = synsetMonotone(i).orElse(Some(monotonicity(k)))
@@ -247,18 +246,19 @@ object NatLog {
 
     // Create Protobuf Words
     val protoWords:Seq[Word] = tokens.zip(monotone).zip(ner).zip(pos).map {
-      case (((word: Int, monotonicity: Monotonicity), ner:String), pos: Option[SynsetType]) =>
+      case (((word: Int, monotonicity: Monotonicity), ner:String), pos: Option[String]) =>
         val gloss = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(word) else Utils.wordGloss(word)
         Word.newBuilder()
           .setWord(word)
           .setGloss(gloss)
-          .setPos(pos match {
-          case Some(SynsetType.NOUN) => "n"
-          case Some(SynsetType.VERB) => "v"
-          case Some(SynsetType.ADJECTIVE) => "j"
-          case Some(SynsetType.ADVERB) => "r"
-          case _ => "?"
-        }).setSense(getWordSense(gloss, ner, sentence, pos))
+          .setPos(pos.getOrElse("?"))
+          .setSense(getWordSense(gloss, ner, sentence, pos match {
+            case Some("N") => Some(SynsetType.NOUN)
+            case Some("V") => Some(SynsetType.VERB)
+            case Some("J") => Some(SynsetType.ADJECTIVE)
+            case Some("R") => Some(SynsetType.ADVERB)
+            case _ => None
+          }))
           .setMonotonicity(monotonicity).build()
     }.dropRight(1)  // drop period at the end
 
@@ -280,10 +280,12 @@ object NatLog {
    * @param rightArg Arg 2 of the triple.
    * @return An annotated query fact, marked with monotonicity.
    */
-  def annotate(leftArg:String, rel:String, rightArg:String):Fact = {
+  def annotate(leftArg:String, rel:String, rightArg:String, unkProvider:String=>String):Fact = {
     val sentence:Sentence = new Sentence(leftArg + " " + rel + " " + rightArg)
-    annotate(sentence, "[" + rel + "](" + leftArg + ", " + rightArg + ")")
+    annotate(sentence, "[" + rel + "](" + leftArg + ", " + rightArg + ")", unkProvider)
   }
+
+  def annotate(leftArg:String, rel:String, rightArg:String):Fact = annotate(leftArg, rel, rightArg, x => Utils.WORD_UNK)
 
   /**
    * An instantiation of the Ollie processing pipeline; this is only called on demand
@@ -337,8 +339,10 @@ object NatLog {
     }
   }
 
-  def annotate(query:String):Iterable[Fact] = {
+  def annotate(query:String, unkProvider:String=>String):Iterable[Fact] = {
     val sentence:Sentence = new Sentence(query)
-    Seq(annotate(sentence, query))
+    Seq(annotate(sentence, query, unkProvider))
   }
+
+  def annotate(query:String):Iterable[Fact] = annotate(query, x => Utils.WORD_UNK)
 }

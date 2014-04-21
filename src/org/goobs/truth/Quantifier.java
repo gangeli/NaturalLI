@@ -1,6 +1,11 @@
 package org.goobs.truth;
 
 import edu.stanford.nlp.Sentence;
+import edu.stanford.nlp.util.StringUtils;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A collection of quantifiers. This is the exhaustive list of quantifiers our system knows about.
@@ -29,14 +34,15 @@ public enum Quantifier {
   MORE_THAN_N8("more than num_8",   LogicalQuantifier.MOST),
   MORE_THAN_N9("more than num_9",   LogicalQuantifier.MOST),
   A_LOT_OF("a lot of",              LogicalQuantifier.MOST),
-  LOTS_OF("lots of",                LogicalQuantifier.MOST),
+  LOTS_OF("lot of",                 LogicalQuantifier.MOST),
   PLENTY_OF("plenty of",            LogicalQuantifier.MOST),
-  HEAPS_OF("heaps of",              LogicalQuantifier.MOST),
+  HEAPS_OF("heap of",               LogicalQuantifier.MOST),
   A_LOAD_OF("a load of",            LogicalQuantifier.MOST),
-  LOADS_OF("loads of",              LogicalQuantifier.MOST),
-  TONS_OF("tons of",                LogicalQuantifier.MOST),
+  LOADS_OF("load of",               LogicalQuantifier.MOST),
+  TONS_OF("ton of",                 LogicalQuantifier.MOST),
   MOST("most",                      LogicalQuantifier.MOST),
   ENOUGH("enough",                  LogicalQuantifier.MOST),
+  SEVERAL("several",                LogicalQuantifier.MOST),
 
   LESS_THAN_N1("less than num_1",   LogicalQuantifier.EXISTS),
   LESS_THAN_N2("less than num_2",   LogicalQuantifier.EXISTS),
@@ -48,12 +54,13 @@ public enum Quantifier {
   LESS_THAN_N8("less than num_8",   LogicalQuantifier.EXISTS),
   LESS_THAN_N9("less than num_9",   LogicalQuantifier.EXISTS),
   SOME_OF("some of",                LogicalQuantifier.EXISTS),
+  SOME("some",                      LogicalQuantifier.EXISTS),
   A_FEW("a few",                    LogicalQuantifier.EXISTS),
   THERE_BE("there be",              LogicalQuantifier.EXISTS),
   THERE_EXIST("there exist",        LogicalQuantifier.EXISTS),
-  SEVERAL("several",                LogicalQuantifier.EXISTS),
   FEW("few",                        LogicalQuantifier.EXISTS),
   EITHER("either",                  LogicalQuantifier.EXISTS),
+  A("a",                            LogicalQuantifier.EXISTS),
 
   NO("no",                          LogicalQuantifier.NONE),
   NONE_OF("none of",                LogicalQuantifier.NONE),
@@ -83,4 +90,10 @@ public enum Quantifier {
     this.closestMeaning = closestMeaning;
   }
 
+
+  public static final Set<String> quantifierGlosses = Collections.unmodifiableSet(new HashSet<String>(){{
+    for (Quantifier q : values()) {
+      add(StringUtils.join(q.surfaceForm, " "));
+    }
+  }});
 }

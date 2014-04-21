@@ -63,7 +63,7 @@ object Client {
 
     // Pre-fetch the annotators while the server spins up
     val cache = new Thread() {
-      override def run() { NatLog.annotate("all models like to be cached"); }
+      override def run() { NatLog.annotate("all models like to be cached", x => Utils.WORD_UNK); }
     }
     cache.setDaemon(true)
     cache.start()
@@ -113,12 +113,12 @@ object Client {
       println("")
       println("Enter an antecedent and a consequent as \"[rel](arg1, arg2)\".")
       for (antecedent:Fact <- /*"[have](all animal, tail)"*/ readLine("antecedent> ") match {
-            case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
+            case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2, x => Utils.WORD_UNK))
             case _ => println("Could not parse antecedent"); None
           }) {
         explain(antecedent, "antecedent")
         for (consequent:Fact <- /*"[have](all cat, tail)"*/ readLine("consequent> ") match {
-          case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2))
+          case INPUT(rel, arg1, arg2) => Some(NatLog.annotate(arg1, rel, arg2, x => Utils.WORD_UNK))
           case _ => println("Could not parse consequent"); None
         }) {
           explain(consequent, "consequent")
