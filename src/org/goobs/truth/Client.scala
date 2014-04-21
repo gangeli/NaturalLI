@@ -16,8 +16,7 @@ import edu.stanford.nlp.util.Execution
  * @author Gabor Angeli
  */
 object Client {
-  Props.NATLOG_INDEXER_LAZY = true
-  
+
   def explain(fact:Fact, tag:String="fact"):Unit = {
     log(tag + ": " + fact.getWordList.map( w =>
       s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
@@ -106,6 +105,7 @@ object Client {
   }
 
   def main(args:Array[String]):Unit = {
+    Props.NATLOG_INDEXER_LAZY = true
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
     val weights = NatLog.softNatlogWeights
 
