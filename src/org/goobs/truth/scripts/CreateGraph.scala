@@ -243,9 +243,11 @@ object CreateGraph {
             case Quantifier.LogicalQuantifier.EXISTS =>
               edge(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
               edge(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
-            case Quantifier.LogicalQuantifier.MOST =>  // TODO(gabor) we really should handle "not" somewhere too
+            case Quantifier.LogicalQuantifier.MOST =>
               edge(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
               edge(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
+            case Quantifier.LogicalQuantifier.NONE =>
+              // TODO(gabor) we really should handle "not" somewhere too
           }
           sourceIndexed
         }).toSet
