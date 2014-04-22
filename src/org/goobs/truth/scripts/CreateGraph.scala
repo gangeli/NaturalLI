@@ -198,9 +198,8 @@ object CreateGraph {
         case class SynonymPair(a:String, aSense:Int, b:String, bSense:Int)
         val synonyms = new mutable.HashSet[SynonymPair]
         for ( node: RealNode <- wordnet.ontology.values.flatten ) {
-          val size = if (node.synset.getWordForms.length > 3) 2 else  1
-          for ( word:String <- node.synset.getWordForms.slice(0, size) ) {
-            for ( synonym:String <- node.synset.getWordForms.slice(0, size) ) {
+          for ( word:String <- node.synset.getWordForms ) {
+            for ( synonym:String <- node.synset.getWordForms ) {
               if (word != synonym) {
                 synonyms.add(SynonymPair(word, getSense(word, node.synset), synonym, getSense(synonym, node.synset)))
               }
@@ -208,7 +207,7 @@ object CreateGraph {
           }
         }
         for ( pair <- synonyms ) {
-          edge(WORDNET_NOUN_SYNONYM, indexOf(pair.a, true), pair.aSense, indexOf(pair.b, true), pair.bSense, 1.0)
+          edge(WORDNET_NOUN_SYNONYM, indexOf(pair.a, trustCase = true), pair.aSense, indexOf(pair.b, trustCase = true), pair.bSense, 1.0)
         }
 
         //
