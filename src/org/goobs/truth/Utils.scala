@@ -122,25 +122,25 @@ object Utils {
           for (i <- start until start + length) { indexResult(i) = index; }
           found = true
         }
-      }
-      if (length > 1 && !found) {
-        // Try to title-case (if it was title cased to begin with)
-        val candidate:String = phrase.slice(start, start+length)
-          .map( (w:String) => if (w.length <= 1) w.toUpperCase
-        else w.substring(0, 1).toUpperCase + w.substring(1) )
-          .mkString(" ")
-        if (rawPhrase.contains(candidate) &&  // not _technically_ sufficient, but close enough
-          contains(candidate)) {
-          val index = wordIndexer(candidate)
-          for (i <- start until start + length) { indexResult(i) = index; }
-          found = true
-        }
-        if (!found) {
-          // Try to lower-case
-          if (contains(candidate.toLowerCase)) {
-            val index = wordIndexer(candidate.toLowerCase)
+        if (length > 1 && !found) {
+          // Try to title-case (if it was title cased to begin with)
+          val candidate:String = phrase.slice(start, start+length)
+            .map( (w:String) => if (w.length <= 1) w.toUpperCase
+          else w.substring(0, 1).toUpperCase + w.substring(1) )
+            .mkString(" ")
+          if (rawPhrase.contains(candidate) &&  // not _technically_ sufficient, but close enough
+            contains(candidate)) {
+            val index = wordIndexer(candidate)
             for (i <- start until start + length) { indexResult(i) = index; }
             found = true
+          }
+          if (!found) {
+            // Try to lower-case
+            if (contains(candidate.toLowerCase)) {
+              val index = wordIndexer(candidate.toLowerCase)
+              for (i <- start until start + length) { indexResult(i) = index; }
+              found = true
+            }
           }
         }
       }

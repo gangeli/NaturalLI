@@ -53,7 +53,7 @@ class NLPProcessingTest extends Test {
     it ("should index 'nobel prize' in middle of sentence") {
       val (indexed, _) = index("the nobel prize was awarded")(Postgres.indexerContains, Postgres.indexerGet, x => Utils.WORD_UNK)
       wordGloss(indexed(1)) should be ("nobel prize")
-      wordGloss(indexed(2)) should be ("was")
+      wordGloss(indexed(2)) should be ("be")
     }
 
     it ("should index 'nobel prize' at end of sentence") {
@@ -63,8 +63,17 @@ class NLPProcessingTest extends Test {
 
     it ("should index proper names") {
       val (indexed, _) = index("John saw Mary")(Postgres.indexerContains, Postgres.indexerGet, x => Utils.WORD_UNK)
-      wordGloss(indexed(0)) should be ("john")
+      wordGloss(indexed(0)) should be ("John")
       wordGloss(indexed(2)) should be ("mary")
+    }
+
+    it ("should handle overlapping indices") {
+      val (indexed, _) = index("I like a lot of things")(Postgres.indexerContains, Postgres.indexerGet, x => Utils.WORD_UNK)
+      wordGloss(indexed(0)) should be ("I")
+      wordGloss(indexed(1)) should be ("like")
+      wordGloss(indexed(2)) should be ("a lot of")
+      wordGloss(indexed(3)) should be ("thing")
+      indexed.length should be (4)
 
     }
   }

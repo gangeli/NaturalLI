@@ -11,6 +11,7 @@
 #include "Bloom.h"
 
 #define POOL_BUCKET_SHIFT 20
+#define NULL_EDGE_TYPE 255
 
 class SearchType;
 
@@ -35,13 +36,25 @@ class Path {
   edge_type edgeType;               // 1 byte
   /** The type of edge this path was created from */
   const inference_state inferState; // 1 byte
+  /** 
+    * A very very hacky way of trying to separate monotonicity
+    * boundaries. Please fix me!
+    * We define this boundary to _before_ the word at that index.
+    * Thus, 0 marks the very beginning of the sentence; 1 marks
+    * right after the first word (word at index 0).
+    */
+  const uint8_t monotoneBoundary; // 1 byte
 
   /** The canonical constructor -- all fields are specified */
-  Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-       const uint8_t lastMutationIndex,
-       const inference_state inferState);
+  Path(const Path* parentOrNull, const tagged_word* fact,
+       const uint8_t& factLength, 
+       const edge_type& edgeType,
+       const uint8_t& lastMutationIndex,
+       const inference_state& inferState,
+       const uint8_t& monotoneBoundary);
   /** A constructor for a root node -- there is no parent, nor edge type */
-  Path(const tagged_word* fact, uint8_t factLength);
+  Path(const tagged_word* fact, const uint8_t& factLength,
+       const uint8_t& monotoneBoundary);
   /** The deconstructor -- this should be largely empty */
   ~Path();
 
@@ -287,7 +300,7 @@ class WeightVector {
                            const bool& changingSameWord,
                            const monotonicity& monotonicity) const;
  
- private:
+// private:
   const bool available;
 
   float* unigramWeightsUp;
@@ -312,9 +325,9 @@ class WeightVector {
  * the associated memory.
  */
 search_response Search(Graph*, FactDB*,
-                       const tagged_word* query, const uint8_t queryLength,
+                       const tagged_word* query, const uint8_t& queryLength, const uint8_t& monotoneBoundary,
                        SearchType*,
-                       CacheStrategy*, const WeightVector* weights, const uint64_t timeout);
+                       CacheStrategy*, const WeightVector* weights, const uint64_t& timeout);
 
 
 

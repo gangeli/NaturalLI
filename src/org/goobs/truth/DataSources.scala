@@ -77,10 +77,10 @@ object FraCaS extends DataSource {
   }
 
   def main(args:Array[String]):Unit = {
+    Props.SERVER_PORT = 4001
     System.exit(Client.startMockServer(() =>
       Test.evaluate(read(Props.DATA_FRACAS_PATH.getPath), NatLog.hardNatlogWeights,
         List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) )),
-    printOut = true))
+    printOut = false))
   }
-
 }

@@ -82,7 +82,7 @@ class InMemoryGraph : public Graph {
 //
 // Read Any Graph
 //
-Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edgeIter, bool mock) {
+Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edgeIter, const bool& mock) {
   // Read words
   char** index2gloss = (char**) malloc( numWords * sizeof(char*) );
   memset(index2gloss, 0, numWords * sizeof(char*));
@@ -142,16 +142,16 @@ Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edge
     edges[source][edgesSizes[source]] = e;
     edgesSizes[source] += 1;
     edgeI += 1;
-    if (edgeI % 1000000 == 0) {
+    if (!mock && edgeI % 1000000 == 0) {
       printf("  loaded %luM edges\n", edgeI / 1000000);
     }
   }
   free(edgeCapacities);
-  printf("  %lu edges loaded.\n", edgeI);
+  if (!mock) { printf("  %lu edges loaded.\n", edgeI); }
   
   
   // Finish
-  printf("%s\n", "  done reading the graph.");
+  if (!mock) { printf("%s\n", "  done reading the graph."); }
   return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
 }
 

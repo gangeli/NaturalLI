@@ -224,7 +224,7 @@ object NatLog {
         if (Quantifier.quantifierGlosses.contains(chunkedWords(i))) {
           synsetPOS(i) = Some("Q")
         }
-        for (k <- math.min(tokenEnd - 1, pos.length - 1) to tokenStart by -1) {
+        for (k <- (tokenEnd - 1) to tokenStart by -1) {
           synsetPOS(i) = synsetPOS(i).orElse(pos(k) match {
             case NOUN(_) => Some("N")
             case VERB(_) => Some("V")
@@ -267,7 +267,10 @@ object NatLog {
     for (word <- protoWords) { fact.addWord(word) }
     fact.setGloss(sentence.toString())
       .setToString(gloss)
-      .build()
+      .setMonotoneBoundary({
+        val candidate:Int = pos.indexOf( (x:String) => x == "V")
+        if (candidate < 0) pos.length - 1 else candidate
+      }).build()
 
   }
 

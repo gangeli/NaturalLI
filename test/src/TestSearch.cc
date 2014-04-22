@@ -26,7 +26,7 @@ class PathTest : public ::testing::Test {
     animalsHaveTails_ = animalsHaveTails();
     catsHaveTails_ = catsHaveTails();
     // Add base path element
-    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size(), 1);
     // Register paths with search
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
@@ -123,12 +123,14 @@ class TestName : public ::testing::Test { \
     lemursHaveTails_ = lemursHaveTails(); \
     animalsHaveTails_ = animalsHaveTails(); \
     catsHaveTails_ = catsHaveTails(); \
-    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size()); \
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size(), 1); \
     cache = new CacheStrategyNone(); \
     bloom = new CacheStrategyBloom(); \
     graph = ReadMockGraph(); \
     facts = ReadMockFactDB(); \
     EXPECT_TRUE(search.isEmpty()); \
+    someDogChaseCat_ = someDogsChaseCats(); \
+    qnode = new Path(&someDogChaseCat_[0], someDogChaseCat_.size(), 2); \
   } \
 \
   virtual void TearDown() { \
@@ -136,10 +138,12 @@ class TestName : public ::testing::Test { \
     delete bloom; \
     delete graph; \
     delete facts; \
+    delete qnode; \
   } \
 \
   ClassName search; \
   const Path* root; \
+  const Path* qnode; \
   CacheStrategy* cache; \
   CacheStrategy* bloom; \
   Graph* graph; \
@@ -148,6 +152,7 @@ class TestName : public ::testing::Test { \
   std::vector<tagged_word> lemursHaveTails_; \
   std::vector<tagged_word> animalsHaveTails_; \
   std::vector<tagged_word> catsHaveTails_; \
+  std::vector<tagged_word> someDogChaseCat_; \
 }; \
 TEST_F(TestName, IsEmpty) { \
   EXPECT_TRUE(search.isEmpty()); \
@@ -172,7 +177,7 @@ TEST_F(TestName, PushPop) { \
 TEST_F(TestName, RunToySearch) { \
   WeightVector w; \
   vector<scored_path> result = Search(graph, facts, \
-                                &lemursHaveTails_[0], lemursHaveTails_.size(), \
+                                &lemursHaveTails_[0], lemursHaveTails_.size(), 1, \
                                 &search, cache, &w, 100).paths; \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
@@ -192,7 +197,7 @@ TEST_F(TestName, RunToySearch) { \
 TEST_F(TestName, RunToySearchWithCache) { \
   WeightVector w; \
   vector<scored_path> result = Search(graph, facts, \
-                                &lemursHaveTails_[0], lemursHaveTails_.size(), \
+                                &lemursHaveTails_[0], lemursHaveTails_.size(), 1, \
                                 &search, bloom, &w, 100).paths; \
   ASSERT_EQ(1, result.size()); \
   ASSERT_EQ(3, result[0].path->factLength); \
@@ -272,12 +277,127 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_TRUE(search.isEmpty());
 }
 
+// When mutating a fact, we should maintain the mutation index
+TEST_F(BreadthFirstSearchTest, Push_Mutate) {
+  bool oom = false;
+  const Path* child;
+  // root is 'lemurs have tails'
+  // @index 0
+  child = search.push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(ANIMAL, child->fact[0]);
+  EXPECT_EQ(child->lastMutationIndex, 0);
+  EXPECT_EQ(WORDNET_UP, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+  // @index 1
+  child = search.push(root, 1, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(ANIMAL, child->fact[1]);
+  EXPECT_EQ(child->lastMutationIndex, 1);
+  EXPECT_EQ(WORDNET_UP, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+  // @index 2
+  child = search.push(root, 2, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(ANIMAL, child->fact[2]);
+  EXPECT_EQ(child->lastMutationIndex, 2);
+  EXPECT_EQ(WORDNET_UP, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+}
+
+// When inserting a fact, funny things happen to the mutation index
+TEST_F(BreadthFirstSearchTest, Push_Insert) {
+  bool oom = false;
+  const Path* child;
+  // root is 'lemurs have tails'
+  // @index 0, pre-insert
+  child = search.push(root, 0, 2, ANIMAL, LEMUR, ADD_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(ANIMAL, child->fact[0]);
+  EXPECT_EQ(LEMUR, child->fact[1]);
+  EXPECT_EQ(child->lastMutationIndex, 0);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(2, child->monotoneBoundary);
+  // @index 0, post-insert
+  child = search.push(root, 0, 2, LEMUR, ANIMAL, ADD_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(LEMUR, child->fact[0]);
+  EXPECT_EQ(ANIMAL, child->fact[1]);
+  EXPECT_EQ(child->lastMutationIndex, 1);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(2, child->monotoneBoundary);
+  // @index 1, post-insert
+  child = search.push(root, 1, 2, HAVE, LEMUR, ADD_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(child->lastMutationIndex, 2);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+  // @index 2, post-insert
+  child = search.push(root, 2, 2, TAIL, LEMUR, ADD_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(child->lastMutationIndex, 3);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+}
+
+// Check monotonicity weakening
+TEST_F(BreadthFirstSearchTest, MonotonicityWeakening) {
+  bool oom = false;
+  const Path* child;
+  // root is 'some dogs chase cats'
+  EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[0].monotonicity);
+  EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[1].monotonicity);
+  EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[2].monotonicity);
+  EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[3].monotonicity);
+  child = search.push(qnode, 0, 1, ANIMAL, NULL_WORD, QUANTIFIER_STRENGTHEN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(2, child->monotoneBoundary);
+  EXPECT_EQ(MONOTONE_DOWN, child->fact[0].monotonicity);
+  EXPECT_EQ(MONOTONE_DOWN,    child->fact[1].monotonicity);
+  EXPECT_EQ(MONOTONE_DEFAULT, child->fact[2].monotonicity);
+  EXPECT_EQ(MONOTONE_DEFAULT, child->fact[3].monotonicity);
+}
+
+// When deleting a fact, make sure the mutation index follows
+TEST_F(BreadthFirstSearchTest, Push_Delete) {
+  bool oom = false;
+  const Path* child;
+  // root is 'lemurs have tails'
+  // delete index 0
+  child = search.push(root, 0, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(HAVE, child->fact[0]);
+  EXPECT_EQ(child->lastMutationIndex, 0);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(0, child->monotoneBoundary);
+  // delete index 1
+  EXPECT_EQ(0, root->lastMutationIndex);
+  child = search.push(root, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(LEMUR, child->fact[0]);
+  EXPECT_EQ(child->lastMutationIndex, 1);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+  // delete index 1; lastMutation=1
+  child = search.push(root, 1, 1, LEMUR, NULL_WORD, DEL_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(LEMUR, child->fact[1]);
+  EXPECT_EQ(1, child->lastMutationIndex);
+  child = search.push(child, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, INFER_FORWARD_ENTAILMENT, cache, oom);
+  ASSERT_FALSE(oom);
+  EXPECT_EQ(LEMUR, child->fact[0]);
+  EXPECT_EQ(TAIL, child->fact[1]);
+  EXPECT_EQ(1, child->lastMutationIndex);
+  EXPECT_EQ(NULL_EDGE_TYPE, child->edgeType);
+  EXPECT_EQ(1, child->monotoneBoundary);
+}
+
 //
 // Uniform Cost Search
 //
 InitSearchTypeTests(UniformCostSearch, UniformCostSearchTest)
 
-TEST_F(UniformCostSearchTest, StressTestAllocationAndOrdering) {
+TEST_F(UniformCostSearchTest, StressTestAllocAndOrder) {
   // Initialize Search
   bool outOfMemory = true;
   EXPECT_TRUE(search.isEmpty());
@@ -326,7 +446,7 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
   EXPECT_TRUE(search.isEmpty());
   EXPECT_TRUE(bfs.isEmpty());
   search.start(root);
-  root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());  // need a new root so we don't double free
+  root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size(), 1);  // need a new root so we don't double free
   bfs.start(root);
   EXPECT_FALSE(search.isEmpty());
   EXPECT_FALSE(bfs.isEmpty());
@@ -376,10 +496,10 @@ class CacheStrategyNoneTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     // Add base path element
-    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
     lemursHaveTails_ = lemursHaveTails();
     animalsHaveTails_ = animalsHaveTails();
     catsHaveTails_ = catsHaveTails();
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size(), 1);
   }
 
   virtual void TearDown() {
@@ -414,10 +534,10 @@ class CacheStrategyBloomTest : public ::testing::Test {
   virtual void SetUp() {
     cache = new CacheStrategyBloom();
     // Add base path element
-    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size());
     lemursHaveTails_ = lemursHaveTails();
     animalsHaveTails_ = animalsHaveTails();
     catsHaveTails_ = catsHaveTails();
+    root = new Path(&lemursHaveTails_[0], lemursHaveTails_.size(), 1);
   }
 
   virtual void TearDown() {

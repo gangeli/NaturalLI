@@ -3,6 +3,10 @@
 
 #include <vector>
 #include <string>
+#include <stdio.h>
+#include <stdlib.h>
+#include <execinfo.h>
+#include <cxxabi.h>
 
 #include <config.h>
 #include "Types.h"
@@ -38,5 +42,16 @@ const std::vector<tagged_word> animalsHaveTails();
  *  The fact (cat, have, tail)
  */
 const std::vector<tagged_word> catsHaveTails();
+
+/**
+ *  The fact (some, dogs, chase, cats)
+ */
+const std::vector<tagged_word> someDogsChaseCats();
+
+/**
+ * stacktrace.h (c) 2008, Timo Bingmann from http://idlebox.net/
+ * published under the WTFPL v2.0
+ */
+void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63);
 
 #endif

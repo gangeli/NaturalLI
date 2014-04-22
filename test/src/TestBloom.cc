@@ -90,6 +90,6 @@ TEST_F(BloomTest, FewFalsePositives) {
       }
     }
   }
-  printf("False positives in Bloom filter: %u / %u\n", falsePositives, total);
+//  printf("False positives in Bloom filter: %u / %u\n", falsePositives, total);
   EXPECT_LT(falsePositives, 100);
 }

@@ -14,11 +14,44 @@ import org.goobs.truth.TruthValue.TruthValue
  */
 object RegressionTest {
 
-  Props.NATLOG_INDEXER_LAZY = true
-  Props.SERVER_HOST = "localhost"
-  Props.SERVER_PORT = 41337
-  Props.SEARCH_TIMEOUT = 10000
+  /** Evaluate, optionally backing off to a larger timeout (if not solution was found */
+  private def evaluateQuery(facts:Seq[Fact], truth:TruthValue, timeout:Int):Int = {
+    val score:Double = Learn.evaluate(Client.issueQuery(
+      facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
+        builder.addKnownFact(fact)
+      }.setQueryFact(facts.last)
+        .setUseRealWorld(false)
+        .setTimeout(timeout)
+        .setWeights(Learn.weightsToCosts(NatLog.hardNatlogWeights))
+        .setSearchType("ucs")
+        .setCacheType("bloom")
+        .build()), NatLog.hardNatlogWeights)
 
+    // Check Validity
+    truth match {
+      case TruthValue.TRUE =>
+        if (score < 0.6) {
+          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
+          err(RED,"SHOULD BE VALID (score=" + score + ") ")
+          return 1
+        }
+      case TruthValue.UNKNOWN =>
+        if (score >= 0.6 || score <= 0.4) {
+          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
+          err(RED,"SHOULD BE UNKNOWN (score=" + score + ") ")
+          return 1
+        }
+      case TruthValue.FALSE =>
+        if (score > 0.4) {
+          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
+          err(RED,"SHOULD BE FALSE (score=" + score + ") ")
+          return 1
+        }
+    }
+    0
+  }
+
+  /** Run the regression test */
   def runClient():Int = {
     startTrack("Regression Test")
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
@@ -30,7 +63,7 @@ object RegressionTest {
       line = line.replaceAll("\\s*#.*", "")
       if (!line.trim.equals("")) {
         // Print example
-        startTrack(BOLD, "Running " + line)
+        startTrack(BOLD, BLUE, "Running " + line)
 
         // Parse Line
         // (truth value)
@@ -48,37 +81,11 @@ object RegressionTest {
         }
 
         // Issue Query
-        Client.explain(facts.last, "consequent")
-        val score:Double = Learn.evaluate(Client.issueQuery(
-          facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
-            Client.explain(fact, "antecedent")
-            builder.addKnownFact(fact)
-          }.setQueryFact(facts.last)
-            .setUseRealWorld(false)
-            .setTimeout(10000)
-            .setWeights(Learn.weightsToCosts(NatLog.hardNatlogWeights))
-            .setSearchType("ucs")
-            .setCacheType("bloom")
-            .build()), NatLog.hardNatlogWeights)
-
-        // Check Validity
-        truth match {
-          case TruthValue.TRUE =>
-            if (score < 0.6) {
-              err(RED,"SHOULD BE VALID (score=" + score + "): " + line)
-              exitStatus += 1
-            }
-          case TruthValue.UNKNOWN =>
-            if (score >= 0.6 || score <= 0.4) {
-              err(RED,"SHOULD BE UNKNOWN (score=" + score + "): " + line)
-              exitStatus += 1
-            }
-          case TruthValue.FALSE =>
-            if (score > 0.4) {
-              err(RED,"SHOULD BE FALSE (score=" + score + "): " + line)
-              exitStatus += 1
-            }
+        for ( fact <- facts.slice(0, facts.length - 1) ) {
+          Client.explain(fact, "antecedent")
         }
+        Client.explain(facts.last, "consequent")
+        evaluateQuery(facts, truth, 10000)
         endTrack("Running " + line)
       }
 
@@ -91,7 +98,9 @@ object RegressionTest {
 
   def main(args:Array[String]) {
     var exitStatus:Int = 0
-    Client.startMockServer(() => exitStatus = runClient(), printOut = true)
+    Props.SERVER_HOST = "localhost"
+    Props.SERVER_PORT = 41337
+    Client.startMockServer(() => exitStatus = runClient(), printOut = false)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")
     } else {

@@ -8,8 +8,6 @@
 #include "Search.h"
 #include "Utils.h"
 
-#define NULL_EDGE_TYPE 255
-
 using namespace std;
 
 //
@@ -35,24 +33,34 @@ inline void setBit(uint64_t bitmask[], const uint8_t& index) {
 //
 // Class Path
 //
-Path::Path(const Path* parentOrNull, const tagged_word* fact, uint8_t factLength, edge_type edgeType,
-           uint8_t lastMutatedIndex,
-           const inference_state inferState) 
+Path::Path(const Path* parentOrNull, 
+           const tagged_word* fact, 
+           const uint8_t& factLength,
+           const edge_type& edgeType,
+           const uint8_t& lastMutatedIndex,
+           const inference_state& inferState,
+           const uint8_t& monotoneBoundary )
     : parent(parentOrNull),
       fact(fact),
       factLength(factLength),
       lastMutationIndex(lastMutatedIndex),
       edgeType(edgeType),
-      inferState(inferState) {
+      inferState(inferState),
+      monotoneBoundary(monotoneBoundary) {
+  assert (monotoneBoundary <= factLength);
 }
 
-Path::Path(const tagged_word* fact, uint8_t factLength)
+Path::Path(const tagged_word* fact, const uint8_t& factLength,
+           const uint8_t& monotoneBoundary)
     : parent(NULL),
       fact(fact),
       factLength(factLength),
       lastMutationIndex(0),
       edgeType(NULL_EDGE_TYPE),
-      inferState(INFER_EQUIVALENT) { }
+      inferState(INFER_EQUIVALENT),
+      monotoneBoundary(monotoneBoundary) {
+  assert (monotoneBoundary <= factLength);
+}
 
 Path::~Path() {
 };
@@ -98,8 +106,8 @@ BreadthFirstSearch::BreadthFirstSearch()
 
 // -- destructor --
 BreadthFirstSearch::~BreadthFirstSearch() {
-  printf("de-allocating BFS; %lu MB freed\n",
-    ((fringeCapacity << POOL_BUCKET_SHIFT)*sizeof(Path) + (poolCapacity << POOL_BUCKET_SHIFT) * sizeof(word)) >> 20);
+//  printf("de-allocating BFS; %lu MB freed\n",
+//    ((fringeCapacity << POOL_BUCKET_SHIFT)*sizeof(Path) + (poolCapacity << POOL_BUCKET_SHIFT) * sizeof(word)) >> 20);
   for (int i = 0; i < fringeCapacity; ++i) {
     free(this->fringe[i]);
   }
@@ -190,6 +198,7 @@ inline const Path* BreadthFirstSearch::push(
   // Allocate new fact
   // (prototype fact)
   const uint8_t mutatedLength = parent->factLength - 1 + replaceLength;
+  assert (mutatedLength > 0);
   tagged_word localMutated[mutatedLength];
   // (mutate fact)
   // Care should be taken in this code.
@@ -220,8 +229,9 @@ inline const Path* BreadthFirstSearch::push(
       break;
   }
 
-  // 3. Calculate the new mutation index
+  // 3. Calculate the new mutation index / monotone boundary
   uint8_t newMutationIndex;
+  uint8_t newMonotoneBoundary = parent->monotoneBoundary;
   switch (replaceLength) {
     case 2:
       // on inserts, shift focus to new word
@@ -229,6 +239,10 @@ inline const Path* BreadthFirstSearch::push(
         newMutationIndex = mutationIndex;
       } else {
         newMutationIndex = mutationIndex + 1;
+      }
+      // Update monotone boundary
+      if (parent->monotoneBoundary > mutationIndex) {
+        newMonotoneBoundary = parent->monotoneBoundary + 1;
       }
       break;
     case 0:
@@ -238,12 +252,17 @@ inline const Path* BreadthFirstSearch::push(
       } else {
         newMutationIndex = mutationIndex;
       }
+      // Update monotone boundary
+      if (parent->monotoneBoundary > mutationIndex) {
+        newMonotoneBoundary = parent->monotoneBoundary - 1;
+      }
       break;
     default:
-      // by default, don't 
+      // by default, don't change anything
       newMutationIndex = mutationIndex;
       break;
   }
+  assert (mutatedLength > newMutationIndex);
 
   // 4. Copy everything after the mutation zone
   if (mutationIndex < parent->factLength - 1) {
@@ -259,12 +278,39 @@ inline const Path* BreadthFirstSearch::push(
   // (copy local mutated fact to queue)
   memcpy(mutated, localMutated, mutatedLength * sizeof(tagged_word));
 
+  // 5. Tweak monotonicity
+  const uint8_t until = newMonotoneBoundary >= newMutationIndex ? newMonotoneBoundary : mutatedLength;
+  switch (edge) {
+    case QUANTIFIER_WEAKEN:
+    case QUANTIFIER_STRENGTHEN:
+    case QUANTIFIER_NEGATE:
+      // Flip monotonicity
+      for (uint8_t k = newMutationIndex; k < until; ++k) {
+        switch (mutated[k].monotonicity) {
+          case MONOTONE_UP:
+            mutated[k].monotonicity = MONOTONE_DOWN;
+            break;
+          case MONOTONE_DOWN:
+            mutated[k].monotonicity = MONOTONE_UP;
+            break;
+          default:
+            break;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
-  return new(newPath) Path(parent, mutated, mutatedLength, edge, 
+  assert (mutatedLength > newMutationIndex);
+  return new(newPath) Path(parent, mutated, mutatedLength,
+                           replaceLength == 1 ? edge : NULL_EDGE_TYPE, 
                            newMutationIndex,
-                           compose(parent->inferState, localInference));
+                           compose(parent->inferState, localInference),
+                           newMonotoneBoundary);
 }
 
 // -- peek at the next element --
@@ -311,7 +357,7 @@ UniformCostSearch::UniformCostSearch() :
 
 // -- destructor --
 UniformCostSearch::~UniformCostSearch() {
-  printf("de-allocating UCS; %lu MB freed\n", (heapSize * (sizeof(Path*) + sizeof(float))) >> 20);
+//  printf("de-allocating UCS; %lu MB freed\n", (heapSize * (sizeof(Path*) + sizeof(float))) >> 20);
   free(heap);
   free(costs);
 }
@@ -516,7 +562,7 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   const float pathCost = path.cost == 0.0 ? 1e-10 : path.cost;
   if (path.type >= MONOTONE_INDEPENDENT_BEGIN) {  // lemma morphs
     const float anyCost = unigramWeightsAny[path.type] * pathCost;
-    return lastEdgeType == 255 ? anyCost : anyCost + 
+    return lastEdgeType == NULL_EDGE_TYPE ? anyCost : anyCost + 
         (changingSameWord ? bigramWeightsAny[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
   }
   // Case: care about monotonicity
@@ -524,15 +570,15 @@ inline float WeightVector::computeCost(const edge_type& lastEdgeType, const edge
   switch (monotonicity) {
     case MONOTONE_UP:
       upCost = unigramWeightsUp[path.type] * pathCost;
-      return lastEdgeType == 255 ? upCost : upCost + 
+      return lastEdgeType == NULL_EDGE_TYPE ? upCost : upCost + 
           (changingSameWord ? bigramWeightsUp[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_DOWN:
       downCost = unigramWeightsDown[path.type] * pathCost;
-      return lastEdgeType == 255 ? downCost : downCost +
+      return lastEdgeType == NULL_EDGE_TYPE ? downCost : downCost +
           (changingSameWord ? bigramWeightsDown[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     case MONOTONE_FLAT:
       flatCost = unigramWeightsFlat[path.type] * pathCost;
-      return lastEdgeType == 255 ? flatCost : flatCost +
+      return lastEdgeType == NULL_EDGE_TYPE ? flatCost : flatCost +
           (changingSameWord ? bigramWeightsFlat[((uint64_t) lastEdgeType) * NUM_EDGE_TYPES + path.type] : 0.0f);
     default:
       printf("Unknown monotonicity: %d\n", monotonicity);
@@ -556,10 +602,11 @@ inline search_response mkResponse(const vector<scored_path>& paths,
 // Function Search()
 //
 search_response Search(Graph* graph, FactDB* knownFacts,
-                       const tagged_word* queryFact, const uint8_t queryFactLength,
+                       const tagged_word* queryFact, const uint8_t& queryFactLength,
+                       const uint8_t& monotoneBoundary,
                        SearchType* fringe, CacheStrategy* cache,
                        const WeightVector* weights,
-                       const uint64_t timeout) {
+                       const uint64_t& timeout) {
   //
   // Setup
   //
@@ -577,18 +624,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   
   // -- Initialize fringe--
   // Create the start state
-  fringe->root = new Path(queryFact, queryFactLength);  // I need the memory to not go away
-//  // Add initial hard-to-get-to states
-//  const Path* root;
-//  float initialCost = fringe->pop(&root);
-//  CacheStrategyNone noCache;
-//  for (uint32_t index = 0; index < root->factLength; ++index) {
-//    fringe->push(root, index, 1, root->fact[index], NULL_WORD,
-//      root->edgeType, initialCost, INFER_FORWARD_ENTAILMENT,
-//      &noCache, oom);
-//    if (oom) { printf("Error pushing initial states (!?); returning\n"); return mkResponse(responses, time); }
-//  }
-//  assert (!fringe->isEmpty());
+  fringe->root = new Path(queryFact, queryFactLength, monotoneBoundary);  // I need the memory to not go away
 
   //
   // Search
@@ -623,6 +659,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
 
     // -- Check If Valid --
     bool isCorrectFact = false;
+    assert (parent->factLength > parent->lastMutationIndex);
     if (knownFacts->contains(parent->fact, parent->factLength,
                              parent->lastMutationIndex, inserts)) {
       responses.push_back(scored_path());
@@ -694,9 +731,12 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parent->edgeType, mutation,
-          parent->parent == NULL || parent->edgeType == 255,
+          parent->parent == NULL || parent->edgeType == NULL_EDGE_TYPE,
           parentMonotonicity);
-      if (mutationCost < 1e10) {
+//      printf("  mutate %u -> %u at %u cost %f  type=(%u,%u), unigramUp=%f, unigramDown=%f\n",
+//             parentFact[indexToMutate].word, mutation.sink, indexToMutate, mutationCost,
+//             parent->edgeType, mutation.type, weights->unigramWeightsUp[mutation.type], weights->unigramWeightsDown[mutation.type] );
+      if (mutationCost < 1e10 && (parentLength > 1 || mutation.sink != 0)) {
         // push mutation[/deletion]
         fringe->push(parent, indexToMutate,
           mutation.sink == 0 ? 0 : 1,
@@ -719,7 +759,9 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   // Return
   //
   const uint64_t searchTimeMS = (uint64_t) (1000.0 * ( std::clock() - startTime ) / ((double) CLOCKS_PER_SEC));
-  printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
+  if (time > 100) {  // my OCD trying to get the tests to not print anything
+    printf("end search (%lu ms); %lu ticks yielded %lu results\n", searchTimeMS, time, responses.size());
+  }
   return mkResponse(responses, time);
 }
 

@@ -8,6 +8,7 @@
 #include <unordered_map>
 
 #include "Postgres.h"
+#include "Utils.h"
 
 using namespace std;
 using namespace btree;
@@ -78,12 +79,13 @@ inline void Trie::addCompletion(const Trie* child, const word& sink,
 
 
 //
-// Trie::containsImpl
+// Trie::contains
 //
 const bool Trie::contains(const tagged_word* query, 
                           const uint8_t& queryLength,
                           const int16_t& mutationIndex,
                           edge* insertions) const {
+  assert (queryLength > mutationIndex);
   uint32_t mutableIndex = 0;
   bool contains;
   if (mutationIndex == -1) {
@@ -136,7 +138,7 @@ const bool Trie::containsImpl(const tagged_word* query,
                               const int16_t& mutationIndex,
                               edge* insertions,
                               uint32_t& mutableIndex) const {
-//  assert (queryLength > mutationIndex);  // TODO(gabor) why do the asserts always fire!
+  assert (queryLength > mutationIndex);
 
   // -- Part 1: Fill in completions --
   if (mutationIndex == -1) {

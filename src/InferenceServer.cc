@@ -235,10 +235,11 @@ void handleConnection(int socket, sockaddr_in* client,
   }
   // (create query)
   uint8_t queryLength = query.queryfact().word_size();
+  uint8_t monotoneBoundary = query.queryfact().monotoneboundary();
   tagged_word queryFact[queryLength];
   for (int i = 0; i < queryLength; ++i) {
-    if (query.queryfact().word(i).monotonicity() < MONOTONE_FLAT ||
-        query.queryfact().word(i).monotonicity() > MONOTONE_DOWN) {
+    if (query.queryfact().word(i).monotonicity() < 0 ||
+        query.queryfact().word(i).monotonicity() > 3) {
     // case: invalid monotonicity markings
     printf("[%d] invalid monotonicity marking: %d\n", socket, query.queryfact().word(i).monotonicity());
     if (!query.userealworld()) { delete factDB; }
@@ -286,7 +287,7 @@ void handleConnection(int socket, sockaddr_in* client,
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   search_response result;
   try {
-    result = Search(graph, factDB, queryFact, queryLength, search, cache, weights, query.timeout());
+    result = Search(graph, factDB, queryFact, queryLength, monotoneBoundary, search, cache, weights, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.paths.size());
   } catch (std::exception& e) {
     printf("%s\n", e.what());

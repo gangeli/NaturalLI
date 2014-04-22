@@ -77,7 +77,7 @@ object Client {
     // Run the server
     var running = false
     startTrack("Starting Server")
-    List[String]("src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
+    List[String]("catchsegv", "src/server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
       if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
         // Server is initialized -- we can start doing client-side stuff

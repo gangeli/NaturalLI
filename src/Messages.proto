@@ -2,9 +2,9 @@
 option java_package = "org.goobs.truth";
 
 enum Monotonicity {
-  FLAT = 0;
-  UP   = 1;
-  DOWN = 2;
+  UP   = 0;
+  DOWN = 1;
+  FLAT = 2;
 }
 
 /** A single word in a fact */
@@ -18,9 +18,10 @@ message Word {
 
 /** A fact, potentially with a marked truth and confidence */
 message Fact {
-  repeated Word word         = 1;
-  optional string gloss      = 2;
-  optional string toString   = 3;
+  repeated Word word               = 1;
+  optional string gloss            = 2;
+  optional string toString         = 3;
+  optional uint32 monotoneBoundary = 4;
 }
 
 /** A query to the server; at minimum, it should contain
