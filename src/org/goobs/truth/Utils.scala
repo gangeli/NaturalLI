@@ -217,50 +217,51 @@ object EdgeType extends Enumeration {
   val WORDNET_UP                     = Value(0,  "wordnet_up")
   val WORDNET_DOWN                   = Value(1,  "wordnet_down")
   val WORDNET_NOUN_ANTONYM           = Value(2,  "wordnet_noun_antonym")
-  val WORDNET_VERB_ANTONYM           = Value(3,  "wordnet_verb_antonym")
-  val WORDNET_ADJECTIVE_ANTONYM      = Value(4,  "wordnet_adjective_antonym")
-  val WORDNET_ADVERB_ANTONYM         = Value(5,  "wordnet_adverb_antonym")
-  val WORDNET_ADJECTIVE_PERTAINYM    = Value(6,  "wordnet_adjective_pertainym")
-  val WORDNET_ADVERB_PERTAINYM       = Value(7,  "wordnet_adverb_pertainym")
-  val WORDNET_ADJECTIVE_RELATED      = Value(8,  "wordnet_adjective_related")
+  val WORDNET_NOUN_SYNONYM           = Value(3,  "wordnet_noun_synonym")
+  val WORDNET_VERB_ANTONYM           = Value(4,  "wordnet_verb_antonym")
+  val WORDNET_ADJECTIVE_ANTONYM      = Value(5,  "wordnet_adjective_antonym")
+  val WORDNET_ADVERB_ANTONYM         = Value(6,  "wordnet_adverb_antonym")
+  val WORDNET_ADJECTIVE_PERTAINYM    = Value(7,  "wordnet_adjective_pertainym")
+  val WORDNET_ADVERB_PERTAINYM       = Value(8,  "wordnet_adverb_pertainym")
+  val WORDNET_ADJECTIVE_RELATED      = Value(9,  "wordnet_adjective_related")
   
-  val ANGLE_NEAREST_NEIGHBORS        = Value(9,  "angle_nn")
+  val ANGLE_NEAREST_NEIGHBORS        = Value(10,  "angle_nn")
   
-  val FREEBASE_UP                    = Value(10, "freebase_up")
-  val FREEBASE_DOWN                  = Value(11, "freebase_down")
+  val FREEBASE_UP                    = Value(11, "freebase_up")
+  val FREEBASE_DOWN                  = Value(12, "freebase_down")
 
-  val ADD_NOUN                       = Value(12, "add_noun")
-  val ADD_VERB                       = Value(13, "add_verb")
-  val ADD_ADJ                        = Value(14, "add_adj")
-  val ADD_ADV                        = Value(15, "add_adv")
-  val ADD_EXISTENTIAL                = Value(16, "add_existential")
-  val ADD_QUANTIFIER_OTHER           = Value(17, "add_quantifier_other")
-  val ADD_UNIVERSAL                  = Value(18, "add_universal")
-  val ADD_OTHER                      = Value(19, "add_?")
+  val ADD_NOUN                       = Value(13, "add_noun")
+  val ADD_VERB                       = Value(14, "add_verb")
+  val ADD_ADJ                        = Value(15, "add_adj")
+  val ADD_ADV                        = Value(16, "add_adv")
+  val ADD_EXISTENTIAL                = Value(17, "add_existential")
+  val ADD_QUANTIFIER_OTHER           = Value(18, "add_quantifier_other")
+  val ADD_UNIVERSAL                  = Value(19, "add_universal")
+  val ADD_OTHER                      = Value(20, "add_?")
 
-  val DEL_NOUN                       = Value(20, "del_noun")
-  val DEL_VERB                       = Value(21, "del_verb")
-  val DEL_ADJ                        = Value(22, "del_adj")
-  val DEL_ADV                        = Value(23, "del_adv")
-  val DEL_EXISTENTIAL                = Value(24, "del_existential")
-  val DEL_QUANTIFIER_OTHER           = Value(25, "del_quantifier_other")
-  val DEL_UNIVERSAL                  = Value(26, "del_universal")
-  val DEL_OTHER                      = Value(27, "del_?")
+  val DEL_NOUN                       = Value(21, "del_noun")
+  val DEL_VERB                       = Value(22, "del_verb")
+  val DEL_ADJ                        = Value(23, "del_adj")
+  val DEL_ADV                        = Value(24, "del_adv")
+  val DEL_EXISTENTIAL                = Value(25, "del_existential")
+  val DEL_QUANTIFIER_OTHER           = Value(26, "del_quantifier_other")
+  val DEL_UNIVERSAL                  = Value(27, "del_universal")
+  val DEL_OTHER                      = Value(28, "del_?")
 
   // --------
   // NOTE: Everything under here is monotonicity agnostic
   // --------
 
   // Quantifiers
-  val QUANTIFIER_WEAKEN              = Value(28, "quantifier_weaken")
-  val QUANTIFIER_NEGATE              = Value(29, "quantifier_negate")
-  val QUANTIFIER_STRENGTHEN          = Value(30, "quantifier_strengthen")
-  val QUANTIFIER_REWORD              = Value(31, "quantifier_reword")
+  val QUANTIFIER_WEAKEN              = Value(29, "quantifier_weaken")
+  val QUANTIFIER_NEGATE              = Value(30, "quantifier_negate")
+  val QUANTIFIER_STRENGTHEN          = Value(31, "quantifier_strengthen")
+  val QUANTIFIER_REWORD              = Value(32, "quantifier_reword")
 
   // Could in theory be subdivided: tense, plurality, etc.
-  val MORPH_FUDGE_NUMBER             = Value(32, "morph_fudge_number")
+  val MORPH_FUDGE_NUMBER             = Value(33, "morph_fudge_number")
 
   // Word Sense Disambiguation
-  val SENSE_REMOVE                   = Value(33, "sense_remove")
-  val SENSE_ADD                      = Value(34, "sense_add")
+  val SENSE_REMOVE                   = Value(34, "sense_remove")
+  val SENSE_ADD                      = Value(35, "sense_add")
 }

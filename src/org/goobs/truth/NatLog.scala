@@ -20,7 +20,9 @@ object NatLog {
                     insertionOrDeletion:Double,
                     unknownInsertionOrDeletion:Double,
                     morphology:Double, wsd:Double,
-                    okQuantifier:Double, default:Double):WeightVector = {
+                    okQuantifier:Double,
+                    synonyms:Double,
+                    default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
     if (similarity > 0) { throw new IllegalArgumentException("Weights must always be negative (similarity is not)"); }
@@ -43,8 +45,10 @@ object NatLog {
     weights.setCount(unigramUp(   DEL_ADV      ), insertionOrDeletion)
     weights.setCount(unigramDown( ADD_NOUN      ), insertionOrDeletion)
     weights.setCount(unigramUp(   DEL_NOUN      ), insertionOrDeletion)
+    weights.setCount(unigramUp(   ADD_OTHER     ), insertionOrDeletion)
     weights.setCount(unigramDown( ADD_OTHER     ), insertionOrDeletion)
     weights.setCount(unigramUp(   DEL_OTHER     ), insertionOrDeletion)
+    weights.setCount(unigramDown( DEL_OTHER     ), insertionOrDeletion)
     weights.setCount(unigramDown( ADD_EXISTENTIAL ), insertionOrDeletion)
     weights.setCount(unigramUp(   ADD_EXISTENTIAL ), insertionOrDeletion)
     weights.setCount(unigramDown( DEL_UNIVERSAL ), insertionOrDeletion)
@@ -56,6 +60,9 @@ object NatLog {
     weights.setCount(unigramAny( QUANTIFIER_WEAKEN ), okQuantifier)
     weights.setCount(unigramAny( QUANTIFIER_STRENGTHEN ), okQuantifier)
     weights.setCount(unigramAny( QUANTIFIER_REWORD ), okQuantifier)
+    // (synonyms)
+    weights.setCount(unigramUp( WORDNET_ADJECTIVE_RELATED ), synonyms)
+    weights.setCount(unigramUp( WORDNET_ADVERB_PERTAINYM ), synonyms)
     // (bigrams)
     weights.setCount(bigramUp( WORDNET_UP, WORDNET_UP ), strictNatLog)
     weights.setCount(bigramUp( WORDNET_UP, FREEBASE_UP ), strictNatLog)

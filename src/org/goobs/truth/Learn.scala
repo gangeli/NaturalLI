@@ -71,8 +71,8 @@ object Learn {
     1.0 - {for (inference <- paths) yield {
       val prob = computeProb(inference);
       log({
-        if (prob >= 0.5) "\033[32mp(true)=" + prob + "\033[0m : " 
-        else "\033[33mp(true)=" + prob + "\033[0m : " 
+        if (prob >= 0.5) "p(true)=" + prob + ": "
+        else "p(true)=" + prob + ": "
         } + recursivePrint(inference))
       prob
     }}.foldLeft(1.0){ case (orInverse:Double, prob:Double) => orInverse * (1.0 - prob) }

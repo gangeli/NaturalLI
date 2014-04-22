@@ -18,6 +18,7 @@ import edu.stanford.nlp.util.HashIndex
 
 import org.goobs.sim._
 import edu.stanford.nlp.Sentence
+import org.goobs.sim.Ontology.RealNode
 
 //
 // SQL prerequisite statements for this script:
@@ -193,7 +194,22 @@ object CreateGraph {
             }
           }
         }
-
+        // Synonyms
+        case class SynonymPair(a:String, aSense:Int, b:String, bSense:Int)
+        val synonyms = new mutable.HashSet[SynonymPair]
+        for ( node: RealNode <- wordnet.ontology.values.flatten ) {
+          val size = if (node.synset.getWordForms.length > 3) 2 else  1
+          for ( word:String <- node.synset.getWordForms.slice(0, size) ) {
+            for ( synonym:String <- node.synset.getWordForms.slice(0, size) ) {
+              if (word != synonym) {
+                synonyms.add(SynonymPair(word, getSense(word, node.synset), synonym, getSense(synonym, node.synset)))
+              }
+            }
+          }
+        }
+        for ( pair <- synonyms ) {
+          edge(WORDNET_NOUN_SYNONYM, indexOf(pair.a, true), pair.aSense, indexOf(pair.b, true), pair.bSense, 1.0)
+        }
 
         //
         // Nearest Neighbors
@@ -226,12 +242,10 @@ object CreateGraph {
                 edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               } else if (source.closestMeaning.partialOrder == -sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
+              } else if (source.closestMeaning.partialOrder >= 0 && source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder > sink.closestMeaning.partialOrder) {
+              } else if (source.closestMeaning.partialOrder > sink.closestMeaning.partialOrder && sink.closestMeaning.partialOrder >= 0) {
                 edge(EdgeType.QUANTIFIER_WEAKEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else {
-                throw new IllegalStateException("This case should be impossible...")
               }
             }
           }
