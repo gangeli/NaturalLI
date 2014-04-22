@@ -90,7 +90,13 @@ class NLPProcessingTest extends Test {
       fact.head.getWord(3).getSense should be (0)
       fact.head.getWord(5).getSense should be (0)
       fact.head.getWord(6).getSense should be (0)
+    }
 
+    it ("should tag 'leading' as an adjective") {
+      val fact = NatLog.annotate("Both commissioners used to be leading businessmen.")
+      fact.head.getWordCount should be (6)
+      fact.head.getWord(4).getPos should be ("J")
     }
   }
+
 }

@@ -66,6 +66,7 @@ string toString(const edge_type& edge) {
     case WORDNET_UP                   : return "WORDNET_UP";
     case WORDNET_DOWN                 : return "WORDNET_DOWN";
     case WORDNET_NOUN_ANTONYM         : return "WORDNET_NOUN_ANTONYM";
+    case WORDNET_NOUN_SYNONYM         : return "WORDNET_NOUN_SYNONYM";
     case WORDNET_VERB_ANTONYM         : return "WORDNET_VERB_ANTONYM";
     case WORDNET_ADJECTIVE_ANTONYM    : return "WORDNET_ADJECTIVE_ANTONYM";
     case WORDNET_ADVERB_ANTONYM       : return "WORDNET_ADVERB_ANTONYM";

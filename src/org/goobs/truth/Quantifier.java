@@ -61,6 +61,7 @@ public enum Quantifier {
   FEW("few",                        LogicalQuantifier.EXISTS),
   EITHER("either",                  LogicalQuantifier.EXISTS),
   A("a",                            LogicalQuantifier.EXISTS),
+  THE("the",                          LogicalQuantifier.EXISTS),
 
   NO("no",                          LogicalQuantifier.NONE),
   NONE_OF("none of",                LogicalQuantifier.NONE),

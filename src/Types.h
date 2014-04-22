@@ -25,46 +25,47 @@
 #define WORDNET_UP                   0
 #define WORDNET_DOWN                 1
 #define WORDNET_NOUN_ANTONYM         2
-#define WORDNET_VERB_ANTONYM         3
-#define WORDNET_ADJECTIVE_ANTONYM    4
-#define WORDNET_ADVERB_ANTONYM       5
-#define WORDNET_ADJECTIVE_PERTAINYM  6
-#define WORDNET_ADVERB_PERTAINYM     7
-#define WORDNET_ADJECTIVE_RELATED    8
-#define ANGLE_NN                     9
-#define FREEBASE_UP                  10
-#define FREEBASE_DOWN                11
+#define WORDNET_NOUN_SYNONYM         3
+#define WORDNET_VERB_ANTONYM         4
+#define WORDNET_ADJECTIVE_ANTONYM    5
+#define WORDNET_ADVERB_ANTONYM       6
+#define WORDNET_ADJECTIVE_PERTAINYM  7
+#define WORDNET_ADVERB_PERTAINYM     8
+#define WORDNET_ADJECTIVE_RELATED    9
+#define ANGLE_NN                     10
+#define FREEBASE_UP                  11
+#define FREEBASE_DOWN                12
 
-#define EDGE_ADDS_BEGIN              12  // should be the same as the first ADD_X item
-#define ADD_NOUN                     12
-#define ADD_VERB                     13
-#define ADD_ADJ                      14
-#define ADD_ADV                      15
-#define ADD_EXISTENTIAL              16
-#define ADD_QUANTIFIER_OTHER         17
-#define ADD_UNIVERSAL                18
-#define ADD_OTHER                    19  // NOTE: never have more than 8 insertion types. @see Trie.h
+#define EDGE_ADDS_BEGIN              13  // should be the same as the first ADD_X item
+#define ADD_NOUN                     13
+#define ADD_VERB                     14
+#define ADD_ADJ                      15
+#define ADD_ADV                      16
+#define ADD_EXISTENTIAL              17
+#define ADD_QUANTIFIER_OTHER         18
+#define ADD_UNIVERSAL                19
+#define ADD_OTHER                    20  // NOTE: never have more than 8 insertion types. @see Trie.h
 
-#define DEL_NOUN                     20
-#define DEL_VERB                     21
-#define DEL_ADJ                      22
-#define DEL_ADV                      23
-#define DEL_EXISTENTIAL              24
-#define DEL_QUANTIFIER_OTHER         25
-#define DEL_UNIVERSAL                26
-#define DEL_OTHER                    27
+#define DEL_NOUN                     21
+#define DEL_VERB                     22
+#define DEL_ADJ                      23
+#define DEL_ADV                      24
+#define DEL_EXISTENTIAL              25
+#define DEL_QUANTIFIER_OTHER         26
+#define DEL_UNIVERSAL                27
+#define DEL_OTHER                    28
 
-#define MONOTONE_INDEPENDENT_BEGIN   28  // should be the same as the first index after which monotonicity doesn't matter
-#define QUANTIFIER_WEAKEN            28
-#define QUANTIFIER_NEGATE            29
-#define QUANTIFIER_STRENGTHEN        30
-#define QUANTIFIER_REWORD            31
+#define MONOTONE_INDEPENDENT_BEGIN   29  // should be the same as the first index after which monotonicity doesn't matter
+#define QUANTIFIER_WEAKEN            29
+#define QUANTIFIER_NEGATE            30
+#define QUANTIFIER_STRENGTHEN        31
+#define QUANTIFIER_REWORD            32
 
-#define MORPH_FUDGE_NUMBER           32
-#define SENSE_REMOVE                 33
-#define SENSE_ADD                    34
+#define MORPH_FUDGE_NUMBER           33
+#define SENSE_REMOVE                 34
+#define SENSE_ADD                    35
 
-#define NUM_EDGE_TYPES               35
+#define NUM_EDGE_TYPES               36
 
 
 // Inference States

@@ -209,7 +209,13 @@ object NatLog {
     // POS tag
     val (pos, ner, monotone):(Array[Option[String]], Array[String], Array[Monotonicity]) = {
       // (get variables)
-      val pos:Array[String] = sentence.pos
+      val pos:Array[String] = {
+        val candidate = sentence.pos
+        for ( i <- 1 until (candidate.length - 1)) {
+          if (candidate(i) == "VBG" && candidate(i + 1).startsWith("N")) { candidate(i) = "JJVBG" }
+        }
+        candidate
+      }
       val ner:Array[String] = sentence.ner
       val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.parse).map {
         case natlog.Monotonicity.UP => Monotonicity.UP
