@@ -97,6 +97,7 @@ object NatLog {
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
+    synonyms = -0.02,
     default = Double.NegativeInfinity)
 
   /**
@@ -114,6 +115,7 @@ object NatLog {
     morphology = -0.01,
     wsd = -0.2,
     okQuantifier = -0.01,
+    synonyms = -0.2,
     default = -2.0)
 
   /**
