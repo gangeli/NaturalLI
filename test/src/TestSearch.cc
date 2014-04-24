@@ -175,7 +175,7 @@ TEST_F(TestName, PushPop) { \
 } \
 \
 TEST_F(TestName, RunToySearch) { \
-  WeightVector w; \
+  CostVector w; \
   vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), 1, \
                                 &search, cache, &w, 100).paths; \
@@ -195,7 +195,7 @@ TEST_F(TestName, RunToySearch) { \
 }\
 \
 TEST_F(TestName, RunToySearchWithCache) { \
-  WeightVector w; \
+  CostVector w; \
   vector<scored_path> result = Search(graph, facts, \
                                 &lemursHaveTails_[0], lemursHaveTails_.size(), 1, \
                                 &search, bloom, &w, 100).paths; \
@@ -316,7 +316,7 @@ TEST_F(BreadthFirstSearchTest, Push_Insert) {
   EXPECT_EQ(ANIMAL, child->fact[0]);
   EXPECT_EQ(LEMUR, child->fact[1]);
   EXPECT_EQ(child->lastMutationIndex, 0);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(2, child->monotoneBoundary);
   // @index 0, post-insert
   child = search.push(root, 0, 2, LEMUR, ANIMAL, ADD_NOUN, 42.0f, cache, oom);
@@ -324,19 +324,19 @@ TEST_F(BreadthFirstSearchTest, Push_Insert) {
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(ANIMAL, child->fact[1]);
   EXPECT_EQ(child->lastMutationIndex, 1);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(2, child->monotoneBoundary);
   // @index 1, post-insert
   child = search.push(root, 1, 2, HAVE, LEMUR, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(child->lastMutationIndex, 2);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // @index 2, post-insert
   child = search.push(root, 2, 2, TAIL, LEMUR, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(child->lastMutationIndex, 3);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
 }
 
@@ -368,7 +368,7 @@ TEST_F(BreadthFirstSearchTest, Push_Delete) {
   ASSERT_FALSE(oom);
   EXPECT_EQ(HAVE, child->fact[0]);
   EXPECT_EQ(child->lastMutationIndex, 0);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(DEL_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(0, child->monotoneBoundary);
   // delete index 1
   EXPECT_EQ(0, root->lastMutationIndex);
@@ -376,7 +376,7 @@ TEST_F(BreadthFirstSearchTest, Push_Delete) {
   ASSERT_FALSE(oom);
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(child->lastMutationIndex, 1);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(DEL_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // delete index 1; lastMutation=1
   child = search.push(root, 1, 1, LEMUR, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
@@ -388,7 +388,7 @@ TEST_F(BreadthFirstSearchTest, Push_Delete) {
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(TAIL, child->fact[1]);
   EXPECT_EQ(1, child->lastMutationIndex);
-  EXPECT_EQ(NULL_EDGE_TYPE, child->nodeState.incomingEdge);
+  EXPECT_EQ(DEL_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
 }
 

@@ -312,9 +312,8 @@ inline const Path* BreadthFirstSearch::push(
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
   assert (mutatedLength > newMutationIndex);
-  const edge_type newEdgeType = (replaceLength == 1 ? edge : NULL_EDGE_TYPE);
   return new(newPath) Path(parent, mutated, mutatedLength,
-                           newEdgeType, newMutationIndex,
+                           edge, newMutationIndex,
                            compose(parent->nodeState.truth, edge),
                            newMonotoneBoundary);
 }

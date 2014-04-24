@@ -48,8 +48,9 @@ class NatLogTest extends Test {
     it ("should mark 'few'") {
       NatLog.annotate("few cat", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(DOWN, DOWN, DOWN, DOWN))
     }
-    it ("should mark 'most'") {
+    it ("should mark 'most'/'many'") {
       NatLog.annotate("most cats", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(FLAT, FLAT, UP, UP))
+      NatLog.annotate("many cats", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(FLAT, FLAT, UP, UP))
     }
     it ("should mark 'no'") {
       NatLog.annotate("no cats", "have", "tails").getWordList.map(_.getMonotonicity).toList should be(List(DOWN, DOWN, DOWN, DOWN))

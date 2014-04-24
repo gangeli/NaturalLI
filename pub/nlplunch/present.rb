@@ -535,18 +535,18 @@ slide!('Results-ish',
     [h2('Subset'),     h2('Majority Class'), h2('MC 07'), h2('MC 08'), h2('Me')],
     ['All',        '61',             '--',    '--',    '41'],
     ['Applicable', '56',             '60',    '70',    '50'],
-    ['NatLog',     '46',             '76',    '87',    '65'],
+    ['NatLog',     '46',             '76',    '87',    '73'],
   nil).cjustify('lcrrr'),
   left,
   '',
   pause,
 
   h1('Why so low?'),
-  ind('Negation (10\% of examples) not implemented yet'),
+  ind('Negation (11\% of examples) not implemented yet'),
+  ind('Quantifiers: \textit{a few} $\rightarrow$ \textit{at least a few}'),
   ind('Spurious inserts: \textit{finish} $\rightarrow$ \textit{finish on time}'),
-  ind('Quantifier expansion: \textit{a few} $\rightarrow$ \textit{at least a few}'),
-  ind('Non-intersective adjectives: \textit{former student} $\rightarrow$ \textit{student}'),
-nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(6) }
+  ind('Search timeout / Unexpected verb usage / $\dots$'),
+nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(9) }
 
 ################################################################################
 # CONCLUSION

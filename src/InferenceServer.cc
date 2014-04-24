@@ -73,8 +73,14 @@ FactDB* makeFactDB(Query& query) {
       // Set the edge type
       if (query.knownfact(factI).word(wordI).has_pos()) {
         const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
-        if (posTag != NULL && (posTag[0] == 'q' || posTag[0] == 'Q')) {
-          fact[wordI].type = DEL_QUANTIFIER_OTHER;
+        if (posTag != NULL && (posTag[0] == 'a' || posTag[0] == 'A')) {
+          fact[wordI].type = DEL_UNIVERSAL;
+        } else if (posTag != NULL && (posTag[0] == 'e' || posTag[0] == 'E')) {
+          fact[wordI].type = DEL_EXISTENTIAL;
+        } else if (posTag != NULL && (posTag[0] == 'g' || posTag[0] == 'G')) {
+          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // certainly not right for NOT
+        } else if (posTag != NULL && (posTag[0] == 'm' || posTag[0] == 'M')) {
+          fact[wordI].type = DEL_UNIVERSAL;  // not quite right for MOST
         } else if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
           fact[wordI].type = DEL_NOUN;
         } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
@@ -83,8 +89,11 @@ FactDB* makeFactDB(Query& query) {
           fact[wordI].type = DEL_ADJ;
         } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
           fact[wordI].type = DEL_ADV;
-        } else {
+        } else if (posTag != NULL && posTag[0] == '?') {
           fact[wordI].type = DEL_OTHER;
+        } else {
+          printf("Invalid POS tag: %s", posTag);
+          std::exit(1);
         }
       } else {
         fact[wordI].type = DEL_OTHER;

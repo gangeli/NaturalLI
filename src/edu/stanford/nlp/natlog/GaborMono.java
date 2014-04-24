@@ -103,7 +103,7 @@ public class GaborMono implements Mono {
         Monotonicity.UP));
 
     add(new BinaryQuantifier("many",
-        "DT < /^[Mm]any$/", // not under QP, to eliminate "at most"
+        "/DT|JJ/ < /^[Mm]any$/",
         NP_PROJECTION,
         Monotonicity.NON,
         S_PROJECTION,

@@ -49,10 +49,13 @@ object NatLog {
     weights.setCount(monoDown_stateTrue( ADD_OTHER     ), insertionOrDeletion)
     weights.setCount(monoUp_stateTrue(   DEL_OTHER     ), insertionOrDeletion)
     weights.setCount(monoDown_stateTrue( DEL_OTHER     ), insertionOrDeletion)
+
+    weights.setCount(monoUp_stateTrue(   ADD_EXISTENTIAL ), insertionOrDeletion)
     weights.setCount(monoUp_stateTrue(   DEL_EXISTENTIAL ), insertionOrDeletion)
     weights.setCount(monoUp_stateTrue(   DEL_UNIVERSAL ), insertionOrDeletion)
     weights.setCount(monoDown_stateTrue( ADD_UNIVERSAL ), insertionOrDeletion)
     weights.setCount(monoDown_stateTrue( ADD_EXISTENTIAL ), insertionOrDeletion)
+
     // (more fishy insertions or deletions)
     weights.setCount(monoDown_stateTrue( ADD_VERB      ), unknownInsertionOrDeletion)
     weights.setCount(monoUp_stateTrue(   DEL_VERB      ), unknownInsertionOrDeletion)
@@ -81,7 +84,7 @@ object NatLog {
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
     insertionOrDeletion = -0.01,
-    unknownInsertionOrDeletion = -0.25,
+    unknownInsertionOrDeletion = -0.01,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
@@ -225,7 +228,13 @@ object NatLog {
         val tokenStart = tokenI
         val tokenEnd = tokenI + chunkedWords(i).replaceAll("\\s+", " ").count( p => p == ' ' ) + 1
         if (Quantifier.quantifierGlosses.contains(chunkedWords(i))) {
-          synsetPOS(i) = Some("q")
+          synsetPOS(i) = Some(Quantifier.get(chunkedWords(i)).closestMeaning match {
+            case Quantifier.LogicalQuantifier.FORALL => "a"
+            case Quantifier.LogicalQuantifier.EXISTS => "e"
+            case Quantifier.LogicalQuantifier.MOST => "m"
+            case Quantifier.LogicalQuantifier.NONE => "g"
+            case _ => throw new NoSuchElementException("Could not find logical meaning: " + Quantifier.get(chunkedWords(i)).closestMeaning)
+          })
         }
         for (k <- (tokenEnd - 1) to tokenStart by -1) {
           synsetPOS(i) = synsetPOS(i).orElse(pos(k) match {

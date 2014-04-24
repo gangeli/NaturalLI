@@ -5,6 +5,7 @@ import edu.stanford.nlp.util.StringUtils;
 
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 /**
@@ -99,4 +100,13 @@ public enum Quantifier {
       add(StringUtils.join(q.surfaceForm, " "));
     }
   }});
+
+  public static Quantifier get(String gloss) {
+    for (Quantifier q : values()) {
+      if (StringUtils.join(q.surfaceForm, " ").equals(gloss)) {
+        return q;
+      }
+    }
+    throw new NoSuchElementException(gloss);
+  }
 }
