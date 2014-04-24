@@ -112,7 +112,7 @@ class Trie : public FactDB {
     assert (data.numValidInsertions <= 4);
     if (data.numValidInsertions == 4) { return; }
     // Set the new sense
-    data.validInsertions[data.numValidInsertions].type = e.type - EDGE_ADDS_BEGIN;
+    data.validInsertions[data.numValidInsertions].type = e.type - EDGE_DELS_BEGIN;
     data.validInsertions[data.numValidInsertions].sense = e.source_sense;
     assert (data.validInsertions[data.numValidInsertions].type  < 8);
     assert (data.validInsertions[data.numValidInsertions].sense < 32);
@@ -122,13 +122,13 @@ class Trie : public FactDB {
   /** Get the edge types we can insert */
   inline uint8_t getEdges(edge* buffer) const {
     for (uint8_t i = 0; i < data.numValidInsertions; ++i) {
-      buffer[i].type         = data.validInsertions[i].type + EDGE_ADDS_BEGIN;
+      buffer[i].type         = data.validInsertions[i].type + EDGE_DELS_BEGIN;
       buffer[i].source_sense = data.validInsertions[i].sense;
       buffer[i].cost         = 1.0f;
       buffer[i].sink         = 0;
       buffer[i].sink_sense   = 0;
-      assert (buffer[i].type  >= EDGE_ADDS_BEGIN);
-      assert (buffer[i].type  <  EDGE_ADDS_BEGIN + 8);
+      assert (buffer[i].type  >= EDGE_DELS_BEGIN);
+      assert (buffer[i].type  <  EDGE_DELS_BEGIN + 8);
       assert (buffer[i].source_sense <  32);
     }
     return data.numValidInsertions;

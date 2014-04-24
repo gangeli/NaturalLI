@@ -26,6 +26,7 @@ object Test {
     // Run queries
     val accuracies = Accuracy("all", (x:Datum) => true, 0, 0) :: subResults.map{ case (name:String, fn:(Datum=>Boolean)) => Accuracy(name, fn, 0, 0) }.toList
     for ( (query, gold) <- data) {
+      val datum:Datum = (query, gold)
       // Run Query
       Client.explain(query.getKnownFact(0), "antecedent")
       Client.explain(query.getQueryFact, "consequent")
@@ -47,12 +48,17 @@ object Test {
       if (correct) {
         log(GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
       } else {
-        log(RED, "incorrect (gold=" + gold + "; guess=" + prob + ")")
+        if (remember.apply( datum )) {
+          log(RED, BOLD, "--------------------")
+          log(RED, BOLD, ">>> incorrect (gold=" + gold + "; guess=" + prob + ")")
+          log(RED, BOLD, "--------------------")
+        } else {
+          log(RED, "incorrect (gold=" + gold + "; guess=" + prob + ")")
+        }
       }
 
       // Update accuracies
       accuracies.foreach{ (view:Accuracy) =>
-        val datum:Datum = (query, gold)
         if (view.shouldTake.apply(datum)) {
           view.total += 1
           if (correct) { view.correct += 1 }

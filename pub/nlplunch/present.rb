@@ -484,8 +484,8 @@ slide!('Step 4: Inference/Learning',
   center,
   '$p(\textrm{True}) = \frac{1}{1 + \exp\left(w_0 - \sum\limits_i f_{e_i} \cdot (-c_{e_i,s})\right)}$',
   rtable(
-    '$w_0 > 0$ (bias)',
-    '$w_i = -c_{e_i,s} \le 0$',
+    table(['s.t.', '$w_0 > 0$ \red{$\leftarrow$ bias}'],
+          ['',     '$w_i = -c_{e_i,s} \le 0$']),
   nil),
   left,
   pause,
@@ -495,7 +495,7 @@ slide!('Step 4: Inference/Learning',
   pause,
   ind('But, not limited to these features'),
   ind('Lexicalize? Look at constituency match? etc.'),
-nil){ |slide| slide.label('learn_infer').slideStyle(slideStyle).signature(11) }
+nil){ |slide| slide.label('learn_infer').slideStyle(slideStyle).signature(13) }
 
 ################################################################################
 # LEARNING
@@ -534,15 +534,19 @@ slide!('Results-ish',
   table(
     [h2('Subset'),     h2('Majority Class'), h2('MC 07'), h2('MC 08'), h2('Me')],
     ['All',        '61',             '--',    '--',    '41'],
-    ['Applicable', '56',             '60',    '70',    '49'],
+    ['Applicable', '56',             '60',    '70',    '50'],
     ['NatLog',     '46',             '76',    '87',    '65'],
   nil).cjustify('lcrrr'),
   left,
   '',
   pause,
 
-  header('Takeaway:', 'Guess Unk too often'),
-nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(3) }
+  h1('Why so low?'),
+  ind('Negation (10\% of examples) not implemented yet'),
+  ind('Spurious inserts: \textit{finish} $\rightarrow$ \textit{finish on time}'),
+  ind('Quantifier expansion: \textit{a few} $\rightarrow$ \textit{at least a few}'),
+  ind('Non-intersective adjectives: \textit{former student} $\rightarrow$ \textit{student}'),
+nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(6) }
 
 ################################################################################
 # CONCLUSION

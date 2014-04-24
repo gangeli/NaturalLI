@@ -80,7 +80,8 @@ object FraCaS extends DataSource {
     Props.SERVER_PORT = 4001
     System.exit(Client.startMockServer(() =>
       Test.evaluate(read(Props.DATA_FRACAS_PATH.getPath), NatLog.hardNatlogWeights,
-        List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) )),
+        List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),
+      isApplicable),
     printOut = false))
   }
 }

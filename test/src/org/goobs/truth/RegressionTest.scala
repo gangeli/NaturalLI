@@ -85,7 +85,7 @@ object RegressionTest {
           Client.explain(fact, "antecedent")
         }
         Client.explain(facts.last, "consequent")
-        evaluateQuery(facts, truth, 10000)
+        exitStatus += evaluateQuery(facts, truth, 10000)
         endTrack("Running " + line)
       }
 

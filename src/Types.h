@@ -36,7 +36,6 @@
 #define FREEBASE_UP                  11
 #define FREEBASE_DOWN                12
 
-#define EDGE_ADDS_BEGIN              13  // should be the same as the first ADD_X item
 #define ADD_NOUN                     13
 #define ADD_VERB                     14
 #define ADD_ADJ                      15
@@ -44,8 +43,9 @@
 #define ADD_EXISTENTIAL              17
 #define ADD_QUANTIFIER_OTHER         18
 #define ADD_UNIVERSAL                19
-#define ADD_OTHER                    20  // NOTE: never have more than 8 insertion types. @see Trie.h
+#define ADD_OTHER                    20
 
+#define EDGE_DELS_BEGIN              21  // should be the same as the first DEL_X item
 #define DEL_NOUN                     21
 #define DEL_VERB                     22
 #define DEL_ADJ                      23
@@ -53,7 +53,7 @@
 #define DEL_EXISTENTIAL              25
 #define DEL_QUANTIFIER_OTHER         26
 #define DEL_UNIVERSAL                27
-#define DEL_OTHER                    28
+#define DEL_OTHER                    28  // NOTE: never have more than 8 insertion types. @see Trie.h
 
 #define MONOTONE_INDEPENDENT_BEGIN   29  // should be the same as the first index after which monotonicity doesn't matter
 #define QUANTIFIER_WEAKEN            29

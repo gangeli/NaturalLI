@@ -58,10 +58,12 @@ public enum Quantifier {
   A_FEW("a few",                    LogicalQuantifier.EXISTS),
   THERE_BE("there be",              LogicalQuantifier.EXISTS),
   THERE_EXIST("there exist",        LogicalQuantifier.EXISTS),
+  THERE_BE_SOME("there be some",    LogicalQuantifier.EXISTS),
+  THERE_BE_FEW("there be few",      LogicalQuantifier.EXISTS),
   FEW("few",                        LogicalQuantifier.EXISTS),
   EITHER("either",                  LogicalQuantifier.EXISTS),
   A("a",                            LogicalQuantifier.EXISTS),
-  THE("the",                          LogicalQuantifier.EXISTS),
+  THE("the",                        LogicalQuantifier.EXISTS),
 
   NO("no",                          LogicalQuantifier.NONE),
   NONE_OF("none of",                LogicalQuantifier.NONE),

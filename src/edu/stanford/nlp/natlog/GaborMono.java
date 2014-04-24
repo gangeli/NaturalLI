@@ -101,6 +101,13 @@ public class GaborMono implements Mono {
         Monotonicity.NON,
         S_PROJECTION,
         Monotonicity.UP));
+
+    add(new BinaryQuantifier("many",
+        "DT < /^[Mm]any$/", // not under QP, to eliminate "at most"
+        NP_PROJECTION,
+        Monotonicity.NON,
+        S_PROJECTION,
+        Monotonicity.UP));
   }});
 
   private static final String NP_PROJECTION = "__ >+(NP) (NP=proj !> NP)";

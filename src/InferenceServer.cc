@@ -74,20 +74,20 @@ FactDB* makeFactDB(Query& query) {
       if (query.knownfact(factI).word(wordI).has_pos()) {
         const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
         if (posTag != NULL && (posTag[0] == 'q' || posTag[0] == 'Q')) {
-          fact[wordI].type = ADD_NOUN;
+          fact[wordI].type = DEL_QUANTIFIER_OTHER;
         } else if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
-          fact[wordI].type = ADD_NOUN;
+          fact[wordI].type = DEL_NOUN;
         } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
-          fact[wordI].type = ADD_VERB;
+          fact[wordI].type = DEL_VERB;
         } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
-          fact[wordI].type = ADD_ADJ;
+          fact[wordI].type = DEL_ADJ;
         } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
-          fact[wordI].type = ADD_ADV;
+          fact[wordI].type = DEL_ADV;
         } else {
-          fact[wordI].type = ADD_OTHER;
+          fact[wordI].type = DEL_OTHER;
         }
       } else {
-        fact[wordI].type = ADD_OTHER;
+        fact[wordI].type = DEL_OTHER;
       }
       fact[wordI].cost = 1.0f;  // not really relevant...
     }

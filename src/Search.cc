@@ -680,8 +680,8 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     if (parentLength < MAX_FACT_LENGTH) {
       for (uint8_t insertI = 0; insertI < MAX_COMPLETIONS; ++insertI) {
         // Make sure the insert exists
-        if (inserts[insertI].sink == 0) { break; }
-        assert (inserts[insertI].source != 0);
+        if (inserts[insertI].source == 0) { break; }
+        assert (inserts[insertI].sink == 0);
         const edge& insertion = inserts[insertI];
         // Add the state to the fringe
         const float insertionCost = weights->computeCost(
@@ -732,10 +732,10 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
-//      printf("  mutate %u -> %u at %u cost %f  type=(%u,%u), unigramUp=%f, unigramDown=%f\n",
-//             parentFact[indexToMutate].word, mutation.source, indexToMutate, mutationCost,
-//             parent->edgeType, mutation.type, weights->unigramWeightsUp[mutation.type], weights->unigramWeightsDown[mutation.type] );
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
+//        printf("  mutate %s -> %s at %u cost %f  type=(%u,%u), unigramUp=%f, unigramDown=%f\n",
+//               graph->gloss(getTaggedWord(mutation.source, mutation.source_sense, 0)), graph->gloss(parentFact[indexToMutate]), indexToMutate, mutationCost,
+//               parent->nodeState.incomingEdge, mutation.type, weights->upTrueW[mutation.type], weights->downTrueW[mutation.type] );
         // push mutation[/deletion]
         fringe->push(parent, indexToMutate,
           mutation.source == 0 ? 0 : 1,

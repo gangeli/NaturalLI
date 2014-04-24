@@ -39,10 +39,6 @@
 ✔[is fooer than](john, bill)	[is fooer than](john, bill)
 ?[is fooer than](john, bill)	[is bazer than](john, bill)
 
-# Quantifier insertion/deletion
-✔[are](all cats, smart)	[are](cats, smart)
-✔[likes](no dog, cats)	[likes](no dog, a few cats)
-
 # Quantifier weakening/strengthening
 ✔[have](all cats, tails)	[have](a few cats, tails)
 ✔[likes](no dog, a few cats)	[likes](no dog, all cats)

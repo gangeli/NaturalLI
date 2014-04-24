@@ -30,6 +30,7 @@ void Trie::add(edge* elements, uint8_t length) {
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
   const word w = elements[0].source;
+  assert (w > 0);
   const btree_map<word,Trie*>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
@@ -41,6 +42,7 @@ void Trie::add(edge* elements, uint8_t length) {
   // Register skip-gram
   if (length > 1) {
     const word grandChildW = elements[1].source;
+    assert (grandChildW > 0);
     skipGrams[grandChildW].push_back(w);
   }
   // Register information about child

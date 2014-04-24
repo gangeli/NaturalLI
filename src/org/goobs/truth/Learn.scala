@@ -47,10 +47,9 @@ object Learn {
       builder.build()
     }
 
-    // Note: flip up and down! The inference inversion happens here.
     Costs.newBuilder()
-      .setUnlexicalizedMonotoneDown(unlexicalizedWeights(monoUp_stateTrue, monoUp_stateFalse))
-      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(monoDown_stateTrue, monoUp_stateFalse))
+      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(monoUp_stateTrue, monoUp_stateFalse))
+      .setUnlexicalizedMonotoneDown(unlexicalizedWeights(monoDown_stateTrue, monoUp_stateFalse))
       .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(monoFlat_stateTrue, monoFlat_stateFalse))
       .setUnlexicalizedMonotoneAny(unlexicalizedWeights(monoAny_stateTrue, monoAny_stateFalse))
       .build()

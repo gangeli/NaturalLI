@@ -161,7 +161,9 @@ object CreateGraph {
                   edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
-                  edge(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                    edge(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
+                  }
                   edge(EdgeType.DEL_NOUN, index, sense, 0, 0, 1.0)
                 }
               case (as:VerbSynset) =>
@@ -169,7 +171,9 @@ object CreateGraph {
                   edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
-                  edge(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                    edge(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
+                  }
                   edge(EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
                 }
               case (as:AdjectiveSynset) =>
@@ -184,8 +188,10 @@ object CreateGraph {
                   edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
-                  edge(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
-                  edge(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                    edge(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
+                    edge(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
+                  }
                 }
               case (as:AdverbSynset) =>
                 for (pertainym <- as.getPertainyms(phraseGloss)) {
@@ -195,7 +201,9 @@ object CreateGraph {
                   edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
-                  edge(EdgeType.ADD_ADV, 0, 0, index, sense, 1.0)
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                    edge(EdgeType.ADD_ADV, 0, 0, index, sense, 1.0)
+                  }
                   edge(EdgeType.DEL_ADV, index, sense, 0, 0, 1.0)
                 }
               case _ =>
@@ -247,7 +255,7 @@ object CreateGraph {
             if (sourceIndexed != sinkIndexed) {
               if (source.closestMeaning.partialOrder == sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder == -sink.closestMeaning.partialOrder) {
+              } else if (source.closestMeaning.partialOrder >= 0 && sink.closestMeaning.partialOrder < 0) {
                 edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               } else if (source.closestMeaning.partialOrder >= 0 && source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
