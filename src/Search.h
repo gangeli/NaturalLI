@@ -11,7 +11,7 @@
 #include "Bloom.h"
 
 #define POOL_BUCKET_SHIFT 20
-#define NULL_EDGE_TYPE 255
+#define NULL_EDGE_TYPE 63
 
 class SearchType;
 
@@ -288,15 +288,15 @@ class UniformCostSearch : public BreadthFirstSearch {
  * This is a more interpretable representation of the weights passed from
  * the client, with an emphasis for fast computation.
  */
-class WeightVector {
+class CostVector {
  public:
-  WeightVector();
-  WeightVector(
+  CostVector();
+  CostVector(
     float* upTrueW,   float* upFalseW,
     float* downTrueW, float* downFalseW,
     float* flatTrueW, float* flatFalseW,
     float* anyTrueW,  float* anyFalseW);
-  ~WeightVector();
+  ~CostVector();
 
   /**
    * Compute the cost of taking a search step, in terms of monotonicity
@@ -330,7 +330,7 @@ class WeightVector {
 search_response Search(Graph*, FactDB*,
                        const tagged_word* query, const uint8_t& queryLength, const uint8_t& monotoneBoundary,
                        SearchType*,
-                       CacheStrategy*, const WeightVector* weights, const uint64_t& timeout);
+                       CacheStrategy*, const CostVector* weights, const uint64_t& timeout);
 
 
 

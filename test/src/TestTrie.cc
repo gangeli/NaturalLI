@@ -49,15 +49,15 @@ class TrieTest : public ::testing::Test {
     // Issue children query
     if (queryLength > 0) { buffer[0] = getTaggedWord(factq1); }
     if (queryLength > 1) { buffer[1] = getTaggedWord(factq2); }
-    edges[0].sink = 0;
-    edges[1].sink = 0;
-    edges[2].sink = 0;
+    edges[0].source = 0;
+    edges[1].source = 0;
+    edges[2].source = 0;
     EXPECT_FALSE(trie->contains(buffer, queryLength, index, edges));
 
     // Run assertions
-    EXPECT_EQ(insert1, edges[0].sink);
-    EXPECT_EQ(insert2, edges[1].sink);
-    EXPECT_EQ(insert3, edges[2].sink);
+    EXPECT_EQ(insert1, edges[0].source);
+    EXPECT_EQ(insert2, edges[1].source);
+    EXPECT_EQ(insert3, edges[2].source);
   }
 };
 

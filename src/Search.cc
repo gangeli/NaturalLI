@@ -312,9 +312,9 @@ inline const Path* BreadthFirstSearch::push(
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
   assert (mutatedLength > newMutationIndex);
+  const edge_type newEdgeType = (replaceLength == 1 ? edge : NULL_EDGE_TYPE);
   return new(newPath) Path(parent, mutated, mutatedLength,
-                           replaceLength == 1 ? edge : NULL_EDGE_TYPE, 
-                           newMutationIndex,
+                           newEdgeType, newMutationIndex,
                            compose(parent->nodeState.truth, edge),
                            newMonotoneBoundary);
 }
@@ -526,16 +526,16 @@ void CacheStrategyBloom::add(const tagged_word* fact, const uint8_t& factLength,
 }
 
 // 
-// Class WeightVector
+// Class CostVector
 //
-WeightVector::WeightVector() :
+CostVector::CostVector() :
   available(false),
   upTrueW(NULL),   upFalseW(NULL),
   downTrueW(NULL), downFalseW(NULL),
   flatTrueW(NULL), flatFalseW(NULL),
   anyTrueW(NULL),  anyFalseW(NULL) { }
 
-WeightVector::WeightVector(
+CostVector::CostVector(
     float* upTrueW,   float* upFalseW,
     float* downTrueW, float* downFalseW,
     float* flatTrueW, float* flatFalseW,
@@ -546,7 +546,7 @@ WeightVector::WeightVector(
   flatTrueW(flatTrueW), flatFalseW(flatFalseW),
   anyTrueW(anyTrueW),  anyFalseW(anyFalseW) { }
   
-WeightVector::~WeightVector() {
+CostVector::~CostVector() {
   if (available) {
     free(upTrueW);   free(upFalseW);
     free(downTrueW); free(downFalseW);
@@ -555,7 +555,7 @@ WeightVector::~WeightVector() {
   }
 }
 
-inline float WeightVector::computeCost(const inference_state& state,
+inline float CostVector::computeCost(const inference_state& state,
                                        const edge& edge,
                                        const monotonicity& monotonicity) const {
   // Make sure we have weights
@@ -602,7 +602,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
                        const tagged_word* queryFact, const uint8_t& queryFactLength,
                        const uint8_t& monotoneBoundary,
                        SearchType* fringe, CacheStrategy* cache,
-                       const WeightVector* weights,
+                       const CostVector* weights,
                        const uint64_t& timeout) {
   //
   // Setup

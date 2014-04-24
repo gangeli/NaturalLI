@@ -102,7 +102,7 @@ TEST(TrieITest, CompletionsValid) {
         db->contains(&word, 1, 0, edges);
         // Make sure the response [insertable facts] is valid
         for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
-          if (edges[i].sink == 0) { break; }
+          if (edges[i].source == 0) { break; }
           EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
           EXPECT_LT(edges[i].source, numWords);
           EXPECT_LT(edges[i].source_sense, 32);
@@ -155,6 +155,7 @@ TEST(GraphITest, AllEdgesValid) {
     const edge* edges = graph->incomingEdgesFast(getTaggedWord(w, 0, 0), &numEdges);
     for (uint32_t i = 0; i < numEdges; ++i) {
       ASSERT_LT(edges[i].sink, keys.size());
+      ASSERT_LT(edges[i].source, keys.size());
       ASSERT_GE(edges[i].cost, 0.0);
     }
   }

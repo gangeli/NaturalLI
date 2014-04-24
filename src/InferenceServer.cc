@@ -150,25 +150,15 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
 }
 
 /**
- * A simple utility to convert a proto weights file to unigram edge weights
+ * A simple utility to convert a proto costs file to unigram edge costs
  */
-float* mkUnigramWeight(const UnlexicalizedWeights& proto) {
-  float* weights = (float*) malloc(proto.edgeweight_size() * sizeof(float));
-  for (int i = 0; i < proto.edgeweight_size(); ++i) {
-    weights[i] = proto.edgeweight(i);
+float* mkCosts(const UnlexicalizedCosts& proto, const bool& trueCost) {
+  assert (proto.truecost_size() == proto.falsecost_size());
+  float* costs = (float*) malloc(proto.truecost_size() * sizeof(float));
+  for (int i = 0; i < proto.truecost_size(); ++i) {
+    costs[i] = (trueCost ? proto.truecost(i) : proto.falsecost(i));
   }
-  return weights;
-}
-
-/**
- * A simple utility to convert a proto weights file to bigram edge weights
- */
-float* mkBigramWeight(const UnlexicalizedWeights& proto) {
-  float* weights = (float*) malloc(proto.edgepairweight_size() * sizeof(float));
-  for (int i = 0; i < proto.edgepairweight_size(); ++i) {
-    weights[i] = proto.edgepairweight(i);
-  }
-  return weights;
+  return costs;
 }
 
   
@@ -199,23 +189,24 @@ void handleConnection(int socket, sockaddr_in* client,
   }
 
   // Construct weights
-  WeightVector* weights;
-  if (query.has_weights() &&
-      query.weights().has_unlexicalizedmonotoneup() &&
-      query.weights().has_unlexicalizedmonotonedown() &&
-      query.weights().has_unlexicalizedmonotoneflat() &&
-      query.weights().has_unlexicalizedmonotoneany() ) {
-    weights = new WeightVector(
-      mkUnigramWeight(query.weights().unlexicalizedmonotoneup()),
-      mkBigramWeight(query.weights().unlexicalizedmonotoneup()),
-      mkUnigramWeight(query.weights().unlexicalizedmonotonedown()),
-      mkBigramWeight(query.weights().unlexicalizedmonotonedown()),
-      mkUnigramWeight(query.weights().unlexicalizedmonotoneflat()),
-      mkBigramWeight(query.weights().unlexicalizedmonotoneflat()),
-      mkUnigramWeight(query.weights().unlexicalizedmonotoneany()),
-      mkBigramWeight(query.weights().unlexicalizedmonotoneany()));
+  CostVector* costs;
+  if (query.has_costs() &&
+      query.costs().has_unlexicalizedmonotoneup() &&
+      query.costs().has_unlexicalizedmonotonedown() &&
+      query.costs().has_unlexicalizedmonotoneflat() &&
+      query.costs().has_unlexicalizedmonotoneany() ) {
+    costs = new CostVector(
+      mkCosts(query.costs().unlexicalizedmonotoneup(),   true),
+      mkCosts(query.costs().unlexicalizedmonotoneup(),   false),
+      mkCosts(query.costs().unlexicalizedmonotonedown(), true),
+      mkCosts(query.costs().unlexicalizedmonotonedown(), false),
+      mkCosts(query.costs().unlexicalizedmonotoneflat(), true),
+      mkCosts(query.costs().unlexicalizedmonotoneflat(), false),
+      mkCosts(query.costs().unlexicalizedmonotoneany(),  true),
+      mkCosts(query.costs().unlexicalizedmonotoneany(),  false)
+      );
   } else {
-    weights = new WeightVector();
+    costs = new CostVector();
   }
 
   // Run Search
@@ -245,7 +236,7 @@ void handleConnection(int socket, sockaddr_in* client,
     // case: invalid monotonicity markings
     printf("[%d] invalid monotonicity marking: %d\n", socket, query.queryfact().word(i).monotonicity());
     if (!query.userealworld()) { delete factDB; }
-    delete weights;
+    delete costs;
     closeConnection(socket, client);
     return;
       
@@ -267,7 +258,7 @@ void handleConnection(int socket, sockaddr_in* client,
   } else {
     // case: could not create this search type
     printf("[%d] unknown search type: %s\n", socket, query.searchtype().c_str());
-    delete weights;
+    delete costs;
     if (!query.userealworld()) { delete factDB; }
     closeConnection(socket, client);
     return;
@@ -280,7 +271,7 @@ void handleConnection(int socket, sockaddr_in* client,
     cache = new CacheStrategyBloom();
   } else {
     printf("[%d] unknown cache strategy: %s\n", socket, query.cachetype().c_str());
-    delete weights;
+    delete costs;
     if (!query.userealworld()) { delete factDB; }
     closeConnection(socket, client);
     return;
@@ -289,7 +280,7 @@ void handleConnection(int socket, sockaddr_in* client,
   printf("[%d] running search (timeout: %lu)...\n", socket, query.timeout());
   search_response result;
   try {
-    result = Search(graph, factDB, queryFact, queryLength, monotoneBoundary, search, cache, weights, query.timeout());
+    result = Search(graph, factDB, queryFact, queryLength, monotoneBoundary, search, cache, costs, query.timeout());
     printf("[%d] ...finished search; %lu results found\n", socket, result.paths.size());
   } catch (std::exception& e) {
     printf("%s\n", e.what());
@@ -301,7 +292,7 @@ void handleConnection(int socket, sockaddr_in* client,
   // (send result)
   Response response;
   for (int i = 0; i < result.paths.size(); ++i) {
-    double score = exp(-result.paths[i].cost + (query.has_weights() ? query.weights().bias() : 0.0));
+    double score = exp(-result.paths[i].cost + (query.has_costs() ? query.costs().bias() : 0.0));
     response.add_inference()->CopyFrom(inferenceFromPath(result.paths[i].path, graph, score));
   }
   response.set_totalticks(result.totalTicks);
@@ -310,7 +301,7 @@ void handleConnection(int socket, sockaddr_in* client,
   if (!query.userealworld()) { delete factDB; }
   delete cache;
   delete search;
-  delete weights;
+  delete costs;
   closeConnection(socket, client);
 }
 

@@ -31,7 +31,7 @@ message Query {
   required bool useRealWorld = 2;
   repeated Fact knownFact    = 3;
   optional uint64 timeout    = 4 [ default = 1000 ];
-  optional Weights weights   = 5;
+  optional Costs costs       = 5;
   optional string searchType = 6 [ default = "ucs" ];
   optional string cacheType  = 7 [ default = "none" ];
 
@@ -59,22 +59,20 @@ message Response {
 }
 
 /** A holistic view of the weights to send to the search component */
-message Weights {
+message Costs {
   optional float bias = 1 [ default = 0.0 ];
 
-  optional UnlexicalizedWeights unlexicalizedMonotoneUp   = 11;
-  optional UnlexicalizedWeights unlexicalizedMonotoneDown = 12;
-  optional UnlexicalizedWeights unlexicalizedMonotoneFlat = 13;
-  optional UnlexicalizedWeights unlexicalizedMonotoneAny  = 14;
+  optional UnlexicalizedCosts unlexicalizedMonotoneUp   = 11;
+  optional UnlexicalizedCosts unlexicalizedMonotoneDown = 12;
+  optional UnlexicalizedCosts unlexicalizedMonotoneFlat = 13;
+  optional UnlexicalizedCosts unlexicalizedMonotoneAny  = 14;
 }
 
 
 /** A set of (relatively) dense unlexicalized weights which can be passed back and forth to the server */
-message UnlexicalizedWeights {
+message UnlexicalizedCosts {
   /** There should be |edges| elements in this, according to the indices in EDGE_TYPE */
-  repeated float edgeWeight     = 1;
-
-  /** There should be |edges|^2 elements in this; the path from edge with index a to edge with
-      index b would be |edges|*a + b */
-  repeated float edgePairWeight = 2;
+  repeated float trueCost     = 1;
+  /** There should be |edges| elements in this, according to the indices in EDGE_TYPE */
+  repeated float falseCost = 2;
 }

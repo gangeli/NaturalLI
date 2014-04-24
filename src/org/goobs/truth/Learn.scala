@@ -3,20 +3,21 @@ package org.goobs.truth
 import edu.stanford.nlp.stats.Counter
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.EdgeType.EdgeType
-import org.goobs.truth.Messages.{UnlexicalizedWeights, Weights, Inference}
+import org.goobs.truth.Messages._
 
 
 object Learn {
   type WeightVector = Counter[String]
 
-  def unigramUp(edge:EdgeType):String   = "^" + "::" + edge
-  def unigramDown(edge:EdgeType):String = "v" + "::" + edge
-  def unigramFlat(edge:EdgeType):String = "-" + "::" + edge
-  def unigramAny(edge:EdgeType):String  = "*" + "::" + edge
-  def bigramUp(e1:EdgeType, e2:EdgeType):String    = "^" + "::" + e1 + "->" + e2
-  def bigramDown(e1:EdgeType, e2:EdgeType):String  = "v" + "::" + e1 + "->" + e2
-  def bigramFlat(e1:EdgeType, e2:EdgeType):String  = "-" + "::" + e1 + "->" + e2
-  def bigramAny(e1:EdgeType, e2:EdgeType):String   = "*" + "::" + e1 + "->" + e2
+  def monoUp_stateTrue(edge:EdgeType):String   = "^,T" + "::" + edge
+  def monoDown_stateTrue(edge:EdgeType):String = "v,T" + "::" + edge
+  def monoFlat_stateTrue(edge:EdgeType):String = "-,T" + "::" + edge
+  def monoAny_stateTrue(edge:EdgeType):String  = "*,T" + "::" + edge
+
+  def monoUp_stateFalse(edge:EdgeType):String   = "^,F" + "::" + edge
+  def monoDown_stateFalse(edge:EdgeType):String = "v,F" + "::" + edge
+  def monoFlat_stateFalse(edge:EdgeType):String = "-,F" + "::" + edge
+  def monoAny_stateFalse(edge:EdgeType):String  = "*,F" + "::" + edge
 
   /**
    * Serialize a weight vector into a protobuf to send to the server.
@@ -31,25 +32,27 @@ object Learn {
    * @param weights The weight vector to serialize
    * @return A protobuf message encoding the <b>cost</b> of each weight
    */
-  def weightsToCosts(weights:WeightVector):Weights = {
+  def weightsToCosts(weights:WeightVector):Costs = {
     // Function to set the unlexicalized weights
-    def unlexicalizedWeights(unigram:EdgeType=>String, bigram:(EdgeType,EdgeType)=>String):UnlexicalizedWeights = {
-      val builder = UnlexicalizedWeights.newBuilder()
+    def unlexicalizedWeights(stateTrue:EdgeType=>String, stateFalse:EdgeType=>String):UnlexicalizedCosts = {
+      val builder = UnlexicalizedCosts.newBuilder()
       for (from <- EdgeType.values.toArray.sortWith({ (a:EdgeType.Value, b:EdgeType.Value) => a.id < b.id })) {
-        builder.addEdgeWeight(-weights.getCount(unigram(from)).toFloat)
-        for (to <- EdgeType.values.toArray.sortWith({ (a:EdgeType.Value, b:EdgeType.Value) => a.id < b.id })) {
-          builder.addEdgePairWeight(-weights.getCount(bigram(from, to)).toFloat)
-        }
+        val trueWeight = weights.getCount(stateTrue(from)).toFloat
+        val falseWeight = weights.getCount(stateFalse(from)).toFloat
+        assert(trueWeight <= 0, "trueWeight=" + trueWeight)
+        assert(falseWeight <= 0, "falseWeight=" + falseWeight)
+        builder.addTrueCost(-trueWeight)
+        builder.addFalseCost(-falseWeight)
       }
       builder.build()
     }
 
     // Note: flip up and down! The inference inversion happens here.
-    Weights.newBuilder()
-      .setUnlexicalizedMonotoneDown(unlexicalizedWeights(unigramUp, bigramUp))
-      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(unigramDown, bigramDown))
-      .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(unigramFlat, bigramFlat))
-      .setUnlexicalizedMonotoneAny(unlexicalizedWeights(unigramAny, bigramAny))
+    Costs.newBuilder()
+      .setUnlexicalizedMonotoneDown(unlexicalizedWeights(monoUp_stateTrue, monoUp_stateFalse))
+      .setUnlexicalizedMonotoneUp(unlexicalizedWeights(monoDown_stateTrue, monoUp_stateFalse))
+      .setUnlexicalizedMonotoneFlat(unlexicalizedWeights(monoFlat_stateTrue, monoFlat_stateFalse))
+      .setUnlexicalizedMonotoneAny(unlexicalizedWeights(monoAny_stateTrue, monoAny_stateFalse))
       .build()
   }
 
@@ -69,7 +72,7 @@ object Learn {
     if (paths.isEmpty) { return 0.5 }
     // Compute noisy or of probabilities
     1.0 - {for (inference <- paths) yield {
-      val prob = computeProb(inference);
+      val prob = computeProb(inference)
       log({
         if (prob >= 0.5) "p(true)=" + prob + ": "
         else "p(true)=" + prob + ": "

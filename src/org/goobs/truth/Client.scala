@@ -104,6 +104,7 @@ object Client {
 
   }
 
+  /*
   def main(args:Array[String]):Unit = {
     Props.NATLOG_INDEXER_LAZY = true
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
@@ -143,6 +144,40 @@ object Client {
         }
       } while (true),
     printOut = false)
+  }
+  */
+
+  def main(args:Array[String]):Unit = {
+    Props.NATLOG_INDEXER_LAZY = false
+    val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
+    val weights = NatLog.hardNatlogWeights
+
+    startMockServer( () =>
+      do {
+        println("")
+        println("Enter an antecedent and a consequent")
+        val antecedent:Fact = NatLog.annotate(readLine("antecedent> "), x => Utils.WORD_UNK).head
+        explain(antecedent, "antecedent")
+        val consequent:Fact = NatLog.annotate(readLine("consequent> "), x => Utils.WORD_UNK).head
+        explain(consequent, "consequent")
+        // We have our antecedent and consequent
+        val query = Query.newBuilder()
+          .setQueryFact(consequent)
+          .addKnownFact(antecedent)
+          .setUseRealWorld(false)
+          .setTimeout(1000000)
+          .setWeights(Learn.weightsToCosts(weights))
+          .setSearchType("ucs")
+          .setCacheType("bloom")
+          .build()
+        // Execute Query
+        val paths:Iterable[Inference] = issueQuery(query)
+        // Evaluate Query
+        val prob = Learn.evaluate(paths, weights)
+        // Debug Print
+        if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
+      } while (true),
+      printOut = false)
 
   }
 }

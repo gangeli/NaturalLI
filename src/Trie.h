@@ -125,6 +125,8 @@ class Trie : public FactDB {
       buffer[i].type         = data.validInsertions[i].type + EDGE_ADDS_BEGIN;
       buffer[i].source_sense = data.validInsertions[i].sense;
       buffer[i].cost         = 1.0f;
+      buffer[i].sink         = 0;
+      buffer[i].sink_sense   = 0;
       assert (buffer[i].type  >= EDGE_ADDS_BEGIN);
       assert (buffer[i].type  <  EDGE_ADDS_BEGIN + 8);
       assert (buffer[i].source_sense <  32);
