@@ -166,7 +166,7 @@ object Client {
           .addKnownFact(antecedent)
           .setUseRealWorld(false)
           .setTimeout(1000000)
-          .setWeights(Learn.weightsToCosts(weights))
+          .setCosts(Learn.weightsToCosts(weights))
           .setSearchType("ucs")
           .setCacheType("bloom")
           .build()

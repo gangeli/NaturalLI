@@ -32,7 +32,7 @@ object Test {
       val prob:Double = Learn.evaluate(Client.issueQuery(query
         .setUseRealWorld(false)
         .setTimeout(Props.SEARCH_TIMEOUT)
-        .setWeights(Learn.weightsToCosts(weights))
+        .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom")
         .build()), weights)
