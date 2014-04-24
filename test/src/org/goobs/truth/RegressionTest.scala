@@ -22,7 +22,7 @@ object RegressionTest {
       }.setQueryFact(facts.last)
         .setUseRealWorld(false)
         .setTimeout(timeout)
-        .setWeights(Learn.weightsToCosts(NatLog.hardNatlogWeights))
+        .setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights))
         .setSearchType("ucs")
         .setCacheType("bloom")
         .build()), NatLog.hardNatlogWeights)
