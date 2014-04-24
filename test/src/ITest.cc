@@ -104,9 +104,11 @@ TEST(TrieITest, CompletionsValid) {
         for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
           if (edges[i].sink == 0) { break; }
           EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
-          EXPECT_LT(edges[i].sink, numWords);
-          EXPECT_LT(edges[i].sense, 32);
-          if (edges[i].sense > 0) {
+          EXPECT_LT(edges[i].source, numWords);
+          EXPECT_LT(edges[i].source_sense, 32);
+          EXPECT_EQ(0, edges[i].sink);
+          EXPECT_EQ(0, edges[i].sink_sense);
+          if (edges[i].source_sense > 0) {
             wordHasNonzeroSense = true;
           }
           wordHasCompletion = true;
@@ -150,7 +152,7 @@ TEST(GraphITest, AllEdgesValid) {
   vector<word> keys = graph->keys();
   for (int w = 0; w < keys.size(); ++w) {
     uint32_t numEdges = 0;
-    const edge* edges = graph->outgoingEdgesFast(getTaggedWord(w, 0, 0), &numEdges);
+    const edge* edges = graph->incomingEdgesFast(getTaggedWord(w, 0, 0), &numEdges);
     for (uint32_t i = 0; i < numEdges; ++i) {
       ASSERT_LT(edges[i].sink, keys.size());
       ASSERT_GE(edges[i].cost, 0.0);

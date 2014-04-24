@@ -15,17 +15,17 @@ class Graph {
   virtual ~Graph() { }
 
   /** Get all outgoing edges from the given word */
-  virtual const edge* outgoingEdgesFast(const tagged_word& source, uint32_t* outputLength) const = 0;
+  virtual const edge* incomingEdgesFast(const tagged_word& sink, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
   virtual const char* gloss(const tagged_word&) const = 0;
   /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() const = 0;
 
   /** A helper to get the outgoing edges in a more reasonable form */
-  virtual const std::vector<edge> outgoingEdges(const tagged_word& source) {
+  virtual const std::vector<edge> incomingEdges(const tagged_word& sink) {
     std::vector<edge> rtn;
     uint32_t length = 0;
-    const edge* edges = outgoingEdgesFast(source, &length);
+    const edge* edges = incomingEdgesFast(sink, &length);
     for (int i = 0; i < length; ++i) {
       rtn.push_back(edges[i]);
     }

@@ -54,4 +54,6 @@ const std::vector<tagged_word> someDogsChaseCats();
  */
 void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63);
 
+inference_function edge2function(const edge_type& type);
+
 #endif

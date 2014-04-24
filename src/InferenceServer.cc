@@ -61,13 +61,15 @@ FactDB* makeFactDB(Query& query) {
     for (int wordI = 0; wordI < factLength; ++wordI) {
       Word word = query.knownfact(factI).word(wordI);
       // Set the word
-      fact[wordI].sink = word.word();
+      fact[wordI].source = word.word();
       // Set the sense
       if (word.has_sense()) {
-        fact[wordI].sense = word.sense();
+        fact[wordI].source_sense = word.sense();
       } else {
-        fact[wordI].sense = 0;
+        fact[wordI].source_sense = 0;
       }
+      fact[wordI].sink = 0;
+      fact[wordI].sink_sense = 0;
       // Set the edge type
       if (query.knownfact(factI).word(wordI).has_pos()) {
         const char* posTag = query.knownfact(factI).word(wordI).pos().c_str();
@@ -141,7 +143,7 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   // Return
   if (path->parent != NULL) {
     inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
-    inference.set_incomingedgetype(path->edgeType);
+    inference.set_incomingedgetype(path->nodeState.incomingEdge);
   }
   inference.set_score(score);
   return inference;

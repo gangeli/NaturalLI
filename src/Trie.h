@@ -46,19 +46,23 @@ class Trie : public FactDB {
 
   /**
    * Like the vanilla add() method, but also keep track of the edge
-   * type and words sense that would correspond to each element being inserted.
+   * type and words sense that would correspond to each element 
+   * begin <b>DELETED</b>, which corresponds to an insertion in the
+   * reverse search.
    */
   virtual void add(edge* elements, uint8_t length);
   
-  /** {@inheritDoc} */
+  /** Insert a given fact. */
   virtual void add(tagged_word* elements, uint8_t length) {
     edge edges[length];
     for (int i = 0; i < length; ++i) {
       edge e;
-      e.sink  = elements[i].word;
-      e.sense = elements[i].sense;
-      e.type  = ADD_OTHER;
-      e.cost  = 1.0f;
+      e.source       = elements[i].word;
+      e.source_sense = elements[i].sense;
+      e.sink         = 0;
+      e.sink_sense   = 0;
+      e.type         = ADD_OTHER;
+      e.cost         = 1.0f;
       edges[i] = e;
     }
     add(edges, length);
@@ -109,7 +113,7 @@ class Trie : public FactDB {
     if (data.numValidInsertions == 4) { return; }
     // Set the new sense
     data.validInsertions[data.numValidInsertions].type = e.type - EDGE_ADDS_BEGIN;
-    data.validInsertions[data.numValidInsertions].sense = e.sense;
+    data.validInsertions[data.numValidInsertions].sense = e.source_sense;
     assert (data.validInsertions[data.numValidInsertions].type  < 8);
     assert (data.validInsertions[data.numValidInsertions].sense < 32);
     data.numValidInsertions += 1;
@@ -118,12 +122,12 @@ class Trie : public FactDB {
   /** Get the edge types we can insert */
   inline uint8_t getEdges(edge* buffer) const {
     for (uint8_t i = 0; i < data.numValidInsertions; ++i) {
-      buffer[i].type  = data.validInsertions[i].type + EDGE_ADDS_BEGIN;
-      buffer[i].sense = data.validInsertions[i].sense;
-      buffer[i].cost  = 1.0f;
+      buffer[i].type         = data.validInsertions[i].type + EDGE_ADDS_BEGIN;
+      buffer[i].source_sense = data.validInsertions[i].sense;
+      buffer[i].cost         = 1.0f;
       assert (buffer[i].type  >= EDGE_ADDS_BEGIN);
       assert (buffer[i].type  <  EDGE_ADDS_BEGIN + 8);
-      assert (buffer[i].sense <  32);
+      assert (buffer[i].source_sense <  32);
     }
     return data.numValidInsertions;
   }

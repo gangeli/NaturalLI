@@ -20,7 +20,8 @@ object Test {
 
 
   def evaluate(data:DataStream, weights:WeightVector,
-                subResults:Seq[(String, Datum=>Boolean)] = Nil) {
+                subResults:Seq[(String, Datum=>Boolean)] = Nil,
+                remember:Datum=>Boolean = x => false) {
     startTrack("Evaluating")
     // Run queries
     val accuracies = Accuracy("all", (x:Datum) => true, 0, 0) :: subResults.map{ case (name:String, fn:(Datum=>Boolean)) => Accuracy(name, fn, 0, 0) }.toList

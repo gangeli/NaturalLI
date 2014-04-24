@@ -15,6 +15,12 @@
 
 class SearchType;
 
+/** A silly little struct to bit twiddle an incoming edge and a truth value together */
+typedef struct {
+  uint8_t incomingEdge:6,
+          truth:2;
+}__attribute__((packed)) search_state;
+
 /**
  * A state in the search space.
  * This represents a path from the query fact, to the intermediate
@@ -32,10 +38,8 @@ class Path {
   const uint8_t factLength;         // 1 byte
   /** The index that was last mutated, or 255 if this is the first element*/
   const uint8_t lastMutationIndex;  // 1 byte
-  /** The type of edge this path was created from */
-  edge_type edgeType;               // 1 byte
-  /** The type of edge this path was created from */
-  const inference_state inferState; // 1 byte
+  /** A combination of the truth state, and the incoming edge type */
+  const search_state nodeState;     // 1 byte
   /** 
     * A very very hacky way of trying to separate monotonicity
     * boundaries. Please fix me!
@@ -60,6 +64,9 @@ class Path {
 
   /** Check if this fact is equal to another fact */
   bool operator==(const Path& other) const;
+
+  inline inference_state inferenceState() { return nodeState.truth; }
+  inline edge_type incomingEdge() { return nodeState.incomingEdge; }
 };
 
 /**
@@ -166,10 +173,11 @@ class SearchType {
    * guaranteed to never change.
    * The returned path is new pushed element.
    */
-  virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
-    const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
+  virtual const Path* push(const Path* parent, 
+    const uint8_t& mutationIndex,
+    const uint8_t& replaceLength, const tagged_word& replace1, 
+    const tagged_word& replace2,
     const edge_type& edge, const float& cost, 
-    const inference_state localInference,
     const CacheStrategy* cache, bool& outOfMemory) = 0;
   virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
@@ -204,7 +212,6 @@ class BreadthFirstSearch : public SearchType {
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
     const edge_type& edge, const float& cost, 
-    const inference_state localInference,
     const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
@@ -256,7 +263,6 @@ class UniformCostSearch : public BreadthFirstSearch {
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
     const edge_type& edge, const float& cost, 
-    const inference_state localInference,
     const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
@@ -286,31 +292,28 @@ class WeightVector {
  public:
   WeightVector();
   WeightVector(
-    float* unigramWeightsUp,   float* bigramWeightsUp,
-    float* unigramWeightsDown, float* bigramWeightsDown,
-    float* unigramWeightsFlat, float* bigramWeightsFlat,
-    float* unigramWeightsAny,  float* bigramWeightsAny);
+    float* upTrueW,   float* upFalseW,
+    float* downTrueW, float* downFalseW,
+    float* flatTrueW, float* flatFalseW,
+    float* anyTrueW,  float* anyFalseW);
   ~WeightVector();
 
   /**
    * Compute the cost of taking a search step, in terms of monotonicity
    * and the last two edges taken.
    */
-  inline float computeCost(const edge_type& lastEdgeType, const edge& path,
-                           const bool& changingSameWord,
-                           const monotonicity& monotonicity) const;
+  inline float computeCost(
+      const inference_state& state,
+      const edge& edge,
+      const monotonicity& monotonicity) const;
  
 // private:
   const bool available;
-
-  float* unigramWeightsUp;
-  float* bigramWeightsUp;
-  float* unigramWeightsDown;
-  float* bigramWeightsDown;
-  float* unigramWeightsFlat;
-  float* bigramWeightsFlat;
-  float* unigramWeightsAny;
-  float* bigramWeightsAny;
+  
+  float* upTrueW;   float* upFalseW;
+  float* downTrueW; float* downFalseW;
+  float* flatTrueW; float* flatFalseW;
+  float* anyTrueW;  float* anyFalseW;
 };
 
 /**

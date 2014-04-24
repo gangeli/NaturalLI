@@ -103,6 +103,69 @@ string toString(const edge_type& edge) {
   }
 }
 
+inference_function edge2function(const edge_type& type) {
+  inference_function function;
+  switch (type) {
+    case WORDNET_UP: 
+    case FREEBASE_UP: 
+    case DEL_NOUN:
+    case DEL_VERB:
+    case DEL_ADJ:
+    case DEL_ADV:
+    case DEL_OTHER:
+      function = FUNCTION_FORWARD_ENTAILMENT;
+      break;
+    case WORDNET_DOWN: 
+    case FREEBASE_DOWN: 
+    case ADD_NOUN:
+    case ADD_VERB:
+    case ADD_ADJ:
+    case ADD_ADV:
+    case ADD_OTHER:
+      function = FUNCTION_REVERSE_ENTAILMENT;
+      break;
+    case WORDNET_NOUN_ANTONYM: 
+    case WORDNET_VERB_ANTONYM: 
+    case WORDNET_ADJECTIVE_ANTONYM: 
+    case WORDNET_ADVERB_ANTONYM: 
+      function = FUNCTION_ALTERNATION;
+      break;
+    case WORDNET_NOUN_SYNONYM: 
+    case WORDNET_ADJECTIVE_RELATED: 
+    case QUANTIFIER_REWORD:
+    case ANGLE_NN: 
+    case MORPH_FUDGE_NUMBER: 
+    case SENSE_REMOVE: 
+    case SENSE_ADD: 
+      function = FUNCTION_EQUIVALENT;
+      break;
+    case WORDNET_ADJECTIVE_PERTAINYM:
+    case WORDNET_ADVERB_PERTAINYM:
+      function = FUNCTION_EQUIVALENT;
+      break;
+    case QUANTIFIER_NEGATE:
+      function = FUNCTION_NEGATION;
+      break;
+    // The weird cases...
+    case ADD_EXISTENTIAL:
+    case ADD_UNIVERSAL:
+    case ADD_QUANTIFIER_OTHER:
+    case DEL_EXISTENTIAL:
+    case DEL_UNIVERSAL:
+    case DEL_QUANTIFIER_OTHER:
+    // I think something special actually happens with these
+    case QUANTIFIER_WEAKEN:
+    case QUANTIFIER_STRENGTHEN:
+      function = FUNCTION_EQUIVALENT;
+      break;
+    default:
+      perror("Unknown edge type!");
+      printf("  (%u)\n", type);
+      break;
+  }
+  return function;
+}
+
 /**
  * Print a demangled stack backtrace of the caller function to FILE* out.
  *

@@ -24,7 +24,7 @@ class InMemoryFactDB : public FactDB {
                               const uint8_t& queryLength,
                               const int16_t& mutationIndex,
                               edge* insertions) const {
-    insertions[0].sink = 0;
+    insertions[0].source = 0;
     // Variables for hashing
     int64_t hash = 0;
     uint32_t shiftIncr = (64 / queryLength);
@@ -74,7 +74,7 @@ class MockFactDB : public FactDB {
                               const uint8_t& queryLength,
                               const int16_t& mutationIndex,
                               edge* insertions) const {
-    insertions[0].sink = 0;
+    insertions[0].source = 0;
     return queryLength == 3 && 
       query[0].word == CAT.word &&
       query[1].word == HAVE.word &&

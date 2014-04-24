@@ -18,10 +18,10 @@ class UtilsTest : public ::testing::Test {
     lemursHaveTails_ = lemursHaveTails();
     lemurs = new Path(&lemursHaveTails_[0], lemursHaveTails().size(), 1);
     searchType->start(lemurs);
-    searchType->push(lemurs, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(lemurs, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
-    searchType->push(animals, 0, 1, CAT, NULL_WORD, 1, 0.0f, INFER_EQUIVALENT, cache, outOfMemory);
+    searchType->push(animals, 0, 1, CAT, NULL_WORD, 1, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     animals = ((BreadthFirstSearch*) searchType)->debugGet(0);
     cats = ((BreadthFirstSearch*) searchType)->debugGet(1);

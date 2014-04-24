@@ -29,7 +29,7 @@ void Trie::add(edge* elements, uint8_t length) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
-  const word w = elements[0].sink;
+  const word w = elements[0].source;
   const btree_map<word,Trie*>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
@@ -40,7 +40,7 @@ void Trie::add(edge* elements, uint8_t length) {
   }
   // Register skip-gram
   if (length > 1) {
-    const word grandChildW = elements[1].sink;
+    const word grandChildW = elements[1].source;
     skipGrams[grandChildW].push_back(w);
   }
   // Register information about child
@@ -59,19 +59,19 @@ inline uint8_t min(const uint8_t& a, const uint8_t b) { return a < b ? a : b; }
 //
 // Trie::addCompletion
 //
-inline void Trie::addCompletion(const Trie* child, const word& sink,
+inline void Trie::addCompletion(const Trie* child, const word& source,
                                 edge* insertion, uint32_t& index) const {
   if (index < MAX_COMPLETIONS - 4) {
     // case: write directly to insertion buffer
     uint8_t numEdges = child->getEdges(&(insertion[index]));
-    for (int i = 0; i < numEdges; ++i) { insertion[index + i].sink = sink; }
+    for (int i = 0; i < numEdges; ++i) { insertion[index + i].source = source; }
     index += numEdges;
   } else {
     // case: write to temporary buffer and copy over
     edge buffer[4];
     uint8_t bufferedEdges = child->getEdges(buffer);
     uint8_t numEdges = min( MAX_COMPLETIONS - index, bufferedEdges );
-    for (int i = 0; i < numEdges; ++i) { buffer[i].sink = sink; }
+    for (int i = 0; i < numEdges; ++i) { buffer[i].source = source; }
     memcpy(&(insertion[index]), buffer, numEdges * sizeof(edge));
     index += numEdges;
   }
@@ -125,7 +125,7 @@ const bool Trie::contains(const tagged_word* query,
 
   // Return
   if (mutableIndex < MAX_COMPLETIONS) {
-    insertions[mutableIndex].sink = 0;
+    insertions[mutableIndex].source = 0;
   }
   return contains;
 }
@@ -188,11 +188,11 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
   Trie* facts = new Trie();
   char query[127];
 
-  // Read valid insertions
-  printf("Reading registered insertions...\n");
+  // Read valid deletions
+  printf("Reading registered deletions...\n");
   unordered_map<word,vector<edge>> word2senses;
   // (query)
-  snprintf(query, 127, "SELECT DISTINCT (sink) sink, sink_sense, type FROM %s WHERE source=0 AND sink<>0 ORDER BY type;", PG_TABLE_EDGE);
+  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
   PGIterator wordIter = PGIterator(query);
   uint32_t numValidInsertions = 0;
   while (wordIter.hasNext()) {
@@ -200,12 +200,12 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     PGRow row = wordIter.next();
     // Create edge
     edge e;
-    e.sink  = atoi(row[0]);
-    e.sense = atoi(row[1]);
+    e.source       = atoi(row[0]);
+    e.source_sense = atoi(row[1]);
     e.type  = atoi(row[2]);
     e.cost  = 1.0f;
     // Register edge
-    word2senses[e.sink].push_back(e);
+    word2senses[e.source].push_back(e);
     numValidInsertions += 1;
   }
   printf("  Done. %u words have sense tags\n", numValidInsertions);
@@ -245,13 +245,15 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
       // Register the word
       unordered_map<word,vector<edge>>::iterator iter = word2senses.find( w );
       if (iter == word2senses.end() || iter->second.size() == 0) {
-        buffer[bufferLength].sink  = w;
-        buffer[bufferLength].sense = 0;
-        buffer[bufferLength].type  = 0;
-        buffer[bufferLength].cost  = 1.0f;
+        buffer[bufferLength].source       = w;
+        buffer[bufferLength].source_sense = 0;
+        buffer[bufferLength].type         = 0;
+        buffer[bufferLength].cost         = 1.0f;
       } else {
         buffer[bufferLength] = iter->second[0];
       }
+      buffer[bufferLength].sink       = 0;
+      buffer[bufferLength].sink_sense = 0;
       if (bufferLength >= MAX_FACT_LENGTH) { break; }
       bufferLength += 1;
     }
@@ -260,7 +262,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     facts->add(buffer, bufferLength);
     // Add word sense variants
     for (uint32_t k = 0; k < bufferLength; ++k) {
-      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].sink );
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
       if (iter != word2senses.end() && iter->second.size() > 1) {
         for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
           buffer[k] = iter->second[sense];

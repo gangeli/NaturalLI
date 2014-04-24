@@ -69,13 +69,18 @@
 
 
 // Inference States
-#define INFER_EQUIVALENT         0
-#define INFER_FORWARD_ENTAILMENT 1
-#define INFER_REVERSE_ENTAILMENT 2
-#define INFER_NEGATION           3
-#define INFER_ALTERNATION        4
-#define INFER_COVER              5
-#define INFER_INDEPENDENCE       6
+#define INFER_FALSE   0
+#define INFER_TRUE    1
+#define INFER_UNKNOWN 2
+
+// Inference functions
+#define FUNCTION_EQUIVALENT         0
+#define FUNCTION_FORWARD_ENTAILMENT 1
+#define FUNCTION_REVERSE_ENTAILMENT 2
+#define FUNCTION_NEGATION           3
+#define FUNCTION_ALTERNATION        4
+#define FUNCTION_COVER              5
+#define FUNCTION_INDEPENDENCE       6
 
 // Static Data
 #define NULL_WORD getTaggedWord(0, 0, 0)
@@ -132,13 +137,18 @@ typedef uint8_t edge_type;
 /** The current inference state */
 typedef uint8_t inference_state;
 
+/** An inference function (e.g., forward entailment) */
+typedef uint8_t inference_function;
+
 /**
  * A simple representation of an Edge in the graph -- that is,
  * a potential mutation of a word.
  */
 struct edge {
+  word      source;
+  uint8_t   source_sense;
   word      sink;
-  uint8_t   sense;
+  uint8_t   sink_sense;
   edge_type type;
   float     cost;
 };
