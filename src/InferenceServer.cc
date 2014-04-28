@@ -149,12 +149,31 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   }
   fact.set_gloss(toString(*graph, path->fact, path->factLength));
   inference.mutable_fact()->CopyFrom(fact);
-  // Return
+  // Populate path
+  // (source)
   if (path->parent != NULL) {
     inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
     inference.set_incomingedgetype(path->nodeState.incomingEdge);
   }
+  // (truth state)
+  switch (path->nodeState.truth) {
+    case INFER_TRUE:
+      inference.set_state(CollapsedInferenceState::TRUE);
+      break;
+    case INFER_FALSE:
+      inference.set_state(CollapsedInferenceState::FALSE);
+      break;
+    case INFER_UNKNOWN:
+      inference.set_state(CollapsedInferenceState::UNKNOWN);
+      break;
+    default:
+      printf("Invalid inference state: %u", path->nodeState.truth);
+      std::exit(1);
+      break;
+  }
+  // (score)
   inference.set_score(score);
+  // (return)
   return inference;
 }
 

@@ -21,13 +21,8 @@ object Learn {
 
   /**
    * Serialize a weight vector into a protobuf to send to the server.
-   * Note that the semantics of the serialized weights is different in at least
-   * two ways:
-   *
-   * <ol>
-   *   <li> The weights are now costs -- they are the negative of the passed in weights</li>
-   *   <li> The up and down edges are reversed, as the search is performing reverse inference.
-   * <ol>
+   * Note that the semantics of the serialized weights is the negative of the weights
+   * used on the client.
    *
    * @param weights The weight vector to serialize
    * @return A protobuf message encoding the <b>cost</b> of each weight
@@ -64,8 +59,12 @@ object Learn {
       }
     }
     def computeProb(node:Inference):Double = {
-      // TODO(gabor) compute a more real score
-      node.getScore
+      // TODO(gabor) compute a more real score (e.g., post-featurizers on the path)
+      node.getState match {
+        case Messages.CollapsedInferenceState.TRUE => node.getScore
+        case Messages.CollapsedInferenceState.FALSE => 1.0 - node.getScore
+        case Messages.CollapsedInferenceState.UNKNOWN => 0.5
+      }
     }
     // Special case for no paths
     if (paths.isEmpty) { return 0.5 }

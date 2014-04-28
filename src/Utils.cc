@@ -156,11 +156,12 @@ inference_function edge2function(const edge_type& type) {
     // I think something special actually happens with these
     case QUANTIFIER_WEAKEN:
     case QUANTIFIER_STRENGTHEN:
+    case NULL_EDGE_TYPE:
       function = FUNCTION_EQUIVALENT;
       break;
     default:
-      perror("Unknown edge type!");
-      printf("  (%u)\n", type);
+      printf("Unknown edge type: %u", type);
+      std::exit(1);
       break;
   }
   return function;

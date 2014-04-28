@@ -160,7 +160,7 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
-                if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
+                if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
                     edge(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
                   }
@@ -170,7 +170,7 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
-                if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
+                if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
                     edge(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
                   }
@@ -187,7 +187,7 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
-                if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
+                if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
                     edge(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
                     edge(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
@@ -200,7 +200,7 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
-                if (!Quantifier.quantifierGlosses.contains(phraseGloss)) {
+                if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
                     edge(EdgeType.ADD_ADV, 0, 0, index, sense, 1.0)
                   }
@@ -239,7 +239,10 @@ object CreateGraph {
             val sink:Int = indexOf(scoreAndGloss(1))
             val angle:Double = math.acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
             assert(angle >= 0.0)
-            edge(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
+            if (!Quantifier.quantifierGlosses.contains(scoreAndGloss(1).toLowerCase) ||
+                !Quantifier.quantifierGlosses.contains(fields(0).toLowerCase)) {  // don't add quantifier replacements
+              edge(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
+            }
           }
         }
 
@@ -256,6 +259,8 @@ object CreateGraph {
               if (source.closestMeaning.partialOrder == sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               } else if (source.closestMeaning.partialOrder >= 0 && sink.closestMeaning.partialOrder < 0) {
+                edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+              } else if (source.closestMeaning.partialOrder < 0 && sink.closestMeaning.partialOrder >= 0) {
                 edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               } else if (source.closestMeaning.partialOrder >= 0 && source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
                 edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)

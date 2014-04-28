@@ -1,10 +1,21 @@
 
 option java_package = "org.goobs.truth";
 
+/** An enumeration of monotonicity markings (upwards, downwards, or flat) */
 enum Monotonicity {
   UP   = 0;
   DOWN = 1;
   FLAT = 2;
+}
+
+/** 
+ * An enumeration of inference states, in the collapsed set 
+ * of {T,F,U}.
+ */
+enum CollapsedInferenceState {
+  FALSE   = 0;
+  TRUE    = 1;
+  UNKNOWN = 2;
 }
 
 /** A single word in a fact */
@@ -42,12 +53,14 @@ message Query {
 
 /** An inference, implementing a linked list of facts corresponding to a reverse inference */
 message Inference {
-  required Fact      fact             = 1;
-  optional Inference impliedFrom      = 2;
-  optional uint32    incomingEdgeType = 3;
+  required Fact                    fact             = 1;
+  optional Inference               impliedFrom      = 2;
+  optional uint32                  incomingEdgeType = 3;
 
-  optional double score = 11;
-  optional uint64 ticks = 12;
+  optional double                  score            = 11;
+  optional CollapsedInferenceState state            = 12;
+
+  optional uint64                  ticks            = 21;
 }
 
 /** A response from the server, encoding a number of inferences and an optional error message */

@@ -100,7 +100,7 @@ object RegressionTest {
     var exitStatus:Int = 0
     Props.SERVER_HOST = "localhost"
     Props.SERVER_PORT = 41337
-    Client.startMockServer(() => exitStatus = runClient(), printOut = false)
+    Client.startMockServer(() => exitStatus = runClient(), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")
     } else {
