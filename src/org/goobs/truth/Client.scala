@@ -8,7 +8,6 @@ import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import scala.Some
 import org.goobs.truth.scripts.ShutdownServer
 import edu.stanford.nlp.util.Execution
 
@@ -161,21 +160,25 @@ object Client {
         val consequent:Fact = NatLog.annotate(readLine("consequent> "), x => Utils.WORD_UNK).head
         explain(consequent, "consequent")
         // We have our antecedent and consequent
-        val query = Query.newBuilder()
-          .setQueryFact(consequent)
-          .addKnownFact(antecedent)
-          .setUseRealWorld(false)
-          .setTimeout(1000000)
-          .setCosts(Learn.weightsToCosts(weights))
-          .setSearchType("ucs")
-          .setCacheType("bloom")
-          .build()
-        // Execute Query
-        val paths:Iterable[Inference] = issueQuery(query)
-        // Evaluate Query
-        val prob = Learn.evaluate(paths, weights)
-        // Debug Print
-        if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
+        if (antecedent.getWordCount > 0 && consequent.getWordCount > 0) {
+          val query = Query.newBuilder()
+            .setQueryFact(consequent)
+            .addKnownFact(antecedent)
+            .setUseRealWorld(false)
+            .setTimeout(1000000)
+            .setCosts(Learn.weightsToCosts(weights))
+            .setSearchType("ucs")
+            .setCacheType("bloom")
+            .build()
+          // Execute Query
+          val paths:Iterable[Inference] = issueQuery(query)
+          // Evaluate Query
+          val prob = Learn.evaluate(paths, weights)
+          // Debug Print
+          if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
+         } else {
+          err("No antecedent or consequent provided!")
+        }
       } while (true),
       printOut = false)
 

@@ -187,10 +187,55 @@ inline Path* BreadthFirstSearch::allocatePath() {
   return &currentFringe[offset];
 }
 
+/**
+ * A simplified Join table adapted from MacCartney, to handle negation.
+ */
 inline const inference_state compose(const inference_state& current,
                                      const edge_type& transition) {
-  // TODO(gabor) work out transitions
-  return current;
+  switch (current) {
+    case INFER_TRUE:
+      switch(edge2function(transition)) {
+        case FUNCTION_EQUIVALENT:
+        case FUNCTION_FORWARD_ENTAILMENT:
+          return INFER_TRUE;
+        case FUNCTION_NEGATION:
+        case FUNCTION_ALTERNATION:
+          return INFER_FALSE;
+        case FUNCTION_REVERSE_ENTAILMENT:
+        case FUNCTION_COVER:
+        case FUNCTION_INDEPENDENCE:
+          return current;
+        default:
+          printf("Invalid function: %u", edge2function(transition));
+          std::exit(1);
+          return INFER_UNKNOWN;
+      }
+      break;
+    case INFER_FALSE:
+      switch(edge2function(transition)) {
+        case FUNCTION_EQUIVALENT:
+        case FUNCTION_REVERSE_ENTAILMENT:
+          return INFER_FALSE;
+        case FUNCTION_NEGATION:
+        case FUNCTION_COVER:
+          return INFER_FALSE;
+        case FUNCTION_FORWARD_ENTAILMENT:
+        case FUNCTION_ALTERNATION:
+        case FUNCTION_INDEPENDENCE:
+          return current;
+        default:
+          printf("Invalid function: %u", edge2function(transition));
+          std::exit(1);
+          return INFER_UNKNOWN;
+      }
+      break;
+    case INFER_UNKNOWN:
+      return INFER_UNKNOWN;
+    default:
+      printf("Invalid infer state: %u", current);
+      std::exit(1);
+      return INFER_UNKNOWN;
+  }
 }
 
 // -- push a new element onto the fringe --

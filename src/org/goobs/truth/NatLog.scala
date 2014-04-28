@@ -29,49 +29,75 @@ object NatLog {
     if (wordnet > 0) { throw new IllegalArgumentException("Weights must always be negative (wordnet is not)"); }
     if (morphology > 0) { throw new IllegalArgumentException("Weights must always be negative (morphology is not)"); }
     if (wsd > 0) { throw new IllegalArgumentException("Weights must always be negative (wsd is not)"); }
+    if (okQuantifier > 0) { throw new IllegalArgumentException("Weights must always be negative (okQuantifier is not)"); }
+    if (insertionOrDeletion > 0) { throw new IllegalArgumentException("Weights must always be negative (insertionOrDeletion is not)"); }
+    if (unknownInsertionOrDeletion > 0) { throw new IllegalArgumentException("Weights must always be negative (okInsertionOrDeletion is not)"); }
     if (default > 0) { throw new IllegalArgumentException("Weights must always be negative (default is not)"); }
     // Set negative weight
     weights.setDefaultReturnValue(default)
-    // Set positive weights
-    // (unigrams)
-    weights.setCount(monoUp_stateTrue(   WORDNET_UP    ), wordnet)
-    weights.setCount(monoUp_stateTrue(   FREEBASE_UP   ), wordnet)
-    weights.setCount(monoDown_stateTrue( WORDNET_DOWN  ), wordnet)
-    weights.setCount(monoDown_stateTrue( FREEBASE_DOWN ), wordnet)
-    // (additions/deletions)
-    weights.setCount(monoDown_stateTrue( ADD_ADJ      ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_ADJ      ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( ADD_ADV      ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_ADV      ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( ADD_NOUN      ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_NOUN      ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   ADD_OTHER     ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( ADD_OTHER     ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_OTHER     ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( DEL_OTHER     ), insertionOrDeletion)
+    // Set OK weights
 
-    weights.setCount(monoUp_stateTrue(   ADD_EXISTENTIAL ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_EXISTENTIAL ), insertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_UNIVERSAL ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( ADD_UNIVERSAL ), insertionOrDeletion)
-    weights.setCount(monoDown_stateTrue( ADD_EXISTENTIAL ), insertionOrDeletion)
+    def setCounts(edge:EdgeType, trueMono:Monotonicity, weight:Double) {
+      trueMono match {
+        case Monotonicity.UP =>
+          weights.setCount(monoUp_stateTrue(    edge ), weight)
+          weights.setCount(monoDown_stateFalse( edge ), weight)
+        case Monotonicity.DOWN =>
+          weights.setCount(monoDown_stateTrue(  edge ), weight)
+          weights.setCount(monoUp_stateFalse(   edge ), weight)
+      }
+    }
+
+    // (unigrams)
+    setCounts(WORDNET_UP, Monotonicity.UP, wordnet)
+    setCounts(FREEBASE_UP, Monotonicity.UP, wordnet)
+    setCounts(WORDNET_DOWN, Monotonicity.DOWN, wordnet)
+    setCounts(FREEBASE_DOWN, Monotonicity.DOWN, wordnet)
+    // (additions/deletions)
+    setCounts(ADD_ADJ, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(DEL_ADJ, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_ADV, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(DEL_ADV, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_NOUN, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(DEL_NOUN, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_OTHER, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(DEL_OTHER, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_OTHER, Monotonicity.UP, insertionOrDeletion)
+    setCounts(DEL_OTHER, Monotonicity.DOWN, insertionOrDeletion)
+
+    setCounts(ADD_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
+    setCounts(DEL_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
+    setCounts(DEL_UNIVERSAL, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, insertionOrDeletion)
 
     // (more fishy insertions or deletions)
-    weights.setCount(monoDown_stateTrue( ADD_VERB      ), unknownInsertionOrDeletion)
-    weights.setCount(monoUp_stateTrue(   DEL_VERB      ), unknownInsertionOrDeletion)
+    setCounts(ADD_VERB, Monotonicity.DOWN, unknownInsertionOrDeletion)
+    setCounts(DEL_VERB, Monotonicity.UP, unknownInsertionOrDeletion)
     // (ok quantifier swaps)
     weights.setCount(monoAny_stateTrue( QUANTIFIER_WEAKEN ), okQuantifier)
     weights.setCount(monoAny_stateTrue( QUANTIFIER_STRENGTHEN ), okQuantifier)
     weights.setCount(monoAny_stateTrue( QUANTIFIER_REWORD ), okQuantifier)
+    weights.setCount(monoAny_stateFalse( QUANTIFIER_WEAKEN ), okQuantifier)
+    weights.setCount(monoAny_stateFalse( QUANTIFIER_STRENGTHEN ), okQuantifier)
+    weights.setCount(monoAny_stateFalse( QUANTIFIER_REWORD ), okQuantifier)
     // (synonyms)
-    weights.setCount(monoUp_stateTrue( WORDNET_ADJECTIVE_RELATED ), synonyms)
-    weights.setCount(monoUp_stateTrue( WORDNET_ADVERB_PERTAINYM ), synonyms)
+    setCounts(WORDNET_NOUN_SYNONYM, Monotonicity.UP, synonyms)
+    setCounts(WORDNET_ADJECTIVE_RELATED, Monotonicity.UP, synonyms)
+    setCounts(WORDNET_ADVERB_PERTAINYM, Monotonicity.UP, synonyms)
+    setCounts(WORDNET_NOUN_SYNONYM, Monotonicity.DOWN, synonyms)
+    setCounts(WORDNET_ADJECTIVE_RELATED, Monotonicity.DOWN, synonyms)
+    setCounts(WORDNET_ADVERB_PERTAINYM, Monotonicity.DOWN, synonyms)
     // Set "don't care" weights
     weights.setCount(monoAny_stateTrue( MORPH_FUDGE_NUMBER), morphology)
+    weights.setCount(monoAny_stateFalse( MORPH_FUDGE_NUMBER), morphology)
     // Set weights we only care about a bit
     weights.setCount(monoUp_stateTrue(ANGLE_NEAREST_NEIGHBORS), similarity)
     weights.setCount(monoDown_stateTrue(ANGLE_NEAREST_NEIGHBORS), similarity)
     weights.setCount(monoFlat_stateTrue(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(monoUp_stateFalse(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(monoDown_stateFalse(ANGLE_NEAREST_NEIGHBORS), similarity)
+    weights.setCount(monoFlat_stateFalse(ANGLE_NEAREST_NEIGHBORS), similarity)
     // Return
     weights
   }

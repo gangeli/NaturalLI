@@ -30,7 +30,7 @@ slide!('',
 	center,
 	rtable(
 		rtable('Natural Logic',
-           'for Common Sense Inference').scale(2.0).color(darkred).center,
+           'for Common Sense Reasoning').scale(2.0).color(darkred).center,
 		ctable(
       author(_('Gabor Angeli').color(darkblue)),
     nil).cmargin(u(1.0)),
@@ -77,7 +77,7 @@ slide!('Motivation',
     nil),
     rtable(h1('But... \textit{``text is knowledge\'\'}'),
       ind('Knowledge bases are just caching information in text'),
-      ind('Explicitly handle, e.g., contradiction resolution'),
+      ind('Must explicitly handle, e.g., contradictions'),
       nil),
   nil),
   pause,
@@ -184,12 +184,12 @@ slide!('Natural Logic: Monotonicity',
   left,
   pause,
 
-  h1('Words have monotonicity'),
+  h1('Words tagged with monotonicity'),
   ind('Upwards: if $w \forward y$ then can substitute $y$ for $w$'),
   ind('Downwards: if $w \reverse y$ then can substitute $y$ for $w$'),
   pause,
 
-  h1('Quantifiers tag monotonicity'),
+  h1('Quantifiers determine monotonicity'),
   staggeredOverlay(true,
    ind(mono('\textbf{all}_v animals_v have_^ tails_^')),
    ind(mono('\textbf{all}_v \blue{cats}_v have_^ tails_^')),
@@ -198,7 +198,7 @@ slide!('Natural Logic: Monotonicity',
    ind(mono('\textbf{some}_^ animals_^ have_^ tails_^')),
    ind(mono('\textbf{some}_^ \red{cats}_^ have_^ tails_^')),
   nil),
-nil){ |slide| slide.label('natlog_monotone').slideStyle(slideStyle).signature(54) }
+nil){ |slide| slide.label('natlog_monotone').slideStyle(slideStyle).signature(56) }
 
 ################################################################################
 # NATURAL LOGIC MacCarntney
@@ -403,7 +403,7 @@ slide!('Quantifiers?',
     ctable('$($', mono('all_v cats_v have_^ tails_^'), '$,0)$').rjustify('r'),
   nil)).cmargin(u(0.25)).rjustify('c'))),
   pause,
-  ind('Can we steal prior work?'),
+  ind('Can we do what the last guy did?'),
   pause,
   ind('With alignment we could replace \textit{furry} first'),
   ind(ind('But this leads to duplicate paths in search')),
@@ -412,7 +412,7 @@ slide!('Quantifiers?',
   '',
   pause,
   ind('\textbf{Current solution:} Godawful hacks to guess monotonicity.'),
-nil){ |slide| slide.label('search_quantifiers').slideStyle(slideStyle).signature(15) }
+nil){ |slide| slide.label('search_quantifiers').slideStyle(slideStyle).signature(18) }
 
 ################################################################################
 # FUZZY INFERENCE
@@ -533,9 +533,9 @@ slide!('Results-ish',
   center,
   table(
     [h2('Subset'),     h2('Majority Class'), h2('MC 07'), h2('MC 08'), h2('Me')],
-    ['All',        '61',             '--',    '--',    '41'],
-    ['Applicable', '56',             '60',    '70',    '50'],
-    ['NatLog',     '46',             '76',    '87',    '73'],
+    ['All',        '61',             '--',    '--',    '43'],
+    ['Applicable', '56',             '60',    '70',    '55'],
+    ['\textbf{NatLog}',     '\textbf{46}',    '\textbf{76}',    '\textbf{87}',    '\textbf{73}'],
   nil).cjustify('lcrrr'),
   left,
   '',
@@ -546,7 +546,7 @@ slide!('Results-ish',
   ind('Quantifiers: \textit{a few} $\rightarrow$ \textit{at least a few}'),
   ind('Spurious inserts: \textit{finish} $\rightarrow$ \textit{finish on time}'),
   ind('Search timeout / Unexpected verb usage / $\dots$'),
-nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(9) }
+nil){ |slide| slide.label('results_fracas').slideStyle(slideStyle).signature(11) }
 
 ################################################################################
 # CONCLUSION
