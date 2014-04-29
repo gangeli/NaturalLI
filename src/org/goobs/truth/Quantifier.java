@@ -69,6 +69,8 @@ public enum Quantifier {
   NO("no",                          LogicalQuantifier.NONE),
   NONE_OF("none of",                LogicalQuantifier.NONE),
   NEITHER("neither",                LogicalQuantifier.NONE),
+  NOT("not",                        LogicalQuantifier.NONE),
+  NT("n't",                         LogicalQuantifier.NONE),
   ;
 
   public static enum LogicalQuantifier {
