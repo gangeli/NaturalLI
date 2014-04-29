@@ -2,7 +2,6 @@ package org.goobs.truth;
 
 import edu.stanford.nlp.Sentence;
 import edu.stanford.nlp.util.StringUtils;
-import scala.tools.nsc.transform.patmat.Logic;
 
 import java.util.Collections;
 import java.util.HashSet;
