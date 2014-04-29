@@ -84,22 +84,22 @@
 
 // Static Data
 #define NULL_WORD getTaggedWord(0, 0, 0)
-#define LEMUR     getTaggedWord(11863, 0, 0)
+#define LEMUR     getTaggedWord(11859, 0, 0)
 #define ANIMAL    getTaggedWord(3605, 0, 0)
 #define POTTO     getTaggedWord(112136, 0, 0)
 #define CAT       getTaggedWord(3263, 0, 0)
 #define HAVE      getTaggedWord(1265, 0, 0)
-#define TAIL      getTaggedWord(26812, 0, 0)
+#define TAIL      getTaggedWord(26808, 0, 0)
 #define SOME      getTaggedWord(8489, 0, 0)
 #define DOG       getTaggedWord(20841, 0, 0)
 #define CHASE     getTaggedWord(37234, 0, 0)
 // (static data as strings)
-#define LEMUR_STR  "11863"
+#define LEMUR_STR  "11859"
 #define ANIMAL_STR "3605"
 #define POTTO_STR  "112136"
 #define CAT_STR    "3263"
 #define HAVE_STR   "1265"
-#define TAIL_STR   "26812"
+#define TAIL_STR   "26808"
 
 //
 // Typedefs
