@@ -14,65 +14,52 @@ import java.util.Set;
  * @author Gabor Angeli
  */
 public enum Quantifier {
-  ALL("all",                        LogicalQuantifier.FORALL),
-  ANY("any",                        LogicalQuantifier.FORALL),
-  BOTH("both",                      LogicalQuantifier.FORALL),
-  EACH("each",                      LogicalQuantifier.FORALL),
-  THE_LOT_OF("the lot of",          LogicalQuantifier.FORALL),
-  ALL_OF("all of",                  LogicalQuantifier.FORALL),
-  FOR_ALL("for all",                LogicalQuantifier.FORALL),
-  FOR_EVERY("for every",            LogicalQuantifier.FORALL),
-  FOR_EACH("for each",              LogicalQuantifier.FORALL),
-  EVERY("every",                    LogicalQuantifier.FORALL),
+  ALL("all",                        LogicalQuantifier.FORALL, TriggerType.DEFAULT),
+  ANY("any",                        LogicalQuantifier.FORALL, TriggerType.DEFAULT),
+  BOTH("both",                      LogicalQuantifier.FORALL, TriggerType.DEFAULT),
+  EACH("each",                      LogicalQuantifier.FORALL, TriggerType.DEFAULT),
+  EVERY("every",                    LogicalQuantifier.FORALL, TriggerType.DEFAULT),
+  THE_LOT_OF("the lot of",          LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
+  ALL_OF("all of",                  LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
+  FOR_ALL("for all",                LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
+  FOR_EVERY("for every",            LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
+  FOR_EACH("for each",              LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
 
-  MORE_THAN_N1("more than num_1",   LogicalQuantifier.MOST),
-  MORE_THAN_N2("more than num_2",   LogicalQuantifier.MOST),
-  MORE_THAN_N3("more than num_3",   LogicalQuantifier.MOST),
-  MORE_THAN_N4("more than num_4",   LogicalQuantifier.MOST),
-  MORE_THAN_N5("more than num_5",   LogicalQuantifier.MOST),
-  MORE_THAN_N6("more than num_6",   LogicalQuantifier.MOST),
-  MORE_THAN_N7("more than num_7",   LogicalQuantifier.MOST),
-  MORE_THAN_N8("more than num_8",   LogicalQuantifier.MOST),
-  MORE_THAN_N9("more than num_9",   LogicalQuantifier.MOST),
-  A_LOT_OF("a lot of",              LogicalQuantifier.MOST),
-  LOTS_OF("lot of",                 LogicalQuantifier.MOST),
-  PLENTY_OF("plenty of",            LogicalQuantifier.MOST),
-  HEAPS_OF("heap of",               LogicalQuantifier.MOST),
-  A_LOAD_OF("a load of",            LogicalQuantifier.MOST),
-  LOADS_OF("load of",               LogicalQuantifier.MOST),
-  TONS_OF("ton of",                 LogicalQuantifier.MOST),
-  MOST("most",                      LogicalQuantifier.MOST),
-  ENOUGH("enough",                  LogicalQuantifier.MOST),
-  SEVERAL("several",                LogicalQuantifier.MOST),
+  MOST("most",                      LogicalQuantifier.MOST, TriggerType.DEFAULT),
+  ENOUGH("enough",                  LogicalQuantifier.MOST, TriggerType.DEFAULT),
+  SEVERAL("several",                LogicalQuantifier.MOST, TriggerType.DEFAULT),
+  MORE_THAN("more than",            LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  A_LOT_OF("a lot of",              LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  LOTS_OF("lot of",                 LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  PLENTY_OF("plenty of",            LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  HEAPS_OF("heap of",               LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  A_LOAD_OF("a load of",            LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  LOADS_OF("load of",               LogicalQuantifier.MOST, TriggerType.DONT_MARK),
+  TONS_OF("ton of",                 LogicalQuantifier.MOST, TriggerType.DONT_MARK),
 
-  LESS_THAN_N1("less than num_1",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N2("less than num_2",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N3("less than num_3",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N4("less than num_4",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N5("less than num_5",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N6("less than num_6",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N7("less than num_7",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N8("less than num_8",   LogicalQuantifier.EXISTS),
-  LESS_THAN_N9("less than num_9",   LogicalQuantifier.EXISTS),
-  SOME_OF("some of",                LogicalQuantifier.EXISTS),
-  SOME("some",                      LogicalQuantifier.EXISTS),
-  A_FEW("a few",                    LogicalQuantifier.EXISTS),
-  THERE_BE("there be",              LogicalQuantifier.EXISTS),
-  THERE_EXIST("there exist",        LogicalQuantifier.EXISTS),
-  THERE_BE_SOME("there be some",    LogicalQuantifier.EXISTS),
-  THERE_BE_FEW("there be few",      LogicalQuantifier.EXISTS),
-  FEW("few",                        LogicalQuantifier.EXISTS),
-  EITHER("either",                  LogicalQuantifier.EXISTS),
-  A("a",                            LogicalQuantifier.EXISTS),
-  THE("the",                        LogicalQuantifier.EXISTS),
+  SOME("some",                      LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
+  EITHER("either",                  LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
+  A("a",                            LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
+  THE("the",                        LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
+  LESS_THAN("less than",            LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  SOME_OF("some of",                LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  A_FEW("a few",                    LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  THERE_BE("there be",              LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  THERE_EXIST("there exist",        LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  THERE_BE_SOME("there be some",    LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  THERE_BE_FEW("there be few",      LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
 
-  NO("no",                          LogicalQuantifier.NONE),
-  NONE_OF("none of",                LogicalQuantifier.NONE),
-  NEITHER("neither",                LogicalQuantifier.NONE),
-  NOT("not",                        LogicalQuantifier.NONE),
-  NT("n't",                         LogicalQuantifier.NONE),
+  NO("no",                          LogicalQuantifier.NONE, TriggerType.NO),
+  NOT("not",                        LogicalQuantifier.NONE, TriggerType.UNARY_NOT),
+  NT("n't",                         LogicalQuantifier.NONE, TriggerType.UNARY_NOT),
+  WITHOUT("without",                LogicalQuantifier.NONE, TriggerType.UNARY_NOT_IN),
+  NEITHER("neither",                LogicalQuantifier.NONE, TriggerType.DEFAULT),
+  FEW("few",                        LogicalQuantifier.NONE, TriggerType.DEFAULT),
+  NONE_OF("none of",                LogicalQuantifier.NONE, TriggerType.DONT_MARK),
+  AT_MOST("at most",                LogicalQuantifier.NONE, TriggerType.DONT_MARK),
   ;
 
+  /** The closest pure logical meaning of the quantifier */
   public static enum LogicalQuantifier {
     FORALL(3),
     MOST(2),
@@ -86,20 +73,37 @@ public enum Quantifier {
     }
   }
 
+  /** The trigger type for recognizing this quantifier in a constituency parse */
+  public static enum TriggerType {
+    UNARY_NOT,
+    UNARY_NOT_IN,
+    NO,
+    DEFAULT,
+    DONT_MARK,
+  }
+
+  public final String[] literalSurfaceForm;
   public final String[] surfaceForm;
   public final LogicalQuantifier closestMeaning;
+  public final TriggerType trigger;
 
-
-
-  Quantifier(String surfaceForm, LogicalQuantifier closestMeaning) {
-    this.surfaceForm = new Sentence(surfaceForm.split("\\s+")).lemma();
+  Quantifier(String surfaceForm, LogicalQuantifier closestMeaning, TriggerType trigger) {
+    this.literalSurfaceForm = surfaceForm.split("\\s+");
+    this.surfaceForm = new Sentence(this.literalSurfaceForm).lemma();
     this.closestMeaning = closestMeaning;
+    this.trigger = trigger;
+  }
+
+  /** If true, this quantifier behaves as a binary quantifier (e.g., 'all') rather than a unary one (e.g., 'not') */
+  public boolean isBinary() {
+    return trigger != TriggerType.UNARY_NOT && trigger != TriggerType.UNARY_NOT_IN;
   }
 
 
   public static final Set<String> quantifierGlosses = Collections.unmodifiableSet(new HashSet<String>(){{
     for (Quantifier q : values()) {
       add(StringUtils.join(q.surfaceForm, " "));
+      add(StringUtils.join(q.literalSurfaceForm, " "));
     }
   }});
 

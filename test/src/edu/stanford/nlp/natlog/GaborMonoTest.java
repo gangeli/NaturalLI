@@ -3,7 +3,10 @@ package edu.stanford.nlp.natlog;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
+import edu.stanford.nlp.trees.tregex.TregexMatcher;
+import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.util.StringUtils;
 import org.goobs.truth.Quantifier;
 import org.junit.Test;
@@ -51,7 +54,8 @@ public class GaborMonoTest {
     Monotonicity[] mono = GaborMono.getInstance().annotate(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(TreeCoreAnnotations.TreeAnnotation.class));
 
     // Checks
-    assertEquals(expected.size(), mono.length);
+    assertEquals(spec + " [" + StringUtils.join(expected, " ") + "] versus [" + StringUtils.join(mono, " ") + "]",
+        expected.size(), mono.length);
     for (int i = 0; i < Math.min(expected.size(), mono.length); ++i) {
       assertEquals("Disagreed on '" + spec.split("\\s+")[i] + "' in '" + spec + "'", expected.get(i), mono[i]);
     }
@@ -64,8 +68,11 @@ public class GaborMonoTest {
   }
 
   @Test
-  public void singleQuantifier() {
+  public void singleBinaryQuantifierBulk() {
+    validate("all^ catsv have^ tails^");
+
     for (Quantifier q : Quantifier.values()) {
+      if (q.trigger == Quantifier.TriggerType.DONT_MARK || !q.isBinary()) { continue; }
       String sm;
       String om;
       switch (q.closestMeaning) {
@@ -86,6 +93,58 @@ public class GaborMonoTest {
       }
       validate(StringUtils.join(q.surfaceForm, "^ ") + "^ cats" + sm + " have" + om + " tails" + om);
       validate(StringUtils.join(q.surfaceForm, "^ ") + "^ fluffy" + sm + " cats" + sm + " have" + om + " long" + om + " tails" + om);
+    }
+  }
+
+  @Test
+  public void singleBinaryQuantifierExceptions() {
+    validate("at^ most^ fivev catsv havev tailsv");
+  }
+
+  @Test
+  public void singleUnaryQuantifierBulk() {
+    validate("some^ cats^ do^ not^ havev tailsv");
+    validate("some^ cats^ do^ n't^ havev tailsv");
+
+    for (Quantifier q : Quantifier.values()) {
+      if (q.trigger == Quantifier.TriggerType.DONT_MARK || q.isBinary()) { continue; }
+      String m;
+      switch (q.closestMeaning) {
+        case FORALL:
+          m = "v";
+          break;
+        case EXISTS:
+          m = "^";
+          break;
+        case MOST:
+          m = "*";
+          break;
+        case NONE:
+          m = "v";
+          break;
+        default:
+          throw new IllegalArgumentException();
+      }
+      validate("some^ cats^ do^ " + StringUtils.join(q.surfaceForm, "^ ") + "^ have" + m + " tails" + m);
+      validate("some^ fluffy^ cats^ do^ " + StringUtils.join(q.surfaceForm, "^ ") + "^ have" + m + " furry" + m + " tails" + m);
+    }
+  }
+
+  @Test
+  public void multipleQuantifiers() {
+//    validate ("enough^ cats* have^ no^ tailsv");
+    validate ("some^ cats^ have^ n't^ anyv tailsv");   // -> some cats haven't any {fuzzy tails}
+    validate ("all^ catsv do^ n't^ havev tailsv");
+    validate ("no^ catsv havev nov tail^");
+  }
+
+  @Test
+  public void sandbox() {
+//    TregexPattern p = TregexPattern.compile("/^DT|JJS?$/ < /^[nN]o|[nN]either|[fF]ew$/ !$, (DT < /^[Aa]$/) !>> VP");
+    TregexPattern p = TregexPattern.compile("DT < /^[Nn]o$/ > NP >> VP");
+    TregexMatcher m = p.matcher(Tree.valueOf("(ROOT  (S    (NP (JJ enough) (NNS cats))    (VP (VBP have)      (NP (DT no) (NNS tails)))))"));
+    while (m.find()) {
+      m.getMatch().pennPrint();
     }
   }
 

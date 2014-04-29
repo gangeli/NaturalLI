@@ -1,10 +1,12 @@
 package edu.stanford.nlp.natlog;
 
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.Label;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.StringUtils;
 
 import java.util.*;
 
@@ -19,15 +21,40 @@ import java.util.*;
 public class GaborMono implements Mono {
 
   public static final Collection<Quantifier> quantifiers = Collections.unmodifiableCollection(new ArrayList<Quantifier>() {{
+    List<String> regexps;
+
     // downward-monotone operators ----------------------------------------------
-    add(new UnaryQuantifier("not",
-        "RB < /^[Nn][o']t$/", // match either "not" or "n't"
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
+          (q.trigger == org.goobs.truth.Quantifier.TriggerType.UNARY_NOT || q.trigger == org.goobs.truth.Quantifier.TriggerType.NO)) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new UnaryQuantifier("down unary under RB",
+        "RB < /^" + StringUtils.join(regexps, "|") + "$/",
         PARENT_PROJECTION,
         Monotonicity.DOWN));
 
-    add(new UnaryQuantifier("without",
-        "IN < /^[Ww]ithout$/",
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
+          q.trigger == org.goobs.truth.Quantifier.TriggerType.UNARY_NOT_IN) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new UnaryQuantifier("down unary under IN",
+        "IN < /^" + StringUtils.join(regexps, "|") + "$/",
         PP_PROJECTION,
+        Monotonicity.DOWN));
+
+    add(new UnaryQuantifier("unary 'no'",
+        "DT < /^[Nn]o$/ > NP >> VP",
+        NP_PROJECTION,
         Monotonicity.DOWN));
 
     // non-monotone operators ---------------------------------------------------
@@ -39,21 +66,23 @@ public class GaborMono implements Mono {
 
 
     // down-down operators ------------------------------------------------------
-
-    add(new BinaryQuantifier("no",
-        "DT < /^[Nn]o$/",
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
+          (q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT || q.trigger == org.goobs.truth.Quantifier.TriggerType.NO)) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new BinaryQuantifier("down down under DT/JJ",
+        "(/^DT|JJS?$/ < /^" + StringUtils.join(regexps, "|") + "$/ !$, (DT < /^[Aa]$/)) !>> VP",
         NP_PROJECTION,
         Monotonicity.DOWN,
         S_PROJECTION,
         Monotonicity.DOWN));
 
-    add(new BinaryQuantifier("neither",
-        "DT < /^[Nn]either$/",
-        NP_PROJECTION,
-        Monotonicity.DOWN,
-        S_PROJECTION,
-        Monotonicity.DOWN));
-
+    // Some other special cases
     add(new BinaryQuantifier("AT_MOST",
         "QP < (IN < /^[Aa]t$/) < (JJS < /^most$/) < CD",
         NP_PROJECTION,
@@ -61,49 +90,36 @@ public class GaborMono implements Mono {
         S_PROJECTION,
         Monotonicity.DOWN));
 
-    add(new BinaryQuantifier("few",
-        "JJ < /^[Ff]ew$/ !$, (DT < /^[Aa]$/)", // exclude "a few"
-        NP_PROJECTION,
-        Monotonicity.DOWN,
-        S_PROJECTION,
-        Monotonicity.DOWN));
-
-
     // down-up operators --------------------------------------------------------
 
-    add(new BinaryQuantifier("all",
-        "DT < /^[Aa]ll$/",
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.FORALL &&
+          q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new BinaryQuantifier("down up under DT",
+        "DT < /^" + StringUtils.join(regexps, "|") + "$/ !>> VP",
         NP_PROJECTION,
         Monotonicity.DOWN,
         S_PROJECTION,
         Monotonicity.UP));
-
-    add(new BinaryQuantifier("each",
-        "DT < /^[Ee]ach$/",
-        NP_PROJECTION,
-        Monotonicity.DOWN,
-        S_PROJECTION,
-        Monotonicity.UP));
-
-    add(new BinaryQuantifier("every",
-        "DT < /^[Ee]very$/",
-        NP_PROJECTION,
-        Monotonicity.DOWN,
-        S_PROJECTION,
-        Monotonicity.UP));
-
 
     // non-up operators ---------------------------------------------------------
-
-    add(new BinaryQuantifier("most",
-        "JJS < /^[Mm]ost$/ !> QP", // not under QP, to eliminate "at most"
-        NP_PROJECTION,
-        Monotonicity.NON,
-        S_PROJECTION,
-        Monotonicity.UP));
-
-    add(new BinaryQuantifier("many",
-        "/DT|JJ/ < /^[Mm]any$/",
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.MOST &&
+          q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new BinaryQuantifier("non up under DT/JJ/RBS",
+        "/^(DT|JJ|RB)S?$/ < /^" + StringUtils.join(regexps, "|") + "$/ !> QP !>> VP",
         NP_PROJECTION,
         Monotonicity.NON,
         S_PROJECTION,
@@ -157,6 +173,9 @@ public class GaborMono implements Mono {
       //noinspection unchecked
       return Collections.EMPTY_LIST;
     }
+
+    @Override
+    public String toString() { return humanReadableName; }
   }
 
 
@@ -251,6 +270,10 @@ public class GaborMono implements Mono {
     Arrays.fill(monoMarks, Monotonicity.DEFAULT);
     Monotonicity[] quantifierMarks = new Monotonicity[tree.yield().size()];
     Arrays.fill(quantifierMarks, Monotonicity.UP);
+    List<String> yield = new ArrayList<>(monoMarks.length);
+    for (Label w : tree.yield()) {
+      yield.add(w.value());
+    }
 
     // Run Monotonicity
     for (Quantifier quantifier : quantifiers) {
@@ -258,7 +281,22 @@ public class GaborMono implements Mono {
       boolean doCompose = false;
       for (Pair<Tree, Monotonicity> match : quantifier.annotate(tree)) {
         doCompose = true;
-        for (int index : spans.findSpan(match.first)) {
+        Span span = spans.findSpan(match.first);
+        // Don't mark the quantifier itself
+        // This block is a mess of off-by-ones.
+        // We start with a span, and try to find a quantifier as far left as possible, going
+        // no more than two words to the right of the left edge (if this sounds hacky, it's because
+        // it is).
+        OUTER: for (int start = 0; start < Math.min(2, span.size() - 1); ++start) {
+          for (int len = span.size() - start - 1; len > 0; --len) {
+            if (org.goobs.truth.Quantifier.quantifierGlosses.contains(StringUtils.join(yield.subList(span.start() + start, span.start() + start + len), " ").toLowerCase())) {
+              span.setStart(span.start() + start + len);
+              break OUTER;
+            }
+          }
+        }
+        // Apply the local markings
+        for (int index : span) {
           if (quantifierMarks[index] == Monotonicity.UP) {
             quantifierMarks[index] = match.second;
           }

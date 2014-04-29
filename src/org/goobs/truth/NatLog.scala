@@ -119,6 +119,18 @@ object NatLog {
     synonyms = -0.02,
     default = Double.NegativeInfinity)
 
+  def hartNatlogNoMutations:WeightVector = natlogWeights(
+    strictNatLog = -0.0,
+    similarity = Double.NegativeInfinity,
+    wordnet = Double.NegativeInfinity,
+    insertionOrDeletion = -0.01,
+    unknownInsertionOrDeletion = -0.01,
+    morphology = Double.NegativeInfinity,
+    wsd = Double.NegativeInfinity,
+    okQuantifier = -0.01,
+    synonyms = Double.NegativeInfinity,
+    default = Double.NegativeInfinity)
+
   /**
    * A soft initialization to NatLog weights; this is the same as
    * hardNatlogWeights, but with a soft rather than hard penalty for invalid
