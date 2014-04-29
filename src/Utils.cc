@@ -108,6 +108,7 @@ inference_function edge2function(const edge_type& type) {
   switch (type) {
     case WORDNET_UP: 
     case FREEBASE_UP: 
+    case QUANTIFIER_UP:
     case DEL_NOUN:
     case DEL_VERB:
     case DEL_ADJ:
@@ -116,6 +117,7 @@ inference_function edge2function(const edge_type& type) {
       break;
     case WORDNET_DOWN: 
     case FREEBASE_DOWN: 
+    case QUANTIFIER_DOWN:
     case ADD_NOUN:
     case ADD_VERB:
     case ADD_ADJ:
@@ -153,9 +155,6 @@ inference_function edge2function(const edge_type& type) {
     case DEL_EXISTENTIAL:
     case DEL_UNIVERSAL:
     case DEL_QUANTIFIER_OTHER:
-    // I think something special actually happens with these
-    case QUANTIFIER_WEAKEN:
-    case QUANTIFIER_STRENGTHEN:
     case NULL_EDGE_TYPE:
       function = FUNCTION_EQUIVALENT;
       break;

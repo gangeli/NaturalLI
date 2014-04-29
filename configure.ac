@@ -39,6 +39,10 @@ if test "x$scalac_found" != "xyes"; then
   AC_MSG_ERROR([could not find scalac compiler])
 fi
 
+# (ant)
+AC_CHECK_PROG([ant_found],["ant"],[yes],[no])
+AM_CONDITIONAL(HAVE_ANT, test x"$ant_found" = x"yes")
+
 echo "---CHECKS FOR LIBRARIES---"
 # (postgresql)
 AX_LIB_POSTGRESQL([8.4.9])

@@ -332,8 +332,8 @@ inline const Path* BreadthFirstSearch::push(
   // 5. Tweak monotonicity
   const uint8_t until = newMonotoneBoundary >= newMutationIndex ? newMonotoneBoundary : mutatedLength;
   switch (edge) {
-    case QUANTIFIER_WEAKEN:
-    case QUANTIFIER_STRENGTHEN:
+    case QUANTIFIER_UP:     // TODO(gabor) I rather suspect this is wrong
+    case QUANTIFIER_DOWN:
     case QUANTIFIER_NEGATE:
       // Flip monotonicity
       for (uint8_t k = newMutationIndex; k < until; ++k) {

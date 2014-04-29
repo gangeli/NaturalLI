@@ -11,7 +11,7 @@ clean-local:
 
 LIB=${realpath lib}
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:lib/stanford-corenlp-caseless-models-current.jar:lib/stanford-corenlp-models-current.jar
-export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/scripts/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/typesafe-config.jar:${LIB}/demo/gson.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar
+export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim.jar:${LIB}/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/typesafe-config.jar:${LIB}/demo/gson.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar
 export TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
 src/org/goobs/truth/Messages.java: src/Messages.proto
@@ -35,10 +35,17 @@ test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard te
 
 java_test: src/client.jar test/test_client.jar
 	@echo "[test] junit *.java"
-	@${JAVA_HOME}/bin/java -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+if HAVE_ANT
+	@echo "  (using ant)"
+	@${JAVA_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+else
+	@echo "  (could not find ant -- running directly)"
+	@${JAVA_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+endif
+	endif
 	@echo "[test] scalatest *.scala"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test/test_scala.xml -R test/test_client.jar -o -w org.goobs.truth
 	@echo "[test] RegressionTest"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -R test/test_client.jar -o -w org.goobs.truth
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
 
 server: src/truth

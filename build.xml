@@ -1,0 +1,32 @@
+<!-- This is only a wrapper for producing JUnit XML output -->
+<project name="truth" default="test" basedir=".">
+  <property name="tests.path"      value="${basedir}/test/src" />
+  <property environment="env"/>
+  
+  <target name="classpath" description="Sets the classpath">
+    <path id="classpath">
+      <fileset dir="${basedir}/lib">
+        <include name="*.jar"/>
+      </fileset>
+      <fileset dir="${basedir}/lib/test">
+        <include name="*.jar"/>
+      </fileset>
+      <pathelement path="${basedir}/src/client.jar"/>
+      <pathelement path="${basedir}/test/test_client.jar"/>
+      <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
+    </path>
+  </target>
+  
+  <target name="test" depends="classpath"
+          description="Run core unit tests">
+    <junit fork="true" maxmemory="1g" printsummary="off" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
+      <classpath refid="classpath"/>
+      <formatter type="xml"/>
+      <batchtest fork="yes" todir="${basedir}/test/">
+        <fileset dir="${tests.path}">
+          <include name="**/*Test.java"/>
+        </fileset>
+      </batchtest>
+    </junit>
+  </target>
+</project>
