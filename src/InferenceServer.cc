@@ -81,14 +81,14 @@ FactDB* makeFactDB(Query& query) {
           fact[wordI].type = DEL_QUANTIFIER_OTHER;  // certainly not right for NOT
         } else if (posTag != NULL && (posTag[0] == 'm' || posTag[0] == 'M')) {
           fact[wordI].type = DEL_UNIVERSAL;  // not quite right for MOST
+        } else if (posTag != NULL && (posTag[0] == 'g' || posTag[0] == 'G')) {
+          fact[wordI].type = DEL_NEGATION;
         } else if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
           fact[wordI].type = DEL_NOUN;
         } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
           fact[wordI].type = DEL_VERB;
         } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
           fact[wordI].type = DEL_ADJ;
-        } else if (posTag != NULL && (posTag[0] == 'r' || posTag[0] == 'R')) {
-          fact[wordI].type = DEL_ADV;
         } else if (posTag != NULL && posTag[0] == '?') {
           fact[wordI].type = DEL_OTHER;
         } else {

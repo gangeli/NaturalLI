@@ -82,7 +82,7 @@ string toString(const edge_type& edge) {
     case ADD_NOUN                     : return "ADD_NOUN";
     case ADD_VERB                     : return "ADD_VERB";
     case ADD_ADJ                      : return "ADD_ADJ";
-    case ADD_ADV                      : return "ADD_ADV";
+    case ADD_NEGATION                 : return "ADD_NEGATION";
     case ADD_EXISTENTIAL              : return "ADD_EXISTENTIAL";
     case ADD_QUANTIFIER_OTHER         : return "ADD_QUANTIFIER_OTHER";
     case ADD_UNIVERSAL                : return "ADD_UNIVERSAL";
@@ -90,7 +90,7 @@ string toString(const edge_type& edge) {
     case DEL_NOUN                     : return "DEL_NOUN";
     case DEL_VERB                     : return "DEL_VERB";
     case DEL_ADJ                      : return "DEL_ADJ";
-    case DEL_ADV                      : return "DEL_ADV";
+    case DEL_NEGATION                 : return "DEL_NEGATION";
     case DEL_EXISTENTIAL              : return "DEL_EXISTENTIAL";
     case DEL_QUANTIFIER_OTHER         : return "DEL_QUANTIFIER_OTHER";
     case DEL_UNIVERSAL                : return "DEL_UNIVERSAL";
@@ -111,7 +111,6 @@ inference_function edge2function(const edge_type& type) {
     case DEL_NOUN:
     case DEL_VERB:
     case DEL_ADJ:
-    case DEL_ADV:
     case DEL_OTHER:
       function = FUNCTION_FORWARD_ENTAILMENT;
       break;
@@ -120,7 +119,6 @@ inference_function edge2function(const edge_type& type) {
     case ADD_NOUN:
     case ADD_VERB:
     case ADD_ADJ:
-    case ADD_ADV:
     case ADD_OTHER:
       function = FUNCTION_REVERSE_ENTAILMENT;
       break;
@@ -144,6 +142,8 @@ inference_function edge2function(const edge_type& type) {
       function = FUNCTION_EQUIVALENT;
       break;
     case QUANTIFIER_NEGATE:
+    case ADD_NEGATION:
+    case DEL_NEGATION:
       function = FUNCTION_NEGATION;
       break;
     // The weird cases...

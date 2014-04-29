@@ -39,7 +39,7 @@
 #define ADD_NOUN                     13
 #define ADD_VERB                     14
 #define ADD_ADJ                      15
-#define ADD_ADV                      16
+#define ADD_NEGATION                 16
 #define ADD_EXISTENTIAL              17
 #define ADD_QUANTIFIER_OTHER         18
 #define ADD_UNIVERSAL                19
@@ -49,7 +49,7 @@
 #define DEL_NOUN                     21
 #define DEL_VERB                     22
 #define DEL_ADJ                      23
-#define DEL_ADV                      24
+#define DEL_NEGATION                 24
 #define DEL_EXISTENTIAL              25
 #define DEL_QUANTIFIER_OTHER         26
 #define DEL_UNIVERSAL                27

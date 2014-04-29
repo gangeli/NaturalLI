@@ -225,9 +225,9 @@ object CreateGraph {
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.ADD_ADV, 0, 0, index, sense, 1.0)
+                    edge(EdgeType.ADD_OTHER, 0, 0, index, sense, 1.0)
                   }
-                  edge(EdgeType.DEL_ADV, index, sense, 0, 0, 1.0)
+                  edge(EdgeType.DEL_OTHER, index, sense, 0, 0, 1.0)
                 }
               case _ =>
             }
@@ -304,7 +304,8 @@ object CreateGraph {
               edge(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
               edge(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
             case Quantifier.LogicalQuantifier.NONE =>
-              // TODO(gabor) we really should handle "not" somewhere too
+              edge(EdgeType.ADD_NEGATION, 0, 0, sourceIndexed, 0, 1.0)
+              edge(EdgeType.DEL_NEGATION, sourceIndexed, 0, 0, 0, 1.0)
           }
           sourceIndexed
         }).toSet
@@ -325,9 +326,6 @@ object CreateGraph {
               case 'J' =>
                 edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
                 edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
-              case 'R' =>
-                edge(EdgeType.DEL_ADV, index, 0, 0, 0, 1.0)
-                edge(EdgeType.ADD_ADV, 0, 0, index, 0, 1.0)
               case _ =>
                 edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
                 edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)

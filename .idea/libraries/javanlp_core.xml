@@ -4,6 +4,8 @@
       <root url="file://$PROJECT_DIR$/../nlp/projects/core/classes" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES />
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../nlp/projects/core/src" />
+    </SOURCES>
   </library>
 </component>

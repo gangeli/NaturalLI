@@ -56,8 +56,6 @@ object NatLog {
     // (additions/deletions)
     setCounts(ADD_ADJ, Monotonicity.DOWN, insertionOrDeletion)
     setCounts(DEL_ADJ, Monotonicity.UP, insertionOrDeletion)
-    setCounts(ADD_ADV, Monotonicity.DOWN, insertionOrDeletion)
-    setCounts(DEL_ADV, Monotonicity.UP, insertionOrDeletion)
     setCounts(ADD_NOUN, Monotonicity.DOWN, insertionOrDeletion)
     setCounts(DEL_NOUN, Monotonicity.UP, insertionOrDeletion)
     setCounts(ADD_OTHER, Monotonicity.DOWN, insertionOrDeletion)
@@ -70,6 +68,8 @@ object NatLog {
     setCounts(DEL_UNIVERSAL, Monotonicity.UP, insertionOrDeletion)
     setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, insertionOrDeletion)
     setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(ADD_NEGATION, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_NEGATION, Monotonicity.DOWN, insertionOrDeletion)
 
     // (more fishy insertions or deletions)
     setCounts(ADD_VERB, Monotonicity.DOWN, unknownInsertionOrDeletion)
@@ -246,7 +246,6 @@ object NatLog {
       val NOUN = "(N.*)".r
       val VERB = "(V.*)".r
       val ADJ  = "(J.*)".r
-      val ADV  = "(R.*)".r
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[String]] = Array.fill[Option[String]](chunkedWords.size)( None )
@@ -269,7 +268,6 @@ object NatLog {
             case NOUN(_) => Some("n")
             case VERB(_) => Some("v")
             case ADJ(_) => Some("j")
-            case ADV(_) => Some("r")
             case _ => None
           })
           synsetMonotone(i) = synsetMonotone(i).orElse(Some(monotonicity(k)))
