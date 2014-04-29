@@ -32,6 +32,7 @@ import org.goobs.sim.Ontology.RealNode
 // CREATE INDEX word_gloss ON word_indexer(gloss);
 // CREATE INDEX edge_outgoing ON edge (source, source_sense);
 // CREATE INDEX edge_type ON edge (type);
+// CREATE VIEW graph AS (SELECT source.gloss AS source, e.source_sense AS source_sense, t.gloss AS relation, sink.gloss AS sink, e.sink_sense AS sink_sense FROM word source, word sink, edge e, edge_type t WHERE e.source=source.index AND e.sink=sink.index AND e.type=t.index);
 //
 
 /**
@@ -158,10 +159,14 @@ object CreateGraph {
             node.synset match {
               case (as:NounSynset) =>
                 for (antonym <- as.getAntonyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                     edge(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
                   }
                   edge(EdgeType.DEL_NOUN, index, sense, 0, 0, 1.0)
@@ -171,7 +176,8 @@ object CreateGraph {
                   edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
+                    !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                     edge(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
                   }
                   edge(EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
@@ -179,29 +185,46 @@ object CreateGraph {
               case (as:AdjectiveSynset) =>
                 for (related <- as.getSimilar;
                      wordForm <- related.getWordForms) {
-                  edge(EdgeType.WORDNET_ADJECTIVE_RELATED, index, sense, indexOf(wordForm), getSense(wordForm, related), 1.0)
+                  if (!Quantifier.quantifierGlosses.contains(wordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_ADJECTIVE_RELATED, index, sense, indexOf(wordForm), getSense(wordForm, related), 1.0)
+                  }
                 }
                 for (pertainym <- as.getPertainyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_ADJECTIVE_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                  if (!Quantifier.quantifierGlosses.contains(pertainym.getWordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_ADJECTIVE_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                  }
                 }
                 for (antonym <- as.getAntonyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                     edge(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
                     edge(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
                   }
                 }
               case (as:AdverbSynset) =>
-                for (pertainym <- as.getPertainyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_ADVERB_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                for (pertainym: WordSense <- as.getPertainyms(phraseGloss)) {
+                  if (!Quantifier.quantifierGlosses.contains(pertainym.getWordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_ADVERB_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                  }
                 }
-                for (antonym <- as.getAntonyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                for (antonym: WordSense <- as.getAntonyms(phraseGloss)) {
+                  if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
+                    edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss)) {
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
+                      !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                     edge(EdgeType.ADD_ADV, 0, 0, index, sense, 1.0)
                   }
                   edge(EdgeType.DEL_ADV, index, sense, 0, 0, 1.0)
