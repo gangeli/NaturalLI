@@ -14,16 +14,16 @@ import java.util.Set;
  * @author Gabor Angeli
  */
 public enum Quantifier {
+  ALL("all",                        LogicalQuantifier.FORALL),
+  ANY("any",                        LogicalQuantifier.FORALL),
+  BOTH("both",                      LogicalQuantifier.FORALL),
+  EACH("each",                      LogicalQuantifier.FORALL),
   THE_LOT_OF("the lot of",          LogicalQuantifier.FORALL),
   ALL_OF("all of",                  LogicalQuantifier.FORALL),
   FOR_ALL("for all",                LogicalQuantifier.FORALL),
   FOR_EVERY("for every",            LogicalQuantifier.FORALL),
   FOR_EACH("for each",              LogicalQuantifier.FORALL),
   EVERY("every",                    LogicalQuantifier.FORALL),
-  ALL("all",                        LogicalQuantifier.FORALL),
-  ANY("any",                        LogicalQuantifier.FORALL),
-  BOTH("both",                      LogicalQuantifier.FORALL),
-  EACH("each",                      LogicalQuantifier.FORALL),
 
   MORE_THAN_N1("more than num_1",   LogicalQuantifier.MOST),
   MORE_THAN_N2("more than num_2",   LogicalQuantifier.MOST),

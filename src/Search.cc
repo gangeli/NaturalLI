@@ -218,7 +218,7 @@ inline const inference_state compose(const inference_state& current,
           return INFER_FALSE;
         case FUNCTION_NEGATION:
         case FUNCTION_COVER:
-          return INFER_FALSE;
+          return INFER_TRUE;
         case FUNCTION_FORWARD_ENTAILMENT:
         case FUNCTION_ALTERNATION:
         case FUNCTION_INDEPENDENCE:

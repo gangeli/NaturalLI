@@ -110,6 +110,7 @@ public class GaborMono implements Mono {
         Monotonicity.UP));
   }});
 
+//  private static final String NP_PROJECTION = "__ >+(NP) (NP=proj !> NP)";
   private static final String NP_PROJECTION = "__ >+(NP) (NP=proj !> NP)";
   private static final String PP_PROJECTION = "__ > PP=proj";
   // private static final String S_PROJECTION = "__ >+(/.*/) (S=proj !> S)";

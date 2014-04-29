@@ -11,7 +11,6 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 
 import static org.junit.Assert.*;
 
@@ -21,24 +20,6 @@ import static org.junit.Assert.*;
  * @author Gabor Angeli
  */
 public class GaborMonoTest {
-
-  public static final String[] nouns = new String[]{ "cat", "dog", "animal", "tail", "fur", "legs" };
-  public static final String[] adjectives = new String[]{ "furry", "large", "small", "cute" };
-  public static final String[] verbs = new String[]{ "has", "plays with", "is covered in", "is" };
-
-  private static String noun(Random rand) {
-    return nouns[rand.nextInt(nouns.length)];
-  }
-  private static String adj(Random rand) {
-    return adjectives[rand.nextInt(adjectives.length)];
-  }
-  private static String verb(Random rand) {
-    return verbs[rand.nextInt(verbs.length)];
-  }
-  private static String quantifier(Random rand) {
-    return StringUtils.join(Quantifier.values()[rand.nextInt(Quantifier.values().length)].surfaceForm, " ");
-  }
-
   private static final StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
     setProperty("annotators", "tokenize,ssplit,parse");
   }});
@@ -72,7 +53,7 @@ public class GaborMonoTest {
     // Checks
     assertEquals(expected.size(), mono.length);
     for (int i = 0; i < Math.min(expected.size(), mono.length); ++i) {
-      assertEquals(expected.get(i), mono[i]);
+      assertEquals("Disagreed on '" + spec.split("\\s+")[i] + "' in '" + spec + "'", expected.get(i), mono[i]);
     }
   }
 
@@ -80,6 +61,32 @@ public class GaborMonoTest {
   public void noQuantifier() {
     validate("cats^ have^ tails^");
     validate("the^ seven^ blue^ cats^ all^ have^ tails^");
+  }
+
+  @Test
+  public void singleQuantifier() {
+    for (Quantifier q : Quantifier.values()) {
+      String sm;
+      String om;
+      switch (q.closestMeaning) {
+        case FORALL:
+          sm = "v"; om = "^";
+          break;
+        case EXISTS:
+          sm = "^"; om = "^";
+          break;
+        case MOST:
+          sm = "*"; om = "^";
+          break;
+        case NONE:
+          sm = "v"; om = "v";
+          break;
+        default:
+          throw new IllegalArgumentException();
+      }
+      validate(StringUtils.join(q.surfaceForm, "^ ") + "^ cats" + sm + " have" + om + " tails" + om);
+      validate(StringUtils.join(q.surfaceForm, "^ ") + "^ fluffy" + sm + " cats" + sm + " have" + om + " long" + om + " tails" + om);
+    }
   }
 
 }
