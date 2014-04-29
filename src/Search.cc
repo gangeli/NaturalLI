@@ -714,7 +714,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     // (variables)
     const uint8_t& parentLength = parent->factLength;
     const tagged_word* parentFact = parent->fact;
-    const inference_state& parentTruth = parent->nodeState.truth;
+    const inference_state parentTruth = parent->nodeState.truth;
     const uint8_t& indexToMutate = parent->lastMutationIndex;
     const tagged_word& parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
     const monotonicity& parentMonotonicity = parentWord.monotonicity;
