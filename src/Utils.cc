@@ -95,9 +95,9 @@ string toString(const edge_type& edge) {
     case DEL_QUANTIFIER_OTHER         : return "DEL_QUANTIFIER_OTHER";
     case DEL_UNIVERSAL                : return "DEL_UNIVERSAL";
     case DEL_OTHER                    : return "DEL_?";
-    case QUANTIFIER_WEAKEN            : return "QUANTIFIER_WEAKEN";
+    case QUANTIFIER_UP                : return "QUANTIFIER_UP";
+    case QUANTIFIER_DOWN              : return "QUANTIFIER_DOWN";
     case QUANTIFIER_NEGATE            : return "QUANTIFIER_NEGATE";
-    case QUANTIFIER_STRENGTHEN        : return "QUANTIFIER_STRENGTHEN";
     case QUANTIFIER_REWORD            : return "QUANTIFIER_REWORD";
     default: return "UNK_EDGE_TYPE";
   }

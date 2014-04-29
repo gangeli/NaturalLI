@@ -3,10 +3,7 @@ package edu.stanford.nlp.natlog;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
-import edu.stanford.nlp.trees.tregex.TregexMatcher;
-import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.util.StringUtils;
 import org.goobs.truth.Quantifier;
 import org.junit.Test;
@@ -136,16 +133,6 @@ public class GaborMonoTest {
     validate ("some^ cats^ have^ n't^ anyv tailsv");   // -> some cats haven't any {fuzzy tails}
     validate ("all^ catsv do^ n't^ havev tailsv");
     validate ("no^ catsv havev nov tail^");
-  }
-
-  @Test
-  public void sandbox() {
-//    TregexPattern p = TregexPattern.compile("/^DT|JJS?$/ < /^[nN]o|[nN]either|[fF]ew$/ !$, (DT < /^[Aa]$/) !>> VP");
-    TregexPattern p = TregexPattern.compile("DT < /^[Nn]o$/ > NP >> VP");
-    TregexMatcher m = p.matcher(Tree.valueOf("(ROOT  (S    (NP (JJ enough) (NNS cats))    (VP (VBP have)      (NP (DT no) (NNS tails)))))"));
-    while (m.find()) {
-      m.getMatch().pennPrint();
-    }
   }
 
 }

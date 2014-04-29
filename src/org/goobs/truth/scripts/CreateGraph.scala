@@ -279,16 +279,17 @@ object CreateGraph {
           for (sink <- Quantifier.values()) {
             val sinkIndexed:Int = indexOf(sink.surfaceForm.mkString(" "))
             if (sourceIndexed != sinkIndexed) {
-              if (source.closestMeaning.partialOrder == sink.closestMeaning.partialOrder) {
-                edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder >= 0 && sink.closestMeaning.partialOrder < 0) {
+              if (source.closestMeaning.isComparableTo(sink.closestMeaning)) {
+                if (source.closestMeaning.denotationLessThan(sink.closestMeaning)) {
+                  edge(EdgeType.QUANTIFIER_UP, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                } else if (sink.closestMeaning.denotationLessThan(source.closestMeaning)) {
+                  edge(EdgeType.QUANTIFIER_DOWN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                } else if (source.closestMeaning.equals(sink.closestMeaning)) {
+                  edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                }
+              }
+              if (source.closestMeaning.isNegationOf(sink.closestMeaning)) {
                 edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder < 0 && sink.closestMeaning.partialOrder >= 0) {
-                edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder >= 0 && source.closestMeaning.partialOrder < sink.closestMeaning.partialOrder) {
-                edge(EdgeType.QUANTIFIER_STRENGTHEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
-              } else if (source.closestMeaning.partialOrder > sink.closestMeaning.partialOrder && sink.closestMeaning.partialOrder >= 0) {
-                edge(EdgeType.QUANTIFIER_WEAKEN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               }
             }
           }

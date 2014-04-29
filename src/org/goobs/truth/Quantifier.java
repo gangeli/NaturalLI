@@ -2,6 +2,7 @@ package org.goobs.truth;
 
 import edu.stanford.nlp.Sentence;
 import edu.stanford.nlp.util.StringUtils;
+import scala.tools.nsc.transform.patmat.Logic;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ public enum Quantifier {
   FOR_EACH("for each",              LogicalQuantifier.FORALL, TriggerType.DONT_MARK),
 
   MOST("most",                      LogicalQuantifier.MOST, TriggerType.DEFAULT),
+  MANY("many",                      LogicalQuantifier.MOST, TriggerType.DEFAULT),
   ENOUGH("enough",                  LogicalQuantifier.MOST, TriggerType.DEFAULT),
   SEVERAL("several",                LogicalQuantifier.MOST, TriggerType.DEFAULT),
   MORE_THAN("more than",            LogicalQuantifier.MOST, TriggerType.DONT_MARK),
@@ -67,6 +69,38 @@ public enum Quantifier {
     NONE(-3);
 
     public final int partialOrder;
+
+    public boolean isComparableTo(LogicalQuantifier other) {
+      switch (this) {
+        case FORALL:
+          return other == FORALL || other == MOST || other == EXISTS;
+        case MOST:
+          return other == FORALL || other == MOST || other == EXISTS;
+        case EXISTS:
+          return other == FORALL || other == MOST || other == EXISTS;
+        case NONE:
+          return other == NONE;
+        default: throw new IllegalStateException("Unknown truth value: " + this);
+      }
+    }
+
+    public boolean denotationLessThan(LogicalQuantifier other) {
+      switch (this) {
+        case FORALL:
+          return other == MOST || other == EXISTS;
+        case MOST:
+          return other == EXISTS;
+        case EXISTS:
+          return false;
+        case NONE:
+          return false;
+        default: throw new IllegalStateException("Unknown truth value: " + this);
+      }
+    }
+
+    public boolean isNegationOf(LogicalQuantifier other) {
+      return (this == NONE && other != NONE) || (other == NONE && this != NONE);
+    }
 
     LogicalQuantifier(int partialOrder) {
       this.partialOrder = partialOrder;

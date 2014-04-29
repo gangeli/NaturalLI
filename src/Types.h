@@ -55,10 +55,10 @@
 #define DEL_UNIVERSAL                27
 #define DEL_OTHER                    28  // NOTE: never have more than 8 insertion types. @see Trie.h
 
-#define MONOTONE_INDEPENDENT_BEGIN   29  // should be the same as the first index after which monotonicity doesn't matter
-#define QUANTIFIER_WEAKEN            29
-#define QUANTIFIER_NEGATE            30
-#define QUANTIFIER_STRENGTHEN        31
+#define QUANTIFIER_UP                29
+#define QUANTIFIER_DOWN              30
+#define MONOTONE_INDEPENDENT_BEGIN   31  // should be the same as the first index after which monotonicity doesn't matter
+#define QUANTIFIER_NEGATE            31
 #define QUANTIFIER_REWORD            32
 
 #define MORPH_FUDGE_NUMBER           33

@@ -311,9 +311,9 @@ object EdgeType extends Enumeration {
   // --------
 
   // Quantifiers
-  val QUANTIFIER_WEAKEN              = Value(29, "quantifier_weaken")
-  val QUANTIFIER_NEGATE              = Value(30, "quantifier_negate")
-  val QUANTIFIER_STRENGTHEN          = Value(31, "quantifier_strengthen")
+  val QUANTIFIER_UP                  = Value(29, "quantifier_up")
+  val QUANTIFIER_DOWN                = Value(30, "quantifier_down")
+  val QUANTIFIER_NEGATE              = Value(31, "quantifier_negate")
   val QUANTIFIER_REWORD              = Value(32, "quantifier_reword")
 
   // Could in theory be subdivided: tense, plurality, etc.
