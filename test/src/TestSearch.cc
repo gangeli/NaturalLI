@@ -352,7 +352,7 @@ TEST_F(BreadthFirstSearchTest, MonotonicityWeakening) {
   child = search.push(qnode, 0, 1, ANIMAL, NULL_WORD, QUANTIFIER_DOWN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(2, child->monotoneBoundary);
-  EXPECT_EQ(MONOTONE_DOWN, child->fact[0].monotonicity);
+  EXPECT_EQ(MONOTONE_UP,      child->fact[0].monotonicity);
   EXPECT_EQ(MONOTONE_DOWN,    child->fact[1].monotonicity);
   EXPECT_EQ(MONOTONE_DEFAULT, child->fact[2].monotonicity);
   EXPECT_EQ(MONOTONE_DEFAULT, child->fact[3].monotonicity);
