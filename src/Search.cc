@@ -727,6 +727,15 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     const uint8_t& indexToMutate = parent->lastMutationIndex;
     const tagged_word& parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
     const monotonicity& parentMonotonicity = parentWord.monotonicity;
+    // This is actually a bit complicated.
+    // When we insert a word, we have to decide if we take the monotonicity of
+    // its left or right neighbor.
+    // Usually, we want to take the right neighbor (in English; right-branching
+    // yadda yadda); but, there are some special cases where we want to take the
+    // left. These are:
+    //   (1) If we're at the end of the sentence (duh)
+    //   (2) If we're about to cross a phrase boundary -- we approximate this
+    //       using the monotoneBoundary, but this is a bit hacky.
     const monotonicity& insertMonotonicity = 
       parentFact[
         indexToMutate >= parentLength - 1

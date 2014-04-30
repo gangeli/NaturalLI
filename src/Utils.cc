@@ -143,9 +143,11 @@ inference_function edge2function(const edge_type& type) {
     case WORDNET_ADVERB_PERTAINYM:
       function = FUNCTION_EQUIVALENT;
       break;
-    case QUANTIFIER_NEGATE:
     case ADD_NEGATION:
     case DEL_NEGATION:
+      function = FUNCTION_INDEPENDENCE;
+      break;
+    case QUANTIFIER_NEGATE:
       function = FUNCTION_NEGATION;
       break;
     // The weird cases...
