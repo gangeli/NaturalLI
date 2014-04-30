@@ -28,7 +28,6 @@ public enum Quantifier {
   MOST("most",                      LogicalQuantifier.MOST, TriggerType.DEFAULT),
   MANY("many",                      LogicalQuantifier.MOST, TriggerType.DEFAULT),
   ENOUGH("enough",                  LogicalQuantifier.MOST, TriggerType.DEFAULT),
-  SEVERAL("several",                LogicalQuantifier.MOST, TriggerType.DEFAULT),
   MORE_THAN("more than",            LogicalQuantifier.MOST, TriggerType.DONT_MARK),
   A_LOT_OF("a lot of",              LogicalQuantifier.MOST, TriggerType.DONT_MARK),
   LOTS_OF("lot of",                 LogicalQuantifier.MOST, TriggerType.DONT_MARK),
@@ -38,6 +37,7 @@ public enum Quantifier {
   LOADS_OF("load of",               LogicalQuantifier.MOST, TriggerType.DONT_MARK),
   TONS_OF("ton of",                 LogicalQuantifier.MOST, TriggerType.DONT_MARK),
 
+  SEVERAL("several",                LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
   SOME("some",                      LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
   EITHER("either",                  LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
   A("a",                            LogicalQuantifier.EXISTS, TriggerType.DEFAULT),

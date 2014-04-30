@@ -37,10 +37,10 @@ java_test: src/client.jar test/test_client.jar
 	@echo "[test] junit *.java"
 if HAVE_ANT
 	@echo "  (using ant)"
-	@${JAVA_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
 else
 	@echo "  (could not find ant -- running directly)"
-	@${JAVA_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
 endif
 	endif
 	@echo "[test] scalatest *.scala"

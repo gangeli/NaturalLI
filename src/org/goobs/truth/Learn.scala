@@ -60,7 +60,7 @@ object Learn {
           recursivePrint(node.getImpliedFrom)
         }
       } else {
-        s"<${node.getFact.getGloss}>"
+        s"${node.getFact.getGloss}"
       }
     }
     def computeProb(node:Inference):Double = {
