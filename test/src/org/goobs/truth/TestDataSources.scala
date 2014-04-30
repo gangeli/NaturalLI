@@ -94,14 +94,6 @@ class TestDataSources extends Test {
       numNo  should be (8)
       numUnk should be (32)
     }
-
-    it ("should match expected monotonicity markings on a subset of queries") {
-      import Messages.Monotonicity._
-      // There was an Italian who became the world 's greatest tenor
-      // TODO(gabor) I actually contest the FLAT mark here?
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).head._1.getQueryFact.getWordList.map( _.getMonotonicity ).toList should be (
-        List(UP, UP, UP, UP, UP, FLAT, FLAT, FLAT, FLAT, FLAT))
-    }
   }
 
 }
