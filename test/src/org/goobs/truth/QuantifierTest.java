@@ -30,9 +30,11 @@ public class QuantifierTest {
     assertFalse(Quantifier.LogicalQuantifier.FORALL.denotationLessThan(Quantifier.LogicalQuantifier.FORALL));
     assertTrue(Quantifier.LogicalQuantifier.FORALL.denotationLessThan(Quantifier.LogicalQuantifier.MOST));
     assertTrue(Quantifier.LogicalQuantifier.FORALL.denotationLessThan(Quantifier.LogicalQuantifier.EXISTS));
+
     assertFalse(Quantifier.LogicalQuantifier.MOST.denotationLessThan(Quantifier.LogicalQuantifier.FORALL));
     assertFalse(Quantifier.LogicalQuantifier.MOST.denotationLessThan(Quantifier.LogicalQuantifier.MOST));
     assertTrue(Quantifier.LogicalQuantifier.MOST.denotationLessThan(Quantifier.LogicalQuantifier.EXISTS));
+
     assertFalse(Quantifier.LogicalQuantifier.EXISTS.denotationLessThan(Quantifier.LogicalQuantifier.FORALL));
     assertFalse(Quantifier.LogicalQuantifier.EXISTS.denotationLessThan(Quantifier.LogicalQuantifier.MOST));
     assertFalse(Quantifier.LogicalQuantifier.EXISTS.denotationLessThan(Quantifier.LogicalQuantifier.EXISTS));

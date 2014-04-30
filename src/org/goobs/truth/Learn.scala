@@ -55,7 +55,7 @@ object Learn {
       if (node.hasImpliedFrom) {
         val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
         if (incomingType != 63) {
-          s"${node.getFact.getGloss} <-[$incomingType]- ${recursivePrint(node.getImpliedFrom)}"
+          s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
         } else {
           recursivePrint(node.getImpliedFrom)
         }

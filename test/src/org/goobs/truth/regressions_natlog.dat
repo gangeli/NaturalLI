@@ -30,12 +30,27 @@
 ✔[is](no dog, smart)	[is](neither dog, smart)
 ✔[are](most dogs, smart)	[are](several dogs, smart)
 
+# Quantifier mutation
+# (monotone up)
+✔[are](all dogs, smart)	[are](most dogs, smart)
+✔[are](all dogs, smart)	[are](some dogs, smart)
+?[are](most dogs, smart)	[are](all dogs, smart)
+✔[are](most dogs, smart)	[are](some dogs, smart)
+?[are](some dogs, smart)	[are](all dogs, smart)
+?[are](some dogs, smart)	[are](most dogs, smart)
+# (monotone down)
+?[chases](no dog, all cats)	[chases](no dog, most cats)
+?[chases](no dog, all cats)	[chases](no dog, some cats)
+✔[chases](no dog, most cats)	[chases](no dog, all cats)
+?[chases](no dog, most cats)	[chases](no dog, some cats)
+✔[chases](no dog, some cat)	[chases](no dog, all cat)
+✔[chases](no dog, some cat)	[chases](no dog, most cat)
+
 # Quantifier negation
 ✘[is](every dog, smart)	[is](no dog, smart)
 ✘[is](some dog, smart)	[is](no dog, smart)
 ✘[is](no dog, smart)	[is](some dog, smart)
 ✘[is](no dog, smart)	[is](every dog, smart)
-
 
 #
 # Tier 2: Intermediate NatLog
@@ -81,3 +96,8 @@
 #✔[runs](some man, faster than I)	[runs](some man, faster than I run)  # generally, the less safe direction
 ?[play](many cats, baseball)	[watch](many cats, baseball)
 ?[play](some cats, baseball)	[watch](some cats, baseball)
+
+#
+# Tier 3: FraCaS errors
+#
+

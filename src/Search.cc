@@ -338,7 +338,7 @@ inline const Path* BreadthFirstSearch::push(
     case QUANTIFIER_DOWN:
     case QUANTIFIER_NEGATE:
       // Flip monotonicity
-      for (uint8_t k = newMutationIndex; k < until; ++k) {
+      for (uint8_t k = newMutationIndex + 1; k < until; ++k) {
         switch (mutated[k].monotonicity) {
           case MONOTONE_UP:
             mutated[k].monotonicity = MONOTONE_DOWN;
