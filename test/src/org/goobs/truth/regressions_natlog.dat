@@ -97,6 +97,11 @@
 ?[play](many cats, baseball)	[watch](many cats, baseball)
 ?[play](some cats, baseball)	[watch](some cats, baseball)
 
+# Deletion special cases (straddling the monotonicity change)
+?[have](most furry cats, tails)	[have](most cats, tails)
+?[have](most cats in America, tails)	[have](most cats, tails)
+✔[have](most cats, furry tails)	[have](most cats, tails)
+
 #
 # Tier 3: FraCaS errors
 #

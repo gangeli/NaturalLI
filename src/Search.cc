@@ -727,7 +727,12 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     const uint8_t& indexToMutate = parent->lastMutationIndex;
     const tagged_word& parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
     const monotonicity& parentMonotonicity = parentWord.monotonicity;
-    const monotonicity& insertMonotonicity = parentFact[indexToMutate >= parentLength - 1 ? parentLength - 1  : indexToMutate + 1].monotonicity;
+    const monotonicity& insertMonotonicity = 
+      parentFact[
+        indexToMutate >= parentLength - 1
+          ? parentLength - 1 
+          : ((indexToMutate + 1) == parent->monotoneBoundary ? indexToMutate : indexToMutate + 1)
+        ].monotonicity;
 
     // Do post-insertions
     // note: edge is a deletion (remember, reverse search)

@@ -36,13 +36,11 @@ test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard te
 java_test: src/client.jar test/test_client.jar
 	@echo "[test] junit *.java"
 if HAVE_ANT
-	@echo "  (using ant)"
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+	ant test
 else
 	@echo "  (could not find ant -- running directly)"
 	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
 endif
-	endif
 	@echo "[test] scalatest *.scala"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test/test_scala.xml -R test/test_client.jar -o -w org.goobs.truth
 	@echo "[test] RegressionTest"
