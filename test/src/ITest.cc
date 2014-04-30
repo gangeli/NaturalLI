@@ -34,6 +34,7 @@ using namespace std;
 TEST(PostgresITest, RepeatableFactOrdering) {
   vector<vector<word>> facts1 = ReadLiteralFacts( NUM_FACTS_TO_CHECK );
   vector<vector<word>> facts2 = ReadLiteralFacts( NUM_FACTS_TO_CHECK );
+  ASSERT_GE(facts1.size(), NUM_FACTS_TO_CHECK);
 
   for (int i = 0; i < NUM_FACTS_TO_CHECK; ++i) {
     EXPECT_EQ(facts1[i], facts2[i]);
@@ -124,7 +125,7 @@ TEST(TrieITest, CompletionsValid) {
   }
   uint64_t endTime = rdtsc();
   printf("%u inputs have some completion (%u with non-null sense)\n", numCompletions, numNonzeroSense);
-  printf("  [took %lu CPU ticks; %2.2fx slower than control]\n",
+  printf("  [took %lu CPU ticks; %2.2fx the time for the control]\n",
             (endTime-beginTime), ((double) (endTime - beginTime)) / ((double) (185l * 8l * 3l * 100000l)));
 
   // Make sure we have some completions

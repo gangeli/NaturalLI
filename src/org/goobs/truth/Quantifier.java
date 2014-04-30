@@ -49,13 +49,13 @@ public enum Quantifier {
   THERE_EXIST("there exist",        LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_BE_SOME("there be some",    LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_BE_FEW("there be few",      LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  FEW("few",                        LogicalQuantifier.EXISTS, TriggerType.FEW),
 
   NO("no",                          LogicalQuantifier.NONE, TriggerType.NO),
   NOT("not",                        LogicalQuantifier.NONE, TriggerType.UNARY_NOT),
   NT("n't",                         LogicalQuantifier.NONE, TriggerType.UNARY_NOT),
   WITHOUT("without",                LogicalQuantifier.NONE, TriggerType.UNARY_NOT_IN),
   NEITHER("neither",                LogicalQuantifier.NONE, TriggerType.DEFAULT),
-  FEW("few",                        LogicalQuantifier.NONE, TriggerType.DEFAULT),
   NONE_OF("none of",                LogicalQuantifier.NONE, TriggerType.DONT_MARK),
   AT_MOST("at most",                LogicalQuantifier.NONE, TriggerType.DONT_MARK),
   ;
@@ -111,6 +111,7 @@ public enum Quantifier {
     UNARY_NOT,
     UNARY_NOT_IN,
     NO,
+    FEW,
     DEFAULT,
     DONT_MARK,
   }

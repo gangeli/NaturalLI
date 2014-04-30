@@ -63,6 +63,7 @@
 ✔[have](all cats, tails)	[have](all furry cats, tails)  # cats -> furry cats
 # (the actual queries we are interested in)
 ✔[have](all cats, tails)	[have](a few furry cats, tails)
+✔[have](all cats, tails)	[have](a few cats, a tails)
 ✔[have](all cats, tails)	[have](a few furry cats, a tail)  # takes 1M ticks to get
 
 # Intermediate Quantifier rewording
@@ -70,3 +71,13 @@
 
 # Intermediate Quantifier negation
 ✔[are](all dogs, smart)	[are](no dogs, not smart)
+
+# Monotonicity checks
+?[have](many cats, tails)	[have](many furry cats, tails)
+?[have](many furry cats, tails)	[have](many cats, tails)
+
+# Verb insertions
+✔[runs](some man, faster than I run)	[runs](some man, faster than I)
+#✔[runs](some man, faster than I)	[runs](some man, faster than I run)  # generally, the less safe direction
+?[play](many cats, baseball)	[watch](many cats, baseball)
+?[play](some cats, baseball)	[watch](some cats, baseball)

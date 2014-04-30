@@ -16,18 +16,20 @@ import edu.stanford.nlp.util.Execution
  */
 object Client {
 
-  def explain(fact:Fact, tag:String="fact"):Unit = {
+  def explain(fact:Fact, tag:String="fact", verbose:Boolean=true):Unit = {
     log(tag + ": " + fact.getWordList.map( w =>
       s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
     ).mkString(" "))
-    log(fact.getWordList.map{ w =>
-      val synsets = NatLog.wordnet.getSynsets(w.getGloss)
-      if (synsets == null || synsets.size == 0 || w.getSense == 0) {
-        s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
-      } else {
-        s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
-      }
-    }.mkString("\n"))
+    if (verbose) {
+      log(fact.getWordList.map{ w =>
+        val synsets = NatLog.wordnet.getSynsets(w.getGloss)
+        if (synsets == null || synsets.size == 0 || w.getSense == 0) {
+          s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
+        } else {
+          s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
+        }
+      }.mkString("\n"))
+    }
   }
 
   /**
@@ -148,7 +150,6 @@ object Client {
 
   def main(args:Array[String]):Unit = {
     Props.NATLOG_INDEXER_LAZY = false
-    val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
     val weights = NatLog.hardNatlogWeights
 
     startMockServer( () =>

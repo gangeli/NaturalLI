@@ -238,7 +238,9 @@ inline const inference_state compose(const inference_state& current,
   }
 }
 
+//
 // -- push a new element onto the fringe --
+//
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& sink, const tagged_word& toInsert,
@@ -353,6 +355,14 @@ inline const Path* BreadthFirstSearch::push(
       break;
   }
 
+  // Update the inference state
+  inference_state newState = compose(parent->nodeState.truth, edge);
+  if (newState != parent->nodeState.truth && newMutationIndex < mutatedLength - 1) {
+    // If we have swapped the truth, stop editing this word.
+    // This is to prevent, e.g., taking an antonym and then deleting
+    // the antonym.
+    newMutationIndex += 1;
+  }
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
@@ -613,7 +623,6 @@ inline float CostVector::computeCost(const inference_state& state,
     return (useTrueWeights ? anyTrueW : anyFalseW)[edge.type] * pathCost;
   }
   // Case: care about monotonicity
-  float upCost, downCost, flatCost;
   switch (monotonicity) {
     case MONOTONE_UP:
       return (useTrueWeights ? upTrueW : upFalseW)[edge.type] * pathCost;
@@ -718,6 +727,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     const uint8_t& indexToMutate = parent->lastMutationIndex;
     const tagged_word& parentWord = parentFact[indexToMutate == parentLength ? parentLength - 1 : indexToMutate];
     const monotonicity& parentMonotonicity = parentWord.monotonicity;
+    const monotonicity& insertMonotonicity = parentFact[indexToMutate >= parentLength - 1 ? parentLength - 1  : indexToMutate + 1].monotonicity;
 
     // Do post-insertions
     // note: edge is a deletion (remember, reverse search)
@@ -727,15 +737,18 @@ search_response Search(Graph* graph, FactDB* knownFacts,
         if (inserts[insertI].source == 0) { break; }
         assert (inserts[insertI].sink == 0);
         const edge& insertion = inserts[insertI];
-        // Add the state to the fringe
-        const float insertionCost = weights->computeCost(
-            parentTruth, insertion, parentMonotonicity);
-        if (insertionCost < 1e10) {
-          // push insertion
-          fringe->push(parent, indexToMutate,
-            2, parentWord, getTaggedWord(insertion.source, insertion.source_sense, parentMonotonicity),
-            insertion.type, costSoFar + insertionCost, cache, oom);
-          if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
+        if (indexToMutate >= parentLength - 1 ||  // don't add duplicate words (e.g., 'all cats have have tails')
+            insertion.source != parentFact[indexToMutate + 1].word) {
+          // Add the state to the fringe
+          const float insertionCost = weights->computeCost(
+              parentTruth, insertion, insertMonotonicity);
+          if (insertionCost < 1e10) {
+            // push insertion
+            fringe->push(parent, indexToMutate,
+              2, parentWord, getTaggedWord(insertion.source, insertion.source_sense, insertMonotonicity),
+              insertion.type, costSoFar + insertionCost, cache, oom);
+            if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
+          }
         }
       }
     }

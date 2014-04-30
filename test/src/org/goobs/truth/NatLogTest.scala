@@ -46,7 +46,7 @@ class NatLogTest extends Test {
       NatLog.annotate("there exist cats", "which have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(UP, UP, UP, UP, UP))
     }
     it ("should mark 'few'") {
-      NatLog.annotate("few cat", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(UP, DOWN, DOWN, DOWN))
+      NatLog.annotate("few cat", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(UP, DOWN, UP, UP))
     }
     it ("should mark 'most'/'many'") {
       NatLog.annotate("most cats", "have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(UP, FLAT, UP, UP))
@@ -67,6 +67,15 @@ class NatLogTest extends Test {
       new Sentence("not every job that involves a giant squid is safe").words.length should be (10)
       NatLog.annotate("not every job that involves a giant squid is safe").head.getWordList.map( _.getMonotonicity ).toList should be (
         List(UP, DOWN, UP, UP, UP, UP, UP, DOWN, DOWN))
+    }
+  }
+
+  describe("Monotone boundaries") {
+    it("should find the first verb") {
+      NatLog.annotate("some cat has a tail").head.getMonotoneBoundary should be (2)
+      NatLog.annotate("all cats have a tail").head.getMonotoneBoundary should be (2)
+      NatLog.annotate("all cats are animals").head.getMonotoneBoundary should be (2)
+
     }
   }
 

@@ -77,7 +77,11 @@ public class GaborMonoTest {
           sm = "v"; om = "^";
           break;
         case EXISTS:
-          sm = "^"; om = "^";
+          if (q.trigger == Quantifier.TriggerType.FEW) {
+            sm = "v"; om = "^";
+          } else {
+            sm = "^"; om = "^";
+          }
           break;
         case MOST:
           sm = "*"; om = "^";
@@ -129,10 +133,19 @@ public class GaborMonoTest {
 
   @Test
   public void multipleQuantifiers() {
-//    validate ("enough^ cats* have^ no^ tailsv");
     validate ("some^ cats^ have^ n't^ anyv tailsv");   // -> some cats haven't any {fuzzy tails}
     validate ("all^ catsv do^ n't^ havev tailsv");
     validate ("no^ catsv havev nov tail^");
+  }
+
+  @Test
+  public void regressions() {
+    // Special-case "few" but not "a few"
+    validate ("few^ catsv are^ dogs^");
+    validate ("a^ few^ cats^ have^ tails^");
+    validate ("some^ cats^ have^ few^ tailsv");
+    validate ("some^ cats^ have^ a^ few^ tails^");
+
   }
 
 }

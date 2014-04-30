@@ -28,8 +28,8 @@ object Test {
     for ( (query, gold) <- data) {
       val datum:Datum = (query, gold)
       // Run Query
-      Client.explain(query.getKnownFact(0), "antecedent")
-      Client.explain(query.getQueryFact, "consequent")
+      Client.explain(query.getKnownFact(0), "antecedent", false)
+      Client.explain(query.getQueryFact, "consequent", false)
       val prob:Double = Learn.evaluate(Client.issueQuery(query
         .setUseRealWorld(false)
         .setTimeout(Props.SEARCH_TIMEOUT)
@@ -46,7 +46,11 @@ object Test {
         case _ => throw new IllegalArgumentException("Gold annotation has invalid truth value: " + gold)
       }
       if (correct) {
-        log(GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
+        if (remember.apply( datum )) {
+          log(BOLD, GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
+        } else {
+          log(GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
+        }
       } else {
         if (remember.apply( datum )) {
           log(RED, BOLD, "--------------------")

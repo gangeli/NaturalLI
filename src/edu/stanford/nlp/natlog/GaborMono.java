@@ -108,6 +108,25 @@ public class GaborMono implements Mono {
         S_PROJECTION,
         Monotonicity.UP));
 
+    regexps = new ArrayList<>();
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (q.trigger == org.goobs.truth.Quantifier.TriggerType.FEW) {
+        assert q.surfaceForm.length == 1;
+        regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
+        if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
+      }
+    }
+    add(new BinaryQuantifier("down up under JJ (few)",
+        "/JJS?/ < /^" + StringUtils.join(regexps, "|") + "$/ !>> VP !$, (DT < /^[Aa]$/)",
+        NP_PROJECTION,
+        Monotonicity.DOWN,
+        S_PROJECTION,
+        Monotonicity.UP));
+    add(new UnaryQuantifier("down under JJ (few)",
+        "/JJS?/ < /^" + StringUtils.join(regexps, "|") + "$/ ( > NP >> VP ) ( !$, ( DT < /^[Aa]$/ ) )",
+        NP_PROJECTION,
+        Monotonicity.DOWN));
+
     // non-up operators ---------------------------------------------------------
     regexps = new ArrayList<>();
     for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {

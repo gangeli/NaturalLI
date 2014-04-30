@@ -18,10 +18,11 @@ object NatLog {
    */
   def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
                     insertionOrDeletion:Double,
-                    unknownInsertionOrDeletion:Double,
+                    verbInsertOrDelete:Double,
                     morphology:Double, wsd:Double,
                     okQuantifier:Double,
                     synonyms:Double,
+                    antonym:Double,
                     default:Double):WeightVector = {
     val weights = new ClassicCounter[String]
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
@@ -31,7 +32,8 @@ object NatLog {
     if (wsd > 0) { throw new IllegalArgumentException("Weights must always be negative (wsd is not)"); }
     if (okQuantifier > 0) { throw new IllegalArgumentException("Weights must always be negative (okQuantifier is not)"); }
     if (insertionOrDeletion > 0) { throw new IllegalArgumentException("Weights must always be negative (insertionOrDeletion is not)"); }
-    if (unknownInsertionOrDeletion > 0) { throw new IllegalArgumentException("Weights must always be negative (okInsertionOrDeletion is not)"); }
+    if (verbInsertOrDelete > 0) { throw new IllegalArgumentException("Weights must always be negative (verbInsertOrDelete is not)"); }
+    if (antonym > 0) { throw new IllegalArgumentException("Weights must always be negative (antonym is not)"); }
     if (default > 0) { throw new IllegalArgumentException("Weights must always be negative (default is not)"); }
     // Set negative weight
     weights.setDefaultReturnValue(default)
@@ -62,18 +64,31 @@ object NatLog {
     setCounts(DEL_OTHER, Monotonicity.UP, insertionOrDeletion)
     setCounts(ADD_OTHER, Monotonicity.UP, insertionOrDeletion)
     setCounts(DEL_OTHER, Monotonicity.DOWN, insertionOrDeletion)
-
-    setCounts(ADD_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
-    setCounts(DEL_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
-    setCounts(DEL_UNIVERSAL, Monotonicity.UP, insertionOrDeletion)
-    setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, insertionOrDeletion)
-    setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, insertionOrDeletion)
+    // (negation is always ok to add/remove)
     setCounts(ADD_NEGATION, Monotonicity.UP, insertionOrDeletion)
     setCounts(ADD_NEGATION, Monotonicity.DOWN, insertionOrDeletion)
-
+    setCounts(DEL_NEGATION, Monotonicity.UP, insertionOrDeletion)
+    setCounts(DEL_NEGATION, Monotonicity.DOWN, insertionOrDeletion)
+    // (quantifiers we have to worry about...)
+    // INVALID: add existential, monotone down (can weaken to universal)
+    setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, default)
+    // VALID: add existential, monotone up (weakened from generic, e.g., 'most')
+    setCounts(ADD_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
+    // INVALID del existential, monotone up (by reverse of add_existential_up)
+    setCounts(DEL_EXISTENTIAL, Monotonicity.UP, default)
+    // INVALID del existential, monotone down (I can only think of pathological cases where you would do this)
+    setCounts(DEL_EXISTENTIAL, Monotonicity.DOWN, default)
+    // VALID: add universal, monotone down (strengthen from generic, e.g., 'most': no cat likes dogs -> no cat likes all dogs)
+    setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, insertionOrDeletion)
+    // INVALID: add universal, monotone up (cannot strengthen from generic, e.g., 'most')
+    setCounts(ADD_UNIVERSAL, Monotonicity.UP, default)
+    // VALID del universal, monotone up (by reverse of add_universal_down)
+    setCounts(DEL_UNIVERSAL, Monotonicity.UP, insertionOrDeletion)
+    // INVALID del universal, monotone down (cannot weaken to generic, e.g., 'most')
+    setCounts(DEL_UNIVERSAL, Monotonicity.DOWN, default)
     // (more fishy insertions or deletions)
-    setCounts(ADD_VERB, Monotonicity.DOWN, unknownInsertionOrDeletion)
-    setCounts(DEL_VERB, Monotonicity.UP, unknownInsertionOrDeletion)
+    setCounts(DEL_VERB, Monotonicity.UP, verbInsertOrDelete)
+    setCounts(DEL_VERB, Monotonicity.DOWN, verbInsertOrDelete)
     // (ok quantifier swaps)
     setCounts(QUANTIFIER_UP,   Monotonicity.UP, okQuantifier)
     setCounts(QUANTIFIER_DOWN, Monotonicity.DOWN, okQuantifier)
@@ -88,6 +103,13 @@ object NatLog {
     setCounts(WORDNET_NOUN_SYNONYM, Monotonicity.DOWN, synonyms)
     setCounts(WORDNET_ADJECTIVE_RELATED, Monotonicity.DOWN, synonyms)
     setCounts(WORDNET_ADVERB_PERTAINYM, Monotonicity.DOWN, synonyms)
+    // (antonyms)
+    setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.UP, antonym)
+    setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.DOWN, antonym)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.UP, antonym)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.DOWN, antonym)
+    setCounts(WORDNET_VERB_ANTONYM, Monotonicity.UP, antonym)
+    setCounts(WORDNET_VERB_ANTONYM, Monotonicity.DOWN, antonym)
     // Set "don't care" weights
     weights.setCount(monoAny_stateTrue( MORPH_FUDGE_NUMBER), morphology)
     weights.setCount(monoAny_stateFalse( MORPH_FUDGE_NUMBER), morphology)
@@ -110,23 +132,25 @@ object NatLog {
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
     insertionOrDeletion = -0.01,
-    unknownInsertionOrDeletion = -0.01,
+    verbInsertOrDelete = -0.01,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
-    synonyms = -0.02,
+    synonyms = -0.015,
+    antonym = -0.015,
     default = Double.NegativeInfinity)
 
-  def hartNatlogNoMutations:WeightVector = natlogWeights(
+  def hardNatlogNoMutations:WeightVector = natlogWeights(
     strictNatLog = -0.0,
     similarity = Double.NegativeInfinity,
     wordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
-    unknownInsertionOrDeletion = -0.01,
+    verbInsertOrDelete = -0.01,
     morphology = Double.NegativeInfinity,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
     synonyms = Double.NegativeInfinity,
+    antonym = Double.NegativeInfinity,
     default = Double.NegativeInfinity)
 
   /**
@@ -140,11 +164,12 @@ object NatLog {
     similarity = -1.0,
     wordnet = -0.1,
     insertionOrDeletion = -0.1,
-    unknownInsertionOrDeletion = -0.25,
+    verbInsertOrDelete = -0.25,
     morphology = -0.01,
     wsd = -0.2,
     okQuantifier = -0.01,
     synonyms = -0.2,
+    antonym = -0.2,
     default = -2.0)
 
   /**
@@ -223,7 +248,7 @@ object NatLog {
     }
     // Enforce punctuation (for parser, primarily)
     val sentence = if (inputSentence.word.last != "." && inputSentence.word.last != "?" && inputSentence.word.last != "!") {
-      new Sentence(inputSentence.toString() + ".")
+      new Sentence(inputSentence.toString() + " .")
     } else { inputSentence }
 
     // Tokenize
@@ -233,14 +258,15 @@ object NatLog {
       } else {
         Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s), unkProvider)._1
       }}
-    val tokens = index(sentence.words.mkString(" "))
+    val tokens = index(sentence.words.take(sentence.length - 1).mkString(" "))
 
     // POS tag
     val (pos, ner, monotone):(Array[Option[String]], Array[String], Array[Monotonicity]) = {
       // (get variables)
       val pos:Array[String] = {
         val candidate = sentence.pos
-        for ( i <- 1 until (candidate.length - 1)) {
+        // Fix up things like "running shoes"
+        for ( i <- 0 until (candidate.length - 1)) {
           if (candidate(i) == "VBG" && candidate(i + 1).startsWith("N")) { candidate(i) = "JJVBG" }
         }
         candidate
@@ -308,7 +334,7 @@ object NatLog {
             case _ => None
           }))
           .setMonotonicity(monotonicity).build()
-    }.dropRight(1)  // drop period at the end
+    }
 
     // Create Protobuf Fact
     val fact: Fact.Builder = Fact.newBuilder()
@@ -316,7 +342,7 @@ object NatLog {
     fact.setGloss(sentence.toString())
       .setToString(gloss)
       .setMonotoneBoundary({
-        val candidate:Int = pos.indexOf( (x:String) => x == "V")
+        val candidate:Int = pos.indexWhere( (y:Option[String]) => y.isDefined && (y.get == "V" || y.get == "v") )
         if (candidate < 0) pos.length - 1 else candidate
       }).build()
 
