@@ -104,5 +104,9 @@ class NatLogTest extends Test {
       NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
       NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
     }
+    it ("should not mark VBP as a verb") {
+      NatLog.annotate("Cats", "have", "more fur than dogs have").getWordList.map( _.getPos ).toList should be (List("n", "?", "?", "n", "?", "n", "?"))
+
+    }
   }
 }
