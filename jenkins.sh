@@ -3,6 +3,7 @@
 
 set -e
 export MAXMEM_GB=6
+output=${JAVANLP_HOME-/home/gabor/nlp}
 
 echo "-- SETUP --"
 rm lib/stanford-corenlp-*
