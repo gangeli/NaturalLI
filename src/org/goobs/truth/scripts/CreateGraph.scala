@@ -225,9 +225,9 @@ object CreateGraph {
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.ADD_OTHER, 0, 0, index, sense, 1.0)
+                    edge(EdgeType.DEL_OTHER, index, sense, 0, 0, 1.0)
                   }
-                  edge(EdgeType.DEL_OTHER, index, sense, 0, 0, 1.0)
+                  edge(EdgeType.ADD_OTHER, 0, 0, index, sense, 1.0)
                 }
               case _ =>
             }
@@ -319,16 +319,28 @@ object CreateGraph {
           if (!quantifiers.contains(index)) {
             pos match {
               case 'N' =>
-                edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
+                if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
+                    !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
+                  edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
+                }
                 edge(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
               case 'V' =>
-                edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+                if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
+                    !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
+                  edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+                }
                 edge(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
               case 'J' =>
-                edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
-                edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
+                if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
+                    !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
+                  edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
+                  edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
+                }
               case _ =>
-                edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
+                if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
+                    !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
+                  edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
+                }
                 edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
             }
           }

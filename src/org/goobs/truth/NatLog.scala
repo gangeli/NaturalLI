@@ -302,7 +302,8 @@ object NatLog {
         for (k <- (tokenEnd - 1) to tokenStart by -1) {
           synsetPOS(i) = synsetPOS(i).orElse(pos(k) match {
             case NOUN(_) => Some("n")
-            case VERB(_) => Some("v")
+            case VERB(_) =>
+              if (i == chunkedWords.size - 1) None else Some("v")  // 'cats have more fur than dogs _have_'; final _have_ should not be marked as a verb
             case ADJ(_) => Some("j")
             case _ => None
           })
