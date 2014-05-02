@@ -348,11 +348,12 @@ object CreateGraph {
                 }
                 edgeII(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
               case 'V' =>
+                val isAuxilliary:Boolean = Utils.AUXILLIARY_VERBS.contains(wordIndexer.get(index).toLowerCase)
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
-                  edgeII(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+                  edgeII(if (isAuxilliary) EdgeType.DEL_OTHER else EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
                 }
-                edgeII(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
+                edgeII(if (isAuxilliary) EdgeType.DEL_OTHER else EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
               case 'J' =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
