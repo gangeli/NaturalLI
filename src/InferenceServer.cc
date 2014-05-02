@@ -52,7 +52,7 @@ void setmemlimit() {
 /**
  * Create a very simple FactDB based on an input query.
  */
-FactDB* makeFactDB(Query& query) {
+FactDB* makeFactDB(Query& query, Graph* graph) {
   Trie* facts = new Trie();
   uint32_t size = query.knownfact_size();
   for (int factI = 0; factI < size; ++factI) {
@@ -101,7 +101,7 @@ FactDB* makeFactDB(Query& query) {
       fact[wordI].cost = 1.0f;  // not really relevant...
     }
     // Add the fact
-    facts->add(fact, factLength);
+    facts->add(fact, factLength, graph);
   }
   return facts;
 }
@@ -244,14 +244,14 @@ void handleConnection(int socket, sockaddr_in* client,
     if (factDB == NULL) {
       // Read the real knowledge base
       factDBReadLock.lock();
-      *dbOrNull = ReadFactTrie();
+      *dbOrNull = ReadFactTrie(graph);
       factDBReadLock.unlock();
       factDB = *dbOrNull;
     }
     printf("[%d] created real factdb.\n", socket);
   } else {
     // Read a dummy knowledge base
-    factDB = makeFactDB(query);
+    factDB = makeFactDB(query, graph);
     printf("[%d] created mock factdb.\n", socket);
   }
   // (create query)

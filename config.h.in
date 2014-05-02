@@ -153,6 +153,9 @@
 /* The table in which the facts are stored */
 #undef PG_TABLE_FACT
 
+/* The table storing all deletable word+sense items */
+#undef PG_TABLE_PRIVATIVE
+
 /* The table in which the word indexer is stored */
 #undef PG_TABLE_WORD
 

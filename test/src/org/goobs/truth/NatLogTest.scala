@@ -106,6 +106,7 @@ class NatLogTest extends Test {
     }
     it ("should not mark final VBP as a OTHER") {
       NatLog.annotate("cats", "have", "more fur than dogs have").getWordList.map( _.getPos ).toList should be (List("n", "v", "?", "n", "?", "n", "?"))
+      NatLog.annotate("cats", "have", "a more important role than dogs are").getWordList.map( _.getPos ).toList.last should be ("?")
 
     }
   }

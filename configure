@@ -16072,6 +16072,11 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+cat >>confdefs.h <<_ACEOF
+#define PG_TABLE_PRIVATIVE "${PG_TABLE_PRIVATIVE:=privative}"
+_ACEOF
+
+
 
 cat >>confdefs.h <<_ACEOF
 #define MAX_FACT_LENGTH ${MAX_FACT_LENGTH:=255}

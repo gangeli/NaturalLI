@@ -28,8 +28,8 @@ object Test {
     for ( (query, gold) <- data) {
       val datum:Datum = (query, gold)
       // Run Query
-      Client.explain(query.getKnownFact(0), "antecedent", false)
-      Client.explain(query.getQueryFact, "consequent", false)
+      Client.explain(query.getKnownFact(0), "antecedent", verbose = false)
+      Client.explain(query.getQueryFact, "consequent", verbose = false)
       val prob:Double = Learn.evaluate(Client.issueQuery(query
         .setUseRealWorld(false)
         .setTimeout(Props.SEARCH_TIMEOUT)

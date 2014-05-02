@@ -4,6 +4,7 @@
 
 #include "Graph.h"
 #include "Postgres.h"
+#include "btree_set.h"
 
 using namespace std;
 
@@ -38,10 +39,17 @@ class InMemoryGraph : public Graph {
   edge** edgesBySink;
   uint32_t* edgesSizes;
   uint64_t size;
+  btree::btree_set<tagged_word> invalidDeletions;
   
  public:
-  InMemoryGraph(char** index2gloss, edge** edgesBySink, uint32_t* edgesSizes, uint64_t size)
-    : index2gloss(index2gloss), edgesBySink(edgesBySink), edgesSizes(edgesSizes), size(size) { }
+  InMemoryGraph(char** index2gloss,
+                edge** edgesBySink,
+                uint32_t* edgesSizes,
+                uint64_t size,
+                btree::btree_set<tagged_word> invalidDeletions)
+    : index2gloss(index2gloss), edgesBySink(edgesBySink), 
+      edgesSizes(edgesSizes), size(size),
+      invalidDeletions(invalidDeletions) { }
 
   ~InMemoryGraph() {
     for (int i = 0; i < size; ++i) { 
@@ -77,12 +85,21 @@ class InMemoryGraph : public Graph {
     }
     return keys;
   }
+  
+  virtual const bool containsDeletion(const edge& deletion) const {
+    tagged_word w = getTaggedWord(deletion.source,  deletion.source_sense, MONOTONE_DEFAULT);
+    return invalidDeletions.find( w ) == invalidDeletions.end();
+  }
 };
 
 //
 // Read Any Graph
 //
-Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edgeIter, const bool& mock) {
+Graph* readGraph(const uint32_t numWords, 
+                 PGIterator* wordIter,
+                 PGIterator* edgeIter,
+                 PGIterator* invalidDeletionIter,
+                 const bool& mock) {
   // Read words
   char** index2gloss = (char**) malloc( numWords * sizeof(char*) );
   memset(index2gloss, 0, numWords * sizeof(char*));
@@ -150,10 +167,17 @@ Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edge
   free(edgeCapacities);
   if (!mock) { printf("  %lu edges loaded.\n", edgeI); }
   
+  // Read invalid deletions
+  btree::btree_set<tagged_word> invalidDeletions;
+  while (invalidDeletionIter->hasNext()) {
+    PGRow row = invalidDeletionIter->next();
+    invalidDeletions.insert(getTaggedWord(atoi(row[0]), atoi(row[1]), MONOTONE_DEFAULT));
+  }
+  if (!mock) { printf("  %lu invalid deletions.\n", invalidDeletions.size()); }
   
   // Finish
   if (!mock) { printf("%s\n", "  done reading the graph."); }
-  return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords);
+  return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords, invalidDeletions);
 }
 
 
@@ -163,7 +187,8 @@ Graph* readGraph(const uint32_t numWords, PGIterator* wordIter, PGIterator* edge
 Graph* ReadGraph() {
   printf("Reading graph...\n");
   // Words
-  char wordQuery[127];
+  printf("  creating word iterator...\n");
+  char wordQuery[128];
   snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD);
   const uint32_t numWords
     = atoi(PGIterator(wordQuery).next()[0]);
@@ -171,11 +196,19 @@ Graph* ReadGraph() {
   PGIterator wordIter = PGIterator(wordQuery);
   
   // Edges
-  char edgeQuery[127];
+  printf("  creating edge iterator...\n");
+  char edgeQuery[128];
   snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type, sink_sense ASC;", PG_TABLE_EDGE);
   PGIterator edgeIter = PGIterator(edgeQuery);
 
-  return readGraph(numWords, &wordIter, &edgeIter, false);
+  // Invalid deletions
+  printf("  creating valid deletion iterator...\n");
+  char invalidDeletionQuery[128];
+  snprintf(invalidDeletionQuery, 127,
+           "SELECT * FROM %s;", PG_TABLE_PRIVATIVE);
+  PGIterator invalidDeletionIter = PGIterator(invalidDeletionQuery);
+
+  return readGraph(numWords, &wordIter, &edgeIter, &invalidDeletionIter, false);
 }
 
 //
@@ -201,5 +234,7 @@ Graph* ReadMockGraph() {
                  potto2lemurRow, animal2lemurRow, cat2animalRow };
   MockPGIterator edgeIter(3, edges);
   
-  return readGraph(200000, &wordIter, &edgeIter, true);
+  MockPGIterator invalidDeletionIter(0, NULL);
+  
+  return readGraph(200000, &wordIter, &edgeIter, & invalidDeletionIter, true);
 }

@@ -120,6 +120,13 @@ inline bool operator==(const tagged_word& lhs, const tagged_word& rhs) {
   return lhs.word == rhs.word && lhs.sense == rhs.sense && lhs.monotonicity == rhs.monotonicity;
 }
 
+/** The < operator for two tagged words */
+inline bool operator<(const tagged_word& lhs, const tagged_word& rhs) {
+  if (lhs.word != rhs.word) { return lhs.word < rhs.word; }
+  if (lhs.sense != rhs.sense) { return lhs.sense < rhs.sense; }
+  return lhs.monotonicity < rhs.monotonicity;
+}
+
 /** The != operator for two tagged words */
 inline bool operator!=(const tagged_word& lhs, const tagged_word& rhs) {
   return !(lhs == rhs);

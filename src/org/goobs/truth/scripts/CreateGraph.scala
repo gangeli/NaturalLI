@@ -27,12 +27,17 @@ import org.goobs.sim.Ontology.RealNode
 // CREATE TABLE edge_type ( index SMALLINT PRIMARY KEY, gloss TEXT );
 // CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );
 //
-// SQL post-requisite statements on completion of this script (only the first is crucial):
+// SQL post-requisite statements on completion of this script (only the last one is crucial):
 // -----
 // CREATE INDEX word_gloss ON word_indexer(gloss);
 // CREATE INDEX edge_outgoing ON edge (source, source_sense);
+// CREATE INDEX edge_incoming ON edge (sink, sink_sense);
+// CREATE INDEX edge_source ON edge (source);
+// CREATE INDEX edge_sink ON edge (sink);
 // CREATE INDEX edge_type ON edge (type);
 // CREATE VIEW graph AS (SELECT source.gloss AS source, e.source_sense AS source_sense, t.gloss AS relation, sink.gloss AS sink, e.sink_sense AS sink_sense FROM word source, word sink, edge e, edge_type t WHERE e.source=source.index AND e.sink=sink.index AND e.type=t.index);
+//
+// CREATE TABLE privative AS (SELECT DISTINCT source, source_sense FROM edge e1 WHERE source <> 0 AND NOT EXISTS (SELECT * FROM edge e2 WHERE e2.source=e1.source AND e2.source_sense=e1.source_sense AND e2.sink=0));
 //
 
 /**
@@ -81,13 +86,13 @@ object CreateGraph {
     index
   }
 
-  def getSense(phrase:String, synset:Synset)(implicit jaws:WordNetDatabase):Int = {
+  def getSense(phrase:String, synset:Synset)(implicit jaws:WordNetDatabase):Option[Int] = {
     val synsets:Array[Synset] = jaws.getSynsets(phrase)
     val index = synsets.indexOf(synset)
     if (index < 0) {
       throw new IllegalStateException("Unknown synset: " + synset)
     }
-    if (index > 30) 0 else index + 1
+    if (index > 30) None else Some(index + 1)
   }
 
   def main(args:Array[String]) = {
@@ -117,14 +122,31 @@ object CreateGraph {
             " (source, source_sense, sink, sink_sense, type, cost) VALUES (?, ?, ?, ?, ?, ?);")
 
         // Function to add an edge
-        def edge(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSense:Int, weight:Double):Unit = {
-          edgeInsert.setInt(1, source)
-          edgeInsert.setInt(2, sourceSense)
-          edgeInsert.setInt(3, sink)
-          edgeInsert.setInt(4, sinkSense)
-          edgeInsert.setInt(5, t.id)
-          edgeInsert.setFloat(6, weight.toFloat)
-          edgeInsert.addBatch()
+        var edgesAdded = new mutable.HashSet[(Int,Int,Int,Int,Int,Float)]
+        def edge(t:EdgeType, source:Int, sourceSenseOption:Option[Int], sink:Int, sinkSenseOption:Option[Int], weight:Double):Unit = {
+          for (sourceSense:Int <- sourceSenseOption;
+               sinkSense:Int <- sinkSenseOption) {
+            val key = (source, sourceSense, sink, sinkSense, t.id, weight.toFloat)
+            if (!edgesAdded(key)) {
+              edgeInsert.setInt(1, source)
+              edgeInsert.setInt(2, sourceSense)
+              edgeInsert.setInt(3, sink)
+              edgeInsert.setInt(4, sinkSense)
+              edgeInsert.setInt(5, t.id)
+              edgeInsert.setFloat(6, weight.toFloat)
+              edgeInsert.addBatch()
+              edgesAdded += key
+            }
+          }
+        }
+        def edgeII(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSense:Int, weight:Double):Unit = {
+          edge(t, source, Some(sourceSense), sink, Some(sinkSense), weight)
+        }
+        def edgeIO(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSenseOption:Option[Int], weight:Double):Unit = {
+          edge(t, source, Some(sourceSense), sink, sinkSenseOption, weight)
+        }
+        def edgeOI(t:EdgeType, source:Int, sourceSenseOption:Option[Int], sink:Int, sinkSense:Int, weight:Double):Unit = {
+          edge(t, source, sourceSenseOption, sink, Some(sinkSense), weight)
         }
 
         //
@@ -139,7 +161,7 @@ object CreateGraph {
               if (wordForms.length > 0) (wordForms(0), true) else (gloss, false)
             }
             val index:Int = indexOf(phraseGloss, trustCase)
-            val sense:Int = getSense(phraseGloss, node.synset)
+            val sense:Option[Int] = getSense(phraseGloss, node.synset)
 
             // Add hyper/hypo-nyms
             for (x:Ontology.Node <- node.hypernyms.toArray.sortBy( _.toString() )) x match { case (hyperNode:Ontology.RealNode) =>
@@ -149,7 +171,7 @@ object CreateGraph {
 
               for (hyperWord <- hyperNode.synset.getWordForms) {
                 val hyperInt:Int = indexOf(hyperWord)
-                val hyperSense:Int = getSense(hyperWord, hyperNode.synset)
+                val hyperSense:Option[Int] = getSense(hyperWord, hyperNode.synset)
                 edge(EdgeType.WORDNET_UP, index, sense, hyperInt, hyperSense, edgeWeight)
                 edge(EdgeType.WORDNET_DOWN, hyperInt, hyperSense, index, sense, edgeWeight)
               }
@@ -167,9 +189,9 @@ object CreateGraph {
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss.toLowerCase) &&
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.DEL_NOUN, index, sense, 0, 0, 1.0)
+                    edgeOI(EdgeType.DEL_NOUN, index, sense, 0, 0, 1.0)
                   }
-                  edge(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
+                  edgeIO(EdgeType.ADD_NOUN, 0, 0, index, sense, 1.0)
                 }
               case (as:VerbSynset) =>
                 for (antonym <- as.getAntonyms(phraseGloss)) {
@@ -178,9 +200,9 @@ object CreateGraph {
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss.toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
+                    edgeOI(EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
                   }
-                  edge(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
+                  edgeIO(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
                 }
               case (as:AdjectiveSynset) =>
                 for (related <- as.getSimilar;
@@ -205,8 +227,8 @@ object CreateGraph {
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss.toLowerCase) &&
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
-                    edge(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
+                    edgeIO(EdgeType.ADD_ADJ, 0, 0, index, sense, 1.0)
+                    edgeOI(EdgeType.DEL_ADJ, index, sense, 0, 0, 1.0)
                   }
                 }
               case (as:AdverbSynset) =>
@@ -223,18 +245,18 @@ object CreateGraph {
                   }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss) &&
+                  if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss.toLowerCase) &&
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.DEL_OTHER, index, sense, 0, 0, 1.0)
+                    edgeOI(EdgeType.DEL_OTHER, index, sense, 0, 0, 1.0)
                   }
-                  edge(EdgeType.ADD_OTHER, 0, 0, index, sense, 1.0)
+                  edgeIO(EdgeType.ADD_OTHER, 0, 0, index, sense, 1.0)
                 }
               case _ =>
             }
           }
         }
         // Synonyms
-        case class SynonymPair(a:String, aSense:Int, b:String, bSense:Int)
+        case class SynonymPair(a:String, aSense:Option[Int], b:String, bSense:Option[Int])
         val synonyms = new mutable.HashSet[SynonymPair]
         for ( node: RealNode <- wordnet.ontology.values.flatten ) {
           for ( word:String <- node.synset.getWordForms ) {
@@ -264,7 +286,7 @@ object CreateGraph {
             assert(angle >= 0.0)
             if (!Quantifier.quantifierGlosses.contains(scoreAndGloss(1).toLowerCase) ||
                 !Quantifier.quantifierGlosses.contains(fields(0).toLowerCase)) {  // don't add quantifier replacements
-              edge(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
+              edgeII(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
             }
           }
         }
@@ -281,32 +303,32 @@ object CreateGraph {
             if (sourceIndexed != sinkIndexed) {
               if (source.closestMeaning.isComparableTo(sink.closestMeaning)) {
                 if (source.closestMeaning.denotationLessThan(sink.closestMeaning)) {
-                  edge(EdgeType.QUANTIFIER_UP, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                  edgeII(EdgeType.QUANTIFIER_UP, sourceIndexed, 0, sinkIndexed, 0, 1.0)
                 } else if (sink.closestMeaning.denotationLessThan(source.closestMeaning)) {
-                  edge(EdgeType.QUANTIFIER_DOWN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                  edgeII(EdgeType.QUANTIFIER_DOWN, sourceIndexed, 0, sinkIndexed, 0, 1.0)
                 } else if (source.closestMeaning.equals(sink.closestMeaning)) {
-                  edge(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                  edgeII(EdgeType.QUANTIFIER_REWORD, sourceIndexed, 0, sinkIndexed, 0, 1.0)
                 }
               }
               if (source.closestMeaning.isNegationOf(sink.closestMeaning)) {
-                edge(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
+                edgeII(EdgeType.QUANTIFIER_NEGATE, sourceIndexed, 0, sinkIndexed, 0, 1.0)
               }
             }
           }
           // Allow insertion/deletion
           source.closestMeaning match {
             case Quantifier.LogicalQuantifier.FORALL =>
-              edge(EdgeType.ADD_UNIVERSAL, 0, 0, sourceIndexed, 0, 1.0)
-              edge(EdgeType.DEL_UNIVERSAL, sourceIndexed, 0, 0, 0, 1.0)
+              edgeII(EdgeType.ADD_UNIVERSAL, 0, 0, sourceIndexed, 0, 1.0)
+              edgeII(EdgeType.DEL_UNIVERSAL, sourceIndexed, 0, 0, 0, 1.0)
             case Quantifier.LogicalQuantifier.EXISTS =>
-              edge(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
-              edge(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
+              edgeII(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
+              edgeII(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
             case Quantifier.LogicalQuantifier.MOST =>
-              edge(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
-              edge(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
+              edgeII(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
+              edgeII(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
             case Quantifier.LogicalQuantifier.NONE =>
-              edge(EdgeType.ADD_NEGATION, 0, 0, sourceIndexed, 0, 1.0)
-              edge(EdgeType.DEL_NEGATION, sourceIndexed, 0, 0, 0, 1.0)
+              edgeII(EdgeType.ADD_NEGATION, 0, 0, sourceIndexed, 0, 1.0)
+              edgeII(EdgeType.DEL_NEGATION, sourceIndexed, 0, 0, 0, 1.0)
           }
           sourceIndexed
         }).toSet
@@ -321,27 +343,27 @@ object CreateGraph {
               case 'N' =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
-                  edge(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
+                  edgeII(EdgeType.DEL_NOUN, index, 0, 0, 0, 1.0)
                 }
-                edge(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
+                edgeII(EdgeType.ADD_NOUN, 0, 0, index, 0, 1.0)
               case 'V' =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
-                  edge(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
+                  edgeII(EdgeType.DEL_VERB, index, 0, 0, 0, 1.0)
                 }
-                edge(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
+                edgeII(EdgeType.ADD_VERB, 0, 0, index, 0, 1.0)
               case 'J' =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
-                  edge(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
-                  edge(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
+                  edgeII(EdgeType.DEL_ADJ, index, 0, 0, 0, 1.0)
+                  edgeII(EdgeType.ADD_ADJ, 0, 0, index, 0, 1.0)
                 }
               case _ =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {
-                  edge(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
+                  edgeII(EdgeType.DEL_OTHER, index, 0, 0, 0, 1.0)
                 }
-                edge(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
+                edgeII(EdgeType.ADD_OTHER, 0, 0, index, 0, 1.0)
             }
           }
         }
@@ -377,15 +399,15 @@ object CreateGraph {
         for (oom <- 2 until 100 if wordIndexer.indexOf("num_" + oom, false) >= 0 && wordIndexer.indexOf("num_" + (oom-1), false) >= 0) {
           val lower = wordIndexer.indexOf("num_" + (oom-1))
           val higher = wordIndexer.indexOf("num_" + oom)
-          edge(EdgeType.MORPH_FUDGE_NUMBER, lower, 0, higher, 0, 1.0)
-          edge(EdgeType.MORPH_FUDGE_NUMBER, higher, 0, lower, 0, 1.0)
+          edgeII(EdgeType.MORPH_FUDGE_NUMBER, lower, 0, higher, 0, 1.0)
+          edgeII(EdgeType.MORPH_FUDGE_NUMBER, higher, 0, lower, 0, 1.0)
         }
         // Fudge senses
         for ( (word, index) <- wordIndexer.objectsList.zipWithIndex ) {
           val synsets = jaws.getSynsets(word)
           for (sense <- 1 to math.min(31, if (synsets != null) synsets.length else 0)) {
-            edge(EdgeType.SENSE_ADD, index, 0, index, sense, 1.0)
-            edge(EdgeType.SENSE_REMOVE, index, sense, index, 0, 1.0)
+            edgeII(EdgeType.SENSE_ADD, index, 0, index, sense, 1.0)
+            edgeII(EdgeType.SENSE_REMOVE, index, sense, index, 0, 1.0)
 
           }
         }

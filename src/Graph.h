@@ -14,12 +14,14 @@ class Graph {
  public:
   virtual ~Graph() { }
 
-  /** Get all outgoing edges from the given word */
+  /** Get all incoming edges from the given word */
   virtual const edge* incomingEdgesFast(const tagged_word& sink, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
   virtual const char* gloss(const tagged_word&) const = 0;
   /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() const = 0;
+  /** Returns whether this edge is a valid deletion */
+  virtual const bool containsDeletion(const edge& deletion) const = 0;
 
   /** A helper to get the outgoing edges in a more reasonable form */
   virtual const std::vector<edge> incomingEdges(const tagged_word& sink) {

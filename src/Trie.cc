@@ -25,7 +25,8 @@ Trie::~Trie() {
 //
 // Trie::add
 //
-void Trie::add(edge* elements, uint8_t length) {
+void Trie::add(const edge* elements, const uint8_t& length,
+               const Graph* graph) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
@@ -46,13 +47,15 @@ void Trie::add(edge* elements, uint8_t length) {
     skipGrams[grandChildW].push_back(w);
   }
   // Register information about child
-  child->registerEdge(elements[0]);
+  if (graph == NULL || graph->containsDeletion(elements[0])) {
+    child->registerEdge(elements[0]);
+  }
   // Recursive call
   if (length == 1) {
     child->isLeaf = true;    // Mark this as a leaf node
     completions[w] = child;  // register a completion
   } else {
-    child->add(&(elements[1]), length - 1);
+    child->add(&(elements[1]), length - 1, graph);
   }
 }
 
@@ -186,7 +189,7 @@ const bool Trie::containsImpl(const tagged_word* query,
 //
 // ReadFactTrie
 //
-FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
+FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   Trie* facts = new Trie();
   char query[127];
 
@@ -261,14 +264,14 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead) {
     }
     // Add fact
     // Add 'canonical' version
-    facts->add(buffer, bufferLength);
+    facts->add(buffer, bufferLength, graph);
     // Add word sense variants
     for (uint32_t k = 0; k < bufferLength; ++k) {
       unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
       if (iter != word2senses.end() && iter->second.size() > 1) {
         for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
           buffer[k] = iter->second[sense];
-          facts->add(buffer, bufferLength);
+          facts->add(buffer, bufferLength, graph);
         }
       }
     }

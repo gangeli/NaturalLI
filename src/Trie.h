@@ -50,7 +50,8 @@ class Trie : public FactDB {
    * begin <b>DELETED</b>, which corresponds to an insertion in the
    * reverse search.
    */
-  virtual void add(edge* elements, uint8_t length);
+  virtual void add(const edge* elements, const uint8_t& length,
+                   const Graph* graph);
   
   /** Insert a given fact. */
   virtual void add(tagged_word* elements, uint8_t length) {
@@ -65,7 +66,7 @@ class Trie : public FactDB {
       e.cost         = 1.0f;
       edges[i] = e;
     }
-    add(edges, length);
+    add(edges, length, NULL);
   }
 
 
@@ -141,9 +142,9 @@ class Trie : public FactDB {
  * @param maxFactsToRead Cap the number of facts read to this amount, 
  *        ordered by the fact's weight in the database
  */
-FactDB* ReadFactTrie(const uint64_t maxFactsToRead);
+FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph);
 
 /** Read all facts in the database; @see ReadFactTrie(uint64_t) */
-inline FactDB* ReadFactTrie() { return ReadFactTrie(std::numeric_limits<uint64_t>::max()); }
+inline FactDB* ReadFactTrie(const Graph* graph) { return ReadFactTrie(std::numeric_limits<uint64_t>::max(), graph); }
 
 #endif

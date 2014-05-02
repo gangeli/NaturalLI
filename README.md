@@ -14,9 +14,9 @@ If you're an optimist, the following might even just work:
 Otherwise, likely you'll have to set a few options to configure.
 For example:
     
-    --with-scala=/path/to/SCALA_HOME    # scalac should be in bin/
-    --with-java=/path/to/JDK_HOME       # javac should be in bin/
-    --with-protoc=/path/to/PROTOC_HOME  # protoc should be in bin/protoc
+    --with-scala=/path/to/SCALA_HOME    # scalac should be bin/scalac
+    --with-java=/path/to/JDK_HOME       # javac should be bin/javac
+    --with-protoc=/path/to/PROTOC_HOME  # protoc should be bin/protoc
     --enable-debug                      # compile with -O0 -ggdb (and enable profiler + asserts)
 
 In addition, a number of environment variables are very likely to be
@@ -44,9 +44,13 @@ command line arguments.
     PGPASSWORD=<postgres password>
     DBNAME=<postgres database name>
 
+The other variables either set up some constants in the database,
+or set various parameters (these should not need changing).
+
     PG_TABLE_WORD=<the table name for the word indexer; default=word>
     PG_TABLE_EDGE=<the table name for the edges in the graph; default=edge>
     PG_TABLE_FACT=<the table name for the knowledge base; default=fact>
+    PG_TABLE_PRIVATIVE=<the table of privative adjectives; default=privative>
 
     MAX_FACT_LENGTH=<the maximum fact length in words; between 1 and 255>
     MAX_COMPLETIONS=<the maximum number of insertions to consider; default=25>

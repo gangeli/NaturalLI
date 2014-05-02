@@ -21,7 +21,7 @@ object RegressionTest {
         builder.addKnownFact(fact)
       }.setQueryFact(facts.last)
         .setUseRealWorld(false)
-        .setTimeout(timeout)
+        .setTimeout(if (truth == TruthValue.UNKNOWN) Props.SEARCH_TIMEOUT else timeout)
         .setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights))
         .setSearchType("ucs")
         .setCacheType("bloom")
@@ -37,7 +37,6 @@ object RegressionTest {
         }
       case TruthValue.UNKNOWN =>
         if (score >= 0.6 || score <= 0.4) {
-          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
           err(RED,"SHOULD BE UNKNOWN (score=" + score + ") ")
           return 1
         }

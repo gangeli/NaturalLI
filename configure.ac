@@ -120,9 +120,10 @@ AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=truth}", [The database to connect
 AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=gabor}", [The username to use for the database connection])
 AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=gabor}", [The password to use for the database connection])
 
-AC_DEFINE_UNQUOTED(PG_TABLE_WORD,   "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,   "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_FACT,   "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_WORD,      "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
 AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=25},  [The maximum number of completions to propose when inserting words])

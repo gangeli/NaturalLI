@@ -804,6 +804,12 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
+//        if (mutation.source == 0) {
+//          printf("  add word %s of type %u under monotonicity %u\n",
+//                 graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
+//                 mutation.type,
+//                 parentMonotonicity);
+//        }
 //        printf("  mutate %s -> %s at %u cost %f  type=(%u,%u), unigramUp=%f, unigramDown=%f\n",
 //               graph->gloss(getTaggedWord(mutation.source, mutation.source_sense, 0)), graph->gloss(parentFact[indexToMutate]), indexToMutate, mutationCost,
 //               parent->nodeState.incomingEdge, mutation.type, weights->upTrueW[mutation.type], weights->downTrueW[mutation.type] );
@@ -817,7 +823,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     }
         
     // Do index shift
-    if (parent->lastMutationIndex < parentLength - 1 && !isCorrectFact) {
+    if (indexToMutate < parentLength - 1 && !isCorrectFact) {
       fringe->push(parent, indexToMutate + 1, 1,
         parent->fact[parent->lastMutationIndex + 1], NULL_WORD,
         NULL_EDGE_TYPE, costSoFar, cache, oom);
