@@ -691,7 +691,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
                parent->lastMutationIndex);
 
     // -- Debug Output --
-//    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
+    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -803,16 +803,15 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
+      if (mutation.source == 0) {
+        printf("  [%u] add word '%s' of type %u under monotonicity %u with cost %f\n",
+               parent->lastMutationIndex,
+               graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
+               mutation.type,
+               parentMonotonicity,
+               mutationCost);
+      }
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
-//        if (mutation.source == 0) {
-//          printf("  add word %s of type %u under monotonicity %u\n",
-//                 graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
-//                 mutation.type,
-//                 parentMonotonicity);
-//        }
-//        printf("  mutate %s -> %s at %u cost %f  type=(%u,%u), unigramUp=%f, unigramDown=%f\n",
-//               graph->gloss(getTaggedWord(mutation.source, mutation.source_sense, 0)), graph->gloss(parentFact[indexToMutate]), indexToMutate, mutationCost,
-//               parent->nodeState.incomingEdge, mutation.type, weights->upTrueW[mutation.type], weights->downTrueW[mutation.type] );
         // push mutation[/deletion]
         fringe->push(parent, indexToMutate,
           mutation.source == 0 ? 0 : 1,

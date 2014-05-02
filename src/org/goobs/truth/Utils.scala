@@ -21,6 +21,23 @@ object Utils {
   // Note: match these with CreateGraph's index creation
   val WORD_NONE:String = "__none__"
   val WORD_UNK:String  = "__unk__"
+  val AUXILLIARY_VERBS = Set[String](
+    "be",
+    "can",
+    "could",
+    "dare",
+    "do",
+    "have",
+    "may",
+    "might",
+    "must",
+    "need",
+    "ought",
+    "shall",
+    "should",
+    "will",
+    "would"
+  )
 
   val INTENSIONAL_ADJECTIVES = Set[String](
     "believed",

@@ -197,12 +197,13 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
                 }
+                val isAuxilliary:Boolean = Utils.AUXILLIARY_VERBS.contains(phraseGloss.toLowerCase)
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
                   if (!Utils.INTENSIONAL_ADJECTIVES.contains(phraseGloss.toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edgeOI(EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
+                    edgeOI(if (isAuxilliary) EdgeType.DEL_OTHER else EdgeType.DEL_VERB, index, sense, 0, 0, 1.0)
                   }
-                  edgeIO(EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
+                  edgeIO(if (isAuxilliary) EdgeType.ADD_OTHER else EdgeType.ADD_VERB, 0, 0, index, sense, 1.0)
                 }
               case (as:AdjectiveSynset) =>
                 for (related <- as.getSimilar;

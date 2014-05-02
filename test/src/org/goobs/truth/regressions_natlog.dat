@@ -94,7 +94,7 @@
 ## Verb insertions
 #✔[runs](some man, faster than I run)	[runs](some man, faster than I)
 ##✔[runs](some man, faster than I)	[runs](some man, faster than I run)  # generally, the less safe direction
-?[play](many cats, baseball)	[watch](many cats, baseball)
+#?[play](many cats, baseball)	[watch](many cats, baseball)
 #?[play](some cats, baseball)	[watch](some cats, baseball)
 #
 ## Deletion special cases (straddling the monotonicity change)
@@ -119,3 +119,5 @@
 #
 ## Adjective negations can allow funky paths in this guy
 #?[finish](some delegates, the survey)	[finish](some delegates, the survey on time)
+#✔[have](foo, a more important customer than bar)	[have](foo, a more important customer than bar have)
+✔[have](cat, a more important customer than dog)	[have](cat, a more important customer than dog have)
