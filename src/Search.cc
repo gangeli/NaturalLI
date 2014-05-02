@@ -691,7 +691,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
                parent->lastMutationIndex);
 
     // -- Debug Output --
-    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
+//    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);
     // Update time
     time += 1;
     if (time % tickTime == 0) {
@@ -736,11 +736,11 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     //   (1) If we're at the end of the sentence (duh)
     //   (2) If we're about to cross a phrase boundary -- we approximate this
     //       using the monotoneBoundary, but this is a bit hacky.
-    const monotonicity& insertMonotonicity = 
+    const monotonicity& deletionMonotonicity = 
       parentFact[
         indexToMutate >= parentLength - 1
           ? parentLength - 1 
-          : ((indexToMutate + 1) == parent->monotoneBoundary ? indexToMutate : indexToMutate + 1)
+          : ((indexToMutate + 1) == parent->monotoneBoundary ? indexToMutate : (indexToMutate + 1))
         ].monotonicity;
 
     // Do post-insertions
@@ -755,11 +755,11 @@ search_response Search(Graph* graph, FactDB* knownFacts,
             insertion.source != parentFact[indexToMutate + 1].word) {
           // Add the state to the fringe
           const float insertionCost = weights->computeCost(
-              parentTruth, insertion, insertMonotonicity);
+              parentTruth, insertion, deletionMonotonicity);
           if (insertionCost < 1e10) {
             // push insertion
             fringe->push(parent, indexToMutate,
-              2, parentWord, getTaggedWord(insertion.source, insertion.source_sense, insertMonotonicity),
+              2, parentWord, getTaggedWord(insertion.source, insertion.source_sense, deletionMonotonicity),
               insertion.type, costSoFar + insertionCost, cache, oom);
             if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
           }
@@ -803,14 +803,14 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
-      if (mutation.source == 0) {
-        printf("  [%u] add word '%s' of type %u under monotonicity %u with cost %f\n",
-               parent->lastMutationIndex,
-               graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
-               mutation.type,
-               parentMonotonicity,
-               mutationCost);
-      }
+//      if (mutation.source == 0) {
+//        printf("  [%u] add word '%s' of type %u under monotonicity %u with cost %f\n",
+//               parent->lastMutationIndex,
+//               graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
+//               mutation.type,
+//               parentMonotonicity,
+//               mutationCost);
+//      }
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
         // push mutation[/deletion]
         fringe->push(parent, indexToMutate,

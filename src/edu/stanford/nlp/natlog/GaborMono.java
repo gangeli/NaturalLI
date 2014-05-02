@@ -110,7 +110,7 @@ public class GaborMono implements Mono {
 
     regexps = new ArrayList<>();
     for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.trigger == org.goobs.truth.Quantifier.TriggerType.FEW) {
+      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.FEW) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }

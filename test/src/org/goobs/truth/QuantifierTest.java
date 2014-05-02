@@ -53,6 +53,5 @@ public class QuantifierTest {
     assertFalse(Quantifier.LogicalQuantifier.FORALL.isNegationOf(Quantifier.LogicalQuantifier.MOST));
     assertFalse(Quantifier.LogicalQuantifier.EXISTS.isNegationOf(Quantifier.LogicalQuantifier.MOST));
     assertFalse(Quantifier.LogicalQuantifier.NONE.isNegationOf(Quantifier.LogicalQuantifier.NONE));
-
   }
 }

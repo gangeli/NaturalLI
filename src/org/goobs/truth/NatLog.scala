@@ -78,24 +78,32 @@ object NatLog {
     setCounts(DEL_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
     // INVALID del existential, monotone down (I can only think of pathological cases where you would do this)
     setCounts(DEL_EXISTENTIAL, Monotonicity.DOWN, default)
-    // INVALID: add universal, monotone down (causes problems TODO think through why)
-    setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, default)
+    // VALID: add universal, monotone down (caused problems in the past?)
+    setCounts(ADD_UNIVERSAL, Monotonicity.DOWN, insertionOrDeletion)
     // INVALID: add universal, monotone up (cannot strengthen from generic, e.g., 'most')
     setCounts(ADD_UNIVERSAL, Monotonicity.UP, default)
     // VALID del universal, monotone up (by reverse of add_universal_down)
     setCounts(DEL_UNIVERSAL, Monotonicity.UP, insertionOrDeletion)
     // INVALID del universal, monotone down (cannot weaken to generic, e.g., 'most')
     setCounts(DEL_UNIVERSAL, Monotonicity.DOWN, default)
+    // VALID: mirror universal
+    setCounts(ADD_QUANTIFIER_OTHER, Monotonicity.DOWN, insertionOrDeletion)
+    // INVALID: mirror universal
+    setCounts(ADD_QUANTIFIER_OTHER, Monotonicity.UP, default)
+    // VALID: mirror universal
+    setCounts(DEL_QUANTIFIER_OTHER, Monotonicity.UP, insertionOrDeletion)
+    // INVALID: mirror universal
+    setCounts(DEL_QUANTIFIER_OTHER, Monotonicity.DOWN, default)
     // (more fishy insertions or deletions)
-    setCounts(ADD_VERB, Monotonicity.DOWN, insertionOrDeletion)
-    setCounts(DEL_VERB, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_VERB, Monotonicity.DOWN, verbInsertOrDelete)
+    setCounts(DEL_VERB, Monotonicity.UP, verbInsertOrDelete)
     // (ok quantifier swaps)
     setCounts(QUANTIFIER_UP,   Monotonicity.UP, okQuantifier)
     setCounts(QUANTIFIER_DOWN, Monotonicity.DOWN, okQuantifier)
     weights.setCount(monoAny_stateTrue(  QUANTIFIER_REWORD ), okQuantifier)
     weights.setCount(monoAny_stateFalse( QUANTIFIER_REWORD ), okQuantifier)
     weights.setCount(monoAny_stateTrue(  QUANTIFIER_NEGATE ), okQuantifier)
-    weights.setCount(monoAny_stateFalse( QUANTIFIER_NEGATE ), okQuantifier)
+    weights.setCount(monoAny_stateFalse( QUANTIFIER_NEGATE ), default)  // double negation is dangerous due to monotonicity swapping
     // (synonyms)
     setCounts(WORDNET_NOUN_SYNONYM, Monotonicity.UP, synonyms)
     setCounts(WORDNET_ADJECTIVE_RELATED, Monotonicity.UP, synonyms)
@@ -340,11 +348,14 @@ object NatLog {
 
     // Create Protobuf Fact
     val fact: Fact.Builder = Fact.newBuilder()
-    for (word <- protoWords) { fact.addWord(word) }
+    for (word: Word <- protoWords) { fact.addWord(word) }
     fact.setGloss(sentence.toString())
       .setToString(gloss)
       .setMonotoneBoundary({
-        val candidate:Int = pos.indexWhere( (y:Option[String]) => y.isDefined && (y.get == "V" || y.get == "v") )
+        val candidate:Int = protoWords.indexWhere {
+          (w: Word) => (w.hasGloss && Utils.AUXILLIARY_VERBS.contains(w.getGloss.toLowerCase)) ||
+                       (w.hasPos && (w.getPos == "v" || w.getPos == "V"))
+        }
         if (candidate < 0) pos.length - 1 else candidate
       }).build()
 

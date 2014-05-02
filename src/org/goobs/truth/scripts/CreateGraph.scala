@@ -324,6 +324,9 @@ object CreateGraph {
             case Quantifier.LogicalQuantifier.EXISTS =>
               edgeII(EdgeType.ADD_EXISTENTIAL, 0, 0, sourceIndexed, 0, 1.0)
               edgeII(EdgeType.DEL_EXISTENTIAL, sourceIndexed, 0, 0, 0, 1.0)
+            case Quantifier.LogicalQuantifier.FEW =>
+              edgeII(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
+              edgeII(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)
             case Quantifier.LogicalQuantifier.MOST =>
               edgeII(EdgeType.ADD_QUANTIFIER_OTHER, 0, 0, sourceIndexed, 0, 1.0)
               edgeII(EdgeType.DEL_QUANTIFIER_OTHER, sourceIndexed, 0, 0, 0, 1.0)

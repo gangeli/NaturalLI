@@ -78,7 +78,7 @@ object FraCaS extends DataSource {
 
   def main(args:Array[String]):Unit = {
     Props.SERVER_PORT = 4001
-    Props.SEARCH_TIMEOUT = 100000
+    Props.SEARCH_TIMEOUT = 250000
     System.exit(Client.startMockServer(() =>
       Test.evaluate(read(Props.DATA_FRACAS_PATH.getPath).filter( isApplicable ), NatLog.hardNatlogWeights,
         List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),

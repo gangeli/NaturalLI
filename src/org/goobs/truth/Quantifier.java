@@ -37,6 +37,8 @@ public enum Quantifier {
   LOADS_OF("load of",               LogicalQuantifier.MOST, TriggerType.DONT_MARK),
   TONS_OF("ton of",                 LogicalQuantifier.MOST, TriggerType.DONT_MARK),
 
+  FEW("few",                        LogicalQuantifier.FEW, TriggerType.DEFAULT),
+
   SEVERAL("several",                LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
   SOME("some",                      LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
   EITHER("either",                  LogicalQuantifier.EXISTS, TriggerType.DEFAULT),
@@ -52,7 +54,6 @@ public enum Quantifier {
   THERE_EXIST("there exist",        LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_BE_SOME("there be some",    LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_BE_FEW("there be few",      LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
-  FEW("few",                        LogicalQuantifier.EXISTS, TriggerType.FEW),
 
   NO("no",                          LogicalQuantifier.NONE, TriggerType.NO),
   NOT("not",                        LogicalQuantifier.NONE, TriggerType.UNARY_NOT),
@@ -65,10 +66,11 @@ public enum Quantifier {
 
   /** The closest pure logical meaning of the quantifier */
   public static enum LogicalQuantifier {
-    FORALL(3),
-    MOST(2),
+    FORALL(4),
+    MOST(3),
+    FEW(2),
     EXISTS(1),
-    NONE(-3);
+    NONE(-4);
 
     public final int partialOrder;
 
@@ -77,6 +79,8 @@ public enum Quantifier {
         case FORALL:
           return other == FORALL || other == MOST || other == EXISTS;
         case MOST:
+          return other == FORALL || other == MOST || other == EXISTS;
+        case FEW:
           return other == FORALL || other == MOST || other == EXISTS;
         case EXISTS:
           return other == FORALL || other == MOST || other == EXISTS;
@@ -89,8 +93,10 @@ public enum Quantifier {
     public boolean denotationLessThan(LogicalQuantifier other) {
       switch (this) {
         case FORALL:
-          return other == MOST || other == EXISTS;
+          return other == MOST || other == EXISTS || other == FEW;
         case MOST:
+          return other == EXISTS || other == FEW;
+        case FEW:
           return other == EXISTS;
         case EXISTS:
           return false;

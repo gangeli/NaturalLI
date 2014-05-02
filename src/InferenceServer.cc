@@ -76,21 +76,21 @@ FactDB* makeFactDB(Query& query, Graph* graph) {
         if (posTag != NULL && (posTag[0] == 'a' || posTag[0] == 'A')) {
           fact[wordI].type = DEL_UNIVERSAL;
         } else if (posTag != NULL && (posTag[0] == 'e' || posTag[0] == 'E')) {
-          fact[wordI].type = DEL_EXISTENTIAL;
-        } else if (posTag != NULL && (posTag[0] == 'g' || posTag[0] == 'G')) {
-          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // certainly not right for NOT
+          fact[wordI].type = DEL_EXISTENTIAL;       // existential
         } else if (posTag != NULL && (posTag[0] == 'm' || posTag[0] == 'M')) {
-          fact[wordI].type = DEL_UNIVERSAL;  // not quite right for MOST
+          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // most, etc
+        } else if (posTag != NULL && (posTag[0] == 'a' || posTag[0] == 'A')) {
+          fact[wordI].type = DEL_UNIVERSAL;         // forall
         } else if (posTag != NULL && (posTag[0] == 'g' || posTag[0] == 'G')) {
-          fact[wordI].type = DEL_NEGATION;
+          fact[wordI].type = DEL_NEGATION;          // negation
         } else if (posTag != NULL && (posTag[0] == 'n' || posTag[0] == 'N')) {
-          fact[wordI].type = DEL_NOUN;
+          fact[wordI].type = DEL_NOUN;              // nouns
         } else if (posTag != NULL && (posTag[0] == 'v' || posTag[0] == 'V')) {
-          fact[wordI].type = DEL_VERB;
+          fact[wordI].type = DEL_VERB;              // verbs
         } else if (posTag != NULL && (posTag[0] == 'j' || posTag[0] == 'J')) {
-          fact[wordI].type = DEL_ADJ;
+          fact[wordI].type = DEL_ADJ;               // adjectives
         } else if (posTag != NULL && posTag[0] == '?') {
-          fact[wordI].type = DEL_OTHER;
+          fact[wordI].type = DEL_OTHER;             // seriously, who needs _all_ the PTB tags :/
         } else {
           printf("Invalid POS tag: %s", posTag);
           std::exit(1);
