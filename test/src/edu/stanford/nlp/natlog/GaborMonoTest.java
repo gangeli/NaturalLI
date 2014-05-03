@@ -77,11 +77,10 @@ public class GaborMonoTest {
           sm = "v"; om = "^";
           break;
         case EXISTS:
-          if (q.trigger == Quantifier.TriggerType.FEW) {
-            sm = "v"; om = "^";
-          } else {
-            sm = "^"; om = "^";
-          }
+          sm = "^"; om = "^";
+          break;
+        case FEW:
+          sm = "v"; om = "^";
           break;
         case MOST:
           sm = "*"; om = "^";
@@ -119,6 +118,9 @@ public class GaborMonoTest {
           break;
         case MOST:
           m = "*";
+          break;
+        case FEW:
+          m = "v";
           break;
         case NONE:
           m = "v";

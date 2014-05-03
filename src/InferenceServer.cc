@@ -78,7 +78,9 @@ FactDB* makeFactDB(Query& query, Graph* graph) {
         } else if (posTag != NULL && (posTag[0] == 'e' || posTag[0] == 'E')) {
           fact[wordI].type = DEL_EXISTENTIAL;       // existential
         } else if (posTag != NULL && (posTag[0] == 'm' || posTag[0] == 'M')) {
-          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // most, etc
+          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // most, etc.
+        } else if (posTag != NULL && (posTag[0] == 'f' || posTag[0] == 'f')) {
+          fact[wordI].type = DEL_QUANTIFIER_OTHER;  // few, etc.
         } else if (posTag != NULL && (posTag[0] == 'a' || posTag[0] == 'A')) {
           fact[wordI].type = DEL_UNIVERSAL;         // forall
         } else if (posTag != NULL && (posTag[0] == 'g' || posTag[0] == 'G')) {

@@ -803,21 +803,22 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
-//      if (mutation.source == 0) {
-//        printf("  [%u] add word '%s' of type %u under monotonicity %u with cost %f\n",
-//               parent->lastMutationIndex,
-//               graph->gloss(getTaggedWord(mutation.sink, 0, 0)),
-//               mutation.type,
-//               parentMonotonicity,
-//               mutationCost);
-//      }
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
-        // push mutation[/deletion]
-        fringe->push(parent, indexToMutate,
-          mutation.source == 0 ? 0 : 1,
-          getTaggedWord(mutation.source, mutation.source_sense, parentMonotonicity), NULL_WORD,
-          mutation.type, costSoFar + mutationCost, cache, oom);
-        if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
+        // Another awkward edge case.
+        // We don't want to delete the last remnant of a phrase; where,
+        // we define a phrase as the last remaining token in a contiguous
+        // monotone block (e.g., ^ ^ [v] ^ ^ ^).
+        const bool singletonPhrase = (indexToMutate > 0 && indexToMutate < parentLength - 1 &&
+                                      parent->fact[indexToMutate - 1].monotonicity != parentMonotonicity &&
+                                      parent->fact[indexToMutate + 1].monotonicity != parentMonotonicity);
+        if (!singletonPhrase) {
+          // push mutation[/deletion]
+          fringe->push(parent, indexToMutate,
+            mutation.source == 0 ? 0 : 1,
+            getTaggedWord(mutation.source, mutation.source_sense, parentMonotonicity), NULL_WORD,
+            mutation.type, costSoFar + mutationCost, cache, oom);
+          if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
+        }
       }
     }
         

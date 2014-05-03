@@ -304,6 +304,7 @@ object NatLog {
             case Quantifier.LogicalQuantifier.FORALL => "a"
             case Quantifier.LogicalQuantifier.EXISTS => "e"
             case Quantifier.LogicalQuantifier.MOST => "m"
+            case Quantifier.LogicalQuantifier.FEW => "f"
             case Quantifier.LogicalQuantifier.NONE => "g"
             case _ => throw new NoSuchElementException("Could not find logical meaning: " + Quantifier.get(chunkedWords(i)).closestMeaning)
           })
