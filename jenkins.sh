@@ -3,7 +3,7 @@
 
 set -e
 export MAXMEM_GB=6
-output=${JAVANLP_HOME-/home/gabor/nlp}
+JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
 
 echo "-- SETUP --"
 rm lib/stanford-corenlp-*
@@ -18,8 +18,8 @@ make clean
 make all check TESTS_ENVIRONMENT=true 
 
 echo "-- TEST --"
-test/src/test_server --gtest_output=xml:test/test_server.junit.xml
-test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
+#test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+#test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 make java_test
 
 echo "-- COVERAGE --"
