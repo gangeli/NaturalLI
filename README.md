@@ -3,15 +3,17 @@
 Compilation
 ===========
 
-Configuration
+Server (C++)
 -------------
-
+### Optimistic Version
 If you're an optimist, the following might even just work:
     
-    ./configure
+    ./configure --prefix=/path/to/installation
     make check
+    make install
 
-Otherwise, likely you'll have to set a few options to configure.
+### Realistic Version
+More likely you'll have to set a few options for the configure script.
 For example:
     
     --with-scala=/path/to/SCALA_HOME    # scalac should be bin/scalac

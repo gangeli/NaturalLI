@@ -3,7 +3,8 @@
 
 set -e
 export MAXMEM_GB=6
-JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
+export JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
+echo "JavaNLP at: $JAVANLP_HOME"
 
 echo "-- SETUP --"
 rm lib/stanford-corenlp-*
