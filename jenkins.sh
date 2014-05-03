@@ -5,6 +5,8 @@ set -e
 export MAXMEM_GB=6
 export JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
 echo "JavaNLP at: $JAVANLP_HOME"
+export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
+echo "Scala at: $SCALA_HOME"
 
 echo "-- SETUP --"
 rm lib/stanford-corenlp-*
@@ -12,7 +14,7 @@ ln -s $HOME/stanford-corenlp-* lib/
 
 echo "-- MAKE --"
 ./configure \
-  --with-scala=/home/gabor/programs/scala \
+  --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-7-oracle \
   --enable-debug
 make clean
