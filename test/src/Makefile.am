@@ -2,7 +2,7 @@ SUBDIRS = gtest
 
 _OBJS_SPEC = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
              Bloom.o Messages.pb.o
-OBJ_NAMES = $(patsubst %,server-%,${_OBJS_SPEC})
+OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 
 _TEST_OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})

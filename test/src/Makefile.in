@@ -38,10 +38,7 @@ check_PROGRAMS = test_server$(EXEEXT) itest_server$(EXEEXT)
 subdir = test/src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_postgresql.m4 \
 	$(top_srcdir)/m4/ax_compile_stdcxx_0x.m4 \
 	$(top_srcdir)/m4/ax_cxx_header_unordered_map.m4 \
 	$(top_srcdir)/configure.ac
@@ -262,7 +259,7 @@ SUBDIRS = gtest
 _OBJS_SPEC = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
              Bloom.o Messages.pb.o
 
-OBJ_NAMES = $(patsubst %,server-%,${_OBJS_SPEC})
+OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 _TEST_OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 TEST_SRC = $(patsubst %.o,%.cc,${_TEST_OBJS})
