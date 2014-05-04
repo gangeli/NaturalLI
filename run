@@ -1,5 +1,5 @@
 #!/bin/bash
-exec scala -cp qry.jar:test/test_client.jar:src/client.jar "$0" "$@"
+exec scala -cp qry.jar:test/test_client.jar:src/naturalli_client.jar "$0" "$@"
 !#
 import Qry._
 
@@ -46,7 +46,7 @@ def cp:String = {
       "lib/scripts/sim-1.0.jar",
       "lib/protobuf.jar"
     ).mkString(":")
-  List("src/client.jar", "test/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
+  List("src/naturalli_client.jar", "test/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
 }
 
 def guessClassOrElse(default:String):String = {

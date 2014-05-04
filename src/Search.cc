@@ -808,10 +808,12 @@ search_response Search(Graph* graph, FactDB* knownFacts,
         // We don't want to delete the last remnant of a phrase; where,
         // we define a phrase as the last remaining token in a contiguous
         // monotone block (e.g., ^ ^ [v] ^ ^ ^).
-        const bool singletonPhrase = (indexToMutate > 0 && indexToMutate < parentLength - 1 &&
-                                      parent->fact[indexToMutate - 1].monotonicity != parentMonotonicity &&
-                                      parent->fact[indexToMutate + 1].monotonicity != parentMonotonicity);
-        if (!singletonPhrase) {
+        const bool singletonDeletion 
+            = (mutation.source == 0 &&  // is deletion
+               indexToMutate > 0 && indexToMutate < parentLength - 1 &&
+               parent->fact[indexToMutate - 1].monotonicity != parentMonotonicity &&
+               parent->fact[indexToMutate + 1].monotonicity != parentMonotonicity);
+        if (!singletonDeletion) {
           // push mutation[/deletion]
           fringe->push(parent, indexToMutate,
             mutation.source == 0 ? 0 : 1,
