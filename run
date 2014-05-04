@@ -43,7 +43,7 @@ def cp:String = {
       "lib/corenlp-scala.jar",
       "lib/trove.jar",
       "lib/jaws.jar",
-      "lib/scripts/sim.jar",
+      "lib/scripts/sim-1.0.jar",
       "lib/protobuf.jar"
     ).mkString(":")
   List("src/client.jar", "test/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")

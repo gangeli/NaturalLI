@@ -1,5 +1,5 @@
 SUBDIRS = fnv
-bin_PROGRAMS=server
+bin_PROGRAMS=naturalli_server
 
 Messages.pb.h Messages.pb.cc: Messages.proto
 	${PROTOC} -I=. --cpp_out=. Messages.proto
@@ -12,27 +12,27 @@ clean-local:
 
 BUILT_SOURCES = Messages.proto
 
-server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
+naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.cc Postgres.cc         Utils.cc \
                  Graph.cc  InferenceServer.cc  Search.cc \
                  Bloom.h   Graph.h        Utils.h \
                  Types.h   Messages.pb.h  Search.h \
                  FactDB.h  Postgres.h     Trie.h
 
-server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
-server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
+naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
+naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if HAVE_TCMALLOC
-  server_LDADD += -ltcmalloc
+  naturalli_server_LDADD += -ltcmalloc
 endif
 if DEBUG
-  server_CXXFLAGS += -O0 -ggdb
-  server_LDADD += -lprofiler
+  naturalli_server_CXXFLAGS += -O0 -ggdb
+  naturalli_server_LDADD += -lprofiler
 endif
 
-client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java
+naturalli_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find . -name "*.java"`
 	@echo "Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
-	jar cf client.jar -C . .
+	jar cf naturalli_client.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'

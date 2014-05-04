@@ -21,8 +21,8 @@ make clean
 make all check TESTS_ENVIRONMENT=true 
 
 echo "-- TEST --"
-#test/src/test_server --gtest_output=xml:test/test_server.junit.xml
-#test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
+test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 make java_test
 
 echo "-- COVERAGE --"
