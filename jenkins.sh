@@ -15,6 +15,7 @@ ln -s $HOME/stanford-corenlp-* lib/
 echo "-- CLEAN --"
 make distclean
 git clean -f
+./autogen.sh
 
 echo "-- MAKE --"
 ./configure \
