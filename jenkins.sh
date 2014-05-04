@@ -30,7 +30,12 @@ test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 make java_test
 
 echo "-- COVERAGE --"
-gcovr -x -r src -e ".+\.test\.cc" > build/coverage.xml
+cd src/
+rm naturalli_server-Messages.pb.gcda
+rm naturalli_server-Messages.pb.gcno
+gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
+gcovr -r . --xml -o coverage.xml
+cd ..
 
 echo "-- Document --"
 doxygen doxygen.conf

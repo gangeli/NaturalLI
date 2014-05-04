@@ -33,3 +33,14 @@ test_server_LDADD =  ${OBJS}
 
 itest_server_SOURCES= ITest.cc
 itest_server_LDADD =  ${OBJS}
+
+if HAVE_TCMALLOC
+  test_server_LDADD += -ltcmalloc
+  itest_server_LDADD += -ltcmalloc
+endif
+if DEBUG
+  test_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
+  test_server_LDADD += -lprofiler -lgcov
+  itest_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
+  itest_server_LDADD += -lprofiler -lgcov
+endif
