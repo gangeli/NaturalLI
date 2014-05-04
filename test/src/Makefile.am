@@ -1,5 +1,8 @@
 SUBDIRS = gtest
 
+clean-local:
+	rm -f *.gcno *.gcda
+
 _OBJS_SPEC = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
              Bloom.o Messages.pb.o
 OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
@@ -38,9 +41,14 @@ if HAVE_TCMALLOC
   test_server_LDADD += -ltcmalloc
   itest_server_LDADD += -ltcmalloc
 endif
+
 if DEBUG
+  test_server_LDADD += -lprofiler
+  itest_server_LDADD += -lprofiler
+if IS_GCC
   test_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
-  test_server_LDADD += -lprofiler -lgcov
+  test_server_LDADD += -lgcov
   itest_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
-  itest_server_LDADD += -lprofiler -lgcov
+  itest_server_LDADD += -lgcov
+endif
 endif

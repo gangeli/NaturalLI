@@ -9,6 +9,7 @@ org/goobs/truth/Messages.java: Messages.proto
 
 clean-local:
 	rm -f Messages.pb.cc Messages.pb.h org/goobs/truth/Messages.java
+	rm -f *.gcno *.gcda
 
 BUILT_SOURCES = Messages.proto
 
@@ -24,9 +25,13 @@ naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -
 if HAVE_TCMALLOC
   naturalli_server_LDADD += -ltcmalloc
 endif
+
 if DEBUG
-  naturalli_server_CXXFLAGS += -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
+  naturalli_server_LDADD += -lprofiler
+if IS_GCC
+  naturalli_server_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC
   naturalli_server_LDADD += -lprofiler -lgcov
+endif
 endif
 
 naturalli_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java

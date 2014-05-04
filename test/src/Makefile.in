@@ -37,12 +37,17 @@ TESTS = test_server$(EXEEXT)
 check_PROGRAMS = test_server$(EXEEXT) itest_server$(EXEEXT)
 @HAVE_TCMALLOC_TRUE@am__append_1 = -ltcmalloc
 @HAVE_TCMALLOC_TRUE@am__append_2 = -ltcmalloc
-@DEBUG_TRUE@am__append_3 = -lprofiler -lgcov
-@DEBUG_TRUE@am__append_4 = -lprofiler -lgcov
+@DEBUG_TRUE@am__append_3 = -lprofiler
+@DEBUG_TRUE@am__append_4 = -lprofiler
+@DEBUG_TRUE@@IS_GCC_TRUE@am__append_5 = -lgcov
+@DEBUG_TRUE@@IS_GCC_TRUE@am__append_6 = -lgcov
 subdir = test/src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_lib_postgresql.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
 	$(top_srcdir)/m4/ax_compile_stdcxx_0x.m4 \
 	$(top_srcdir)/m4/ax_cxx_header_unordered_map.m4 \
 	$(top_srcdir)/configure.ac
@@ -56,7 +61,7 @@ am_itest_server_OBJECTS = itest_server-ITest.$(OBJEXT)
 itest_server_OBJECTS = $(am_itest_server_OBJECTS)
 am__DEPENDENCIES_1 =
 itest_server_DEPENDENCIES = $(OBJS) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 itest_server_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(itest_server_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -70,7 +75,7 @@ am_test_server_OBJECTS = test_server-TestPostgres.$(OBJEXT) \
 	test_server-TestUtils.$(OBJEXT)
 test_server_OBJECTS = $(am_test_server_OBJECTS)
 test_server_DEPENDENCIES = $(OBJS) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 test_server_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CXXLD) $(test_server_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -293,11 +298,13 @@ test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
                       TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
                       TestMessages.pb.cc  TestUtils.cc
 
-test_server_LDADD = ${OBJS} $(am__append_1) $(am__append_3)
+test_server_LDADD = ${OBJS} $(am__append_1) $(am__append_3) \
+	$(am__append_5)
 itest_server_SOURCES = ITest.cc
-itest_server_LDADD = ${OBJS} $(am__append_2) $(am__append_4)
-@DEBUG_TRUE@test_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
-@DEBUG_TRUE@itest_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
+itest_server_LDADD = ${OBJS} $(am__append_2) $(am__append_4) \
+	$(am__append_6)
+@DEBUG_TRUE@@IS_GCC_TRUE@test_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
+@DEBUG_TRUE@@IS_GCC_TRUE@itest_server_CXXFLAGS = -O0 -ggdb -fprofile-arcs -ftest-coverage -fPIC
 all: all-recursive
 
 .SUFFIXES:
@@ -857,7 +864,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 	mostlyclean-am
 
 distclean: distclean-recursive
@@ -931,19 +938,22 @@ uninstall-am:
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am check check-TESTS check-am clean \
-	clean-checkPROGRAMS clean-generic clean-libtool ctags \
-	ctags-recursive distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am
+	clean-checkPROGRAMS clean-generic clean-libtool clean-local \
+	ctags ctags-recursive distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-data install-data-am install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs installdirs-am \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am
 
+
+clean-local:
+	rm -f *.gcno *.gcda
 
 ${MAIN_SRC}/%.o: ${MAIN_SRC}/%.cc ${MAIN_SRC}/%.h
 	$(MAKE) -C ${MAIN_SRC} $<

@@ -98,6 +98,9 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
 AX_CXX_HEADER_UNORDERED_MAP
 
 echo "---CUSTOM FLAGS---"
+# Set some useful variables
+AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"g++")
+
 # optionally enable debugging
 AC_ARG_ENABLE(debug,
 AS_HELP_STRING([--enable-debug],

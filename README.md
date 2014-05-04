@@ -75,7 +75,7 @@ and link to it via the `with-scala` option:
 
 Other possibly useful options are:
 
-    --enable-debug                        # compile with -O0 -ggdb (and enable profiler & asserts)
+    --enable-debug                        # compile with asserts and profiling
 
 In addition, a number of environment variables are very likely to be
 useful. At minimum, the program should be pointed to the location
@@ -128,3 +128,18 @@ You're on your own in terms of setting up the classpath / etc. though
 Data (Postgres)
 -------------
 Some day this will be in an easily distributable form...
+
+Optimization
+-------------
+By default, autoconf compiles with `-02 -g`. 
+This can be changed by creating a file `share/config.site` within the
+prefix directory set in the configure script using `--prefix=`.
+For better performance, add the line:
+
+    CXXFLAGS="-03"
+
+For a better debugging experience, add the line:
+    
+    CXXFLAGS="-00 -ggdb"
+
+

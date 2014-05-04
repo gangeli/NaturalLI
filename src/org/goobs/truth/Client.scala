@@ -95,9 +95,8 @@ object Client {
             // ^^^
 
             // Shutdown the server
-            forceTrack("Shutting down server")
+            log("shutting down server...")
             ShutdownServer.shutdown()
-            endTrack("Shutting down server")
           }
         }).start()
       }
