@@ -17,7 +17,14 @@ The program is composed of two main components:
 Installation
 ===========
 This section describes the installation of the system.
-The program currently relies o
+Now, before anyone starts complaining about how godawfully long
+this section is (true story: all build systems suck), you're always
+entitled to try the version I use at home; the rest of the section can
+be thought of as debugging help.
+
+    ./configure CXX=clang++-3.4
+    make -j4
+    ./run
 
 Both the server and client are configured using autoconf, and so
 you should follow the configuration instructions for the server
