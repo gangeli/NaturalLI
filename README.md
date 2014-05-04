@@ -1,5 +1,6 @@
-NaturalLI: Natural [Language|Logic] Inference
+NaturalLI
 ===========
+**Natural [Language|Logic] Inference**
 
 The program is composed of two main components:
 

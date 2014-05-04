@@ -12,12 +12,15 @@ echo "-- SETUP --"
 rm lib/stanford-corenlp-*
 ln -s $HOME/stanford-corenlp-* lib/
 
+echo "-- CLEAN --"
+make distclean
+git clean -f
+
 echo "-- MAKE --"
 ./configure \
   --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-7-oracle \
   --enable-debug
-make clean
 make all check TESTS_ENVIRONMENT=true 
 
 echo "-- TEST --"
