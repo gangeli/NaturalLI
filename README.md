@@ -16,7 +16,7 @@ The program is composed of two main components:
     This is the entry point most users are looking for.
 
 Installation
-===========
+----------
 This section describes the installation of the system.
 Now, before anyone starts complaining about how godawfully long
 this section is (true story: all build systems suck), you're always
@@ -31,8 +31,7 @@ Both the server and client are configured using autoconf, and so
 you should follow the configuration instructions for the server
 before installing the client.
 
-Prerequisites
--------------
+###Prerequisites
 The code tries to have relatively few dependencies.
 Many of the java dependencies are simply bundled into the `lib`
 directory; the remaining dependencies are:
@@ -52,8 +51,7 @@ C++:
   * Protobuf 2.4 compiler (protoc)
   * Postgresql (9.2.4 tested)
 
-Server (C++)
--------------
+###Server (C++)
 The server is configured using autoconf.
 That is, the high-level procedure to install the server is as follows,
 yielding a final execuable `naturalli_server` (by default, in `src/`):
@@ -120,17 +118,14 @@ Some other potentially useful variables to set may be:
 
     CXX=<c++ compiler; g++ and clang++ 3.4 or later have been tested)
 
-Client (Java)
--------------
+###Client (Java)
 For now, `make src/naturalli_client.jar` pretty much works.
 You're on your own in terms of setting up the classpath / etc. though
 
-Data (Postgres)
--------------
+###Data (Postgres)
 Some day this will be in an easily distributable form...
 
-Optimization
--------------
+###Optimization
 By default, autoconf compiles with `-02 -g`. 
 This can be changed by creating a file `share/config.site` within the
 prefix directory set in the configure script using `--prefix=`.
