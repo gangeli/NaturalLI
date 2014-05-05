@@ -33,7 +33,9 @@ echo "-- COVERAGE --"
 cd src/
 rm naturalli_server-Messages.pb.gcda
 rm naturalli_server-Messages.pb.gcno
-gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
+rm -f naturalli_server-Messages.pb.h.gcno
+rm -f naturalli_server-Messages.pb.h.gcda
+gcovr -r . --html --html-details -o /var/www/naturalli/coverage/
 gcovr -r . --xml -o coverage.xml
 cd ..
 
