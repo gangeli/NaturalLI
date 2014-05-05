@@ -5,23 +5,17 @@
 #include <cstring>
 #include <string>
 #include <sstream>
-#include <iostream>
-
 #ifdef HAVE_UNORDERED_MAP
   #include <unordered_map>
 #else
   #include <map>
 #endif
-
-#ifdef HAVE_BOOST_THREAD
-  #include <boost/thread/thread.hpp>
-  #include <boost/lockfree/queue.hpp>
-  #include <boost/atomic.hpp>
+#ifdef HAVE_OPENMP
+  #include <omp.h>
 #endif
 
 #include "Postgres.h"
 #include "Utils.h"
-
 
 
 
@@ -288,70 +282,6 @@ uint64_t TrieRoot::memoryUsage(uint64_t* onFacts,
 // ----------------------------------------------------------------------------
 //
 
-inline bool consumeRow(Trie* facts, PGRow& row,
-                       const Graph* graph,
-#ifdef HAVE_UNORDERED_MAP
-                       unordered_map<word,vector<edge>> word2senses
-#else
-                       map<word,vector<edge>> word2senses
-#endif
-    ) {
-  const char* gloss = row[0];
-  uint32_t weight = atoi(row[1]);
-  if (weight < MIN_FACT_COUNT) { return false; }
-  // Parse fact
-  stringstream stream (&gloss[1]);
-  string substr;
-  edge buffer[256];
-  uint8_t bufferLength = 0;
-  while( getline (stream, substr, ',' ) ) {
-    // Parse the word
-    word w = atoi(substr.c_str());
-    // Register the word
-#ifdef HAVE_UNORDERED_MAP
-    unordered_map<word,vector<edge>>::const_iterator iter = word2senses.find( w );
-#else
-    map<word,vector<edge>>::const_iterator iter = word2senses.find( w );
-#endif
-    if (iter == word2senses.end() || iter->second.size() == 0) {
-      buffer[bufferLength].source       = w;
-      buffer[bufferLength].source_sense = 0;
-      buffer[bufferLength].type         = 0;
-      buffer[bufferLength].cost         = 1.0f;
-    } else {
-      buffer[bufferLength] = iter->second[0];
-    }
-    buffer[bufferLength].sink       = 0;
-    buffer[bufferLength].sink_sense = 0;
-    if (bufferLength >= MAX_FACT_LENGTH) { break; }
-    bufferLength += 1;
-  }
-  // Error check
-  if (cin.bad()) {
-    printf("IO Error: %s\n", gloss);
-    std::exit(2);
-  }
-  // Add fact
-  // Add 'canonical' version
-  facts->add(buffer, bufferLength, graph);
-  // Add word sense variants
-  for (uint32_t k = 0; k < bufferLength; ++k) {
-#ifdef HAVE_UNORDERED_MAP
-    unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
-#else
-    map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
-#endif
-    if (iter != word2senses.end() && iter->second.size() > 1) {
-      for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
-        buffer[k] = iter->second[sense];
-        facts->add(buffer, bufferLength, graph);
-      }
-    }
-  }
-  // continue loop
-  return true;
-}
-
 //
 // ReadFactTrie
 //
@@ -401,12 +331,62 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   }
   PGIterator iter = PGIterator(query);
   uint64_t i = 0;
-
-  // vv begin loop vv
+  edge buffer[256];
+  uint8_t bufferLength;
   while (iter.hasNext()) {
     // Get fact
     PGRow row = iter.next();
-    consumeRow(facts, row, graph, word2senses);
+    const char* gloss = row[0];
+    uint32_t weight = atoi(row[1]);
+    if (weight < MIN_FACT_COUNT) { break; }
+    // Parse fact
+    stringstream stream (&gloss[1]);
+    string substr;
+    bufferLength = 0;
+    while( getline (stream, substr, ',' ) ) {
+      // Parse the word
+      word w = atoi(substr.c_str());
+      // Register the word
+#ifdef HAVE_UNORDERED_MAP
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( w );
+#else
+      map<word,vector<edge>>::iterator iter = word2senses.find( w );
+#endif
+      if (iter == word2senses.end() || iter->second.size() == 0) {
+        buffer[bufferLength].source       = w;
+        buffer[bufferLength].source_sense = 0;
+        buffer[bufferLength].type         = 0;
+        buffer[bufferLength].cost         = 1.0f;
+      } else {
+        buffer[bufferLength] = iter->second[0];
+      }
+      buffer[bufferLength].sink       = 0;
+      buffer[bufferLength].sink_sense = 0;
+      if (bufferLength >= MAX_FACT_LENGTH) { break; }
+      bufferLength += 1;
+    }
+    // Error check
+    if (cin.bad()) {
+      printf("IO Error: %s\n", gloss);
+      std::exit(2);
+    }
+    // Add fact
+    // Add 'canonical' version
+    facts->add(buffer, bufferLength, graph);
+    // Add word sense variants
+    for (uint32_t k = 0; k < bufferLength; ++k) {
+#ifdef HAVE_UNORDERED_MAP
+      unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
+#else
+      map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
+#endif
+      if (iter != word2senses.end() && iter->second.size() > 1) {
+        for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
+          buffer[k] = iter->second[sense];
+          facts->add(buffer, bufferLength, graph);
+        }
+      }
+    }
     // Debug
     i += 1;
     if (i % 1000000 == 0) {
@@ -415,7 +395,6 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
              facts->memoryUsage(NULL, NULL, NULL) / 1000000);
     }
   }
-  // ^^ end loop ^^
 
   // Return
   printf("  done reading the fact database (%lu facts read)\n", i);
