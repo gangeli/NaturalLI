@@ -25,7 +25,7 @@ be thought of as debugging help.
 
     ./configure CXX=clang++-3.4
     make -j4
-    ./run
+    ./run FraCaS
 
 Both the server and client are configured using autoconf, and so
 you should follow the configuration instructions for the server

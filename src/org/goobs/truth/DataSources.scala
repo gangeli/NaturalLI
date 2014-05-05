@@ -29,7 +29,7 @@ trait DataSource {
 /**
  * Read examples from the FraCaS test suite found at: http://www-nlp.stanford.edu/~wcmac/downloads/fracas.xml
  */
-object FraCaS extends DataSource {
+object FraCaS extends DataSource with Client {
   import DataSource._
   /**
    * A filter for selecting queries which have only a single antecedent
@@ -79,7 +79,7 @@ object FraCaS extends DataSource {
   def main(args:Array[String]):Unit = {
     Props.SERVER_PORT = 4001
     Props.SEARCH_TIMEOUT = 250000
-    System.exit(Client.startMockServer(() =>
+    System.exit(startMockServer(() =>
       Test.evaluate(read(Props.DATA_FRACAS_PATH.getPath) filter isApplicable, NatLog.hardNatlogWeights,
         List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),
       isApplicable),

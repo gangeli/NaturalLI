@@ -12,11 +12,11 @@ import org.goobs.truth.TruthValue.TruthValue
  *
  * @author gabor
  */
-object RegressionTest {
+object RegressionTest extends Client {
 
   /** Evaluate, optionally backing off to a larger timeout (if not solution was found */
   private def evaluateQuery(facts:Seq[Fact], truth:TruthValue, timeout:Int):Int = {
-    val score:Double = Learn.evaluate(Client.issueQuery(
+    val score:Double = Learn.evaluate(issueQuery(
       facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
         builder.addKnownFact(fact)
       }.setQueryFact(facts.last)
@@ -81,9 +81,9 @@ object RegressionTest {
 
         // Issue Query
         for ( fact <- facts.slice(0, facts.length - 1) ) {
-          Client.explain(fact, "antecedent")
+          explain(fact, "antecedent")
         }
-        Client.explain(facts.last, "consequent")
+        explain(facts.last, "consequent")
         exitStatus += evaluateQuery(facts, truth, 10000)
         endTrack("Running " + line)
       }
@@ -99,7 +99,7 @@ object RegressionTest {
     var exitStatus:Int = 0
     Props.SERVER_HOST = "localhost"
     Props.SERVER_PORT = 41337
-    Client.startMockServer(() => exitStatus = runClient(), printOut = true)
+    startMockServer(() => exitStatus = runClient(), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")
     } else {

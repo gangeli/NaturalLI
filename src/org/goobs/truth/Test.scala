@@ -12,7 +12,7 @@ import org.goobs.truth.scripts.ShutdownServer
  *
  * @author gabor
  */
-object Test {
+object Test extends Client {
 
   case class Accuracy(name:String, shouldTake:Datum=>Boolean, var correct:Int = 0, var total:Int = 0) {
     override def toString:String = "Accuracy[" + name + "]: " + new DecimalFormat("0.00%").format(correct.toDouble / total.toDouble) + "  = " + correct + " / " + total
@@ -28,9 +28,9 @@ object Test {
     for ( (query, gold) <- data) {
       val datum:Datum = (query, gold)
       // Run Query
-      Client.explain(query.getKnownFact(0), "antecedent", verbose = false)
-      Client.explain(query.getQueryFact, "consequent", verbose = false)
-      val prob:Double = Learn.evaluate(Client.issueQuery(query
+      explain(query.getKnownFact(0), "antecedent", verbose = false)
+      explain(query.getQueryFact, "consequent", verbose = false)
+      val prob:Double = Learn.evaluate(issueQuery(query
         .setUseRealWorld(false)
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
