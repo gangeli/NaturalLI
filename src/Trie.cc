@@ -277,8 +277,8 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     }
     // Debug
     i += 1;
-    if (i % 10000000 == 0) {
-      printf("  loaded %luM facts\n", i / 1000000);
+    if (i % 1000 == 0) {
+      printf("  loaded %lu facts\n", i);
     }
   }
 
