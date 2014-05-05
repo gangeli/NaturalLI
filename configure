@@ -16171,6 +16171,11 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+cat >>confdefs.h <<_ACEOF
+#define HIGH_MEMORY ${HIGH_MEMORY:=0}
+_ACEOF
+
+
 ac_config_files="$ac_config_files Makefile src/Makefile src/fnv/Makefile test/src/Makefile test/src/gtest/Makefile"
 
 cat >confcache <<\_ACEOF

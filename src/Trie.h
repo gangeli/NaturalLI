@@ -51,7 +51,9 @@ class Trie : public FactDB {
    * reverse search.
    */
   virtual void add(const edge* elements, const uint8_t& length,
-                   const Graph* graph);
+                   const Graph* graph) {
+    addImpl(elements, length, graph, true);
+  }
   
   /** Insert a given fact. */
   virtual void add(tagged_word* elements, uint8_t length) {
@@ -91,12 +93,17 @@ class Trie : public FactDB {
                           const int16_t& mutationIndex,
                           edge* insertions,
                           uint32_t& mutableIndex) const;
+  
+  virtual void addImpl(const edge* elements, const uint8_t& length,
+                       const Graph* graph, const bool& isRoot);
 
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
   btree::btree_map<word,Trie*> children;
 
+#if HIGH_MEMORY
   /** A utility structure for words from here which would complete a fact */
   btree::btree_map<word,Trie*> completions;
+#endif
 
   /** A map from grandchild to valid child values. */
   btree::btree_map<word,std::vector<word>> skipGrams;

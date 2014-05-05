@@ -130,6 +130,7 @@ AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=25},  [The maximum number
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,  ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
 AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,  ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
+AC_DEFINE_UNQUOTED(HIGH_MEMORY,     ${HIGH_MEMORY:=0},  [If true, use more memory in exchange for better performance.])
 
 AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile \
                  test/src/Makefile test/src/gtest/Makefile ])

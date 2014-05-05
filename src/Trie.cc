@@ -34,8 +34,8 @@ Trie::~Trie() {
 //
 // Trie::add
 //
-void Trie::add(const edge* elements, const uint8_t& length,
-               const Graph* graph) {
+void Trie::addImpl(const edge* elements, const uint8_t& length,
+                   const Graph* graph, const bool& isRoot) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
@@ -50,7 +50,7 @@ void Trie::add(const edge* elements, const uint8_t& length,
     child = childIter->second;
   }
   // Register skip-gram
-  if (length > 1) {
+  if (isRoot && length > 1) {
     const word grandChildW = elements[1].source;
     assert (grandChildW > 0);
     skipGrams[grandChildW].push_back(w);
@@ -62,7 +62,9 @@ void Trie::add(const edge* elements, const uint8_t& length,
   // Recursive call
   if (length == 1) {
     child->isLeaf = true;    // Mark this as a leaf node
+#if HIGH_MEMORY
     completions[w] = child;  // register a completion
+#endif
   } else {
     child->add(&(elements[1]), length - 1, graph);
   }
@@ -165,11 +167,13 @@ const bool Trie::containsImpl(const tagged_word* query,
         if (mutableIndex >= MAX_COMPLETIONS) { break; }
       }
     } else {
+#if HIGH_MEMORY
       // sub-case: too many children; only add completions
       for (btree_map<word,Trie*>::const_iterator iter = completions.begin(); iter != completions.end(); ++iter) {
         addCompletion(iter->second, iter->first, insertions, mutableIndex);
         if (mutableIndex >= MAX_COMPLETIONS) { break; }
       }
+#endif
     }
   }
   

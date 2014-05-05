@@ -102,6 +102,9 @@
 /* Define to 1 if you have the <vector> header file. */
 #undef HAVE_VECTOR
 
+/* If true, use more memory in exchange for better performance. */
+#undef HIGH_MEMORY
+
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR

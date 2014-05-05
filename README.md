@@ -113,6 +113,7 @@ or set various parameters (these should not need changing).
 
     SEARCH_TIMEOUT=<default search timeout in queue pops>
     MIN_FACT_COUNT=<the minimum count for a valid fact>
+    HIGH_MEMORY=<enable memory-intensive optmization for small databases>
 
 Some other potentially useful variables to set may be:
 
