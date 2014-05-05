@@ -15,6 +15,10 @@
 
 class Trie;
 
+/**
+ * A packed edge, encoding the sense and edge type of
+ * the edge, but not the other information (1 byte)
+ */
 #ifdef __GNUG__
 typedef struct {
 #else
@@ -28,6 +32,10 @@ typedef struct alignas(1) {
 } __attribute__ ((__packed__)) packed_edge;
 #endif
 
+/**
+ * A little helper struct to encode all the information a
+ * Trie node needs into 4 bytes.
+ */
 #ifdef __GNUG__
 typedef struct {
 #else
@@ -111,17 +119,26 @@ class Trie : public FactDB {
   inline bool isLeaf() const { return data.isLeaf != 0; }
 
  protected:
+  // 8 bytes
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
   btree::btree_map<word,Trie*> children;
 
 #if HIGH_MEMORY
+  // 8 bytes
   /** A utility structure for words from here which would complete a fact */
   btree::btree_map<word,Trie*> completions;
 #endif
 
+  // 4 bytes
   /** A compact representation of the data to be stored at this node of the Trie. */
   trie_data data;
+
+  // 4 bytes left over -- the bloody thing rounds to 24 bytes :/
   
+  /**
+   * A helper function for adding completions to the output
+   * completion list.
+   */
   inline void addCompletion(const Trie* child, const word& sink,
                             edge* insertion, uint32_t& index) const;
 
