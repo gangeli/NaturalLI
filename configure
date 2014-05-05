@@ -2971,7 +2971,6 @@ am__tar='$${TAR-tar} chof - "$$tardir"' am__untar='$${TAR-tar} xf -'
 ac_config_headers="$ac_config_headers config.h"
 
 
-echo "---CHECKS FOR COMPILERS---"
 # (c++)
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
@@ -15313,7 +15312,6 @@ else
 fi
 
 
-echo "---CHECKS FOR LIBRARIES---"
 # (postgresql)
 
 
@@ -15750,7 +15748,6 @@ fi
 
 
 
-echo "---CHECKS FOR HEADERS---"
 
 for ac_header in algorithm arpa/inet.h assert.h cmath cstdio \
                   cstdlib cstring ctime exception map netinet/in.h \
@@ -15997,7 +15994,70 @@ $as_echo "#define HAVE_UNORDERED_MAP /**/" >>confdefs.h
   fi
 
 
-echo "---CUSTOM FLAGS---"
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenMP flag of C++ compiler" >&5
+$as_echo_n "checking for OpenMP flag of C++ compiler... " >&6; }
+if ${ax_cv_cxx_openmp+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  saveCXXFLAGS=$CXXFLAGS
+ax_cv_cxx_openmp=unknown
+# Flags to try:  -fopenmp (gcc), -openmp (icc), -mp (SGI & PGI),
+#                -xopenmp (Sun), -omp (Tru64), -qsmp=omp (AIX), none
+ax_openmp_flags="-fopenmp -openmp -mp -xopenmp -omp -qsmp=omp none"
+if test "x$OPENMP_CXXFLAGS" != x; then
+  ax_openmp_flags="$OPENMP_CXXFLAGS $ax_openmp_flags"
+fi
+for ax_openmp_flag in $ax_openmp_flags; do
+  case $ax_openmp_flag in
+    none) CXXFLAGS=$saveCXX ;;
+    *) CXXFLAGS="$saveCXXFLAGS $ax_openmp_flag" ;;
+  esac
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+void omp_set_num_threads(int);
+int
+main ()
+{
+const int N = 100000;
+  int i, arr[N];
+
+  omp_set_num_threads(2);
+
+  #pragma omp parallel for
+  for (i = 0; i < N; i++) {
+    arr[i] = i;
+  }
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ax_cv_cxx_openmp=$ax_openmp_flag; break
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+done
+CXXFLAGS=$saveCXXFLAGS
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ax_cv_cxx_openmp" >&5
+$as_echo "$ax_cv_cxx_openmp" >&6; }
+if test "x$ax_cv_cxx_openmp" = "xunknown"; then
+  :
+else
+  if test "x$ax_cv_cxx_openmp" != "xnone"; then
+    OPENMP_CXXFLAGS=$ax_cv_cxx_openmp
+  fi
+
+$as_echo "#define HAVE_OPENMP 1" >>confdefs.h
+
+fi
+
+
 # Set some useful variables
  if test x"$CXX" = x"g++"; then
   IS_GCC_TRUE=

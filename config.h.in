@@ -42,6 +42,9 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
+/* Define if OpenMP is enabled */
+#undef HAVE_OPENMP
+
 /* Define to 1 if PostgreSQL libraries are available */
 #undef HAVE_POSTGRESQL
 

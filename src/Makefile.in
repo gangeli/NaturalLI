@@ -42,9 +42,10 @@ bin_PROGRAMS = naturalli_server$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_openmp.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/m4/ax_lib_postgresql.m4 \
 	$(top_srcdir)/m4/ax_compile_stdcxx_0x.m4 \
 	$(top_srcdir)/m4/ax_cxx_header_unordered_map.m4 \
@@ -290,7 +291,7 @@ naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.h  Postgres.h     Trie.h
 
 naturalli_server_CXXFLAGS = -std=c++0x -pthread ${POSTGRESQL_CFLAGS} \
-	${PROTO_CFLAGS} $(am__append_3)
+	${PROTO_CFLAGS} ${OPENMP_CFLAGS} $(am__append_3)
 naturalli_server_LDADD = ${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} \
 	-lprotobuf -Lfnv -lfnv32 $(am__append_1) $(am__append_2) \
 	$(am__append_4)

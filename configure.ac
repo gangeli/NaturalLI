@@ -9,7 +9,6 @@ m4_include([m4/ax_cxx_header_unordered_map.m4])
 
 AC_CONFIG_HEADERS(config.h)
 
-echo "---CHECKS FOR COMPILERS---"
 # (c++)
 AC_PROG_CXX
 AC_LANG(C++)
@@ -43,7 +42,6 @@ fi
 AC_CHECK_PROG([ant_found],["ant"],[yes],[no])
 AM_CONDITIONAL(HAVE_ANT, test x"$ant_found" = x"yes")
 
-echo "---CHECKS FOR LIBRARIES---"
 # (postgresql)
 AX_LIB_POSTGRESQL([8.4.9])
 
@@ -89,15 +87,14 @@ AC_SUBST([GTEST_CXXFLAGS])
 AC_SUBST([GTEST_LDFLAGS])
 AC_SUBST([GTEST_LIBS])
 
-echo "---CHECKS FOR HEADERS---"
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   cstdlib cstring ctime exception map netinet/in.h \
                   queue set sstream stdio.h stdlib.h string \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
                   vector ])
 AX_CXX_HEADER_UNORDERED_MAP
+AX_OPENMP
 
-echo "---CUSTOM FLAGS---"
 # Set some useful variables
 AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"g++")
 

@@ -5,10 +5,19 @@
 #include <cstring>
 #include <string>
 #include <sstream>
-#include <unordered_map>
+#ifdef HAVE_UNORDERED_MAP
+  #include <unordered_map>
+#else
+  #include <map>
+#endif
+#ifdef HAVE_OPENMP
+  #include <omp.h>
+#endif
 
 #include "Postgres.h"
 #include "Utils.h"
+
+
 
 using namespace std;
 using namespace btree;
@@ -195,7 +204,11 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
 
   // Read valid deletions
   printf("Reading registered deletions...\n");
+#ifdef HAVE_UNORDERED_MAP
   unordered_map<word,vector<edge>> word2senses;
+#else
+  map<word,vector<edge>> word2senses;
+#endif
   // (query)
   snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
   PGIterator wordIter = PGIterator(query);
@@ -241,14 +254,17 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     if (weight < MIN_FACT_COUNT) { break; }
     // Parse fact
     stringstream stream (&gloss[1]);
+    string substr;
     bufferLength = 0;
-    while( stream.good() ) {
+    while( getline (stream, substr, ',' ) ) {
       // Parse the word
-      string substr;
-      getline( stream, substr, ',' );
       word w = atoi(substr.c_str());
       // Register the word
+#ifdef HAVE_UNORDERED_MAP
       unordered_map<word,vector<edge>>::iterator iter = word2senses.find( w );
+#else
+      map<word,vector<edge>>::iterator iter = word2senses.find( w );
+#endif
       if (iter == word2senses.end() || iter->second.size() == 0) {
         buffer[bufferLength].source       = w;
         buffer[bufferLength].source_sense = 0;
@@ -262,12 +278,21 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
       if (bufferLength >= MAX_FACT_LENGTH) { break; }
       bufferLength += 1;
     }
+    // Error check
+    if (cin.bad()) {
+      printf("IO Error: %s\n", gloss);
+      std::exit(2);
+    }
     // Add fact
     // Add 'canonical' version
     facts->add(buffer, bufferLength, graph);
     // Add word sense variants
     for (uint32_t k = 0; k < bufferLength; ++k) {
+#ifdef HAVE_UNORDERED_MAP
       unordered_map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
+#else
+      map<word,vector<edge>>::iterator iter = word2senses.find( buffer[k].source );
+#endif
       if (iter != word2senses.end() && iter->second.size() > 1) {
         for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
           buffer[k] = iter->second[sense];
@@ -277,8 +302,8 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     }
     // Debug
     i += 1;
-    if (i % 1000 == 0) {
-      printf("  loaded %lu facts\n", i);
+    if (i % 10000000 == 0) {
+      printf("  loaded %luM facts\n", i / 1000000);
     }
   }
 

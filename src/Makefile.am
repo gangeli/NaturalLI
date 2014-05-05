@@ -20,7 +20,7 @@ naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  Types.h   Messages.pb.h  Search.h \
                  FactDB.h  Postgres.h     Trie.h
 
-naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS}
+naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS} ${OPENMP_CFLAGS}
 naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
 if HAVE_TCMALLOC
   naturalli_server_LDADD += -ltcmalloc
