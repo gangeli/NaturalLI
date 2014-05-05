@@ -8,7 +8,7 @@ inline tagged_word getTaggedWord(word w) { return getTaggedWord(w, 0, 0); }
 class TrieTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    trie = new Trie();
+    trie = new TrieRoot();
   }
 
   virtual void TearDown() {
@@ -222,12 +222,17 @@ TEST_F(TrieTest, CompletionFromNoSkipGrams) {
     2, 3, 0);              // valid sinks
 }
 
-TEST_F(TrieTest, EnsureReasonableSize) {
+TEST_F(TrieTest, EnsureTrieStructSizes) {
+  EXPECT_EQ(1, sizeof(packed_edge));
+  EXPECT_EQ(4, sizeof(trie_data));
+}
+
+TEST_F(TrieTest, EnsureTrieSize) {
   EXPECT_EQ(8, sizeof(uint64_t));
 #if HIGH_MEMORY
   EXPECT_EQ(40, sizeof(*trie));
 #else
-  EXPECT_EQ(32, sizeof(*trie));
+  EXPECT_EQ(24, sizeof(*trie));
 #endif
   // Add some facts
   buffer[0] = getTaggedWord(1);
@@ -252,9 +257,9 @@ TEST_F(TrieTest, EnsureReasonableSize) {
   EXPECT_EQ(168, onStructure);
   EXPECT_EQ(288, onCompletionCaching);
 #else
-  EXPECT_EQ(504, usage);
-  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
-  EXPECT_EQ(432, onStructure);
+  EXPECT_EQ(416, usage);
+  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);  // 40 bytes
+  EXPECT_EQ(344, onStructure);
   EXPECT_EQ(32, onCompletionCaching);
 #endif
   buffer[9] = getTaggedWord(11);

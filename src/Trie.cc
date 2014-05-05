@@ -30,54 +30,12 @@ Trie::~Trie() {
     delete iter->second;
   }
 }
-  
-//
-// Trie::memoryUsage
-//
-uint64_t Trie::memoryUsage(uint64_t* onFacts,
-                           uint64_t* onStructure,
-                           uint64_t* onCompletionCaching) const {
-  // (make sure variables work)
-  uint64_t a = 0;
-  uint64_t b = 0;
-  uint64_t c = 0;
-  if (onFacts == NULL) {
-    onFacts = &a;
-  }
-  if (onStructure == NULL) {
-    onStructure = &b;
-  }
-  if (onCompletionCaching == NULL) {
-    onCompletionCaching = &c;
-  }
-  // (me)
-  (*onStructure) += sizeof(*this);
-  // (completions)
-#if HIGH_MEMORY
-  (*onCompletionCaching) += (sizeof(word) + sizeof(Trie*)) * completions.size();
-#endif
-  // (skip-grams)
-  for (btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.begin();
-       skipGramIter != skipGrams.end(); ++skipGramIter) {
-    (*onCompletionCaching) += sizeof(word);
-    (*onCompletionCaching) += sizeof(vector<word>) + sizeof(word) * skipGramIter->second.size();
-  }
-  // (children)
-  for (btree_map<word,Trie*>::const_iterator childIter = children.begin();
-       childIter != children.end(); ++childIter) {
-    (*onFacts) += sizeof(word);
-    (*onStructure) += sizeof(Trie*);
-    childIter->second->memoryUsage(onFacts, onStructure, onCompletionCaching);
-  }
-  // (return)
-  return (*onFacts) + (*onStructure) + (*onCompletionCaching);
-}
 
 //
 // Trie::add
 //
-void Trie::addImpl(const edge* elements, const uint8_t& length,
-                   const Graph* graph, const bool& isRoot) {
+void Trie::add(const edge* elements, const uint8_t& length,
+               const Graph* graph) {
   // Corner cases
   if (length == 0) { return; }  // this case shouldn't actually happen normally...
   // Register child
@@ -91,12 +49,6 @@ void Trie::addImpl(const edge* elements, const uint8_t& length,
   } else {
     child = childIter->second;
   }
-  // Register skip-gram
-  if (isRoot && length > 1) {
-    const word grandChildW = elements[1].source;
-    assert (grandChildW > 0);
-    skipGrams[grandChildW].push_back(w);
-  }
   // Register information about child
   if (graph == NULL || graph->containsDeletion(elements[0])) {
     child->registerEdge(elements[0]);
@@ -108,7 +60,7 @@ void Trie::addImpl(const edge* elements, const uint8_t& length,
     completions[w] = child;  // register a completion
 #endif
   } else {
-    child->addImpl(&(elements[1]), length - 1, graph, false);
+    child->add(&(elements[1]), length - 1, graph);
   }
 }
 
@@ -136,65 +88,14 @@ inline void Trie::addCompletion(const Trie* child, const word& source,
 }
 
 
+
 //
 // Trie::contains
 //
 const bool Trie::contains(const tagged_word* query, 
                           const uint8_t& queryLength,
                           const int16_t& mutationIndex,
-                          edge* insertions) const {
-  assert (queryLength > mutationIndex);
-  uint32_t mutableIndex = 0;
-  bool contains;
-  if (mutationIndex == -1) {
-    if (queryLength > 0) {
-      btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( query[0].word );
-      if (skipGramIter != skipGrams.end()) {
-        // Case: add anything that leads into the second term
-        for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
-          btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
-          if (childIter != children.end()) {
-            addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
-          }
-          if (mutableIndex >= MAX_COMPLETIONS) { break; }
-        }
-      } else {
-        // Case: we're kind of shit out of luck. We're inserting into the
-        //       beginning of the sentence, but with no valid skip-grams.
-        //       So, let's just add some starting words and pray.
-        for (btree_map<word,Trie*>::const_iterator childIter = children.begin(); childIter != children.end(); ++childIter) {
-          addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
-          if (mutableIndex >= MAX_COMPLETIONS) { break; }
-        }
-      }
-    } else {
-      // Case: add any single-term completions
-      for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
-        if (iter->second->isLeaf()) {
-          addCompletion(iter->second, iter->first, insertions, mutableIndex);
-          if (mutableIndex >= MAX_COMPLETIONS) { break; }
-        }
-      }
-    }
-    contains =  containsImpl(query, queryLength, -9000, insertions, mutableIndex);  // already added completions
-  } else {
-    contains = containsImpl(query, queryLength, mutationIndex, insertions, mutableIndex);
-  }
-
-  // Return
-  if (mutableIndex < MAX_COMPLETIONS) {
-    insertions[mutableIndex].source = 0;
-  }
-  return contains;
-}
-
-//
-// Trie::containsImpl
-//
-const bool Trie::containsImpl(const tagged_word* query, 
-                              const uint8_t& queryLength,
-                              const int16_t& mutationIndex,
-                              edge* insertions,
+                          edge* insertions,
                               uint32_t& mutableIndex) const {
   assert (queryLength > mutationIndex);
 
@@ -231,21 +132,161 @@ const bool Trie::containsImpl(const tagged_word* query,
       return false;
     } else {
       // Check the child
-      return childIter->second->containsImpl(&(query[1]), 
-                                             queryLength - 1,
-                                             mutationIndex - 1,
-                                             insertions,
-                                             mutableIndex);
+      return childIter->second->contains(&(query[1]), 
+                                         queryLength - 1,
+                                         mutationIndex - 1,
+                                         insertions,
+                                         mutableIndex);
     }
   }
 }
 
+//
+// Trie::memoryUsage
+//
+uint64_t Trie::memoryUsage(uint64_t* onFacts,
+                           uint64_t* onStructure,
+                           uint64_t* onCompletionCaching) const {
+  // (make sure variables work)
+  uint64_t a = 0;
+  uint64_t b = 0;
+  uint64_t c = 0;
+  if (onFacts == NULL) {
+    onFacts = &a;
+  }
+  if (onStructure == NULL) {
+    onStructure = &b;
+  }
+  if (onCompletionCaching == NULL) {
+    onCompletionCaching = &c;
+  }
+  // (me)
+  (*onStructure) += sizeof(*this);
+  // (completions)
+#if HIGH_MEMORY
+  (*onCompletionCaching) += (sizeof(word) + sizeof(Trie*)) * completions.size();
+#endif
+  // (children)
+  for (btree_map<word,Trie*>::const_iterator childIter = children.begin();
+       childIter != children.end(); ++childIter) {
+    (*onFacts) += sizeof(word);
+    (*onStructure) += sizeof(Trie*);
+    childIter->second->memoryUsage(onFacts, onStructure, onCompletionCaching);
+  }
+  // (return)
+  return (*onFacts) + (*onStructure) + (*onCompletionCaching);
+}
+
+//
+// ----------------------------------------------------------------------------
+//
+
+//
+// TrieRoot::add()
+//
+void TrieRoot::add(const edge* elements, const uint8_t& length,
+                   const Graph* graph) {
+  // Add the fact
+  Trie::add(elements, length, graph);
+  // Register skip-gram
+  const word w = elements[0].source;
+  if (length > 1) {
+    const word grandChildW = elements[1].source;
+    assert (grandChildW > 0);
+    skipGrams[grandChildW].push_back(w);
+  }
+}
+
+//
+// TrieRoot::contains
+//
+const bool TrieRoot::contains(const tagged_word* query, 
+                              const uint8_t& queryLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const {
+  assert (queryLength > mutationIndex);
+  uint32_t mutableIndex = 0;
+  bool contains;
+  if (mutationIndex == -1) {
+    if (queryLength > 0) {
+      btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.find( query[0].word );
+      if (skipGramIter != skipGrams.end()) {
+        // Case: add anything that leads into the second term
+        for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
+          btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
+          if (childIter != children.end()) {
+            addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
+          }
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      } else {
+        // Case: we're kind of shit out of luck. We're inserting into the
+        //       beginning of the sentence, but with no valid skip-grams.
+        //       So, let's just add some starting words and pray.
+        for (btree_map<word,Trie*>::const_iterator childIter = children.begin(); childIter != children.end(); ++childIter) {
+          addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      }
+    } else {
+      // Case: add any single-term completions
+      for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
+        if (iter->second->isLeaf()) {
+          addCompletion(iter->second, iter->first, insertions, mutableIndex);
+          if (mutableIndex >= MAX_COMPLETIONS) { break; }
+        }
+      }
+    }
+    contains = Trie::contains(query, queryLength, -9000, insertions, mutableIndex);  // already added completions
+  } else {
+    contains = Trie::contains(query, queryLength, mutationIndex, insertions, mutableIndex);
+  }
+
+  // Return
+  if (mutableIndex < MAX_COMPLETIONS) {
+    insertions[mutableIndex].source = 0;
+  }
+  return contains;
+}
+  
+//
+// TrieRoot::memoryUsage()
+//
+uint64_t TrieRoot::memoryUsage(uint64_t* onFacts,
+                               uint64_t* onStructure,
+                               uint64_t* onCompletionCaching) const {
+  // (make sure variables work)
+  uint64_t a = 0;
+  uint64_t b = 0;
+  uint64_t c = 0;
+  if (onFacts == NULL) {
+    onFacts = &a;
+  }
+  if (onStructure == NULL) {
+    onStructure = &b;
+  }
+  if (onCompletionCaching == NULL) {
+    onCompletionCaching = &c;
+  }
+  Trie::memoryUsage(onFacts, onStructure, onCompletionCaching);
+  // (skip-grams)
+  for (btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.begin();
+       skipGramIter != skipGrams.end(); ++skipGramIter) {
+    (*onCompletionCaching) += sizeof(word);
+    (*onCompletionCaching) += sizeof(vector<word>) + sizeof(word) * skipGramIter->second.size();
+  }
+  return (*onFacts) + (*onStructure) + (*onCompletionCaching);
+}
+
+//
+// ----------------------------------------------------------------------------
+//
 
 //
 // ReadFactTrie
 //
 FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
-  Trie* facts = new Trie();
+  Trie* facts = new TrieRoot();
   char query[127];
 
   // Read valid deletions

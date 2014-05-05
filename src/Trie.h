@@ -9,17 +9,18 @@
 #include <config.h>
 #include "Bloom.h"
 #include "FactDB.h"
+#include "Utils.h"
 
 #define TRIE_NUM_VALID_INSERTIONS_PER_NODE 3
 
 class Trie;
 
-typedef struct {
+typedef struct alignas(1) {
   uint8_t sense:5,
           type:3;
-}__attribute__((packed)) packed_edge;
+} packed_edge;
 
-typedef struct {
+typedef struct alignas(4) {
   packed_edge validInsertions[TRIE_NUM_VALID_INSERTIONS_PER_NODE];
   uint8_t numValidInsertions:2,
           isLeaf:1;
@@ -55,56 +56,45 @@ class Trie : public FactDB {
    * reverse search.
    */
   virtual void add(const edge* elements, const uint8_t& length,
-                   const Graph* graph) {
-    addImpl(elements, length, graph, true);
-  }
-  
-  /** Insert a given fact. */
-  virtual void add(tagged_word* elements, uint8_t length) {
-    edge edges[length];
-    for (int i = 0; i < length; ++i) {
-      edge e;
-      e.source       = elements[i].word;
-      e.source_sense = elements[i].sense;
-      e.sink         = 0;
-      e.sink_sense   = 0;
-      e.type         = ADD_OTHER;
-      e.cost         = 1.0f;
-      edges[i] = e;
-    }
-    add(edges, length, NULL);
-  }
+                   const Graph* graph);
 
 
-  /** {@inheritDoc} */
-  virtual const bool contains(const tagged_word* words,
-                              const uint8_t& wordLength,
-                              const int16_t& mutationIndex,
-                              edge* insertions) const;
-  
-  /** {@inheritDoc} */
-  bool contains(const tagged_word* words, const uint8_t wordLength) const {
-    edge edges[MAX_COMPLETIONS];
-    return contains(words, wordLength, wordLength - 1, edges);
-  }
-
-  uint64_t memoryUsage(uint64_t* onFacts,
-                       uint64_t* onStructure,
-                       uint64_t* onCompletionCaching) const;
-
- private:
-  inline void addCompletion(const Trie* child, const word& sink,
-                            edge* insertion, uint32_t& index) const;
-  
-  const bool containsImpl(const tagged_word* words,
+  const bool contains(const tagged_word* words,
                           const uint8_t& wordLength,
                           const int16_t& mutationIndex,
                           edge* insertions,
                           uint32_t& mutableIndex) const;
   
-  virtual void addImpl(const edge* elements, const uint8_t& length,
-                       const Graph* graph, const bool& isRoot);
+  /** {@inheritDoc} */
+  virtual const bool contains(const tagged_word* words,
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const {
+    printf("[1] Should never call this contains() on a Trie directly!\n");
+    print_stacktrace();
+    std::exit(3);
+  }
+  /** {@inheritDoc} */
+  virtual bool contains(const tagged_word* words, const uint8_t wordLength) const {
+    printf("[2] Should never call this contains() on a Trie directly!\n");
+    print_stacktrace();
+    std::exit(3);
+  }
+  /** {@inheritDoc} */
+  virtual void add(tagged_word* elements, uint8_t length) {
+    printf("[3] Should never call this add() on a Trie directly!\n");
+    print_stacktrace();
+    std::exit(3);
+  }
 
+  virtual uint64_t memoryUsage(uint64_t* onFacts,
+                               uint64_t* onStructure,
+                               uint64_t* onCompletionCaching) const;
+  
+  /** A simple helper function for whether this node is a leaf node */
+  inline bool isLeaf() const { return data.isLeaf != 0; }
+
+ protected:
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
   btree::btree_map<word,Trie*> children;
 
@@ -113,14 +103,13 @@ class Trie : public FactDB {
   btree::btree_map<word,Trie*> completions;
 #endif
 
-  /** A map from grandchild to valid child values. */
-  btree::btree_map<word,std::vector<word>> skipGrams;
-
   /** A compact representation of the data to be stored at this node of the Trie. */
   trie_data data;
+  
+  inline void addCompletion(const Trie* child, const word& sink,
+                            edge* insertion, uint32_t& index) const;
 
-  /** A simple helper function for whether this node is a leaf node */
-  inline bool isLeaf() const { return data.isLeaf != 0; }
+ private:
 
   /** Register a new edge type to insert */
   inline void registerEdge(edge e) {
@@ -149,6 +138,54 @@ class Trie : public FactDB {
     }
     return data.numValidInsertions;
   }
+};
+
+
+/**
+ * A special Trie node denoting the root, storing some additional
+ * information bits of information that we don't want to replicate
+ * for every node.
+ */
+class TrieRoot : public Trie {
+ public:
+  virtual void add(const edge* elements, const uint8_t& length,
+                   const Graph* graph);
+  
+  /** {@inheritDoc} Insert a given fact. */
+  virtual void add(tagged_word* elements, uint8_t length) {
+    edge edges[length];
+    for (int i = 0; i < length; ++i) {
+      edge e;
+      e.source       = elements[i].word;
+      e.source_sense = elements[i].sense;
+      e.sink         = 0;
+      e.sink_sense   = 0;
+      e.type         = ADD_OTHER;
+      e.cost         = 1.0f;
+      edges[i] = e;
+    }
+    add(edges, length, NULL);
+  }
+  
+  /** {@inheritDoc} */
+  virtual const bool contains(const tagged_word* words,
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const;
+  
+  /** {@inheritDoc} */
+  virtual bool contains(const tagged_word* words, const uint8_t wordLength) const {
+    edge edges[MAX_COMPLETIONS];
+    return contains(words, wordLength, wordLength - 1, edges);
+  }
+  
+  virtual uint64_t memoryUsage(uint64_t* onFacts,
+                               uint64_t* onStructure,
+                               uint64_t* onCompletionCaching) const;
+
+ private:
+  /** A map from grandchild to valid child values. */
+  btree::btree_map<word,std::vector<word>> skipGrams;
 };
 
 

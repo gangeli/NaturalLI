@@ -109,11 +109,11 @@
  * A representation of a word, tagged with various bits of
  * metadata
  */
-typedef struct {
+typedef struct alignas(4) {
   uint32_t monotonicity:2,
            sense:5,
            word:25;
-}__attribute__((packed)) tagged_word;
+} tagged_word;
 
 /** The == operator for two tagged words */
 inline bool operator==(const tagged_word& lhs, const tagged_word& rhs) {
