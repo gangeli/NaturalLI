@@ -173,7 +173,6 @@ class Trie : public FactDB {
   }
 };
 
-
 /**
  * A special Trie node denoting the root, storing some additional
  * information bits of information that we don't want to replicate

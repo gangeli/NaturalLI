@@ -7,6 +7,8 @@ m4_include([m4/ax_lib_postgresql.m4])
 m4_include([m4/ax_compile_stdcxx_0x.m4])
 m4_include([m4/ax_cxx_header_unordered_map.m4])
 m4_include([m4/ax_openmp.m4])
+m4_include([m4/ax_boost_base.m4])
+m4_include([m4/ax_boost_thread.m4])
 
 AC_CONFIG_HEADERS(config.h)
 
@@ -93,8 +95,14 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   queue set sstream stdio.h stdlib.h string \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
                   vector ])
+
+# (unordered map)
 AX_CXX_HEADER_UNORDERED_MAP
+# (openmp)
 AX_OPENMP
+# (boost)
+AX_BOOST_BASE([1.54.0])
+AX_BOOST_THREAD()
 
 # Set some useful variables
 AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"g++")

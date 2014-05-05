@@ -9,6 +9,12 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* define if the Boost library is available */
+#undef HAVE_BOOST
+
+/* define if the Boost::Thread library is available */
+#undef HAVE_BOOST_THREAD
+
 /* Define to 1 if you have the <cmath> header file. */
 #undef HAVE_CMATH
 
