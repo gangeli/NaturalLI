@@ -84,6 +84,10 @@ class Trie : public FactDB {
     return contains(words, wordLength, wordLength - 1, edges);
   }
 
+  uint64_t memoryUsage(uint64_t* onFacts,
+                       uint64_t* onStructure,
+                       uint64_t* onCompletionCaching) const;
+
  private:
   inline void addCompletion(const Trie* child, const word& sink,
                             edge* insertion, uint32_t& index) const;

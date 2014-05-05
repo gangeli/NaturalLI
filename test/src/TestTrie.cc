@@ -221,3 +221,36 @@ TEST_F(TrieTest, CompletionFromNoSkipGrams) {
     // Checks              
     2, 3, 0);              // valid sinks
 }
+
+TEST_F(TrieTest, EnsureReasonableSize) {
+  EXPECT_EQ(8, sizeof(uint64_t));
+  EXPECT_EQ(32, sizeof(*trie));
+  // Add some facts
+  buffer[0] = getTaggedWord(1);
+  buffer[1] = getTaggedWord(2);
+  buffer[2] = getTaggedWord(3);
+  buffer[3] = getTaggedWord(4);
+  buffer[4] = getTaggedWord(5);
+  buffer[5] = getTaggedWord(6);
+  buffer[6] = getTaggedWord(7);
+  buffer[7] = getTaggedWord(8);
+  buffer[8] = getTaggedWord(9);
+  buffer[9] = getTaggedWord(10);
+  trie->add(buffer, 10);
+  // Check size @ 1 elem
+  uint64_t onFacts = 0; uint64_t onStructure = 0; uint64_t onCompletionCaching = 0;
+  uint64_t usage = trie->memoryUsage(&onFacts, &onStructure, &onCompletionCaching);
+  ASSERT_EQ(onFacts + onStructure + onCompletionCaching, usage);
+  EXPECT_EQ(usage, trie->memoryUsage(NULL, NULL, NULL));
+  EXPECT_EQ(496, usage);
+  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
+  EXPECT_EQ(168, onStructure);
+  EXPECT_EQ(288, onCompletionCaching);
+  buffer[9] = getTaggedWord(11);
+  trie->add(buffer, 10);
+//  // Check size @ 2 elem
+//  EXPECT_EQ(200, trie->memoryUsage(&onFacts, &onStructure, &onCompletionCaching));
+//  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
+//  EXPECT_EQ(100, onStructure);
+//  EXPECT_EQ(50, onCompletionCaching);
+}

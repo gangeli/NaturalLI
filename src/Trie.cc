@@ -30,6 +30,48 @@ Trie::~Trie() {
     delete iter->second;
   }
 }
+  
+//
+// Trie::memoryUsage
+//
+uint64_t Trie::memoryUsage(uint64_t* onFacts,
+                           uint64_t* onStructure,
+                           uint64_t* onCompletionCaching) const {
+  // (make sure variables work)
+  uint64_t a = 0;
+  uint64_t b = 0;
+  uint64_t c = 0;
+  if (onFacts == NULL) {
+    onFacts = &a;
+  }
+  if (onStructure == NULL) {
+    onStructure = &b;
+  }
+  if (onCompletionCaching == NULL) {
+    onCompletionCaching = &c;
+  }
+  // (me)
+  (*onStructure) += sizeof(this);
+  // (completions)
+#if HIGH_MEMORY
+  (*onCompletionCaching) += (sizeof(word) + sizeof(Trie*)) * completions.size();
+#endif
+  // (skip-grams)
+  for (btree_map<word,vector<word>>::const_iterator skipGramIter = skipGrams.begin();
+       skipGramIter != skipGrams.end(); ++skipGramIter) {
+    (*onCompletionCaching) += sizeof(word);
+    (*onCompletionCaching) += sizeof(vector<word>) + sizeof(word) * skipGramIter->second.size();
+  }
+  // (children)
+  for (btree_map<word,Trie*>::const_iterator childIter = children.begin();
+       childIter != children.end(); ++childIter) {
+    (*onFacts) += sizeof(word);
+    (*onStructure) += sizeof(Trie*);
+    childIter->second->memoryUsage(onFacts, onStructure, onCompletionCaching);
+  }
+  // (return)
+  return (*onFacts) + (*onStructure) + (*onCompletionCaching);
+}
 
 //
 // Trie::add
@@ -306,8 +348,10 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     }
     // Debug
     i += 1;
-    if (i % 10000000 == 0) {
-      printf("  loaded %luM facts\n", i / 1000000);
+    if (i % 1000000 == 0) {
+      printf("  loaded %luM facts (%luMB memory used in Trie)\n",
+             i / 1000000,
+             facts->memoryUsage(NULL, NULL, NULL) / 1000000);
     }
   }
 
