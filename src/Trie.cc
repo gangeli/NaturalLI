@@ -406,7 +406,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   while (iter.hasNext()) {
     // Get fact
     PGRow row = iter.next();
-    consumeRow(facts, row, graph, word2senses);
+    if (!consumeRow(facts, row, graph, word2senses)) { break; }
     // Debug
     i += 1;
     if (i % 1000000 == 0) {
