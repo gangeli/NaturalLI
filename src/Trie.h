@@ -15,16 +15,32 @@
 
 class Trie;
 
+#ifdef __GNUG__
+typedef struct {
+#else
 typedef struct alignas(1) {
+#endif
   uint8_t sense:5,
           type:3;
+#ifdef __GNUG__
 } packed_edge;
+#else
+} __attribute__ ((__packed__)) packed_edge;
+#endif
 
+#ifdef __GNUG__
+typedef struct {
+#else
 typedef struct alignas(4) {
+#endif
   packed_edge validInsertions[TRIE_NUM_VALID_INSERTIONS_PER_NODE];
   uint8_t numValidInsertions:2,
           isLeaf:1;
+#ifdef __GNUG__
+} __attribute__ ((__packed__)) trie_data;
+#else
 } trie_data;
+#endif
 
 /**
  * A Trie implementation of a fact database.

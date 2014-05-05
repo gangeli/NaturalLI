@@ -109,11 +109,19 @@
  * A representation of a word, tagged with various bits of
  * metadata
  */
+#ifdef __GNUG__
+typedef struct {
+#else
 typedef struct alignas(4) {
+#endif
   uint32_t monotonicity:2,
            sense:5,
            word:25;
+#ifdef __GNUG__
 } tagged_word;
+#else
+} __attribute__ ((__packed__)) tagged_word;
+#endif
 
 /** The == operator for two tagged words */
 inline bool operator==(const tagged_word& lhs, const tagged_word& rhs) {
