@@ -101,8 +101,8 @@ AX_CXX_HEADER_UNORDERED_MAP
 # (openmp)
 AX_OPENMP
 # (boost)
-AX_BOOST_BASE([1.54.0])
-AX_BOOST_THREAD()
+#AX_BOOST_BASE([1.54.0])
+#AX_BOOST_THREAD()
 
 # Set some useful variables
 AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"g++")

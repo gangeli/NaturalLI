@@ -16501,6 +16501,7 @@ $as_echo "#define HAVE_BOOST /**/" >>confdefs.h
 fi
 
 
+if test "x$have_boost" = "xyes"; then
 
 
 # Check whether --with-boost-thread was given.
@@ -16772,6 +16773,7 @@ fi
 	LDFLAGS="$LDFLAGS_SAVED"
 	fi
 
+fi
 
 # Set some useful variables
  if test x"$CXX" = x"g++"; then
