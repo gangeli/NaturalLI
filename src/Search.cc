@@ -808,13 +808,12 @@ search_response Search(Graph* graph, FactDB* knownFacts,
         // We don't want to delete the last remnant of a phrase; where,
         // we define a phrase as the last remaining token in a contiguous
         // monotone block (e.g., ^ ^ [v] ^ ^ ^).
-        // TODO(gabor) also, don't delete a block at the end of a sentence (e.g., dangling "a cat has some $")
         bool singletonDeletion = false;
         if (mutation.source == 0) {
-          const monotonicity lastMonotonicity = (indexToMutate > 0) ? parent->fact[indexToMutate - 1].monotonicity : MONOTONE_INVALID;
+          const monotonicity lastMonotonicity = (indexToMutate > 0)                ? parent->fact[indexToMutate - 1].monotonicity : MONOTONE_INVALID;
           const monotonicity nextMonotonicity = (indexToMutate < parentLength - 1) ? parent->fact[indexToMutate + 1].monotonicity : MONOTONE_INVALID;
-          singletonDeletion |= (lastMonotonicity != parentMonotonicity);
-          singletonDeletion |= (nextMonotonicity != parentMonotonicity);
+          singletonDeletion = (lastMonotonicity != parentMonotonicity) &&
+                              (nextMonotonicity != parentMonotonicity);
         }
         if (!singletonDeletion) {
           // push mutation[/deletion]
