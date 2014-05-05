@@ -11,9 +11,10 @@
 //
 
 // Monotonicities
-#define MONOTONE_UP   0
-#define MONOTONE_DOWN 1
-#define MONOTONE_FLAT 2
+#define MONOTONE_UP      0
+#define MONOTONE_DOWN    1
+#define MONOTONE_FLAT    2
+#define MONOTONE_INVALID 3
 #define MONOTONE_DEFAULT MONOTONE_UP
 
 // Graph Edges

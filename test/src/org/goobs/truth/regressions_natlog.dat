@@ -122,3 +122,11 @@
 ✔[have](cat, a more important customer than dog)	[have](cat, a more important customer than dog have)
 ✔[got](several delegates, the results published in major national newspapers)	[got](several delegates, the results published)
 ?[can travel](most cats who are residing in Europe, freely in Europe)	[can travel](most cats, freely in Europe)
+
+#
+# Tier 4: Ollie Regressions
+#
+
+# Used to delete land (in monotone down), and then insert tail (in monotone up)
+# Fixed by disallowing deleting the last phrase in a sentence.
+?[have](a man, a lot of land)	[have](a man, a tail)

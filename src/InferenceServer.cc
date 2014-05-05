@@ -53,7 +53,7 @@ void setmemlimit() {
  * Create a very simple FactDB based on an input query.
  */
 FactDB* makeFactDB(Query& query, Graph* graph) {
-  Trie* facts = new Trie();
+  Trie* facts = new TrieRoot();
   uint32_t size = query.knownfact_size();
   for (int factI = 0; factI < size; ++factI) {
     uint32_t factLength = query.knownfact(factI).word_size();
