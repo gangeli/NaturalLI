@@ -224,7 +224,11 @@ TEST_F(TrieTest, CompletionFromNoSkipGrams) {
 
 TEST_F(TrieTest, EnsureReasonableSize) {
   EXPECT_EQ(8, sizeof(uint64_t));
+#if HIGH_MEMORY
+  EXPECT_EQ(40, sizeof(*trie));
+#else
   EXPECT_EQ(32, sizeof(*trie));
+#endif
   // Add some facts
   buffer[0] = getTaggedWord(1);
   buffer[1] = getTaggedWord(2);
@@ -242,15 +246,17 @@ TEST_F(TrieTest, EnsureReasonableSize) {
   uint64_t usage = trie->memoryUsage(&onFacts, &onStructure, &onCompletionCaching);
   ASSERT_EQ(onFacts + onStructure + onCompletionCaching, usage);
   EXPECT_EQ(usage, trie->memoryUsage(NULL, NULL, NULL));
+#if HIGH_MEMORY
   EXPECT_EQ(496, usage);
   EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
   EXPECT_EQ(168, onStructure);
   EXPECT_EQ(288, onCompletionCaching);
+#else
+  EXPECT_EQ(504, usage);
+  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
+  EXPECT_EQ(432, onStructure);
+  EXPECT_EQ(32, onCompletionCaching);
+#endif
   buffer[9] = getTaggedWord(11);
   trie->add(buffer, 10);
-//  // Check size @ 2 elem
-//  EXPECT_EQ(200, trie->memoryUsage(&onFacts, &onStructure, &onCompletionCaching));
-//  EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
-//  EXPECT_EQ(100, onStructure);
-//  EXPECT_EQ(50, onCompletionCaching);
 }

@@ -21,7 +21,7 @@ object Truth extends Client {
     do {
       println("")
       val consequent:Fact = NatLog.annotate(readLine("query> "), x => Utils.WORD_UNK).head
-      explain(consequent, "consequent")
+      explain(consequent, "query (consequent)")
       // We have our antecedent and consequent
       if (consequent.getWordCount > 0) {
         val query = Query.newBuilder()
@@ -39,7 +39,7 @@ object Truth extends Client {
         // Debug Print
         if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
       } else {
-        err("No antecedent or consequent provided!")
+        err("No query provided!")
       }
     } while (true)
   }

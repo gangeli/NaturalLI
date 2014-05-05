@@ -10,6 +10,8 @@
 #include "Bloom.h"
 #include "FactDB.h"
 
+#define TRIE_NUM_VALID_INSERTIONS_PER_NODE 3
+
 class Trie;
 
 typedef struct {
@@ -18,8 +20,9 @@ typedef struct {
 }__attribute__((packed)) packed_edge;
 
 typedef struct {
-  packed_edge validInsertions[4];
-  uint8_t numValidInsertions;
+  packed_edge validInsertions[TRIE_NUM_VALID_INSERTIONS_PER_NODE];
+  uint8_t numValidInsertions:2,
+          isLeaf:1;
 } trie_data;
 
 /**
@@ -39,8 +42,9 @@ typedef struct {
  */
 class Trie : public FactDB {
  public:
-  Trie() : isLeaf(false) { 
+  Trie() { 
     data.numValidInsertions = 0;
+    data.isLeaf = 0;
   }
   virtual ~Trie();
 
@@ -115,14 +119,14 @@ class Trie : public FactDB {
   /** A compact representation of the data to be stored at this node of the Trie. */
   trie_data data;
 
-  /** A marker for whether this node is a leaf node */
-  bool     isLeaf;
+  /** A simple helper function for whether this node is a leaf node */
+  inline bool isLeaf() const { return data.isLeaf != 0; }
 
   /** Register a new edge type to insert */
   inline void registerEdge(edge e) {
     // Don't register more than 4 senses. This seems like a reasonable limitation...
-    assert (data.numValidInsertions <= 4);
-    if (data.numValidInsertions == 4) { return; }
+    assert (data.numValidInsertions <= TRIE_NUM_VALID_INSERTIONS_PER_NODE);
+    if (data.numValidInsertions == TRIE_NUM_VALID_INSERTIONS_PER_NODE) { return; }
     // Set the new sense
     data.validInsertions[data.numValidInsertions].type = e.type - EDGE_DELS_BEGIN;
     data.validInsertions[data.numValidInsertions].sense = e.source_sense;

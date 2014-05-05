@@ -51,7 +51,7 @@ uint64_t Trie::memoryUsage(uint64_t* onFacts,
     onCompletionCaching = &c;
   }
   // (me)
-  (*onStructure) += sizeof(this);
+  (*onStructure) += sizeof(*this);
   // (completions)
 #if HIGH_MEMORY
   (*onCompletionCaching) += (sizeof(word) + sizeof(Trie*)) * completions.size();
@@ -103,12 +103,12 @@ void Trie::addImpl(const edge* elements, const uint8_t& length,
   }
   // Recursive call
   if (length == 1) {
-    child->isLeaf = true;    // Mark this as a leaf node
+    child->data.isLeaf = true;    // Mark this as a leaf node
 #if HIGH_MEMORY
     completions[w] = child;  // register a completion
 #endif
   } else {
-    child->add(&(elements[1]), length - 1, graph);
+    child->addImpl(&(elements[1]), length - 1, graph, false);
   }
 }
 
@@ -170,7 +170,7 @@ const bool Trie::contains(const tagged_word* query,
     } else {
       // Case: add any single-term completions
       for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
-        if (iter->second->isLeaf) {
+        if (iter->second->isLeaf()) {
           addCompletion(iter->second, iter->first, insertions, mutableIndex);
           if (mutableIndex >= MAX_COMPLETIONS) { break; }
         }
@@ -222,7 +222,7 @@ const bool Trie::containsImpl(const tagged_word* query,
   // -- Part 2: Check containment --
   if (queryLength == 0) {
     // return whether the fact exists
-    return isLeaf;
+    return isLeaf();
   } else {
     // Case: we're in the middle of the query
     btree_map<word,Trie*>::const_iterator childIter = children.find( query[0].word );
