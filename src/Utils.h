@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <execinfo.h>
 #include <cxxabi.h>
+#include <assert.h>
 
 #include <config.h>
 #include "Types.h"
@@ -54,6 +55,25 @@ const std::vector<tagged_word> someDogsChaseCats();
  */
 void print_stacktrace(FILE *out = stderr, unsigned int max_frames = 63);
 
+/**
+ * Convert an edge type to the MacCartney style projection function.
+ */
 inference_function edge2function(const edge_type& type);
+
+/**
+ * atoi() is actually quite slow, and we don't need all its special cases.
+ */
+inline uint32_t fast_atoi( const char * str ) {
+  assert (str[0] > '0' || str[1] == '\0');  // note: no leading zeroes
+  uint32_t val = 0;
+  while( *str != '\0') {
+    if (str[0] == '}') { return val; } // <-- bit of an awful hack here, for the sake of Postgresql
+    assert (str[0] >= '0');
+    assert (str[0] <= '9');
+    val = val*10 + (str[0] - '0');
+    str = &(str[1]);
+  }
+  return val;
+}
 
 #endif

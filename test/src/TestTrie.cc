@@ -230,7 +230,7 @@ TEST_F(TrieTest, EnsureTrieStructSizes) {
 TEST_F(TrieTest, EnsureTrieSize) {
   EXPECT_EQ(8, sizeof(uint64_t));
 #if HIGH_MEMORY
-  EXPECT_EQ(40, sizeof(*trie));
+  EXPECT_EQ(32, sizeof(*trie));
 #else
   EXPECT_EQ(24, sizeof(*trie));
 #endif
@@ -252,10 +252,10 @@ TEST_F(TrieTest, EnsureTrieSize) {
   ASSERT_EQ(onFacts + onStructure + onCompletionCaching, usage);
   EXPECT_EQ(usage, trie->memoryUsage(NULL, NULL, NULL));
 #if HIGH_MEMORY
-  EXPECT_EQ(496, usage);
+  EXPECT_EQ(516, usage);
   EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
-  EXPECT_EQ(168, onStructure);
-  EXPECT_EQ(288, onCompletionCaching);
+  EXPECT_EQ(432, onStructure);
+  EXPECT_EQ(44, onCompletionCaching);
 #else
   EXPECT_EQ(416, usage);
   EXPECT_EQ(10 * sizeof(tagged_word), onFacts);  // 40 bytes

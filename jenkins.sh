@@ -41,8 +41,24 @@ gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
 gcovr -r . --xml -o coverage.xml
 cd ..
 
-echo "-- Document --"
+echo "-- DOCUMENT --"
 doxygen doxygen.conf
+
+echo "--SPECIAL TESTS--"
+echo "(high memory mode)"
+make clean
+./configure \
+  --with-scala=$SCALA_HOME \
+  --with-java=/usr/lib/jvm/java-7-oracle \
+  --enable-debug \
+  HIGH_MEMORY=true
+make all check
+echo "(no debugging)"
+make clean
+./configure \
+  --with-scala=$SCALA_HOME \
+  --with-java=/usr/lib/jvm/java-7-oracle
+make all check
 
 echo "SUCCESS!"
 exit 0
