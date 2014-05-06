@@ -290,7 +290,7 @@ object NatLog {
       // (regexps)
       val NOUN = "(N.*)".r
       val VERB = "(V.*)".r
-      val ADJ  = "(J.*)".r
+      val ADJ  = "([JR].*)".r
       // (find synset POS)
       var tokenI = 0
       val synsetPOS:Array[Option[String]] = Array.fill[Option[String]](chunkedWords.size)( None )

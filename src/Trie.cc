@@ -282,6 +282,17 @@ uint64_t TrieRoot::memoryUsage(uint64_t* onFacts,
 // ----------------------------------------------------------------------------
 //
 
+/**
+ * atoi() is actually quite slow, and we don't need all its special cases.
+ */
+inline int fast_atoi( const char * str ) {
+  int val = 0;
+  while( *str ) {
+    val = val*10 + (*str++ - '0');
+  }
+  return val;
+}
+
 //
 // ReadFactTrie
 //
@@ -305,9 +316,9 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     PGRow row = wordIter.next();
     // Create edge
     edge e;
-    e.source       = atoi(row[0]);
-    e.source_sense = atoi(row[1]);
-    e.type  = atoi(row[2]);
+    e.source       = fast_atoi(row[0]);
+    e.source_sense = fast_atoi(row[1]);
+    e.type  = fast_atoi(row[2]);
     e.cost  = 1.0f;
     // Register edge
     word2senses[e.source].push_back(e);
@@ -337,7 +348,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     // Get fact
     PGRow row = iter.next();
     const char* gloss = row[0];
-    uint32_t weight = atoi(row[1]);
+    uint32_t weight = fast_atoi(row[1]);
     if (weight < MIN_FACT_COUNT) { break; }
     // Parse fact
     stringstream stream (&gloss[1]);
@@ -345,7 +356,7 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
     bufferLength = 0;
     while( getline (stream, substr, ',' ) ) {
       // Parse the word
-      word w = atoi(substr.c_str());
+      word w = fast_atoi(substr.c_str());
       // Register the word
 #ifdef HAVE_UNORDERED_MAP
       unordered_map<word,vector<edge>>::iterator iter = word2senses.find( w );
