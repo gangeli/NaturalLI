@@ -61,6 +61,11 @@ class TrieTest : public ::testing::Test {
   }
 };
 
+// Do some basic validation on my awful hacks
+TEST_F(TrieTest, TryToValidateHacks) {
+  ASSERT_EQ(sizeof(Trie), sizeof(trie_placeholder));
+}
+
 // Make sure we can add to the Trie
 TEST_F(TrieTest, CanAdd) {
   buffer[0] = getTaggedWord(42);
@@ -252,16 +257,14 @@ TEST_F(TrieTest, EnsureTrieSize) {
   ASSERT_EQ(onFacts + onStructure + onCompletionCaching, usage);
   EXPECT_EQ(usage, trie->memoryUsage(NULL, NULL, NULL));
 #if HIGH_MEMORY
-  EXPECT_EQ(516, usage);
+  EXPECT_EQ(436, usage);
   EXPECT_EQ(10 * sizeof(tagged_word), onFacts);
-  EXPECT_EQ(432, onStructure);
+  EXPECT_EQ(352, onStructure);
   EXPECT_EQ(44, onCompletionCaching);
 #else
-  EXPECT_EQ(416, usage);
+  EXPECT_EQ(336, usage);
   EXPECT_EQ(10 * sizeof(tagged_word), onFacts);  // 40 bytes
-  EXPECT_EQ(344, onStructure);
+  EXPECT_EQ(264, onStructure);
   EXPECT_EQ(32, onCompletionCaching);
 #endif
-  buffer[9] = getTaggedWord(11);
-  trie->add(buffer, 10);
 }

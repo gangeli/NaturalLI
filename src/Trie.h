@@ -50,6 +50,14 @@ typedef struct alignas(4) {
 } trie_data;
 #endif
 
+typedef struct {
+#if HIGH_MEMORY
+  uint64_t placeholder_size[4];
+#else
+  uint64_t placeholder_size[3];
+#endif
+} trie_placeholder;
+
 /**
  * A Trie implementation of a fact database.
  * This is primarily useful as it provides a means of determining possible
@@ -121,7 +129,7 @@ class Trie : public FactDB {
  protected:
   // 8 bytes
   /** The core of the Trie. Check if a sequence of [untagged] words is in the Trie. */
-  btree::btree_map<word,Trie*> children;
+  btree::btree_map<word,trie_placeholder> children;
 
 #if HIGH_MEMORY
   // 8 bytes

@@ -21,9 +21,13 @@ using namespace btree;
 // Trie::~Trie
 //
 Trie::~Trie() {
-  for (btree_map<word,Trie*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
-    delete iter->second;
-  }
+//  for (btree_map<word,Trie*>::iterator iter = children.begin(); iter != children.end(); ++iter) {
+//    delete iter->second;
+//  }
+}
+
+inline Trie* materializeSecond(const btree_map<word,trie_placeholder>::const_iterator iter) {
+  return (Trie*) (&(iter->second));
 }
 
 //
@@ -36,13 +40,14 @@ void Trie::add(const edge* elements, const uint8_t& length,
   // Register child
   const word w = elements[0].source;
   assert (w > 0);
-  const btree_map<word,Trie*>::iterator childIter = children.find( w );
+  const btree_map<word,trie_placeholder>::iterator childIter = children.find( w );
   Trie* child = NULL;
   if (childIter == children.end()) {
-    child = new Trie();
-    children[w] = child;
+    // This is filthy. I'm so sorry...
+    children[w]; // allocate space
+    child = new(&(children[w])) Trie();
   } else {
-    child = childIter->second;
+    child = materializeSecond(childIter);
   }
   // Register information about child
   if (graph == NULL || graph->containsDeletion(elements[0])) {
@@ -99,9 +104,9 @@ const bool Trie::contains(const tagged_word* query,
     const bool tooManyChildren = (children.size() > MAX_COMPLETIONS);
     if (!tooManyChildren) {
       // sub-case: add all children
-      btree_map<word,Trie*>::const_iterator iter;
+      btree_map<word,trie_placeholder>::const_iterator iter;
       for (iter = children.begin(); iter != children.end(); ++iter) {
-        addCompletion(iter->second, iter->first, insertions, mutableIndex);
+        addCompletion(materializeSecond(iter), iter->first, insertions, mutableIndex);
         if (mutableIndex >= MAX_COMPLETIONS) { break; }
       }
     } else {
@@ -121,17 +126,18 @@ const bool Trie::contains(const tagged_word* query,
     return isLeaf();
   } else {
     // Case: we're in the middle of the query
-    btree_map<word,Trie*>::const_iterator childIter = children.find( query[0].word );
+    btree_map<word,trie_placeholder>::const_iterator childIter = children.find( query[0].word );
     if (childIter == children.end()) {
       // Return false
       return false;
     } else {
       // Check the child
-      return childIter->second->contains(&(query[1]), 
-                                         queryLength - 1,
-                                         mutationIndex - 1,
-                                         insertions,
-                                         mutableIndex);
+      return materializeSecond(childIter)
+        ->contains(&(query[1]), 
+                   queryLength - 1,
+                   mutationIndex - 1,
+                   insertions,
+                   mutableIndex);
     }
   }
 }
@@ -162,11 +168,10 @@ uint64_t Trie::memoryUsage(uint64_t* onFacts,
   (*onCompletionCaching) += (sizeof(word) + sizeof(Trie*)) * completions.size();
 #endif
   // (children)
-  for (btree_map<word,Trie*>::const_iterator childIter = children.begin();
+  for (btree_map<word,trie_placeholder>::const_iterator childIter = children.begin();
        childIter != children.end(); ++childIter) {
     (*onFacts) += sizeof(word);
-    (*onStructure) += sizeof(Trie*);
-    childIter->second->memoryUsage(onFacts, onStructure, onCompletionCaching);
+    materializeSecond(childIter)->memoryUsage(onFacts, onStructure, onCompletionCaching);
   }
   // (return)
   return (*onFacts) + (*onStructure) + (*onCompletionCaching);
@@ -208,9 +213,9 @@ const bool TrieRoot::contains(const tagged_word* query,
       if (skipGramIter != skipGrams.end()) {
         // Case: add anything that leads into the second term
         for (vector<word>::const_iterator iter = skipGramIter->second.begin(); iter != skipGramIter->second.end(); ++iter) {
-          btree_map<word,Trie*>::const_iterator childIter = children.find( *iter );
+          btree_map<word,trie_placeholder>::const_iterator childIter = children.find( *iter );
           if (childIter != children.end()) {
-            addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
+            addCompletion(materializeSecond(childIter), childIter->first, insertions, mutableIndex);
           }
           if (mutableIndex >= MAX_COMPLETIONS) { break; }
         }
@@ -218,16 +223,17 @@ const bool TrieRoot::contains(const tagged_word* query,
         // Case: we're kind of shit out of luck. We're inserting into the
         //       beginning of the sentence, but with no valid skip-grams.
         //       So, let's just add some starting words and pray.
-        for (btree_map<word,Trie*>::const_iterator childIter = children.begin(); childIter != children.end(); ++childIter) {
-          addCompletion(childIter->second, childIter->first, insertions, mutableIndex);
+        for (btree_map<word,trie_placeholder>::const_iterator childIter = children.begin(); childIter != children.end(); ++childIter) {
+          addCompletion(materializeSecond(childIter), childIter->first, insertions, mutableIndex);
           if (mutableIndex >= MAX_COMPLETIONS) { break; }
         }
       }
     } else {
       // Case: add any single-term completions
-      for (btree_map<word,Trie*>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
-        if (iter->second->isLeaf()) {
-          addCompletion(iter->second, iter->first, insertions, mutableIndex);
+      for (btree_map<word,trie_placeholder>::const_iterator iter = children.begin(); iter != children.end(); ++iter) {
+        Trie* child = materializeSecond(iter);
+        if (child->isLeaf()) {
+          addCompletion(child, iter->first, insertions, mutableIndex);
           if (mutableIndex >= MAX_COMPLETIONS) { break; }
         }
       }
