@@ -30,13 +30,14 @@ object Test extends Client {
       // Run Query
       explain(query.getKnownFact(0), "antecedent", verbose = false)
       explain(query.getQueryFact, "consequent", verbose = false)
-      val prob:Double = Learn.evaluate(issueQuery(query
+      import Learn.flattenWeights
+      val prob:Double = new Learn.ProbabilityOfTruth(issueQuery(query
         .setUseRealWorld(false)
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom")
-        .build()), weights)
+        .build())).apply(weights)
 
       // Check if correct
       val correct:Boolean = gold match {

@@ -22,16 +22,22 @@ import java.util.Properties;
 public class Props {
   private static final Redwood.RedwoodChannels logger = Redwood.channels("Exec");
 
+  private static String checkEnv(String key, String defaultValue) {
+    String value = System.getenv().get(key);
+    if (value == null) { return defaultValue; }
+    return value;
+  }
+
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
-  public static String PSQL_HOST = "john0";
+  public static String PSQL_HOST = checkEnv("PGHOST", "john0");
   @Option(name="psql.port", gloss="The port at which postgres is running")
-  public static int PSQL_PORT = 4243;
+  public static int PSQL_PORT = Integer.parseInt(checkEnv("PGPORT", "4243"));
   @Option(name="psql.db", gloss="The database name")
-  public static String PSQL_DB = "truth";
+  public static String PSQL_DB = checkEnv("DBNAME", "truth");
   @Option(name="psql.username", gloss="The username for the postgres session")
-  public static String PSQL_USERNAME = "gabor";
+  public static String PSQL_USERNAME = checkEnv("PGUSER", "gabor");
   @Option(name="psql.password", gloss="The password for the postgres session")
-  public static String PSQL_PASSWORD = "gabor";
+  public static String PSQL_PASSWORD = checkEnv("PGPASSWORD", "gabor");
 
   @Option(name="natlog.indexer.lazy", gloss="If true, do word indexing lazily rather than reading the indexer at once")
   public static boolean NATLOG_INDEXER_LAZY = false;
@@ -53,6 +59,13 @@ public class Props {
 
   @Option(name="data.fracas.path", gloss="The path to the FraCaS test suite")
   public static File DATA_FRACAS_PATH = new File("etc/fracas.xml");
+
+  @Option(name="learn.iterations", gloss="The number of iterations to run learning for")
+  public static int LEARN_ITERATIONS = 100;
+  @Option(name="learn.model", gloss="The file to save/load the model from")
+  public static File LEARN_MODEL = new File("/dev/null");
+  @Option(name="learn.sgd.nu", gloss="The regularization $nu$ for SGD")
+  public static double LEARN_SGD_NU = 0.1;
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";

@@ -5,6 +5,7 @@ import edu.stanford.nlp.util.logging.Redwood.Util._
 
 import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue._
+import edu.stanford.nlp.util.Execution
 
 
 object DataSource {
@@ -77,6 +78,7 @@ object FraCaS extends DataSource with Client {
   }
 
   def main(args:Array[String]):Unit = {
+    Execution.fillOptions(classOf[Props], args)
     Props.SERVER_PORT = 4001
     Props.SEARCH_TIMEOUT = 250000
     System.exit(startMockServer(() =>

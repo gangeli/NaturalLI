@@ -170,7 +170,7 @@ object Utils {
     tokenizeWithCase(Sentence(phrase).lemma, Some(headWord))
   }
 
-  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Unit) {
+  def printToFile(f: java.io.File)(op: java.io.PrintWriter => Any) {
     val p = new java.io.PrintWriter(f)
     try { op(p) } finally { p.close() }
   }
@@ -323,13 +323,13 @@ object EdgeType extends Enumeration {
   val DEL_UNIVERSAL                  = Value(27, "del_universal")
   val DEL_OTHER                      = Value(28, "del_?")
 
-  // --------
-  // NOTE: Everything under here is monotonicity agnostic
-  // --------
-
   // Quantifiers
   val QUANTIFIER_UP                  = Value(29, "quantifier_up")
   val QUANTIFIER_DOWN                = Value(30, "quantifier_down")
+  // --------
+  // NOTE: Everything under here is monotonicity agnostic
+  // --------
+  val MONOTONE_INDEPENDENT_BEGIN:Int = 31
   val QUANTIFIER_NEGATE              = Value(31, "quantifier_negate")
   val QUANTIFIER_REWORD              = Value(32, "quantifier_reword")
 

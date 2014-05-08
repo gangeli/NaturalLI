@@ -34,10 +34,12 @@ inline void setBit(uint64_t bitmask[], const uint8_t& index) {
 // Class Path
 //
 inline search_state mkState(const edge_type& incomingEdge,
-                            const inference_state& state) {
+                            const inference_state& state,
+                            const float& edgeCost) {
   search_state rtn;
   rtn.incomingEdge = incomingEdge;
   rtn.truth = state;
+  rtn.incomingCost = edgeCost;
   return rtn;
 }
 
@@ -45,6 +47,7 @@ Path::Path(const Path* parentOrNull,
            const tagged_word* fact, 
            const uint8_t& factLength,
            const edge_type& edgeType,
+           const float& edgeCost,
            const uint8_t& lastMutatedIndex,
            const inference_state& inferState,
            const uint8_t& monotoneBoundary )
@@ -52,7 +55,7 @@ Path::Path(const Path* parentOrNull,
       fact(fact),
       factLength(factLength),
       lastMutationIndex(lastMutatedIndex),
-      nodeState(mkState(edgeType, inferState)),
+      nodeState(mkState(edgeType, inferState, edgeCost)),
       monotoneBoundary(monotoneBoundary) {
   assert (monotoneBoundary <= factLength);
 }
@@ -63,7 +66,7 @@ Path::Path(const tagged_word* fact, const uint8_t& factLength,
       fact(fact),
       factLength(factLength),
       lastMutationIndex(0),
-      nodeState(mkState(NULL_EDGE_TYPE, INFER_TRUE)),
+      nodeState(mkState(NULL_EDGE_TYPE, INFER_TRUE, 0.0)),
       monotoneBoundary(monotoneBoundary) {
   assert (monotoneBoundary <= factLength);
 }
@@ -244,7 +247,7 @@ inline const inference_state compose(const inference_state& current,
 inline const Path* BreadthFirstSearch::push(
     const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& sink, const tagged_word& toInsert,
-    const edge_type& edge, const float& cost,
+    const edge& edge, const float& cost,
     const CacheStrategy* cache, bool& outOfMemory) {
   outOfMemory = false;
 
@@ -333,7 +336,7 @@ inline const Path* BreadthFirstSearch::push(
 
   // 5. Tweak monotonicity
   const uint8_t until = newMonotoneBoundary >= newMutationIndex ? newMonotoneBoundary : mutatedLength;
-  switch (edge) {
+  switch (edge.type) {
     case QUANTIFIER_UP:     // TODO(gabor) I rather suspect this is wrong
     case QUANTIFIER_DOWN:
     case QUANTIFIER_NEGATE:
@@ -356,7 +359,7 @@ inline const Path* BreadthFirstSearch::push(
   }
 
   // Update the inference state
-  inference_state newState = compose(parent->nodeState.truth, edge);
+  inference_state newState = compose(parent->nodeState.truth, edge.type);
   if (newState != parent->nodeState.truth && newMutationIndex < mutatedLength - 1) {
     // If we have swapped the truth, stop editing this word.
     // This is to prevent, e.g., taking an antonym and then deleting
@@ -368,8 +371,8 @@ inline const Path* BreadthFirstSearch::push(
   if (newPath == NULL) { outOfMemory = true; return NULL; }
   assert (mutatedLength > newMutationIndex);
   return new(newPath) Path(parent, mutated, mutatedLength,
-                           edge, newMutationIndex,
-                           compose(parent->nodeState.truth, edge),
+                           edge.type, edge.cost, newMutationIndex,
+                           compose(parent->nodeState.truth, edge.type),
                            newMonotoneBoundary);
 }
 
@@ -475,7 +478,7 @@ inline void UniformCostSearch::bubbleUp(const uint64_t index) {
 // -- push() --
 inline const Path* UniformCostSearch::push(const Path* parent, const uint8_t& mutationIndex,
                     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-                    const edge_type& edge, const float& cost, 
+                    const edge& edge, const float& cost, 
                     const CacheStrategy* cache, bool& outOfMemory) {
   // Allocate the node
   const Path* node = BreadthFirstSearch::push(parent, mutationIndex, replaceLength, replace1, replace2, edge, cost, cache, outOfMemory);
@@ -610,8 +613,8 @@ CostVector::~CostVector() {
 }
 
 inline float CostVector::computeCost(const inference_state& state,
-                                       const edge& edge,
-                                       const monotonicity& monotonicity) const {
+                                     const edge& edge,
+                                     const monotonicity& monotonicity) const {
   // Make sure we have weights
   if (!available) { return 0.0; }
   // Switch which flag to use
@@ -671,6 +674,10 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   // Initialize add-able words
   edge inserts[MAX_COMPLETIONS];
   for (int i = 0; i < MAX_COMPLETIONS; ++i) { inserts[i].sink = 0; }
+  // Initialize some variables
+  edge NULL_EDGE;
+  NULL_EDGE.cost = 0.0f;
+  NULL_EDGE.type = NULL_EDGE_TYPE;
   
   // -- Initialize fringe--
   // Create the start state
@@ -760,7 +767,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
             // push insertion
             fringe->push(parent, indexToMutate,
               2, parentWord, getTaggedWord(insertion.source, insertion.source_sense, deletionMonotonicity),
-              insertion.type, costSoFar + insertionCost, cache, oom);
+              insertion, costSoFar + insertionCost, cache, oom);
             if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
           }
         }
@@ -785,7 +792,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
           // push insertion
           fringe->push(parent, 0,
             2, getTaggedWord(insertion.source, insertion.source_sense, parentMonotonicity), parentWord,
-            insertion.type, costSoFar + insertionCost, cache, oom);
+            insertion, costSoFar + insertionCost, cache, oom);
           if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
         }
       }
@@ -820,7 +827,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
           fringe->push(parent, indexToMutate,
             mutation.source == 0 ? 0 : 1,
             getTaggedWord(mutation.source, mutation.source_sense, parentMonotonicity), NULL_WORD,
-            mutation.type, costSoFar + mutationCost, cache, oom);
+            mutation, costSoFar + mutationCost, cache, oom);
           if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
         }
       }
@@ -830,7 +837,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     if (indexToMutate < parentLength - 1 && !isCorrectFact) {
       fringe->push(parent, indexToMutate + 1, 1,
         parent->fact[parent->lastMutationIndex + 1], NULL_WORD,
-        NULL_EDGE_TYPE, costSoFar, cache, oom);
+        NULL_EDGE, costSoFar, cache, oom);
       if (oom) { printf("Error pushing to stack; returning\n"); return mkResponse(responses, time); }
     }
   }

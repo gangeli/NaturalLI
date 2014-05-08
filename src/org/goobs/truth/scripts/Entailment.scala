@@ -40,7 +40,8 @@ object Entailment extends Client {
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
           // Evaluate Query
-          val prob = Learn.evaluate(paths, weights)
+          import Learn.flattenWeights
+          val prob = new Learn.ProbabilityOfTruth(paths).apply(weights)
           // Debug Print
           if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
         } else {

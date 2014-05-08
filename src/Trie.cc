@@ -26,7 +26,7 @@ Trie::~Trie() {
 //  }
 }
 
-inline Trie* materializeSecond(const btree_map<word,trie_placeholder>::const_iterator iter) {
+inline Trie* materializeSecond(const btree_map<word,trie_placeholder>::const_iterator& iter) {
   return (Trie*) (&(iter->second));
 }
 
@@ -148,19 +148,6 @@ const bool Trie::contains(const tagged_word* query,
 uint64_t Trie::memoryUsage(uint64_t* onFacts,
                            uint64_t* onStructure,
                            uint64_t* onCompletionCaching) const {
-  // (make sure variables work)
-  uint64_t a = 0;
-  uint64_t b = 0;
-  uint64_t c = 0;
-  if (onFacts == NULL) {
-    onFacts = &a;
-  }
-  if (onStructure == NULL) {
-    onStructure = &b;
-  }
-  if (onCompletionCaching == NULL) {
-    onCompletionCaching = &c;
-  }
   // (me)
   (*onStructure) += sizeof(*this);
   // (completions)

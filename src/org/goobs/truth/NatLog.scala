@@ -130,6 +130,11 @@ object NatLog {
     weights.setCount(monoDown_stateFalse(ANGLE_NEAREST_NEIGHBORS), similarity)
     weights.setCount(monoFlat_stateFalse(ANGLE_NEAREST_NEIGHBORS), similarity)
     // Return
+    val iter = weights.iterator()
+    while (iter.hasNext) {
+      if (weights.getCount(iter.next()) == weights.defaultReturnValue()) { iter.remove(); }
+    }
+    weights.setCount("bias", 0.0)
     weights
   }
 

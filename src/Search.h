@@ -16,10 +16,19 @@
 class SearchType;
 
 /** A silly little struct to bit twiddle an incoming edge and a truth value together */
+#ifdef __GNUG__
 typedef struct {
+#else
+typedef struct alignas(1) {
+#endif
   uint8_t incomingEdge:6,
           truth:2;
-}__attribute__((packed)) search_state;
+  float   incomingCost;
+#ifdef __GNUG__
+} __attribute__((packed)) search_state;
+#else
+} search_state;
+#endif
 
 /**
  * A state in the search space.
@@ -33,13 +42,13 @@ class Path {
   /** A pointer to the "parent" of this node -- where the search came from */
   const Path* parent;               // 8 bytes
   /** The actual fact expressed by the node */
-  const tagged_word* fact;          // 4 bytes
+  const tagged_word* fact;          // 8 bytes
   /** The length of the fact expressed by the node */
   const uint8_t factLength;         // 1 byte
   /** The index that was last mutated, or 255 if this is the first element*/
   const uint8_t lastMutationIndex;  // 1 byte
   /** A combination of the truth state, and the incoming edge type */
-  const search_state nodeState;     // 1 byte
+  const search_state nodeState;     // 5 byte (can shave off incoming cost if we need to)
   /** 
     * A very very hacky way of trying to separate monotonicity
     * boundaries. Please fix me!
@@ -53,6 +62,7 @@ class Path {
   Path(const Path* parentOrNull, const tagged_word* fact,
        const uint8_t& factLength, 
        const edge_type& edgeType,
+       const float& edgeCost,
        const uint8_t& lastMutationIndex,
        const inference_state& inferState,
        const uint8_t& monotoneBoundary);
@@ -177,7 +187,7 @@ class SearchType {
     const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, 
     const tagged_word& replace2,
-    const edge_type& edge, const float& cost, 
+    const edge& edge, const float& cost, 
     const CacheStrategy* cache, bool& outOfMemory) = 0;
   virtual float pop(const Path** poppedElement) = 0;
   virtual const Path* peek() = 0;
@@ -211,7 +221,7 @@ class BreadthFirstSearch : public SearchType {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, 
+    const edge& edge, const float& cost, 
     const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
@@ -262,7 +272,7 @@ class UniformCostSearch : public BreadthFirstSearch {
  public:
   virtual const Path* push(const Path* parent, const uint8_t& mutationIndex,
     const uint8_t& replaceLength, const tagged_word& replace1, const tagged_word& replace2,
-    const edge_type& edge, const float& cost, 
+    const edge& edge, const float& cost, 
     const CacheStrategy* cache, bool& outOfMemory);
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();

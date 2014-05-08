@@ -3,9 +3,10 @@ option java_package = "org.goobs.truth";
 
 /** An enumeration of monotonicity markings (upwards, downwards, or flat) */
 enum Monotonicity {
-  UP   = 0;
-  DOWN = 1;
-  FLAT = 2;
+  UP             = 0;
+  DOWN           = 1;
+  FLAT           = 2;
+  ANY_OR_INVALID = 3;
 }
 
 /** 
@@ -59,6 +60,8 @@ message Inference {
 
   optional double                  score            = 11;
   optional CollapsedInferenceState state            = 12;
+  optional Monotonicity            monotoneContext  = 13;
+  optional float                   incomingEdgeCost = 14;
 
   optional uint64                  ticks            = 21;
 }

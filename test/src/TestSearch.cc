@@ -31,12 +31,16 @@ class PathTest : public ::testing::Test {
     searchType->start(root);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_EQ(*root, *searchType->peek());
-    searchType->push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_DOWN, 0.0f, cache, outOfMemory);
+    edge e;
+    e.type = WORDNET_DOWN;
+    e.cost = 1.0f;
+    searchType->push(root, 0, 1, ANIMAL, NULL_WORD, e, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     dist1 = ((BreadthFirstSearch*) searchType)->debugGet(0);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
-    searchType->push(dist1, 0, 1, CAT, NULL_WORD, WORDNET_UP, 0.0f, cache, outOfMemory);
+    e.type = WORDNET_UP;
+    searchType->push(dist1, 0, 1, CAT, NULL_WORD, e, 0.0f, cache, outOfMemory);
     ASSERT_FALSE(outOfMemory);
     EXPECT_EQ(*root, *searchType->root);
     EXPECT_TRUE(searchType->root->parent == NULL);
@@ -62,6 +66,9 @@ class PathTest : public ::testing::Test {
   std::vector<tagged_word> catsHaveTails_;
 };
 
+TEST_F(PathTest, HasExpectedSize) {
+  EXPECT_EQ(24, sizeof(Path));
+}
 
 // Ensures that a Path element can be created
 TEST_F(PathTest, CanCreate) {
@@ -141,6 +148,19 @@ class TestName : public ::testing::Test { \
     delete qnode; \
   } \
 \
+  const Path* push(const Path* parent, \
+    const uint8_t& mutationIndex, \
+    const uint8_t& replaceLength, const tagged_word& replace1, \
+    const tagged_word& replace2, \
+    const edge_type& edgeType, const float& cost, \
+    const CacheStrategy* cache, bool& outOfMemory) { \
+    edge e; \
+    e.cost = 1.0; \
+    e.type = edgeType; \
+    return search.push(parent, mutationIndex, replaceLength, \
+                       replace1, replace2, e, cost, cache, outOfMemory); \
+  } \
+\
   ClassName search; \
   const Path* root; \
   const Path* qnode; \
@@ -163,7 +183,7 @@ TEST_F(TestName, PushPop) { \
   EXPECT_TRUE(search.isEmpty()); \
   search.start(root); \
   EXPECT_FALSE(search.isEmpty()); \
-  search.push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_DOWN, 0.0f, cache, outOfMemory); \
+  push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_DOWN, 0.0f, cache, outOfMemory); \
   ASSERT_FALSE(outOfMemory); \
   EXPECT_FALSE(search.isEmpty()); \
   EXPECT_EQ((Path*) NULL, search.popWithoutScore()->parent); \
@@ -225,8 +245,8 @@ TEST_F(BreadthFirstSearchTest, FIFOOrdering) {
   EXPECT_TRUE(search.isEmpty());
   search.start(root);
   EXPECT_FALSE(search.isEmpty());
-  search.push(root, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, cache, outOfMemory);
-  search.push(root, 0, 1, CAT, NULL_WORD, 1, 0.0f, cache, outOfMemory);
+  push(root, 0, 1, ANIMAL, NULL_WORD, 0, 0.0f, cache, outOfMemory);
+  push(root, 0, 1, CAT, NULL_WORD, 1, 0.0f, cache, outOfMemory);
   ASSERT_FALSE(outOfMemory);
   const Path* dist1 = search.debugGet(0);
   const Path* dist2 = search.debugGet(1);
@@ -247,7 +267,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, 0.0f, cache, outOfMemory);
+    push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, 0.0f, cache, outOfMemory);
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -255,7 +275,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, 0.0f, cache, outOfMemory);
+      push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, 0.0f, cache, outOfMemory);
     }
   }
   // pop off elements
@@ -283,21 +303,21 @@ TEST_F(BreadthFirstSearchTest, Push_Mutate) {
   const Path* child;
   // root is 'lemurs have tails'
   // @index 0
-  child = search.push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
+  child = push(root, 0, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(ANIMAL, child->fact[0]);
   EXPECT_EQ(child->lastMutationIndex, 0);
   EXPECT_EQ(WORDNET_UP, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // @index 1
-  child = search.push(root, 1, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
+  child = push(root, 1, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(ANIMAL, child->fact[1]);
   EXPECT_EQ(child->lastMutationIndex, 1);
   EXPECT_EQ(WORDNET_UP, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // @index 2
-  child = search.push(root, 2, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
+  child = push(root, 2, 1, ANIMAL, NULL_WORD, WORDNET_UP, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(ANIMAL, child->fact[2]);
   EXPECT_EQ(child->lastMutationIndex, 2);
@@ -311,7 +331,7 @@ TEST_F(BreadthFirstSearchTest, Push_Insert) {
   const Path* child;
   // root is 'lemurs have tails'
   // @index 0, pre-insert
-  child = search.push(root, 0, 2, ANIMAL, LEMUR, ADD_NOUN, 42.0f, cache, oom);
+  child = push(root, 0, 2, ANIMAL, LEMUR, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(ANIMAL, child->fact[0]);
   EXPECT_EQ(LEMUR, child->fact[1]);
@@ -319,7 +339,7 @@ TEST_F(BreadthFirstSearchTest, Push_Insert) {
   EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(2, child->monotoneBoundary);
   // @index 0, post-insert
-  child = search.push(root, 0, 2, LEMUR, ANIMAL, ADD_NOUN, 42.0f, cache, oom);
+  child = push(root, 0, 2, LEMUR, ANIMAL, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(ANIMAL, child->fact[1]);
@@ -327,13 +347,13 @@ TEST_F(BreadthFirstSearchTest, Push_Insert) {
   EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(2, child->monotoneBoundary);
   // @index 1, post-insert
-  child = search.push(root, 1, 2, HAVE, LEMUR, ADD_NOUN, 42.0f, cache, oom);
+  child = push(root, 1, 2, HAVE, LEMUR, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(child->lastMutationIndex, 2);
   EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // @index 2, post-insert
-  child = search.push(root, 2, 2, TAIL, LEMUR, ADD_NOUN, 42.0f, cache, oom);
+  child = push(root, 2, 2, TAIL, LEMUR, ADD_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(child->lastMutationIndex, 3);
   EXPECT_EQ(ADD_NOUN, child->nodeState.incomingEdge);
@@ -349,7 +369,7 @@ TEST_F(BreadthFirstSearchTest, MonotonicityWeakening) {
   EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[1].monotonicity);
   EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[2].monotonicity);
   EXPECT_EQ(MONOTONE_DEFAULT, qnode->fact[3].monotonicity);
-  child = search.push(qnode, 0, 1, ANIMAL, NULL_WORD, QUANTIFIER_DOWN, 42.0f, cache, oom);
+  child = push(qnode, 0, 1, ANIMAL, NULL_WORD, QUANTIFIER_DOWN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(2, child->monotoneBoundary);
   EXPECT_EQ(MONOTONE_UP,      child->fact[0].monotonicity);
@@ -364,7 +384,7 @@ TEST_F(BreadthFirstSearchTest, Push_Delete) {
   const Path* child;
   // root is 'lemurs have tails'
   // delete index 0
-  child = search.push(root, 0, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
+  child = push(root, 0, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(HAVE, child->fact[0]);
   EXPECT_EQ(child->lastMutationIndex, 0);
@@ -372,18 +392,18 @@ TEST_F(BreadthFirstSearchTest, Push_Delete) {
   EXPECT_EQ(0, child->monotoneBoundary);
   // delete index 1
   EXPECT_EQ(0, root->lastMutationIndex);
-  child = search.push(root, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
+  child = push(root, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(child->lastMutationIndex, 1);
   EXPECT_EQ(DEL_NOUN, child->nodeState.incomingEdge);
   EXPECT_EQ(1, child->monotoneBoundary);
   // delete index 1; lastMutation=1
-  child = search.push(root, 1, 1, LEMUR, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
+  child = push(root, 1, 1, LEMUR, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(LEMUR, child->fact[1]);
   EXPECT_EQ(1, child->lastMutationIndex);
-  child = search.push(child, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
+  child = push(child, 1, 0, NULL_WORD, NULL_WORD, DEL_NOUN, 42.0f, cache, oom);
   ASSERT_FALSE(oom);
   EXPECT_EQ(LEMUR, child->fact[0]);
   EXPECT_EQ(TAIL, child->fact[1]);
@@ -405,7 +425,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocAndOrder) {
   EXPECT_FALSE(search.isEmpty());
   // populate search
   for (int i = 0; i < 120; ++i) {
-    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
+    push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
     EXPECT_EQ(3, search.debugGet(i)->factLength);
   }
   for (int parent = 0; parent < 100; ++parent) {
@@ -413,7 +433,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocAndOrder) {
     for (int i = 0; i < 128; ++i) {
       const Path* p = search.debugGet(parent);
       EXPECT_EQ(3, search.debugGet(parent)->factLength);
-      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
+      push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/100.0)), cache, outOfMemory );
     }
   }
   // pop off elements
@@ -454,8 +474,11 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
   float score = 0.0f;
   for (int i = 0; i < 120; ++i) {
     score += 0.1f;
-    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, score, cache, outOfMemory);
-    bfs.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, 0, score, cache, outOfMemory);
+    edge e;
+    e.type = 0;
+    e.cost = 1.0;
+    search.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, e, score, cache, outOfMemory);
+    bfs.push(root, 0, 1, getTaggedWord(i, 0, 0), NULL_WORD, e, score, cache, outOfMemory);
   }
   for (int parent = 0; parent < 100; ++parent) {
     for (int i = 0; i < 128; ++i) {
@@ -465,8 +488,11 @@ TEST_F(UniformCostSearchTest, DegenerateToBFS) {
       ASSERT_EQ(pBFS->fact[1], p->fact[1]);
       ASSERT_EQ(pBFS->fact[2], p->fact[2]);
       score += 0.1f;
-      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, score, cache, outOfMemory);
-      bfs.push(pBFS, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, 0, score, cache, outOfMemory);
+      edge e;
+      e.type = 0;
+      e.cost = 1.0;
+      search.push(p, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, e, score, cache, outOfMemory);
+      bfs.push(pBFS, 0, 1, getTaggedWord(1000 * parent + i, 0, 0), NULL_WORD, e, score, cache, outOfMemory);
     }
   }
   // pop off elements

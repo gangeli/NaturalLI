@@ -155,7 +155,28 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   // (source)
   if (path->parent != NULL) {
     inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
-    inference.set_incomingedgetype(path->nodeState.incomingEdge);
+    if (path->nodeState.incomingEdge != NULL_EDGE_TYPE) {
+      inference.set_incomingedgetype(path->nodeState.incomingEdge);
+    }
+    inference.set_incomingedgecost(path->nodeState.incomingCost);
+    switch (path->fact[path->lastMutationIndex].monotonicity) {
+      case MONOTONE_UP:
+        inference.set_monotonecontext(Monotonicity::UP);
+        break;
+      case MONOTONE_DOWN:
+        inference.set_monotonecontext(Monotonicity::DOWN);
+        break;
+      case MONOTONE_FLAT:
+        inference.set_monotonecontext(Monotonicity::FLAT);
+        break;
+      default:
+      printf("Invalid monotonicity: %u", path->fact[path->lastMutationIndex].monotonicity);
+      std::exit(1);
+      break;
+    }
+    if (path->nodeState.incomingEdge >= MONOTONE_INDEPENDENT_BEGIN) {
+      inference.set_monotonecontext(Monotonicity::ANY_OR_INVALID);
+    }
   }
   // (truth state)
   switch (path->nodeState.truth) {
