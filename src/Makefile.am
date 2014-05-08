@@ -36,7 +36,7 @@ endif
 
 naturalli_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/scripts/*.scala) $(wildcard org/goobs/truth/conf/*.conf) org/goobs/truth/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/typesafe-config.jar `find . -name "*.java"`
+	@${JDK_HOME}/bin/javac -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find . -name "*.java"`
 	@echo "Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
 	jar cf naturalli_client.jar -C . .

@@ -84,41 +84,10 @@ class LearnTest extends Test {
         loss(goldValue = true, 2.0, -5.0)(w) should be (14.0 +- 1e-5)
         loss(goldValue = true, 2.0, -1.0)(w) should be (0.12692801104 +- 1e-5)
       }
-      it ("should pass gradient check") {
-        gradientCheck(loss)
-      }
-    }
-
-    /**
-     * The Logistic Confidence Loss
-     */
-    describe ("the Logistic confidence loss") {
-      def positiveLoss(goldValue:Boolean, x0:Double, x1:Double) = new LogisticConfidenceLoss {
-        val features = Array(x0, x1)
-        override def feature(i: Int): Double = features(i)
-        override def prediction(wVector: Array[Double]): Double = wVector(0) * features(0) + wVector(1) * features(1)
-        override def gold: Double = if (goldValue) 1.0 else -1.0
-        override def predictionPolarity: Double = 1.0
-      }
-      def negativeLoss(goldValue:Boolean, x0:Double, x1:Double) = new LogisticConfidenceLoss {
-        val features = Array(x0, x1)
-        override def feature(i: Int): Double = features(i)
-        override def prediction(wVector: Array[Double]): Double = wVector(0) * features(0) + wVector(1) * features(1)
-        override def gold: Double = if (goldValue) 1.0 else -1.0
-        override def predictionPolarity: Double = -1.0
-      }
-      it ("should be the log inverse probability") {
-        val w = Array(3.0, 4.0)
-        val confidence = 1.0 / ( 1.0 + math.exp(-(w(0) * 2.0 + w(1) * -5.0)) )
-        val prob:Double = 0.5 + (1.0 / 2.0) * confidence
-        prob should be >= 0.0
-        prob should be <= 1.0
-        positiveLoss(goldValue = true, 2.0, -5.0)(w) should be (math.log(1.0 / prob) +- 1e-5)
-      }
-      it ("should be monotone for positive loss") {
+      it ("should be monotone") {
         val losses:Seq[Double]
-          = for (w0 <- -100.0 to 10.0 by 0.01)
-            yield positiveLoss(goldValue = true, 2.0, -5.0)(Array(w0, 1.0))
+        = for (w0 <- -100.0 to 10.0 by 0.01)
+        yield loss(goldValue = true, 2.0, -5.0)(Array(w0, 1.0))
         losses.length should be > 1000
         losses.last should be (0.0 +- 0.01)
         for ((last, current) <- losses.zip(losses.drop(1))) {
@@ -127,11 +96,8 @@ class LearnTest extends Test {
           current should be <= last
         }
       }
-      it ("should match my math") {
-        val w = Array(3.0, 4.0)
-        positiveLoss(goldValue = true, 2.0, -5.0)(w) should be (0.69314634903 +- 1e-5)
-        positiveLoss(goldValue = true, 2.0, -1.0)(w) should be (0.06145151592 +- 1e-5)
-
+      it ("should pass gradient check") {
+        gradientCheck(loss)
       }
     }
   }

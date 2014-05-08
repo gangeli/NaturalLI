@@ -32,15 +32,15 @@ object Learn extends Client {
   def feature(edge:EdgeType, truth:Boolean, mono:Monotonicity):String = {
     truth match {
       case true => mono match {
-        case Monotonicity.UP      => monoUp_stateTrue(edge)
-        case Monotonicity.DOWN    => monoDown_stateTrue(edge)
-        case Monotonicity.FLAT    => monoFlat_stateTrue(edge)
+        case Monotonicity.UP             => monoUp_stateTrue(edge)
+        case Monotonicity.DOWN           => monoDown_stateTrue(edge)
+        case Monotonicity.FLAT           => monoFlat_stateTrue(edge)
         case Monotonicity.ANY_OR_INVALID => monoAny_stateTrue(edge)
       }
       case false => mono match {
-        case Monotonicity.UP      => monoUp_stateFalse(edge)
-        case Monotonicity.DOWN    => monoDown_stateFalse(edge)
-        case Monotonicity.FLAT    => monoFlat_stateFalse(edge)
+        case Monotonicity.UP             => monoUp_stateFalse(edge)
+        case Monotonicity.DOWN           => monoDown_stateFalse(edge)
+        case Monotonicity.FLAT           => monoFlat_stateFalse(edge)
         case Monotonicity.ANY_OR_INVALID => monoAny_stateFalse(edge)
       }
     }
@@ -131,7 +131,9 @@ object Learn extends Client {
     if (path.hasIncomingEdgeType && path.getIncomingEdgeType != 63) {
       // Variables for score
       val edge: EdgeType.Value = EdgeType(path.getIncomingEdgeType)
-      val state: CollapsedInferenceState = if (path.hasState) path.getState else CollapsedInferenceState.TRUE
+      val state: CollapsedInferenceState
+      = if (path.hasImpliedFrom && path.getImpliedFrom.hasState) path.getImpliedFrom.getState
+        else CollapsedInferenceState.TRUE
       val monotonicity: Monotonicity = if (path.hasMonotoneContext) path.getMonotoneContext else Messages.Monotonicity.UP
       // Compute score
       val useTrueWeights:Boolean = state == CollapsedInferenceState.TRUE
@@ -169,13 +171,18 @@ object Learn extends Client {
   abstract class MaxTypeLoss(guesses:Iterable[Inference], goldTruth:TruthValue) {
     val guess:Option[Inference] = if (guesses.isEmpty) None else Some(guesses.maxBy( x => math.abs(0.5 - x.getScore) ))
     val features:Array[Double] = if (guess.isDefined) featurize(guess.get) else new ClassicCounter[String]
-    val gold = goldTruth match {
+    val gold = (goldTruth match {
       case TruthValue.TRUE => 1.0
       case TruthValue.FALSE => -1.0
       case TruthValue.UNKNOWN => 0.0
       case TruthValue.INVALID => throw new IllegalArgumentException("Invalid truth value")
-    }
-
+    }) * guess.map {
+      _.getState match {
+        case CollapsedInferenceState.TRUE => 1.0
+        case CollapsedInferenceState.FALSE => -1.0
+        case _ => 1.0
+      }
+    }.getOrElse(1.0)  // Did we get it right?
   }
 
   /**
@@ -185,8 +192,25 @@ object Learn extends Client {
    * @param goldTruth The ground truth for the query associated with this loss.
    */
   class LogisticMaxLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends MaxTypeLoss(guesses,goldTruth)  with LogisticLoss {
-    override def prediction(wVector:Array[Double]):Double = dotProduct(wVector, features)
+    override def prediction(wVector:Array[Double]):Double = {
+      assert (wVector.forall( _ <= 0.0 ))
+      assert (features.forall( _ >= 0.0 ))
+      val p = dotProduct(wVector, features)
+      if (p > 0.0) 0.0 else p
+    }
     override def feature(i: Int): Double = features(i)
+    override def probability(wVector:Array[Double]):Double = {
+      val state:Double = guess.map( _.getState ).getOrElse(CollapsedInferenceState.UNKNOWN) match {
+        case CollapsedInferenceState.TRUE => 1.0
+        case CollapsedInferenceState.FALSE => -1.0
+        case CollapsedInferenceState.UNKNOWN => 0.0
+      }
+      val logistic = 1.0 / (1.0 + math.exp(-prediction(wVector) * state))
+      val prob = 0.5*state + logistic
+      assert (prob >= 0.0, "Not a probability: " + prob + " from x=" + (prediction(wVector) * state) + " => sigmoid=" + logistic)
+      assert (prob <= 1.0, "Not a probability: " + prob + " from x=" + (prediction(wVector) * state) + " => sigmoid=" + logistic)
+      prob
+    }
   }
 
   /**
@@ -209,7 +233,7 @@ object Learn extends Client {
         }
       }
       for (inference <- guesses) {
-        val prob = new LogisticMaxLoss(List(inference), TruthValue.TRUE).apply(wVector)
+        val prob = new LogisticMaxLoss(List(inference), TruthValue.TRUE).probability(wVector)
         assert(!prob.isNaN)
         log({
           if (prob >= 0.5) "p(true)=" + prob + ": "
@@ -217,12 +241,7 @@ object Learn extends Client {
         } + recursivePrint(inference))
       }
       // Compute score
-      val prob = super.apply(wVector)
-      assert(!prob.isNaN)
-      if (guess.isDefined && math.abs(prob - guess.get.getScore) > 1e-5) {
-        log(YELLOW, "Client score disagreed with server; client=" + prob + "; server=" + guess.get.getScore)
-      }
-      prob
+      super.probability(wVector)
     }
   }
 

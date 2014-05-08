@@ -25,27 +25,9 @@ trait LogisticLoss extends LossFunction {
     }).toMap
   }
 
-  def prediction(wVector:Array[Double]):Double
-  def gold:Double
-  def feature(i:Int):Double
-}
-
-trait LogisticConfidenceLoss extends LossFunction {
-  override def apply(wVector: Array[Double]): Double = {
-    val m = prediction(wVector) * gold
-    math.log( 2.0 * (1 + math.exp(-m)) / (predictionPolarity + (1 + math.exp(-m))) )
-  }
-
-  override def gradient(wVector: Array[Double]): Map[Int, Double] = {
-    val m = prediction(wVector) * gold
-    val constant = (-2 * predictionPolarity * math.exp(-m)) / ((1 + predictionPolarity + math.exp(-m)) * (1 + predictionPolarity + math.exp(-m)))
-    (for (i <- 0 until wVector.length) yield {
-      (i, constant * feature(i))
-    }).toMap
-  }
+  def probability(wVector:Array[Double]):Double = 1.0 / (1.0 + math.exp(-prediction(wVector)))
 
   def prediction(wVector:Array[Double]):Double
-  def predictionPolarity:Double
   def gold:Double
   def feature(i:Int):Double
 }

@@ -15,7 +15,7 @@ val program:List[String] = ("java"
 	->guessClassOrElse("org.goobs.truth.Client")
 ).toList
 
-using("src/org/goobs/truth/conf/script.conf")
+using("src/org/goobs/truth/conf/base.conf")
 
 submit(program
 )
@@ -37,7 +37,8 @@ def cp:String = {
   ).mkString(":")
   val SCALA = List(
       System.getenv("SCALA_HOME") + "/lib/scala-library.jar",
-      System.getenv("SCALA_HOME") + "/lib/typesafe-config.jar"
+      System.getenv("SCALA_HOME") + "/lib/config-1.2.0.jar",
+      System.getenv("SCALA_HOME") + "/lib/scala-xml_2.11-1.0.1.jar"
     ).mkString(":")
   val CUSTOM = List(
       "lib/corenlp-scala.jar",

@@ -11,8 +11,8 @@ clean-local:
 
 LIB=${realpath lib}
 JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:lib/stanford-corenlp-caseless-models-current.jar:lib/stanford-corenlp-models-current.jar
-export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim-1.0.jar:${LIB}/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/typesafe-config.jar:${LIB}/demo/gson.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar
-export TEST_CP=${CP}:${LIB}/test/scalatest.jar:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
+export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim-1.0.jar:${LIB}/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${SCALA_HOME}/lib/config-1.2.0.jar:${LIB}/demo/gson.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar
+export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.5.jar:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
 src/org/goobs/truth/Messages.java: src/Messages.proto
 	$(MAKE) -C src org/goobs/truth/Messages.java
@@ -34,13 +34,17 @@ test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard te
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 java_test: src/naturalli_client.jar test/test_client.jar
+	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
 	ant test
 else
 	@echo "  (could not find ant -- running directly)"
 	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.truth.QuantifierTest
+	@echo "[test] scalatest *.scala"
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test/test_scala.xml -R test/test_client.jar -o -w org.goobs.truth
 endif
+# TODO(gabor) eventually I should fix the ant task and the manual call can disappear
 	@echo "[test] scalatest *.scala"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test/test_scala.xml -R test/test_client.jar -o -w org.goobs.truth
 	@echo "[test] RegressionTest"
