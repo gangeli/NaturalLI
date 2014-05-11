@@ -147,12 +147,30 @@ class LearnTest extends Test {
           override def guess(wVector: Array[Double]): Double = wVector(0) * 2.5
           override def guessGradient(wVector: Array[Double]): Array[Double] = Array[Double]( 2.5 )
         }
-        val optimizer = new OnlineOptimization(Array[Double](100.0), OnlineRegularizer.sgd(1.0))
+        val optimizer:OnlineOptimizer = OnlineOptimizer(Array[Double](100.0), OnlineRegularizer.sgd(1.0))()
         for (i <- 0 until 100) {
           optimizer.update(loss)
         }
         optimizer.weights(0) should be (1.0 +- 1e-5)
       }
+    }
+  }
+
+  describe("An online optimizer") {
+    it ("should be serializable/deserializable") {
+      val loss = new SquaredLoss {
+        override def gold: Double = 2.5
+        override def guess(wVector: Array[Double]): Double = wVector(0) * 2.5
+        override def guessGradient(wVector: Array[Double]): Array[Double] = Array[Double]( 2.5 )
+      }
+      import Learn.flattenWeights
+      val optimizer:OnlineOptimizer = OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.sgd(1.0))()
+      val tmpFile = File.createTempFile("optimizer", ".tab")
+      val reread:OnlineOptimizer = OnlineOptimizer.deserialize(optimizer.serializePartial(tmpFile), OnlineRegularizer.sgd(1.0))
+      optimizer.weights should be (reread.weights)
+      optimizer.averageRegret should be (reread.averageRegret)
+      optimizer.averagePerformance should be (reread.averagePerformance)
+
     }
   }
 }

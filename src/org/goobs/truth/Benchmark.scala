@@ -12,7 +12,7 @@ import org.goobs.truth.scripts.ShutdownServer
  *
  * @author gabor
  */
-object Test extends Client {
+object Benchmark extends Client {
 
   case class Accuracy(name:String, shouldTake:Datum=>Boolean, var correct:Int = 0, var total:Int = 0) {
     override def toString:String = "Accuracy[" + name + "]: " + new DecimalFormat("0.00%").format(correct.toDouble / total.toDouble) + "  = " + correct + " / " + total

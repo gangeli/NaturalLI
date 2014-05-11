@@ -74,25 +74,27 @@ object Learn extends Client {
   }
   implicit def inflateWeights(w:Array[Double]):WeightVector = inflateWeights(w, 0.0)
 
-  /** Write a weight vector to a file. Returns the same file that we wrote to */
-  def serialize(w:WeightVector, f:File):File = {
-    Utils.printToFile(f){ (p:PrintWriter) =>
-      for ( (key, value) <- Counters.asMap(w) ) {
-        p.println(key + "\t" + value)
-      }
+  /** Write a weight vector to a print writer (usually, a file). */
+  def serialize(w:WeightVector, p:PrintWriter):Unit = {
+    for ( (key, value) <- Counters.asMap(w) ) {
+      p.println(key + "\t" + value)
     }
-    f
+  }
+
+  /** Write a weight vector to a file. Returns the same file that we wrote to */
+  def serialize(w:WeightVector, f:File):File = { Utils.printToFile(f)( Learn.serialize(w, _) ); f }
+
+  /** Read a weight vector from a list of entries (usually, lines of a file) */
+  def deserialize(lines:Seq[String]):WeightVector = {
+    lines.foldLeft(new ClassicCounter[String]){ case (w:ClassicCounter[String], line:String) =>
+      val fields = line.split("\t")
+      w.setCount(fields(0), fields(1).toDouble)
+      w
+    }
   }
 
   /** Read a weight vector from a file */
-  def deserialize(f:File):WeightVector = {
-    io.Source.fromFile(f).getLines().toArray
-      .foldLeft(new ClassicCounter[String]){ case (w:ClassicCounter[String], line:String) =>
-        val fields = line.split("\t")
-        w.setCount(fields(0), fields(1).toDouble)
-        w
-      }
-  }
+  def deserialize(f:File):WeightVector = deserialize(io.Source.fromFile(f).getLines().toArray)
 
   /**
    * Serialize a weight vector into a protobuf to send to the server.
@@ -282,28 +284,28 @@ object Learn extends Client {
   }
 
   /**
-   * Learn a model.
-   */
-  def main(args:Array[String]):Unit = {
-    // Initialize Options
-    if (args.length == 1) {
-      val props:Properties = new Properties
-      val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
-      for ( entry <- config.entrySet() ) {
-        props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
-      }
-      Execution.fillOptions(classOf[Props], props)
-    } else {
-      Execution.fillOptions(classOf[Props], args)
+ * Learn a model.
+ */
+def main(args:Array[String]):Unit = {
+  // Initialize Options
+  if (args.length == 1) {
+    val props:Properties = new Properties
+    val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
+    for ( entry <- config.entrySet() ) {
+      props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
     }
+    Execution.fillOptions(classOf[Props], props)
+  } else {
+    Execution.fillOptions(classOf[Props], args)
+  }
 
-    // Initialize Data
-    val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
-    val testData:GenSeq[(Query.Builder, TruthValue)] = data
+  // Initialize Data
+val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
+  val testData:GenSeq[(Query.Builder, TruthValue)] = data
 
-    // Initialize Optimization
-    val initialWeights:Array[Double] = NatLog.softNatlogWeights
-    val optimizer:OnlineOptimization = new OnlineOptimization(initialWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU), (i:Int,w:Double) => math.min(-1e-4, w))
+  // Initialize Optimization
+  val initialWeights:Array[Double] = NatLog.softNatlogWeights
+  val optimizer:OnlineOptimizer = OnlineOptimizer(initialWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
 
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
@@ -337,8 +339,9 @@ object Learn extends Client {
         iter.next()
       }
       val guessValue = guess(query, optimizer.weights)
-      debug("[" + index + "] loss: " + optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold)))
-      if (iterCounter.getAndIncrement % 10 == 0) {
+      optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold))
+//      debug("[" + index + "] loss: " + loss)
+      if (iterCounter.incrementAndGet() % 10 == 0) {
         log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
       }
     }

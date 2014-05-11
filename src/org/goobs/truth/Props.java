@@ -64,6 +64,10 @@ public class Props {
   public static int LEARN_ITERATIONS = 100;
   @Option(name="learn.model", gloss="The file to save/load the model from")
   public static File LEARN_MODEL = new File("/dev/null");
+  @Option(name="learn.resume.do", gloss="If true, resume training from a saved model")
+  public static boolean LEARN_RESUME_DO = false;
+  @Option(name="learn.resume.model", gloss="The path to the model to resume training from")
+  public static File LEARN_RESUME_MODEL = new File("/dev/null");
   @Option(name="learn.sgd.nu", gloss="The regularization $nu$ for SGD")
   public static double LEARN_SGD_NU = 0.1;
   @Option(name="learn.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
