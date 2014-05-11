@@ -1,6 +1,7 @@
 AC_PREREQ([2.62])
 AC_INIT([NaturalLI], [0.1], [angeli@stanford.edu])
 AM_INIT_AUTOMAKE([-Wall no-define foreign])
+AC_LANG_DEFINES_PROVIDED
 
 AC_CONFIG_MACRO_DIR([m4])
 m4_include([m4/ax_lib_postgresql.m4])
