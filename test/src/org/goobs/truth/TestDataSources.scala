@@ -3,6 +3,7 @@ package org.goobs.truth
 import org.goobs.truth.TruthValue.TruthValue
 
 import scala.collection.JavaConversions._
+import org.goobs.truth.Messages.Query
 
 /**
  * Test various sources of training / test data.
@@ -93,6 +94,19 @@ class TestDataSources extends Test {
       numYes should be (35)
       numNo  should be (8)
       numUnk should be (32)
+    }
+  }
+
+  /**
+   * Tests on the held-out dataset
+   */
+  describe("Held-Out") {
+    it ("should be readable") {
+      HoldOneOut.read("").take(10).length should be (10)
+    }
+    it ("should have an equal number of positive and negative examples") {
+      HoldOneOut.read("").take(10).filter{case (x:Query.Builder, t:TruthValue) => t == TruthValue.TRUE}.length should be (5)
+      HoldOneOut.read("").take(10).filter{case (x:Query.Builder, t:TruthValue) => t == TruthValue.FALSE}.length should be (5)
     }
   }
 

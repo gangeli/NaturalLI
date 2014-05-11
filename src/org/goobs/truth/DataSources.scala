@@ -7,6 +7,7 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue._
 import edu.stanford.nlp.util.Execution
 import java.sql.{ResultSet, Connection}
+import org.goobs.truth.DataSource.DataStream
 
 
 object DataSource {
@@ -90,26 +91,32 @@ object FraCaS extends DataSource with Client {
   }
 }
 
-object HoldOneOut extends DataSource {
+trait FromPostgres {
   import DataSource._
   /**
    * Read queries from the specified abstract path.
-   * @param path The path to read the queries from. The meaning of this path can vary depending on the particular extractor.
+   * @param query The query to run.
+   * @param truth The truth value to annotate the fact with
    * @return A stream of examples, annotated with their truth value.
    */
-  override def read(path: String): DataStream = {
+  def read(query:String, truth:TruthValue): DataStream = {
     Postgres.withConnection( (psql:Connection) => {
-      val results: ResultSet = psql.createStatement().executeQuery(s"SELECT * FROM ${Postgres.TABLE_FACTS} ORDER BY weight DESC")
+      val stmt = psql.createStatement()
+      stmt.setFetchSize(1000)
+      psql.setAutoCommit(false)
+      val results: ResultSet = stmt.executeQuery(query)
       def readResult(r:ResultSet, index:Int):Stream[Datum] = {
         if (r.next()) {
-          val fact:Array[String] = r.getArray("gloss").asInstanceOf[Array[Any]]
+          val fact:Array[String] = r.getArray("gloss").getArray.asInstanceOf[Array[Any]]
             .map( _.toString.toInt )
             .map( Utils.wordGloss )
+          debug(s"read [$truth] '${fact.mkString(" ")}'")
           val datum:Datum = (Query.newBuilder()
               // Consequent
               .setQueryFact(NatLog.annotate(fact.mkString(" ")).head)
+              .setAllowLookup(false)
               .setId(index),
-              TruthValue.TRUE
+              truth
             )
           Stream.cons(datum, readResult(r, index + 1))
         } else {
@@ -118,5 +125,21 @@ object HoldOneOut extends DataSource {
       }
       readResult(results, 0)
     }).getOrElse(Stream.Empty)
+  }
+}
+
+object HoldOneOut extends DataSource with FromPostgres {
+  /**
+   * Read queries from the specified abstract path.
+   * @param path Ignored in this case
+   * @return A stream of examples, annotated with their truth value.
+   */
+  override def read(path: String): DataStream = {
+    val trueQuery = s"SELECT * FROM ${Postgres.TABLE_FACTS} ORDER BY weight DESC"
+    val falseQuery = s"SELECT * FROM ${Postgres.TABLE_FACTS} ORDER BY weight ASC"
+    read(trueQuery, TruthValue.TRUE)
+      .zip(read(falseQuery, TruthValue.FALSE))
+      .map{ case (a, b) => Stream(a, b) }
+      .flatten
   }
 }

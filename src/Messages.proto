@@ -39,13 +39,14 @@ message Fact {
 /** A query to the server; at minimum, it should contain
     the query fact, and the fact database to use */
 message Query {
-  required Fact queryFact    = 1;
-  required bool useRealWorld = 2;
-  repeated Fact knownFact    = 3;
-  optional uint64 timeout    = 4 [ default = 1000 ];
-  optional Costs costs       = 5;
-  optional string searchType = 6 [ default = "ucs" ];
-  optional string cacheType  = 7 [ default = "none" ];
+  required Fact   queryFact    = 1;
+  required bool   useRealWorld = 2;
+  repeated Fact   knownFact    = 3;
+  optional uint64 timeout      = 4 [ default = 1000 ];
+  optional Costs  costs        = 5;
+  optional string searchType   = 6 [ default = "ucs" ];
+  optional string cacheType    = 7 [ default = "none" ];
+  optional bool   allowLookup  = 8 [ default = true ];
 
   optional uint32 id         = 50;
 
