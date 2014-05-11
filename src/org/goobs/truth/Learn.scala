@@ -13,7 +13,10 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue.TruthValue
 
 import scala.language.implicitConversions
-
+import scala.collection.GenSeq
+import java.util.concurrent.atomic.AtomicInteger
+import scala.collection.parallel.immutable.ParRange
+import scala.collection.parallel.ForkJoinTaskSupport
 
 
 object Learn extends Client {
@@ -168,45 +171,38 @@ object Learn extends Client {
    * @param guesses The inference paths we are guessing
    * @param goldTruth The ground truth for the query associated with this loss.
    */
-  abstract class MaxTypeLoss(guesses:Iterable[Inference], goldTruth:TruthValue) {
-    val guess:Option[Inference] = if (guesses.isEmpty) None else Some(guesses.maxBy( x => math.abs(0.5 - x.getScore) ))
-    val features:Array[Double] = if (guess.isDefined) featurize(guess.get) else new ClassicCounter[String]
-    val gold = (goldTruth match {
+  class MaxTypeLoss(guesses:Iterable[Inference], goldTruth:TruthValue) {
+    val guessPath:Option[Inference] = if (guesses.isEmpty) None else Some(guesses.maxBy( x => math.abs(0.5 - x.getScore) ))
+    val features:Array[Double] = if (guessPath.isDefined) featurize(guessPath.get) else new ClassicCounter[String]
+    val goldPolarity = goldTruth match {
       case TruthValue.TRUE => 1.0
       case TruthValue.FALSE => -1.0
       case TruthValue.UNKNOWN => 0.0
       case TruthValue.INVALID => throw new IllegalArgumentException("Invalid truth value")
-    }) * guess.map {
-      _.getState match {
-        case CollapsedInferenceState.TRUE => 1.0
-        case CollapsedInferenceState.FALSE => -1.0
-        case _ => 1.0
-      }
-    }.getOrElse(1.0)  // Did we get it right?
-  }
+    }
+    val goldProbability = goldTruth match {
+      case TruthValue.TRUE => 1.0
+      case TruthValue.FALSE => 0.0
+      case TruthValue.UNKNOWN => 0.5
+      case TruthValue.INVALID => throw new IllegalArgumentException("Invalid truth value")
+    }
 
-  /**
-   * A loss function over the logistic loss on the most peaked inference. That is, the inference with the furthest
-   * search score from 0.5.
-   * @param guesses The inference paths we are guessing
-   * @param goldTruth The ground truth for the query associated with this loss.
-   */
-  class LogisticMaxLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends MaxTypeLoss(guesses,goldTruth)  with LogisticLoss {
-    override def prediction(wVector:Array[Double]):Double = {
+    def prediction(wVector:Array[Double]):Double = {
       assert (wVector.forall( _ <= 0.0 ))
       assert (features.forall( _ >= 0.0 ))
+      assert (features.forall( !_.isNaN ))
       val p = dotProduct(wVector, features)
       if (p > 0.0) 0.0 else p
     }
-    override def feature(i: Int): Double = features(i)
-    override def probability(wVector:Array[Double]):Double = {
-      val state:Double = guess.map( _.getState ).getOrElse(CollapsedInferenceState.UNKNOWN) match {
+    def probability(wVector:Array[Double]):Double = {
+      val state:Double = guessPath.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
         case CollapsedInferenceState.TRUE => 1.0
         case CollapsedInferenceState.FALSE => -1.0
         case CollapsedInferenceState.UNKNOWN => 0.0
       }
       val logistic = 1.0 / (1.0 + math.exp(-prediction(wVector) * state))
       val prob = 0.5*state + logistic
+      assert (!prob.isNaN)
       assert (prob >= 0.0, "Not a probability: " + prob + " from x=" + (prediction(wVector) * state) + " => sigmoid=" + logistic)
       assert (prob <= 1.0, "Not a probability: " + prob + " from x=" + (prediction(wVector) * state) + " => sigmoid=" + logistic)
       prob
@@ -214,11 +210,51 @@ object Learn extends Client {
   }
 
   /**
+   * A loss function over the squared loss on the most peaked inference. That is, the inference with the furthest
+   * search score from 0.5.
+   * @param guesses The inference paths we are guessing
+   * @param goldTruth The ground truth for the query associated with this loss.
+   */
+  class SquaredMaxLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends MaxTypeLoss(guesses,goldTruth)  with SquaredLoss {
+    override def gold: Double = goldProbability
+    override def guess(wVector: Array[Double]): Double = probability(wVector)
+    override def guessGradient(wVector: Array[Double]): Array[Double] = {
+      val gradient = guessPath.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
+        case CollapsedInferenceState.TRUE =>
+          val sigmoid = 1.0 / (1.0 + math.exp(-prediction(wVector)))
+          features.map(x => sigmoid * (1.0 - sigmoid) * x)
+        case CollapsedInferenceState.FALSE =>
+          val sigmoid = 1.0 / (1.0 + math.exp(prediction(wVector)))
+          features.map(x => sigmoid * (1.0 - sigmoid) * x)
+        case CollapsedInferenceState.UNKNOWN => features.map( _ => 0.0 )
+        case _ => throw new RuntimeException("Unknown inference state")
+      }
+      // Some sanity checks
+      // (the gradient is real-valued)
+      assert( gradient.forall( x => !x.isNaN && !x.isInfinite ) )
+      // (the gradient is pushing weights up if true, and down if false)
+      assert ( gradient.forall( x => x >= 0.0 ) || gradient.forall( x => x <= 0.0 ),
+        "took a fishy gradient update: " + guess(wVector) + " vs " + goldTruth + "; gradient=" + gradient.mkString(" ")
+      )
+      // Return the gradient
+      gradient
+    }
+  }
+
+  class ZeroOneMaxLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends MaxTypeLoss(guesses,goldTruth) with ZeroOneLoss {
+    override def isCorrect: Boolean = guessPath.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
+      case CollapsedInferenceState.TRUE => goldTruth == TruthValue.TRUE
+      case CollapsedInferenceState.FALSE => goldTruth == TruthValue.FALSE
+      case CollapsedInferenceState.UNKNOWN => goldTruth == TruthValue.UNKNOWN
+    }
+  }
+
+  /**
    * A little helper for when we just want p(TRUE) rather than any structured loss
    * @param guesses The inference paths we are guessing
    */
-  class ProbabilityOfTruth(guesses:Iterable[Inference]) extends LogisticMaxLoss(guesses, TruthValue.TRUE) {
-    override def apply(wVector:Array[Double]):Double = {
+  class ProbabilityOfTruth(guesses:Iterable[Inference]) extends MaxTypeLoss(guesses, TruthValue.TRUE) {
+    def apply(wVector:Array[Double]):Double = {
       // Debugging output
       def recursivePrint(node:Inference):String = {
         if (node.hasImpliedFrom) {
@@ -233,7 +269,7 @@ object Learn extends Client {
         }
       }
       for (inference <- guesses) {
-        val prob = new LogisticMaxLoss(List(inference), TruthValue.TRUE).probability(wVector)
+        val prob = new MaxTypeLoss(List(inference), TruthValue.TRUE).probability(wVector)
         assert(!prob.isNaN)
         log({
           if (prob >= 0.5) "p(true)=" + prob + ": "
@@ -262,30 +298,57 @@ object Learn extends Client {
     }
 
     // Initialize Data
-    val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath)
+    val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
+    val testData:GenSeq[(Query.Builder, TruthValue)] = data
 
     // Initialize Optimization
     val initialWeights:Array[Double] = NatLog.softNatlogWeights
-    val optimizer:OnlineOptimization = new OnlineOptimization(initialWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU))
+    val optimizer:OnlineOptimization = new OnlineOptimization(initialWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU), (i:Int,w:Double) => math.min(-1e-4, w))
+
+    // Define some useful functions
+    def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
+      issueQuery(query
+        .setUseRealWorld(false)
+        .setTimeout(Props.SEARCH_TIMEOUT)
+        .setCosts(Learn.weightsToCosts(weights))
+        .setSearchType("ucs")
+        .setCacheType("bloom").build(), quiet = true)
+    }
+    def evaluate:Double = optimizer.error({
+      val parTestData = testData.par
+      parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
+      parTestData.map{ case (query:Query.Builder, gold:TruthValue) =>
+        new ZeroOneMaxLoss(guess(query, optimizer.weights), gold)
+      }
+    })
+
+    // Pre-Evaluate Model
+    log("Evaluating (pre-learning)...")
+//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     var iter = data.iterator
-    for (iteration <- 1 to Props.LEARN_ITERATIONS) {
-      if (!iter.hasNext) { iter = data.iterator }
-      val (query, gold) = iter.next()
-
-      val guess = issueQuery(query
-        .setUseRealWorld(false)
-        .setTimeout(Props.SEARCH_TIMEOUT)
-        .setCosts(Learn.weightsToCosts(optimizer.weights))
-        .setSearchType("ucs")
-        .setCacheType("bloom").build())
-
-      optimizer.update(new LogisticMaxLoss(guess, gold))
+    val iterCounter = new AtomicInteger(0)
+    for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par
+                    x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
+                    x }) {
+      val (query, gold) = synchronized {
+        if (!iter.hasNext) { iter = data.iterator }
+        iter.next()
+      }
+      val guessValue = guess(query, optimizer.weights)
+      debug("[" + index + "] loss: " + optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold)))
+      if (iterCounter.getAndIncrement % 10 == 0) {
+        log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
+      }
     }
 
     // Save Model
     serialize(optimizer.weights, Props.LEARN_MODEL)
+
+    // Evaluate Model
+    log("Evaluating...")
+    log(BOLD, BLUE, "[Post-learning] Error: " + Utils.percent.format(evaluate))
   }
 }
 

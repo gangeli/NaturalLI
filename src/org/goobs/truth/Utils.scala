@@ -18,6 +18,9 @@ object Utils {
   NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
   private val logger = Redwood.channels("Utils")
 
+  val percent = new java.text.DecimalFormat("0.00%")
+  val df = new java.text.DecimalFormat("0.0000")
+
   // Note: match these with CreateGraph's index creation
   val WORD_NONE:String = "__none__"
   val WORD_UNK:String  = "__unk__"

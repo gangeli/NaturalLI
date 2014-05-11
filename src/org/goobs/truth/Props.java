@@ -66,6 +66,8 @@ public class Props {
   public static File LEARN_MODEL = new File("/dev/null");
   @Option(name="learn.sgd.nu", gloss="The regularization $nu$ for SGD")
   public static double LEARN_SGD_NU = 0.1;
+  @Option(name="learn.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
+  public static int LEARN_THREADS = 4;
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";

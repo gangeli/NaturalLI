@@ -131,6 +131,7 @@ void closeConnection(int socket, sockaddr_in* client) {
     }
     printf(")\n");
   }
+  close(socket);
   free(client);
   fflush(stdout);
 }

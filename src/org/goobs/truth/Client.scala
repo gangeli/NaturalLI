@@ -35,18 +35,19 @@ trait Client {
   /**
    * Issue a query to the search server, and block until it returns
    * @param query The query, with monotonicity markings set.
+   * @param quiet Suppress logging messages
    * @return The query fact, with a truth value and confidence
    */
-  def issueQuery(query:Query):Iterable[Inference] = {
+  def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = {
     // Set up connection
     val sock = new Socket(Props.SERVER_HOST, Props.SERVER_PORT)
     val toServer = new DataOutputStream(sock.getOutputStream)
     val fromServer = new DataInputStream(sock.getInputStream)
-    log("connection established with server.")
+    if (!quiet) log("connection established with server.")
 
     // Write query
     query.writeTo(toServer)
-    log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
+    if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
     sock.shutdownOutput()  // signal end of transmission
 
     // Read response
@@ -54,7 +55,7 @@ trait Client {
     if (response.getError) {
       throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
     }
-    log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
+    if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
     response.getInferenceList
   }
 

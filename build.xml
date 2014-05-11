@@ -31,7 +31,7 @@
     <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
       <classpath refid="classpath"/>
     </taskdef>
-
+    
     <junit fork="true" maxmemory="1g" printsummary="off" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
       <formatter type="xml"/>
@@ -51,6 +51,5 @@
       <reporter type="junitxml" directory="${basedir}/test/"/>
     </scalatest>
     -->
-
   </target>
 </project>

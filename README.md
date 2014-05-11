@@ -138,4 +138,11 @@ For a better debugging experience, add the line:
     
     CXXFLAGS="-00 -ggdb"
 
+###Database
+
+For now, the easiest way to connect to the database is to tunnel to
+`john0`. With access to the NLP machines, this can be done with:
+
+    ssh -L 4243:john0:4243 angeli@jamie -N
+
 

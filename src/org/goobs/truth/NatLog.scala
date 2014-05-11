@@ -174,16 +174,16 @@ object NatLog {
    * The goal is to use this to initialize the search.
    */
   def softNatlogWeights:WeightVector = natlogWeights(
-    strictNatLog = -0.01,
+    strictNatLog = -0.0,
     similarity = -1.0,
     wordnet = -0.1,
     insertionOrDeletion = -0.1,
-    verbInsertOrDelete = -0.25,
-    morphology = -0.01,
-    wsd = -0.2,
-    okQuantifier = -0.01,
-    synonyms = -0.2,
-    antonym = -0.2,
+    verbInsertOrDelete = -0.1,
+    morphology = -0.25,
+    wsd = -1.0,
+    okQuantifier = -0.1,
+    synonyms = -0.15,
+    antonym = -0.15,
     default = -2.0)
 
   /**
