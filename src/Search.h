@@ -134,6 +134,13 @@ class CacheStrategy {
    */
   virtual void add(const tagged_word* fact, const uint8_t& factLength,
                    const uint32_t& additionalFlags) = 0;
+
+  /**
+   * Get whether this cache initialized correctly and can be used in
+   * search. The most common reason for this being set to false is if
+   * memory has run out.
+   */
+  virtual bool isValid() = 0;
 };
 
 /**
@@ -149,6 +156,8 @@ class CacheStrategyNone : public CacheStrategy {
   /** {@inheritDoc} */
   virtual void add(const tagged_word* fact, const uint8_t& factLength,
                    const uint32_t& additionalFlags);
+  /** {@inheritDoc} */
+  virtual bool isValid() { return true; }
 };
 
 /**
@@ -162,6 +171,9 @@ class CacheStrategyBloom : public CacheStrategy {
   /** {@inheritDoc} */
   virtual void add(const tagged_word* fact, const uint8_t& factLength,
                    const uint32_t& additionalFlags);
+  
+  /** {@inheritDoc} */
+  virtual bool isValid() { return filter.isValid(); }
  
  private:
   BloomFilter filter;
@@ -197,6 +209,13 @@ class SearchType {
   const Path* root;
   /** Set the root of the search. This class now owns this pointer. */
   void start(const Path* startState) { root = startState; }
+  
+  /**
+   * Get whether this search type has been initialized properly and can
+   * be used in search. The most common reason for this to not be true
+   * is if memory has run out
+   */
+  virtual bool isValid() = 0;
   
   virtual ~SearchType() { }
   
@@ -234,6 +253,20 @@ class BreadthFirstSearch : public SearchType {
     const uint64_t bucket = i >> POOL_BUCKET_SHIFT;
     const uint64_t offset = i % (0x1 << POOL_BUCKET_SHIFT);
     return &fringe[bucket][offset];
+  }
+  
+  /** {@inheritDoc} */
+  virtual bool isValid() { 
+    if ( fringe == NULL || currentPopFringe == NULL || memoryPool == NULL) {
+      return false;
+    }
+    for (int i = 0; i < fringeCapacity; ++i) {
+      if (fringe[i] == NULL) { return false; }
+    }
+    for (int i = 0; i < poolCapacity; ++i) {
+      if (memoryPool[i] == NULL) { return false; }
+    }
+    return true;
   }
   
   BreadthFirstSearch();
@@ -277,6 +310,10 @@ class UniformCostSearch : public BreadthFirstSearch {
   virtual float pop(const Path** poppedElement);
   virtual const Path* peek();
   virtual bool isEmpty();
+  /** {@inheritDoc} */
+  virtual bool isValid() { 
+    return BreadthFirstSearch::isValid() && heap != NULL && costs != NULL;
+  }
 
   UniformCostSearch();
   virtual ~UniformCostSearch();

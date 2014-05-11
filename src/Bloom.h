@@ -13,6 +13,8 @@ class BloomFilter {
   BloomFilter();
   ~BloomFilter();
  
+  bool isValid() { return bits != NULL; }
+  
  private:
   inline void setBit(const uint32_t& bit);
   inline bool getBit(const uint32_t& bit) const;

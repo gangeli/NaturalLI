@@ -102,13 +102,17 @@ BreadthFirstSearch::BreadthFirstSearch()
     : fringeLength(0), fringeCapacity(16), fringeI(0),
       poolCapacity(16), poolLength(0), poppedRoot(false) {
   this->fringe = (Path**) malloc(fringeCapacity * sizeof(Path*));
-  for (int i = 0; i < fringeCapacity; ++i) {
-    this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
+  if (this->fringe != NULL) {
+    for (int i = 0; i < fringeCapacity; ++i) {
+      this->fringe[i] = (Path*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(Path) );
+    }
   }
   this->currentFringe = this->fringe[0];
   this->memoryPool = (tagged_word**) malloc(poolCapacity * sizeof(tagged_word*));
-  for (int i = 0; i < poolCapacity; ++i) {
-    this->memoryPool[i] = (tagged_word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(tagged_word) );
+  if (this->memoryPool != NULL) {
+    for (int i = 0; i < poolCapacity; ++i) {
+      this->memoryPool[i] = (tagged_word*) malloc( (0x1 << POOL_BUCKET_SHIFT) * sizeof(tagged_word) );
+    }
   }
   this->currentMemoryPool = this->memoryPool[0];
 }
@@ -117,15 +121,21 @@ BreadthFirstSearch::BreadthFirstSearch()
 BreadthFirstSearch::~BreadthFirstSearch() {
 //  printf("de-allocating BFS; %lu MB freed\n",
 //    ((fringeCapacity << POOL_BUCKET_SHIFT)*sizeof(Path) + (poolCapacity << POOL_BUCKET_SHIFT) * sizeof(word)) >> 20);
-  for (int i = 0; i < fringeCapacity; ++i) {
-    free(this->fringe[i]);
+  if (this->fringe != NULL) {
+    for (int i = 0; i < fringeCapacity; ++i) {
+      if (this->fringe[i] != NULL) { free(this->fringe[i]); }
+    }
+    free(this->fringe);
   }
-  free(this->fringe);
-  for (int i = 0; i < poolCapacity; ++i) {
-    free(this->memoryPool[i]);
+  if (this->memoryPool != NULL) {
+    for (int i = 0; i < poolCapacity; ++i) {
+      if (this->memoryPool[i] != NULL) { free(this->memoryPool[i]); }
+    }
+    free(this->memoryPool);
   }
-  free(this->memoryPool);
-  delete this->root;
+  if (this->root != NULL) {
+    delete this->root;
+  }
 }
 
 // -- allocate space for word --
@@ -421,8 +431,12 @@ UniformCostSearch::UniformCostSearch() :
 // -- destructor --
 UniformCostSearch::~UniformCostSearch() {
 //  printf("de-allocating UCS; %lu MB freed\n", (heapSize * (sizeof(Path*) + sizeof(float))) >> 20);
-  free(heap);
-  free(costs);
+  if (heap != NULL) {
+    free(heap);
+  } 
+  if (costs != NULL) {
+    free(costs);
+  }
 }
 
 // -- swap() --
@@ -682,6 +696,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
   // -- Initialize fringe--
   // Create the start state
   fringe->root = new Path(queryFact, queryFactLength, monotoneBoundary);  // I need the memory to not go away
+  if (fringe->root == NULL) { printf("Error creating root; returning\n"); return mkResponse(responses, time); }
 
   //
   // Search

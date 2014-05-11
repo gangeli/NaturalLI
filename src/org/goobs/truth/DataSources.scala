@@ -6,6 +6,7 @@ import edu.stanford.nlp.util.logging.Redwood.Util._
 import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue._
 import edu.stanford.nlp.util.Execution
+import java.sql.{ResultSet, Connection}
 
 
 object DataSource {
@@ -86,5 +87,36 @@ object FraCaS extends DataSource with Client {
         List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),
       isApplicable),
     printOut = false))
+  }
+}
+
+object HoldOneOut extends DataSource {
+  import DataSource._
+  /**
+   * Read queries from the specified abstract path.
+   * @param path The path to read the queries from. The meaning of this path can vary depending on the particular extractor.
+   * @return A stream of examples, annotated with their truth value.
+   */
+  override def read(path: String): DataStream = {
+    Postgres.withConnection( (psql:Connection) => {
+      val results: ResultSet = psql.createStatement().executeQuery(s"SELECT * FROM ${Postgres.TABLE_FACTS} ORDER BY weight DESC")
+      def readResult(r:ResultSet, index:Int):Stream[Datum] = {
+        if (r.next()) {
+          val fact:Array[String] = r.getArray("gloss").asInstanceOf[Array[Any]]
+            .map( _.toString.toInt )
+            .map( Utils.wordGloss )
+          val datum:Datum = (Query.newBuilder()
+              // Consequent
+              .setQueryFact(NatLog.annotate(fact.mkString(" ")).head)
+              .setId(index),
+              TruthValue.TRUE
+            )
+          Stream.cons(datum, readResult(r, index + 1))
+        } else {
+          Stream.Empty
+        }
+      }
+      readResult(results, 0)
+    }).getOrElse(Stream.Empty)
   }
 }

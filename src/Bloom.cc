@@ -8,26 +8,35 @@
 #include "Bloom.h"
 
 BloomFilter::BloomFilter() {
-  this->bits = (uint64_t*) malloc( (0x1l << 32 >> 6) * sizeof(uint64_t) );
-  memset(this->bits, 0x0, (0x1l << 32 >> 6) * sizeof(uint64_t));
+  const uint64_t size = 0x1l << 32 >> 6;
+  this->bits = (uint64_t*) malloc( size * sizeof(uint64_t) );
+  if (this->bits != NULL) {
+    memset(this->bits, 0x0, size * sizeof(uint64_t));
+  }
 }
 
 BloomFilter::~BloomFilter() {
-  free(this->bits);
+  if (this->bits != NULL) {
+    free(this->bits);
+  }
 }
 
 inline void BloomFilter::setBit(const uint32_t& bit) {
   const uint32_t bucket = bit >> 6;
   const uint32_t offset = (bit << 26) >> 26;
   const uint64_t bitmask = 0x1 << offset;
-  this->bits[bucket] |= bitmask;
+  if (this->bits != NULL) {
+    this->bits[bucket] |= bitmask;
+  }
 }
 
 inline bool BloomFilter::getBit(const uint32_t& bit) const {
   const uint32_t bucket = bit >> 6;
   const uint32_t offset = (bit << 26) >> 26;
   const uint64_t bitmask = 0x1 << offset;
-  return this->bits[bucket] & bitmask;
+  if (this->bits != NULL) {
+    return this->bits[bucket] & bitmask;
+  }
 }
 
 bool BloomFilter::contains(const uint32_t* data, const uint32_t& length) const {

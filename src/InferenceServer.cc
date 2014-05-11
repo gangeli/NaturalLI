@@ -268,9 +268,10 @@ void handleConnection(int socket, sockaddr_in* client,
     if (factDB == NULL) {
       // Read the real knowledge base
       factDBReadLock.lock();
-      *dbOrNull = ReadFactTrie(graph);
+      if (*dbOrNull == NULL) {
+        *dbOrNull = ReadFactTrie(graph);
+      }
       factDBReadLock.unlock();
-      factDB = *dbOrNull;
     }
     printf("[%d] created real factdb.\n", socket);
   } else {
@@ -324,6 +325,17 @@ void handleConnection(int socket, sockaddr_in* client,
   } else {
     printf("[%d] unknown cache strategy: %s\n", socket, query.cachetype().c_str());
     delete costs;
+    delete search;
+    if (!query.userealworld()) { delete factDB; }
+    closeConnection(socket, client);
+    return;
+  }
+  // (make sure we're valid)
+  if (!search->isValid() || !cache->isValid()) {
+    printf("[%d] ERROR: SEARCH OR CACHE IS INVALID: %s\n", socket, query.cachetype().c_str());
+    delete costs;
+    delete search;
+    delete cache;
     if (!query.userealworld()) { delete factDB; }
     closeConnection(socket, client);
     return;

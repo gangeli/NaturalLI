@@ -300,12 +300,13 @@ def main(args:Array[String]):Unit = {
   }
 
   // Initialize Data
-val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
+val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
   val testData:GenSeq[(Query.Builder, TruthValue)] = data
 
   // Initialize Optimization
-  val initialWeights:Array[Double] = NatLog.softNatlogWeights
-  val optimizer:OnlineOptimizer = OnlineOptimizer(initialWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
+  val optimizer:OnlineOptimizer
+    = if (Props.LEARN_RESUME_DO && Props.LEARN_RESUME_MODEL.exists && Props.LEARN_RESUME_MODEL.canRead) OnlineOptimizer.deserialize(Props.LEARN_RESUME_MODEL, OnlineRegularizer.sgd(Props.LEARN_SGD_NU), project = (i:Int,w:Double) => math.min(-1e-4, w))
+      else OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
 
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
@@ -326,7 +327,7 @@ val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     var iter = data.iterator
@@ -347,7 +348,7 @@ val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.
     }
 
     // Save Model
-    serialize(optimizer.weights, Props.LEARN_MODEL)
+    optimizer.serializePartial(Props.LEARN_MODEL)
 
     // Evaluate Model
     log("Evaluating...")
