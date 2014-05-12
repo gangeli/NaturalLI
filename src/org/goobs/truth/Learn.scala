@@ -251,6 +251,10 @@ object Learn extends Client {
     }
   }
 
+  class ZeroOneAllTrueLoss(guesses:Iterable[Iterable[Inference]], goldTruth:TruthValue) extends ZeroOneLoss {
+    override def isCorrect: Boolean = guesses.foldLeft(true){ case (truth:Boolean, guess:Iterable[Inference]) => truth && new ZeroOneMaxLoss(guess, goldTruth).isCorrect }
+  }
+
   /**
    * A little helper for when we just want p(TRUE) rather than any structured loss
    * @param guesses The inference paths we are guessing
@@ -302,7 +306,7 @@ def main(args:Array[String]):Unit = {
   // Initialize Data
 //  val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
   val data:DataStream = HoldOneOut.read("")
-  val testData:GenSeq[(Query.Builder, TruthValue)] = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
+  val testData:GenSeq[(Iterable[Query.Builder], TruthValue)] = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
 
   // Initialize Optimization
   val optimizer:OnlineOptimizer
@@ -321,8 +325,8 @@ def main(args:Array[String]):Unit = {
     def evaluate:Double = optimizer.error({
       val parTestData = testData.par
       parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
-      parTestData.map{ case (query:Query.Builder, gold:TruthValue) =>
-        new ZeroOneMaxLoss(guess(query, optimizer.weights), gold)
+      parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+        new ZeroOneAllTrueLoss(queries.map( guess(_, optimizer.weights) ), gold)
       }
     })
 
@@ -337,13 +341,15 @@ def main(args:Array[String]):Unit = {
     for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par
                     x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
                     x }) {
-      val (query, gold) = synchronized {
+      val (queries, gold) = synchronized {
         if (!iter.hasNext) { iter = data.iterator }
         iter.next()
       }
-      val guessValue = guess(query, optimizer.weights)
-      optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold))
-//      debug("[" + index + "] loss: " + loss)
+      for (query <- queries) {
+        val guessValue = guess(query, optimizer.weights)
+        optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold))
+        //      debug("[" + index + "] loss: " + loss)
+      }
       if (iterCounter.incrementAndGet() % 10 == 0) {
         log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
       }

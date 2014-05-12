@@ -48,7 +48,8 @@ message Query {
   optional string cacheType    = 7 [ default = "none" ];
   optional bool   allowLookup  = 8 [ default = true ];
 
-  optional uint32 id         = 50;
+  optional uint32 id           = 50;
+  optional bool   forceFalse   = 51;
 
   optional bool shutdownServer = 101 [ default = false ];
 }

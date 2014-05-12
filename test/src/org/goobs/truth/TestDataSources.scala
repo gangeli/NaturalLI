@@ -25,13 +25,16 @@ class TestDataSources extends Test {
     }
 
     it ("should have valid facts") {
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (query:Messages.QueryOrBuilder, truth:TruthValue) =>
-        // Ensure all the facts have been indexed successfully
-        query.getKnownFactCount should be > 0
-        query.getKnownFactList.foreach{ (antecedent:Messages.Fact) =>
-          antecedent.getWordCount should be > 0
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+        queries.size should be (1)
+        for (query <- queries) {
+          // Ensure all the facts have been indexed successfully
+          query.getKnownFactCount should be > 0
+          query.getKnownFactList.foreach { (antecedent: Messages.Fact) =>
+            antecedent.getWordCount should be > 0
+          }
+          query.getQueryFact.getWordCount should be > 0
         }
-        query.getQueryFact.getWordCount should be > 0
       }
     }
 
@@ -39,11 +42,14 @@ class TestDataSources extends Test {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (query:Messages.QueryOrBuilder, truth:TruthValue) =>
-        truth match {
-          case TruthValue.TRUE    => numYes += 1
-          case TruthValue.FALSE   => numNo  += 1
-          case TruthValue.UNKNOWN => numUnk += 1
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+        queries.size should be (1)
+        for (query <- queries) {
+          truth match {
+            case TruthValue.TRUE    => numYes += 1
+            case TruthValue.FALSE   => numNo  += 1
+            case TruthValue.UNKNOWN => numUnk += 1
+          }
         }
       }
       numYes should be (203)
@@ -55,18 +61,21 @@ class TestDataSources extends Test {
     it ("should have the correct single-antecedent dataset") {
       val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent )
       data.size should be (183)
-      data.forall( _._1.getKnownFactCount == 1) should be (right = true)
+      data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
 
     it ("should have correct single-antecedent label distribution") {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent ).foreach{ case (query:Messages.QueryOrBuilder, truth:TruthValue) =>
-        truth match {
-          case TruthValue.TRUE    => numYes += 1
-          case TruthValue.FALSE   => numNo  += 1
-          case TruthValue.UNKNOWN => numUnk += 1
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+        queries.size should be (1)
+        for (query <- queries) {
+          truth match {
+            case TruthValue.TRUE => numYes += 1
+            case TruthValue.FALSE => numNo += 1
+            case TruthValue.UNKNOWN => numUnk += 1
+          }
         }
       }
       numYes should be (102)
@@ -77,18 +86,21 @@ class TestDataSources extends Test {
     it ("should have the correct 'applicable' dataset (according to McCartney)") {
       val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable )
       data.size should be (75)
-      data.forall( _._1.getKnownFactCount == 1) should be (right = true)
+      data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
 
     it ("should have correct 'applicable' label distribution") {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).foreach{ case (query:Messages.QueryOrBuilder, truth:TruthValue) =>
-        truth match {
-          case TruthValue.TRUE    => numYes += 1
-          case TruthValue.FALSE   => numNo  += 1
-          case TruthValue.UNKNOWN => numUnk += 1
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+        queries.size should be (1)
+        for (query <- queries) {
+          truth match {
+            case TruthValue.TRUE => numYes += 1
+            case TruthValue.FALSE => numNo += 1
+            case TruthValue.UNKNOWN => numUnk += 1
+          }
         }
       }
       numYes should be (35)
@@ -101,12 +113,50 @@ class TestDataSources extends Test {
    * Tests on the held-out dataset
    */
   describe("Held-Out") {
+
     it ("should be readable") {
       HoldOneOut.read("").take(10).length should be (10)
     }
+
     it ("should have an equal number of positive and negative examples") {
-      HoldOneOut.read("").take(10).filter{case (x:Query.Builder, t:TruthValue) => t == TruthValue.TRUE}.length should be (5)
-      HoldOneOut.read("").take(10).filter{case (x:Query.Builder, t:TruthValue) => t == TruthValue.FALSE}.length should be (5)
+      HoldOneOut.read("").take(10).filter{case (x:Iterable[Query.Builder], t:TruthValue) => t == TruthValue.TRUE}.length should be (5)
+      HoldOneOut.read("").take(10).filter{case (x:Iterable[Query.Builder], t:TruthValue) => t == TruthValue.FALSE}.length should be (5)
+    }
+
+  }
+
+  /**
+   * Test the AVE
+   */
+  describe("AVE Examples") {
+
+    it ("should load from files") {
+      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).size should be (1111)
+      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).size should be (202)
+      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).size should be (1055)
+    }
+
+    it ("should have valid facts") {
+      for (path <- Props.DATA_AVE_PATH.values()) {
+        AVE.read(path.getPath).foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+          queries.size should be > 0
+          queries.size should be <= 2
+          for (query <- queries) {
+            // Ensure all the facts have been indexed successfully
+            query.getKnownFactCount should be (0)
+            query.getKnownFactList.foreach { (antecedent: Messages.Fact) =>
+              antecedent.getWordCount should be > 0
+            }
+            query.getQueryFact.getWordCount should be > 0
+          }
+        }
+      }
+    }
+
+    it ("should have the right number of facts filtered") {
+      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).filter( _._1.head.getForceFalse ).size should be > 0
+      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).filter( _._1.head.getForceFalse ).size should be > 0
+      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).filter( _._1.head.getForceFalse ).size should be > 0
     }
   }
 

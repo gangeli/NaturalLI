@@ -38,7 +38,7 @@ directory; the remaining dependencies are:
 
 General:
   * Java 7 JDK
-  * Scala 2.10.0 (the exact version sadly may matter here)
+  * Scala 2.11.0 (2.10 compiles with classpath tweaks)
 
 Java (too large to include in Git):
 

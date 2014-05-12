@@ -11,6 +11,7 @@ import edu.stanford.nlp.util.logging.Redwood;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
@@ -27,6 +28,8 @@ public class Props {
     if (value == null) { return defaultValue; }
     return value;
   }
+
+  public static enum Corpus { HELD_OUT, FRACAS, AVE_2006, AVE_2007, AVE_2008, MTURK }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = checkEnv("PGHOST", "john0");
@@ -59,6 +62,14 @@ public class Props {
 
   @Option(name="data.fracas.path", gloss="The path to the FraCaS test suite")
   public static File DATA_FRACAS_PATH = new File("etc/fracas.xml");
+  @Option(name="data.ave.path", gloss="The paths to the AVE answer validation examples by year")
+  public static Map<String,File> DATA_AVE_PATH = new HashMap<String,File>() {{
+    put("2006", new File("etc/ave/ave2006.tab"));
+    put("2007", new File("etc/ave/ave2007.tab"));
+    put("2008", new File("etc/ave/ave2008.tab"));
+  }};
+  @Option(name="data.ave.year", gloss="The year to use for the AVE data")
+  public static int DATA_AVE_YEAR = 2006;
 
   @Option(name="learn.iterations", gloss="The number of iterations to run learning for")
   public static int LEARN_ITERATIONS = 100;
@@ -72,6 +83,10 @@ public class Props {
   public static double LEARN_SGD_NU = 0.1;
   @Option(name="learn.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
   public static int LEARN_THREADS = 4;
+  @Option(name="learn.train", gloss="The corpus to use for training")
+  public static Corpus LEARN_TRAIN = Corpus.FRACAS;
+  @Option(name="learn.test", gloss="The corpus to use for testing")
+  public static Corpus LEARN_TEST = Corpus.FRACAS;
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";
