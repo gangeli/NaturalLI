@@ -110,7 +110,6 @@ trait FromPostgres {
           val fact:Array[String] = r.getArray("gloss").getArray.asInstanceOf[Array[Any]]
             .map( _.toString.toInt )
             .map( Utils.wordGloss )
-          debug(s"read [$truth] '${fact.mkString(" ")}'")
           val datum:Datum = (Query.newBuilder()
               // Consequent
               .setQueryFact(NatLog.annotate(fact.mkString(" ")).head)

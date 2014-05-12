@@ -1,0 +1,202 @@
+1	false	false	one:::tell leave:::they home	one:::be:::many people
+1	false	false	0:::tell leave:::they home	0:::be:::many people
+1	false	false	Dutch:::tell leave:::they home	Dutch:::be:::many people
+5	false	true	A Hard:::be name of:::Flanders Swann	A Hard:::be:::name of Flanders Swann
+5	false	true	The station:::be name of:::Flanders Swann	The station:::be:::name of Flanders Swann
+5	false	false	002:::be name of:::Flanders Swann	002:::be:::name of Flanders Swann
+5	false	true	you:::be name of:::Flanders Swann	you:::be:::name of Flanders Swann
+9	true	true	Swann:::play:::piano	piano:::be:::instrument
+9	false	false	Swann:::play:::one	one:::be:::instrument
+9	false	false	Swann:::play:::1964	1964:::be:::instrument
+13	false	true	Pierre Beregovoy:::Minister of:::who committed suicide	who committed suicide:::be:::country
+13	false	false	Pierre Beregovoy:::Minister of:::0	0:::be:::country
+13	false	false	Pierre Beregovoy:::Minister of:::1993	1993:::be:::country
+16	false	false	10:::be near:::Sydney in January 1994
+16	false	false	290:::be near:::Sydney in January 1994
+16	false	false	one:::be near:::Sydney in January 1994
+20	false	false	$700:::be name of:::barge sink on 7th of January 1994	$700:::be:::name of barge sink on 7th of January 1994
+20	false	false	Puerto Ricans:::be name of:::barge sink on 7th of January 1994	Puerto Ricans:::be:::name of barge sink on 7th of January 1994
+24	true	true	War syndrome:::be:::GULF WAR SYNDROME MAY BE CONTAGIOUS, SURVEY SHOWS; HEALTH: RESULTS OF GOVERNMENT STUDY FIND SIGNIFICANT NUMBERS OF VETERANS' SPOUSES, CHILDREN EXHIBITING SYMPTOMS OF THE MYSTERIOUS ILLNESSES.
+24	false	true	War syndrome:::be:::one
+24	false	true	War syndrome:::be:::you
+26	false	false	roof of supermarket in nice:::collapse at:::2004	2004:::be:::time
+26	false	false	roof of supermarket in nice:::collapse at:::18 March	18 March:::be:::time
+26	false	false	roof of supermarket in nice:::collapse at:::Las Vegas	Las Vegas:::be:::time
+30	false	false	May 16 1971:::Priests Church of:::ordain woman	May 16 1971:::be:::Church of ordain woman
+30	false	false	1086:::Priests Church of:::ordain woman	1086:::be:::Church of ordain woman
+30	false	false	1995:::Priests Church of:::ordain woman	1995:::be:::Church of ordain woman
+30	false	false	6:1:::Priests Church of:::ordain woman	6:1:::be:::Church of ordain woman
+30	false	false	Anglican Communion:::Priests Church of:::ordain woman	Anglican Communion:::be:::Church of ordain woman
+34	false	true	Alcinous:::list:::brand of olive oil
+34	false	true	of the Unknown:::list:::brand of olive oil
+34	false	false	ten:::list:::brand of olive oil
+38	false	true	a part:::be:::Skoda Xanthi
+38	false	true	a part:::be:::MUSIC REVIEWS
+38	false	false	a part:::be:::ten
+42	true	true	driver:::be occupation of:::Alister McRae	driver:::be:::occupation of Alister McRae
+42	false	true	one:::be occupation of:::Alister McRae	one:::be:::occupation of Alister McRae
+42	false	false	1984:::be occupation of:::Alister McRae	1984:::be:::occupation of Alister McRae
+46	true	true	comedian:::be occupation of:::Billy Connolly	comedian:::be:::occupation of Billy Connolly
+46	false	true	one:::be occupation of:::Billy Connolly	one:::be:::occupation of Billy Connolly
+49	false	true	manager:::be occupation of:::Te Kanawa	manager:::be:::occupation of Te Kanawa
+49	true	true	 -  opera singer:::be occupation of:::Te Kanawa	 -  opera singer:::be:::occupation of Te Kanawa
+49	false	true	one:::be occupation of:::Te Kanawa	one:::be:::occupation of Te Kanawa
+51	true	true	actor:::be job of:::Michael Barrymore	actor:::be:::job of Michael Barrymore
+51	false	true	Adam Ingram:::be job of:::Michael Barrymore	Adam Ingram:::be:::job of Michael Barrymore
+51	false	false	one:::be job of:::Michael Barrymore	one:::be:::job of Michael Barrymore
+55	true	true	conductor:::be occupation of:::John Barbirolli	conductor:::be:::occupation of John Barbirolli
+55	false	true	a chamber orchestra:::be occupation of:::John Barbirolli	a chamber orchestra:::be:::occupation of John Barbirolli
+55	false	false	one:::be occupation of:::John Barbirolli	one:::be:::occupation of John Barbirolli
+59	false	true	Point Road:::be in:::country within the UK	Point Road:::be:::city of Perth
+59	false	true	Australia:::be in:::country within the UK	Australia:::be:::city of Perth
+59	false	false	$130:::be in:::country within the UK	$130:::be:::city of Perth
+59	false	true	first:::be in:::country within the UK	first:::be:::city of Perth
+63	false	true	198.92:::be in:::Park system
+63	false	true	one:::be in:::Park system
+67	false	false	Horse:::try type of:::animal	Horse:::be:::Victor Bernal
+67	false	false	1:::try type of:::animal	1:::be:::Victor Bernal
+67	false	false	18:::try type of:::animal	18:::be:::Victor Bernal
+71	true	true	Steve Fosset:::cross:::Pacific Ocean	Pacific Ocean:::be:::ocean
+71	false	true	Steve Fosset:::cross:::an Australian/American team	an Australian/American team:::be:::ocean
+71	false	false	Steve Fosset:::cross:::one	one:::be:::ocean
+75	false	false	Ann Timmel:::lose at:::one	one:::be:::airport
+79	false	false	Howard D:::nationalise:::railway system
+79	false	false	S.I.:::nationalise:::railway system
+79	false	false	Gregory Chaitin:::nationalise:::railway system
+79	false	false	02:::nationalise:::railway system
+79	false	false	1986:::nationalise:::railway system
+83	false	true	Hermitage Museum:::be:::London
+83	false	true	Hermitage Museum:::be:::Birseck
+83	false	true	Hermitage Museum:::be:::Pushkin Museum
+83	false	false	Hermitage Museum:::be:::0
+83	false	false	Hermitage Museum:::be:::2000
+87	false	true	a organophosphate:::be:::Organophosphate insecticides Main article :
+87	true	true	a organophosphate:::be:::An organophosphate (sometimes abbreviated OP) is the general name for esters of phosphoric acid and is one of the organophosphorus compounds.
+87	false	true	a organophosphate:::be:::after that
+87	false	false	a organophosphate:::be:::3
+89	false	false	881076:::be in:::impact car
+89	false	false	0:::be in:::impact car
+89	false	false	United States:::be in:::impact car
+93	false	true	the lives:::be name of:::ship collide in March 1994	the lives:::be:::name of ship collide in March 1994
+93	false	false	one:::be name of:::ship collide in March 1994	one:::be:::name of ship collide in March 1994
+97	false	true	Austria - France:::be where in:::Russia	Austria - France:::be:::\ 's Cathedral
+97	false	false	0:::be where in:::Russia	0:::be:::\ 's Cathedral
+97	false	false	1135:::be where in:::Russia	1135:::be:::\ 's Cathedral
+101	false	true	salsa mambo samba:::be:::Mambo
+101	false	false	salsa mambo samba:::be:::after that
+101	false	false	salsa mambo samba:::be:::one
+102	false	true	a test:::\ \:::95 \
+102	false	false	2:::\ \:::95 \
+106	false	true	Thom Rotella:::be:::Ken Navarro Nils Steve Oliver Michael O'Neill Doc Powell Juan Carlos Quintero Lee Ritenour
+106	false	true	Thom Rotella:::be:::who leads Thom Rotella five - piece ensemble at Randell's in Santa Ana tonight.
+106	false	true	Thom Rotella:::be:::Grant Geissman
+106	false	false	Thom Rotella:::be:::0 Mar
+110	false	false	\ soccer commentator:::be \ commentator on:::UK
+110	false	false	\ soccer commentator:::be \ commentator on:::one
+112	false	true	Kia:::be:::Poland Kia Motors Romania Kia Motors Russia Kia Motors France Kia Motors Spain Kia Motors Italia Kia Motors Greece Kia Motors Belgium Kia Motors Netherland Kia Motors Sweden
+112	false	true	Kia:::be:::Kia Asamiya vision, though most of time is true, but sometimes can deviate, especilly when Kia Asamiya doesn't have enough data/knowledge about the subject (like when Yui hug Kia Asamiya, when Kia Asamiya vision shows Yui shakes Kia Asamiya hand, when they first meet, and when Kia Asamiya trapped in Rapunzel's tower on fairytale simulation).
+112	false	true	Kia:::be:::in the United States
+112	false	false	Kia:::be:::3
+116	true	true	Zanussi:::be:::was an Italian producer of home appliances
+116	false	true	Zanussi:::be:::who had also been in Cassibile since August 31
+116	false	false	Zanussi:::be:::3
+118	true	true	Will Carling:::be:::ENGLAND rugby captain
+118	false	false	Will Carling:::be:::Sagan
+118	false	false	Will Carling:::be:::00
+119	false	true	Lester Piggott:::be:::who gave the horse far too much ground to make up in a race not long after Lester Piggott exertions in the St. Leger over a longer distance
+119	false	true	Lester Piggott:::be:::Nijinsky II
+119	false	false	Lester Piggott:::be:::1
+122	true	true	Jonathan Edwards:::be:::Welsh rugby player
+122	true	true	Jonathan Edwards:::be:::the world record holder in the triple jump
+122	false	true	Jonathan Edwards:::be:::Karl Barth
+122	false	false	Jonathan Edwards:::be:::0
+123	false	true	Blacks \:::be:::Eden Park
+123	false	false	Blacks \:::be:::Black Pacifier
+123	false	true	Blacks \:::be:::Christian Cullen
+123	false	false	Blacks \:::be:::0
+125	false	true	arnica:::be:::— northern arnica Arnica  longifolia — longleaf arnica Arnica louiseana — Lake Louise arnica Arnica mollis — hairy arnica Arnica  parryi — nodding arnica Arnica rydbergii — subalpine arnica Arnica sororia — twin
+125	false	true	arnica:::be:::after that
+125	false	false	arnica:::be:::3
+126	false	true	Ribena:::make:::Ribena	Ribena:::be:::company
+126	false	true	Bristol:::make:::Ribena	Bristol:::be:::company
+126	false	true	this time:::make:::Ribena	this time:::be:::company
+126	false	false	one:::make:::Ribena	one:::be:::company
+126	false	true	two:::make:::Ribena	two:::be:::company
+127	false	true	Glaxo:::be:::offer price
+127	true	true	Glaxo:::be:::originally a baby food manufacturer processing local milk into an early baby food named Glaxo
+127	false	false	Glaxo:::be:::3
+128	false	true	Zantac:::be:::Zantac from the manufacturer
+128	true	true	Zantac:::be:::its best - selling anti - ulcer treatment
+128	false	false	Zantac:::be:::3
+129	false	false	Flexoset:::be:::3
+130	false	true	Lakeland Plastics:::be:::West , Gateshead , Tyne and Wear
+130	false	true	Lakeland Plastics:::be:::George Street
+130	false	true	Lakeland Plastics:::be:::one
+131	false	false	to ME:::\ information about:::the yacht	to ME:::be:::information about the yacht
+131	false	false	one:::\ information about:::the yacht	one:::be:::information about the yacht
+132	false	true	Keith Musto:::be:::, 1964 Olympic silver medallist in the Flying Dutchman class , led through Saturday
+132	false	false	Keith Musto:::be:::0
+133	false	true	HSBC:::be:::HSBC Arena , Buffalo , New York One HSBC Center , Buffalo , New York HSBC Building , Shanghai HSBC Tower , Shanghai HSBC Building , Tokyo HSBC Canada Building , Vancouver , British Columbia
+133	false	true	HSBC:::be:::HSBC was formed on 1st November 2005 when CCF SA (Crédit Commercial de France) along with subsidiary companies UBP, Banque de Picardie and Banque Hervet rebranded as HSBC, with several smaller regional banking networks retaining their long standing local brands and identities.
+133	false	false	HSBC:::be:::3
+134	false	true	Denys Henderson:::be:::of ICI
+134	false	false	Denys Henderson:::be:::1
+135	true	true	Chi Thien:::be:::the Vietnamese poet
+135	false	false	Chi Thien:::be:::0
+137	false	true	the Eurofighter:::be:::however the UK government selected the European missile
+137	false	false	the Eurofighter:::be:::3
+138	false	true	Hazell Dean .:::write:::song
+138	true	true	abba:::write:::song
+138	false	false	0:::write:::song
+138	false	true	you:::write:::song
+140	false	true	a Polygraph:::be:::School
+140	false	true	a Polygraph:::be:::high - poly
+140	false	true	a Polygraph:::be:::after that
+140	false	false	a Polygraph:::be:::3
+144	true	false	H. Ames:::work for:::Central Intelligence Agencys	Central Intelligence Agencys:::be:::organization
+144	false	false	H. Ames:::work for:::one	one:::be:::organization
+148	true	true	Yitzhak Rabin:::bear:::March 1 1922
+148	false	true	Yitzhak Rabin:::bear:::1992 - 1995
+148	false	false	Yitzhak Rabin:::bear:::4 19
+148	false	false	Yitzhak Rabin:::bear:::1995
+152	false	true	into frosty:::\:::frosty \
+152	false	false	3:::\:::frosty \
+156	false	true	Sky Europe:::be:::Pitbull
+156	false	false	Sky Europe:::be:::3
+160	false	false	U.N Resolutions:::mastermind:::David Agreement	U.N Resolutions:::be:::american President
+160	true	true	Jimmy Carter:::mastermind:::David Agreement	Jimmy Carter:::be:::american President
+160	false	false	in the National Palace Museum:::mastermind:::David Agreement	in the National Palace Museum:::be:::american President
+160	false	false	one:::mastermind:::David Agreement	one:::be:::american President
+164	false	true	effect \:::be:::Heatwave or Greenhouse Effect Main articles :
+164	false	false	effect \:::be:::2
+168	false	true	Stu Sutcliffe:::be:::as the film shows
+168	false	true	Stu Sutcliffe:::be:::Astrid Kirchherr
+168	false	false	Stu Sutcliffe:::be:::00
+172	false	false	iPod \:::be:::( Video ) iPod 4G ( Color/Photo ) iPod 4G ( Grayscale ) iPod 3G iPod  nano 1G iPod Mini 1G
+172	false	false	iPod \:::be:::On June 28 2005, the IPod photo line was merged with the existing IPod line, giving all full size iPods the same features and color screen as IPod photo; the IPod photo line then ceased to exist under that name.
+172	false	false	iPod \:::be:::of
+172	false	false	iPod \:::be:::3
+176	false	true	be a quasus - legal way for police:::\:::blue flu \
+176	false	false	0:::\:::blue flu \
+178	false	false	Edouard Balladur:::bear in:::Frances	Frances:::be:::country
+178	false	true	Edouard Balladur:::bear in:::12% jobless rate	12% jobless rate:::be:::country
+178	false	false	Edouard Balladur:::bear in:::10	10:::be:::country
+178	false	false	Edouard Balladur:::bear in:::7	7:::be:::country
+182	false	true	corn:::be food in:::the UK	corn:::be:::food in the UK
+182	false	true	at breakfast:::be food in:::the UK	at breakfast:::be:::food in the UK
+182	false	true	at the time:::be food in:::the UK	at the time:::be:::food in the UK
+182	false	true	one:::be food in:::the UK	one:::be:::food in the UK
+186	true	true	balsa:::name:::wood use for boat building
+186	false	true	a variety:::name:::wood use for boat building
+186	false	true	one:::name:::wood use for boat building
+190	false	true	from Asia:::name:::food part of diet of Southeast asia
+190	false	true	the U.S.:::name:::food part of diet of Southeast asia
+190	false	false	one:::name:::food part of diet of Southeast asia
+192	false	false	Midwest Plastic Components:::name:::type of plastic use make \ reinforce plastic \	Midwest Plastic Components:::be:::carbon fiber
+192	false	true	whitewater:::name:::type of plastic use make \ reinforce plastic \	whitewater:::be:::carbon fiber
+195	false	false	the area:::claim \:::scheme in UK by size \	the area:::be:::pension scheme
+195	false	false	the site:::claim \:::scheme in UK by size \	the site:::be:::pension scheme
+195	false	false	one:::claim \:::scheme in UK by size \	one:::be:::pension scheme
+198	false	false	30:::be:::people	30:::have:::so far
+198	false	false	by the IOC President Avery Brundage:::be:::people	by the IOC President Avery Brundage:::have:::so far
+198	false	false	2004:::be:::people	2004:::have:::so far

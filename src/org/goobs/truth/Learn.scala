@@ -300,8 +300,9 @@ def main(args:Array[String]):Unit = {
   }
 
   // Initialize Data
-val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
-  val testData:GenSeq[(Query.Builder, TruthValue)] = data
+//  val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
+  val data:DataStream = HoldOneOut.read("")
+  val testData:GenSeq[(Query.Builder, TruthValue)] = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
 
   // Initialize Optimization
   val optimizer:OnlineOptimizer
@@ -311,7 +312,7 @@ val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
       issueQuery(query
-        .setUseRealWorld(false)
+        .setUseRealWorld(true)
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
@@ -327,9 +328,10 @@ val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
+    log("Learning...")
     var iter = data.iterator
     val iterCounter = new AtomicInteger(0)
     for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par

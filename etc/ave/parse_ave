@@ -1,0 +1,386 @@
+#!/bin/bash
+exec scala "$0" "$@"
+!#
+
+//(scala)
+import scala.collection.JavaConversions._
+import scala.xml._
+// (java)
+import java.util.regex.Matcher
+// (javanlp)
+import edu.stanford.nlp.NLP._
+import edu.stanford.nlp.trees.tregex._
+import edu.stanford.nlp.trees._
+
+if (args.length < 1) {
+  println("Usage: parse_ave [query_xml] [mapping?]")
+  System.exit(1)
+}
+
+// recognize wh* questions
+val P_QUESTION = TregexPattern.compile("""/.*/ < (/WH.*/ $+ SQ)""")
+
+// Who is Bill Clinton ?
+val P_EMPTY_WHNP = TregexPattern.compile("""WHNP <: /W.*/""")
+// Which *president* is Bill Clinton ?
+val P_WHNP = TregexPattern.compile("""WHNP < (/W.*/ $ /N.*/)""")
+// Other wh* questions
+val P_WHSTAR = TregexPattern.compile("""SQ < (/.*/ $+ /.*/ $+ /.*/)""")
+
+// What *is* Bill Clinton eating ?
+val P_SQIS   = TregexPattern.compile("""SQ < ((/V.*/ < /^was|is|be|were|are$/) $+ /.*/)""")
+// Which president *did* Bill Clinton *follow* ?
+val P_SQDO   = TregexPattern.compile("""SQ < (/V.*/ $ /N.*/ $ /V.*/)""")
+// Who *ran* for office in 1999 ?
+val P_SQNORM = TregexPattern.compile("""SQ < (VP < (/V.*/ $+ /.*/))""")
+
+val tregexLock = new scala.concurrent.Lock
+
+val patterns = 
+  if (args.length > 1) {
+    val patternsXML = XML.loadFile(args(1));
+    Some({for (pattern <- patternsXML \\ "patterns" \ "pattern") yield {
+      (
+        (pattern \ "@id").toString.toInt,
+        (answer:String) => { pattern.text.replaceAll("___ANSWER___",
+                               Matcher.quoteReplacement(answer)) }
+      )
+    }}.toMap)
+  } else None
+
+val queryXML = XML.loadFile(args(0));
+var correct:Double = 0
+var guess:Double = 0
+var gold:Double = 0
+val entries:Seq[(Int, Boolean, Boolean, List[String])]
+    = {for (query <- (queryXML \\ "ave-corpus" \ "q")) yield {
+  // (question information)
+  val qid:Int = (query \ "@id").toString.toInt
+  val question:String = (query \\ "q_str").text.replaceAll("-", " - ")
+  // (answers)
+  for (answerXML <- query \ "a") yield {
+    val aid:String = (answerXML \ "@id").toString
+    val judgement:Boolean = (answerXML \ "@value").toString match {
+        case "VALIDATED" => true
+        case "REJECTED" => false
+        case "UNKNOWN" => false
+      }
+    val answer:String = (answerXML \ "a_str").text.replaceAll("-", " - ")
+    val justification:String = (answerXML \ "t_str").text.replaceAll("-", " - ")
+    // (basic filters)
+    var myGuess = true
+    if (justification.length > 0 && question.length > 0 && answer.length > 0) {
+      val justificationNouns = new Sentence(justification).word.zip( new Sentence(justification).pos )
+//                                  .filter{ case (w:String, pos:String) =>
+//                                    pos.toLowerCase.startsWith("n") || pos.toLowerCase.startsWith("v") || pos.toLowerCase.startsWith("fw") }
+                                  .map( _._1 ).map( x => Symbol(x.toLowerCase) )
+      val questionNouns = new Sentence(question).word.zip( new Sentence(question).pos )
+//                                  .filter{ case (w:String, pos:String) =>
+//                                    pos.toLowerCase.startsWith("n") || pos.toLowerCase.startsWith("v") || pos.toLowerCase.startsWith("fw") }
+                                  .map( _._1 ).map( x => Symbol(x.toLowerCase) )
+      val answerNouns = new Sentence(answer).word.zip( new Sentence(answer).pos )
+//                                  .filter{ case (w:String, pos:String) =>
+//                                    pos.toLowerCase.startsWith("n") || pos.toLowerCase.startsWith("v") || pos.toLowerCase.startsWith("fw") }
+                                  .map( _._1 ).map( x => Symbol(x.toLowerCase) )
+      val aSim = lesk(new Sentence(justification).words.map( x => Symbol(x.toLowerCase )),
+                      new Sentence(answer).words.map( x => Symbol(x.toLowerCase) ))
+      myGuess = myGuess && (aSim.isNaN || aSim > 0.5)
+      val qSim = lesk(justificationNouns, questionNouns)
+      myGuess = myGuess && qSim > 0.025
+    } else {
+      myGuess = false
+    }
+    myGuess = myGuess && {try {answer.toInt; false } catch { case _ => true }}
+    // (debug score)
+    if (myGuess && myGuess == judgement) correct += 1
+    if (judgement) gold += 1
+    if (myGuess) guess += 1
+    // (write)
+    (qid, judgement, myGuess, List[String]())
+//    patterns match {
+//      case Some(patterns) =>
+//        (qid, judgement, myGuess, List[String](patterns(qid)(answer)))
+//      case None =>
+//        val line = stanfordDep(question, answer)
+//        System.err.println(line)
+//        if (line.isEmpty) System.err.println("COULD NOT PARSE: " + question)
+//        (qid, judgement, myGuess, line)
+//    }
+  }
+}}.toList.flatten
+
+for ( (qid, correct, filter, statement) <- entries) { println(qid + "\t" + correct + "\t" + filter + "\t" + statement.map( _.replaceAll("\t", " ") ).mkString("\t")) }
+
+System.err.println("Precision: " + correct / guess + " (" + guess.toInt + ")")
+System.err.println("Recall:    " + correct / gold +  " (" + correct.toInt + ")")
+System.err.println("F1:        " + {
+    val p = correct / guess; val r = correct / gold
+    2.0 * p * r / (p + r)
+  })
+
+
+//
+// A Godawful mess of heuristic rules for converting
+// questions into statements
+//
+
+def stanfordDep(questionGloss:String, answer:String):List[String] = {
+  if (questionGloss == "") return Nil
+  val question = new Sentence(questionGloss)
+  val root = question.dependencyRoot
+
+  // -- Get Arguments
+  val subjHead:Option[Int] = question.stanfordDependencies.zipWithIndex
+      .filter{ case ((parent, label), i) => label.toLowerCase.contains("subj") }
+      .headOption.map{ case ((parent, label), i) => i }
+  val objHead:Option[Int] = question.stanfordDependencies.zipWithIndex
+      .filter{ case ((parent, label), i) => label.toLowerCase.contains("obj") }
+      .headOption.map{ case ((parent, label), i) => i }
+  val subj:Option[String]
+          = subjHead.map( question.dependencyYield(_).toArray.sortBy( x => x ) )
+                    .map( _.map( question.lemma ) )
+                    .map( _.mkString(" ") )
+  val obj:Option[String]
+          = objHead.map( question.dependencyYield(_).toArray.sortBy( x => x ) )
+                    .map( _.map( question.lemma ) )
+                    .map( _.mkString(" ") )
+  val reln:String
+    = objHead.flatMap( x => question.dependencyPathMonotonic(question.dependencyRoot, x)
+                                .map( _.map( question.lemma ).mkString(" ") ))
+             .getOrElse( question.lemma( question.dependencyRoot ) )
+
+  // -- Parse Arguments
+  // (should_fill, type cast)
+  def grokArg(arg:Option[String]):(Boolean, Option[String]) = {
+    arg match {
+      case Some(arg) =>
+        val argSent = new Sentence(arg)
+        val filtered = argSent.word.zip(argSent.pos).filter{ case (w, p) =>
+            !p.toLowerCase.startsWith("w") }
+          .map{ case (w, p) => w }
+        if (filtered.length == 0) (true, None)
+        else if (filtered.length != argSent.length) (true, Some(filtered.mkString(" ")))
+        else (false, None)
+      case None => (true, None)
+    }
+  }
+
+  val (shouldFillArg1, arg1Constraint) = grokArg(subj)
+  val (shouldFillArg2, arg2Constraint) = grokArg(obj)
+
+  if (shouldFillArg1 && shouldFillArg2) {
+    heuristicTregex(questionGloss, answer)
+  } else if (shouldFillArg1) {
+    (answer + ":::" + reln + ":::" + obj.get) ::
+      {arg1Constraint match { case Some(x) => List(answer + ":::be:::" + x);
+                             case None => Nil }}
+  } else if (shouldFillArg2) {
+    (subj.get + ":::" + reln + ":::" + answer) ::
+      {arg2Constraint match { case Some(x) => List(answer + ":::be:::" + x);
+                             case None => Nil }}
+  } else {
+    (answer + ":::" + reln + ":::" + obj.get) ::
+      (answer + ":::be:::" + subj.get) :: Nil
+  }
+}
+
+
+def heuristicTregex(questionGloss:String, answer:String):List[String] = {
+  if (questionGloss.trim.equals("")) return List[String]()
+  val tree = (new Sentence(questionGloss)).parse
+  // -- Get a matching TREGEX
+  def parse(pattern:TregexPattern, t:Tree = tree):Option[Tree] = {
+    if (pattern == null) throw new IllegalArgumentException("pattern is null!")
+    tregexLock.acquire
+    val matcher = pattern.matcher(t)
+    tregexLock.release
+    if (matcher.find) {
+      Some(matcher.getMatch)
+    } else {
+      None
+    }
+  }
+
+  // -- Construct a relation triple
+  def triple(a:String, b:String, c:String):String = {
+    def filter(str:String):String = str.replaceAll("^the ", "")
+                                       .replaceAll("^a ", "")
+    new Sentence(filter(a)).lemma.mkString(" ") + ":::" +
+      new Sentence(b).lemma.mkString(" ") + ":::" +
+      new Sentence(filter(c)).lemma.mkString(" ")
+  }
+ 
+  val questionSentence = new Sentence(questionGloss)
+  val relationPreposition =
+    if (questionSentence.pos(0).equalsIgnoreCase("IN")) questionSentence.lemma(0)
+    else if (questionSentence.word(0).equalsIgnoreCase("where")) "in"
+    else if (questionSentence.word(0).equalsIgnoreCase("when")) "in"
+    else ""
+
+  // -- Convert a possibly complex VP into a simple relation
+  def getRelation(vp:Tree):String = {
+    if (!vp.label.value.equalsIgnoreCase("VP")) {
+      for (vp <- parse(TregexPattern.compile("""VP"""), vp)) return getRelation(vp)
+    }
+    var relation = if (vp.numChildren == 0) vp.`yield`.mkString(" ")
+                   else vp.getChild(0).`yield`.mkString(" ")
+    val vpGloss = vp.`yield`.mkString(" ").toLowerCase
+    if (vpGloss.contains(" to ") || vpGloss.endsWith(" to")) relation += " to"
+    else if (vpGloss.contains(" at ") || vpGloss.endsWith(" at")) relation += " at"
+    else relation += " " + relationPreposition
+    relation.trim
+  }
+
+  // -- Convert a possibly complex tree into a simple argument
+  def getArg(np:Tree):String = {
+    if (!np.label.value.equalsIgnoreCase("NP")) {
+      // (case: not an NP)
+      for (np <- parse(TregexPattern.compile("""NP"""), np)) return getArg(np)
+    }
+    if (np.`yield`.length > 10) {
+      // (case: very long NP)
+      for (subtree <- np.children.reverse) {
+        for (np <- parse(TregexPattern.compile("""NP"""), subtree)) return getArg(np)
+      }
+    }
+    np.`yield`.mkString(" ").replaceAll("""``(.*)''""", "$1")
+  }
+
+  // Handle a clause
+  // @param sq The SQ subtree
+  def handleSQ(sq:Tree):Option[String] = {
+    // (e.g., "What is Atlantis?")
+    parse(P_SQIS).map{ (sq:Tree) =>
+//      System.err.println("    SQIS: " + sq)
+      sq.children.drop(1).foldLeft( None.asInstanceOf[Option[Tree]] ){
+          case (soFar:Option[Tree], child:Tree) =>
+        soFar.orElse( parse(TregexPattern.compile("""VP"""), child) )
+      } match {
+        case Some(vp:Tree) =>
+          triple(answer, getRelation(vp), getArg(sq.getChild(1)))
+        case None =>
+          triple(getArg(sq.getChild(1)), getRelation(sq.getChild(0)), answer)
+      }}
+    // (e.g., "Which country did Iraq invade?")
+    .orElse(parse(P_SQDO).map{ (sq:Tree) =>
+//      System.err.println("    SQDO")
+      triple(getArg(sq.getChild(1)),
+             getRelation(sq.getChild(2)),
+             answer) })
+    // (e.g., "Which company produces the car?")
+    .orElse(parse(P_SQNORM).map{ (sq:Tree) =>
+//      System.err.println("    SQNORM")
+      if (sq.numChildren > 1) {
+        triple(answer,
+               getRelation(sq.getChild(0)),
+               getArg(sq.getChild(1)))
+      } else {
+        // note: I think this is always a parse error
+        triple(answer,
+               getRelation(sq.getChild(0).getChild(0)),
+               getArg(sq.getChild(0).getChild(1)))
+      } })
+  }
+  // -- MAIN SWITCH
+  try {
+  // (case: Question)
+  parse(P_QUESTION).map{ (question:Tree) =>
+//    System.err.println("Question")
+    var children = question.children
+    while (!children(0).label.value.toLowerCase.startsWith("wh")) children = children.drop(1)
+    // (e.g., "What is Atlantis?")
+    parse(P_EMPTY_WHNP).map{ x => 
+//      System.err.println("  WHEMPTY")
+      List(handleSQ(children(1))).filter( _.isDefined ).map( _.get ) }
+    // (e.g., "What country did Iraq invade?")
+    .orElse(parse(P_WHNP).map{ (whnp:Tree) =>
+//      System.err.println("  WHNP")
+      List(Some(triple(answer, "is",
+                    whnp.children.drop(1).map( _.`yield`.mkString(" ") ).mkString(" "))),
+                   handleSQ(children(1))).filter( _.isDefined ).map( _.get ) })
+    // (e.g., anything with "wh" -- this covers a lot!)
+    .orElse(parse(P_WHSTAR).map{ (sq:Tree) =>
+//      System.err.println("  WHSTAR")
+      List(handleSQ(children(1))).filter( _.isDefined ).map( _.get ) })
+    .getOrElse(List[String]()) } // case: parse error (usually)
+  // (case: List)
+  .orElse({
+    if (questionGloss.trim.toLowerCase.startsWith("list") ||
+        questionGloss.trim.toLowerCase.startsWith("name")
+          ) {
+      Some(List[String](triple(
+        answer,
+        "be",
+        getArg(new Sentence(questionGloss.substring(questionGloss.indexOf(" ")).trim).parse))))
+    } else None })
+  .getOrElse(List[String]()) // case: complex question
+  } catch {
+    case (e:NoSuchElementException) =>
+    System.err.println (questionGloss.trim.toLowerCase.startsWith("list"))
+    System.err.println (questionGloss.trim.toLowerCase)
+    System.err.println(questionSentence.parse)
+    System.exit(1)
+    Nil
+  }
+}
+
+
+/**
+ * LESK similarity
+ */
+def lesk(tokensA:Array[Symbol], tokensB:Array[Symbol], approx:Boolean=false):Double = {
+  import org.goobs.nlp.Search._
+  import org.goobs.nlp.SearchState
+  import org.goobs.nlp.Search
+  def allEqual(a:Array[Symbol], startA:Int,
+               b:Array[Symbol], startB:Int, length:Int):Boolean = {
+    (0 until length).forall{ (i:Int) => a(startA + i) == b(startB + i) }
+  }
+  def allFalse(mask:Array[Boolean], start:Int, untilVal:Int):Boolean = {
+    (start until untilVal).forall( mask(_) == false )
+  }
+  // (variables)
+  val tokensShort = if (tokensA.length < tokensB.length) tokensA else tokensB
+  val tokensLong = if (tokensA.length < tokensB.length) tokensB else tokensA
+  // (possible alignments)
+  var candidates = List[((Array[Boolean],Array[Boolean])=>Boolean,
+                 AlignState=>AlignState)]()
+  for( length <- 1 to tokensB.length;
+       shortStart <- 0 to tokensShort.length - length;
+       longStart <- 0 to tokensLong.length - length ) {
+    if (allEqual(tokensShort, shortStart,
+                 tokensLong, longStart, length) ) {
+      val candidate = (
+        (shortMask:Array[Boolean], longMask:Array[Boolean]) => {
+          allFalse(shortMask, shortStart, shortStart + length) &&
+          allFalse(longMask, longStart, longStart + length)
+        },
+        (old:AlignState) => {
+          val newShortMask = old.shortMask.map( x => x )
+          val newLongMask = old.longMask.map( x => x )
+          for( i <- shortStart until shortStart + length ) newShortMask(i) = true
+          for( i <- longStart until longStart + length ) newLongMask(i) = true
+          AlignState(newShortMask, newLongMask, old.cost - length * length)
+        }
+      )
+      candidates = candidate :: candidates
+    }
+  }
+  // (search)
+  case class AlignState(shortMask:Array[Boolean],
+                        longMask:Array[Boolean],
+                        override val cost:Double) extends SearchState {
+    override def children:List[AlignState] = {
+      candidates.filter( _._1(shortMask, longMask) )
+                .map( _._2(this) )
+    }
+  }
+  val maxCost:Double = tokensShort.length.toDouble * tokensShort.length.toDouble
+  val cost = (new Search[AlignState](if (approx) GREEDY else cache(UNIFORM_COST)))
+      .best(AlignState(tokensShort.map( x => false ),
+                       tokensLong.map( x => false ),
+                       maxCost)).cost
+  val overlap:Double = maxCost - cost
+  overlap / maxCost
+}
+

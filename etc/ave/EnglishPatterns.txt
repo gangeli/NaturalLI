@@ -1,0 +1,602 @@
+﻿<patterns>
+<question id="0001" type="OBJECT">What is Atlantis</question>
+<pattern id="0001">Atlantis is ___ANSWER___.</pattern>
+
+<question id="0002" type="OBJECT">What is Hubble?</question>
+<pattern id="0002">Hubble is ___ANSWER___.</pattern>
+
+<question id="0003" type="LOCATION">Which country did Iraq invade in 1990?</question>
+<pattern id="0003">Iraq invaded the country of ___ANSWER___ in 1990.</pattern>
+
+<question id="0004" type="LOCATION">Where did Freud move to live in 1939?</question>
+<pattern id="0004">Freud moved to live to ___ANSWER___ in 1939.</pattern>
+
+<question id="0005" type="LOCATION">In which country is Kashmir?</question>
+<pattern id="0005">Kashmir is in the country of ___ANSWER___.</pattern>
+
+<question id="0006" type="LOCATION">Where did the oil tanker "Prestige" sink?</question>
+<pattern id="0006">The oil tanker "Prestige" sank in ___ANSWER___.</pattern>
+
+<question id="0007" type="ORGANIZATION">Which company produces the car makes "Thunderbird" and "Mustang"?</question>
+<pattern id="0007">The company ___ANSWER___ produces the car makes "Thunderbird" and "Mustang".</pattern> 
+
+<question id="0008" type="OTHER">What treaty did Michail Gorbatchov and Ronald Reagan sign in 1987?</question>
+<pattern id="0008">Michail Gorbatchov and Ronald Reagan signed the treaty ___ANSWER___ in 1987 .</pattern>
+
+<question id="0009" type="OTHER">Which symphony was composed by Beethoven in 1824?</question>
+<pattern id="0009">Beethoven composed the ___ANSWER___ symphony in 1824.</pattern>
+
+<question id="0010" type="PERSON">Which football player was awarded with "Gold Ball" in 1994?</question>
+<pattern id="0010">___ANSWER___ was the football player awarded with "Gold Ball" in 1994.</pattern>
+
+<question id="0011" type="PERSON">Who played the main role in the film "Seven Years in Tibet"?</question>
+<pattern id="0011">___ANSWER___ played the main role in the film "Seven Years in Tibet".</pattern>
+
+<question id="0012" type="PERSON">Who was commandant of the Warsaw Rebellion?</question>
+<pattern id="0012">___ANSWER___ was commandant of the Warsaw Rebellion.</pattern>
+
+<question id="0013" type="PERSON">Who wrote the fantasy epic "Lord of the Rings"?</question>
+<pattern id="0013">___ANSWER___ wrote the fantasy epic "Lord of the Rings".</pattern>
+
+<question id="0014" type="PERSON">What is the name of the woman who first climbed Mt. Everest without an oxygen mask?</question>
+<pattern id="0014">___ANSWER___ was the first woman who climbed Mt. Everest without an oxygen mask.</pattern>
+
+<question id="0015" type="PERSON">Who was called the "Iron Chancellor"?</question>
+<pattern id="0015">___ANSWER___ was called the "Iron Chancellor".</pattern>
+
+<question id="0016" type="TIME">In what year did the catastrophe in Chernobyl happen?</question>
+<pattern id="0016">The catastrophe in Chernobyl happened in the year ___ANSWER___.</pattern>
+
+<question id="0017" type="TIME">What year was Helmut Kohl born?</question>
+<pattern id="0017">Helmut Kohl was born in the year ___ANSWER___.</pattern>
+
+<question id="0018" type="TIME">Which year did the Titanic sink?</question>
+<pattern id="0018">The Titanic sank in the year ___ANSWER___.</pattern>
+
+<question id="0019" type="TIME">When did man first walk on the moon?</question>
+<pattern id="0019">Man first walked on the moon in ___ANSWER___.</pattern>
+
+<question id="0020" type="LOCATION">Which city was Wolfgang Amadeus Mozart born in?</question>
+<pattern id="0020">Wolfgang Amadeus Mozart was born in the city of ___ANSWER___.</pattern>
+
+<question id="0021" type="ORGANIZATION">Which party does Bill Clinton belong to?</question>
+<pattern id="0021">Bill Clinton belongs to ___ANSWER___ party.</pattern>
+
+<question id="0022" type="MEASURE">How many people died during the terror of Pol Pot?</question>
+<pattern id="0022">___ANSWER___ people died during the terror of Pol Pot.</pattern>
+
+<question id="0023" type="OTHER">What was O.J. Simpson accused of?</question>
+<pattern id="0023">O.J. Simpson was accused of ___ANSWER___.</pattern>
+
+<question id="0024" type="PERSON">Who is Stephen Hawking?</question>
+<pattern id="0024">Stephen Hawking is ___ANSWER___.</pattern>
+
+<question id="0025" type="ORGANIZATION">What is the Yakuza?</question>
+<pattern id="0025">The Yakuza is ___ANSWER___.</pattern>
+
+<question id="0026" type="OBJECT">What is Euro-Disney?</question>
+<pattern id="0026">Euro-Disney is ___ANSWER___.</pattern>
+
+<question id="0027" type="OTHER">What is Hapkido?</question>
+<pattern id="0027">Hapkido is ___ANSWER___.</pattern>
+
+<question id="0028" type="LOCATION">Where did the Winter Olympics take place in 1994?</question>
+<pattern id="0028">The 1994 Winter Olympics took place in ___ANSWER___.</pattern>
+
+<question id="0029" type="ORGANIZATION">Which environmental organisation was founded in 1971?</question>
+<pattern id="0029">The environmental organisation ___ANSWER___ was founded in 1971.</pattern>
+
+<question id="0030" type="LOCATION">Which Country has become independent after 30 years of civil war?</question>
+<pattern id="0030">The country of ___ANSWER___ has become independent after 30 years of civil war.</pattern>
+
+<question id="0031" type="MEASURE">How many gold medals did Brian Goodel win in the 1979 Pan American Games?</question>
+<pattern id="0031">Brian Goodel won ___ANSWER___ gold medals in the 1979 Pan American Games.</pattern>
+
+<question id="0032" type="PERSON">Which athlete won eighteen gold medals and set 21 world records?</question>
+<pattern id="0032">The athlete ___ANSWER___ won eighteen gold medals and set 21 world records.</pattern>
+
+<question id="0033" type="MEASURE">How many men's world sporting records were set in 1995?</question>
+<pattern id="0033">___ANSWER___ men's world sporting records were set in 1995.</pattern>
+
+<question id="0034" type="OBJECT">What is the Top Quark?</question>
+<pattern id="0034">The Top Quark is ___ANSWER___.</pattern>
+
+<question id="0035" type="OBJECT">What are the three elementary particles of physics according to the Standard Model?</question>
+<pattern id="0035">The three elementary particles of physics are ___ANSWER___.</pattern>
+
+<question id="0036" type="LOCATION">Where is the Fermi National Accelerator Laboratory?</question>
+<pattern id="0036">The Fermi National Accelerator Laboratory is in ___ANSWER___.</pattern>
+
+<question id="0037" type="MEASURE">How many researchers were involved in the 17-year search for the Top Quark?</question>
+<pattern id="0037">___ANSWER___ researchers were involved in the 17-year search for the Top Quark.</pattern>
+
+<question id="0038" type="MEASURE">How many passengers does the ship the "Canadian Empress" carry?</question>
+<pattern id="0038">The ship the "Canadian Empress" carries ___ANSWER___ passengers.</pattern>
+
+<question id="0039" type="LOCATION">Where was the cruise liner the "Oriana" built?</question>
+<pattern id="0039">The cruise liner the "Oriana" was built in ___ANSWER___.</pattern>
+
+<question id="0040" type="OTHER">What is the Bavarian National Anthem?</question>
+<pattern id="0040">The Bavarian National Anthem is ___ANSWER___.</pattern>
+
+<question id="0041" type="PERSON">Who was Munich's Catholic archbishop in 1995?</question>
+<pattern id="0041">___ANSWER___ was Munich's Catholic archbishop in 1995.</pattern>
+
+<question id="0042" type="MEASURE">How many "lander" are there in Germany?</question>
+<pattern id="0042">In Germany there are ___ANSWER___ "lander".</pattern>
+
+<question id="0043" type="PERSON">Who set up Minerva Rigging at Kip Marina?</question>
+<pattern id="0043">___ANSWER___ set up Minerva Rigging at Kip Marina.</pattern>
+
+<question id="0044" type="PERSON">Who is Britain's most successful yachtsman ever?</question>
+<pattern id="0044">___ANSWER___ is Britain's most successful yachtsman ever.</pattern>
+
+<question id="0045" type="LOCATION">In what American state is Everglades National Park?</question>
+<pattern id="0045">Everglades National Park is in the American state of ___ANSWER___.</pattern>
+
+<question id="0046" type="MEASURE">How wide is the everglades?</question>
+<pattern id="0046">The everglades is ___ANSWER___ wide.</pattern>
+
+<question id="0047" type="OTHER">Which is the only one of the "seven wonders of the world" to have survived?</question>
+<pattern id="0047">___ANSWER___ is the only one of the "seven wonders of the world" to have survived.</pattern>
+
+<question id="0048" type="MEASURE">How many years ago was the Pharos Lighthouse built?</question>
+<pattern id="0048">The Pharos Lighthouse was built ___ANSWER___ years ago.</pattern>
+
+<question id="0049" type="MEASURE">How high was the Pharos Lighthouse?</question>
+<pattern id="0049">The Pharos Lighthouse was ___ANSWER___ high.</pattern>
+
+<question id="0050" type="MEASURE">List World Heritage Sites</question>
+<pattern id="0050">World Heritage Sites include ___ANSWER___.</pattern>
+
+<question id="0051" type="MEASURE">Who discovered the Shoemaker-Levy comet?</question>
+<pattern id="0051">Shoemaker-Levy comet was discovered by ___ANSWER___.</pattern>
+
+<question id="0052" type="OTHER">What planet did the Shoemaker-Levy comet hit?</question>
+<pattern id="0052">The Shoemaker-Levy comet hit ___ANSWER___ planet.</pattern>
+
+<question id="0053" type="MEASURE">How many comets are thought to exist?</question>
+<pattern id="0053">___ANSWER___ comets are thought to exist .</pattern>
+
+<question id="0054" type="MEASURE">What proportion of all milk sold is used on breakfast cereals?</question>
+<pattern id="0054">The proportion of ___ANSWER___ of all milk sold is used on breakfast cereals.</pattern>
+
+<question id="0055" type="MEASURE">How many Russian cities are in need of air pollution relief according to the World Bank?</question>
+<pattern id="0055">According to the World Bank there are ___ANSWER___ Russian cities in need of air pollution relief.</pattern>
+
+<question id="0056" type="OBJECT">What is Quinoa?</question>
+<pattern id="0056">Quinoa is ___ANSWER___.</pattern>
+
+<question id="0057" type="ORGANIZATION">Which milk organisation was abolished in November 1994?</question>
+<pattern id="0057">The milk organisation ___ANSWER___ was abolished in November 1994.</pattern>
+
+<question id="0058" type="ORGANIZATION">Unknown Query</question>
+<pattern id="0058">The answer to life the universe and everything is ___ANSWER___.</pattern>
+
+<question id="0059" type="LOCATION">What country do the Gurkhas come from?</question>
+<pattern id="0059">The Gurkhas come from ___ANSWER___.</pattern>
+
+<question id="0060" type="ORGANIZATION">From which organisation did Willy Claes resign as Secretary General in 1995?</question>
+<pattern id="0060">Willy Claes resign as Secretary General from ___ANSWER___ in 1995 .</pattern>
+
+<question id="0061" type="MEASURE">How many members of Nato are there?</question>
+<pattern id="0061">There are ___ANSWER___ NATO members.</pattern>
+
+<question id="0062" type="ORGANIZATION">Which company took over Barings after its collapse in February 1995?</question>
+<pattern id="0062">___ANSWER___ took over Barings after its collapse in February 1995.</pattern>
+
+<question id="0063" type="PERSON">Who is Nick Leeson?</question>
+<pattern id="0063">Nick Leeson is ___ANSWER___.</pattern>
+
+<question id="0064" type="PERSON">Who was president of France at the time of the nuclear weapons tests in the South Pacific?</question>
+<pattern id="0064">___ANSWER___ was president of France at the time of the nuclear weapons tests in the South Pacific.</pattern>
+
+<question id="0065" type="TIME">Which countries are declared nuclear powers?</question>
+<pattern id="0065">___ANSWER___ is a declared nuclear power.</pattern>
+
+<question id="0066" type="TIME">In what year did the Normandy Landings take place?</question>
+<pattern id="0066">The Normandy Landings took place in year ___ANSWER___.</pattern>
+
+<question id="0067" type="PERSON">Who called D-day "a great crusade"?</question>
+<pattern id="0067">___ANSWER___ called D-day "a great crusade".</pattern>
+
+<question id="0068" type="ORGANIZATION">Which army unit participating in the D-day Landings has the motto "No mission too difficult, no sacrifice too great, nothing in hell can stop the 1st Division."?</question>
+<pattern id="0068">The army unit ___ANSWER___ participated in the D-day Landings and has the motto "No mission too difficult, no sacrifice too great, nothing in hell can stop the 1st Division.".</pattern>
+
+<question id="0069" type="PERSON">Who was Lin Piao?</question>
+<pattern id="0069">Lin Piao was ___ANSWER___.</pattern>
+
+<question id="0070" type="OTHER">Where was an Oviraptor fossil sitting on a nest discovered?</question>
+<pattern id="0070">An Oviraptor fossil sitting on a nest was discovered in ___ANSWER___.</pattern>
+
+<question id="0071" type="OTHER">What is leprosy?</question>
+<pattern id="0071">Leprosy is ___ANSWER___.</pattern>
+
+<question id="0072" type="ORGANIZATION">To which organisation is Peter Anderson the alcohol adviser?</question>
+<pattern id="0072">Peter Anderson is the alcohol adviser to ___ANSWER___.</pattern>
+
+<question id="0073" type="PERSON">Who was Vermeer?</question>
+<pattern id="0073">Vermeer was ___ANSWER___.</pattern>
+
+<question id="0074" type="ORGANIZATION">Which political party was Willy Brandt a member of?</question>
+<pattern id="0074">Willy Brandt was a member of ___ANSWER___ political party.</pattern>
+
+<question id="0075" type="ORGANIZATION">What is the name of Helmut Kohl's political party?</question>
+<pattern id="0075">___ANSWER___ is the Helmut Kohl's political party.</pattern>
+
+<question id="0076" type="ORGANIZATION">Name a British company which transports nuclear waste.</question>
+<pattern id="0076">___ANSWER___ is a British company which transports nuclear waste.</pattern>
+
+<question id="0077" type="TIME">When was the "Basle Convention on the Control of Transboundary Movements of Hazardous Waste" agreed?</question>
+<pattern id="0077">The "Basle Convention on the Control of Transboundary Movements of Hazardous Waste" was agreed in ___ANSWER___.</pattern>
+
+<question id="0078" type="OTHER">What has been described as  "a flawed tool" and "the world's most awesome mess."?</question>
+<pattern id="0078">___ANSWER___ has been described as "a flawed tool" and "the world's most awesome mess.".</pattern>
+
+<question id="0079" type="PERSON">Who is Klaus Pohl?</question>
+<pattern id="0079">Klaus Pohl is ___ANSWER___.</pattern>
+
+<question id="0080" type="OTHER">What is the longest German word?</question>
+<pattern id="0080">The longest German word is ___ANSWER___.</pattern>
+
+<question id="0081" type="LOCATION">What is the new name for Nicosia following spelling changes in Cyprus?</question>
+<pattern id="0081">The new name for Nicosia following spelling changes in Cyprus is ___ANSWER___.</pattern>
+
+<question id="0082" type="TIME">In what year was the Hubble Space Telescope launched?</question>
+<pattern id="0082">The Hubble Space Telescope was launched in year ___ANSWER___.</pattern>
+
+<question id="0083" type="LOCATION">Where is the Jet Propulsion Laboratory of NASA?</question>
+<pattern id="0083">The Jet Propulsion Laboratory of NASA is in ___ANSWER___.</pattern>
+
+<question id="0084" type="TIME">When is the mission of the space probe Galileo predicted to end?</question>
+<pattern id="0084">The mission of the space probe Galileo is predicted to end in ___ANSWER___.</pattern>
+
+<question id="0085" type="PERSON">Who is Kailash Satyarthi?</question>
+<pattern id="0085">Kailash Satyarthi is ___ANSWER___.</pattern>
+
+<question id="0086" type="TIME">When did Uttar Pradesh adopt the Child Labour Abolition and Regulation Act?</question>
+<pattern id="0086">Uttar Pradesh adopted the Child Labour Abolition and Regulation Act ___ANSWER___.</pattern>
+
+<question id="0087" type="OTHER">What are latifundios?</question>
+<pattern id="0087">Latifundios are ___ANSWER___.</pattern>
+
+<question id="0088" type="LOCATION">In which city was Vladislav Listyev murdered?</question>
+<pattern id="0088">Vladislav Listyev was murdered in the city of ___ANSWER___.</pattern>
+
+<question id="0089" type="PERSON">Which composer wrote the opera "The Maid of Pskov"?</question>
+<pattern id="0089">___ANSWER___ wrote the opera "The Maid of Pskov".</pattern>
+
+<question id="0090" type="ORGANIZATION">What is meant in music by the term "Les Six"?</question>
+<pattern id="0090">___ANSWER___ is meant in music by the term "Les Six".</pattern>
+
+<question id="0091" type="OTHER">What is the name of the Latvian currency?</question>
+<pattern id="0091">The Latvian currency is ___ANSWER___.</pattern>
+
+<question id="0092" type="PERSON">Who is Prime Ministier of Lithuania?</question>
+<pattern id="0092">___ANSWER___ is the Prime Minister of Lithuania.</pattern>
+
+<question id="0093" type="ORGANIZATION">What did Nice belong to between 1814 and 1860?</question>
+<pattern id="0093">Nice belonged to ___ANSWER___ between 1814 and 1860.</pattern>
+
+<question id="0094" type="PERSON">Who was King of Italy from 1900 to 1946?</question>
+<pattern id="0094">___ANSWER___ was King of Italy from 1900 to 1946.</pattern>
+
+<question id="0095" type="ORGANIZATION">What is the name of the national airline in Italy?</question>
+<pattern id="0095">___ANSWER___ is the national airline in Italy.</pattern>
+
+<question id="0096" type="OTHER">What is the abbreviation for "Federal Aviation Administration"?</question>
+<pattern id="0096">The abbreviation for "Federal Aviation Administration" is ___ANSWER___.</pattern>
+
+<question id="0097" type="OTHER">What is "wake turbulence"?</question>
+<pattern id="0097">"Wake turbulence" is ___ANSWER___.</pattern>
+
+<question id="0098" type="ORGANIZATION">What is the International Civil Aviation Organisation?</question>
+<pattern id="0098">The International Civil Aviation Organisation is ___ANSWER___.</pattern>
+
+<question id="0099" type="PERSON">Who is head of Bank of Tokyo?</question>
+<pattern id="0099">___ANSWER___ is head of Bank of Tokyo.</pattern>
+
+<question id="0100" type="TIME">When did Cosmo Securities become part of Daiwa Bank?</question>
+<pattern id="0100">Cosmo Securities became part of Daiwa Bank ___ANSWER___.</pattern>
+
+<question id="0101" type="OTHER">What is "nintendo"?</question>
+<pattern id="0101">"Nintendo" is ___ANSWER___.</pattern>
+
+<question id="0102" type="OTHER">What is the Dayton Agreement?</question>
+<pattern id="0102">The Dayton Agreement is ___ANSWER___.</pattern>
+
+<question id="0103" type="OBJECT">What is GI Joe?</question>
+<pattern id="0103">GI Joe is ___ANSWER___.</pattern>
+
+<question id="0104" type="PERSON">Name a production designer who won an Oscar for his 1987 film.</question>
+<pattern id="0104">___ANSWER___ won an Oscar as production designer for his 1987 film.</pattern>
+
+<question id="0105" type="PERSON">Who said "Put talent in your craft and genius in your life"?</question>
+<pattern id="0105">___ANSWER___ said "Put talent in your craft and genius in your life".</pattern>
+
+<question id="0106" type="ORGANIZATION">What is the OAU?</question>
+<pattern id="0106">The OAU is ___ANSWER___.</pattern>
+
+<question id="0107" type="ORGANIZATION">Of what organisation is Sam Chisholm chief executive?</question>
+<pattern id="0107">Sam Chisholm is chief executive of ___ANSWER___.</pattern>
+
+<question id="0108" type="ORGANIZATION">What is Reuters?</question>
+<pattern id="0108">Reuters is ___ANSWER___.</pattern>
+
+<question id="0109" type="MEASURE">How much will the proposed flood defence plan for Perth cost?</question>
+<pattern id="0109">The proposed flood defence plan for Perth will cost ___ANSWER___.</pattern>
+
+<question id="0110" type="PERSON">Who is Professor of Forensic Medicine at the University of Edinburgh?</question>
+<pattern id="0110">___ANSWER___ is Professor of Forensic Medicine at the University of Edinburgh.</pattern>
+
+<question id="0111" type="LOCATION">Where was the "killer smog" of 1952 which resulted in 4,000 deaths?</question>
+<pattern id="0111">The "killer smog" of 1952 in ___ANSWER___ resulted in 4,000 deaths.</pattern>
+
+<question id="0112" type="TIME">When did Indonesia annex East Timor?</question>
+<pattern id="0112">Indonesia annexed East Timor ___ANSWER___.</pattern>
+
+<question id="0113" type="OTHER">What is the main religion of East Timor?</question>
+<pattern id="0113">The main religion of East Timor is ___ANSWER___.</pattern>
+
+<question id="0114" type="MEASURE">How many houses are expected to be built under the Stirling Initiative between 1993 and 1998?</question>
+<pattern id="0114">___ANSWER___ houses are expected to be built under the Stirling Initiative between 1993 and 1998.</pattern>
+
+<question id="0115" type="OTHER">At which air show did a F-86 Mk 6 crash in 1993?</question>
+<pattern id="0115">A F-86 Mk 6 crashed at the ___ANSWER___ air show in 1993.</pattern>
+
+<question id="0116" type="ORGANIZATION">Of which organisation is Velupillai Prabakaran the head?</question>
+<pattern id="0116">Velupillai Prabakaran is the head of ___ANSWER___.</pattern>
+
+<question id="0117" type="ORGANIZATION">What organisation occupied eastern Sri Lanka between 1987 and 1989?</question>
+<pattern id="0117">___ANSWER___ occupied eastern Sri Lanka between 1987 and 1989.</pattern>
+
+<question id="0118" type="OTHER">The proposed sinking of what structure in the Atlantic caused controversy at the G7 summit in Halifax?</question>
+<pattern id="0118">The proposed sinking of ___ANSWER___ in the Atlantic caused controversy at the G7 summit in Halifax.</pattern>
+
+<question id="0119" type="OTHER">What injures 11,000 people per year according to Prevent Blindness America?</question>
+<pattern id="0119">___ANSWER___ injures 11,000 people per year according to Prevent Blindness America.</pattern>
+
+<question id="0120" type="OBJECT">What is "Sophie's World"?</question>
+<pattern id="0120">"Sophie's World" is ___ANSWER___.</pattern>
+
+<question id="0121" type="TIME">In what year was Graeme Obree named Scotland's Sports Personality?</question>
+<pattern id="0121">Graeme Obree was named Scotland's Sports Personality in year ___ANSWER___.</pattern>
+
+<question id="0122" type="TIME">In what year did Aung San Suu Kyi win the Nobel Prize for Peace?</question>
+<pattern id="0122">Aung San Suu Kyi won the Nobel Prize for Peace in year ___ANSWER___.</pattern>
+
+<question id="0123" type="LOCATION">During hurrican season, where do Dugan and Janet Essick intend to stay in their yacht "Jeekers"?</question>
+<pattern id="0123">During hurrican season Dugan and Janet Essick intend to stay in their yacht "Jeekers" in ___ANSWER___.</pattern>
+
+<question id="0124" type="OBJECT">What is nandrolone?</question>
+<pattern id="0124">Nandrolone is ___ANSWER___.</pattern>
+
+<question id="0125" type="LOCATION">In which city did the runner Ben Johnson test positive for Stanozol during the Olympic Games?</question>
+<pattern id="0125">The runner Ben Johnson tested positive for Stanozol during the Olympic Games in the city of ___ANSWER___.</pattern>
+
+<question id="0126" type="LOCATION">Where did Francis Cammaerts work with the Maquis during World War II?</question>
+<pattern id="0126">Francis Cammaerts worked in ___ANSWER___ with the Maquis during World War II.</pattern>
+
+<question id="0127" type="LOCATION">In which region of Scotland was the proportion of crimes detected 31% during the period 1991-1993?</question>
+<pattern id="0127">In the Scottish region of ___ANSWER___ was the proportion of crimes detected 31% during the period 1991-1993.</pattern>
+
+<question id="0128" type="TIME">On what date during the summer does the Ventura Community Services Department commence its summer nature program?</question>
+<pattern id="0128">The Ventura Community Services Department commence its summer nature program on ___ANSWER___.</pattern>
+
+<question id="0129" type="TIME">From what time in the morning can you see wildflowers in bloom at Mission Canyon during the Wildflower Festival?</question>
+<pattern id="0129">During the Wildflower Festival at Mission Canyon you can see wildflowers in bloom from ___ANSWER___ in the morning.</pattern>
+
+<question id="0130" type="ORGANIZATION">What is the RLPO?</question>
+<pattern id="0130">The RLPO is ___ANSWER___.</pattern>
+
+<question id="0131" type="PERSON">Who was Alexander Graham Bell?</question>
+<pattern id="0131">Alexander Graham Bell was ___ANSWER___.</pattern>
+
+<question id="0132" type="ORGANIZATION">What is Lufthansa?</question>
+<pattern id="0132">Lufthansa is ___ANSWER___.</pattern>
+
+<question id="0133" type="ORGANIZATION">What is Christie's?</question>
+<pattern id="0133">Christie's is ___ANSWER___.</pattern>
+
+<question id="0134" type="OTHER">What is Eurovision?</question>
+<pattern id="0134">Eurovision is ___ANSWER___.</pattern>
+
+<question id="0135" type="PERSON">Who is the president of Latvia?</question>
+<pattern id="0135">___ANSWER___ is the president of Latvia.</pattern>
+
+<question id="0136" type="TIME">In which year was the Football World Cup celebrated in the United States?</question>
+<pattern id="0136">The Football World Cup was celebrated in the United States in year ___ANSWER___.</pattern>
+
+<question id="0137" type="TIME">On which day did Jordan and Israel sign a peace treaty?</question>
+<pattern id="0137">Jordan and Israel signed a peace treaty on ___ANSWER___.</pattern>
+
+<question id="0138" type="TIME">In which year did Bernard Montgomery die?</question>
+<pattern id="0138">Bernard Montgomery died in year ___ANSWER___.</pattern>
+
+<question id="0139" type="TIME">In which year was the Russian Revolution?</question>
+<pattern id="0139">The Russian Revolution was in the year ___ANSWER___.</pattern>
+
+<question id="0140" type="LOCATION">In which city is the Johnson Space Center?</question>
+<pattern id="0140">The Johnson Space Center is in the city of ___ANSWER___.</pattern>
+
+<question id="0141" type="LOCATION">In which city is the Sea World aquatic park?</question>
+<pattern id="0141">The Sea World aquatic park is in the city of ___ANSWER___.</pattern>
+
+<question id="0142" type="ORGANIZATION">What organization is Michel Camdessus managing director of?</question>
+<pattern id="0142">Michel Camdessus is managing director of ___ANSWER___.</pattern>
+
+<question id="0143" type="ORGANIZATION">What motion picture studio was Cedric Gibbons chief art director of?</question>
+<pattern id="0143">Cedric Gibbons was chief art director of the ___ANSWER___ motion picture studio.</pattern>
+
+<question id="0144" type="MEASURE">How many inhabitants are there in Longyearbyen?</question>
+<pattern id="0144">In Longyearbyen there are ___ANSWER___ inhabitants.</pattern>
+
+<question id="0145" type="MEASURE">How many Oscar Academy Awards did Star Wars win?</question>
+<pattern id="0145">Star Wars won ___ANSWER___ Oscar Academy Awards.</pattern>
+
+<question id="0146" type="ORGANIZATION">What force was Luis Roldan director of from 1986 to 1993?</question>
+<pattern id="0146">Luis Roldan was director of ___ANSWER___ from 1986 to 1993.</pattern>
+
+<question id="0147" type="OTHER">Which war took place from 1939 to 1945?</question>
+<pattern id="0147">___ANSWER___ was the war that took place from 1939 to 1945.</pattern>
+
+<question id="0148" type="OTHER">In which sport did Europe beat America during 1987?</question>
+<pattern id="0148">Europe beat America during 1987 in ___ANSWER___ sport.</pattern>
+
+<question id="0149" type="OTHER">Which countries made up the North American Free Trade Agreement?</question>
+<pattern id="0149">___ANSWER___ make up the North American Free Trade Association.</pattern>
+
+<question id="0150" type="OTHER">Name the three Beatles that are alive.</question>
+<pattern id="0150">The three Beatles that are alive include ___ANSWER___.</pattern>
+
+<question id="0151" type="LOCATION">What is the capital of Chechnya?</question>
+<pattern id="0151">___ANSWER___ is the capital of Chechnya.</pattern>
+
+<question id="0152" type="LOCATION">Which country won the World Cup in 1994?</question>
+<pattern id="0152">___ANSWER___ won the World Cup in 1994.</pattern>
+
+<question id="0153" type="TIME">When was the Berlin Wall torn down?</question>
+<pattern id="0153">The Berlin Wall was torn down ___ANSWER___.</pattern>
+
+<question id="0154" type="OTHER">Which Swedish band released their first album in 1994?</question>
+<pattern id="0154">The Swedish band ___ANSWER___ released their first album in 1994.</pattern>
+
+<question id="0155" type="LOCATION">Where was the world soccer championship final held in 1994?</question>
+<pattern id="0155">The 1994 world soccer championship final was held in ___ANSWER___.</pattern>
+
+<question id="0156" type="TIME">Which day was the first IRA attack on Heathrow airport?</question>
+<pattern id="0156">The first IRA attack on Heathrow airport was on ___ANSWER___.</pattern>
+
+<question id="0157" type="OTHER">Which famous comet was last sighted in the Earth's atmosphere between 1985 and 1986?</question>
+<pattern id="0157">The famous comet ___ANSWER___ was last sighted in the Earth's atmosphere between 1985 and 1986.</pattern>
+
+<question id="0158" type="OTHER">Name all the airports in London, England.</question>
+<pattern id="0158">The airports in London, England include ___ANSWER___.</pattern>
+
+<question id="0159" type="PERSON">Who is Boris Becker?</question>
+<pattern id="0159">Boris Becker is ___ANSWER___.</pattern>
+
+<question id="0160" type="OTHER">What is the Internet?</question>
+<pattern id="0160">The Internet is ___ANSWER___.</pattern>
+
+<question id="0161" type="MEASURE">How many times has Zinedine Zidane won the US Open?</question>
+<pattern id="0161">Zinedine Zidane has won the US Open ___ANSWER___ times.</pattern>
+
+<question id="0162" type="OTHER">Which film of Kevin Reynolds has Kevin Costner acted in?</question>
+<pattern id="0162">Kevin Costner has acted in the film ___ANSWER___ of Kevin Reynolds.</pattern>
+
+<question id="0163" type="ORGANIZATION">What is the Knesset?</question>
+<pattern id="0163">The Knesset is ___ANSWER___.</pattern>
+
+<question id="0164" type="PERSON">Which former Iranian Prime Minister was assassinated in 1991?</question>
+<pattern id="0164">The former Iranian Prime Minister ___ANSWER___ was assassinated in 1991.</pattern>
+
+<question id="0165" type="LOCATION">Where were the 1993 Olympic Games held?</question>
+<pattern id="0165">The 1993 Olympic Games were held in ___ANSWER___.</pattern>
+
+<question id="0166" type="OTHER">What kind of bombs did the IRA use in their attack on Heathrow in 1994?</question>
+<pattern id="0166">The IRA use ___ANSWER___ in their attack on Heathrow in 1994.</pattern>
+
+<question id="0167" type="OBJECT">What is a Chinook?</question>
+<pattern id="0167">A Chinook is ___ANSWER___.</pattern>
+
+<question id="0168" type="MEASURE">How old was Roland Ratzenberger when he died?</question>
+<pattern id="0168">Roland Ratzenberger was ___ANSWER___ years old when he died.</pattern>
+
+<question id="0169" type="ORGANIZATION">Which banking firm collapsed due to speculations made by Nick Leeson?</question>
+<pattern id="0169">The banking firm ___ANSWER___ collapsed due to speculations made by Nick Leeson.</pattern>
+
+<question id="0170" type="OTHER">What is sorghum?</question>
+<pattern id="0170">Sorghum is ___ANSWER___.</pattern>
+
+<question id="0171" type="PERSON">Who is Fernando Henrique Cardoso?</question>
+<pattern id="0171">Fernando Henrique Cardoso is ___ANSWER___.</pattern>
+
+<question id="0172" type="PERSON">Who was the president of Deutsche Bank during the bankruptcy of the property speculator Juergen Schneider?</question>
+<pattern id="0172">___ANSWER___ was the president of Deutsche Bank during the bankruptcy of the property speculator Juergen Schneider.</pattern>
+
+<question id="0173" type="ORGANIZATION">What is the name of the biggest penitentiary in Sao Paulo?</question>
+<pattern id="0173">___ANSWER___ is the biggest penitentiary in Sao Paulo.</pattern>
+
+<question id="0174" type="PERSON">Who is Rolf Ekeus?</question>
+<pattern id="0174">Rolf Ekeus is ___ANSWER___.</pattern>
+
+<question id="0175" type="MEASURE">What countries are members of the Gulf Cooperation Council?</question>
+<pattern id="0175">Countries which are members of the Gulf Cooperative are ___ANSWER___.</pattern>
+
+<question id="0176" type="MEASURE">What is the average surface temperature of the Earth?</question>
+<pattern id="0176">The average surface temperature of the Earth is ___ANSWER___.</pattern>
+
+<question id="0177" type="OTHER">What is the chemical formula of carbon dioxide?</question>
+<pattern id="0177">The chemical formula for carbon dioxide is ___ANSWER___.</pattern>
+
+<question id="0178" type="PERSON">Who was awarded the Nobel Prize for literature in 1995?</question>
+<pattern id="0178">___ANSWER___ was awarded the Nobel Prize for literature in 1995.</pattern>
+
+<question id="0179" type="OTHER">What are fatwas</question>
+<pattern id="0179">Fatwas are ___ANSWER___.</pattern>
+
+<question id="0180" type="PERSON">Who is Aldrich Hazen Ames married to?</question>
+<pattern id="0180">Aldrich Hazen Ames is married to ___ANSWER___.</pattern>
+
+<question id="0181" type="MEASURE">What is the penalty imposed on Italy for over production with respect to milk quota?</question>
+<pattern id="0181">The penalty imposed on Italy for over production with respect to milk quota is ___ANSWER___.</pattern>
+
+<question id="0182" type="ORGANIZATION">What film festival awards the Golden Bear?</question>
+<pattern id="0182">The ___ANSWER___ film festival awards the Golden Bear.</pattern>
+
+<question id="0183" type="ORGANIZATION">What group does the car company Seat belong to?</question>
+<pattern id="0183">The car company Seat belongs to ___ANSWER___ group.</pattern>
+
+<question id="0184" type="PERSON">Who is the director of the film "Caro diario"?</question>
+<pattern id="0184">___ANSWER___ is the director of the film "Caro diario".</pattern>
+
+<question id="0185" type="MEASURE">How many wars have been fought between India and Pakistan for the possession of Kashmir?</question>
+<pattern id="0185">India and Pakistan have fought ___ANSWER___ wars for the possession of Kashmir.</pattern>
+
+<question id="0186" type="MEASURE">How many times did Jackie Stewart become world champion?</question>
+<pattern id="0186">Jackie Stewart became world champion ___ANSWER___ times.</pattern>
+
+<question id="0187" type="LOCATION">Which state has approved a law which prohibits cigarette advertising?</question>
+<pattern id="0187">The state of ___ANSWER___ has approved a law which prohibits cigarette advertising.</pattern>
+
+<question id="0188" type="OBJECT">What is the ecu?</question>
+<pattern id="0188">The ecu is ___ANSWER___.</pattern>
+
+<question id="0189" type="MEASURE">How many nature reserves does Costa Rica have?</question>
+<pattern id="0189">Costa Rica has ___ANSWER___ nature reserves.</pattern>
+
+<question id="0190" type="PERSON">What is the name of the founder of Black Sparrow Press?</question>
+<pattern id="0190">___ANSWER___ is the founder of Black Sparrow Press.</pattern>
+
+<question id="0191" type="ORGANIZATION">What is APEC?</question>
+<pattern id="0191">APEC is ___ANSWER___.</pattern>
+
+<question id="0192" type="OTHER">What is the nickname of Eddy Merckx?</question>
+<pattern id="0192">The nickname of Eddy Merckx is ___ANSWER___.</pattern>
+
+<question id="0193" type="LOCATION">Where is the Hermitage?</question>
+<pattern id="0193">The Hermitage is in ___ANSWER___.</pattern>
+
+<question id="0194" type="ORGANIZATION">Who created the operating system OS/2?</question>
+<pattern id="0194">___ANSWER___ created the operating system OS/2.</pattern>
+
+<question id="0195" type="OTHER">Who controlled Sudan in 1899?</question>
+<pattern id="0195">___ANSWER___ controlled Sudan in 1899.</pattern>
+
+<question id="0196" type="ORGANIZATION">Who were the Picts?</question>
+<pattern id="0196">The Picts were ___ANSWER___.</pattern>
+
+<question id="0197" type="MEASURE">How much was John Fashanu fined?</question>
+<pattern id="0197">John Fashanu was fined ___ANSWER___.</pattern>
+
+<question id="0198" type="OTHER">What is the current name of Ceylon?</question>
+<pattern id="0198">The current name of Ceylon is ___ANSWER___.</pattern>
+
+<question id="0199" type="OTHER">Which war lasted from 1865 to 1870?</question>
+<pattern id="0199">The war that lasted from 1865 to 1870 was ___ANSWER___.</pattern>
+
+<question id="0200" type="OTHER">Who saved Jews during the Second World War?</question>
+<pattern id="0200">___ANSWER___ saved Jews during the Second World War.</pattern>
+
+</patterns>

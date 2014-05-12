@@ -1,0 +1,17 @@
+<!ELEMENT ave-corpus (q+)>
+<!ELEMENT q (q_str, a+)>
+<!ATTLIST q
+	id CDATA #REQUIRED
+	lang CDATA #REQUIRED
+>
+<!ELEMENT q_str (#PCDATA)>
+<!ELEMENT a (a_str, t_str)>
+<!ATTLIST a
+	id CDATA #REQUIRED
+	value CDATA  #REQUIRED
+>
+<!ELEMENT a_str (#PCDATA)>
+<!ELEMENT t_str (#PCDATA)>
+<!ATTLIST t_str
+	doc CDATA #REQUIRED
+>
