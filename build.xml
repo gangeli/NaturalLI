@@ -35,7 +35,6 @@
       <classpath refid="classpath"/>
     </taskdef>
     
-    <!--
     <junit fork="true" maxmemory="1g" printsummary="off" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
       <formatter type="xml"/>
@@ -45,7 +44,6 @@
         </fileset>
       </batchtest>
     </junit>
-    -->
 
     <scalatest fork="true" maxmemory="2g">
       <jvmarg value="-Dwordnet.database.dir=etc/WordNet-3.1/dict"/>
