@@ -83,7 +83,7 @@ class TestDataSources extends Test {
       numUnk should be (60)
     }
 
-    it ("should have the correct 'applicable' dataset (according to McCartney)") {
+    it ("should have the correct 'applicable' dataset (according to MacCartney)") {
       val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isApplicable )
       data.size should be (75)
       data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
@@ -110,7 +110,7 @@ class TestDataSources extends Test {
   }
 
   /**
-   * Tests on the held-out dataset
+   * Tests on the held-out dataset of Ollie facts.
    */
   describe("Held-Out") {
 
@@ -126,7 +126,9 @@ class TestDataSources extends Test {
   }
 
   /**
-   * Test the AVE
+   * Test the AVE question answering validation corpus.
+   * The statistics for these are taken from Angeli and Manning (2013): http://stanford.edu/~angeli/papers/2013-conll-truth.pdf.
+   * The data is in etc/ave.
    */
   describe("AVE Examples") {
 
@@ -160,6 +162,11 @@ class TestDataSources extends Test {
     }
   }
 
+  /**
+   * Test the MTurk annotated ReVerb examples.
+   * The statistics for these are taken from Angeli and Manning (2013): http://stanford.edu/~angeli/papers/2013-conll-truth.pdf.
+   * The data is in etc/mturk.
+   */
   describe("MTurk Examples") {
 
     it ("should load from files") {

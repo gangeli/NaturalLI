@@ -13,7 +13,6 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue.TruthValue
 
 import scala.language.implicitConversions
-import scala.collection.GenSeq
 import java.util.concurrent.atomic.AtomicInteger
 import scala.collection.parallel.immutable.ParRange
 import scala.collection.parallel.ForkJoinTaskSupport
@@ -288,41 +287,49 @@ object Learn extends Client {
   }
 
   /**
- * Learn a model.
- */
-def main(args:Array[String]):Unit = {
-  // Initialize Options
-  if (args.length == 1) {
-    val props:Properties = new Properties
-    val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
-    for ( entry <- config.entrySet() ) {
-      props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
+   * Learn a model.
+   */
+  def main(args:Array[String]):Unit = {
+    // Initialize Options
+    if (args.length == 1) {
+      val props:Properties = new Properties
+      val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
+      for ( entry <- config.entrySet() ) {
+        props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
+      }
+      Execution.fillOptions(classOf[Props], props)
+    } else {
+      Execution.fillOptions(classOf[Props], args)
     }
-    Execution.fillOptions(classOf[Props], props)
-  } else {
-    Execution.fillOptions(classOf[Props], args)
-  }
 
-  // Initialize Data
-  def mkDataset(corpus:Props.Corpus):DataStream = {
-    corpus match {
-      case Props.Corpus.HELD_OUT => HoldOneOut.read("")
-      case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath)
-      case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
-      case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
-      case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
-      case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
-      case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
-      case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
+    // Initialize Data
+    def mkDataset(corpus:Props.Corpus):DataStream = {
+      corpus match {
+        case Props.Corpus.HELD_OUT => HoldOneOut.read("")
+        case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath)
+        case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
+        case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
+        case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
+        case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
+        case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
+        case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
+      }
     }
-  }
-  val trainData:DataStream = Props.LEARN_TRAIN.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
-  val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+    val trainData:DataStream = Props.LEARN_TRAIN.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+    val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
 
-  // Initialize Optimization
-  val optimizer:OnlineOptimizer
-    = if (Props.LEARN_RESUME_DO && Props.LEARN_RESUME_MODEL.exists && Props.LEARN_RESUME_MODEL.canRead) OnlineOptimizer.deserialize(Props.LEARN_RESUME_MODEL, OnlineRegularizer.sgd(Props.LEARN_SGD_NU), project = (i:Int,w:Double) => math.min(-1e-4, w))
-      else OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.sgd(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
+    // Initialize Optimization
+    def modelName(iteration:Int):String = "model_" + (math.max(0, iteration) / 1000) + ".tab"
+    val modelFile:Option[File] =
+      if (Props.LEARN_MODEL_DIR.exists && Props.LEARN_MODEL_DIR.isDirectory) {
+        val modelFile = new File(Props.LEARN_MODEL_DIR + File.separator + modelName(Props.LEARN_MODEL_START))
+        if (modelFile.exists() && modelFile.canRead) { Some(modelFile) } else { None }
+      } else { None }
+    if (!Props.LEARN_MODEL_DIR.mkdirs()) { warn(YELLOW, "Could not create model directory: " + Props.LEARN_MODEL_DIR) }
+    val optimizer = modelFile match {
+      case Some(file) => OnlineOptimizer.deserialize(file, OnlineRegularizer.adagrad(Props.LEARN_SGD_NU), project = (i:Int,w:Double) => math.min(-1e-4, w))
+      case None =>       OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.adagrad(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
+    }
 
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
@@ -342,15 +349,15 @@ def main(args:Array[String]):Unit = {
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+    //    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     log("Learning...")
     var iter = trainData.iterator
     val iterCounter = new AtomicInteger(0)
     for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par
-                    x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
-                    x }) {
+      x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
+      x }) {
       val (queries, gold) = synchronized {
         if (!iter.hasNext) { iter = trainData.iterator }
         iter.next()
@@ -360,13 +367,19 @@ def main(args:Array[String]):Unit = {
         optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold))
         //      debug("[" + index + "] loss: " + loss)
       }
-      if (iterCounter.incrementAndGet() % 10 == 0) {
+      val iteration :Int = iterCounter.incrementAndGet()
+      if (iteration % 10 == 0) {
         log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
+      }
+      if (iteration % 1000 == 0 && Props.LEARN_MODEL_DIR.exists()) {
+        optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(iteration)))
       }
     }
 
     // Save Model
-    optimizer.serializePartial(Props.LEARN_MODEL)
+    if (Props.LEARN_MODEL_DIR.exists()) {
+      optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(Props.LEARN_ITERATIONS)))
+    }
 
     // Evaluate Model
     log("Evaluating...")

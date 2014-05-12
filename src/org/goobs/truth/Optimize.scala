@@ -18,6 +18,13 @@ object OnlineRegularizer {
     override def nu(iteration: Int, sumSquaredGradient: Array[Double], keys: Iterable[Int]): Map[Int, Double] = keys.map( (xi:Int) => (xi, nuValue / math.sqrt((1 + iteration).toDouble)) ).toMap
   }
   def sgd(nuValue:Double) = l2_inverseSqrtDecay(nuValue)
+  def adagrad(nuValue:Double) = new OnlineRegularizer {
+    override def nu(iteration: Int, sumSquaredGradient: Array[Double], keys: Iterable[Int]): Map[Int, Double] = {
+      keys.map{ (xi:Int) =>
+        (xi, nuValue / math.max(sumSquaredGradient(xi), 1.0))
+      }.toMap
+    }
+  }
 }
 
 trait LossFunction extends ((Array[Double]) => Double) {

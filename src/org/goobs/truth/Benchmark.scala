@@ -28,11 +28,10 @@ object Benchmark extends Client {
     for ( (query, gold) <- data) {
       val datum:Datum = (query, gold)
       // Run Query
-      explain(query.getKnownFact(0), "antecedent", verbose = false)
-      explain(query.getQueryFact, "consequent", verbose = false)
+      explain(query.head.getKnownFact(0), "antecedent", verbose = false)
+      explain(query.head.getQueryFact, "consequent", verbose = false)
       import Learn.flattenWeights
-      val prob:Double = new Learn.ProbabilityOfTruth(issueQuery(query
-        .setUseRealWorld(false)
+      val prob:Double = new Learn.ProbabilityOfTruth(issueQuery(query.head
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
