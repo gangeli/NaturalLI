@@ -26,7 +26,7 @@ client: src/naturalli_client.jar
 test/test_client.jar: $(wildcard test/src/org/goobs/truth/*.scala) $(wildcard test/src/org/goobs/truth/*.java) $(wildcard test/src/org/goobs/truth/*.dat) $(wildcard test/src/edu/stanford/nlp/natlog/*.java) $(wildcard test/src/org/goobs/truth/*.java) 
 	$(MAKE) -C src naturalli_client.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d test/src -cp ${TEST_CP}:src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar  `find . -name "*.java"`
+	@${JDK_HOME}/bin/javac -d test/src -cp ${TEST_CP}:src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
 	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d test/src -cp ${TEST_CP}:src/naturalli_client.jar `find test/src -name "*.scala"` `find test/src -name "*.java"`
 	jar cf test/test_client.jar -C test/src .

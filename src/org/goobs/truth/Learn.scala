@@ -306,7 +306,8 @@ object Learn extends Client {
     def mkDataset(corpus:Props.Corpus):DataStream = {
       corpus match {
         case Props.Corpus.HELD_OUT => HoldOneOut.read("")
-        case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath)
+        case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
+        case Props.Corpus.FRACAS_NATLOG => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
         case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
         case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
         case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
@@ -319,16 +320,20 @@ object Learn extends Client {
     val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
 
     // Initialize Optimization
-    def modelName(iteration:Int):String = "model_" + (math.max(0, iteration) / 1000) + ".tab"
+    val regularizer = OnlineRegularizer.adagrad(Props.LEARN_SGD_NU)
+    def modelName(iteration:Int):String = "model." + regularizer.name + "_" + Props.LEARN_SGD_NU + "."+(math.max(0, iteration) / 1000) + ".tab"
     val modelFile:Option[File] =
       if (Props.LEARN_MODEL_DIR.exists && Props.LEARN_MODEL_DIR.isDirectory) {
         val modelFile = new File(Props.LEARN_MODEL_DIR + File.separator + modelName(Props.LEARN_MODEL_START))
         if (modelFile.exists() && modelFile.canRead) { Some(modelFile) } else { None }
       } else { None }
-    if (!Props.LEARN_MODEL_DIR.mkdirs()) { warn(YELLOW, "Could not create model directory: " + Props.LEARN_MODEL_DIR) }
+    if (!Props.LEARN_MODEL_DIR.exists() && !Props.LEARN_MODEL_DIR.mkdirs()) { warn(YELLOW, "Could not create model directory: " + Props.LEARN_MODEL_DIR) }
     val optimizer = modelFile match {
-      case Some(file) => OnlineOptimizer.deserialize(file, OnlineRegularizer.adagrad(Props.LEARN_SGD_NU), project = (i:Int,w:Double) => math.min(-1e-4, w))
-      case None =>       OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.adagrad(Props.LEARN_SGD_NU))(project = (i:Int,w:Double) => math.min(-1e-4, w))
+      case Some(file) => OnlineOptimizer.deserialize(file, regularizer, project = (i:Int,w:Double) => math.min(-1e-4, w))
+      case None =>
+        val optimizer = OnlineOptimizer(NatLog.softNatlogWeights, regularizer)(project = (i:Int,w:Double) => math.min(-1e-4, w))
+        optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(0)))
+        optimizer
     }
 
     // Define some useful functions
@@ -349,13 +354,13 @@ object Learn extends Client {
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-    //    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     log("Learning...")
     var iter = trainData.iterator
     val iterCounter = new AtomicInteger(0)
-    for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par
+    for (index <- { val x: ParRange = ((Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS).par
       x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
       x }) {
       val (queries, gold) = synchronized {

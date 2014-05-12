@@ -131,16 +131,19 @@ class TestDataSources extends Test {
    * The data is in etc/ave.
    */
   describe("AVE Examples") {
+    val ave2006 = AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par
+    val ave2007 = AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par
+    val ave2008 = AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par
 
     it ("should load from files") {
-      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par.size should be (1111)
-      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par.size should be (202)
-      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par.size should be (1055)
+      ave2006.size should be (1111)
+      ave2007.size should be (202)
+      ave2008.size should be (1055)
     }
 
     it ("should have valid facts") {
-      for (path <- Props.DATA_AVE_PATH.values()) {
-        AVE.read(path.getPath).par.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+      for (stream <- List(ave2006, ave2007, ave2008)) {
+        stream.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
           queries.size should be > 0
           queries.size should be <= 2
           for (query <- queries) {
@@ -156,9 +159,9 @@ class TestDataSources extends Test {
     }
 
     it ("should have the right number of facts filtered") {
-      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
-      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
-      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
+      ave2006.filter( _._1.head.getForceFalse ).size should be > 0
+      ave2007.filter( _._1.head.getForceFalse ).size should be > 0
+      ave2008.filter( _._1.head.getForceFalse ).size should be > 0
     }
   }
 
@@ -169,14 +172,17 @@ class TestDataSources extends Test {
    */
   describe("MTurk Examples") {
 
+    val mturkTrain = MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par
+    val mturkTest = MTurk.read(Props.DATA_MTURK_TEST.getPath).par
+
     it ("should load from files") {
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.size should be (1796)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.size should be (1975)
+      mturkTrain.size should be (1796)
+      mturkTest.size should be (1975)
     }
 
     it ("should have valid facts") {
-      for (path <- List(Props.DATA_MTURK_TRAIN, Props.DATA_MTURK_TEST)) {
-        MTurk.read(path.getPath).par.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+      for (stream <- List(mturkTrain, mturkTest)) {
+        stream.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
           queries.size should be > 0
           queries.size should be <= 2
           for (query <- queries) {
@@ -192,10 +198,10 @@ class TestDataSources extends Test {
     }
 
     it ("should have the right number of facts filtered") {
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.filter( _._2 == TruthValue.TRUE ).size should be (1256)
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.filter( _._2 == TruthValue.FALSE ).size should be (540)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.filter( _._2 == TruthValue.TRUE ).size should be (1286)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.filter( _._2 == TruthValue.FALSE ).size should be (689)
+      mturkTrain.filter( _._2 == TruthValue.TRUE ).size should be (1256)
+      mturkTrain.filter( _._2 == TruthValue.FALSE ).size should be (540)
+      mturkTest.filter( _._2 == TruthValue.TRUE ).size should be (1286)
+      mturkTest.filter( _._2 == TruthValue.FALSE ).size should be (689)
     }
 
   }

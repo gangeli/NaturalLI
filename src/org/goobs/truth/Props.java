@@ -29,7 +29,7 @@ public class Props {
     return value;
   }
 
-  public static enum Corpus { HELD_OUT, FRACAS, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TEST }
+  public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TEST }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = checkEnv("PGHOST", "john0");

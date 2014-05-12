@@ -5,17 +5,22 @@ import java.io.{PrintWriter, File}
 
 trait OnlineRegularizer {
   def nu(iteration:Int, sumSquaredGradient:Array[Double], keys:Iterable[Int]):Map[Int,Double]
+  def name:String
+  override def toString:String = name
 }
 
 object OnlineRegularizer {
   def l2_fixed(nuValue:Double) = new OnlineRegularizer {
     override def nu(iteration: Int, sumSquaredGradient: Array[Double], keys: Iterable[Int]): Map[Int, Double] = keys.map( (xi:Int) => (xi, nuValue) ).toMap
+    override def name:String = "l2_fixed"
   }
   def l2_inverseDecay(nuValue:Double) = new OnlineRegularizer {
     override def nu(iteration: Int, sumSquaredGradient: Array[Double], keys: Iterable[Int]): Map[Int, Double] = keys.map( (xi:Int) => (xi, nuValue / (1 + iteration).toDouble) ).toMap
+    override def name:String = "l2_inverseDecay"
   }
   def l2_inverseSqrtDecay(nuValue:Double) = new OnlineRegularizer {
     override def nu(iteration: Int, sumSquaredGradient: Array[Double], keys: Iterable[Int]): Map[Int, Double] = keys.map( (xi:Int) => (xi, nuValue / math.sqrt((1 + iteration).toDouble)) ).toMap
+    override def name:String = "l2_inverseSqrtDecay"
   }
   def sgd(nuValue:Double) = l2_inverseSqrtDecay(nuValue)
   def adagrad(nuValue:Double) = new OnlineRegularizer {
@@ -24,6 +29,7 @@ object OnlineRegularizer {
         (xi, nuValue / math.max(sumSquaredGradient(xi), 1.0))
       }.toMap
     }
+    override def name:String = "adagrad"
   }
 }
 
