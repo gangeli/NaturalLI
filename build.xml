@@ -11,18 +11,21 @@
       <fileset dir="${basedir}/lib/test">
         <include name="*.jar"/>
       </fileset>
-      <fileset dir="${basedir}/lib/scripts">
-        <include name="*.jar"/>
-      </fileset>
       <pathelement path="${basedir}/src/naturalli_client.jar"/>
-      <pathelement path="${basedir}/test/test_client.jar"/>
       <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
+      <!-- For scala-2.11; this is included in scala-library.jar for 2.10 -->
       <pathelement path="${env.SCALA_HOME}/lib/scala-xml_2.11-1.0.1.jar"/>
       <!-- JavaNLP -->
       <fileset dir="${env.JAVANLP_HOME}/projects/core/lib">
         <include name="*.jar"/>
       </fileset>
       <pathelement path="${env.JAVANLP_HOME}/projects/core/classes"/>
+    </path>
+
+    <path id="classpath-scalatest-bootstrap">
+      <pathelement path="${basedir}/lib/test/scalatest_2.11-2.1.6.jar"/>
+      <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
+      <pathelement path="${env.SCALA_HOME}/lib/scala-xml_2.11-1.0.1.jar"/>
     </path>
   </target>
   
@@ -32,6 +35,7 @@
       <classpath refid="classpath"/>
     </taskdef>
     
+    <!--
     <junit fork="true" maxmemory="1g" printsummary="off" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
       <formatter type="xml"/>
@@ -41,15 +45,15 @@
         </fileset>
       </batchtest>
     </junit>
+    -->
 
-    <!--
     <scalatest fork="true" maxmemory="2g">
+      <jvmarg value="-Dwordnet.database.dir=etc/WordNet-3.1/dict"/>
       <runpath>
-        <pathelement path="test/test_client.jar" />
+        <pathelement path="test/src/test_client.jar" />
       </runpath>
       <reporter type="stdout"/>
       <reporter type="junitxml" directory="${basedir}/test/"/>
     </scalatest>
-    -->
   </target>
 </project>

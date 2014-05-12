@@ -321,7 +321,7 @@ object Learn extends Client {
 
     // Initialize Optimization
     val regularizer = OnlineRegularizer.adagrad(Props.LEARN_SGD_NU)
-    def modelName(iteration:Int):String = "model." + regularizer.name + "_" + Props.LEARN_SGD_NU + "."+(math.max(0, iteration) / 1000) + ".tab"
+    def modelName(iteration:Int):String = "model." + regularizer.name + "_" + Props.LEARN_SGD_NU.toString.replaceAll("\\.", "_") + "."+(math.max(0, iteration) / 1000) + "k.tab"
     val modelFile:Option[File] =
       if (Props.LEARN_MODEL_DIR.exists && Props.LEARN_MODEL_DIR.isDirectory) {
         val modelFile = new File(Props.LEARN_MODEL_DIR + File.separator + modelName(Props.LEARN_MODEL_START))

@@ -52,3 +52,13 @@ if IS_GCC
   itest_server_LDADD += -lgcov
 endif
 endif
+
+test_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/truth/*.java) 
+	$(MAKE) -C ../../src naturalli_client.jar
+	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
+	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
+	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
+	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_client.jar `find . -name "*.scala"` `find . -name "*.java"`
+	jar cf test_client.jar `find . -name "*.class"`
+	jar uf test_client.jar `find . -name "*.scala"`
+	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'

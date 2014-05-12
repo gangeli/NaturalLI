@@ -29,6 +29,7 @@ AC_CHECK_PROG([javac_found],["javac"],[yes],[no],["$JDK_HOME/bin"])
 if test "x$javac_found" != "xyes"; then
   AC_MSG_ERROR([could not find javac compiler])
 fi
+AM_CONDITIONAL(SCALA_2_11, `${SCALA_HOME}/bin/scalac -version | grep "2.11"`)
 
 # (scala)
 AC_SUBST(SCALA_HOME)
@@ -41,6 +42,7 @@ AC_CHECK_PROG([scalac_found],["scalac"],[yes],[no],["$SCALA_HOME/bin"])
 if test "x$scalac_found" != "xyes"; then
   AC_MSG_ERROR([could not find scalac compiler])
 fi
+
 
 # (ant)
 AC_CHECK_PROG([ant_found],["ant"],[yes],[no])

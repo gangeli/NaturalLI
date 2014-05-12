@@ -6,6 +6,7 @@
         <option name="compileOrder" value="JavaThenScala" />
         <option name="compilerLibraryLevel" value="Project" />
         <option name="compilerLibraryName" value="scala-compiler" />
+        <option name="languageLevel" value="Scala 2.11" />
       </configuration>
     </facet>
     <facet type="protobuf" name="Protobuf Facet">
