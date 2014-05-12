@@ -12,6 +12,7 @@
         <include name="*.jar"/>
       </fileset>
       <pathelement path="${basedir}/src/naturalli_client.jar"/>
+      <pathelement path="test/src/test_client.jar" />
       <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
       <!-- For scala-2.11; this is included in scala-library.jar for 2.10 -->
       <pathelement path="${env.SCALA_HOME}/lib/scala-xml_2.11-1.0.1.jar"/>
