@@ -160,4 +160,37 @@ class TestDataSources extends Test {
     }
   }
 
+  describe("MTurk Examples") {
+
+    it ("should load from files") {
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).size should be (1796)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).size should be (1975)
+    }
+
+    it ("should have valid facts") {
+      for (path <- List(Props.DATA_MTURK_TRAIN, Props.DATA_MTURK_TEST)) {
+        MTurk.read(path.getPath).foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+          queries.size should be > 0
+          queries.size should be <= 2
+          for (query <- queries) {
+            // Ensure all the facts have been indexed successfully
+            query.getKnownFactCount should be (0)
+            query.getKnownFactList.foreach { (antecedent: Messages.Fact) =>
+              antecedent.getWordCount should be > 0
+            }
+            query.getQueryFact.getWordCount should be > 0
+          }
+        }
+      }
+    }
+
+    it ("should have the right number of facts filtered") {
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter( _._2 == TruthValue.TRUE ).size should be (1256)
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter( _._2 == TruthValue.FALSE ).size should be (540)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).filter( _._2 == TruthValue.TRUE ).size should be (1286)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).filter( _._2 == TruthValue.FALSE ).size should be (689)
+    }
+
+  }
+
 }

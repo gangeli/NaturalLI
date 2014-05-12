@@ -63,6 +63,7 @@ object FraCaS extends DataSource with Client {
       (List(Query.newBuilder()
         // Antecedents
         .addAllKnownFact((problem \ "p").flatMap ( x => NatLog.annotate(x.text, unkProvider) ))
+        .setUseRealWorld(false)
         // Consequent
         .setQueryFact(NatLog.annotate((problem \ "h").head.text, unkProvider).head)
         .setId((problem \ "@id").text.toInt)),
@@ -113,6 +114,7 @@ trait FromPostgres {
           val datum:Datum = (List(Query.newBuilder()
               // Consequent
               .setQueryFact(NatLog.annotate(fact.mkString(" ")).head)
+              .setUseRealWorld(true)
               .setAllowLookup(false)
               .setId(index)),
               truth
@@ -157,7 +159,25 @@ object AVE extends DataSource {
       val preFiltered: Boolean          = fields(2).toBoolean
       val queries:Seq[Fact]             = fields.drop(3).map( (fact:String) => NatLog.annotate(fact.replaceAll(":::", " "))).map( _.head )
       (queries.map{ (fact:Fact) =>
-        Query.newBuilder().setQueryFact(fact).setId(id).setForceFalse(preFiltered)
+        Query.newBuilder().setQueryFact(fact).setId(id).setForceFalse(preFiltered).setAllowLookup(true).setUseRealWorld(true)
+      }, gold)
+    }
+  }
+}
+
+object MTurk extends DataSource {
+  /**
+   * Read queries from the specified abstract path.
+   * @param path The path to read the queries from. This should be a *.tab file (canonically, in etc/mturk/reverb_[train|test].tab).
+   * @return A stream of examples, annotated with their truth value.
+   */
+  override def read(path: String): DataStream = {
+    io.Source.fromFile(path).getLines().toStream.map{ (line:String) =>
+      val fields :Array[String]         = line.split("\t")
+      val gold: TruthValue.Value        = fields(0).toBoolean match { case true => TruthValue.TRUE; case false => TruthValue.FALSE }
+      val queries:Seq[Fact]             = List(NatLog.annotate(fields.drop(1).mkString(" ")).head)
+      (queries.map{ (fact:Fact) =>
+        Query.newBuilder().setQueryFact(fact).setAllowLookup(false).setUseRealWorld(true)
       }, gold)
     }
   }

@@ -304,9 +304,20 @@ def main(args:Array[String]):Unit = {
   }
 
   // Initialize Data
-//  val data:DataStream = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
-  val data:DataStream = HoldOneOut.read("")
-  val testData:GenSeq[(Iterable[Query.Builder], TruthValue)] = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
+  def mkDataset(corpus:Props.Corpus):DataStream = {
+    corpus match {
+      case Props.Corpus.HELD_OUT => HoldOneOut.read("")
+      case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath)
+      case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
+      case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
+      case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
+      case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
+      case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
+      case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
+    }
+  }
+  val trainData:DataStream = Props.LEARN_TRAIN.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+  val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
 
   // Initialize Optimization
   val optimizer:OnlineOptimizer
@@ -316,7 +327,6 @@ def main(args:Array[String]):Unit = {
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
       issueQuery(query
-        .setUseRealWorld(true)
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
@@ -336,13 +346,13 @@ def main(args:Array[String]):Unit = {
 
     // Learn
     log("Learning...")
-    var iter = data.iterator
+    var iter = trainData.iterator
     val iterCounter = new AtomicInteger(0)
     for (index <- { val x: ParRange = (1 to Props.LEARN_ITERATIONS).par
                     x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
                     x }) {
       val (queries, gold) = synchronized {
-        if (!iter.hasNext) { iter = data.iterator }
+        if (!iter.hasNext) { iter = trainData.iterator }
         iter.next()
       }
       for (query <- queries) {

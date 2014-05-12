@@ -29,7 +29,7 @@ public class Props {
     return value;
   }
 
-  public static enum Corpus { HELD_OUT, FRACAS, AVE_2006, AVE_2007, AVE_2008, MTURK }
+  public static enum Corpus { HELD_OUT, FRACAS, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TEST }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = checkEnv("PGHOST", "john0");
@@ -68,8 +68,10 @@ public class Props {
     put("2007", new File("etc/ave/ave2007.tab"));
     put("2008", new File("etc/ave/ave2008.tab"));
   }};
-  @Option(name="data.ave.year", gloss="The year to use for the AVE data")
-  public static int DATA_AVE_YEAR = 2006;
+  @Option(name="data.mturk.train", gloss="The path to the MTurk annotated ReVerb training examples")
+  public static File DATA_MTURK_TRAIN = new File("etc/mturk/reverb_train.tab");
+  @Option(name="data.mturk.test", gloss="The path to the MTurk annotated Reverb test examples")
+  public static File DATA_MTURK_TEST = new File("etc/mturk/reverb_test.tab");
 
   @Option(name="learn.iterations", gloss="The number of iterations to run learning for")
   public static int LEARN_ITERATIONS = 100;
@@ -84,9 +86,9 @@ public class Props {
   @Option(name="learn.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
   public static int LEARN_THREADS = 4;
   @Option(name="learn.train", gloss="The corpus to use for training")
-  public static Corpus LEARN_TRAIN = Corpus.FRACAS;
+  public static Corpus[] LEARN_TRAIN = new Corpus[]{ Corpus.FRACAS };
   @Option(name="learn.test", gloss="The corpus to use for testing")
-  public static Corpus LEARN_TEST = Corpus.FRACAS;
+  public static Corpus[] LEARN_TEST = new Corpus[]{ Corpus.FRACAS };
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";
