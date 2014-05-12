@@ -8,6 +8,7 @@ clean-local:
 	rm -f src/naturalli_client.jar
 	rm -f test/src/test_client.jar
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
+	bash -c 'for file in `find . -name "TEST-*.xml"`; do rm -f $$file; done'
 
 
 #

@@ -4,6 +4,7 @@ import org.goobs.truth.TruthValue.TruthValue
 
 import scala.collection.JavaConversions._
 import org.goobs.truth.Messages.Query
+import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Test various sources of training / test data.
@@ -39,22 +40,22 @@ class DataSourcesTest extends Test {
     }
 
     it ("should have the correct total label distribution") {
-      var numYes = 0
-      var numNo  = 0
-      var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      val numYes = new AtomicInteger(0)
+      val numNo = new AtomicInteger(0)
+      val numUnk = new AtomicInteger(0)
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
-            case TruthValue.TRUE    => numYes += 1
-            case TruthValue.FALSE   => numNo  += 1
-            case TruthValue.UNKNOWN => numUnk += 1
+            case TruthValue.TRUE    => numYes.incrementAndGet()
+            case TruthValue.FALSE   => numNo.incrementAndGet()
+            case TruthValue.UNKNOWN => numUnk.incrementAndGet()
           }
         }
       }
-      numYes should be (203)
-      numNo  should be (33)
-      numUnk should be (98)
+      numYes.get should be (203)
+      numNo.get  should be (33)
+      numUnk.get should be (98)
 
     }
 
@@ -65,22 +66,22 @@ class DataSourcesTest extends Test {
     }
 
     it ("should have correct single-antecedent label distribution") {
-      var numYes = 0
-      var numNo  = 0
-      var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      val numYes = new AtomicInteger(0)
+      val numNo = new AtomicInteger(0)
+      val numUnk = new AtomicInteger(0)
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
-            case TruthValue.TRUE => numYes += 1
-            case TruthValue.FALSE => numNo += 1
-            case TruthValue.UNKNOWN => numUnk += 1
+            case TruthValue.TRUE => numYes.incrementAndGet()
+            case TruthValue.FALSE => numNo.incrementAndGet()
+            case TruthValue.UNKNOWN => numUnk.incrementAndGet()
           }
         }
       }
-      numYes should be (102)
-      numNo  should be (21)
-      numUnk should be (60)
+      numYes.get should be (102)
+      numNo.get  should be (21)
+      numUnk.get should be (60)
     }
 
     it ("should have the correct 'applicable' dataset (according to MacCartney)") {
@@ -90,22 +91,22 @@ class DataSourcesTest extends Test {
     }
 
     it ("should have correct 'applicable' label distribution") {
-      var numYes = 0
-      var numNo  = 0
-      var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      val numYes = new AtomicInteger(0)
+      val numNo = new AtomicInteger(0)
+      val numUnk = new AtomicInteger(0)
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
-            case TruthValue.TRUE => numYes += 1
-            case TruthValue.FALSE => numNo += 1
-            case TruthValue.UNKNOWN => numUnk += 1
+            case TruthValue.TRUE => numYes.incrementAndGet()
+            case TruthValue.FALSE => numNo.incrementAndGet()
+            case TruthValue.UNKNOWN => numUnk.incrementAndGet()
           }
         }
       }
-      numYes should be (35)
-      numNo  should be (8)
-      numUnk should be (32)
+      numYes.get should be (35)
+      numNo.get  should be (8)
+      numUnk.get should be (32)
     }
   }
 
