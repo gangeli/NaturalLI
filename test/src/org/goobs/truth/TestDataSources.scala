@@ -21,11 +21,11 @@ class TestDataSources extends Test {
     Props.NATLOG_INDEXER_LAZY = false
 
     it ("should load from file") {
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).size should be (334)
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.size should be (334)
     }
 
     it ("should have valid facts") {
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           // Ensure all the facts have been indexed successfully
@@ -42,7 +42,7 @@ class TestDataSources extends Test {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -59,7 +59,7 @@ class TestDataSources extends Test {
     }
 
     it ("should have the correct single-antecedent dataset") {
-      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent )
+      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isSingleAntecedent )
       data.size should be (183)
       data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
@@ -68,7 +68,7 @@ class TestDataSources extends Test {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -84,7 +84,7 @@ class TestDataSources extends Test {
     }
 
     it ("should have the correct 'applicable' dataset (according to McCartney)") {
-      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable )
+      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isApplicable )
       data.size should be (75)
       data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
@@ -93,7 +93,7 @@ class TestDataSources extends Test {
       var numYes = 0
       var numNo  = 0
       var numUnk = 0
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -131,14 +131,14 @@ class TestDataSources extends Test {
   describe("AVE Examples") {
 
     it ("should load from files") {
-      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).size should be (1111)
-      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).size should be (202)
-      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).size should be (1055)
+      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par.size should be (1111)
+      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par.size should be (202)
+      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par.size should be (1055)
     }
 
     it ("should have valid facts") {
       for (path <- Props.DATA_AVE_PATH.values()) {
-        AVE.read(path.getPath).foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+        AVE.read(path.getPath).par.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
           queries.size should be > 0
           queries.size should be <= 2
           for (query <- queries) {
@@ -154,22 +154,22 @@ class TestDataSources extends Test {
     }
 
     it ("should have the right number of facts filtered") {
-      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).filter( _._1.head.getForceFalse ).size should be > 0
-      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).filter( _._1.head.getForceFalse ).size should be > 0
-      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).filter( _._1.head.getForceFalse ).size should be > 0
+      AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
+      AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
+      AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par.filter( _._1.head.getForceFalse ).size should be > 0
     }
   }
 
   describe("MTurk Examples") {
 
     it ("should load from files") {
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).size should be (1796)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).size should be (1975)
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.size should be (1796)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.size should be (1975)
     }
 
     it ("should have valid facts") {
       for (path <- List(Props.DATA_MTURK_TRAIN, Props.DATA_MTURK_TEST)) {
-        MTurk.read(path.getPath).foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
+        MTurk.read(path.getPath).par.foreach { case (queries: Iterable[Messages.QueryOrBuilder], truth: TruthValue) =>
           queries.size should be > 0
           queries.size should be <= 2
           for (query <- queries) {
@@ -185,10 +185,10 @@ class TestDataSources extends Test {
     }
 
     it ("should have the right number of facts filtered") {
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter( _._2 == TruthValue.TRUE ).size should be (1256)
-      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter( _._2 == TruthValue.FALSE ).size should be (540)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).filter( _._2 == TruthValue.TRUE ).size should be (1286)
-      MTurk.read(Props.DATA_MTURK_TEST.getPath).filter( _._2 == TruthValue.FALSE ).size should be (689)
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.filter( _._2 == TruthValue.TRUE ).size should be (1256)
+      MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par.filter( _._2 == TruthValue.FALSE ).size should be (540)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.filter( _._2 == TruthValue.TRUE ).size should be (1286)
+      MTurk.read(Props.DATA_MTURK_TEST.getPath).par.filter( _._2 == TruthValue.FALSE ).size should be (689)
     }
 
   }
