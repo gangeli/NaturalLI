@@ -60,5 +60,6 @@ test_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/
 	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_client.jar `find . -name "*.scala"` `find . -name "*.java"`
 	jar cf test_client.jar `find . -name "*.class"`
+	jar uf test_client.jar `find . -name "*.dat"`
 	jar uf test_client.jar `find . -name "*.scala"`
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'

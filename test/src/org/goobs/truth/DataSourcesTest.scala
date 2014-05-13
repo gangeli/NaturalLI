@@ -19,14 +19,16 @@ class DataSourcesTest extends Test {
    */
   describe("FraCaS") {
 
+    lazy val fracas = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par
+
     Props.NATLOG_INDEXER_LAZY = false
 
     it ("should load from file") {
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.size should be (334)
+      fracas.size should be (334)
     }
 
     it ("should have valid facts") {
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      fracas.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           // Ensure all the facts have been indexed successfully
@@ -43,7 +45,7 @@ class DataSourcesTest extends Test {
       val numYes = new AtomicInteger(0)
       val numNo = new AtomicInteger(0)
       val numUnk = new AtomicInteger(0)
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      fracas.foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -60,7 +62,7 @@ class DataSourcesTest extends Test {
     }
 
     it ("should have the correct single-antecedent dataset") {
-      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isSingleAntecedent )
+      val data = fracas.filter( FraCaS.isSingleAntecedent )
       data.size should be (183)
       data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
@@ -69,7 +71,7 @@ class DataSourcesTest extends Test {
       val numYes = new AtomicInteger(0)
       val numNo = new AtomicInteger(0)
       val numUnk = new AtomicInteger(0)
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      fracas.filter( FraCaS.isSingleAntecedent ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -85,7 +87,7 @@ class DataSourcesTest extends Test {
     }
 
     it ("should have the correct 'applicable' dataset (according to MacCartney)") {
-      val data = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par.filter( FraCaS.isApplicable )
+      val data = fracas.filter( FraCaS.isApplicable )
       data.size should be (75)
       data.forall( _._1.head.getKnownFactCount == 1) should be (right = true)
     }
@@ -94,7 +96,7 @@ class DataSourcesTest extends Test {
       val numYes = new AtomicInteger(0)
       val numNo = new AtomicInteger(0)
       val numUnk = new AtomicInteger(0)
-      FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter( FraCaS.isApplicable ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
+      fracas.filter( FraCaS.isApplicable ).foreach{ case (queries:Iterable[Messages.QueryOrBuilder], truth:TruthValue) =>
         queries.size should be (1)
         for (query <- queries) {
           truth match {
@@ -132,9 +134,9 @@ class DataSourcesTest extends Test {
    * The data is in etc/ave.
    */
   describe("AVE Examples") {
-    val ave2006 = AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par
-    val ave2007 = AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par
-    val ave2008 = AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par
+    lazy val ave2006 = AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par
+    lazy val ave2007 = AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par
+    lazy val ave2008 = AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par
 
     it ("should load from files") {
       ave2006.size should be (1111)
@@ -173,8 +175,8 @@ class DataSourcesTest extends Test {
    */
   describe("MTurk Examples") {
 
-    val mturkTrain = MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par
-    val mturkTest = MTurk.read(Props.DATA_MTURK_TEST.getPath).par
+    lazy val mturkTrain = MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par
+    lazy val mturkTest = MTurk.read(Props.DATA_MTURK_TEST.getPath).par
 
     it ("should load from files") {
       mturkTrain.size should be (1796)

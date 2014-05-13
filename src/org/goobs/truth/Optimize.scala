@@ -65,7 +65,7 @@ trait SquaredLoss extends LossFunction {
     val dw = guessGradient(wVector)
     (for (i <- 0 until wVector.length) yield {
       (i, diff * -1 * dw(i))
-    }).toMap
+    }).filter(x => x._2 != 0.0 && x._2 != -0.0).toMap
   }
 
   def gold:Double

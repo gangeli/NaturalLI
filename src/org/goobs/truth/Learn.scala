@@ -218,7 +218,10 @@ object Learn extends Client {
    */
   class SquaredMaxLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends MaxTypeLoss(guesses,goldTruth)  with SquaredLoss {
     override def gold: Double = goldProbability
-    override def guess(wVector: Array[Double]): Double = probability(wVector)
+    override def guess(wVector: Array[Double]): Double = {
+      val prob = probability(wVector)
+      prob
+    }
     override def guessGradient(wVector: Array[Double]): Array[Double] = {
       val gradient = guessPath.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
         case CollapsedInferenceState.TRUE =>
@@ -227,7 +230,7 @@ object Learn extends Client {
         case CollapsedInferenceState.FALSE =>
           val sigmoid = 1.0 / (1.0 + math.exp(prediction(wVector)))
           features.map(x => sigmoid * (1.0 - sigmoid) * x)
-        case CollapsedInferenceState.UNKNOWN => features.map( _ => 0.0 )
+        case CollapsedInferenceState.UNKNOWN => wVector.map( _ => 0.0 )
         case _ => throw new RuntimeException("Unknown inference state")
       }
       // Some sanity checks
@@ -354,7 +357,7 @@ object Learn extends Client {
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     log("Learning...")
@@ -368,9 +371,10 @@ object Learn extends Client {
         iter.next()
       }
       for (query <- queries) {
-        val guessValue = guess(query, optimizer.weights)
-        optimizer.update(new SquaredMaxLoss(guessValue, gold), new ZeroOneMaxLoss(guessValue, gold))
-        //      debug("[" + index + "] loss: " + loss)
+        val guessValue: Iterable[Inference] = guess(query, optimizer.weights)
+        val loss = new SquaredMaxLoss(guessValue, gold)
+        val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
+//        debug("[" + index + "] loss: " + lossValue)
       }
       val iteration :Int = iterCounter.incrementAndGet()
       if (iteration % 10 == 0) {
