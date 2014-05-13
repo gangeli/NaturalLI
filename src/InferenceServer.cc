@@ -270,6 +270,7 @@ void handleConnection(int socket, sockaddr_in* client,
       factDBReadLock.lock();
       if (*dbOrNull == NULL) {
         *dbOrNull = ReadFactTrie(graph);
+        factDB = *dbOrNull;
       }
       factDBReadLock.unlock();
     }
