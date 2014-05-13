@@ -17,7 +17,7 @@ class DataSourcesTest extends Test {
    * Statistics for this test are taken from the statistics in
    * Section 4 of http://nlp.stanford.edu/~wcmac/papers/natlog-wtep07.pdf
    */
-  describe("FraCaS") {
+  ignore("FraCaS") {
 
     lazy val fracas = FraCaS.read(Props.DATA_FRACAS_PATH.getPath).par
 
@@ -115,7 +115,7 @@ class DataSourcesTest extends Test {
   /**
    * Tests on the held-out dataset of Ollie facts.
    */
-  describe("Held-Out") {
+  ignore("Held-Out") {
 
     it ("should be readable") {
       HoldOneOut.read("").take(10).length should be (10)
@@ -133,7 +133,7 @@ class DataSourcesTest extends Test {
    * The statistics for these are taken from Angeli and Manning (2013): http://stanford.edu/~angeli/papers/2013-conll-truth.pdf.
    * The data is in etc/ave.
    */
-  describe("AVE Examples") {
+  ignore("AVE Examples") {
     lazy val ave2006 = AVE.read(Props.DATA_AVE_PATH.get("2006").getPath).par
     lazy val ave2007 = AVE.read(Props.DATA_AVE_PATH.get("2007").getPath).par
     lazy val ave2008 = AVE.read(Props.DATA_AVE_PATH.get("2008").getPath).par
@@ -173,7 +173,7 @@ class DataSourcesTest extends Test {
    * The statistics for these are taken from Angeli and Manning (2013): http://stanford.edu/~angeli/papers/2013-conll-truth.pdf.
    * The data is in etc/mturk.
    */
-  describe("MTurk Examples") {
+  ignore("MTurk Examples") {
 
     lazy val mturkTrain = MTurk.read(Props.DATA_MTURK_TRAIN.getPath).par
     lazy val mturkTest = MTurk.read(Props.DATA_MTURK_TEST.getPath).par

@@ -20,7 +20,7 @@ object Truth extends Client {
 
     do {
       println("")
-      val consequent:Fact = NatLog.annotate(readLine("query> "), x => Utils.WORD_UNK).head
+      val consequent:Fact = NatLog.annotate(io.StdIn.readLine("query> "), x => Utils.WORD_UNK).head
       explain(consequent, "query (consequent)")
       // We have our antecedent and consequent
       if (consequent.getWordCount > 0) {
@@ -38,7 +38,8 @@ object Truth extends Client {
         import Learn.flattenWeights
         val prob = new Learn.ProbabilityOfTruth(paths).apply(weights)
         // Debug Print
-        if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
+        if (prob > 0.5) { println(Console.GREEN + "VALID" + Console.BLACK + " (p=" + prob + ")") }
+        else { println(Console.RED + "INVALID" + Console.BLACK + " (p=" + prob + ")") }
       } else {
         err("No query provided!")
       }

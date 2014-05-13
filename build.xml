@@ -47,7 +47,7 @@
     </junit>
 
     <scalatest fork="true" maxmemory="4g">
-      <jvmarg value="-Dwordnet.database.dir=etc/WordNet-3.1/dict"/>
+      <jvmarg value="-Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g"/>
       <runpath>
         <pathelement path="test/src/test_client.jar" />
       </runpath>

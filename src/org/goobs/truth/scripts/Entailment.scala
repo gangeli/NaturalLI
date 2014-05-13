@@ -22,9 +22,9 @@ object Entailment extends Client {
       do {
         println("")
         println("Enter an antecedent and a consequent")
-        val antecedent:Fact = NatLog.annotate(readLine("antecedent> "), x => Utils.WORD_UNK).head
+        val antecedent:Fact = NatLog.annotate(io.StdIn.readLine("antecedent> "), x => Utils.WORD_UNK).head
         explain(antecedent, "antecedent")
-        val consequent:Fact = NatLog.annotate(readLine("consequent> "), x => Utils.WORD_UNK).head
+        val consequent:Fact = NatLog.annotate(io.StdIn.readLine("consequent> "), x => Utils.WORD_UNK).head
         explain(consequent, "consequent")
         // We have our antecedent and consequent
         if (antecedent.getWordCount > 0 && consequent.getWordCount > 0) {
@@ -43,7 +43,8 @@ object Entailment extends Client {
           import Learn.flattenWeights
           val prob = new Learn.ProbabilityOfTruth(paths).apply(weights)
           // Debug Print
-          if (prob > 0.5) { println("\033[32mVALID\033[0m (p=" + prob + ")") } else { println("\033[31mINVALID\033[0m (p=" + prob + ")") }
+          if (prob > 0.5) { println(Console.GREEN + "VALID" + Console.BLACK + " (p=" + prob + ")") }
+          else { println(Console.RED + "INVALID" + Console.BLACK + " (p=" + prob + ")") }
         } else {
           err("No antecedent or consequent provided!")
         }

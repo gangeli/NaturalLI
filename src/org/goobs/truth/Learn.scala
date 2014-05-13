@@ -357,7 +357,7 @@ object Learn extends Client {
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-//    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
 
     // Learn
     log("Learning...")
