@@ -51,8 +51,8 @@ make java_test
 
 echo "-- COVERAGE --"
 cd src/
-rm naturalli_server-Messages.pb.gcda
-rm naturalli_server-Messages.pb.gcno
+rm -f naturalli_server-Messages.pb.gcda
+rm -f naturalli_server-Messages.pb.gcno
 rm -f naturalli_server-Messages.pb.h.gcno
 rm -f naturalli_server-Messages.pb.h.gcda
 gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html

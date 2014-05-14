@@ -13,3 +13,7 @@ done
 function client() {
   make -C src client.jar && scala -J-mx1g -cp $CLASSPATH:src/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Client
 }
+
+function configure() {
+  ./configure MIN_FACT_COUNT=1 --with-protoc=/u/nlp/packages/protobuf-2.4.1 --with-scala=/u/angeli/programs/scala --with-postgresql=/u/nlp/packages/pgsql-9.2.4/bin/pg_config --prefix=/u/angeli/programs/
+}

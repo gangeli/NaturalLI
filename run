@@ -34,7 +34,6 @@ def cp:String = {
     System.getenv("JAVANLP_HOME") + "/projects/more/classes",
     System.getenv("JAVANLP_HOME") + "/projects/more/lib/BerkeleyParser.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/classes",
-    System.getenv("JAVANLP_HOME") + "/projects/scala-2.10/classes",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
     "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
