@@ -82,7 +82,8 @@ object FraCaS extends DataSource with Client {
 
   def main(args:Array[String]):Unit = {
     Execution.fillOptions(classOf[Props], args)
-    Props.SERVER_PORT = 4001
+    Props.SERVER_MAIN_HOST = "localhost"
+    Props.SERVER_MAIN_PORT = 4001
     Props.SEARCH_TIMEOUT = 250000
     System.exit(startMockServer(() =>
       Benchmark.evaluate(read(Props.DATA_FRACAS_PATH.getPath) filter isApplicable, NatLog.hardNatlogWeights,

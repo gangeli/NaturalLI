@@ -39,24 +39,33 @@ trait Client {
    * @return The query fact, with a truth value and confidence
    */
   def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = {
-    // Set up connection
-    val sock = new Socket(Props.SERVER_HOST, Props.SERVER_PORT)
-    val toServer = new DataOutputStream(sock.getOutputStream)
-    val fromServer = new DataInputStream(sock.getInputStream)
-    if (!quiet) log("connection established with server.")
+    def doQuery(query:Query, host:String, port:Int):Iterable[Inference] = {
+      // Set up connection
+      val sock = new Socket(host, port)
+      val toServer = new DataOutputStream(sock.getOutputStream)
+      val fromServer = new DataInputStream(sock.getInputStream)
+      if (!quiet) log("connection established with server.")
 
-    // Write query
-    query.writeTo(toServer)
-    if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
-    sock.shutdownOutput()  // signal end of transmission
+      // Write query
+      query.writeTo(toServer)
+      if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
+      sock.shutdownOutput()  // signal end of transmission
 
-    // Read response
-    val response:Response = Response.parseFrom(fromServer)
-    if (response.getError) {
-      throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
+      // Read response
+      val response:Response = Response.parseFrom(fromServer)
+      if (response.getError) {
+        throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
+      }
+      if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
+      response.getInferenceList
     }
-    if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
-    response.getInferenceList
+    // Query with backoff
+    val main = doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
+    if (main.isEmpty) {
+      doQuery(Utils.simplifyQuery(query, (x:String) =>NatLog.annotate(x).head), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+    } else {
+      main
+    }
   }
 
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
@@ -79,7 +88,7 @@ trait Client {
     // Run the server
     var running = false
     startTrack("Starting Server")
-    List[String]("catchsegv", "src/naturalli_server", "" + Props.SERVER_PORT) ! ProcessLogger{line =>
+    List[String]("catchsegv", "src/naturalli_server", "" + Props.SERVER_MAIN_PORT) ! ProcessLogger{line =>
       if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
         // Server is initialized -- we can start doing client-side stuff

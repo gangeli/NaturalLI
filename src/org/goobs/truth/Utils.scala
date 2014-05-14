@@ -286,9 +286,9 @@ object Utils {
     (wordIndexer, reverseIndex)
   }
 
-  def simplifyQuery(query:Messages.Query.Builder, annotate:String=>Messages.Fact):Messages.Query.Builder = {
+  def simplifyQuery(query:Messages.Query, annotate:String=>Messages.Fact):Messages.Query = {
     simplifyQuery(query.getQueryFact.getWordList.map( _.getGloss ).mkString(" "), annotate) match {
-      case Some(fact) => Messages.Query.newBuilder(query.build()).setQueryFact(annotate(fact))
+      case Some(fact) => Messages.Query.newBuilder(query).setQueryFact(annotate(fact)).build()
       case None => query
     }
   }

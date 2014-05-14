@@ -98,8 +98,8 @@ object RegressionTest extends Client {
 
   def main(args:Array[String]) {
     var exitStatus:Int = 0
-    Props.SERVER_HOST = "localhost"
-    Props.SERVER_PORT = 41337
+    Props.SERVER_MAIN_HOST = "localhost"
+    Props.SERVER_MAIN_PORT = 41337
     startMockServer(() => exitStatus = runClient(), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")

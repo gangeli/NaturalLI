@@ -45,10 +45,14 @@ public class Props {
   @Option(name="natlog.indexer.lazy", gloss="If true, do word indexing lazily rather than reading the indexer at once")
   public static boolean NATLOG_INDEXER_LAZY = false;
 
-  @Option(name="server.host", gloss="The hostname for the inference server")
-  public static String SERVER_HOST = "localhost";
-  @Option(name="server.port", gloss="The hostname for the inference server")
-  public static int SERVER_PORT = 1337;
+  @Option(name="server.main.host", gloss="The hostname for the inference server")
+  public static String SERVER_MAIN_HOST = "localhost";
+  @Option(name="server.main.port", gloss="The hostname for the inference server")
+  public static int SERVER_MAIN_PORT = 1337;
+  @Option(name="server.backup.host", gloss="The hostname for the inference server")
+  public static String SERVER_BACKUP_HOST = "localhost";
+  @Option(name="server.backup.port", gloss="The hostname for the inference server")
+  public static int SERVER_BACKUP_PORT = 1338;
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;

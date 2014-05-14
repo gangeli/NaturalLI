@@ -21,7 +21,7 @@ object ShutdownServer {
 
     try {
       // Set up connection
-      val sock = new Socket(Props.SERVER_HOST, Props.SERVER_PORT)
+      val sock = new Socket(Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
       val toServer = new DataOutputStream(sock.getOutputStream)
       // Write query
       query.writeTo(toServer)
