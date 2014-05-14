@@ -13,6 +13,21 @@ import org.goobs.truth.DataSource.DataStream
 object DataSource {
   type Datum = (Iterable[Query.Builder], TruthValue)
   type DataStream = Stream[Datum]
+
+  def loop(dataset:DataStream):DataStream = {
+    if (dataset.isEmpty) { throw new IllegalArgumentException("Cannot loop empty dataset") }
+    var iter: Iterator[(Iterable[Query.Builder], TruthValue)] = dataset.iterator
+    Stream.continually[Datum]({
+      dataset.synchronized {
+        if (iter.hasNext) {
+          iter.next()
+        } else {
+          iter = dataset.iterator
+          iter.next()
+        }
+      }
+    })
+  }
 }
 
 /**

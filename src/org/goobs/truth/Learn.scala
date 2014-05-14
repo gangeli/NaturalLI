@@ -400,13 +400,17 @@ object Learn extends Client {
 
     // Learn
     log("Learning...")
-    var iter = trainData.iterator
+    // (create balanced data stream)
+    val trueData = DataSource.loop(trainData.filter( _._2 == TruthValue.TRUE ))
+    val falseData = DataSource.loop(trainData.filter( _._2 != TruthValue.TRUE ))
+    def mkIter = trueData.zip(falseData).map{ case (a, b) => Stream(a, b) }.flatten.iterator
+    var iter: Iterator[DataSource.Datum] = mkIter
     val iterCounter = new AtomicInteger(0)
     for (index <- { val x: ParRange = ((Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS).par
       x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
       x }) {
-      val (queries, gold) = synchronized {
-        if (!iter.hasNext) { iter = trainData.iterator }
+      val (queries, gold) = Learn.synchronized {
+        if (!iter.hasNext) { iter = mkIter }
         iter.next()
       }
       for (query <- queries) {

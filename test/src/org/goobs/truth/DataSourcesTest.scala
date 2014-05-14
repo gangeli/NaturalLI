@@ -5,6 +5,7 @@ import org.goobs.truth.TruthValue.TruthValue
 import scala.collection.JavaConversions._
 import org.goobs.truth.Messages.Query
 import java.util.concurrent.atomic.AtomicInteger
+import org.goobs.truth.DataSource.DataStream
 
 /**
  * Test various sources of training / test data.
@@ -13,6 +14,33 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 class DataSourcesTest extends Test {
 
+  describe("A Dataset") {
+    class DummyDataSource extends DataSource {
+      override def read(path: String): DataStream = Stream( (Nil, TruthValue.TRUE), (Nil, TruthValue.TRUE), (Nil, TruthValue.FALSE) )
+    }
+
+    it ("should loop gracefully") {
+      val infiniteStream = DataSource.loop(new DummyDataSource().read("foo"))
+      val iter = infiniteStream.iterator
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.TRUE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+    }
+
+    it ("should filter gracefully") {
+      val infiniteStream = DataSource.loop(new DummyDataSource().read("foo")).filter( _._2 == TruthValue.FALSE )
+      val iter = infiniteStream.iterator
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+      iter.hasNext should be (right = true); iter.next()._2 should be (TruthValue.FALSE)
+    }
+  }
   /**
    * Statistics for this test are taken from the statistics in
    * Section 4 of http://nlp.stanford.edu/~wcmac/papers/natlog-wtep07.pdf
