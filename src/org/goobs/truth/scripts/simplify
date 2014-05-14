@@ -88,16 +88,18 @@ def hackyHead(input:String, prefix:Char='N'):Option[String] = {
 for (line <- io.Source.stdin.getLines()) {
   if (line.length < 50) {
     val fields  = line.split("\t")
-    for ( subj <- hackyHead(fields(0), 'N');
-          rel  <- hackyHead(fields(1), 'V');
-          obj  <- hackyHead(fields(2), 'N') ) {
-      def quantifier(elem:String, head:String):String = {
-        QUANTIFIERS.filter( (x:String) => elem.toLowerCase.startsWith(x + " ") ).headOption match {
-          case Some(q) => if (head.startsWith(q) || q.startsWith(head)) "" else q + " "
-          case None => ""
+    if (fields.length >= 3) {
+      for ( subj <- hackyHead(fields(0), 'N');
+            rel  <- hackyHead(fields(1), 'V');
+            obj  <- hackyHead(fields(2), 'N') ) {
+        def quantifier(elem:String, head:String):String = {
+          QUANTIFIERS.filter( (x:String) => elem.toLowerCase.startsWith(x + " ") ).headOption match {
+            case Some(q) => if (head.startsWith(q) || q.startsWith(head)) "" else q + " "
+            case None => ""
+          }
         }
+        println(quantifier(fields(0), subj) + subj + "\t" + rel + "\t" + quantifier(fields(2), obj) + obj)
       }
-      println(quantifier(fields(0), subj) + subj + "\t" + rel + "\t" + quantifier(fields(2), obj) + obj)
     }
   }
 }

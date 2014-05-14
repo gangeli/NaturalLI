@@ -2,7 +2,7 @@
 #
 
 INPUT_DIR='/scr/nlp/data/openie/output/ollie1.0.1'
-export TMPDIR="/jagupard1/scr1/angeli/tmp"
+export TMPDIR="/$HOST/scr1/angeli/tmp"
 
 PGUSER=gabor
 PGPORT=4243
@@ -117,7 +117,7 @@ cat $WORDS |\
 # INDEX FACTS
 # ###########################
 #echo "[40] Index Facts ($OUT_OPENIE_INDEXED)"
-#bunzip2 $OUT_OPENIE_UNNORMALIZED.bz2 || true
+#bunzip2 $OUT_OPENIE_UNNORMALIZED.bz2 &> /dev/null || true
 #cat $OUT_OPENIE_UNNORMALIZED |\
 #  grep -a -P '^[\x01-\x7f]+$' |\
 #  cut -f 2-4 |\
@@ -131,7 +131,7 @@ cat $WORDS |\
 #  egrep '^[0-9]+	[0-9][0-9 ]*$' > $OUT_OPENIE_INDEXED
 
 echo "[45] Index Facts ($OUT_OPENIE_INDEXED_HEADS)"
-bunzip2 $OUT_OPENIE_UNNORMALIZED.bz2 || true
+bunzip2 $OUT_OPENIE_UNNORMALIZED.bz2 &> /dev/null || true
 cat $OUT_OPENIE_UNNORMALIZED |\
   grep -a -P '^[\x01-\x7f]+$' |\
   cut -f 2-4 |\
