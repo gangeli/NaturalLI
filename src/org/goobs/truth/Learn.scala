@@ -14,7 +14,7 @@ import org.goobs.truth.TruthValue.TruthValue
 
 import scala.language.implicitConversions
 import java.util.concurrent.atomic.AtomicInteger
-import scala.collection.parallel.immutable.ParRange
+import scala.collection.parallel.immutable.{ParSeq, ParRange}
 import scala.collection.parallel.ForkJoinTaskSupport
 
 
@@ -249,12 +249,27 @@ object Learn extends Client {
     override def isCorrect: Boolean = guessPath.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
       case CollapsedInferenceState.TRUE => goldTruth == TruthValue.TRUE
       case CollapsedInferenceState.FALSE => goldTruth == TruthValue.FALSE
-      case CollapsedInferenceState.UNKNOWN => goldTruth == TruthValue.UNKNOWN
+      case CollapsedInferenceState.UNKNOWN => if (Props.EVALUATE_ALLOWUNK) goldTruth == TruthValue.UNKNOWN else goldTruth == TruthValue.FALSE
     }
   }
 
-  class ZeroOneAllTrueLoss(guesses:Iterable[Iterable[Inference]], goldTruth:TruthValue) extends ZeroOneLoss {
-    override def isCorrect: Boolean = guesses.foldLeft(true){ case (truth:Boolean, guess:Iterable[Inference]) => truth && new ZeroOneMaxLoss(guess, goldTruth).isCorrect }
+  class ZeroOneAllTrueLoss(guesses:Iterable[Iterable[Inference]], goldTruth:TruthValue, inputs:Option[Iterable[Query.Builder]] = None) extends ZeroOneLoss {
+    lazy val isCorrect: Boolean = {
+      inputs match {
+        case Some(input:Iterable[Query.Builder]) =>
+          guesses.zip(input).foldLeft(true){ case (truth:Boolean, (guess:Iterable[Inference], input:Query.Builder)) =>
+            if (input.getForceFalse) {
+              truth && (goldTruth == TruthValue.FALSE || (Props.EVALUATE_ALLOWUNK && goldTruth == TruthValue.UNKNOWN))
+            } else {
+              truth && new ZeroOneMaxLoss(guess, goldTruth).isCorrect
+            }
+          }
+        case None =>
+          guesses.foldLeft(true){ case (truth:Boolean, guess:Iterable[Inference]) =>
+            truth && new ZeroOneMaxLoss(guess, goldTruth).isCorrect }
+      }
+    }
+    lazy val guessTruthValue:Boolean = (isCorrect && goldTruth == TruthValue.TRUE) || (!isCorrect && goldTruth != TruthValue.TRUE)
   }
 
   /**
@@ -341,23 +356,47 @@ object Learn extends Client {
 
     // Define some useful functions
     def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
-      issueQuery(query
+      issueQuery(Messages.Query.newBuilder(query.build())
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom").build(), quiet = true)
     }
-    def evaluate:Double = optimizer.error({
-      val parTestData = testData.par
-      parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
-      parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-        new ZeroOneAllTrueLoss(queries.map( guess(_, optimizer.weights) ), gold)
-      }
-    })
+    def evaluate(print:String=>Unit):Unit = {
+      // Baseline
+      val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
+        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
+        val guess = !queries.forall( _.getForceFalse )
+        ( g + (if (guess) 1 else 0),
+          c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
+          s + (if (gold == TruthValue.TRUE) 1 else 0),
+          an + (if ((guess && gold == TruthValue.TRUE) || (!guess && gold != TruthValue.TRUE)) 1 else 0),
+          ad + 1 )
+        }
+      print( "Error (baseline)  : " + Utils.percent.format(bAccuracyNumer.toDouble / bAccuracyDenom.toDouble))
+      print(s"      (baseline) P: ${Utils.percent.format(bCorrect.toDouble / bGuessed.toDouble)} R:${Utils.percent.format(bCorrect.toDouble / bShouldHaveGuessed.toDouble)} F1: ${Utils.percent.format(Utils.f1(bGuessed, bCorrect, bShouldHaveGuessed))}")
+      // Evaluate
+      val guessed = new AtomicInteger(0)
+      val correct = new AtomicInteger(0)
+      val shouldHaveGuessed = new AtomicInteger(0)
+      val error = optimizer.error({
+        val parTestData: ParSeq[(Iterable[Query.Builder], TruthValue)] = testData.par
+        parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
+        parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+          val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(queries.map( guess(_, optimizer.weights ) ), gold, inputs=Some(queries))
+          if (loss.guessTruthValue) guessed.incrementAndGet()
+          if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
+          if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
+          loss
+        }
+      })
+      print( "Error: " + Utils.percent.format(error))
+      print(s"    P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
+    }
 
     // Pre-Evaluate Model
     log("Evaluating (pre-learning)...")
-    log(BOLD, YELLOW, "[Pre-learning] Error: " + Utils.percent.format(evaluate))
+    evaluate(x => log(BOLD,YELLOW, "[Pre-learning] " + x))
 
     // Learn
     log("Learning...")
@@ -371,10 +410,12 @@ object Learn extends Client {
         iter.next()
       }
       for (query <- queries) {
-        val guessValue: Iterable[Inference] = guess(query, optimizer.weights)
-        val loss = new SquaredMaxLoss(guessValue, gold)
-        val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
-//        debug("[" + index + "] loss: " + lossValue)
+        if (!query.getForceFalse) {
+          val guessValue: Iterable[Inference] = guess(query, optimizer.weights)
+          val loss = new SquaredMaxLoss(guessValue, gold)
+          val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
+          //        debug("[" + index + "] loss: " + lossValue)
+        }
       }
       val iteration :Int = iterCounter.incrementAndGet()
       if (iteration % 10 == 0) {
@@ -392,7 +433,7 @@ object Learn extends Client {
 
     // Evaluate Model
     log("Evaluating...")
-    log(BOLD, BLUE, "[Post-learning] Error: " + Utils.percent.format(evaluate))
+    evaluate(x => log(BOLD,BLUE, "[Post-learning] " + x))
   }
 }
 

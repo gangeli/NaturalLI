@@ -15,6 +15,12 @@ import java.sql.ResultSet
 import gnu.trove.procedure.TObjectIntProcedure
 
 object Utils {
+  def f1(guessed: Int, correct: Int, shouldHaveGuessed: Int) = {
+    val p = correct.toDouble / guessed.toDouble
+    val r = correct.toDouble / shouldHaveGuessed.toDouble
+    (2.0 * p * r) / (p + r)
+  }
+
   NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
   private val logger = Redwood.channels("Utils")
 

@@ -88,6 +88,9 @@ public class Props {
   @Option(name="learn.test", gloss="The corpus to use for testing")
   public static Corpus[] LEARN_TEST = new Corpus[]{ Corpus.FRACAS };
 
+  @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
+  public static boolean EVALUATE_ALLOWUNK = false;
+
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";
   @Option(name="script.distsim.cos", gloss="The path to the cosine similarity nearest neighbors")
