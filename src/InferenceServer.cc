@@ -333,7 +333,8 @@ void handleConnection(int socket, sockaddr_in* client,
   }
   // (make sure we're valid)
   if (!search->isValid() || !cache->isValid()) {
-    printf("[%d] ERROR: SEARCH OR CACHE IS INVALID: %s\n", socket, query.cachetype().c_str());
+    printf("[%d] ERROR: SEARCH OR CACHE IS INVALID: %u, %u\n",
+           socket, search->isValid(), cache->isValid());
     delete costs;
     delete search;
     delete cache;

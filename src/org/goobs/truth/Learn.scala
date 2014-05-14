@@ -379,6 +379,7 @@ object Learn extends Client {
       val guessed = new AtomicInteger(0)
       val correct = new AtomicInteger(0)
       val shouldHaveGuessed = new AtomicInteger(0)
+      val examplesAnnotated = new AtomicInteger(0)
       val error = optimizer.error({
         val parTestData: ParSeq[(Iterable[Query.Builder], TruthValue)] = testData.par
         parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
@@ -387,6 +388,9 @@ object Learn extends Client {
           if (loss.guessTruthValue) guessed.incrementAndGet()
           if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
           if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
+          if (examplesAnnotated.incrementAndGet() % 100 == 0) {
+            log(s"[${examplesAnnotated.get()}]  P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
+          }
           loss
         }
       })
@@ -395,11 +399,12 @@ object Learn extends Client {
     }
 
     // Pre-Evaluate Model
-    log("Evaluating (pre-learning)...")
+    startTrack("Evaluating (pre-learning)")
     evaluate(x => log(BOLD,YELLOW, "[Pre-learning] " + x))
+    endTrack("Evaluating (pre-learning)")
 
     // Learn
-    log("Learning...")
+    startTrack("Learning")
     // (create balanced data stream)
     val trueData = DataSource.loop(trainData.filter( _._2 == TruthValue.TRUE ))
     val falseData = DataSource.loop(trainData.filter( _._2 != TruthValue.TRUE ))
@@ -429,6 +434,7 @@ object Learn extends Client {
         optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(iteration)))
       }
     }
+    endTrack("Learning")
 
     // Save Model
     if (Props.LEARN_MODEL_DIR.exists()) {
@@ -436,8 +442,9 @@ object Learn extends Client {
     }
 
     // Evaluate Model
-    log("Evaluating...")
+    startTrack("Evaluating")
     evaluate(x => log(BOLD,BLUE, "[Post-learning] " + x))
+    endTrack("Evaluating")
   }
 }
 

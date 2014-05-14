@@ -100,6 +100,8 @@ object RegressionTest extends Client {
     var exitStatus:Int = 0
     Props.SERVER_MAIN_HOST = "localhost"
     Props.SERVER_MAIN_PORT = 41337
+    Props.SERVER_BACKUP_HOST = "localhost"
+    Props.SERVER_BACKUP_PORT = 41337
     startMockServer(() => exitStatus = runClient(), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")

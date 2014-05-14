@@ -172,7 +172,7 @@ object AVE extends DataSource {
       val fields :Array[String]         = line.split("\t")
       val id: Int                       = fields(0).toInt
       val gold: TruthValue.Value        = fields(1).toBoolean match { case true => TruthValue.TRUE; case false => TruthValue.FALSE }
-      val preFiltered: Boolean          = fields(2).toBoolean
+      val preFiltered: Boolean          = !fields(2).toBoolean
       val queries:Seq[Fact]             = fields.drop(3).map( (fact:String) => NatLog.annotate(fact.replaceAll(":::", " "))).map( _.head )
       (queries.map{ (fact:Fact) =>
         Query.newBuilder().setQueryFact(fact).setId(id).setForceFalse(preFiltered).setAllowLookup(true).setUseRealWorld(true)
