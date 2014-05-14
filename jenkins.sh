@@ -26,11 +26,11 @@ echo "-- MAKE --"
 make clean
 make all check TESTS_ENVIRONMENT=true 
 
-echo "-- TEST --"
+echo "-- C++ TESTS --"
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
-echo "--SPECIAL TESTS--"
+echo "-- C++SPECIAL TESTS --"
 echo "(high memory mode)"
 make clean
 ./configure \
@@ -46,7 +46,7 @@ make clean
   --with-java=/usr/lib/jvm/java-7-oracle
 make all check
 
-echo "--JAVA TEST--"
+echo "-- JAVA TESTS --"
 make java_test
 
 echo "-- COVERAGE --"
