@@ -360,7 +360,7 @@ object Learn extends Client {
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
-        .setCacheType("bloom").build(), quiet = true)
+        .setCacheType("bloom").build(), quiet = false)
     }
     def evaluate(print:String=>Unit):Unit = {
       // Baseline
@@ -385,7 +385,8 @@ object Learn extends Client {
         parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
         parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
           val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(queries.map( guess(_, optimizer.weights ) ), gold, inputs=Some(queries))
-          if (loss.guessTruthValue) guessed.incrementAndGet()
+          val allowedTrue = !queries.forall( _.getForceFalse )
+          if (loss.guessTruthValue && allowedTrue) guessed.incrementAndGet()
           if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
           if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
           if (examplesAnnotated.incrementAndGet() % 100 == 0) {

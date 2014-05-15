@@ -46,7 +46,8 @@ string toString(const Graph& graph, const tagged_word* fact, const uint8_t factL
     string marker = "";
     if (m == MONOTONE_DOWN) { marker = "[v]"; }
     if (m == MONOTONE_UP) { marker = "[^]"; }
-    gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(fact[i]);
+    string sense = to_string(fact[i].sense);
+    gloss = gloss + (gloss == "" ? "" : " ") + marker + graph.gloss(fact[i]) + "_" + sense;
   }
   return gloss;
 }

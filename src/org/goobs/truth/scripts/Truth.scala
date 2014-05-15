@@ -38,8 +38,8 @@ object Truth extends Client {
         import Learn.flattenWeights
         val prob = new Learn.ProbabilityOfTruth(paths).apply(weights)
         // Debug Print
-        if (prob > 0.5) { println(Console.GREEN + "VALID" + Console.BLACK + " (p=" + prob + ")") }
-        else { println(Console.RED + "INVALID" + Console.BLACK + " (p=" + prob + ")") }
+        if (prob > 0.5) { println(Console.GREEN + "VALID" + Console.RESET + " (p=" + prob + ")") }
+        else { println(Console.RED + "INVALID" + Console.RESET + " (p=" + prob + ")") }
       } else {
         err("No query provided!")
       }

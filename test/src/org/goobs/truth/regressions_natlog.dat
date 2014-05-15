@@ -130,3 +130,8 @@
 # Used to delete land (in monotone down), and then insert tail (in monotone up)
 # Fixed by disallowing deleting the last phrase in a sentence.
 ?[have](a man, a lot of land)	[have](a man, a tail)
+
+# Weird WordNet paths
+?[dress](cat, suit)	[have](cat, tail)
+
+

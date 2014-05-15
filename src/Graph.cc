@@ -198,7 +198,8 @@ Graph* ReadGraph() {
   // Edges
   printf("  creating edge iterator...\n");
   char edgeQuery[128];
-  snprintf(edgeQuery, 127, "SELECT * FROM %s ORDER BY type, sink_sense ASC;", PG_TABLE_EDGE);
+  snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type <> %u ORDER BY type, sink_sense ASC;",
+    PG_TABLE_EDGE, WORDNET_NOUN_SYNONYM); // TODO(gabor) re-enable synonyms
   PGIterator edgeIter = PGIterator(edgeQuery);
 
   // Invalid deletions

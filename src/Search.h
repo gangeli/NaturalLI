@@ -257,9 +257,9 @@ class BreadthFirstSearch : public SearchType {
   
   /** {@inheritDoc} */
   virtual bool isValid() { 
-    if ( fringe == NULL || currentPopFringe == NULL || memoryPool == NULL) {
-      printf("WARNING: fringe=%p; currentPopFringe=%p; memoryPool=%p\n",
-              fringe, currentPopFringe, memoryPool);
+    if ( fringe == NULL || memoryPool == NULL) {
+      printf("WARNING: fringe=%p; memoryPool=%p\n",
+              fringe, memoryPool);
       return false;
     }
     for (int i = 0; i < fringeCapacity; ++i) {
