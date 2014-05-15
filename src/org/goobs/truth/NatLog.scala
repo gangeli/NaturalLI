@@ -16,7 +16,7 @@ object NatLog {
   /**
    * The actual implementing call for soft and hard NatLog weights.
    */
-  def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double,
+  def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double, badWordnet:Double,
                     insertionOrDeletion:Double,
                     verbInsertOrDelete:Double,
                     morphology:Double, wsd:Double,
@@ -28,6 +28,7 @@ object NatLog {
     if (strictNatLog > 0) { throw new IllegalArgumentException("Weights must always be negative (strictNatLog is not)"); }
     if (similarity > 0) { throw new IllegalArgumentException("Weights must always be negative (similarity is not)"); }
     if (wordnet > 0) { throw new IllegalArgumentException("Weights must always be negative (wordnet is not)"); }
+    if (badWordnet > 0) { throw new IllegalArgumentException("Weights must always be negative (badWordnet is not)"); }
     if (morphology > 0) { throw new IllegalArgumentException("Weights must always be negative (morphology is not)"); }
     if (wsd > 0) { throw new IllegalArgumentException("Weights must always be negative (wsd is not)"); }
     if (okQuantifier > 0) { throw new IllegalArgumentException("Weights must always be negative (okQuantifier is not)"); }
@@ -53,8 +54,12 @@ object NatLog {
     // (unigrams)
     setCounts(WORDNET_UP, Monotonicity.UP, wordnet)
     setCounts(FREEBASE_UP, Monotonicity.UP, wordnet)
+    setCounts(WORDNET_UP, Monotonicity.UP, badWordnet)
+    setCounts(FREEBASE_UP, Monotonicity.UP, badWordnet)
     setCounts(WORDNET_DOWN, Monotonicity.DOWN, wordnet)
     setCounts(FREEBASE_DOWN, Monotonicity.DOWN, wordnet)
+    setCounts(WORDNET_DOWN, Monotonicity.DOWN, badWordnet)
+    setCounts(FREEBASE_DOWN, Monotonicity.DOWN, badWordnet)
     // (additions/deletions)
     setCounts(ADD_ADJ, Monotonicity.DOWN, insertionOrDeletion)
     setCounts(DEL_ADJ, Monotonicity.UP, insertionOrDeletion)
@@ -145,6 +150,7 @@ object NatLog {
     strictNatLog = -0.0,
     similarity = Double.NegativeInfinity,
     wordnet = -0.01,
+    badWordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
     verbInsertOrDelete = -0.01,
     morphology = -0.1,
@@ -158,6 +164,7 @@ object NatLog {
     strictNatLog = -0.0,
     similarity = Double.NegativeInfinity,
     wordnet = Double.NegativeInfinity,
+    badWordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
     verbInsertOrDelete = -0.01,
     morphology = Double.NegativeInfinity,
@@ -175,16 +182,34 @@ object NatLog {
    */
   def softNatlogWeights:WeightVector = natlogWeights(
     strictNatLog = -0.0,
+    similarity = -2.0,
+    wordnet = -1.0,
+    badWordnet = -2.0,
+    insertionOrDeletion = -1.0,
+    verbInsertOrDelete = -1.0,
+    morphology = -2.5,
+    wsd = -5.0,
+    okQuantifier = -1.0,
+    synonyms = -1.5,
+    antonym = -1.5,
+    default = -4.0)
+
+  /**
+   * An initialization to only similarity based approaches.
+   */
+  def similarityWeights:WeightVector = natlogWeights(
+    strictNatLog = Double.NegativeInfinity,
     similarity = -1.0,
-    wordnet = -0.1,
-    insertionOrDeletion = -0.1,
-    verbInsertOrDelete = -0.1,
-    morphology = -0.25,
-    wsd = -1.0,
-    okQuantifier = -0.1,
-    synonyms = -0.15,
-    antonym = -0.15,
-    default = -2.0)
+    wordnet = -1.0,
+    badWordnet = -1.0,
+    insertionOrDeletion = Double.NegativeInfinity,
+    verbInsertOrDelete = Double.NegativeInfinity,
+    morphology = Double.NegativeInfinity,
+    wsd = Double.NegativeInfinity,
+    okQuantifier = Double.NegativeInfinity,
+    synonyms = Double.NegativeInfinity,
+    antonym = Double.NegativeInfinity,
+    default = Double.NegativeInfinity)
 
   /**
    * Compute the Lesk overlap between a synset and a sentence.

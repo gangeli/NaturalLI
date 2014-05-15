@@ -168,6 +168,30 @@ object Learn extends Client {
   }
 
   /**
+   * toString() an inference path, primarily for debugging.
+   * @param node The path to print.
+   * @return The string format of the path.
+   */
+  def recursivePrint(node:Inference):String = {
+    if (node.hasImpliedFrom) {
+      val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
+      if (incomingType != 63) {
+        s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
+      } else {
+        recursivePrint(node.getImpliedFrom)
+      }
+    } else {
+      s"${node.getFact.getGloss}"
+    }
+  }
+
+  /** @see Learn#recursivePrint(Inference) */
+  def recursivePrint(node:Option[Inference]):String = node match {
+    case Some(n) => recursivePrint(n)
+    case None => "<no paths>"
+  }
+
+  /**
    * An abstract class for computing a given loss over just the single most peaked prediction.
    * @param guesses The inference paths we are guessing
    * @param goldTruth The ground truth for the query associated with this loss.
@@ -278,19 +302,6 @@ object Learn extends Client {
    */
   class ProbabilityOfTruth(guesses:Iterable[Inference]) extends MaxTypeLoss(guesses, TruthValue.TRUE) {
     def apply(wVector:Array[Double]):Double = {
-      // Debugging output
-      def recursivePrint(node:Inference):String = {
-        if (node.hasImpliedFrom) {
-          val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
-          if (incomingType != 63) {
-            s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
-          } else {
-            recursivePrint(node.getImpliedFrom)
-          }
-        } else {
-          s"${node.getFact.getGloss}"
-        }
-      }
       for (inference <- guesses) {
         val prob = new MaxTypeLoss(List(inference), TruthValue.TRUE).probability(wVector)
         assert(!prob.isNaN)
@@ -364,17 +375,17 @@ object Learn extends Client {
     }
     def evaluate(print:String=>Unit):Unit = {
       // Baseline
-//      val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
-//        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
-//        val guess = !queries.forall( _.getForceFalse )
-//        ( g + (if (guess) 1 else 0),
-//          c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
-//          s + (if (gold == TruthValue.TRUE) 1 else 0),
-//          an + (if ((guess && gold == TruthValue.TRUE) || (!guess && gold != TruthValue.TRUE)) 1 else 0),
-//          ad + 1 )
-//        }
-//      print( "Error (baseline)  : " + Utils.percent.format(bAccuracyNumer.toDouble / bAccuracyDenom.toDouble))
-//      print(s"      (baseline) P: ${Utils.percent.format(bCorrect.toDouble / bGuessed.toDouble)} R:${Utils.percent.format(bCorrect.toDouble / bShouldHaveGuessed.toDouble)} F1: ${Utils.percent.format(Utils.f1(bGuessed, bCorrect, bShouldHaveGuessed))}")
+      val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
+        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
+        val guess = !queries.forall( _.getForceFalse )
+        ( g + (if (guess) 1 else 0),
+          c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
+          s + (if (gold == TruthValue.TRUE) 1 else 0),
+          an + (if ((guess && gold == TruthValue.TRUE) || (!guess && gold != TruthValue.TRUE)) 1 else 0),
+          ad + 1 )
+        }
+      print( "Error (baseline)  : " + Utils.percent.format(bAccuracyNumer.toDouble / bAccuracyDenom.toDouble))
+      print(s"      (baseline) P: ${Utils.percent.format(bCorrect.toDouble / bGuessed.toDouble)} R:${Utils.percent.format(bCorrect.toDouble / bShouldHaveGuessed.toDouble)} F1: ${Utils.percent.format(Utils.f1(bGuessed, bCorrect, bShouldHaveGuessed))}")
       // Evaluate
       val guessed = new AtomicInteger(0)
       val correct = new AtomicInteger(0)
@@ -384,9 +395,13 @@ object Learn extends Client {
         val parTestData: ParSeq[(Iterable[Query.Builder], TruthValue)] = testData.par
         parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
         parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-          val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(queries.map( guess(_, optimizer.weights ) ), gold, inputs=Some(queries))
+          val guesses = queries.map( guess(_, optimizer.weights) )
+          val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
           val allowedTrue = !queries.forall( _.getForceFalse )
-          if (loss.guessTruthValue && allowedTrue) guessed.incrementAndGet()
+          if (loss.guessTruthValue && allowedTrue) {
+            debug(s"[true]: ${queries.head}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
+            guessed.incrementAndGet()
+          }
           if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
           if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
           if (examplesAnnotated.incrementAndGet() % 100 == 0) {
@@ -424,7 +439,7 @@ object Learn extends Client {
           val guessValue: Iterable[Inference] = guess(query, optimizer.weights)
           val loss = new SquaredMaxLoss(guessValue, gold)
           val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
-          //        debug("[" + index + "] loss: " + lossValue)
+          debug(s"[$index] loss: ${Utils.df.format(lossValue)}; p(true)=${Utils.df.format(loss.guess(optimizer.weights))}  '${query.getQueryFact.getGloss}'")
         }
       }
       val iteration :Int = iterCounter.incrementAndGet()
