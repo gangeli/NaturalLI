@@ -47,17 +47,17 @@ class UtilsTest : public ::testing::Test {
 };
 
 TEST_F(UtilsTest, ToStringPhrase) {
-  EXPECT_EQ(string("[^]lemur [^]have [^]tail"), toString(*graph,  &lemursHaveTails()[0], lemursHaveTails().size()));
-  EXPECT_EQ(string("[^]animal [^]have [^]tail"), toString(*graph, &animalsHaveTails()[0], animalsHaveTails().size()));
-  EXPECT_EQ(string("[^]cat [^]have [^]tail"), toString(*graph,    &catsHaveTails()[0], animalsHaveTails().size()));
+  EXPECT_EQ(string("[^]lemur_0 [^]have_0 [^]tail_0"), toString(*graph,  &lemursHaveTails()[0], lemursHaveTails().size()));
+  EXPECT_EQ(string("[^]animal_0 [^]have_0 [^]tail_0"), toString(*graph, &animalsHaveTails()[0], animalsHaveTails().size()));
+  EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0"), toString(*graph,    &catsHaveTails()[0], animalsHaveTails().size()));
 }
 
 TEST_F(UtilsTest, ToStringPath) {
-  EXPECT_EQ(string("[^]lemur [^]have [^]tail; from\n  <start>"),
+  EXPECT_EQ(string("[^]lemur_0 [^]have_0 [^]tail_0; from\n  <start>"),
             toString(*graph, *searchType, lemurs));
-  EXPECT_EQ(string("[^]animal [^]have [^]tail; from\n  [^]lemur [^]have [^]tail; from\n  <start>"),
+  EXPECT_EQ(string("[^]animal_0 [^]have_0 [^]tail_0; from\n  [^]lemur_0 [^]have_0 [^]tail_0; from\n  <start>"),
             toString(*graph, *searchType, animals));
-  EXPECT_EQ(string("[^]cat [^]have [^]tail; from\n  [^]animal [^]have [^]tail; from\n  [^]lemur [^]have [^]tail; from\n  <start>"),
+  EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0; from\n  [^]animal_0 [^]have_0 [^]tail_0; from\n  [^]lemur_0 [^]have_0 [^]tail_0; from\n  <start>"),
             toString(*graph, *searchType, cats));
 }
 
