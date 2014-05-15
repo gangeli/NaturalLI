@@ -360,21 +360,21 @@ object Learn extends Client {
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
-        .setCacheType("bloom").build(), quiet = false)
+        .setCacheType("bloom").build(), quiet = true)
     }
     def evaluate(print:String=>Unit):Unit = {
       // Baseline
-      val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
-        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
-        val guess = !queries.forall( _.getForceFalse )
-        ( g + (if (guess) 1 else 0),
-          c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
-          s + (if (gold == TruthValue.TRUE) 1 else 0),
-          an + (if ((guess && gold == TruthValue.TRUE) || (!guess && gold != TruthValue.TRUE)) 1 else 0),
-          ad + 1 )
-        }
-      print( "Error (baseline)  : " + Utils.percent.format(bAccuracyNumer.toDouble / bAccuracyDenom.toDouble))
-      print(s"      (baseline) P: ${Utils.percent.format(bCorrect.toDouble / bGuessed.toDouble)} R:${Utils.percent.format(bCorrect.toDouble / bShouldHaveGuessed.toDouble)} F1: ${Utils.percent.format(Utils.f1(bGuessed, bCorrect, bShouldHaveGuessed))}")
+//      val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
+//        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
+//        val guess = !queries.forall( _.getForceFalse )
+//        ( g + (if (guess) 1 else 0),
+//          c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
+//          s + (if (gold == TruthValue.TRUE) 1 else 0),
+//          an + (if ((guess && gold == TruthValue.TRUE) || (!guess && gold != TruthValue.TRUE)) 1 else 0),
+//          ad + 1 )
+//        }
+//      print( "Error (baseline)  : " + Utils.percent.format(bAccuracyNumer.toDouble / bAccuracyDenom.toDouble))
+//      print(s"      (baseline) P: ${Utils.percent.format(bCorrect.toDouble / bGuessed.toDouble)} R:${Utils.percent.format(bCorrect.toDouble / bShouldHaveGuessed.toDouble)} F1: ${Utils.percent.format(Utils.f1(bGuessed, bCorrect, bShouldHaveGuessed))}")
       // Evaluate
       val guessed = new AtomicInteger(0)
       val correct = new AtomicInteger(0)

@@ -287,27 +287,32 @@ object Utils {
   }
 
   def simplifyQuery(query:Messages.Query, annotate:String=>Messages.Fact):Messages.Query = {
-    simplifyQuery(query.getQueryFact.getWordList.map( _.getGloss ).mkString(" "), annotate) match {
-      case Some(fact) => Messages.Query.newBuilder(query).setQueryFact(annotate(fact)).build()
+    simplifyQuery(query.getQueryFact.getWordList.map( _.getGloss.replaceAll("""__num\([0-9]*\)__""", "7").replaceAll(WORD_UNK, "foobazle") ).mkString(" "), annotate) match {
+      case Some(fact) => Messages.Query.newBuilder(query).setQueryFact(annotate(fact)).setAllowLookup(true).build()
       case None => query
     }
   }
 
   def simplifyQuery(gloss:String, annotate:String=>Messages.Fact):Option[String] = {
     val sentence = new Sentence(gloss)
-    def hackyHead(input:String, prefix:Char='N'):Option[String] = {
+    def hackyHead(input:String, prefix:Char='N', force:Boolean=false):Option[String] = {
       val sentence = new Sentence(input)
       val seq = sentence.pos.zip(sentence.lemma)
-      seq.takeWhile{ case (pos:String, lemma:String) => pos(0) != 'P' && pos != "IN" }
+      val goodGuess = seq.takeWhile{ case (pos:String, lemma:String) => pos(0) != 'P' && pos != "IN" }
         .reverse
         .find{ case (pos:String, lemma:String) => pos(0) == prefix && !AUXILLIARY_VERBS(lemma) }
         .map{ _._2 }
+      if (force) {
+        goodGuess.orElse(seq.find(_._1(0) == 'N').map( _._2 )).orElse( if (seq.length > 0) Some(seq(seq.length - 1)._2) else None )
+      } else {
+        goodGuess
+      }
     }
     val quantifiers: Array[String] = Quantifier.values.map{ _.surfaceForm.mkString(" ") }
-    def mkFact(left:String, verb:Int, right:String):Option[String] = {
-      for ( subj <- hackyHead(left, 'N').orElse(hackyHead(left, 'V'));
+    def mkFact(left:String, verb:Int, right:String, force:Boolean = false):Option[String] = {
+      for ( subj <- hackyHead(left, 'N').orElse(hackyHead(left, 'V', force));
             rel  <- Some(sentence.lemma(verb));
-            obj  <- hackyHead(right, 'N') ) yield {
+            obj  <- hackyHead(right, 'N', force) ) yield {
         def quantifier(elem:String, head:String):String = {
           quantifiers.find((x: String) => elem.toLowerCase.startsWith(x + " ")) match {
             case Some(q) => if (head.startsWith(q) || q.startsWith(head)) "" else q + " "
@@ -329,12 +334,20 @@ object Utils {
     val right = sentence.word.zip(sentence.pos).drop(verb + 1).dropWhile( x => x._2(0) == 'P' || x._2 == "IN" || x._2 == "RB" || x._2 == "TO").map( _._1 ).mkString(" ")
     mkFact(left, verb, right).orElse({
       // Else, try and find the main verb via POS matching
-      val mainVerb: Int = sentence.pos.zip(sentence.lemma).indexWhere{ case (p, l) => p(0) == 'V' && !AUXILLIARY_VERBS(l) && p(p.length-1) != 'G'}
+      var mainVerb: Int = sentence.pos.zip(sentence.lemma).indexWhere{ case (p, l) => p(0) == 'V' && !AUXILLIARY_VERBS(l) && p(p.length-1) != 'G'}
+      if (mainVerb < 0) { mainVerb = sentence.pos.zip(sentence.lemma).indexWhere{ case (p, l) => p(0) == 'V' && p(p.length-1) != 'G'} }
+      if (mainVerb < 0) { mainVerb = sentence.pos.zip(sentence.lemma).indexWhere{ case (p, l) => p(0) == 'V' } }
+      if (mainVerb < 0 && sentence.length >= 3) { mainVerb = 1 }
       if (mainVerb > 0) {
         val left = sentence.word.slice(0, mainVerb).mkString(" ")
         val right = sentence.word.zip(sentence.pos).drop(mainVerb + 1).dropWhile( x => x._2(0) == 'P' || x._2 == "IN" || x._2 == "RB" || x._2 == "TO").map( _._1 ).mkString(" ")
-        mkFact(left, mainVerb, right)
+        val fact = mkFact(left, mainVerb, right).orElse(mkFact(left, mainVerb, right, force = true))
+        if (!fact.isDefined) {
+          warn("could not simplify fact [1]: " + gloss)
+        }
+        fact
       } else {
+        warn("could not simplify fact [2]: " + gloss)
         None
       }
     })

@@ -198,6 +198,12 @@ class NLPProcessingTest extends Test {
       Utils.simplifyQuery("the second floor serves as the IT classrooms", (x:String) => NatLog.annotate(x).head) should be (Some("the floor serve the classroom"))
       Utils.simplifyQuery("the seat be lost at the 1917 election", (x:String) => NatLog.annotate(x).head) should be (Some("the seat lose the election"))
     }
+
+    it ("should generally return 3 word phrases") {
+      Utils.simplifyQuery("Atlantis be returns to earth", (x:String) => NatLog.annotate(x).head) should be (Some("atlantis be earth"))
+      Utils.simplifyQuery("Australia be World Heritage site", (x:String) => NatLog.annotate(x).head) should be (Some("australia be site"))
+
+    }
   }
 
 }

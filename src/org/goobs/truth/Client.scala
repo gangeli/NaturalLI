@@ -48,7 +48,7 @@ trait Client {
 
       // Write query
       query.writeTo(toServer)
-      if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes); awaiting response...")
+      if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes): ${query.getQueryFact.getGloss}")
       sock.shutdownOutput()  // signal end of transmission
 
       // Read response
@@ -62,7 +62,16 @@ trait Client {
     // Query with backoff
     val main = if(Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
     if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_BACKUP_PORT)) {
-      doQuery(Utils.simplifyQuery(query, (x:String) =>NatLog.annotate(x).head), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+      val simpleQuery = Utils.simplifyQuery(query, (x:String) =>NatLog.annotate(x).head)
+      val backoff = doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+      if (backoff.isEmpty) {
+        warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
+        val failsave = doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+        if (failsave.isEmpty) {
+          err(RED, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+        }
+      }
+      backoff
     } else {
       main
     }

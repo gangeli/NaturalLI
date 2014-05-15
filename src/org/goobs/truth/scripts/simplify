@@ -12,7 +12,6 @@ exec scala -J-Xmx2g -classpath corenlp-scala.jar:${JAVANLP_HOME}/projects/core/c
 import edu.stanford.nlp.Sentence
 
 val AUXILLIARY_VERBS = Set[String](
-    "be",
     "can",
     "could",
     "dare",
