@@ -119,7 +119,7 @@ void closeConnection(int socket, sockaddr_in* client) {
 		     inet_ntoa(client->sin_addr),
          ntohs(client->sin_port));
   if (shutdown(socket, SHUT_RDWR) != 0) {
-    perror("Failed to shutdown connection");
+    printf("Failed to shutdown connection\n");
     printf("  (");
     switch (errno) {
       case EBADF: printf("The socket argument is not a valid file descriptor"); break;
@@ -385,7 +385,7 @@ int startServer(int port) {
   // Create a socket
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock < 0) {
-		perror("could not create socket");
+		printf("could not create socket\n");
     return 1;
 	}
 	int sockoptval = 1;
@@ -399,7 +399,7 @@ int startServer(int port) {
   address.sin_addr.s_addr = htonl(INADDR_ANY);
   // (actually perform the bind)
   if (bind(sock, (struct sockaddr*) &address, sizeof(address)) != 0) {
-  	perror("Could not bind socket");
+  	printf("Could not bind socket\n");
     return 10;
   } else {
     printf("Opened server socket (hostname: %s)\n", hostname);
@@ -412,7 +412,7 @@ int startServer(int port) {
 
   // set the socket for listening (queue backlog of 5)
 	if (listen(sock, SERVER_TCP_BUFFER) < 0) {
-		perror("Could not open port for listening");
+		printf("Could not open port for listening\n");
     return 100;
 	} else {
     printf("Listening on port %d...\n", port);
@@ -432,7 +432,7 @@ int startServer(int port) {
       // case, loop back and try again
       if ((errno != ECHILD) && (errno != ERESTART) && (errno != EINTR)) {
         // If we got here, there was a serious problem with the connection
-        perror("Failed to accept connection request");
+        printf("Failed to accept connection request\n");
         printf("  (");
         switch (errno) {
           case EAGAIN: printf("O_NONBLOCK is set for the socket file descriptor and no connections are present to be accepted"); break;
