@@ -61,7 +61,7 @@ trait Client {
     }
     // Query with backoff
     val main = if(Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
-    if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_BACKUP_PORT)) {
+    if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
       val simpleQuery = Utils.simplifyQuery(query, (x:String) =>NatLog.annotate(x).head)
       val backoff = doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
       if (backoff.isEmpty) {
