@@ -116,7 +116,7 @@ object Utils {
 
   /**
    * Creates a new unknown word provider.
-   * This hsould be created on every (antecedent, consequent) pair to ensure that
+   * This should be created on every (antecedent, consequent) pair to ensure that
    * the antecedents and consequents map to the same unknown word if the words
    * are equal.
    */

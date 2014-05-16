@@ -19,6 +19,7 @@ import edu.stanford.nlp.util.HashIndex
 import org.goobs.sim._
 import edu.stanford.nlp.Sentence
 import org.goobs.sim.Ontology.RealNode
+import scala.util.matching
 
 //
 // SQL prerequisite statements for this script:
@@ -276,19 +277,28 @@ object CreateGraph {
         // Nearest Neighbors
         //
         println("[20] Nearest Neighbors")
+        val NUMBER: matching.Regex = """[0-9]+(\.[0-9]*)?""".r
         for (line <- Source.fromFile(Props.SCRIPT_DISTSIM_COS, "UTF-8").getLines()) {
           val fields = line.split("\t")
-          val source:Int = indexOf(fields(0))
-          for (i <- 1 until fields.length) {
-            val scoreAndGloss = fields(i).split(" ")
-            assert(scoreAndGloss.length == 2)
-            val sink:Int = indexOf(scoreAndGloss(1))
-            val angle:Double = math.acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
-            assert(angle >= 0.0)
-            if (!Quantifier.quantifierGlosses.contains(scoreAndGloss(1).toLowerCase) ||
-                !Quantifier.quantifierGlosses.contains(fields(0).toLowerCase)) {  // don't add quantifier replacements
-              edgeII(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
-            }
+          fields(0) match {
+            case NUMBER(_) => // noop; don't nearest neighbors numbers
+            case _ => // noop; don't nearest neighbors numbers
+              val source:Int = indexOf(fields(0))
+              for (i <- 1 until fields.length) {
+                val scoreAndGloss = fields(i).split(" ")
+                assert(scoreAndGloss.length == 2)
+                scoreAndGloss(1) match {
+                  case NUMBER(_) => // noop; don't nearest neighbors numbers
+                  case _ =>
+                    val sink:Int = indexOf(scoreAndGloss(1))
+                    val angle:Double = math.acos( scoreAndGloss(0).toDouble ) / scala.math.Pi
+                    assert(angle >= 0.0)
+                    if (!Quantifier.quantifierGlosses.contains(scoreAndGloss(1).toLowerCase) ||
+                      !Quantifier.quantifierGlosses.contains(fields(0).toLowerCase)) {  // don't add quantifier replacements
+                      edgeII(EdgeType.ANGLE_NEAREST_NEIGHBORS, source, 0, sink, 0, angle)
+                    }
+                }
+              }
           }
         }
 

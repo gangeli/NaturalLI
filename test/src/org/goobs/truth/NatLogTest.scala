@@ -110,4 +110,28 @@ class NatLogTest extends Test {
 
     }
   }
+  describe("NER Tags") {
+    it ("should be abstracted if unknown word") {
+      val savedRepl = Props.NATLOG_INDEXER_REPLNER
+      Props.NATLOG_INDEXER_REPLNER = true
+      NatLog.annotate("Chris Manning is a professor").head.getWordList.map( _.getGloss ).toList should be (List("person", "be", "a", "professor"))
+      NatLog.annotate("Chris Manning advises Sonal Gupta").head.getWordList.map( _.getGloss ).toList should be (List("person", "advise", "person"))
+      Props.NATLOG_INDEXER_REPLNER = savedRepl
+    }
+    it ("should not be abstracted if known word") {
+      val savedRepl = Props.NATLOG_INDEXER_REPLNER
+      Props.NATLOG_INDEXER_REPLNER = true
+      NatLog.annotate("George Bush is a president").head.getWordList.map( _.getGloss ).toList should be (List("george bush", "be", "a", "president"))
+      NatLog.annotate("George Bush met Chris Manning").head.getWordList.map( _.getGloss ).toList should be (List("george bush", "meet", "person"))
+      Props.NATLOG_INDEXER_REPLNER = savedRepl
+    }
+    it ("should not be abstracted if unknown word") {
+      val savedRepl = Props.NATLOG_INDEXER_REPLNER
+      Props.NATLOG_INDEXER_REPLNER = false
+      NatLog.annotate("Chris Manning is a professor").head.getWordList.map( _.getGloss ).toList should be (List(Utils.WORD_UNK, "be", "a", "professor"))
+      NatLog.annotate("Chris Manning advises Sonal Gupta").head.getWordList.map( _.getGloss ).toList should be (List(Utils.WORD_UNK, "advise", Utils.WORD_UNK, "gupta"))
+      Props.NATLOG_INDEXER_REPLNER = savedRepl
+    }
+
+  }
 }

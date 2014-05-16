@@ -9,6 +9,7 @@ import edu.stanford.nlp.{natlog, Sentence}
 import edu.smu.tspell.wordnet.{Synset, WordNetDatabase, SynsetType}
 import scala.collection.mutable
 import edu.stanford.nlp.natlog.GaborMono
+import edu.stanford.nlp.sequences.SeqClassifierFlags
 
 object NatLog {
   lazy val wordnet:WordNetDatabase = WordNetDatabase.getFileInstance
@@ -291,13 +292,33 @@ object NatLog {
     } else { inputSentence }
 
     // Tokenize + Index
+    val unkInt = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGet(Utils.WORD_UNK) else Utils.wordIndexer.get(Utils.WORD_UNK)
     val index:String=>Array[Int] = {(arg:String) =>
       if (Props.NATLOG_INDEXER_LAZY) {
         Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet, unkProvider)._1
       } else {
         Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s), unkProvider)._1
       }}
-    val tokens = index(sentence.words.take(sentence.length - 1).mkString(" "))
+    val abstractedTokens = sentence.words.zip(sentence.ner).foldLeft(List[(String,String)]()){ case (soFar:List[(String,String)], (w:String, ner:String)) =>
+        if (soFar.isEmpty) {
+          (w, ner) :: soFar
+        } else {
+          val (lastW, lastNER) = soFar.head
+          if (lastNER != SeqClassifierFlags.DEFAULT_BACKGROUND_SYMBOL && ner == lastNER) {
+            ( lastW + " " + w, ner ) :: soFar.tail
+          } else {
+            (w, ner) :: soFar
+          }
+        }
+    }.reverse.dropRight(1).map { case (phrase: String, ner: String) =>
+        val indices = index(phrase)
+        if (Props.NATLOG_INDEXER_REPLNER && indices.exists(_ == unkInt)) {
+          ner.toLowerCase
+        } else {
+          phrase
+        }
+    }
+    val tokens = index(abstractedTokens.mkString(" "))
 
     // POS tag
     val (pos, ner, monotone):(Array[Option[String]], Array[String], Array[Monotonicity]) = {
