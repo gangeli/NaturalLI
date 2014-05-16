@@ -16,6 +16,7 @@ import scala.language.implicitConversions
 import scala.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
 import scala.concurrent.duration.Duration
+import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration
 
 
 object Learn extends Client {
@@ -270,7 +271,7 @@ object Learn extends Client {
         "took a fishy gradient update: " + guess(wVector) + " vs " + goldTruth + "; gradient=" + gradient.mkString(" ")
       )
       // Debug
-      if (!gradient.forall ( x => x == 0.0)) {
+      if (!gradient.forall ( x => math.abs(x) < 1e-3)) {
         Learn.synchronized {
           startTrack("Gradient Update")
           for (entry <- gradient.entrySet().filter(_.getValue != 0.0)) {
@@ -355,10 +356,9 @@ object Learn extends Client {
       for ( entry <- config.entrySet() ) {
         props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
       }
-      Execution.fillOptions(classOf[Execution], props)
       Execution.fillOptions(classOf[Props], props)
+      StanfordRedwoodConfiguration.apply(props)
     } else {
-      Execution.fillOptions(classOf[Execution], args)
       Execution.fillOptions(classOf[Props], args)
     }
 
