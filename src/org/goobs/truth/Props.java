@@ -51,10 +51,14 @@ public class Props {
   public static String SERVER_MAIN_HOST = "localhost";
   @Option(name="server.main.port", gloss="The hostname for the inference server")
   public static int SERVER_MAIN_PORT = 1337;
+  @Option(name="server.main.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
+  public static int SERVER_MAIN_THREADS = 4;
   @Option(name="server.backup.host", gloss="The hostname for the inference server")
   public static String SERVER_BACKUP_HOST = "localhost";
   @Option(name="server.backup.port", gloss="The hostname for the inference server")
   public static int SERVER_BACKUP_PORT = 1338;
+  @Option(name="server.backup.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
+  public static int SERVER_BACKUP_THREADS = 4;
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;
@@ -87,8 +91,6 @@ public class Props {
   public static int LEARN_MODEL_START = 0;
   @Option(name="learn.sgd.nu", gloss="The regularization $nu$ for SGD")
   public static double LEARN_SGD_NU = 0.1;
-  @Option(name="learn.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
-  public static int LEARN_THREADS = 4;
   @Option(name="learn.train", gloss="The corpus to use for training")
   public static Corpus[] LEARN_TRAIN = new Corpus[]{ Corpus.FRACAS };
   @Option(name="learn.test", gloss="The corpus to use for testing")

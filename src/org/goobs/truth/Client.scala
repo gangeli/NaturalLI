@@ -1,14 +1,17 @@
 package org.goobs.truth
 
 import scala.collection.JavaConversions._
+import scala.concurrent._
 
 import org.goobs.truth.Messages._
+import org.goobs.truth.scripts.ShutdownServer
 import Monotonicity._
+
 import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
+import java.util.concurrent.Executors
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import org.goobs.truth.scripts.ShutdownServer
 import edu.stanford.nlp.util.Execution
 
 /**
@@ -32,13 +35,29 @@ trait Client {
     }
   }
 
+  private val mainExecContext = new ExecutionContext {
+    val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
+    def execute(runnable: Runnable) {
+        threadPool.submit(runnable)
+    }
+    def reportFailure(t: Throwable) { t.printStackTrace() }
+  }
+
+  private val backupExecContext = new ExecutionContext {
+    val threadPool = Executors.newFixedThreadPool(Props.SERVER_BACKUP_THREADS)
+    def execute(runnable: Runnable) {
+      threadPool.submit(runnable)
+    }
+    def reportFailure(t: Throwable) { t.printStackTrace() }
+  }
+
   /**
    * Issue a query to the search server, and block until it returns
    * @param query The query, with monotonicity markings set.
    * @param quiet Suppress logging messages
    * @return The query fact, with a truth value and confidence
    */
-  def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = {
+  def asyncQuery(query:Query, quiet:Boolean=false):Future[Iterable[Inference]] = {
     def doQuery(query:Query, host:String, port:Int):Iterable[Inference] = {
       // Set up connection
       val sock = new Socket(host, port)
@@ -59,23 +78,50 @@ trait Client {
       if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
       response.getInferenceList
     }
+
     // Query with backoff
-    val main = if(Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
-    if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
-      val simpleQuery = Utils.simplifyQuery(query, (x:String) =>NatLog.annotate(x).head)
-      val backoff = doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
-      if (backoff.isEmpty) {
-        warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
-        val failsave = doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
-        if (failsave.isEmpty) {
-          err(RED, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+    // Set up default execution context
+    import scala.concurrent.ExecutionContext.Implicits.global
+    // (step 1: main search)
+    val main: Future[Iterable[Inference]] = Future {
+      if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
+    } (mainExecContext)
+    // (step 2: map to backoff)
+    main.flatMap( (main: Iterable[Inference]) =>
+      if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
+        val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
+        // (step 3: execute backoff)
+        val backoff = Future {
+          doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+        } (backupExecContext)
+        // (step 4: map to backoff)
+        backoff.flatMap{ (backoff: Iterable[Inference]) =>
+          if (backoff.isEmpty) {
+            // (step 5: execute failsafe)
+            warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
+            val failsafe: Future[Iterable[Inference]] = Future {
+              doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+            } (backupExecContext)
+            failsafe.map{ failsafe =>
+              if (failsafe.isEmpty) {
+                err(RED, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+              }
+              // return case: had to go all the way to the failsafe
+              failsafe
+            }
+          } else {
+            // return case: backoff found paths
+            Future.successful(backoff)
+          }
         }
+      } else {
+        // return case: main query found paths
+        Future.successful(main)
       }
-      backoff
-    } else {
-      main
-    }
+    )
   }
+
+  def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet), scala.concurrent.duration.Duration.Inf)
 
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
     ShutdownServer.shutdown()
@@ -95,13 +141,12 @@ trait Client {
 
     // Run the server
     var running = false
-    startTrack("Starting Server")
+    log("Starting Server")
     List[String]("catchsegv", "src/naturalli_server", "" + Props.SERVER_MAIN_PORT) ! ProcessLogger{line =>
       if (!running || printOut) { log(line) }
       if (line.startsWith("Listening on port") && !running) {
         // Server is initialized -- we can start doing client-side stuff
         running = true
-        endTrack("Starting Server")
         new Thread(new Runnable {
           override def run(): Unit = {
             // Finish loading the annotators
@@ -109,7 +154,9 @@ trait Client {
 
             // Call the callback
             // vvv
+            log("--Start Callback--")
             callback()
+            log("--End Callback--")
             // ^^^
 
             // Shutdown the server

@@ -13,9 +13,9 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue.TruthValue
 
 import scala.language.implicitConversions
+import scala.concurrent._
 import java.util.concurrent.atomic.AtomicInteger
-import scala.collection.parallel.immutable.{ParSeq, ParRange}
-import scala.collection.parallel.ForkJoinTaskSupport
+import scala.concurrent.duration.Duration
 
 
 object Learn extends Client {
@@ -319,6 +319,9 @@ object Learn extends Client {
    * Learn a model.
    */
   def main(args:Array[String]):Unit = {
+    // Implicits
+    import scala.concurrent.ExecutionContext.Implicits.global
+
     // Initialize Options
     if (args.length == 1) {
       val props:Properties = new Properties
@@ -365,9 +368,9 @@ object Learn extends Client {
         optimizer
     }
 
-    // Define some useful functions
-    def guess(query:Query.Builder, weights:Array[Double]):Iterable[Inference] = {
-      issueQuery(Messages.Query.newBuilder(query.build())
+    // Define evaluation
+    def guess(query:Query.Builder, weights:Array[Double]):Future[Iterable[Inference]] = {
+      asyncQuery(Messages.Query.newBuilder(query.build())
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
@@ -391,25 +394,25 @@ object Learn extends Client {
       val correct = new AtomicInteger(0)
       val shouldHaveGuessed = new AtomicInteger(0)
       val examplesAnnotated = new AtomicInteger(0)
-      val error = optimizer.error({
-        val parTestData: ParSeq[(Iterable[Query.Builder], TruthValue)] = testData.par
-        parTestData.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
-        parTestData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-          val guesses = queries.map( guess(_, optimizer.weights) )
-          val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
-          val allowedTrue = !queries.forall( _.getForceFalse )
-          if (loss.guessTruthValue && allowedTrue) {
-            debug(s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
-            guessed.incrementAndGet()
+      val losses = Future.sequence(testData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+          Future.sequence(queries.map( guess(_, optimizer.weights) )).map { (guesses: Iterable[Iterable[Inference]]) =>
+            // vv Enter "search done" Monad
+            val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
+            val allowedTrue = !queries.forall( _.getForceFalse )
+            if (loss.guessTruthValue && allowedTrue) {
+              debug(s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
+              guessed.incrementAndGet()
+            }
+            if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
+            if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
+            if (examplesAnnotated.incrementAndGet() % 100 == 0) {
+              log(s"[${examplesAnnotated.get()}]  P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
+            }
+            loss
+            // ^^ Leave "search done" Monad
           }
-          if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
-          if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
-          if (examplesAnnotated.incrementAndGet() % 100 == 0) {
-            log(s"[${examplesAnnotated.get()}]  P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
-          }
-          loss
-        }
-      })
+        })
+      val error = optimizer.error(Await.result(losses, Duration.Inf))
       print( "Error: " + Utils.percent.format(error))
       print(s"    P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
     }
@@ -422,32 +425,31 @@ object Learn extends Client {
     // Learn
     startTrack("Learning")
     // (create balanced data stream)
-    val trueData = DataSource.loop(trainData.filter( _._2 == TruthValue.TRUE ))
-    val falseData = DataSource.loop(trainData.filter( _._2 != TruthValue.TRUE ))
+    val trueData  = DataSource.loop(trainData.filter( x => x._2 == TruthValue.TRUE && !x._1.headOption.fold(false)(_.getForceFalse) ))
+    val falseData = DataSource.loop(trainData.filter( x => x._2 != TruthValue.TRUE && !x._1.headOption.fold(false)(_.getForceFalse) ))
     def mkIter = trueData.zip(falseData).map{ case (a, b) => Stream(a, b) }.flatten.iterator
     var iter: Iterator[DataSource.Datum] = mkIter
     val iterCounter = new AtomicInteger(0)
-    for (index <- { val x: ParRange = ((Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS).par
-      x.tasksupport = new ForkJoinTaskSupport(new scala.concurrent.forkjoin.ForkJoinPool(Props.LEARN_THREADS))
-      x }) {
+    for (index <-  (Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS) {
       val (queries, gold) = Learn.synchronized {
         if (!iter.hasNext) { iter = mkIter }
         iter.next()
       }
-      for (query <- queries) {
-        if (!query.getForceFalse) {
-          val guessValue: Iterable[Inference] = guess(query, optimizer.weights)
+      for (query: Query.Builder <- queries) {
+        for (guessValue: Iterable[Inference] <- guess(query, optimizer.weights)) {
+          // vv Enter "search done" Monad
           val loss = new SquaredMaxLoss(guessValue, gold)
           val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
           debug(s"[$index] loss: ${Utils.df.format(lossValue)}; p(true)=${Utils.df.format(loss.guess(optimizer.weights))}  '${query.getQueryFact.getGloss}'")
+          val iteration :Int = iterCounter.incrementAndGet()
+          if (iteration % 10 == 0) {
+            log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
+          }
+          if (iteration % 1000 == 0 && Props.LEARN_MODEL_DIR.exists()) {
+            optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(iteration)))
+          }
+          // ^^ Leave "search done" Monad
         }
-      }
-      val iteration :Int = iterCounter.incrementAndGet()
-      if (iteration % 10 == 0) {
-        log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
-      }
-      if (iteration % 1000 == 0 && Props.LEARN_MODEL_DIR.exists()) {
-        optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(iteration)))
       }
     }
     endTrack("Learning")
