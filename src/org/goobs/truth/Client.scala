@@ -89,9 +89,8 @@ trait Client {
 
     // Make the server
     import scala.sys.process._
-    startTrack("Making server")
+    log("Making server")
     val couldMake = List[String]("""make""", "-j" + Execution.threads) ! ProcessLogger { line => log(line) }
-    endTrack("Making server")
     if (couldMake != 0) { return -1 }
 
     // Run the server
