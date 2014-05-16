@@ -36,18 +36,20 @@ trait Client {
   }
 
   private val mainExecContext = new ExecutionContext {
-    val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
-    def execute(runnable: Runnable) {
-        threadPool.submit(runnable)
-    }
+    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
+    def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
   }
 
   private val backupExecContext = new ExecutionContext {
-    val threadPool = Executors.newFixedThreadPool(Props.SERVER_BACKUP_THREADS)
-    def execute(runnable: Runnable) {
-      threadPool.submit(runnable)
-    }
+    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_BACKUP_THREADS)
+    def execute(runnable: Runnable) { threadPool.submit(runnable) }
+    def reportFailure(t: Throwable) { t.printStackTrace() }
+  }
+
+  implicit val serverBoundContext = new ExecutionContext {
+    lazy val threadPool = Executors.newFixedThreadPool(math.max(Props.SERVER_BACKUP_THREADS, Props.SERVER_MAIN_THREADS))
+    def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
   }
 
@@ -80,8 +82,6 @@ trait Client {
     }
 
     // Query with backoff
-    // Set up default execution context
-    import scala.concurrent.ExecutionContext.Implicits.global
     // (step 1: main search)
     val main: Future[Iterable[Inference]] = Future {
       if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
@@ -98,13 +98,13 @@ trait Client {
         backoff.flatMap{ (backoff: Iterable[Inference]) =>
           if (backoff.isEmpty) {
             // (step 5: execute failsafe)
-            warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
+//            warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
             val failsafe: Future[Iterable[Inference]] = Future {
               doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
             } (backupExecContext)
             failsafe.map{ failsafe =>
               if (failsafe.isEmpty) {
-                err(RED, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+                debug(YELLOW, "no results for query: " + simpleQuery.getQueryFact.getGloss)
               }
               // return case: had to go all the way to the failsafe
               failsafe

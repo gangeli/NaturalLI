@@ -52,13 +52,13 @@ public class Props {
   @Option(name="server.main.port", gloss="The hostname for the inference server")
   public static int SERVER_MAIN_PORT = 1337;
   @Option(name="server.main.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
-  public static int SERVER_MAIN_THREADS = 4;
+  public static int SERVER_MAIN_THREADS = Execution.threads;
   @Option(name="server.backup.host", gloss="The hostname for the inference server")
   public static String SERVER_BACKUP_HOST = "localhost";
   @Option(name="server.backup.port", gloss="The hostname for the inference server")
   public static int SERVER_BACKUP_PORT = 1338;
   @Option(name="server.backup.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
-  public static int SERVER_BACKUP_THREADS = 4;
+  public static int SERVER_BACKUP_THREADS = Execution.threads;
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;
@@ -95,6 +95,8 @@ public class Props {
   public static Corpus[] LEARN_TRAIN = new Corpus[]{ Corpus.FRACAS };
   @Option(name="learn.test", gloss="The corpus to use for testing")
   public static Corpus[] LEARN_TEST = new Corpus[]{ Corpus.FRACAS };
+  @Option(name="learn.prCurve", gloss="The corpus to use for testing")
+  public static File LEARN_PRCURVE = new File("/dev/null");
 
   @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
   public static boolean EVALUATE_ALLOWUNK = false;

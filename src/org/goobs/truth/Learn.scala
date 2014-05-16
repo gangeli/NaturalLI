@@ -50,7 +50,7 @@ object Learn extends Client {
 
   /** Implicit to convert from a weight counter to a weight vector */
   implicit def flattenWeights(w:WeightVector):Array[Double] = {
-    (w.getCount("bias") ::
+    (w.getCount("bias") :: w.getCount("resultCount") ::
       (for (e <- EdgeType.values.toList;
          truth <- Array[Boolean](true, false);
          mono <- Monotonicity.values().toArray) yield {
@@ -62,7 +62,8 @@ object Learn extends Client {
   def inflateWeights(w:Array[Double], ignoreValue:Double):WeightVector = {
     val feats = new ClassicCounter[String]
     if (w(0) != ignoreValue) { feats.incrementCount("bias", w(0)) }
-    var i:Int = 1
+    if (w(1) != ignoreValue) { feats.incrementCount("resultCount", w(1)) }
+    var i:Int = 2
     for (e <- EdgeType.values.toList;
           truth <- Array[Boolean](true, false);
           mono <- Monotonicity.values().toArray) {
@@ -198,7 +199,11 @@ object Learn extends Client {
    */
   class MaxTypeLoss(guesses:Iterable[Inference], goldTruth:TruthValue) {
     val guessPath:Option[Inference] = if (guesses.isEmpty) None else Some(guesses.maxBy( x => math.abs(0.5 - x.getScore) ))
-    val features:Array[Double] = if (guessPath.isDefined) featurize(guessPath.get) else new ClassicCounter[String]
+    val features:Array[Double] = {
+      val f = if (guessPath.isDefined) featurize(guessPath.get) else new ClassicCounter[String]
+      f.incrementCount("resultCount", guesses.size)
+      f
+    }
     val goldPolarity = goldTruth match {
       case TruthValue.TRUE => 1.0
       case TruthValue.FALSE => -1.0
@@ -213,7 +218,7 @@ object Learn extends Client {
     }
 
     def prediction(wVector:Array[Double]):Double = {
-      assert (wVector.forall( _ <= 0.0 ))
+      assert (wVector.drop(2).forall( _ <= 0.0 ))
       assert (features.forall( _ >= 0.0 ))
       assert (features.forall( !_.isNaN ))
       val p = dotProduct(wVector, features)
@@ -264,6 +269,16 @@ object Learn extends Client {
       assert ( gradient.forall( x => x >= 0.0 ) || gradient.forall( x => x <= 0.0 ),
         "took a fishy gradient update: " + guess(wVector) + " vs " + goldTruth + "; gradient=" + gradient.mkString(" ")
       )
+      // Debug
+      if (!gradient.forall ( x => x == 0.0)) {
+        Learn.synchronized {
+          startTrack("Gradient Update")
+          for (entry <- gradient.entrySet().filter(_.getValue != 0.0)) {
+            debug(s"${entry.getKey}: ${entry.getValue}")
+          }
+          endTrack("Gradient Update")
+        }
+      }
       // Return the gradient
       gradient
     }
@@ -278,6 +293,20 @@ object Learn extends Client {
   }
 
   class ZeroOneAllTrueLoss(guesses:Iterable[Iterable[Inference]], goldTruth:TruthValue, inputs:Option[Iterable[Query.Builder]] = None) extends ZeroOneLoss {
+    def probability(weights:Array[Double]):Double = {
+      inputs match {
+        case Some(input:Iterable[Query.Builder]) =>
+          guesses.zip(input).foldLeft(1.0){ case (probability:Double, (guess:Iterable[Inference], input:Query.Builder)) =>
+            if (input.getForceFalse) { 0.0 }
+            else { probability * new ZeroOneMaxLoss(guess, goldTruth).probability(weights) }
+          }
+        case None =>
+          guesses.foldLeft(1.0){ case (probability:Double, guess:Iterable[Inference]) =>
+            probability * new ZeroOneMaxLoss(guess, goldTruth).probability(weights)
+          }
+      }
+    }
+
     lazy val isCorrect: Boolean = {
       inputs match {
         case Some(input:Iterable[Query.Builder]) =>
@@ -300,12 +329,12 @@ object Learn extends Client {
    * A little helper for when we just want p(TRUE) rather than any structured loss
    * @param guesses The inference paths we are guessing
    */
-  class ProbabilityOfTruth(guesses:Iterable[Inference]) extends MaxTypeLoss(guesses, TruthValue.TRUE) {
+  class ProbabilityOfTruth(guesses:Iterable[Inference], verbose:Boolean=true) extends MaxTypeLoss(guesses, TruthValue.TRUE) {
     def apply(wVector:Array[Double]):Double = {
       for (inference <- guesses) {
         val prob = new MaxTypeLoss(List(inference), TruthValue.TRUE).probability(wVector)
         assert(!prob.isNaN)
-        log({
+        if (verbose) log({
           if (prob >= 0.5) "p(true)=" + prob + ": "
           else "p(true)=" + prob + ": "
         } + recursivePrint(inference))
@@ -319,9 +348,6 @@ object Learn extends Client {
    * Learn a model.
    */
   def main(args:Array[String]):Unit = {
-    // Implicits
-    import scala.concurrent.ExecutionContext.Implicits.global
-
     // Initialize Options
     if (args.length == 1) {
       val props:Properties = new Properties
@@ -329,8 +355,10 @@ object Learn extends Client {
       for ( entry <- config.entrySet() ) {
         props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
       }
+      Execution.fillOptions(classOf[Execution], props)
       Execution.fillOptions(classOf[Props], props)
     } else {
+      Execution.fillOptions(classOf[Execution], args)
       Execution.fillOptions(classOf[Props], args)
     }
 
@@ -360,10 +388,11 @@ object Learn extends Client {
         if (modelFile.exists() && modelFile.canRead) { Some(modelFile) } else { None }
       } else { None }
     if (!Props.LEARN_MODEL_DIR.exists() && !Props.LEARN_MODEL_DIR.mkdirs()) { warn(YELLOW, "Could not create model directory: " + Props.LEARN_MODEL_DIR) }
+    val projection = (i:Int, w:Double) => if (i < 2) w else math.min(-1e-4, w)
     val optimizer = modelFile match {
-      case Some(file) => OnlineOptimizer.deserialize(file, regularizer, project = (i:Int,w:Double) => math.min(-1e-4, w))
+      case Some(file) => OnlineOptimizer.deserialize(file, regularizer, project = projection)
       case None =>
-        val optimizer = OnlineOptimizer(NatLog.softNatlogWeights, regularizer)(project = (i:Int,w:Double) => math.min(-1e-4, w))
+        val optimizer = OnlineOptimizer(NatLog.softNatlogWeights, regularizer)(project = projection)
         optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(0)))
         optimizer
     }
@@ -376,10 +405,10 @@ object Learn extends Client {
         .setSearchType("ucs")
         .setCacheType("bloom").build(), quiet = true)
     }
-    def evaluate(print:String=>Unit):Unit = {
+    def evaluate(print:String=>Unit, prFile:File=new File("/dev/null")):Unit = {
       // Baseline
       val (bGuessed, bCorrect, bShouldHaveGuessed, bAccuracyNumer, bAccuracyDenom)
-        = testData.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
+        = testData.par.foldLeft( (0, 0, 0, 0, 0) ) { case ((g:Int, c:Int, s:Int, an:Int, ad:Int), (queries: Iterable[Query.Builder], gold: TruthValue)) =>
         val guess = !queries.forall( _.getForceFalse )
         ( g + (if (guess) 1 else 0),
           c + (if (guess && gold == TruthValue.TRUE) 1 else 0),
@@ -394,32 +423,50 @@ object Learn extends Client {
       val correct = new AtomicInteger(0)
       val shouldHaveGuessed = new AtomicInteger(0)
       val examplesAnnotated = new AtomicInteger(0)
-      val losses = Future.sequence(testData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+      case class ResultEntry(guess:Boolean, gold:Boolean, prob:Double)
+      // Compute futures
+      val lossesFuture: Future[Stream[(ZeroOneAllTrueLoss, ResultEntry)]]
+        = Future.sequence(testData.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+          val allowedTrue = !queries.forall( _.getForceFalse )
           Future.sequence(queries.map( guess(_, optimizer.weights) )).map { (guesses: Iterable[Iterable[Inference]]) =>
             // vv Enter "search done" Monad
             val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
-            val allowedTrue = !queries.forall( _.getForceFalse )
             if (loss.guessTruthValue && allowedTrue) {
-              debug(s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
+              Learn.synchronized { debug(if (loss.isCorrect) GREEN else RED, s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}") }
               guessed.incrementAndGet()
+            } else if (!loss.isCorrect) {
+              debug(RED, s"[false]: ${queries.head.getQueryFact.getGloss}")
             }
             if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
             if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
             if (examplesAnnotated.incrementAndGet() % 100 == 0) {
-              log(s"[${examplesAnnotated.get()}]  P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
+              Learn.synchronized{ log(s"[${examplesAnnotated.get()}]  P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}") }
             }
-            loss
+            (loss, ResultEntry(loss.guessTruthValue && allowedTrue, gold == TruthValue.TRUE, loss.probability(optimizer.weights)))
             // ^^ Leave "search done" Monad
           }
         })
-      val error = optimizer.error(Await.result(losses, Duration.Inf))
+      val (losses, prCurve) = Await.result(lossesFuture, Duration.Inf).unzip
+      // Print error
+      val error = optimizer.error(losses)
       print( "Error: " + Utils.percent.format(error))
       print(s"    P: ${Utils.percent.format(correct.get.toDouble / guessed.get.toDouble)} R:${Utils.percent.format(correct.get.toDouble / shouldHaveGuessed.get.toDouble)} F1: ${Utils.percent.format(Utils.f1(guessed.get, correct.get, shouldHaveGuessed.get))}")
+      // Save PR curve
+      Utils.printToFile(prFile) { out =>
+        out.println("#gold\tguess\tprob")
+        for (entry <- prCurve.sortBy(_.prob)) { out.println(s"${entry.gold}\t${entry.guess}\t${entry.prob}")}
+      }
+      // Optimal F1
+      val sortedPR = prCurve.sortBy( _.prob )
+      print("Optimal F1: " + (0 until sortedPR.length).map{ (falseUntil:Int) =>
+        Utils.f1(sortedPR.take(falseUntil).map{ case ResultEntry(guess, gold, prob) => (false, gold) }.toList :::
+          sortedPR.drop(falseUntil).map{ case ResultEntry(guess, gold, prob) => (guess, gold) }.toList)
+      }.max)
     }
 
     // Pre-Evaluate Model
-    startTrack("Evaluating (pre-learning)")
-    evaluate(x => log(BOLD,YELLOW, "[Pre-learning] " + x))
+    forceTrack("Evaluating (pre-learning)")
+//    evaluate(x => log(BOLD,YELLOW, "[Pre-learning] " + x))
     endTrack("Evaluating (pre-learning)")
 
     // Learn
@@ -440,10 +487,10 @@ object Learn extends Client {
           // vv Enter "search done" Monad
           val loss = new SquaredMaxLoss(guessValue, gold)
           val lossValue = optimizer.update(loss, new ZeroOneMaxLoss(guessValue, gold))
-          debug(s"[$index] loss: ${Utils.df.format(lossValue)}; p(true)=${Utils.df.format(loss.guess(optimizer.weights))}  '${query.getQueryFact.getGloss}'")
+          Learn.synchronized{ debug(s"[$index] loss: ${Utils.df.format(lossValue)}; p(true)=${Utils.df.format(loss.guess(optimizer.weights))}  '${query.getQueryFact.getGloss}'") }
           val iteration :Int = iterCounter.incrementAndGet()
           if (iteration % 10 == 0) {
-            log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance))
+            Learn.synchronized{ log(BOLD, "[" + iterCounter.get + "] REGRET: " + Utils.df.format(optimizer.averageRegret) + "  ERROR: " + Utils.percent.format(optimizer.averagePerformance)) }
           }
           if (iteration % 1000 == 0 && Props.LEARN_MODEL_DIR.exists()) {
             optimizer.serializePartial(new File(Props.LEARN_MODEL_DIR + File.separator + modelName(iteration)))
@@ -461,7 +508,7 @@ object Learn extends Client {
 
     // Evaluate Model
     startTrack("Evaluating")
-    evaluate(x => log(BOLD,BLUE, "[Post-learning] " + x))
+    evaluate(x => log(BOLD,BLUE, "[Post-learning] " + x), Props.LEARN_PRCURVE)
     endTrack("Evaluating")
   }
 }

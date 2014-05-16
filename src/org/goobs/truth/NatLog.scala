@@ -141,6 +141,7 @@ object NatLog {
       if (weights.getCount(iter.next()) == weights.defaultReturnValue()) { iter.remove(); }
     }
     weights.setCount("bias", 0.0)
+    weights.setCount("resultCount", 1.0)
     weights
   }
 

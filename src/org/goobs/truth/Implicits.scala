@@ -3,6 +3,8 @@ package org.goobs.truth
 import java.util.Properties
 
 import scala.language.implicitConversions
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
 
 /**
  * Implicit definitions to help with the Java/Scala interface
