@@ -399,7 +399,7 @@ object Learn extends Client {
           val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
           val allowedTrue = !queries.forall( _.getForceFalse )
           if (loss.guessTruthValue && allowedTrue) {
-            debug(s"[true]: ${queries.head}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
+            debug(s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}")
             guessed.incrementAndGet()
           }
           if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
