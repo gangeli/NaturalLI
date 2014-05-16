@@ -54,12 +54,12 @@ object NatLog {
     // (unigrams)
     setCounts(WORDNET_UP, Monotonicity.UP, wordnet)
     setCounts(FREEBASE_UP, Monotonicity.UP, wordnet)
-    setCounts(WORDNET_UP, Monotonicity.UP, badWordnet)
-    setCounts(FREEBASE_UP, Monotonicity.UP, badWordnet)
+    setCounts(WORDNET_UP, Monotonicity.DOWN, badWordnet)
+    setCounts(FREEBASE_UP, Monotonicity.DOWN, badWordnet)
     setCounts(WORDNET_DOWN, Monotonicity.DOWN, wordnet)
     setCounts(FREEBASE_DOWN, Monotonicity.DOWN, wordnet)
-    setCounts(WORDNET_DOWN, Monotonicity.DOWN, badWordnet)
-    setCounts(FREEBASE_DOWN, Monotonicity.DOWN, badWordnet)
+    setCounts(WORDNET_DOWN, Monotonicity.UP, badWordnet)
+    setCounts(FREEBASE_DOWN, Monotonicity.UP, badWordnet)
     // (additions/deletions)
     setCounts(ADD_ADJ, Monotonicity.DOWN, insertionOrDeletion)
     setCounts(DEL_ADJ, Monotonicity.UP, insertionOrDeletion)
@@ -290,7 +290,7 @@ object NatLog {
       new Sentence(inputSentence.toString() + " .")
     } else { inputSentence }
 
-    // Tokenize
+    // Tokenize + Index
     val index:String=>Array[Int] = {(arg:String) =>
       if (Props.NATLOG_INDEXER_LAZY) {
         Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet, unkProvider)._1

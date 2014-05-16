@@ -44,6 +44,8 @@ public class Props {
 
   @Option(name="natlog.indexer.lazy", gloss="If true, do word indexing lazily rather than reading the indexer at once")
   public static boolean NATLOG_INDEXER_LAZY = false;
+  @Option(name="natlog.indexer.replner", gloss="If true, replace unknown tokens with the NER tag they represent")
+  public static boolean NATLOG_INDEXER_REPLNER = false;
 
   @Option(name="server.main.host", gloss="The hostname for the inference server")
   public static String SERVER_MAIN_HOST = "localhost";
