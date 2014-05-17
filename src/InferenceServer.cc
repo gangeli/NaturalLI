@@ -5,6 +5,7 @@
 #include <exception>
 #include <thread>
 #include <mutex>
+#include <signal.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <netinet/in.h>
@@ -468,8 +469,28 @@ int startServer(int port) {
 }
 
 /**
+ * The function to call for caught signals.
+ * In practice, this is a NOOP.
+ */
+void signalHandler(int32_t s){
+  printf("Caught signal %d; ignoring...\n",s);
+}
+
+
+/**
  * The server's entry point.
  */
-int main( int argc, char *argv[] ) {
+int32_t main( int32_t argc, char *argv[] ) {
+  // Handle signals
+  // (set up handler)
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = signalHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  // (catch signals)
+  sigaction(SIGINT, &sigIntHandler, NULL);
+  sigaction(SIGPIPE, &sigIntHandler, NULL);
+
+  // (start server)
   while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
 }

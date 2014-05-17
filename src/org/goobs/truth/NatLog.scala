@@ -313,7 +313,7 @@ object NatLog {
         }
     }.reverse.dropRight(1).map { case (phrase: String, ner: String) =>
         val indices = index(phrase)
-        if (Props.NATLOG_INDEXER_REPLNER && indices.exists(_ == unkInt)) {
+        if (Props.NATLOG_INDEXER_REPLNER && indices.exists(_ == unkInt) && !ner.equals("MISC")) {
           ner.toLowerCase
         } else {
           phrase

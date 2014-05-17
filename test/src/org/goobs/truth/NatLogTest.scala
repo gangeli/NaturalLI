@@ -132,6 +132,13 @@ class NatLogTest extends Test {
       NatLog.annotate("Chris Manning advises Sonal Gupta").head.getWordList.map( _.getGloss ).toList should be (List(Utils.WORD_UNK, "advise", Utils.WORD_UNK, "gupta"))
       Props.NATLOG_INDEXER_REPLNER = savedRepl
     }
+//    it ("should lemmatize before abstracting") {
+//      val savedRepl = Props.NATLOG_INDEXER_REPLNER
+//      Props.NATLOG_INDEXER_REPLNER = true
+//      //(from ACE)
+//      NatLog.annotate("Nazis save Jews").head.getWordList.map( _.getGloss ).toList should be (List("nazi", "save", "jew"))
+//      Props.NATLOG_INDEXER_REPLNER = savedRepl
+//    }
 
   }
 }

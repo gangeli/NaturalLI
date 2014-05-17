@@ -202,7 +202,7 @@ object Learn extends Client {
     val guessPath:Option[Inference] = if (guesses.isEmpty) None else Some(guesses.maxBy( x => math.abs(0.5 - x.getScore) ))
     val features:Array[Double] = {
       val f = if (guessPath.isDefined) featurize(guessPath.get) else new ClassicCounter[String]
-      f.incrementCount("resultCount", guesses.size)
+//      f.incrementCount("resultCount", math.log(guesses.size.toDouble))
       f
     }
     val goldPolarity = goldTruth match {
@@ -432,10 +432,10 @@ object Learn extends Client {
             // vv Enter "search done" Monad
             val loss: ZeroOneAllTrueLoss = new ZeroOneAllTrueLoss(guesses, gold, inputs=Some(queries))
             if (loss.guessTruthValue && allowedTrue) {
-              Learn.synchronized { debug(if (loss.isCorrect) GREEN else RED, s"[true]: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}") }
+              Learn.synchronized { debug(if (loss.isCorrect) GREEN else RED, s"[true] ${Utils.df.format(loss.probability(optimizer.weights))}: ${queries.head.getQueryFact.getGloss}: ${recursivePrint(guesses.headOption.flatMap( _.headOption ))}") }
               guessed.incrementAndGet()
             } else if (!loss.isCorrect) {
-              debug(RED, s"[false]: ${queries.head.getQueryFact.getGloss}")
+              debug(RED, s"[false] ${Utils.df.format(loss.probability(optimizer.weights))}: ${queries.head.getQueryFact.getGloss}")
             }
             if (loss.isCorrect && loss.guessTruthValue) correct.incrementAndGet()
             if (gold == TruthValue.TRUE) shouldHaveGuessed.incrementAndGet()
@@ -461,16 +461,16 @@ object Learn extends Client {
       print("Optimal F1: " + (0 until sortedPR.length).map{ (falseUntil:Int) =>
         Utils.f1(sortedPR.take(falseUntil).map{ case ResultEntry(guess, gold, prob) => (false, gold) }.toList :::
           sortedPR.drop(falseUntil).map{ case ResultEntry(guess, gold, prob) => (guess, gold) }.toList)
-      }.max)
+      }.filter( x => !x.isNaN && !x.isInfinite ).max)
     }
 
     // Pre-Evaluate Model
     forceTrack("Evaluating (pre-learning)")
-//    evaluate(x => log(BOLD,YELLOW, "[Pre-learning] " + x))
+    evaluate(x => Learn.synchronized { log(BOLD,YELLOW, "[Pre-learning] " + x) })
     endTrack("Evaluating (pre-learning)")
 
     // Learn
-    startTrack("Learning")
+    forceTrack("Learning")
     // (create balanced data stream)
     val trueData  = DataSource.loop(trainData.filter( x => x._2 == TruthValue.TRUE && !x._1.headOption.fold(false)(_.getForceFalse) ))
     val falseData = DataSource.loop(trainData.filter( x => x._2 != TruthValue.TRUE && !x._1.headOption.fold(false)(_.getForceFalse) ))
@@ -508,7 +508,7 @@ object Learn extends Client {
 
     // Evaluate Model
     startTrack("Evaluating")
-    evaluate(x => log(BOLD,BLUE, "[Post-learning] " + x), Props.LEARN_PRCURVE)
+    evaluate(x => Learn.synchronized { log(BOLD,BLUE, "[Post-learning] " + x) }, Props.LEARN_PRCURVE)
     endTrack("Evaluating")
   }
 }

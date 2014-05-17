@@ -32,6 +32,11 @@ class LearnTest extends Test {
       w.setCount("bias", 0.5)
       counterString(Learn.inflateWeights(Learn.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
     }
+    it ("should have an Array mapping with resultCount") {
+      val w = NatLog.softNatlogWeights
+      w.setCount("resultCount", 10.5)
+      counterString(Learn.inflateWeights(Learn.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
+    }
   }
 
   /**
