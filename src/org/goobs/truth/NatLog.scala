@@ -305,7 +305,7 @@ object NatLog {
           (w, ner) :: soFar
         } else {
           val (lastW, lastNER) = soFar.head
-          if (lastNER != SeqClassifierFlags.DEFAULT_BACKGROUND_SYMBOL && ner == lastNER) {
+          if (lastNER.toLowerCase != SeqClassifierFlags.DEFAULT_BACKGROUND_SYMBOL.toLowerCase && ner == lastNER) {
             ( lastW + " " + w, ner ) :: soFar.tail
           } else {
             (w, ner) :: soFar
@@ -313,7 +313,7 @@ object NatLog {
         }
     }.reverse.dropRight(1).map { case (phrase: String, ner: String) =>
         val indices = index(phrase)
-        if (Props.NATLOG_INDEXER_REPLNER && indices.exists(_ == unkInt) && !ner.equals("MISC")) {
+        if (Props.NATLOG_INDEXER_REPLNER && indices.exists(_ == unkInt) && !ner.equalsIgnoreCase("MISC") && !ner.equalsIgnoreCase("O")) {
           ner.toLowerCase
         } else {
           phrase

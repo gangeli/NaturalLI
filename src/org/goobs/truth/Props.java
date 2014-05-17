@@ -32,15 +32,15 @@ public class Props {
   public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TEST }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
-  public static String PSQL_HOST = checkEnv("PGHOST", "john0");
+  public static String PSQL_HOST = checkEnv("PGHOST", "jonsson");
   @Option(name="psql.port", gloss="The port at which postgres is running")
-  public static int PSQL_PORT = Integer.parseInt(checkEnv("PGPORT", "4243"));
+  public static int PSQL_PORT = Integer.parseInt(checkEnv("PGPORT", "5432"));
   @Option(name="psql.db", gloss="The database name")
-  public static String PSQL_DB = checkEnv("DBNAME", "truth");
+  public static String PSQL_DB = checkEnv("DBNAME", "naturalli");
   @Option(name="psql.username", gloss="The username for the postgres session")
-  public static String PSQL_USERNAME = checkEnv("PGUSER", "gabor");
+  public static String PSQL_USERNAME = checkEnv("PGUSER", "angeli");
   @Option(name="psql.password", gloss="The password for the postgres session")
-  public static String PSQL_PASSWORD = checkEnv("PGPASSWORD", "gabor");
+  public static String PSQL_PASSWORD = checkEnv("PGPASSWORD", "");
 
   @Option(name="natlog.indexer.lazy", gloss="If true, do word indexing lazily rather than reading the indexer at once")
   public static boolean NATLOG_INDEXER_LAZY = false;

@@ -126,11 +126,11 @@ if test x"$debug" = x"false"; then
   AC_DEFINE(NDEBUG, 1, [Disable debugging (for efficiency)])
 fi
 
-AC_DEFINE_UNQUOTED(PG_HOST,         "${PGHOST:=john0.stanford.edu}", [The hostname of the database to connect to])
-AC_DEFINE_UNQUOTED(PG_PORT,         ${PGPORT:=4243}, [The port on which postgres is running])
-AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=truth}", [The database to connect to])
-AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=gabor}", [The username to use for the database connection])
-AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=gabor}", [The password to use for the database connection])
+AC_DEFINE_UNQUOTED(PG_HOST,         "${PGHOST:=jonsson.stanford.edu}", [The hostname of the database to connect to])
+AC_DEFINE_UNQUOTED(PG_PORT,         ${PGPORT:=5432}, [The port on which postgres is running])
+AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=naturalli}", [The database to connect to])
+AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=angeli}", [The username to use for the database connection])
+AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=}", [The password to use for the database connection])
 
 AC_DEFINE_UNQUOTED(PG_TABLE_WORD,      "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
 AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
