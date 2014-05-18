@@ -87,7 +87,7 @@ trait ZeroOneLoss extends LossFunction {
 object OnlineOptimizer {
   def deserialize(f:File, regularizer:OnlineRegularizer,
                   project:(Int,Double)=>Double = (i:Int, w:Double) => w):OnlineOptimizer = {
-    import Learn.flattenWeights
+    import Implicits.flattenWeights
     // Parse file
     val (state, weightLines) = io.Source.fromFile(f).getLines().toList.splitAt(4)
     // Parse parameters
@@ -178,7 +178,7 @@ class OnlineOptimizer(
   }
 
   def serializePartial(f:File):File = {
-    import Learn.inflateWeights
+    import Implicits.inflateWeights
     Utils.printToFile(f){ (p:PrintWriter) =>
       p.println(iteration.toString)
       p.println(sumRegret.toString)

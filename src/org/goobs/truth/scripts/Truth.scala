@@ -36,8 +36,8 @@ object Truth extends Client {
         // Execute Query
         val paths:Iterable[Inference] = issueQuery(query)
         // Evaluate Query
-        import Learn.flattenWeights
-        val prob = new Learn.ProbabilityOfTruth(paths).apply(weights)
+        import Implicits.flattenWeights
+        val prob = probability(paths, weights)
         // Debug Print
         if (prob > 0.5) { println(Console.GREEN + "VALID" + Console.RESET + " (p=" + prob + ")") }
         else { println(Console.RED + "INVALID" + Console.RESET + " (p=" + prob + ")") }

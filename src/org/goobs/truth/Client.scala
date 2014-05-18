@@ -17,7 +17,18 @@ import edu.stanford.nlp.util.Execution
 /**
  * @author Gabor Angeli
  */
-trait Client {
+trait Client extends Evaluate {
+
+  import Implicits.inflateWeights
+
+  /** Offer a prediction for a given query, parameterized by the given weights. */
+  override def guess(query:Query.Builder, weights:Array[Double]):Future[Iterable[Inference]] = {
+    asyncQuery(Messages.Query.newBuilder(query.build())
+      .setTimeout(Props.SEARCH_TIMEOUT)
+      .setCosts(Learn.weightsToCosts(weights))
+      .setSearchType("ucs")
+      .setCacheType("bloom").build(), quiet = true)
+  }
 
   def explain(fact:Fact, tag:String="fact", verbose:Boolean=true):Unit = {
     log(tag + ": " + fact.getWordList.map( w =>
@@ -35,7 +46,7 @@ trait Client {
     }
   }
 
-  private val mainExecContext = new ExecutionContext {
+  val mainExecContext = new ExecutionContext {
     lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }

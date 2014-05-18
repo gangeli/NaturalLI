@@ -1,6 +1,7 @@
 package org.goobs.truth
 
-import Learn._
+import Learn.WeightVector
+import Evaluate._
 import org.goobs.truth.EdgeType._
 import edu.stanford.nlp.stats.ClassicCounter
 import org.goobs.truth.Messages._

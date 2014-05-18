@@ -16,8 +16,8 @@ object RegressionTest extends Client {
 
   /** Evaluate, optionally backing off to a larger timeout (if not solution was found */
   private def evaluateQuery(facts:Seq[Fact], truth:TruthValue, timeout:Int):Int = {
-    import Learn.flattenWeights
-    val score:Double = new Learn.ProbabilityOfTruth(issueQuery(
+    import Implicits.flattenWeights
+    val score:Double = probability(issueQuery(
       facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
         builder.addKnownFact(fact)
       }.setQueryFact(facts.last)
@@ -26,7 +26,7 @@ object RegressionTest extends Client {
         .setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights))
         .setSearchType("ucs")
         .setCacheType("bloom")
-        .build())).apply(NatLog.hardNatlogWeights)
+        .build()), NatLog.hardNatlogWeights)
 
     // Check Validity
     truth match {

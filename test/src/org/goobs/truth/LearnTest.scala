@@ -24,18 +24,18 @@ class LearnTest extends Test {
       counterString(Learn.deserialize(Learn.serialize(NatLog.hardNatlogWeights, tmpFile))) should be (counterString(NatLog.hardNatlogWeights))
     }
     it ("should have an Array mapping") {
-      counterString(Learn.inflateWeights(Learn.flattenWeights(NatLog.hardNatlogWeights), NatLog.hardNatlogWeights.defaultReturnValue())) should be (counterString(NatLog.hardNatlogWeights))
-      counterString(Learn.inflateWeights(Learn.flattenWeights(NatLog.softNatlogWeights), NatLog.softNatlogWeights.defaultReturnValue())) should be (counterString(NatLog.softNatlogWeights))
+      counterString(Implicits.inflateWeights(Implicits.flattenWeights(NatLog.hardNatlogWeights), NatLog.hardNatlogWeights.defaultReturnValue())) should be (counterString(NatLog.hardNatlogWeights))
+      counterString(Implicits.inflateWeights(Implicits.flattenWeights(NatLog.softNatlogWeights), NatLog.softNatlogWeights.defaultReturnValue())) should be (counterString(NatLog.softNatlogWeights))
     }
     it ("should have an Array mapping with bias") {
       val w = NatLog.softNatlogWeights
       w.setCount("bias", 0.5)
-      counterString(Learn.inflateWeights(Learn.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
+      counterString(Implicits.inflateWeights(Implicits.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
     }
     it ("should have an Array mapping with resultCount") {
       val w = NatLog.softNatlogWeights
       w.setCount("resultCount", 10.5)
-      counterString(Learn.inflateWeights(Learn.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
+      counterString(Implicits.inflateWeights(Implicits.flattenWeights(w), w.defaultReturnValue())) should be (counterString(w))
     }
   }
 
@@ -168,7 +168,7 @@ class LearnTest extends Test {
         override def guess(wVector: Array[Double]): Double = wVector(0) * 2.5
         override def guessGradient(wVector: Array[Double]): Array[Double] = Array[Double]( 2.5 )
       }
-      import Learn.flattenWeights
+      import Implicits.flattenWeights
       val optimizer:OnlineOptimizer = OnlineOptimizer(NatLog.softNatlogWeights, OnlineRegularizer.sgd(1.0))()
       val tmpFile = File.createTempFile("optimizer", ".tab")
       val reread:OnlineOptimizer = OnlineOptimizer.deserialize(optimizer.serializePartial(tmpFile), OnlineRegularizer.sgd(1.0))

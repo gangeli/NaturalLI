@@ -19,7 +19,7 @@ object Benchmark extends Client {
   }
 
 
-  def evaluate(data:DataStream, weights:WeightVector,
+  def evaluateBenchmark(data:DataStream, weights:WeightVector,
                 subResults:Seq[(String, Datum=>Boolean)] = Nil,
                 remember:Datum=>Boolean = x => false) {
     startTrack("Evaluating")
@@ -30,13 +30,13 @@ object Benchmark extends Client {
       // Run Query
       explain(query.head.getKnownFact(0), "antecedent", verbose = false)
       explain(query.head.getQueryFact, "consequent", verbose = false)
-      import Learn.flattenWeights
-      val prob:Double = new Learn.ProbabilityOfTruth(issueQuery(query.head
+      import Implicits.flattenWeights
+      val prob:Double = probability(issueQuery(query.head
         .setTimeout(Props.SEARCH_TIMEOUT)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom")
-        .build())).apply(weights)
+        .build()), weights)
 
       // Check if correct
       val correct:Boolean = gold match {

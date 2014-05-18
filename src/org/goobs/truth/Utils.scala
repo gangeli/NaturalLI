@@ -16,25 +16,6 @@ import java.sql.ResultSet
 import gnu.trove.procedure.TObjectIntProcedure
 
 object Utils {
-  def f1(guessed: Int, correct: Int, shouldHaveGuessed: Int) = {
-    val p = correct.toDouble / guessed.toDouble
-    val r = correct.toDouble / shouldHaveGuessed.toDouble
-    (2.0 * p * r) / (p + r)
-  }
-
-  def f1(guessed: Seq[Boolean], golds: Seq[Boolean]):Double = {
-    val correctGuess:Int = guessed.zip(golds).count{ case (guess, gold) => guess && gold }
-    val guessCount:Int = guessed.count( x => x )
-    val goldCount:Int = golds.count( x => x )
-    val p = correctGuess.toDouble / guessCount.toDouble
-    val r = correctGuess.toDouble / goldCount.toDouble
-    2.0 * p * r / (p + r)
-  }
-
-  def f1(guessAndGold: Seq[(Boolean,Boolean)]):Double = {
-    val (guessed, gold) = guessAndGold.unzip
-    f1(guessed, gold)
-  }
 
   NLPConfig.truecase.bias = "INIT_UPPER:-0.7,UPPER:-2.5,O:0"
   private val logger = Redwood.channels("Utils")

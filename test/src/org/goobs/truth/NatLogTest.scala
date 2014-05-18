@@ -22,12 +22,12 @@ class NatLogTest extends Test {
     Props.NATLOG_INDEXER_LAZY = false
     describe("when a hard assignment") {
       it ("should accept Wordnet monotone jumps") {
-        NatLog.hardNatlogWeights.getCount(Learn.monoUp_stateTrue(EdgeType.WORDNET_UP)) should be >= -1.0
-        NatLog.hardNatlogWeights.getCount(Learn.monoDown_stateTrue(EdgeType.WORDNET_DOWN)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Evaluate.monoUp_stateTrue(EdgeType.WORDNET_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Evaluate.monoDown_stateTrue(EdgeType.WORDNET_DOWN)) should be >= -1.0
       }
       it ("should accept Freebase monotone jumps") {
-        NatLog.hardNatlogWeights.getCount(Learn.monoUp_stateTrue(EdgeType.FREEBASE_UP)) should be >= -1.0
-        NatLog.hardNatlogWeights.getCount(Learn.monoDown_stateTrue(EdgeType.FREEBASE_DOWN)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Evaluate.monoUp_stateTrue(EdgeType.FREEBASE_UP)) should be >= -1.0
+        NatLog.hardNatlogWeights.getCount(Evaluate.monoDown_stateTrue(EdgeType.FREEBASE_DOWN)) should be >= -1.0
       }
     }
   }

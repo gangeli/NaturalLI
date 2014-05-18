@@ -101,7 +101,7 @@ object FraCaS extends DataSource with Client {
     Props.SERVER_MAIN_PORT = 4001
     Props.SEARCH_TIMEOUT = 250000
     System.exit(startMockServer(() =>
-      Benchmark.evaluate(read(Props.DATA_FRACAS_PATH.getPath) filter isApplicable, NatLog.hardNatlogWeights,
+      Benchmark.evaluateBenchmark(read(Props.DATA_FRACAS_PATH.getPath) filter isApplicable, NatLog.hardNatlogWeights,
         List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),
       isApplicable),
     printOut = false))
