@@ -191,7 +191,7 @@ object NatLog {
     insertionOrDeletion = -1.0,
     verbInsertOrDelete = -1.0,
     morphology = -2.5,
-    wsd = -5.0,
+    wsd = -1.0,
     okQuantifier = -1.0,
     synonyms = -1.5,
     antonym = -1.5,

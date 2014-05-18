@@ -3,6 +3,7 @@ package org.goobs.truth
 import scala.concurrent._
 
 import org.goobs.truth.Messages._
+import edu.stanford.nlp.util.logging.Redwood.Util._
 import java.io.File
 import org.goobs.truth.DataSource.DataStream
 import org.goobs.truth.EdgeType.EdgeType
@@ -183,15 +184,26 @@ trait Evaluate {
     dumpResult(Await.result(baseline, Duration.Inf), "(baseline)")
 
     // Run evaluation
-    def noisyAndProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft(0.0){ case (p:Double, guess:Iterable[Inference]) => p * probability(guess, weights) })
+    def noisyAndProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft(1.0){ case (p:Double, guess:Iterable[Inference]) => p * probability(guess, weights) })
     val results: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-      noisyAndProb(queries).map( (p:Double) => ResultPoint(p, gold == TruthValue.TRUE))
+      val futureProb = if (queries.exists( _.getForceFalse )) Future.successful(0.0) else noisyAndProb(queries)
+      futureProb.map{ (p:Double) =>
+        val result = ResultPoint(p, gold == TruthValue.TRUE)
+        if (result.gold && result.guess) {
+          log(GREEN, s"[guess=true] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+        } else if (result.gold && !result.guess) {
+          log(RED, s"[guess=false] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+        } else if (!result.gold && result.guess) {
+          log(RED, BOLD, s"[guess=true] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+        }
+        result
+      }
     })
-    val sortedResults = Await.result(results, Duration.Inf)
+    val sortedResults = Await.result(results, Duration.Inf).sortBy( x => x.prob )
     dumpResult(sortedResults)
 
     // Run PR curve
-    assert (sortedResults.isEmpty || sortedResults.head.prob < sortedResults.last.prob)
+    assert (sortedResults.isEmpty || sortedResults.head.prob <= sortedResults.last.prob)
     print("Optimal F1: " + (0 until sortedResults.length).map{ (falseUntil:Int) =>
       f1(sortedResults.take(falseUntil).map{ x => (false, x.gold) }.toList :::
         sortedResults.drop(falseUntil).map{ x => (true, x.gold) }.toList)

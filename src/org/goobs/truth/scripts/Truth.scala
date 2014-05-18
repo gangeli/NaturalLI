@@ -17,7 +17,7 @@ object Truth extends Client {
   def main(args:Array[String]):Unit = {
     Props.NATLOG_INDEXER_REPLNER = true  // before fillOptions to allow it to be overwritten
     Execution.fillOptions(classOf[Props], args)
-    val weights = NatLog.hardNatlogWeights
+    val weights = NatLog.softNatlogWeights
 
     do {
       println("")
@@ -28,13 +28,16 @@ object Truth extends Client {
         val query = Query.newBuilder()
           .setQueryFact(consequent)
           .setUseRealWorld(true)
-          .setTimeout(1000000)
+          .setTimeout(100000)
           .setCosts(Learn.weightsToCosts(weights))
           .setSearchType("ucs")
           .setCacheType("bloom")
           .build()
         // Execute Query
         val paths:Iterable[Inference] = issueQuery(query)
+        for (path <- paths) {
+          log(recursivePrint(path))
+        }
         // Evaluate Query
         import Implicits.flattenWeights
         val prob = probability(paths, weights)

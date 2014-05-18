@@ -202,7 +202,6 @@ class NLPProcessingTest extends Test {
     it ("should generally return 3 word phrases") {
       Utils.simplifyQuery("Atlantis be returns to earth", (x:String) => NatLog.annotate(x).head) should be (Some("atlantis be earth"))
       Utils.simplifyQuery("Australia be World Heritage site", (x:String) => NatLog.annotate(x).head) should be (Some("australia be site"))
-
     }
   }
 

@@ -39,6 +39,9 @@ object Entailment extends Client {
             .build()
           // Execute Query
           val paths:Iterable[Inference] = issueQuery(query)
+          for (path <- paths) {
+            log(recursivePrint(path))
+          }
           // Evaluate Query
           import Implicits.flattenWeights
           val prob = probability(paths, weights)

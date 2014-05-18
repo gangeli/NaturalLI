@@ -322,7 +322,7 @@ object Utils {
     // Try and find the main verb via dependency parsing
     val verb = {
       val naiveRoot = sentence.dependencyRoot
-      val lessNaiveRoot = if (naiveRoot == 0) sentence.stanfordDependencies.indexWhere{ case (i, l) => i == 0 } else naiveRoot
+      val lessNaiveRoot = if (naiveRoot == 0 || sentence.pos(naiveRoot)(0) != 'V') sentence.stanfordDependencies.indexWhere{ case (i, l) => i == 0 } else naiveRoot
       if (lessNaiveRoot < 0 || sentence.pos(lessNaiveRoot)(0) != 'V') 0 else lessNaiveRoot
     }
     val left = sentence.word.slice(0, verb).mkString(" ")

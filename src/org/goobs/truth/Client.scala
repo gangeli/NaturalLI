@@ -46,6 +46,24 @@ trait Client extends Evaluate {
     }
   }
 
+  /**
+   * toString() an inference path, primarily for debugging.
+   * @param node The path to print.
+   * @return The string format of the path.
+   */
+  def recursivePrint(node:Inference):String = {
+    if (node.hasImpliedFrom) {
+      val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
+      if (incomingType != 63) {
+        s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
+      } else {
+        recursivePrint(node.getImpliedFrom)
+      }
+    } else {
+      s"${node.getFact.getGloss}"
+    }
+  }
+
   val mainExecContext = new ExecutionContext {
     lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
@@ -93,43 +111,54 @@ trait Client extends Evaluate {
     }
 
     // Query with backoff
-    // (step 1: main search)
-    val main: Future[Iterable[Inference]] = Future {
-      if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
+    // (step 0: hard weights)
+    val hard: Future[Iterable[Inference]] = Future {
+      if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil
+      else doQuery(Query.newBuilder(query).setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights)).build(), Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
     } (mainExecContext)
-    // (step 2: map to backoff)
-    main.flatMap( (main: Iterable[Inference]) =>
-      if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
-        val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
-        // (step 3: execute backoff)
-        val backoff = Future {
-          doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
-        } (backupExecContext)
-        // (step 4: map to backoff)
-        backoff.flatMap{ (backoff: Iterable[Inference]) =>
-          if (backoff.isEmpty) {
-            // (step 5: execute failsafe)
-//            warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
-            val failsafe: Future[Iterable[Inference]] = Future {
-              doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+    hard.flatMap{ (hard: Iterable[Inference]) =>
+      if (hard.isEmpty) {
+        // (step 1: main search)
+        val main: Future[Iterable[Inference]] = Future {
+          if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
+        } (mainExecContext)
+        // (step 2: map to backoff)
+        main.flatMap( (main: Iterable[Inference]) =>
+          if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
+            val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
+            // (step 3: execute backoff)
+            val backoff = Future {
+              doQuery(simpleQuery, Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
             } (backupExecContext)
-            failsafe.map{ failsafe =>
-              if (failsafe.isEmpty) {
-                debug(YELLOW, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+            // (step 4: map to backoff)
+            backoff.flatMap{ (backoff: Iterable[Inference]) =>
+              if (backoff.isEmpty) {
+                // (step 5: execute failsafe)
+                //            warn("no results for query (backing off to expensive BFS): " + simpleQuery.getQueryFact.getGloss)
+                val failsafe: Future[Iterable[Inference]] = Future {
+                  doQuery(Messages.Query.newBuilder(simpleQuery).setSearchType("bfs").setTimeout(Props.SEARCH_TIMEOUT*2).build(), Props.SERVER_BACKUP_HOST, Props.SERVER_BACKUP_PORT)
+                } (backupExecContext)
+                failsafe.map{ failsafe =>
+                  if (failsafe.isEmpty) {
+                    debug(YELLOW, "no results for query: " + simpleQuery.getQueryFact.getGloss)
+                  }
+                  // return case: had to go all the way to the failsafe
+                  failsafe
+                }
+              } else {
+                // return case: backoff found paths
+                Future.successful(backoff)
               }
-              // return case: had to go all the way to the failsafe
-              failsafe
             }
           } else {
-            // return case: backoff found paths
-            Future.successful(backoff)
+            // return case: main query found paths
+            Future.successful(main)
           }
-        }
+        )
       } else {
-        // return case: main query found paths
-        Future.successful(main)
+        Future.successful(hard)
       }
-    )
+    }
   }
 
   def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet), scala.concurrent.duration.Duration.Inf)

@@ -19,7 +19,7 @@ import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration
 
 object Learn extends Client {
   type WeightVector = Counter[String]
-  import Implicits.{flattenWeights}
+  import Implicits.flattenWeights
 
 
   /** Write a weight vector to a print writer (usually, a file). */
@@ -75,24 +75,6 @@ object Learn extends Client {
       .setUnlexicalizedMonotoneAny(unlexicalizedWeights(monoAny_stateTrue, monoAny_stateFalse))
       .setBias(weights.getCount("bias").toFloat)
       .build()
-  }
-
-  /**
-   * toString() an inference path, primarily for debugging.
-   * @param node The path to print.
-   * @return The string format of the path.
-   */
-  def recursivePrint(node:Inference):String = {
-    if (node.hasImpliedFrom) {
-      val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
-      if (incomingType != 63) {
-        s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
-      } else {
-        recursivePrint(node.getImpliedFrom)
-      }
-    } else {
-      s"${node.getFact.getGloss}"
-    }
   }
 
   /** @see Learn#recursivePrint(Inference) */
@@ -206,7 +188,7 @@ object Learn extends Client {
     def mkIter = trueData.zip(falseData).map{ case (a, b) => Stream(a, b) }.flatten.iterator
     var iter: Iterator[DataSource.Datum] = mkIter
     val iterCounter = new AtomicInteger(0)
-    for (index <-  (Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS) {
+    val futures = for (index <-  (Props.LEARN_MODEL_START  - (Props.LEARN_MODEL_START % 1000)) to Props.LEARN_ITERATIONS) yield {
       val (queries, gold) = Learn.synchronized {
         if (!iter.hasNext) { iter = mkIter }
         iter.next()
