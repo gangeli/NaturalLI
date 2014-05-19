@@ -88,7 +88,7 @@ trait Client extends Evaluate {
    * @param quiet Suppress logging messages
    * @return The query fact, with a truth value and confidence
    */
-  def asyncQuery(query:Query, quiet:Boolean=false):Future[Iterable[Inference]] = {
+  def asyncQuery(query:Query, quiet:Boolean=false, singleQuery:Boolean=false):Future[Iterable[Inference]] = {
     def doQuery(query:Query, host:String, port:Int):Iterable[Inference] = {
       // Set up connection
       val sock = new Socket(host, port)
@@ -112,7 +112,7 @@ trait Client extends Evaluate {
 
     // Query with backoff
     // (step 0: hard weights)
-    val hard: Future[Iterable[Inference]] = Future {
+    val hard: Future[Iterable[Inference]] = if (singleQuery) Future.successful(Nil) else Future {
       if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil
       else doQuery(Query.newBuilder(query).setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights)).build(), Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
     } (mainExecContext)
@@ -123,7 +123,7 @@ trait Client extends Evaluate {
           if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
         } (mainExecContext)
         // (step 2: map to backoff)
-        main.flatMap( (main: Iterable[Inference]) =>
+        if (singleQuery) main else main.flatMap( (main: Iterable[Inference]) =>
           if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
             val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
             // (step 3: execute backoff)
@@ -161,7 +161,7 @@ trait Client extends Evaluate {
     }
   }
 
-  def issueQuery(query:Query, quiet:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet), scala.concurrent.duration.Duration.Inf)
+  def issueQuery(query:Query, quiet:Boolean=false, singleQuery:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet, singleQuery), scala.concurrent.duration.Duration.Inf)
 
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
     ShutdownServer.shutdown()

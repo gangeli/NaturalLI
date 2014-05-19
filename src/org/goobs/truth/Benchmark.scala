@@ -36,7 +36,7 @@ object Benchmark extends Client {
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom")
-        .build()), weights)
+        .build(), quiet=false, singleQuery=true), weights)
 
       // Check if correct
       val correct:Boolean = gold match {

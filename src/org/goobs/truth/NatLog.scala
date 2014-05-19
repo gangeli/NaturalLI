@@ -185,17 +185,17 @@ object NatLog {
    */
   def softNatlogWeights:WeightVector = natlogWeights(
     strictNatLog = -0.0,
-    similarity = -2.0,
-    wordnet = -1.0,
-    badWordnet = -2.0,
-    insertionOrDeletion = -1.0,
+    similarity = -1.0,
+    wordnet = -0.25,
+    badWordnet = -1.0,
+    insertionOrDeletion = -0.5,
     verbInsertOrDelete = -1.0,
-    morphology = -2.5,
-    wsd = -1.0,
+    morphology = -1.5,
+    wsd = -0.5,
     okQuantifier = -1.0,
-    synonyms = -1.5,
-    antonym = -1.5,
-    default = -4.0)
+    synonyms = -0.75,
+    antonym = -1.0,
+    default = -2.0)
 
   /**
    * An initialization to only similarity based approaches.

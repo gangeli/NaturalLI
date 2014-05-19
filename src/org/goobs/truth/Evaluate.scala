@@ -255,7 +255,7 @@ object Evaluate {
   }
 
   def accuracy(guessAndGold: Seq[(Boolean,Boolean)]):Double = {
-    guessAndGold.count(==).toDouble / guessAndGold.size.toDouble
+    guessAndGold.count{case (x, y) => x == y}.toDouble / guessAndGold.size.toDouble
   }
 
 
