@@ -1,0 +1,66 @@
+\Section{related}{Related Work}
+% -- Applications
+Many NLP applications make use of a knowledge base of facts.
+These include semantic parsing
+	\cite{key:1996zelle-semantics,key:2005zettlemoyer-semantics,key:2005kate-semantics,key:2007zettlemoyer-semantics}
+  question answering \cite{key:2001voorhees-trec},
+  information extraction
+  \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}, and recognizing textual
+  entailment
+  \cite{key:2010-schoenmackers-horn,key:2011berant-entailment}.
+
+% -- OpenIE
+A large body of work has been devoted to creating
+  such knowledge bases.
+In particular, OpenIE systems such as
+  \sys{TextRunner} \cite{key:2007yates-textrunner},
+  \sy{ReVerb} \cite{key:2011fader-reverb},
+  \sys{Ollie} \cite{key:2012mausam-ollie},
+  and \sys{NELL} \cite{key:2010carlson-nell} have tackled the task of compiling
+  an open-domain knowledge base.
+% -- ConceptNet
+Similarly, the MIT Media Lab's \sys{ConceptNet} project
+  \cite{key:2004liu-conceptnet}
+  has been working on creating a large database of common sense
+  facts.
+
+% -- Extending OpenIE
+% (people extending OpenIE)
+There have been a number of systems aimed at automatically
+  extending these databases.
+That is, given an existing database, they propose new relations to be added.
+\newcite{key:2006snow-wordnet} present an approach to enriching the \sys{WordNet}
+  taxonomy;
+  \newcite{key:2011tandon-conceptnet} extend \sys{ConceptNet} with new facts;
+  \newcite{key:2010soderland-adapting} use \sys{ReVerb} extractions to enrich
+  a domain-specific ontology.
+% (how we differ)
+We differ from these approaches in that we aim to provide an exhaustive
+  completion of the database; we would like to respond
+  to a query with either membership or lack of membership, rather than
+  extending the set of elements which are members.
+
+\newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas} present
+  a similar task of predicting novel relations between Freebase entities by
+  appealing to a large collection of \sys{OpenIE} extractions.
+Our work focuses on arguments which are not necessarily named entities,
+  at the expense of leveraging less entity-specific information.
+
+% -- GOFAI
+% (intro)
+Work in classical artificial intelligence has tackled the related task
+  of loosening the closed world assumption and monotonicity of logical
+  reasoning, allowing for modeling of unseen propositions.
+% (default logic)
+\newcite{key:1980reiter-logic} presents an approach to leveraging default
+  propositions in the absence of contradictory evidence;
+  \newcite{key:1980mccarthy-circumscription} defines a means of overriding
+  the truth of a proposition in abnormal cases.
+% (probabilisitc semantics)
+Perhaps most similar to this work is \newcite{key:1989pearl-probabilistic}, who
+  proposes approaching non-monotonicity in a probabilistic framework,
+  and in particular presents a framework for making inferences which are not
+  strictly entailed but can be reasonably assumed.
+% (how are we different)
+Unlike these works, our approach places a greater emphasis on working with
+  large corpora of open-domain predicates.

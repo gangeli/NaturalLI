@@ -1,0 +1,51 @@
+\documentclass[11pt,a4paper]{article}
+% -- IMPORTS --
+% (lib)
+\usepackage{acl2014}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
+\usepackage{multirow,hhline,stmaryrd,bussproofs}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage[ruled,lined,linesnumbered]{algorithm2e}
+% (custom)
+\input std-macros.tex
+\input ../macros.tex	
+% (tweaks)
+\definecolor{darkred}{rgb}{0.5451, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.3922, 0.0}
+
+% -- PAPER --
+% (metadata)
+\title{Natural Logic for Common Sense Reasoning}
+\author{ 
+%Gabor Angeli \\
+%  Stanford University \\
+%  Stanford, CA 94305 \\
+%  {\tt angeli@cs.stanford.edu}
+%\And
+%Christopher D. Manning \\
+%  Stanford University \\
+%  Stanford, CA 94305 \\
+%  {\tt manning@cs.stanford.edu}
+}
+\date{}
+
+% -- CONTENT --
+\begin{document}
+
+\maketitle
+
+\input abstract.tex
+%\input intro.tex
+\input related.tex
+\input natlog.tex
+\input inference.tex
+\input learning.tex
+%\input results.tex
+%\input conclusion.tex
+\newpage
+
+%(bibliography)
+\bibliographystyle{acl}
+\bibliography{ref}
+
+\end{document}

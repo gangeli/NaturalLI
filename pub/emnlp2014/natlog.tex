@@ -1,0 +1,198 @@
+% --------------------
+% NATURAL LOGIC
+% --------------------
+\Section{natlog}{Natural Logic}
+Much of the underpinnings of this work rely on the theoretical framework
+  laid by Natural Logic
+  \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
+\todo{motivate NatLog}
+
+An interpretation of Natural Logic as syllogistic reasoning,
+  presented in \refsec{natlog-syllogism}, is sufficient
+  for a working understanding of the contributions of this paper.
+However, Natural Logic is both more powerful than syllogistic reasoning,
+  and is more general than structural matching to known
+  syllogistic templates.
+\refsec{natlog-mono} introduces \textit{monotonicity} in the context
+  of natural language to form the basis of natural logic;
+  \refsec{natlog-exclusion} extends this formalism for reasoning about
+  a wider range of phenomena.
+\newcite{key:2014icard-natlog} offers a good introduction and summary of
+  Natural Logic, and provides a source for much of the notation and
+  exposition presented here.
+
+\Subsection{natlog-syllogism}{Syllogistic Reasoning}
+\todo{write me}
+
+\Subsection{natlog-mono}{Monotonicity in Natural Logic}
+Monotonicity in Natural Logic derives its name from and correlates
+  precisely to monotonicity of functions.
+More precisely, a function can be one of \textit{monotone},
+  \textit{antitone}, or \textit{non-monotone} in each of its
+  arguments.\footnote{
+    \textit{Monotone} and \textit{antitone} are often referenced
+    as \textit{upwards monotone} and \textit{downwards monotone}.
+  }
+Intuitively, the function $f(x,y,z) = x - y + (z-2)^2$ is
+  monotone in $x$, antitone in $y$, and non-monotone in $z$.
+This fact, as well as the ordering of real numbers, allows us to
+  draw inferences over the formula for $f$ without evaluating
+  any part of the function explicitly.
+For instance, we can safely say that $f(1,1,1) \leq f(2,1,1)$, whereas
+  $f(1,1,1) \geq f(1,2,1)$.
+
+Formally, we define a function $f:\sD_1 \rightarrow \sD_2$ and a partial
+  ordering $\le_1$ over $\sD_1$ and $\le_2$ over $\sD_2$.
+If we set $\sD_1 = \sD2 = \sR$, and take $\le_1 = \le_2 = \le$ to be
+  the conventional ``less than or equal to'' over real numbers,
+  we can derive the functions in our example above.
+For instance, $f(x) = x + c$ is monotone; $g(x) = -x$ is antitone;
+  $h(x) = (x-2)^2$ is non-monotone.
+
+However, we can equally well define a partial ordering over sets:
+  $x \le_s y \Leftrightarrow x \cap y = x$.
+Similarly, we can define a partial ordering over functions
+  $f : \sD_1 \rightarrow \sD_2$:
+  $f \le_1 g \Leftrightarrow \forall x ~~ f(x) \leq_2 g(x)$.
+This allows us to adapt our definition of monotonicity to quantifiers
+  in natural language.
+
+Let the denotation of a phrase, marked \denote{\cdot}, be the set of
+  entities to which that phrase refers.
+Equivalently, we may consider each phrase as a predicate, and the denotation
+  of a phrase is the set of entities for which the predicate holds.
+We define the set $e$ to be the set of entities in our discourse space,
+  with a partial ordering $\le_e$ following the ordering over sets
+  above: for every $x,y \subseteq e$, $x \le_e y \Leftrightarrow x \cap y = x$.
+We define the set $t$ to be the set of truth values: $\{T, F\}$.
+The ordering over truth values is trivially
+  $x \le_t y \Leftrightarrow x = F \lor y = T$.
+It should not go unnoticed that $x \Rightarrow y$ and $x \le_t y$ 
+  are equivalent.
+Note that functions $e \rightarrow t$ follow the partial ordering from
+  above.
+
+We can now define the denotation of quantifiers in the conventional
+  fashion as functions $e \rightarrow (e \rightarrow t)$.
+However, we can further mark the arguments to these quantifiers as
+  potentially monotone or antitone.
+For instance, the quantifier \textit{all} is antitone in its first
+  argument and monotone in its second:
+  $e \xrightarrow{-} (e \xrightarrow{+} t)$.\footnote{
+    These markings can, in fact, be elegantly incorporated into the
+    type system. Since this work does not make use of categorical
+    grammars requiring strict interpretations of types, we refer the
+    reader to \newcite{key:2014icard-natlog} and do not elablorate
+    on this topic further.
+  }
+This matches our intuition that, e.g., \textit{all cats have tails}
+  implies that \textit{all tabby cats have tails}.
+
+Formally, we can produce proofs of these sorts of facts by composing
+  function application from atomic facts.
+Returning to the arithmetic cast in the beginning of the section, we
+  can construct a proof that $2^{-4} < 2^{-3}$ via:
+
+\begin{prooftree}
+\AxiomC{$3 < 4$}
+\RightLabel{\scriptsize{$-x$ is antitone}}
+\UnaryInfC{$-3 > -4$}
+\RightLabel{\scriptsize{$2^x$ is monotone}}
+\UnaryInfC{$2^{-3} > 2^{-4}$}
+\end{prooftree}
+
+In a similar vein, we can provide a proof for \textit{all tabby cats
+  have tails}, given in \reffig{catsproof}.
+
+\begin{figure*}
+  \begin{prooftree}
+  \AxiomC{\denoteT{tabby cats} $~\le_e~$ \denoteT{cats}}
+  \RightLabel{\scriptsize{\denoteT{All} antitone in subject}}
+  \UnaryInfC{$
+    \denoteT{all}\left(\denoteT{cats}\right)\left(\cdot\right)
+    ~\le_{e \rightarrow t}~
+    \denoteT{all}\left(\denoteT{tabby cats}\right)\left(\cdot\right)
+  $}
+  \AxiomC{\denoteT{have tails} $~\le~$ \denoteT{have tails}}
+%  \RightLabel{\scriptsize{\denoteT{All} monotone in object}}
+  \BinaryInfC{$
+    \denoteT{all}\left(\denoteT{cats}\right)\left(\denoteT{have tails}\right)
+    ~~\le_{t}~~
+    \denoteT{all}\left(\denoteT{tabby cats}\right)\left(\denoteT{have tails}\right)
+  $}
+  \end{prooftree}
+\caption{\label{fig:catsproof}
+  A proof in Natural Logic for \textit{all tabby cats have tails} from
+    the premise \textit{all cats have tails}.
+  Note that $\le_t$ is equivalent to entailment ($\Rightarrow$).
+} 
+\end{figure*}
+
+That is to say, on a given parse of the respective sentences (in this
+  case unambiguous),
+  \denoteT{All cats have tails} $\leq_t$ \denoteT{All tabby cats have tails};
+  and, as mentioned above, $\leq_t$ and modus ponens ($\Rightarrow$)
+  are defined equivalently.
+
+
+\Subsection{natlog-exclusion}{Reasoning with Exclusion}
+Work by \newcite{key:2009maccartney-natlog}, building off of
+  \newcite{key:2007maccartney-natlog} and
+  \newcite{key:2008maccartney-natlog},
+  has focused on extending the set of atomic relationships between
+  denotations of objects beyond $\leq_e$ (subset) and $\geq_e$ (superset).
+We adopt the semantics of \newcite{key:2012icard-natlog}, although in this
+  work for simplicity we do not make use of their extended
+  monotonicity markings.
+A more thorough treatment of the soundness and completeness of the
+  proof theory described here can be found in
+  \newcite{key:2013djalali-natlog}.
+
+\newcite{key:2014icard-natlog} noted that the partial ordering of
+  $\leq_e$ can be formulated as a \textit{bounded distributive
+  lattice} to encompass the original relations of
+  \newcite{key:2007maccartney-natlog}.
+In particular, for every domain we can define a set of possible 
+  elements $\sX$, binary operators $\land$ and $\lor$,
+  and a minimum and maximum element $\bot$ and $\top$ respectively.
+By example, for the domain of entities we can define $\sX$ to be
+  the power set of our domain of entities, $\land=\cap$,
+  $\lor=\cup$, $\bot=\{\}$, and $\top=E$, where $E$ is the universe
+  of possible entities.
+We then define the set of MacCartney relations, noting that
+  $\forward$ and $\reverse$ are identical to the definitions of
+  $\lte_e$ and $\gte_e$ from the previous section respectively:
+
+\begin{center}
+\begin{tabular}{lcl}
+  $x \forward y$ & $\Leftrightarrow$ & $x \land y = x$ \\
+  $x \reverse y$ & $\Leftrightarrow$ & $x \lor y = x$ \\
+  $x \alternate y$ & $\Leftrightarrow$ & $x \land y = \bot$ \\
+  $x \cover y$ & $\Leftrightarrow$ & $x \lor y = \top$ \\
+  \vspace{-0.5em} & & \\
+  $x \equivalent y$ & $\Leftrightarrow$ & $x \forward y~~\textrm{and}~~x \reverse y$ \\
+  $x \negate y$ & $\Leftrightarrow$ & $x \alternate y~~\textrm{and}~~x \cover y$ \\
+  $x \independent y$ & & Always true
+\end{tabular}
+\end{center}
+
+Note that unlike in the original MacCartney formulation, these relations
+  are not mutually exclusive; in fact, a hierarchy of informativeness
+  emerges where, e.g., \negate subsumes \alternate and \cover.
+
+We are now faced with two issues which need resolving to generalize
+  the proofs from \refsec{natlog-mono}.
+First, we need to resolve how the monotonicity of the function application
+  projects the relation in the argument.
+Implicitly used in the proofs so far is the notion that antitone contexts
+  will flip $\leq$ and $\geq$, whereas monotone contexts will not.
+This relation is preserved for $\forward$ and $\reverse$.
+\newcite{key:2012icard-natlog} present an enriched tagging of 
+  monotonicity which allows the other relations (i.e.,
+  \negate, \alternate, \cover) to project meaningfully.
+This work does not make use of this semantics, although it is not
+  theoretically impossible to do so -- practically, this prohibits
+  our system from reasoning about antonyms.
+
+The second issue is determining how these relations project through
+  the proof tree.
