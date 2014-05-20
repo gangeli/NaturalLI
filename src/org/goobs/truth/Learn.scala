@@ -5,16 +5,12 @@ import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.EdgeType.EdgeType
 import org.goobs.truth.Messages._
 import org.goobs.truth.DataSource.DataStream
-import edu.stanford.nlp.util.Execution
 import java.io.{PrintWriter, File}
-import java.util.Properties
-import com.typesafe.config.{Config, ConfigFactory}
 import scala.collection.JavaConversions._
 import org.goobs.truth.TruthValue.TruthValue
 
 import scala.language.implicitConversions
 import java.util.concurrent.atomic.AtomicInteger
-import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration
 
 
 object Learn extends Client {
@@ -125,33 +121,8 @@ object Learn extends Client {
    * Learn a model.
    */
   def main(args:Array[String]):Unit = {
-    // Initialize Options
-    if (args.length == 1) {
-      val props:Properties = new Properties
-      val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
-      for ( entry <- config.entrySet() ) {
-        props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
-      }
-      Execution.fillOptions(classOf[Props], props)
-      StanfordRedwoodConfiguration.apply(props)
-    } else {
-      Execution.fillOptions(classOf[Props], args)
-    }
-
-    // Initialize Data
-    def mkDataset(corpus:Props.Corpus):DataStream = {
-      corpus match {
-        case Props.Corpus.HELD_OUT => HoldOneOut.read("")
-        case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
-        case Props.Corpus.FRACAS_NATLOG => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
-        case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
-        case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
-        case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
-        case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
-        case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
-        case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
-      }
-    }
+    import scala.concurrent.ExecutionContext.Implicits.global
+    initOptions(args)
     val trainData:DataStream = Props.LEARN_TRAIN.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
     val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
 

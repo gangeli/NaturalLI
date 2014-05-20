@@ -66,6 +66,7 @@ message Inference {
   optional float                   incomingEdgeCost = 14;
 
   optional uint64                  ticks            = 21;
+  optional string                  tag              = 22;
 }
 
 /** A response from the server, encoding a number of inferences and an optional error message */

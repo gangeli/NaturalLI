@@ -7,17 +7,22 @@ import org.goobs.truth.Messages._
 import org.goobs.truth.scripts.ShutdownServer
 import Monotonicity._
 
-import java.io.{DataOutputStream, DataInputStream}
+import com.typesafe.config.{Config, ConfigFactory}
+
+import java.io.{DataOutputStream, DataInputStream, File}
 import java.net.Socket
+import java.util.Properties
 import java.util.concurrent.Executors
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import edu.stanford.nlp.util.Execution
+import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration
+import org.goobs.truth.DataSource.DataStream
 
 /**
  * @author Gabor Angeli
  */
-trait Client extends Evaluate {
+trait Client extends Evaluator {
 
   import Implicits.inflateWeights
 
@@ -64,7 +69,7 @@ trait Client extends Evaluate {
     }
   }
 
-  val mainExecContext = new ExecutionContext {
+  private val mainExecContext = new ExecutionContext {
     lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
@@ -76,7 +81,7 @@ trait Client extends Evaluate {
     def reportFailure(t: Throwable) { t.printStackTrace() }
   }
 
-  implicit val serverBoundContext = new ExecutionContext {
+  private val serverBoundContext = new ExecutionContext {
     lazy val threadPool = Executors.newFixedThreadPool(math.max(Props.SERVER_BACKUP_THREADS, Props.SERVER_MAIN_THREADS))
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
@@ -109,6 +114,8 @@ trait Client extends Evaluate {
       if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
       response.getInferenceList
     }
+
+    def tag(paths:Iterable[Inference], tag:String):Iterable[Inference] = { paths.map{ i => Inference.newBuilder(i).setTag(tag).build } }
 
     // Query with backoff
     // (step 0: hard weights)
@@ -143,26 +150,32 @@ trait Client extends Evaluate {
                     debug(YELLOW, "no results for query: " + simpleQuery.getQueryFact.getGloss)
                   }
                   // return case: had to go all the way to the failsafe
-                  failsafe
-                }
+                  tag(failsafe, "backoff BFS")
+                }(mainExecContext)
               } else {
                 // return case: backoff found paths
-                Future.successful(backoff)
+                Future.successful(tag(backoff, "backoff UCS"))
               }
-            }
+            }(mainExecContext)
           } else {
             // return case: main query found paths
-            Future.successful(main)
+            Future.successful(tag(main, "soft weights"))
           }
-        )
+        )(mainExecContext)
       } else {
-        Future.successful(hard)
+        Future.successful(tag(hard, "hard weights"))
       }
-    }
+    }(mainExecContext)
   }
 
   def issueQuery(query:Query, quiet:Boolean=false, singleQuery:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet, singleQuery), scala.concurrent.duration.Duration.Inf)
 
+  /**
+   * Start a mock server that the client can connect to.
+   * @param callback The callback to call once the server is started.
+   * @param printOut If true, print the server output (otherwise, squash it).
+   * @return The exit code of the server process.
+   */
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
     ShutdownServer.shutdown()
 
@@ -207,5 +220,52 @@ trait Client extends Evaluate {
       }
     }
 
+  }
+
+  /**
+   * Initialize the global options from command-line arguments
+   * @param args The command line arguments
+   */
+  def initOptions(args:Array[String]):Unit = {
+    if (args.length == 1) {
+      val props:Properties = new Properties
+      val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
+      for ( entry <- config.entrySet() ) {
+        props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
+      }
+      Execution.fillOptions(classOf[Props], props)
+      StanfordRedwoodConfiguration.apply(props)
+    } else {
+      Execution.fillOptions(classOf[Props], args)
+    }
+
+    // Shutdown thread pools on exit
+    Runtime.getRuntime.addShutdownHook(new Thread() {
+      override def run():Unit = {
+        import scala.language.reflectiveCalls
+        serverBoundContext.threadPool.shutdown()
+        backupExecContext.threadPool.shutdown()
+        mainExecContext.threadPool.shutdown()
+      }
+    })
+  }
+
+  /**
+   * Create a dataset from a Corpus enum (as set in the properties).
+   * @param corpus The specification of the corpus to load.
+   * @return A DataStream created from reading that corpus.
+   */
+  def mkDataset(corpus:Props.Corpus):DataStream = {
+    corpus match {
+      case Props.Corpus.HELD_OUT => HoldOneOut.read("")
+      case Props.Corpus.FRACAS => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isSingleAntecedent)
+      case Props.Corpus.FRACAS_NATLOG => FraCaS.read(Props.DATA_FRACAS_PATH.getPath).filter(FraCaS.isApplicable)
+      case Props.Corpus.AVE_2006 => AVE.read(Props.DATA_AVE_PATH("2006").getPath)
+      case Props.Corpus.AVE_2007 => AVE.read(Props.DATA_AVE_PATH("2007").getPath)
+      case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
+      case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
+      case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
+      case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
+    }
   }
 }

@@ -14,14 +14,13 @@ import scala.collection.JavaConversions._
 import org.goobs.truth.Learn.WeightVector
 import edu.stanford.nlp.util.Sets
 import org.goobs.truth.TruthValue.TruthValue
-import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * A utility for evaluating a system.
  *
  * @author gabor
  */
-trait Evaluate {
+trait Evaluator {
   import Evaluate._
   import Implicits.{flattenWeights, inflateWeights}
 
@@ -157,6 +156,7 @@ trait Evaluate {
   }
 
   def evaluate(data:DataStream, weightsInput:Array[Double], print:String=>Unit, prFile:File=new File("/dev/null")):Unit = {
+    import scala.concurrent.ExecutionContext.Implicits.global
     val weights = weightsInput.map( x => x )
 
     // An encapsulation of a result point
@@ -184,17 +184,21 @@ trait Evaluate {
     dumpResult(Await.result(baseline, Duration.Inf), "(baseline)")
 
     // Run evaluation
-    def noisyAndProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft(1.0){ case (p:Double, guess:Iterable[Inference]) => p * probability(guess, weights) })
+    def noisyAndProb(queries:Iterable[Query.Builder]):Future[(Double, String)]
+      = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft((1.0, "")) {
+      case ((p: Double, tag: String), guess: Iterable[Inference]) =>
+        (p * probability(guess, weights), guess.headOption.fold(tag)(_.getTag))
+    })
     val results: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-      val futureProb = if (queries.exists( _.getForceFalse )) Future.successful(0.0) else noisyAndProb(queries)
-      futureProb.map{ (p:Double) =>
+      val futureProb = if (queries.exists( _.getForceFalse )) Future.successful((0.0, "forced")) else noisyAndProb(queries)
+      futureProb.map{ case (p:Double, tag:String) =>
         val result = ResultPoint(p, gold == TruthValue.TRUE)
         if (result.gold && result.guess) {
-          log(GREEN, s"[guess=true] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+          log(GREEN, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         } else if (result.gold && !result.guess) {
-          log(RED, s"[guess=false] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+          log(RED, s"[guess=false] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         } else if (!result.gold && result.guess) {
-          log(RED, BOLD, s"[guess=true] ${Utils.df.format(result.prob)}: ${queries.head.getQueryFact.getGloss}")
+          log(RED, BOLD, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         }
         result
       }
@@ -214,7 +218,7 @@ trait Evaluate {
 /**
  * Some static helpers for evaluation
  */
-object Evaluate {
+object Evaluate extends Client {
   def p(guessed: Seq[Boolean], golds: Seq[Boolean]):Double = {
     val correctGuess:Int = guessed.zip(golds).count{ case (guess, gold) => guess && gold }
     val guessCount:Int = guessed.count( x => x )
@@ -291,6 +295,18 @@ object Evaluate {
         case Monotonicity.ANY_OR_INVALID => monoAny_stateFalse(edge)
       }
     }
+  }
+
+  /**
+   * Just evaluate the system, without running learning.
+   */
+  def main(args:Array[String]) {
+    initOptions(args)
+    val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+    import Implicits.flattenWeights
+    forceTrack("Evaluating")
+    evaluate(testData, NatLog.softNatlogWeights, x => Learn.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
+    endTrack("Evaluating")
   }
 
 }

@@ -17,7 +17,7 @@ object Truth extends Client {
   def main(args:Array[String]):Unit = {
     Props.NATLOG_INDEXER_REPLNER = true  // before fillOptions to allow it to be overwritten
     Execution.fillOptions(classOf[Props], args)
-    val weights = NatLog.softNatlogWeights
+    val weights = NatLog.hardNatlogWeights
 
     do {
       println("")
