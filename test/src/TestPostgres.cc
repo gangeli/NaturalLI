@@ -88,12 +88,12 @@ TEST(PostgresTest, WordIndexerHasCorrectEntries) {
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("13"), string(term[0]));
-    EXPECT_EQ(string("vicinity"), string(term[1]));
+    EXPECT_EQ(string("'s gravenhage"), string(term[1]));
     // 14: locality
     ASSERT_TRUE(results.hasNext());
     term = results.next();
     EXPECT_EQ(string("14"), string(term[0]));
-    EXPECT_EQ(string("locality"), string(term[1]));
+    EXPECT_EQ(string("` tween"), string(term[1]));
   }
 }
 

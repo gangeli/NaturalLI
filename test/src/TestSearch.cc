@@ -289,7 +289,7 @@ TEST_F(BreadthFirstSearchTest, StressTestAllocation) {
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
     for (int k = 0; k < elem->factLength; ++k) {
       EXPECT_GE(elem->fact[k].word, 0);  // the word is positive (should always be the case anyways)
-      EXPECT_LT(elem->fact[k].word, 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+      EXPECT_LT(elem->fact[k].word, 200000);  // the word is within bounds (hopefully catches memory corruption errors)
     }
     EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
   }
@@ -451,7 +451,7 @@ TEST_F(UniformCostSearchTest, StressTestAllocAndOrder) {
     EXPECT_FALSE(elem->parent == NULL);  // the element has a parent
     for (int k = 0; k < elem->factLength; ++k) {
       EXPECT_GE(elem->fact[k].word, 0);  // the word is positive (should always be the case anyways)
-      EXPECT_LT(elem->fact[k].word, 120000);  // the word is within bounds (hopefully catches memory corruption errors)
+      EXPECT_LT(elem->fact[k].word, 200000);  // the word is within bounds (hopefully catches memory corruption errors)
     }
     EXPECT_FALSE(search.debugGet(i)->fact == NULL);  // the internal memory state is not corrupted
   }

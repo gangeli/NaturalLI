@@ -36,6 +36,8 @@ inline bool BloomFilter::getBit(const uint32_t& bit) const {
   const uint64_t bitmask = 0x1 << offset;
   if (this->bits != NULL) {
     return this->bits[bucket] & bitmask;
+  } else {
+    return false;
   }
 }
 
