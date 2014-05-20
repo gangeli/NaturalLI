@@ -90,24 +90,29 @@ class NatLogTest extends Test {
     }
   }
 
-  describe("Word Senses") {
-    Props.NATLOG_INDEXER_LAZY = false
-    it ("should get default sense of 'cat'") {
-      NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getPos ).toList should be (List("e", "n", "v", "n"))
-      NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
-    }
-    it ("should get vehicle senses of 'CAT' with enough evidence") {
-      NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getPos ).toList should be (List("e", "n", "v", "j", "n"))
-      NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getSense ).toList should be (List(0, 6, 2, 2, 0))  // TODO(gabor) this should end with 1, not 0
-    }
-    it ("should get right sense of 'tail'") {
-      NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
-      NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
-    }
-    it ("should not mark final VBP as a OTHER") {
-      NatLog.annotate("cats", "have", "more fur than dogs have").getWordList.map( _.getPos ).toList should be (List("n", "v", "j", "n", "?", "n", "?"))
-      NatLog.annotate("cats", "have", "a more important role than dogs are").getWordList.map( _.getPos ).toList.last should be ("?")
-
+describe("Word Senses") {
+  Props.NATLOG_INDEXER_LAZY = false
+  it ("should get default sense of 'cat'") {
+    NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getPos ).toList should be (List("e", "n", "v", "n"))
+    NatLog.annotate("the cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
+  }
+  it ("should get vehicle senses of 'CAT' with enough evidence") {
+    NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getPos ).toList should be (List("e", "n", "v", "j", "n"))
+    NatLog.annotate("the cat", "be", "large tracked vehicle").getWordList.map( _.getSense ).toList should be (List(0, 6, 2, 2, 0))  // TODO(gabor) this should end with 1, not 0
+  }
+  it ("should get right sense of 'tail'") {
+    NatLog.annotate("some cat", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
+    NatLog.annotate("some animal", "have", "tail").getWordList.map( _.getSense ).toList should be (List(0, 1, 2, 1))
+  }
+  it ("should not mark final VBP as a OTHER") {
+    NatLog.annotate("cats", "have", "more fur than dogs have").getWordList.map( _.getPos ).toList should be (List("n", "v", "j", "n", "?", "n", "?"))
+    NatLog.annotate("cats", "have", "a more important role than dogs are").getWordList.map( _.getPos ).toList.last should be ("?")
+  }
+  it ("should handle senses with lemmatization") {
+    NatLog.annotate("Florida is in American state").head.getWordList.map( _.getPos ).toList should be (List("n", "v", "?", "n"))
+    NatLog.annotate("Florida is in American state").head.getWordList.map( _.getSense ).toList should be (List(0, 3, 0,1))
+    NatLog.annotate("Florida be in American state").head.getWordList.map( _.getPos ).toList should be (List("n", "v", "?", "n"))
+      NatLog.annotate("Florida be in American state").head.getWordList.map( _.getSense ).toList should be (List(0, 2, 0,1))
     }
   }
   describe("NER Tags") {

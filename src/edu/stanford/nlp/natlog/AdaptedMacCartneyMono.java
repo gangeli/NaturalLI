@@ -404,6 +404,7 @@ public class AdaptedMacCartneyMono implements Mono {
       pipeline = new StanfordCoreNLP(new Properties() {{
         setProperty("annotators", "tokenize,ssplit,parse");
         setProperty("tokenize.whitespace", "true");
+        setProperty("ssplit.isOneSentence", "true");
         setProperty("parse.model", "edu/stanford/nlp/models/lexparser/englishPCFG.caseless.ser.gz");
       }});
     }

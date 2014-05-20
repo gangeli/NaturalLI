@@ -89,4 +89,5 @@ object Postgres {
   val TABLE_EDGE_TYPE_INTERN:String = "edge_type"
   val TABLE_FACTS:String = "fact"
   val TABLE_EDGES:String = "edge"
+  val TABLE_WORD_SENSE:String = "word_sense"
 }

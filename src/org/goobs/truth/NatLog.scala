@@ -339,6 +339,7 @@ object NatLog {
         case natlog.Monotonicity.DOWN => Monotonicity.DOWN
         case natlog.Monotonicity.NON => Monotonicity.FLAT
       }
+      assert (monotonicity.length == sentence.length, s"Length mismatch (${monotonicity.length} should be ${sentence.length}: " + sentence)
       val chunkedWords:Array[String] = tokens.map ( (w:Int) => if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(w) else Utils.wordGloss(w) )
       // (regexps)
       val NOUN = "(N.*)".r

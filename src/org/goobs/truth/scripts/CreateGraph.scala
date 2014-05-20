@@ -21,26 +21,6 @@ import edu.stanford.nlp.Sentence
 import org.goobs.sim.Ontology.RealNode
 import scala.util.matching
 
-//
-// SQL prerequisite statements for this script:
-// -----
-// CREATE TABLE word ( index INTEGER PRIMARY KEY, gloss TEXT );
-// CREATE TABLE edge_type ( index SMALLINT PRIMARY KEY, gloss TEXT );
-// CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );
-//
-// SQL post-requisite statements on completion of this script (only the last one is crucial):
-// -----
-// CREATE INDEX word_gloss ON word_indexer(gloss);
-// CREATE INDEX edge_outgoing ON edge (source, source_sense);
-// CREATE INDEX edge_incoming ON edge (sink, sink_sense);
-// CREATE INDEX edge_source ON edge (source);
-// CREATE INDEX edge_sink ON edge (sink);
-// CREATE INDEX edge_type ON edge (type);
-// CREATE VIEW graph AS (SELECT source.gloss AS source, e.source_sense AS source_sense, t.gloss AS relation, sink.gloss AS sink, e.sink_sense AS sink_sense FROM word source, word sink, edge e, edge_type t WHERE e.source=source.index AND e.sink=sink.index AND e.type=t.index);
-//
-// CREATE TABLE privative AS (SELECT DISTINCT source, source_sense FROM edge e1 WHERE source <> 0 AND NOT EXISTS (SELECT * FROM edge e2 WHERE e2.source=e1.source AND e2.source_sense=e1.source_sense AND e2.sink=0));
-//
-
 /**
  * Populate the database graph from various resources.
  *
@@ -87,13 +67,16 @@ object CreateGraph {
     index
   }
 
-  def getSense(phrase:String, synset:Synset)(implicit jaws:WordNetDatabase):Option[Int] = {
-    val synsets:Array[Synset] = jaws.getSynsets(phrase)
-    val index = synsets.indexOf(synset)
-    if (index < 0) {
-      throw new IllegalStateException("Unknown synset: " + synset)
+  def getSense(word:Int, synset:Synset, senses:Map[Int,Array[Synset]]):Option[Int] = {
+    senses.get(word) match {
+      case Some(synsets) =>
+        val index = synsets.indexOf(synset)
+        if (index < 0) {
+          throw new IllegalStateException("Unknown synset: " + synset)
+        }
+        if (index > 30) None else Some(index + 1)
+      case None => None
     }
-    if (index > 30) None else Some(index + 1)
   }
 
   def main(args:Array[String]) = {
@@ -109,7 +92,18 @@ object CreateGraph {
       implicit val jaws = WordNetDatabase.getFileInstance
       val wordnet       = Ontology.load(Props.SCRIPT_WORDNET_PATH)
 
-      withConnection{ (psql:Connection) =>
+      withConnection { (psql: Connection) =>
+        // Create tables
+        psql.prepareStatement("""DROP TABLE IF EXISTS word CASCADE;""").execute()
+        psql.prepareStatement("""CREATE TABLE word ( index INTEGER PRIMARY KEY, gloss TEXT );""").execute()
+        psql.prepareStatement("""DROP TABLE IF EXISTS edge_type CASCADE;""").execute()
+        psql.prepareStatement("""CREATE TABLE edge_type ( index SMALLINT PRIMARY KEY, gloss TEXT );""").execute()
+        psql.prepareStatement("""DROP TABLE IF EXISTS edge CASCADE;""").execute()
+        psql.prepareStatement("""CREATE TABLE edge ( source INTEGER, source_sense INTEGER, sink INTEGER, sink_sense INTEGER, type SMALLINT, cost REAL );""").execute()
+        psql.prepareStatement("""DROP TABLE IF EXISTS word_sense CASCADE;""").execute()
+        psql.prepareStatement("""CREATE TABLE word_sense ( index INTEGER, sense INTEGER, definition TEXT);""").execute()
+        psql.prepareStatement("""CREATE VIEW graph AS (SELECT source.gloss AS source, e.source_sense AS source_sense, t.gloss AS relation, sink.gloss AS sink, e.sink_sense AS sink_sense, e.cost AS cost FROM word source, word sink, edge e, edge_type t WHERE e.source=source.index AND e.sink=sink.index AND e.type=t.index);""").execute()
+
         // Database variables
         psql.setAutoCommit(true)
         val wordInsert = psql.prepareStatement(
@@ -121,12 +115,15 @@ object CreateGraph {
         val edgeInsert = psql.prepareStatement(
           "INSERT INTO " + Postgres.TABLE_EDGES +
             " (source, source_sense, sink, sink_sense, type, cost) VALUES (?, ?, ?, ?, ?, ?);")
+        val senseInsert = psql.prepareStatement(
+          "INSERT INTO " + Postgres.TABLE_WORD_SENSE +
+            " (index, sense, definition) VALUES (?, ?, ?);")
 
         // Function to add an edge
-        var edgesAdded = new mutable.HashSet[(Int,Int,Int,Int,Int,Float)]
-        def edge(t:EdgeType, source:Int, sourceSenseOption:Option[Int], sink:Int, sinkSenseOption:Option[Int], weight:Double):Unit = {
-          for (sourceSense:Int <- sourceSenseOption;
-               sinkSense:Int <- sinkSenseOption) {
+        var edgesAdded = new mutable.HashSet[(Int, Int, Int, Int, Int, Float)]
+        def edge(t: EdgeType, source: Int, sourceSenseOption: Option[Int], sink: Int, sinkSenseOption: Option[Int], weight: Double): Unit = {
+          for (sourceSense: Int <- sourceSenseOption;
+               sinkSense: Int <- sinkSenseOption) {
             val key = (source, sourceSense, sink, sinkSense, t.id, weight.toFloat)
             if (!edgesAdded(key)) {
               edgeInsert.setInt(1, source)
@@ -140,15 +137,55 @@ object CreateGraph {
             }
           }
         }
-        def edgeII(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSense:Int, weight:Double):Unit = {
+        def edgeII(t: EdgeType, source: Int, sourceSense: Int, sink: Int, sinkSense: Int, weight: Double): Unit = {
           edge(t, source, Some(sourceSense), sink, Some(sinkSense), weight)
         }
-        def edgeIO(t:EdgeType, source:Int, sourceSense:Int, sink:Int, sinkSenseOption:Option[Int], weight:Double):Unit = {
+        def edgeIO(t: EdgeType, source: Int, sourceSense: Int, sink: Int, sinkSenseOption: Option[Int], weight: Double): Unit = {
           edge(t, source, Some(sourceSense), sink, sinkSenseOption, weight)
         }
-        def edgeOI(t:EdgeType, source:Int, sourceSenseOption:Option[Int], sink:Int, sinkSense:Int, weight:Double):Unit = {
+        def edgeOI(t: EdgeType, source: Int, sourceSenseOption: Option[Int], sink: Int, sinkSense: Int, weight: Double): Unit = {
           edge(t, source, sourceSenseOption, sink, Some(sinkSense), weight)
         }
+
+        // Preparation
+        println("[05] Sense Preparation")
+        val synsetsByLemma = new mutable.HashMap[(Int,SynsetType), Array[Synset]]
+        for ((phrase: Seq[String], nodes: Set[Ontology.RealNode]) <- wordnet.ontology.toArray.sortBy(_._1.toString())) {
+          for (node: Ontology.RealNode <- nodes) {
+            val (phraseGloss: String, trustCase: Boolean) = {
+              val gloss = phrase.mkString(" ")
+              val wordForms = node.synset.getWordForms.filter(_.toLowerCase == gloss)
+              if (wordForms.length > 0) (wordForms(0), true) else (gloss, false)
+            }
+            val index: Int = indexOf(phraseGloss, trustCase)
+            val synsets:Array[Synset] = jaws.getSynsets(phraseGloss)
+            for ( (synsetType, synsets) <- synsets.groupBy( _.getType ) ) {
+              val existingSynsets: Array[Synset] = synsetsByLemma.get( (index, synsetType) ).getOrElse(Array[Synset]())
+              val newSynsets = existingSynsets.map(Some(_)).zipAll(synsets.map(Some(_)), None, None).foldLeft(List[Synset]()){
+                case (lst, (Some(a), Some(b))) => a :: b :: lst
+                case (lst, (Some(a), None)) =>    a :: lst
+                case (lst, (None, Some(b))) =>    b :: lst
+              }.reverse.distinct.toArray
+              synsetsByLemma( (index, synsetType) ) = newSynsets
+            }
+          }
+        }
+        val wordSenses: Map[Int, Array[Synset]] = synsetsByLemma
+          .map{ case ((w:Int, t:SynsetType), synsets:Array[Synset]) => w}
+          .map{ (word:Int) =>
+          (word, SynsetType.ALL_TYPES.map{ x => synsetsByLemma.get( (word, x) ).getOrElse(Array()) }.flatten)
+        }.toMap
+        synsetsByLemma.clear()
+        println("[07] Writing senses...")
+        for ( (w, synsets:Array[Synset]) <- wordSenses ) {
+          for ( (synset:Synset, sense) <- synsets.zipWithIndex) {
+            senseInsert.setInt(1, w)
+            senseInsert.setInt(2, sense)
+            senseInsert.setString(3, synset.getDefinition)
+            senseInsert.addBatch()
+          }
+        }
+        senseInsert.executeBatch()
 
         //
         // WordNet
@@ -162,7 +199,7 @@ object CreateGraph {
               if (wordForms.length > 0) (wordForms(0), true) else (gloss, false)
             }
             val index:Int = indexOf(phraseGloss, trustCase)
-            val sense:Option[Int] = getSense(phraseGloss, node.synset)
+            val sense:Option[Int] = getSense(index, node.synset, wordSenses)
 
             // Add hyper/hypo-nyms
             for (x:Ontology.Node <- node.hypernyms.toArray.sortBy( _.toString() )) x match { case (hyperNode:Ontology.RealNode) =>
@@ -172,7 +209,10 @@ object CreateGraph {
 
               for (hyperWord <- hyperNode.synset.getWordForms) {
                 val hyperInt:Int = indexOf(hyperWord)
-                val hyperSense:Option[Int] = getSense(hyperWord, hyperNode.synset)
+                val hyperSense:Option[Int] = getSense(hyperInt, hyperNode.synset, wordSenses)
+                if (!hyperSense.isDefined) {
+                  System.out.println("  [WARN] unknown word: " + hyperWord)
+                }
                 edge(EdgeType.WORDNET_UP, index, sense, hyperInt, hyperSense, edgeWeight)
                 edge(EdgeType.WORDNET_DOWN, hyperInt, hyperSense, index, sense, edgeWeight)
               }
@@ -184,7 +224,8 @@ object CreateGraph {
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                    val antIndex = indexOf(antonym.getWordForm)
+                    edge(EdgeType.WORDNET_NOUN_ANTONYM, index, sense, antIndex, getSense(antIndex, antonym.getSynset, wordSenses), 1.0)
                   }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
@@ -196,7 +237,8 @@ object CreateGraph {
                 }
               case (as:VerbSynset) =>
                 for (antonym <- as.getAntonyms(phraseGloss)) {
-                  edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                  val antIndex = indexOf(antonym.getWordForm)
+                  edge(EdgeType.WORDNET_VERB_ANTONYM, index, sense, antIndex, getSense(antIndex, antonym.getSynset, wordSenses), 1.0)
                 }
                 val isAuxilliary:Boolean = Utils.AUXILLIARY_VERBS.contains(phraseGloss.toLowerCase)
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
@@ -211,19 +253,22 @@ object CreateGraph {
                      wordForm <- related.getWordForms) {
                   if (!Quantifier.quantifierGlosses.contains(wordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_ADJECTIVE_RELATED, index, sense, indexOf(wordForm), getSense(wordForm, related), 1.0)
+                    val relatedIndex = indexOf(wordForm)
+                    edge(EdgeType.WORDNET_ADJECTIVE_RELATED, index, sense, relatedIndex, getSense(relatedIndex, related, wordSenses), 1.0)
                   }
                 }
                 for (pertainym <- as.getPertainyms(phraseGloss)) {
                   if (!Quantifier.quantifierGlosses.contains(pertainym.getWordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_ADJECTIVE_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                    val relatedIndex = indexOf(pertainym.getWordForm)
+                    edge(EdgeType.WORDNET_ADJECTIVE_PERTAINYM, index, sense, relatedIndex, getSense(relatedIndex, pertainym.getSynset, wordSenses), 1.0)
                   }
                 }
                 for (antonym <- as.getAntonyms(phraseGloss)) {
                   if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                    val antIndex = indexOf(antonym.getWordForm)
+                    edge(EdgeType.WORDNET_ADJECTIVE_ANTONYM, index, sense, antIndex, getSense(antIndex, antonym.getSynset, wordSenses), 1.0)
                   }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
@@ -237,13 +282,15 @@ object CreateGraph {
                 for (pertainym: WordSense <- as.getPertainyms(phraseGloss)) {
                   if (!Quantifier.quantifierGlosses.contains(pertainym.getWordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_ADVERB_PERTAINYM, index, sense, indexOf(pertainym.getWordForm), getSense(pertainym.getWordForm, pertainym.getSynset), 1.0)
+                    val pertIndex = indexOf(pertainym.getWordForm)
+                    edge(EdgeType.WORDNET_ADVERB_PERTAINYM, index, sense, pertIndex, getSense(pertIndex, pertainym.getSynset, wordSenses), 1.0)
                   }
                 }
                 for (antonym: WordSense <- as.getAntonyms(phraseGloss)) {
                   if (!Quantifier.quantifierGlosses.contains(antonym.getWordForm.toLowerCase) ||
                       !Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
-                    edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, indexOf(antonym.getWordForm), getSense(antonym.getWordForm, antonym.getSynset), 1.0)
+                    val antIndex = indexOf(antonym.getWordForm)
+                    edge(EdgeType.WORDNET_ADVERB_ANTONYM, index, sense, antIndex, getSense(antIndex, antonym.getSynset, wordSenses), 1.0)
                   }
                 }
                 if (!Quantifier.quantifierGlosses.contains(phraseGloss.toLowerCase)) {
@@ -262,9 +309,12 @@ object CreateGraph {
         val synonyms = new mutable.HashSet[SynonymPair]
         for ( node: RealNode <- wordnet.ontology.values.flatten ) {
           for ( word:String <- node.synset.getWordForms ) {
+            val wordIndex = indexOf(word)
             for ( synonym:String <- node.synset.getWordForms ) {
               if (word != synonym) {
-                synonyms.add(SynonymPair(word, getSense(word, node.synset), synonym, getSense(synonym, node.synset)))
+                val synIndex = indexOf(synonym)
+                synonyms.add(SynonymPair(word, getSense(wordIndex, node.synset, wordSenses),
+                  synonym, getSense(synIndex, node.synset, wordSenses)))
               }
             }
           }
@@ -446,6 +496,14 @@ object CreateGraph {
         }
         println("  edges...")
         edgeInsert.executeBatch()
+        println("  privative table...")
+        psql.prepareStatement("""CREATE INDEX word_gloss ON word_indexer(gloss);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_outgoing ON edge (source, source_sense);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_incoming ON edge (sink, sink_sense);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_source ON edge (source);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_sink ON edge (sink);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_type ON edge (type);""").execute()
+        psql.prepareStatement("""CREATE TABLE privative AS (SELECT DISTINCT source, source_sense FROM edge e1 WHERE source <> 0 AND NOT EXISTS (SELECT * FROM edge e2 WHERE e2.source=e1.source AND e2.source_sense=e1.source_sense AND e2.sink=0));""").execute()
 
         println("DONE.")
       }
