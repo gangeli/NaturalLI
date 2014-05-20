@@ -104,6 +104,7 @@ object CreateGraph {
         psql.prepareStatement("""DROP TABLE IF EXISTS word_sense CASCADE;""").execute()
         psql.prepareStatement("""CREATE TABLE word_sense ( index INTEGER, sense INTEGER, definition TEXT);""").execute()
         psql.prepareStatement("""CREATE VIEW graph AS (SELECT source.gloss AS source, e.source_sense AS source_sense, t.gloss AS relation, sink.gloss AS sink, e.sink_sense AS sink_sense, e.cost AS cost FROM word source, word sink, edge e, edge_type t WHERE e.source=source.index AND e.sink=sink.index AND e.type=t.index);""").execute()
+        psql.prepareStatement("""DROP TABLE IF EXISTS privative CASCADE;""").execute()
 
         // Database variables
         psql.setAutoCommit(true)
@@ -163,6 +164,7 @@ object CreateGraph {
                   case (lst, (Some(a), Some(b))) => a :: b :: lst
                   case (lst, (Some(a), None)) =>    a :: lst
                   case (lst, (None, Some(b))) =>    b :: lst
+                  case _ => throw new IllegalStateException()
                 }.reverse.distinct.toArray
                 synsetsByLemma( (index, synsetType) ) = newSynsets
               }
@@ -497,12 +499,12 @@ object CreateGraph {
         println("  edges...")
         edgeInsert.executeBatch()
         println("  privative table...")
-        psql.prepareStatement("""CREATE INDEX word_gloss ON word_indexer(gloss);""").execute()
+        psql.prepareStatement("""CREATE INDEX word_gloss ON word(gloss);""").execute()
         psql.prepareStatement("""CREATE INDEX edge_outgoing ON edge (source, source_sense);""").execute()
         psql.prepareStatement("""CREATE INDEX edge_incoming ON edge (sink, sink_sense);""").execute()
         psql.prepareStatement("""CREATE INDEX edge_source ON edge (source);""").execute()
         psql.prepareStatement("""CREATE INDEX edge_sink ON edge (sink);""").execute()
-        psql.prepareStatement("""CREATE INDEX edge_type ON edge (type);""").execute()
+        psql.prepareStatement("""CREATE INDEX edge_type_index ON edge (type);""").execute()
         psql.prepareStatement("""CREATE TABLE privative AS (SELECT DISTINCT source, source_sense FROM edge e1 WHERE source <> 0 AND NOT EXISTS (SELECT * FROM edge e2 WHERE e2.source=e1.source AND e2.source_sense=e1.source_sense AND e2.sink=0));""").execute()
 
         println("DONE.")
