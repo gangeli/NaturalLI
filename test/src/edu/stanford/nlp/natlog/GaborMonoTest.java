@@ -1,16 +1,11 @@
 package edu.stanford.nlp.natlog;
 
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.StringUtils;
 import org.goobs.truth.Quantifier;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 import static org.junit.Assert.*;
 
@@ -20,10 +15,6 @@ import static org.junit.Assert.*;
  * @author Gabor Angeli
  */
 public class GaborMonoTest {
-  private static final StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
-    setProperty("annotators", "tokenize,ssplit,parse");
-  }});
-
   private static void validate(String spec) {
     // Construct sentence
     StringBuilder sentence = new StringBuilder();
@@ -39,16 +30,14 @@ public class GaborMonoTest {
         case 'v':
           expected.add(Monotonicity.DOWN);
           break;
-        case '*':
+        case '-':
           expected.add(Monotonicity.NON);
           break;
       }
     }
 
     // Annotate sentence
-    Annotation ann = new Annotation(sentence.toString());
-    pipeline.annotate(ann);
-    Monotonicity[] mono = GaborMono.getInstance().annotate(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(TreeCoreAnnotations.TreeAnnotation.class));
+    Monotonicity[] mono = GaborMono.getInstance().annotate(sentence.toString());
 
     // Checks
     assertEquals(spec + " [" + StringUtils.join(expected, " ") + "] versus [" + StringUtils.join(mono, " ") + "]",
@@ -56,12 +45,6 @@ public class GaborMonoTest {
     for (int i = 0; i < Math.min(expected.size(), mono.length); ++i) {
       assertEquals("Disagreed on '" + spec.split("\\s+")[i] + "' in '" + spec + "'", expected.get(i), mono[i]);
     }
-  }
-
-  @Test
-  public void noQuantifier() {
-    validate("cats^ have^ tails^");
-    validate("the^ seven^ blue^ cats^ all^ have^ tails^");
   }
 
   @Test
@@ -83,7 +66,7 @@ public class GaborMonoTest {
           sm = "v"; om = "^";
           break;
         case MOST:
-          sm = "*"; om = "^";
+          sm = "-"; om = "^";
           break;
         case NONE:
           sm = "v"; om = "v";
@@ -147,6 +130,13 @@ public class GaborMonoTest {
     validate ("a^ few^ cats^ have^ tails^");
     validate ("some^ cats^ have^ few^ tailsv");
     validate ("some^ cats^ have^ a^ few^ tails^");
+  }
+
+  @Test
+  public void defaultMonotonicity() {
+    validate("the^ seven^ blue^ cats^ all^ have^ tails^");
+    validate ("cats- have^ tails^");
+    validate ("cats- do^ n't^ havev tailsv");
 
   }
 

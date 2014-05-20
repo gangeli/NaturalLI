@@ -1,8 +1,12 @@
 package edu.stanford.nlp.natlog;
 
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.Label;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.util.Pair;
@@ -19,6 +23,7 @@ import java.util.*;
  * @author Gabor Angeli
  */
 public class GaborMono implements Mono {
+  private static StanfordCoreNLP pipeline = null;
 
   public static final Collection<Quantifier> quantifiers = Collections.unmodifiableCollection(new ArrayList<Quantifier>() {{
     List<String> regexps;
@@ -329,7 +334,47 @@ public class GaborMono implements Mono {
         Arrays.fill(quantifierMarks, Monotonicity.UP);
       }
     }
+
+    // Return
     return monoMarks;
+  }
+
+  @Override
+  public Monotonicity[] annotate(String gloss) {
+    // Create pipeline
+    if (pipeline == null) {
+      pipeline = new StanfordCoreNLP(new Properties() {{
+        setProperty("annotators", "tokenize,ssplit,parse");
+      }});
+    }
+    // Add 'most' quantifier if none given
+    boolean hasQuantifier = false;
+    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      if (gloss.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
+    }
+    if (!hasQuantifier) {
+      Annotation ann = new Annotation(gloss);
+      pipeline.annotate(ann);
+      String lemmatized = StringUtils.join( ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class), " ");
+      for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+        if (lemmatized.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
+      }
+      if (!hasQuantifier) {
+        gloss = "Most "  + gloss;
+      }
+    }
+    // Annotate
+    Annotation ann = new Annotation(gloss);
+    pipeline.annotate(ann);
+    Tree tree = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(TreeCoreAnnotations.TreeAnnotation.class);
+    Monotonicity[] raw = annotate(tree);
+    if (!hasQuantifier) {
+      Monotonicity[] withoutQuantifier = new Monotonicity[raw.length - 1];
+      System.arraycopy(raw, 1, withoutQuantifier, 0, withoutQuantifier.length);
+      return withoutQuantifier;
+    } else {
+      return raw;
+    }
   }
 
 

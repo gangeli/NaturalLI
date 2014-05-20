@@ -334,7 +334,7 @@ object NatLog {
         candidate
       }
       val ner:Array[String] = sentence.ner
-      val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.parse).map {
+      val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.toString()).map {
         case natlog.Monotonicity.UP => Monotonicity.UP
         case natlog.Monotonicity.DOWN => Monotonicity.DOWN
         case natlog.Monotonicity.NON => Monotonicity.FLAT

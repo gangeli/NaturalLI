@@ -9,4 +9,6 @@ import edu.stanford.nlp.trees.Tree;
  */
 public interface Mono {
   public Monotonicity[] annotate(Tree tree);
+
+  public Monotonicity[] annotate(String gloss);
 }

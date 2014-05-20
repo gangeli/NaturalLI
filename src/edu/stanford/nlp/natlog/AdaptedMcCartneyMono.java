@@ -1,11 +1,16 @@
 package edu.stanford.nlp.natlog;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.Label;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.util.CollectionUtils;
 import edu.stanford.nlp.util.StringUtils;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -402,6 +407,23 @@ public class AdaptedMcCartneyMono implements Mono {
       }
     }
     return markings;
+  }
+
+  private static StanfordCoreNLP pipeline = null;
+
+  @Override
+  public Monotonicity[] annotate(String gloss) {
+    // Create pipeline
+    if (pipeline == null) {
+      pipeline = new StanfordCoreNLP(new Properties() {{
+        setProperty("annotators", "tokenize,ssplit,parse");
+      }});
+    }
+    // Annotate
+    Annotation ann = new Annotation(gloss);
+    pipeline.annotate(ann);
+    Tree tree = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(TreeCoreAnnotations.TreeAnnotation.class);
+    return annotate(tree);
   }
 
   /**
