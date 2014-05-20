@@ -10,7 +10,6 @@ import edu.stanford.nlp.trees.tregex.TregexPattern;
 import edu.stanford.nlp.trees.tregex.TregexMatcher;
 import edu.stanford.nlp.util.CollectionUtils;
 import edu.stanford.nlp.util.StringUtils;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
 
@@ -20,10 +19,10 @@ import java.util.*;
  * Bill -- if you ever stumble upon this, I'm sorry for the violence I have done to your
  * code.
  *
- * @author Bill McCartney
+ * @author Bill MacCartney
  * @author Gabor Angeli (adapted)
  */
-public class AdaptedMcCartneyMono implements Mono {
+public class AdaptedMacCartneyMono implements Mono {
 
   private static int verbose = 1;
 
@@ -221,7 +220,6 @@ public class AdaptedMcCartneyMono implements Mono {
 
       private int l;
       private int r;
-      private Span parent;
 
       public Span(int l, int r) {
         if (l < 0) throw new IllegalArgumentException("l=" + l + " < 0!");
@@ -236,14 +234,6 @@ public class AdaptedMcCartneyMono implements Mono {
 
       public int left() { return l; }
       public int right() { return r; }
-
-      public Span getParent() {
-        return parent;
-      }
-
-      public void setParent(Span parent) {
-        this.parent = parent;
-      }
 
       @Override
       public String toString() {
@@ -262,15 +252,13 @@ public class AdaptedMcCartneyMono implements Mono {
       }
       */
       }
-      if (tree != null) {
-        treesToSpans = new IdentityHashMap<>();
-        // why IdentityHashMap???
-        // is it to avoid confusion when there are equal subtrees (e.g. repeated words)?
-        collectWordSpans();
-        collectPhraseSpans(tree);
-        // System.err.println("treesToSpans: " + treesToSpans);
-        addParentsToSpans(tree);
-      }
+      treesToSpans = new IdentityHashMap<>();
+      // why IdentityHashMap???
+      // is it to avoid confusion when there are equal subtrees (e.g. repeated words)?
+      collectWordSpans();
+      collectPhraseSpans(tree);
+      // System.err.println("treesToSpans: " + treesToSpans);
+      addParentsToSpans(tree);
     }
 
     public Span getSpanForSubtree(Tree t) {
@@ -309,16 +297,14 @@ public class AdaptedMcCartneyMono implements Mono {
   private void addParentsToSpans(Tree rootTree) {
     Span rootSpan = getSpanForSubtree(rootTree);
     if (rootSpan == null) throw new RuntimeException("WHOA!");
-    addParentsToSpansRecursive(rootTree, rootSpan);
-    rootSpan.setParent(null);
+    addParentsToSpansRecursive(rootTree);
   }
 
-  private void addParentsToSpansRecursive(Tree tree, Span span) {
+  private void addParentsToSpansRecursive(Tree tree) {
     for (Tree childTree : tree.children()) {
       Span childSpan = getSpanForSubtree(childTree);
       if (childSpan == null) throw new RuntimeException("WHOA!");
-      addParentsToSpansRecursive(childTree, childSpan);
-      childSpan.setParent(span);
+      addParentsToSpansRecursive(childTree);
     }
   }
 
@@ -326,13 +312,13 @@ public class AdaptedMcCartneyMono implements Mono {
 
   // ============================================================================
 
-  private static AdaptedMcCartneyMono singleton;
+  private static AdaptedMacCartneyMono singleton;
 
-  private AdaptedMcCartneyMono() { }
+  private AdaptedMacCartneyMono() { }
 
-  public static AdaptedMcCartneyMono getInstance() {
+  public static AdaptedMacCartneyMono getInstance() {
     if (singleton == null) {
-      singleton = new AdaptedMcCartneyMono();
+      singleton = new AdaptedMacCartneyMono();
     }
     return singleton;
   }

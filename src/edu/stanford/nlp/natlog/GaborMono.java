@@ -18,7 +18,7 @@ import java.util.*;
  * Chopping up other people's code is a bad idea. Let's try to understand what it's doing
  * and re-implement it properly.
  *
- * @see edu.stanford.nlp.natlog.AdaptedMcCartneyMono
+ * @see AdaptedMacCartneyMono
  *
  * @author Gabor Angeli
  */
