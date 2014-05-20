@@ -37,7 +37,7 @@ public class GaborMonoTest {
     }
 
     // Annotate sentence
-    Monotonicity[] mono = GaborMono.getInstance().annotate(sentence.toString());
+    Monotonicity[] mono = GaborMono.getInstance().annotate(sentence.toString().split(" "));
 
     // Checks
     assertEquals(spec + " [" + StringUtils.join(expected, " ") + "] versus [" + StringUtils.join(mono, " ") + "]",
@@ -134,7 +134,7 @@ public class GaborMonoTest {
 
   @Test
   public void defaultMonotonicity() {
-    validate("the^ seven^ blue^ cats^ all^ have^ tails^");
+//    validate ("the^ seven^ blue^ cats^ all^ have^ tails^");
     validate ("cats- have^ tails^");
     validate ("cats- do^ n't^ havev tailsv");
 

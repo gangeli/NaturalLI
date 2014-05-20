@@ -412,15 +412,17 @@ public class AdaptedMcCartneyMono implements Mono {
   private static StanfordCoreNLP pipeline = null;
 
   @Override
-  public Monotonicity[] annotate(String gloss) {
+  public Monotonicity[] annotate(String[] gloss) {
     // Create pipeline
     if (pipeline == null) {
       pipeline = new StanfordCoreNLP(new Properties() {{
         setProperty("annotators", "tokenize,ssplit,parse");
+        setProperty("tokenize.whitespace", "true");
+        setProperty("parse.model", "edu/stanford/nlp/models/lexparser/englishPCFG.caseless.ser.gz");
       }});
     }
     // Annotate
-    Annotation ann = new Annotation(gloss);
+    Annotation ann = new Annotation(StringUtils.join(gloss, " "));
     pipeline.annotate(ann);
     Tree tree = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(TreeCoreAnnotations.TreeAnnotation.class);
     return annotate(tree);

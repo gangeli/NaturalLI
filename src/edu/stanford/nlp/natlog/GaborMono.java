@@ -143,7 +143,7 @@ public class GaborMono implements Mono {
       }
     }
     add(new BinaryQuantifier("non up under DT/JJ/RBS",
-        "/^(DT|JJ|RB)S?$/ < /^" + StringUtils.join(regexps, "|") + "$/ !> QP !>> VP",
+        "/^(DT|JJS?|RBS?|NNP?S?)$/ < /^" + StringUtils.join(regexps, "|") + "$/ !> QP !>> VP",
         NP_PROJECTION,
         Monotonicity.NON,
         S_PROJECTION,
@@ -340,15 +340,18 @@ public class GaborMono implements Mono {
   }
 
   @Override
-  public Monotonicity[] annotate(String gloss) {
+  public Monotonicity[] annotate(String[] words) {
     // Create pipeline
     if (pipeline == null) {
       pipeline = new StanfordCoreNLP(new Properties() {{
         setProperty("annotators", "tokenize,ssplit,parse");
+        setProperty("tokenize.whitespace", "true");
+        setProperty("parse.model", "edu/stanford/nlp/models/lexparser/englishPCFG.caseless.ser.gz");
       }});
     }
     // Add 'most' quantifier if none given
     boolean hasQuantifier = false;
+    String gloss = StringUtils.join(words, " ");
     for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
       if (gloss.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
     }

@@ -12,7 +12,7 @@ import edu.stanford.nlp.Sentence
  */
 class NatLogTest extends Test {
 
-  val DEFAULT = Monotonicity.DEFAULT match {
+  val NO_QUANTIFIER = Monotonicity.QUANTIFIERLESS match {
     case Monotonicity.UP => Messages.Monotonicity.UP
     case Monotonicity.DOWN => Messages.Monotonicity.DOWN
     case Monotonicity.NON => Messages.Monotonicity.FLAT
@@ -56,8 +56,8 @@ class NatLogTest extends Test {
       NatLog.annotate("no cats", "have", "tails").getWordList.map(_.getMonotonicity).toList should be(List(UP, DOWN, DOWN, DOWN))
     }
     it ("should mark 'not'") {
-      NatLog.annotate("cat", "do not have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(DEFAULT, UP, UP, DOWN, DOWN))
-      NatLog.annotate("cat", "don't have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(DEFAULT, UP, UP, DOWN, DOWN))
+      NatLog.annotate("cat", "do not have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(NO_QUANTIFIER, UP, UP, DOWN, DOWN))
+      NatLog.annotate("cat", "don't have", "tails").getWordList.map( _.getMonotonicity ).toList should be (List(NO_QUANTIFIER, UP, UP, DOWN, DOWN))
     }
     it ("should work on 'Every job that involves a giant squid is dangerous'") {
       NatLog.annotate("every job that involves a giant squid is dangerous").head.getWordList.map( _.getMonotonicity ).toList should be (

@@ -11,6 +11,7 @@ public enum Monotonicity {
   NON;
 
   public static Monotonicity DEFAULT = UP;
+  public static Monotonicity QUANTIFIERLESS = NON;
 
   public Monotonicity compose(Monotonicity other) {
     switch (this) {
