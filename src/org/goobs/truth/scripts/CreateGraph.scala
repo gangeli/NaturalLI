@@ -72,7 +72,8 @@ object CreateGraph {
       case Some(synsets) =>
         val index = synsets.indexOf(synset)
         if (index < 0) {
-          throw new IllegalStateException("Unknown synset: " + synset)
+          System.out.println("  [WARN] unknown synset: " + synset)
+          None
         }
         if (index > 30) None else Some(index + 1)
       case None => None
@@ -152,21 +153,20 @@ object CreateGraph {
         val synsetsByLemma = new mutable.HashMap[(Int,SynsetType), Array[Synset]]
         for ((phrase: Seq[String], nodes: Set[Ontology.RealNode]) <- wordnet.ontology.toArray.sortBy(_._1.toString())) {
           for (node: Ontology.RealNode <- nodes) {
-            val (phraseGloss: String, trustCase: Boolean) = {
-              val gloss = phrase.mkString(" ")
-              val wordForms = node.synset.getWordForms.filter(_.toLowerCase == gloss)
-              if (wordForms.length > 0) (wordForms(0), true) else (gloss, false)
-            }
-            val index: Int = indexOf(phraseGloss, trustCase)
-            val synsets:Array[Synset] = jaws.getSynsets(phraseGloss)
-            for ( (synsetType, synsets) <- synsets.groupBy( _.getType ) ) {
-              val existingSynsets: Array[Synset] = synsetsByLemma.get( (index, synsetType) ).getOrElse(Array[Synset]())
-              val newSynsets = existingSynsets.map(Some(_)).zipAll(synsets.map(Some(_)), None, None).foldLeft(List[Synset]()){
-                case (lst, (Some(a), Some(b))) => a :: b :: lst
-                case (lst, (Some(a), None)) =>    a :: lst
-                case (lst, (None, Some(b))) =>    b :: lst
-              }.reverse.distinct.toArray
-              synsetsByLemma( (index, synsetType) ) = newSynsets
+            val gloss = phrase.mkString(" ")
+            for ( (phraseGloss, trustCase) <- Seq((node.synset.getWordForms.find(_.toLowerCase == gloss).getOrElse(gloss), true), (gloss, false) ) ) {
+              val index: Int = indexOf(phraseGloss, trustCase)
+              val synsets:Array[Synset] = jaws.getSynsets(phraseGloss)
+              for ( (synsetType, synsets) <- synsets.groupBy( _.getType ) ) {
+                val existingSynsets: Array[Synset] = synsetsByLemma.get( (index, synsetType) ).getOrElse(Array[Synset]())
+                val newSynsets = existingSynsets.map(Some(_)).zipAll(synsets.map(Some(_)), None, None).foldLeft(List[Synset]()){
+                  case (lst, (Some(a), Some(b))) => a :: b :: lst
+                  case (lst, (Some(a), None)) =>    a :: lst
+                  case (lst, (None, Some(b))) =>    b :: lst
+                }.reverse.distinct.toArray
+                synsetsByLemma( (index, synsetType) ) = newSynsets
+              }
+
             }
           }
         }
@@ -211,7 +211,7 @@ object CreateGraph {
                 val hyperInt:Int = indexOf(hyperWord)
                 val hyperSense:Option[Int] = getSense(hyperInt, hyperNode.synset, wordSenses)
                 if (!hyperSense.isDefined) {
-                  System.out.println("  [WARN] unknown word: " + hyperWord)
+                  System.out.println("  [WARN] unknown word: " + hyperWord + " (hypernym of " + phraseGloss + ")")
                 }
                 edge(EdgeType.WORDNET_UP, index, sense, hyperInt, hyperSense, edgeWeight)
                 edge(EdgeType.WORDNET_DOWN, hyperInt, hyperSense, index, sense, edgeWeight)
