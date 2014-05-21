@@ -306,6 +306,12 @@ public class GaborMono implements Mono {
       for (Pair<Tree, Monotonicity> match : quantifier.annotate(tree)) {
         doCompose = true;
         Span span = spans.findSpan(match.first);
+        // A dirty hack to patch the parser's poor job of getting "a few"
+        // TODO(gabor) as mentioned above, this is a dirty hack.
+        String spanText = StringUtils.join(yield.subList(span.start(), span.end()), " ").toLowerCase();
+        if (spanText.contains("a few")) {
+          continue;
+        }
         // Don't mark the quantifier itself
         // This block is a mess of off-by-ones.
         // We start with a span, and try to find a quantifier as far left as possible, going

@@ -405,7 +405,8 @@ object CreateGraph {
         println("[40] Senseless insert/delete")
         for ( (index, pos) <- posCache) {
           if (!quantifiers.contains(index)) {
-            pos match {
+            val gloss = wordIndexer.get(index).toLowerCase
+            (if (Utils.AUXILLIARY_VERBS.contains(gloss)) "?" else pos) match {
               case 'N' =>
                 if (!Utils.INTENSIONAL_ADJECTIVES.contains(wordIndexer.get(index).toLowerCase) &&
                     !Quantifier.quantifierGlosses.contains(wordIndexer.get(index).toLowerCase)) {

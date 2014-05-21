@@ -37,7 +37,7 @@ trait Client extends Evaluator {
 
   def explain(fact:Fact, tag:String="fact", verbose:Boolean=true):Unit = {
     log(tag + ": " + fact.getWordList.map( w =>
-      s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}:${w.getPos.toUpperCase}"
+      s"[${w.getMonotonicity match { case UP => "^" case DOWN => "v" case FLAT => "-"}}]${w.getGloss}_${w.getSense}"
     ).mkString(" "))
     if (verbose) {
       log(fact.getWordList.map{ w =>

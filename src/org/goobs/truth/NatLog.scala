@@ -158,7 +158,7 @@ object NatLog {
     wordnet = -0.01,
     badWordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
-    verbInsertOrDelete = -0.01,
+    verbInsertOrDelete = Double.NegativeInfinity,
     badInsertDelete = Double.NegativeInfinity,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
