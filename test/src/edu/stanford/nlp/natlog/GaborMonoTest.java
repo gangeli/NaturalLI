@@ -136,6 +136,7 @@ public class GaborMonoTest {
     validate ("a^ few^ cats^ have^ tails^");
     validate ("some^ cats^ have^ few^ tailsv");
     validate ("some^ cats^ have^ a^ few^ tails^");
+    validate ("neither^ catv likedv dogsv");
   }
 
   @Test

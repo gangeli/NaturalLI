@@ -137,6 +137,10 @@ void closeConnection(int socket, sockaddr_in* client) {
   fflush(stdout);
 }
 
+/**
+ * Convert a (concise) path object into an Inference object to be passed over the wire
+ * to the client.
+ */
 Inference inferenceFromPath(const Path* path,
                             const Graph* graph,
                             const float& score,
@@ -239,73 +243,6 @@ Inference inferenceFromPath(const Path* path,
     // Recursive case: reverse the rest of the path
     return inferenceFromPath(path->parent, graph, score, rootPolarity, &node, path);
   }
-}
-
-
-/**
- * Convert a (concise) path object into an Inference object to be passed over the wire
- * to the client.
- */
-Inference inferenceFromPath(const Path* path, const Graph* graph, const float& score,
-                            const Inference* inferredFrom) {
-  // Base Case
-  if (path == NULL) { 
-    assert(inferredFrom != NULL);
-    return *inferredFrom;
-  }
-
-  Inference inference;
-  // Populate path
-  // (source)
-  if (path->parent != NULL) {
-    if (path->nodeState.incomingEdge != NULL_EDGE_TYPE) {
-      inference.set_incomingedgetype(path->nodeState.incomingEdge);
-    }
-    inference.set_incomingedgecost(path->nodeState.incomingCost);
-    switch (path->fact[path->lastMutationIndex].monotonicity) {
-      case MONOTONE_UP:
-        inference.set_monotonecontext(Monotonicity::UP);
-        break;
-      case MONOTONE_DOWN:
-        inference.set_monotonecontext(Monotonicity::DOWN);
-        break;
-      case MONOTONE_FLAT:
-        inference.set_monotonecontext(Monotonicity::FLAT);
-        break;
-      default:
-      printf("Invalid monotonicity: %u", path->fact[path->lastMutationIndex].monotonicity);
-      std::exit(1);
-      break;
-    }
-    if (path->nodeState.incomingEdge >= MONOTONE_INDEPENDENT_BEGIN) {
-      inference.set_monotonecontext(Monotonicity::ANY_OR_INVALID);
-    }
-  }
-  // (truth state)
-  switch (path->nodeState.truth) {
-    case INFER_TRUE:
-      inference.set_state(CollapsedInferenceState::TRUE);
-      break;
-    case INFER_FALSE:
-      inference.set_state(CollapsedInferenceState::FALSE);
-      break;
-    case INFER_UNKNOWN:
-      inference.set_state(CollapsedInferenceState::UNKNOWN);
-      break;
-    default:
-      printf("Invalid inference state: %u", path->nodeState.truth);
-      std::exit(1);
-      break;
-  }
-  // (score)
-  inference.set_score(score);
-  // (set implied from)
-  if (inferredFrom != NULL) {
-    inference.mutable_impliedfrom()->CopyFrom(*inferredFrom);
-  }
-  // Recursive Case
-  Inference reversedHead = inferenceFromPath(path->parent, graph, score, &inference);
-  return reversedHead;
 }
 
 /**

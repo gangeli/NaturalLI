@@ -329,6 +329,15 @@ inline const Path* BreadthFirstSearch::push(
       break;
   }
   assert (mutatedLength > newMutationIndex);
+  
+  // 3.5. Update the inference state
+  inference_state newState = compose(parent->nodeState.truth, edge.type);
+  if (newState != parent->nodeState.truth && newMutationIndex < mutatedLength - 1) {
+    // If we have swapped the truth, stop editing this word.
+    // This is to prevent, e.g., taking an antonym and then deleting
+    // the antonym.
+    newMutationIndex += 1;
+  }
 
   // 4. Copy everything after the mutation zone
   if (mutationIndex < parent->factLength - 1) {
@@ -337,7 +346,7 @@ inline const Path* BreadthFirstSearch::push(
            (parent->factLength - mutationIndex - 1) * sizeof(tagged_word));
   }
   // (check cache)
-  if (cache->isSeen(localMutated, mutatedLength, newMutationIndex)) { return NULL; }
+  if (cache->isSeen(localMutated, mutatedLength, newMutationIndex << 2 | newState)) { return NULL; }
   // (allocate fact -- we do this here to avoid allocating cache hits)
   tagged_word* mutated = allocateWord(mutatedLength);
   if (mutated == NULL) { outOfMemory = true; return NULL; }
@@ -345,7 +354,10 @@ inline const Path* BreadthFirstSearch::push(
   memcpy(mutated, localMutated, mutatedLength * sizeof(tagged_word));
 
   // 5. Tweak monotonicity
-  const uint8_t until = newMonotoneBoundary >= newMutationIndex ? newMonotoneBoundary : mutatedLength;
+  const uint8_t until 
+    = newMonotoneBoundary >= newMutationIndex 
+      ? newMonotoneBoundary 
+      : mutatedLength;
   switch (edge.type) {
     case QUANTIFIER_UP:     // TODO(gabor) I rather suspect this is wrong
     case QUANTIFIER_DOWN:
@@ -368,14 +380,6 @@ inline const Path* BreadthFirstSearch::push(
       break;
   }
 
-  // Update the inference state
-  inference_state newState = compose(parent->nodeState.truth, edge.type);
-  if (newState != parent->nodeState.truth && newMutationIndex < mutatedLength - 1) {
-    // If we have swapped the truth, stop editing this word.
-    // This is to prevent, e.g., taking an antonym and then deleting
-    // the antonym.
-    newMutationIndex += 1;
-  }
   // Allocate new path
   Path* newPath = allocatePath();
   if (newPath == NULL) { outOfMemory = true; return NULL; }
@@ -705,12 +709,11 @@ search_response Search(Graph* graph, FactDB* knownFacts,
     // -- Get the next element from the fringe --
     const Path* parent;
     const float costSoFar = fringe->pop(&parent);
-    if (cache->isSeen(parent->fact, parent->factLength,
-        parent->lastMutationIndex)) {
+    const uint32_t flags = parent->lastMutationIndex << 2 | parent->nodeState.truth;
+    if (cache->isSeen(parent->fact, parent->factLength, flags)) {
       continue;
     }
-    cache->add(parent->fact, parent->factLength, 
-               parent->lastMutationIndex);
+    cache->add(parent->fact, parent->factLength, flags);
 
     // -- Debug Output --
 //    printf("%lu [%f] %s [index:%d]\n", time, costSoFar, toString(*graph, parent->fact, parent->factLength).c_str(), parent->lastMutationIndex);

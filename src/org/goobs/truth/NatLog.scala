@@ -98,8 +98,8 @@ object NatLog {
     setCounts(DEL_UNIVERSAL, Monotonicity.DOWN, default)
     // VALID: mirror universal
     setCounts(ADD_QUANTIFIER_OTHER, Monotonicity.DOWN, insertionOrDeletion)
-    // INVALID: mirror universal
-    setCounts(ADD_QUANTIFIER_OTHER, Monotonicity.UP, default)
+    // VALID: default meaning of generic
+    setCounts(ADD_QUANTIFIER_OTHER, Monotonicity.UP, insertionOrDeletion)
     // VALID: mirror universal
     setCounts(DEL_QUANTIFIER_OTHER, Monotonicity.UP, insertionOrDeletion)
     // INVALID: mirror universal
@@ -305,7 +305,7 @@ object NatLog {
       // (map relative index to absolute index)
       Utils.senseIndex.get( (word, synsets(argmaxIndex).getDefinition) ) match {
         case Some(sense) => math.min(31, sense)
-        case None => warn(s"unknown sense for word: $gloss with synset definition '${synsets(argmaxIndex).getDefinition}'"); 0
+        case None => 0
       }
     }
   }
