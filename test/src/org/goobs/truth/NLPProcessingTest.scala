@@ -63,7 +63,7 @@ class NLPProcessingTest extends Test {
 
     it ("should index proper names") {
       val (indexed, _) = index("John saw Mary")(Postgres.indexerContains, Postgres.indexerGet, x => Utils.WORD_UNK)
-      wordGloss(indexed(0)) should be ("John")
+      wordGloss(indexed(0)) should be ("john")
       wordGloss(indexed(2)) should be ("mary")
     }
 

@@ -335,6 +335,20 @@ public class GaborMono implements Mono {
       }
     }
 
+    // Make sure any beginning quantifier is Monotone up
+    // This is really to mitigate parse errors
+    for (org.goobs.truth.Quantifier quantifier : org.goobs.truth.Quantifier.values()) {
+      String[] surfaceForm = quantifier.surfaceForm;
+      if (yield.size() >= surfaceForm.length) {
+        String[] yieldBegin = yield.subList(0, surfaceForm.length).toArray(new String[surfaceForm.length]);
+        if (Arrays.equals(surfaceForm, yieldBegin)) {
+          for (int i = 0; i < surfaceForm.length; ++i) {
+            monoMarks[i] = Monotonicity.DEFAULT;
+          }
+        }
+      }
+    }
+
     // Return
     return monoMarks;
   }

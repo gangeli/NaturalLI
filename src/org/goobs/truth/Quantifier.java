@@ -49,6 +49,7 @@ public enum Quantifier {
   SOME_OF_THE("some of the",        LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   ONE_OF("one of",                  LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   ONE_OF_THE("one of the",          LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
+  AT_LEAST("at least",              LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   A_FEW("a few",                    LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_BE("there be",              LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),
   THERE_EXIST("there exist",        LogicalQuantifier.EXISTS, TriggerType.DONT_MARK),

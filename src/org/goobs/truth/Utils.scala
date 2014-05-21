@@ -7,7 +7,7 @@ import edu.stanford.nlp._
 import edu.stanford.nlp.util.logging.Redwood
 import edu.stanford.nlp.util.logging.Redwood.Util._
 
-import edu.smu.tspell.wordnet.SynsetType
+import edu.smu.tspell.wordnet.{Synset, SynsetType}
 
 import org.goobs.truth.Implicits._
 import org.goobs.truth.Postgres.{slurpTable, TABLE_WORD_INTERN}
@@ -279,6 +279,19 @@ object Utils {
       override def execute(p1: String, p2: Int): Boolean = { reverseIndex(p2) = p1; true }
     })
     (wordIndexer, reverseIndex)
+  }
+
+  /**
+   * A mapping from (word_index, definition) -> word sense
+   */
+  lazy val (senseIndex, senseGloss):(Map[(Int, String), Int],Map[(Int,Int), String]) = {
+    var elems = List[((Int, String), Int)]()
+    var glosses = List[((Int, Int), String)]()
+    slurpTable(Postgres.TABLE_WORD_SENSE, {(r:ResultSet) =>
+      elems = ((r.getInt("index"), r.getString("definition")), r.getInt("sense")) :: elems
+      glosses = ((r.getInt("index"), r.getInt("sense")), r.getString("definition")) :: glosses
+    })
+    (elems.toMap, glosses.toMap)
   }
 
   def simplifyQuery(query:Messages.Query, annotate:String=>Messages.Fact):Messages.Query = {

@@ -182,7 +182,7 @@ object CreateGraph {
         for ( (w, synsets:Array[Synset]) <- wordSenses ) {
           for ( (synset:Synset, sense) <- synsets.zipWithIndex) {
             senseInsert.setInt(1, w)
-            senseInsert.setInt(2, sense)
+            senseInsert.setInt(2, sense + 1)
             senseInsert.setString(3, synset.getDefinition)
             senseInsert.addBatch()
           }

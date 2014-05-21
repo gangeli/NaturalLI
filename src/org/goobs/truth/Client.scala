@@ -45,7 +45,7 @@ trait Client extends Evaluator {
         if (synsets == null || synsets.size == 0 || w.getSense == 0) {
           s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): <unknown sense>"
         } else {
-          s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${synsets(w.getSense - 1).getDefinition}"
+          s"  ${w.getGloss} (${w.getWord}_${w.getSense}}): ${Utils.senseGloss( (w.getWord, w.getSense) )}"
         }
       }.mkString("\n"))
     }
@@ -59,8 +59,8 @@ trait Client extends Evaluator {
   def recursivePrint(node:Inference):String = {
     if (node.hasImpliedFrom) {
       val incomingType = EdgeType.values.find( _.id == node.getIncomingEdgeType).getOrElse(node.getIncomingEdgeType)
-      if (incomingType != 63) {
-        s"${node.getFact.getGloss} -[$incomingType]-> ${recursivePrint(node.getImpliedFrom)}"
+      if (node.hasIncomingEdgeType && incomingType != 63) {
+        s"${node.getFact.getGloss} <-[$incomingType]- ${recursivePrint(node.getImpliedFrom)}"
       } else {
         recursivePrint(node.getImpliedFrom)
       }
@@ -111,7 +111,10 @@ trait Client extends Evaluator {
       if (response.getError) {
         throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
       }
-      if (!quiet) log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
+      if (!quiet) {
+        log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
+        for (inference <- response.getInferenceList) { log(recursivePrint(inference)) }
+      }
       response.getInferenceList
     }
 

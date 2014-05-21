@@ -43,8 +43,8 @@ trait Evaluator {
       // Variables for score
       val edge: EdgeType.Value = EdgeType(path.getIncomingEdgeType)
       val state: CollapsedInferenceState
-      = if (path.hasImpliedFrom && path.getImpliedFrom.hasState) path.getImpliedFrom.getState
-      else CollapsedInferenceState.TRUE
+        = if (path.hasImpliedFrom && path.getImpliedFrom.hasState) path.getImpliedFrom.getState
+          else CollapsedInferenceState.TRUE
       val monotonicity: Monotonicity = if (path.hasMonotoneContext) path.getMonotoneContext else Messages.Monotonicity.UP
       // Compute score
       val useTrueWeights:Boolean = state == CollapsedInferenceState.TRUE

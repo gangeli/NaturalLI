@@ -137,14 +137,15 @@ void closeConnection(int socket, sockaddr_in* client) {
   fflush(stdout);
 }
 
+Inference inferenceFromPath(const Path* path,
+                            const Graph* graph,
+                            const float& score,
+                            const uint8_t& rootPolarity,
+                            const Inference* child,
+                            const Path* pathChild) {
+  Inference node;
 
-/**
- * Convert a (concise) path object into an Inference object to be passed over the wire
- * to the client.
- */
-Inference inferenceFromPath(const Path* path, const Graph* graph, const float& score) {
-  Inference inference;
-  // Populate fact
+  // -- Populate fact
   Fact fact;
   for (int i = 0; i < path->factLength; ++i) {
     Word word;
@@ -152,11 +153,111 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
     fact.add_word()->CopyFrom(word);
   }
   fact.set_gloss(toString(*graph, path->fact, path->factLength));
-  inference.mutable_fact()->CopyFrom(fact);
+  node.mutable_fact()->CopyFrom(fact);
+
+  // -- Set backpointer
+  if (pathChild != NULL) {
+    if (pathChild->nodeState.incomingEdge != NULL_EDGE_TYPE) {
+      node.set_incomingedgetype(pathChild->nodeState.incomingEdge);
+    }
+    node.set_incomingedgecost(pathChild->nodeState.incomingCost);
+    switch (pathChild->fact[pathChild->lastMutationIndex].monotonicity) {
+      case MONOTONE_UP:
+        node.set_monotonecontext(Monotonicity::UP);
+        break;
+      case MONOTONE_DOWN:
+        node.set_monotonecontext(Monotonicity::DOWN);
+        break;
+      case MONOTONE_FLAT:
+        node.set_monotonecontext(Monotonicity::FLAT);
+        break;
+      default:
+      printf("Invalid monotonicity: %u", pathChild->fact[pathChild->lastMutationIndex].monotonicity);
+      std::exit(1);
+      break;
+    }
+    if (pathChild->nodeState.incomingEdge >= MONOTONE_INDEPENDENT_BEGIN) {
+      node.set_monotonecontext(Monotonicity::ANY_OR_INVALID);
+    }
+  }
+  
+  // -- Set truth state
+  switch (path->nodeState.truth) {
+    case INFER_TRUE:
+      switch (rootPolarity) {
+        case INFER_TRUE:
+          node.set_state(CollapsedInferenceState::TRUE);
+          break;
+        case INFER_FALSE:
+          node.set_state(CollapsedInferenceState::FALSE);
+          break;
+        case INFER_UNKNOWN:
+          node.set_state(CollapsedInferenceState::TRUE);
+          break;
+        default:
+          printf("Invalid inference state: %u", path->nodeState.truth);
+          std::exit(1);
+          break;
+      }
+      break;
+    case INFER_FALSE:
+      switch (rootPolarity) {
+        case INFER_TRUE:
+          node.set_state(CollapsedInferenceState::FALSE);
+          break;
+        case INFER_FALSE:
+          node.set_state(CollapsedInferenceState::TRUE);
+          break;
+        case INFER_UNKNOWN:
+          node.set_state(CollapsedInferenceState::FALSE);
+          break;
+        default:
+          printf("Invalid inference state: %u", path->nodeState.truth);
+          std::exit(1);
+          break;
+      }
+      break;
+    case INFER_UNKNOWN:
+      node.set_state(CollapsedInferenceState::UNKNOWN);
+      break;
+    default:
+      printf("Invalid inference state: %u", path->nodeState.truth);
+      std::exit(1);
+      break;
+  }
+  
+  // -- Set inferred from
+  if (child != NULL) {
+    node.mutable_impliedfrom()->CopyFrom(*child);
+  }
+
+  // -- Handle Cases
+  if (path->parent == NULL) {
+    // Base case: "start" of the inference; "end" of the reverse path
+    return node;
+  } else {
+    // Recursive case: reverse the rest of the path
+    return inferenceFromPath(path->parent, graph, score, rootPolarity, &node, path);
+  }
+}
+
+
+/**
+ * Convert a (concise) path object into an Inference object to be passed over the wire
+ * to the client.
+ */
+Inference inferenceFromPath(const Path* path, const Graph* graph, const float& score,
+                            const Inference* inferredFrom) {
+  // Base Case
+  if (path == NULL) { 
+    assert(inferredFrom != NULL);
+    return *inferredFrom;
+  }
+
+  Inference inference;
   // Populate path
   // (source)
   if (path->parent != NULL) {
-    inference.mutable_impliedfrom()->CopyFrom(inferenceFromPath(path->parent, graph, score));
     if (path->nodeState.incomingEdge != NULL_EDGE_TYPE) {
       inference.set_incomingedgetype(path->nodeState.incomingEdge);
     }
@@ -198,8 +299,13 @@ Inference inferenceFromPath(const Path* path, const Graph* graph, const float& s
   }
   // (score)
   inference.set_score(score);
-  // (return)
-  return inference;
+  // (set implied from)
+  if (inferredFrom != NULL) {
+    inference.mutable_impliedfrom()->CopyFrom(*inferredFrom);
+  }
+  // Recursive Case
+  Inference reversedHead = inferenceFromPath(path->parent, graph, score, &inference);
+  return reversedHead;
 }
 
 /**
@@ -361,7 +467,12 @@ void handleConnection(int socket, sockaddr_in* client,
   for (int i = 0; i < result.paths.size(); ++i) {
     if (query.allowlookup() || result.paths[0].path->parent != NULL) {
       double score = exp(-result.paths[i].cost + (query.has_costs() ? query.costs().bias() : 0.0));
-      response.add_inference()->CopyFrom(inferenceFromPath(result.paths[i].path, graph, score));
+      response.add_inference()->CopyFrom(
+        inferenceFromPath(result.paths[i].path, 
+                          graph,
+                          score,
+                          result.paths[i].path->nodeState.truth,
+                          NULL, NULL));
     }
   }
   response.set_totalticks(result.totalTicks);

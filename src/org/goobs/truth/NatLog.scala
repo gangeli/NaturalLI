@@ -20,6 +20,7 @@ object NatLog {
    */
   def natlogWeights(strictNatLog:Double, similarity:Double, wordnet:Double, badWordnet:Double,
                     insertionOrDeletion:Double,
+                    badInsertDelete:Double,
                     verbInsertOrDelete:Double,
                     morphology:Double, wsd:Double,
                     okQuantifier:Double,
@@ -35,6 +36,7 @@ object NatLog {
     if (wsd > 0) { throw new IllegalArgumentException("Weights must always be negative (wsd is not)"); }
     if (okQuantifier > 0) { throw new IllegalArgumentException("Weights must always be negative (okQuantifier is not)"); }
     if (insertionOrDeletion > 0) { throw new IllegalArgumentException("Weights must always be negative (insertionOrDeletion is not)"); }
+    if (badInsertDelete > 0) { throw new IllegalArgumentException("Weights must always be negative (badInsertDelete is not)"); }
     if (verbInsertOrDelete > 0) { throw new IllegalArgumentException("Weights must always be negative (verbInsertOrDelete is not)"); }
     if (antonym > 0) { throw new IllegalArgumentException("Weights must always be negative (antonym is not)"); }
     if (default > 0) { throw new IllegalArgumentException("Weights must always be negative (default is not)"); }
@@ -50,6 +52,7 @@ object NatLog {
         case Monotonicity.DOWN =>
           weights.setCount(monoDown_stateTrue(  edge ), weight)
           weights.setCount(monoUp_stateFalse(   edge ), weight)
+        case _ => throw new IllegalStateException()
       }
     }
 
@@ -156,6 +159,7 @@ object NatLog {
     badWordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
     verbInsertOrDelete = -0.01,
+    badInsertDelete = Double.NegativeInfinity,
     morphology = -0.1,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
@@ -170,6 +174,7 @@ object NatLog {
     badWordnet = Double.NegativeInfinity,
     insertionOrDeletion = -0.01,
     verbInsertOrDelete = -0.01,
+    badInsertDelete = Double.NegativeInfinity,
     morphology = Double.NegativeInfinity,
     wsd = Double.NegativeInfinity,
     okQuantifier = -0.01,
@@ -190,6 +195,7 @@ object NatLog {
     badWordnet = -1.0,
     insertionOrDeletion = -0.5,
     verbInsertOrDelete = -1.0,
+    badInsertDelete = -1.0,
     morphology = -1.5,
     wsd = -0.5,
     okQuantifier = -1.0,
@@ -207,6 +213,7 @@ object NatLog {
     badWordnet = -1.0,
     insertionOrDeletion = Double.NegativeInfinity,
     verbInsertOrDelete = Double.NegativeInfinity,
+    badInsertDelete = Double.NegativeInfinity,
     morphology = Double.NegativeInfinity,
     wsd = Double.NegativeInfinity,
     okQuantifier = Double.NegativeInfinity,
@@ -261,26 +268,45 @@ object NatLog {
    * @return The most likely Synset; if no information is present to disambiguate, this should return the
    *         first synset that matches the POS tag.
    */
-  def getWordSense(word:String, ner:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
-    val synsets:Array[Synset] = wordnet.getSynsets(word)
-    if (synsets == null || synsets.size == 0 || !pos.isDefined || ner != "O" || Quantifier.quantifierGlosses.contains(word)) {
+  def getWordSense(word:Int, ner:String, sentence:Sentence, pos:Option[SynsetType]):Int = {
+    val gloss = Utils.wordGloss(word)
+    val (synsets:Array[Synset], typeFiltered:Boolean) = pos match {
+      case Some(t) =>
+        val typedSynsets = wordnet.getSynsets(gloss, t)
+        if (typedSynsets != null && typedSynsets.length == 0) { (wordnet.getSynsets(gloss), false) } else { (typedSynsets, true) }
+      case None => (wordnet.getSynsets(gloss), false)
+    }
+    if (synsets == null || synsets.size == 0 || !pos.isDefined || ner != "O" || Quantifier.quantifierGlosses.contains(gloss)) {
       // Case: sensless
       0
     } else {
       // Case: find WordNet sense
-      val synsetsConsidered:mutable.HashSet[Synset] = new mutable.HashSet[Synset]
-      val (_, argmaxIndex) = synsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
-        if (pos.isDefined && synset.getType != pos.get) {
-          -1000.0 + synsetIndex.toDouble / 100.0
-        } else {
-          val leskSim: Double = math.max(0, lesk(synset, sentence.words.filter(_ != word)) - 1)
-          val sensePrior:Double = -1.01 * synsetsConsidered.size
-          val glossPriority:Double = 2.01 * math.min(-synset.getWordForms.indexOf(word), 0.0)
-          synsetsConsidered += synset
-          leskSim + sensePrior + glossPriority
-        }
+      // (sort the senses appropriately)
+      val sortedSynsets = if (typeFiltered) {
+        synsets
+      } else {
+        synsets.sortBy( (s:Synset) => Utils.senseIndex( (word, s.getDefinition) ) )
       }
-      math.min(31, argmaxIndex + 1)
+      // (find the best synset from synset array)
+      val synsetsConsidered:mutable.HashSet[Synset] = new mutable.HashSet[Synset]
+      val (_, argmaxIndex) = sortedSynsets.zipWithIndex.maxBy{ case (synset:Synset, synsetIndex:Int) =>
+        // (penalty for not matching the right POS type)
+        val penalty = if (pos.isDefined && synset.getType != pos.get) { -1000.0 } else { 0.0 }
+        // (bonus for matching the definition)
+        val leskSim: Double = math.max(0, lesk(synset, sentence.words.filter(_ != gloss)) - 1)
+        // (penalty for going to less frequent senses)
+        val sensePrior:Double = -1.01 * synsetsConsidered.size
+        // (penalty for not being the primary sense)
+        val glossPriority:Double = 2.01 * math.min(-synset.getWordForms.indexOf(gloss), 0.0)
+        synsetsConsidered += synset
+        // (add the terms together)
+        penalty + leskSim + sensePrior + glossPriority
+      }
+      // (map relative index to absolute index)
+      Utils.senseIndex.get( (word, synsets(argmaxIndex).getDefinition) ) match {
+        case Some(sense) => math.min(31, sense)
+        case None => warn(s"unknown sense for word: $gloss with synset definition '${synsets(argmaxIndex).getDefinition}'"); 0
+      }
     }
   }
 
@@ -391,7 +417,7 @@ object NatLog {
           .setWord(word)
           .setGloss(gloss)
           .setPos(pos.getOrElse("?"))
-          .setSense(getWordSense(gloss, ner, sentence, pos match {
+          .setSense(getWordSense(word, ner, sentence, pos match {
             case Some("n") => Some(SynsetType.NOUN)
             case Some("v") => Some(SynsetType.VERB)
             case Some("j") => Some(SynsetType.ADJECTIVE)

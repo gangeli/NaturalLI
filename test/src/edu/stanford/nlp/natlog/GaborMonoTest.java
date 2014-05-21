@@ -124,6 +124,12 @@ public class GaborMonoTest {
   }
 
   @Test
+  public void chainedQuantifiers() {
+    validate ("there^ are^ some^ cats^ which^ have^ tails^");
+    validate ("at^ least^ a^ few^ cats^ have^ tails^");
+  }
+
+  @Test
   public void regressions() {
     // Special-case "few" but not "a few"
     validate ("few^ catsv are^ dogs^");
