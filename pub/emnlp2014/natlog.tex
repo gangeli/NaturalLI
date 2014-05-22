@@ -5,14 +5,17 @@
 Much of the underpinnings of this work rely on the theoretical framework
   laid by Natural Logic
   \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
-\todo{motivate NatLog}
+Broadly, Natural Logic aims to capture a subset of valid logical
+  inferences by appealing directly to the structure of language,
+  rather than through an intermediate logical form.
+This offers an elegant representation with computational advantages,
+  and, furthermore, allows us to store a large corpus of facts as
+  plain text with only minimal additional analysis.
 
-An interpretation of Natural Logic as syllogistic reasoning,
-  presented in \refsec{natlog-syllogism}, is sufficient
-  for a working understanding of the contributions of this paper.
-However, Natural Logic is both more powerful than syllogistic reasoning,
-  and is more general than structural matching to known
-  syllogistic templates.
+Syllogistic reasoning can be considered a first approximation to
+  Natural Logic, as is presented in \refsec{natlog-syllogism}.
+A brief introduction beyond this first approximation is presented
+  in the subsequent sections.
 \refsec{natlog-mono} introduces \textit{monotonicity} in the context
   of natural language to form the basis of natural logic;
   \refsec{natlog-exclusion} extends this formalism for reasoning about
@@ -196,3 +199,37 @@ This work does not make use of this semantics, although it is not
 
 The second issue is determining how these relations project through
   the proof tree.
+
+\Subsection{natlog-limitations}{Limitations and Future Work}
+Natural Logic is not intended to be a complete solution for natural
+  language inference.
+Although the formalism covers a reasonable range of intuitive inference
+  patterns, the current theory is unable to capture the full range
+  of logical inferences.
+For example, DeMorgan's laws 
+%  ($\lnot(A \lor B) \models \lnot A \land \lnot B$),
+  cannot be inferred in the framework,
+  including their extensions to quantification
+  (e.g., \textit{not all students study} $\models$ \textit{some students don't study}).
+Furthermore, Natural Logic does not elegantly handle inferences
+  making use of multiple antecedents; for instance, the law of
+  excluded middle is not derivable according to current theory.
+
+\newcite{key:2008maccartney-natlog} point out that Natural Logic is
+  not ammenable to reasoning over relational implication
+  (\textit{Eve was let go} $\models$ \textit{Eve lost her job};
+   \textit{Aho, a traider at UBS} $\models$ \textit{Aho works for UBS};
+   etc.).
+We contest that these are special cases of monotone reasoning, where
+  relations are treated as functions and ordered in the same way as
+  quantifiers.
+That is, if a relation $r_1$ entails another relation $r_2$ then
+  $r_1 \leq_r r_2$, where $\leq_r$ is an ordering of functions from
+  a list of entities to truth values: $\be^n \rightarrow \{T,F\}$.
+In fact, under certain conditions Natural Logic can warrant inference
+  over meronymy
+  (\textit{Obama was born in Hawaii} $\models$ \textit{Obama was born in the US}),
+  and potentially other orderings as well.
+We leave this for future work.
+
+

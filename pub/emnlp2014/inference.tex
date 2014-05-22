@@ -204,7 +204,11 @@ A valid transition is one between states
 
 \note{Negation does strange things; flip "truth state" in forwards and reverse cases}
 
-\Subsection{jc}{Generalization of JC Similarity}
+
+%
+% Generalize JC
+%
+\Subsection{inference-jc}{Generalization of JC Similarity}
 Let us assume we have words $w_1$ and $w_2$, with a least common subsumer $\textrm{lcs}$.
 The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 
@@ -219,12 +223,13 @@ In particular, let us define two features, $\phi_\uparrow$ and $\phi_\downarrow$
 Traversing the Wordnet hierarchy from words $w \rightarrow w'$ thus fires the $\phi$
   features with counts:
 
-\begin{align}
+\begin{align*}
   \phi_\uparrow(w \rightarrow w')
-    &= \log\frac{p(w')}{p(w)} = \log p(w') - \log p(w) \\
+    &= \log\frac{p(w')}{p(w)} \\
+    &= \log p(w') - \log p(w) \\
   \phi_\downarrow(w \rightarrow w')
-    &= \log\frac{p(w)}{p(w')} = \log p(w) - \log p(w') 
-\end{align}
+    &= \log p(w) - \log p(w') 
+\end{align*}
 
 We now introduce weights associated with each of these two operations, denoted
   $\theta_\uparrow$ and $\theta_\downarrow$, for each pair of words participating
@@ -233,20 +238,20 @@ The score of a path is then defined as the dot product of the weights and featur
   as described above: $\theta^{\textrm{T}}\phi$.
 
 We can factorize this along the path
-  $w_1, w_1^{(1)}, w_1^{(2)}, \dots, \textrm{lcs}, \dots, w_2^{(2)},  w_2^{(1)}, w_2$
+  $[w_1, w_1^{(1)}, \dots, \textrm{lcs}, \dots,  w_2^{(1)}, w_2]$
   as follows:
 
 \begin{align*}
 \theta^{\textrm{T}}\phi
   &= \theta_\uparrow \left( 
     \left[\log p(w_1^{(1)}) - \log p(w_1)\right] +
-    \dots +
-    \left[\log p(w_1^{(n)}) - \log p(\textrm{lcs})\right]
+    \dots
+%   + \left[\log p(w_1^{(n)}) - \log p(\textrm{lcs})\right]
     \right) + \\
-  &~~ \theta_\downarrow \left( 
+  &~~~~~~ \theta_\downarrow \left( 
     \left[\log p(\textrm{lcs}) - \log p(w_1^{(n)}) \right] +
-    \dots +
-    \left[\log p(w_1) - \log p(w_1^{(1)})\right]
+    \dots
+%    + \left[\log p(w_1) - \log p(w_1^{(1)})\right]
     \right) \\
   &= \theta_\uparrow \left( \log \frac{p(\textrm{lcs}}{p(w_1)} \right) +
      \theta_\downarrow \left( \log \frac{p(\textrm{lcs}}{p(w_2)} \right) \\
@@ -256,3 +261,12 @@ We can factorize this along the path
 
 Note that setting both $\theta_\uparrow$ and $\theta_\downarrow$ to 1 exactly
   yield JC similarity.
+
+It is also worth noting that the nearest neighbors path provides an
+  upper bound on the true similarity between the start and end words
+  in the path.
+In this way, the search based approach presented here can be thought
+  of as generalizing and formalizing the intuition that similar objects 
+  have similar properties (e.g., as presented in
+  \newcite{key:2013angeli-truth}) using both common classes of similarity
+  metrics.

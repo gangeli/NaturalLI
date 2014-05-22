@@ -59,15 +59,32 @@ object FraCaS extends DataSource with Client {
   /**
    * A filter for selecting queries which are considered "valid" for NatLog inference
    */
-  val isApplicable:(Datum) => Boolean = {
-    case (query: Seq[Query.Builder], truth: TruthValue) =>
-      isSingleAntecedent( (query, truth) ) &&
-        (query.head.getId match {
-          case x if   0 to  80 contains x => true
-          case x if 197 to 219 contains x => true
-          case x if 220 to 250 contains x => true
-          case _ => false
-        })
+  val isApplicable07:(Datum) => Boolean = { (datum:Datum) =>
+      isSingleAntecedent(datum) && (isSection(1)(datum) || isSection(5)(datum) || isSection(6)(datum))
+  }
+
+  /**
+   * A filter for selecting queries which are considered "valid" for NatLog inference
+   */
+  val isApplicable:(Datum) => Boolean = { (datum:Datum) =>
+    isSingleAntecedent(datum) && (isSection(1)(datum) || isSection(2)(datum) || isSection(5)(datum) || isSection(6)(datum) || isSection(9)(datum))
+  }
+
+  def isSection(section:Int):(Datum) => Boolean = { case (query:Seq[Query.Builder], truth: TruthValue) =>
+    (section, query.head.getId) match {
+      case (1, x) if   0 to  80 contains x => true
+      case (2, x) if  81 to 113 contains x => true
+      case (3, x) if 114 to 141 contains x => true
+      case (4, x) if 142 to 196 contains x => true
+      case (5, x) if 197 to 219 contains x => true
+      case (6, x) if 220 to 250 contains x => true
+      case (7, x) if 251 to 325 contains x => true
+      case (8, x) if 326 to 333 contains x => true
+      case (9, x) if 334 to 347 contains x => true
+      case (_, x) if x > 347 => throw new IllegalStateException("Unknown id: " + x)
+      case _ => false
+    }
+
   }
 
   override def read(xmlPath:String):DataStream = {
@@ -101,9 +118,22 @@ object FraCaS extends DataSource with Client {
     Props.SERVER_MAIN_PORT = 4001
     Props.SEARCH_TIMEOUT = 250000
     System.exit(startMockServer(() =>
-      Benchmark.evaluateBenchmark(read(Props.DATA_FRACAS_PATH.getPath) filter isApplicable, NatLog.hardNatlogWeights,
-        List( ("single antecedent", isSingleAntecedent), ("NatLog Valid", isApplicable) ),
-      isApplicable),
+      Benchmark.evaluateBenchmark(read(Props.DATA_FRACAS_PATH.getPath) filter isSingleAntecedent, NatLog.hardNatlogWeights,
+        subResults=List(
+          ("single antecedent", isSingleAntecedent),
+          ("NatLog Valid (07)", isApplicable07),
+          ("NatLog Valid (08)", isApplicable),
+          ("1. Quantifiers   ", isSection(1)),
+          ("2. Plurals       ", isSection(2)),
+          ("3. Anaphora      ", isSection(3)),
+          ("4. Ellipses      ", isSection(4)),
+          ("5. Adjectives    ", isSection(5)),
+          ("6. Comparatives  ", isSection(6)),
+          ("7. Temporal      ", isSection(7)),
+          ("8. Verbs         ", isSection(8)),
+          ("9. Attitudes     ", isSection(9))
+        ),
+      remember=isApplicable),
     printOut = false))
   }
 }

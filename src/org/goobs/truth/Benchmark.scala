@@ -4,8 +4,8 @@ import DataSource._
 import org.goobs.truth.Learn.WeightVector
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import java.text.DecimalFormat
 import org.goobs.truth.scripts.ShutdownServer
+import org.goobs.truth.TruthValue.TruthValue
 
 /**
  * TODO(gabor) JavaDoc
@@ -14,8 +14,14 @@ import org.goobs.truth.scripts.ShutdownServer
  */
 object Benchmark extends Client {
 
-  case class Accuracy(name:String, shouldTake:Datum=>Boolean, var correct:Int = 0, var total:Int = 0) {
-    override def toString:String = "Accuracy[" + name + "]: " + new DecimalFormat("0.00%").format(correct.toDouble / total.toDouble) + "  = " + correct + " / " + total
+  case class Accuracy(name:String, shouldTake:Datum=>Boolean, var correct:Int = 0, var total:Int = 0,
+                      var guessedAndTrue:Int = 0, var guessed:Int = 0, var gold:Int = 0) {
+    def accuracy:Double = if (total == 0) 0.0 else correct.toDouble / total.toDouble
+    def precision:Double = if (guessed == 0) 1.0 else guessedAndTrue.toDouble / guessed.toDouble
+    def recall:Double = if (gold == 0) 0.0 else guessedAndTrue.toDouble / gold.toDouble
+    def f1:Double = if (total == 0 || precision + recall == 0.0) 0.0 else 2.0 * precision * recall / (precision + recall)
+    override def toString:String
+      = s"Accuracy[$name]: ${Utils.percent.format(accuracy)} $correct / $total {P:${Utils.percent.format(precision)} R:${Utils.percent.format(recall)} F1:${Utils.percent.format(f1)}}"
   }
 
 
@@ -25,7 +31,7 @@ object Benchmark extends Client {
     startTrack("Evaluating")
     // Run queries
     val accuracies = Accuracy("all", (x:Datum) => true, 0, 0) :: subResults.map{ case (name:String, fn:(Datum=>Boolean)) => Accuracy(name, fn, 0, 0) }.toList
-    for ( (query, gold) <- data) {
+    for ( (query, gold: TruthValue) <- data) {
       val datum:Datum = (query, gold)
       // Run Query
       explain(query.head.getKnownFact(0), "antecedent", verbose = false)
@@ -39,8 +45,9 @@ object Benchmark extends Client {
         .build(), quiet=false, singleQuery=true), weights)
 
       // Check if correct
+      val guessed = prob >= 0.51
       val correct:Boolean = gold match {
-        case TruthValue.TRUE => prob >= 0.51
+        case TruthValue.TRUE => guessed
         case TruthValue.FALSE => prob <= 0.49
         case TruthValue.UNKNOWN => prob < 0.51 && prob > 0.49
         case _ => throw new IllegalArgumentException("Gold annotation has invalid truth value: " + gold)
@@ -66,6 +73,9 @@ object Benchmark extends Client {
         if (view.shouldTake.apply(datum)) {
           view.total += 1
           if (correct) { view.correct += 1 }
+          if (guessed && gold == TruthValue.TRUE) { view.guessedAndTrue += 1; }
+          if (guessed) { view.guessed += 1; }
+          if (gold == TruthValue.TRUE) { view.gold += 1; }
         }
       }
     }

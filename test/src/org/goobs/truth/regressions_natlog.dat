@@ -114,7 +114,7 @@
 ?[are](all cats, in heaven)	[are](all former cats, in heaven)
 
 #
-# Tier 3: FraCaS Regressions
+# Tier 3: FraCaS 07 Regressions
 #
 
 #?[finish](some delegates, the survey)	[finish](some delegates, the survey on time)  # add_? makes this possible :(
@@ -129,7 +129,12 @@
 ✔[like](a few stray cats, dogs)	[like](at least a few cats, dogs)
 
 #
-# Tier 4: Ollie Regressions
+# Tier 4: FraCaS 08 Regressions
+#
+
+
+#
+# Tier 5: Ollie Regressions
 #
 
 # Used to delete land (in monotone down), and then insert tail (in monotone up)
