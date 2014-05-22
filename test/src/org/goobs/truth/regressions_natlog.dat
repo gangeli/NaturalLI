@@ -124,7 +124,9 @@
 ✘[finish](no delegate, the report on time)	[finish](some Scandinavian delegate, the report on time)  # careful featurizing truth shifts!
 ?[finish](no Scandinavian delegate, the report on time)	[finish](some delegate, the report on time)  # just to check...
 ✘[spend](neither commissioner, time at home)	[spend](one of the commissioner, a lot of time at home)
-✔[[spend](neither commissioner, time at home)	[spend](neither commissioner, a lot of time at home)
+✔[spend](neither commissioner, time at home)	[spend](neither commissioner, a lot of time at home)
+✔[like](a few cats, dogs)	[like](at least a few cats, dogs)
+✔[like](a few stray cats, dogs)	[like](at least a few cats, dogs)
 
 #
 # Tier 4: Ollie Regressions
