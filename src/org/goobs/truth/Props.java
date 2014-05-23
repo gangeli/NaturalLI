@@ -83,20 +83,22 @@ public class Props {
   @Option(name="data.mturk.test", gloss="The path to the MTurk annotated Reverb test examples")
   public static File DATA_MTURK_TEST = new File("etc/mturk/reverb_test.tab");
 
-  @Option(name="learn.iterations", gloss="The number of iterations to run learning for")
-  public static int LEARN_ITERATIONS = 100;
   @Option(name="learn.model.dir", gloss="The directory to look for models in")
   public static File LEARN_MODEL_DIR = new File("/dev/null");
   @Option(name="learn.model.start", gloss="The start iteration to resume training from. This will be floored to the nearest 1k")
   public static int LEARN_MODEL_START = 0;
-  @Option(name="learn.sgd.nu", gloss="The regularization $nu$ for SGD")
-  public static double LEARN_SGD_NU = 0.1;
   @Option(name="learn.train", gloss="The corpus to use for training")
   public static Corpus[] LEARN_TRAIN = new Corpus[]{ Corpus.FRACAS };
   @Option(name="learn.test", gloss="The corpus to use for testing")
   public static Corpus[] LEARN_TEST = new Corpus[]{ Corpus.FRACAS };
   @Option(name="learn.prCurve", gloss="The corpus to use for testing")
   public static File LEARN_PRCURVE = new File("/dev/null");
+  @Option(name="learn.online.iterations", gloss="The number of iterations to run learning for")
+  public static int LEARN_ONLINE_ITERATIONS = 100;
+  @Option(name="learn.online.sgd.nu", gloss="The regularization $nu$ for SGD")
+  public static double LEARN_ONLINE_SGD_NU = 0.1;
+  @Option(name="learn.offline.passes", gloss="The number of passes through the data to make")
+  public static int LEARN_OFFLINE_PASSES = 10;
 
   @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
   public static boolean EVALUATE_ALLOWUNK = false;

@@ -370,6 +370,13 @@ object TruthValue extends Enumeration {
   val UNKNOWN = Value(2,  "unknown")
   val INVALID = Value(3,  "invalid")
 
+  def asBoolean:Boolean = Value match {
+    case TRUE => true
+    case FALSE => false
+    case UNKNOWN => false
+    case _ => throw new IllegalStateException("Cannot collapse truth value: " + Value)
+  }
+
 }
 
 object EdgeType extends Enumeration {

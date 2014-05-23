@@ -155,7 +155,12 @@ trait Evaluator {
     gradient
   }
 
-  def evaluate(data:DataStream, weightsInput:Array[Double], print:String=>Unit, prFile:File=new File("/dev/null")):Unit = {
+  def evaluate(data:DataStream,
+               weightsInput:Array[Double],
+               print:String=>Unit,
+               prFile:File=new File("/dev/null"),
+               quiet:Boolean = false
+                ):Iterable[(Iterable[Inference], TruthValue)] = {
     import scala.concurrent.ExecutionContext.Implicits.global
     val weights = weightsInput.map( x => x )
 
@@ -175,22 +180,31 @@ trait Evaluator {
       print(s"$tag        P: ${fmt(p(guessAndGold))} R: ${fmt(r(guessAndGold))} F1: ${fmt(f1(guessAndGold))}")
     }
 
+    // Run guesses
+    val guessedPaths = new java.util.concurrent.ConcurrentLinkedQueue[Future[(Iterable[Inference],TruthValue)]]
+
+
     // Run evaluation
-    def noisyAndProb(queries:Iterable[Query.Builder]):Future[(Double, String)]
-      = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft((1.0, "")) {
-      case ((p: Double, tag: String), guess: Iterable[Inference]) =>
-        (p * probability(guess, weights), guess.headOption.fold(tag)(_.getTag))
-    })
+    def noisyAndProb(queries: Iterable[Query.Builder], goldTruthValue: TruthValue): Future[(Double, String)] = {
+      Future.sequence(queries.map { (x: Query.Builder) =>
+        val guessedPath: Future[Iterable[Inference]] = guess(x, weights)
+        guessedPaths.add(guessedPath.map { x => (x, goldTruthValue)})
+        guessedPath
+      }).map(_.foldLeft((1.0, "")) {
+        case ((p: Double, tag: String), guess: Iterable[Inference]) =>
+          (p * probability(guess, weights), guess.headOption.fold(tag)(_.getTag))
+      })
+    }
     val results: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-      val futureProb = if (queries.exists( _.getForceFalse )) Future.successful((0.0, "forced")) else noisyAndProb(queries)
+      val futureProb = if (queries.exists( _.getForceFalse )) Future.successful((0.0, "forced")) else noisyAndProb(queries, gold)
       futureProb.map{ case (p:Double, tag:String) =>
         val result = ResultPoint(p, gold == TruthValue.TRUE)
         if (result.gold && result.guess) {
-          log(GREEN, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
+          if (!quiet) log(GREEN, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         } else if (result.gold && !result.guess) {
-          log(RED, s"[guess=false] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
+          if (!quiet) log(RED, s"[guess=false] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         } else if (!result.gold && result.guess) {
-          log(RED, BOLD, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
+          if (!quiet) log(RED, BOLD, s"[guess=true] ${Utils.df.format(result.prob)} $tag: ${queries.head.getQueryFact.getGloss}")
         }
         result
       }
@@ -219,6 +233,9 @@ trait Evaluator {
     print(s"Opt. Accuracy: ${Utils.percent.format(optimalAccuracy)}")
     print(s"    Optimal P: ${Utils.percent.format(optimalP)} R: ${Utils.percent.format(optimalR)} F1: ${Utils.percent.format(optimalF1)}")
     print(s"  Optimal AUC: ${Utils.percent.format(optimalAUC)}")
+
+    // Return
+    Await.result(Future.sequence(guessedPaths), Duration.Inf)
   }
 }
 
@@ -339,7 +356,7 @@ object Evaluate extends Client {
       val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
       import Implicits.flattenWeights
       forceTrack("Evaluating")
-      evaluate(testData, NatLog.softNatlogWeights, x => Learn.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
+      evaluate(testData, NatLog.softNatlogWeights, x => LearnOnline.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
       endTrack("Evaluating")
     }), args)
   }

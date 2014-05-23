@@ -9,7 +9,7 @@ import org.goobs.truth.Learn.WeightVector
  *
  * @author gabor
  */
-class LearnTest extends Test {
+class LearnOnlineTest extends Test {
   /**
    * Check the weight vector class
    */
