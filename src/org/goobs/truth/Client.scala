@@ -7,16 +7,13 @@ import org.goobs.truth.Messages._
 import org.goobs.truth.scripts.ShutdownServer
 import Monotonicity._
 
-import com.typesafe.config.{Config, ConfigFactory}
 
-import java.io.{DataOutputStream, DataInputStream, File}
+import java.io.{DataOutputStream, DataInputStream}
 import java.net.Socket
-import java.util.Properties
-import java.util.concurrent.Executors
+import java.util.concurrent.{ThreadFactory, Executors}
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import edu.stanford.nlp.util.Execution
-import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration
 import org.goobs.truth.DataSource.DataStream
 
 /**
@@ -70,19 +67,17 @@ trait Client extends Evaluator {
   }
 
   private val mainExecContext = new ExecutionContext {
-    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS)
+    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_MAIN_THREADS, new ThreadFactory {
+      override def newThread(r: Runnable): Thread = { val t = new Thread(r); t.setDaemon(true); t }
+    })
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
   }
 
   private val backupExecContext = new ExecutionContext {
-    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_BACKUP_THREADS)
-    def execute(runnable: Runnable) { threadPool.submit(runnable) }
-    def reportFailure(t: Throwable) { t.printStackTrace() }
-  }
-
-  private val serverBoundContext = new ExecutionContext {
-    lazy val threadPool = Executors.newFixedThreadPool(math.max(Props.SERVER_BACKUP_THREADS, Props.SERVER_MAIN_THREADS))
+    lazy val threadPool = Executors.newFixedThreadPool(Props.SERVER_BACKUP_THREADS, new ThreadFactory {
+      override def newThread(r: Runnable): Thread = { val t = new Thread(r); t.setDaemon(true); t }
+    })
     def execute(runnable: Runnable) { threadPool.submit(runnable) }
     def reportFailure(t: Throwable) { t.printStackTrace() }
   }
@@ -158,21 +153,21 @@ trait Client extends Evaluator {
                   }
                   // return case: had to go all the way to the failsafe
                   tag(failsafe, "backoff BFS")
-                }(mainExecContext)
+                }(ExecutionContext.Implicits.global)
               } else {
                 // return case: backoff found paths
                 Future.successful(tag(backoff, "backoff UCS"))
               }
-            }(mainExecContext)
+            }(ExecutionContext.Implicits.global)
           } else {
             // return case: main query found paths
             Future.successful(tag(main, "soft weights"))
           }
-        )(mainExecContext)
+        )(ExecutionContext.Implicits.global)
       } else {
         Future.successful(tag(hard, "hard weights"))
       }
-    }(mainExecContext)
+    }(ExecutionContext.Implicits.global)
   }
 
   def issueQuery(query:Query, quiet:Boolean=false, singleQuery:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet, singleQuery), scala.concurrent.duration.Duration.Inf)

@@ -88,16 +88,6 @@ object Learn extends Client {
    * @param goldTruth The ground truth for the query associated with this loss.
    */
   class OptimisticSquaredLoss(guesses:Iterable[Inference], goldTruth:TruthValue) extends SquaredLoss {
-      // Debug
-//      if (!gradient.forall ( x => math.abs(x) < 1e-3)) {
-//        Learn.synchronized {
-//          startTrack("Gradient Update")
-//          for (entry <- gradient.entrySet().filter(_.getValue != 0.0)) {
-//            debug(s"${entry.getKey}: ${entry.getValue}")
-//          }
-//          endTrack("Gradient Update")
-//        }
-//      }
     override def gold: Double = goldTruth match {
         case TruthValue.TRUE => 1.0
         case TruthValue.FALSE => 0.0
@@ -107,7 +97,20 @@ object Learn extends Client {
 
     override def guess(wVector: Array[Double]): Double = probability(guesses, wVector)
 
-    override def guessGradient(wVector: Array[Double]): Array[Double] = probabilitySubgradient(guesses, wVector)
+    override def guessGradient(wVector: Array[Double]): Array[Double] = {
+      val gradient = probabilitySubgradient(guesses, wVector)
+      if (!gradient.forall ( x => math.abs(x) < 1e-3)) {
+        import Implicits.inflateWeights
+        Learn.synchronized {
+          startTrack("Gradient Update")
+          for (entry <- gradient.entrySet().filter(_.getValue != 0.0)) {
+            debug(s"${entry.getKey}: ${entry.getValue}")
+          }
+          endTrack("Gradient Update")
+        }
+      }
+      gradient
+    }
   }
 
   class ZeroOneMaxLoss(guess:Iterable[Inference], goldTruth:TruthValue, wVector:Array[Double]) extends ZeroOneLoss {

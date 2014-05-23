@@ -78,6 +78,10 @@ class EvaluateTest extends Test {
       val guessAndGold = List( (false, true), (true, false), (true, true), (false, false) )
       Evaluate.auc(guessAndGold) should be (2.0 / 3.0 +- 1e-10)
     }
+    it ("should expand to the right") {
+      val guessAndGold = List( (true, false), (true, false), (true, true), (false, false) )
+      Evaluate.auc(guessAndGold) should be (2.0 / 3.0 +- 1e-10)
+    }
     it ("should be 0 if we never guess") {
       val guessAndGold = List( (false, true), (false, false), (false, true), (false, false) )
       Evaluate.auc(guessAndGold) should be (0.0 +- 1e-10)

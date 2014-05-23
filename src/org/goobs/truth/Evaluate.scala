@@ -175,14 +175,6 @@ trait Evaluator {
       print(s"$tag        P: ${fmt(p(guessAndGold))} R: ${fmt(r(guessAndGold))} F1: ${fmt(f1(guessAndGold))}")
     }
 
-
-    // Run baseline
-    def baselineProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.successful(queries.map( (q:Query.Builder) => if (q.getForceFalse) 0.0 else 1.0 )).map( _.foldLeft(1.0){ case (p:Double, guess:Double) => p * guess })
-    val baseline: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
-      baselineProb(queries).map( (p:Double) => ResultPoint(p, gold == TruthValue.TRUE))
-    })
-    dumpResult(Await.result(baseline, Duration.Inf), "(baseline)")
-
     // Run evaluation
     def noisyAndProb(queries:Iterable[Query.Builder]):Future[(Double, String)]
       = Future.sequence( queries.map(guess(_, weights)) ).map( _.foldLeft((1.0, "")) {
@@ -205,6 +197,13 @@ trait Evaluator {
     })
     val sortedResults = Await.result(results, Duration.Inf).sortBy( x => x.prob )
     dumpResult(sortedResults)
+
+    // Run baseline
+    def baselineProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.successful(queries.map( (q:Query.Builder) => if (q.getForceFalse) 0.0 else 1.0 )).map( _.foldLeft(1.0){ case (p:Double, guess:Double) => p * guess })
+    val baseline: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
+      baselineProb(queries).map( (p:Double) => ResultPoint(p, gold == TruthValue.TRUE))
+    })
+    dumpResult(Await.result(baseline, Duration.Inf), "(baseline)")
 
     // Run PR curve
     assert (sortedResults.isEmpty || sortedResults.head.prob <= sortedResults.last.prob)
@@ -277,7 +276,7 @@ object Evaluate extends Client {
 
   def auc(guessAndGold: Seq[(Boolean,Boolean)]):Double = {
     val mostToLeastConfident: Seq[(Boolean, Boolean)] = guessAndGold.reverse
-    val datasetTrueSize = guessAndGold.count(_._2).toDouble
+    var datasetTrueSize = guessAndGold.count(_._2).toDouble
     var rollingAccuracyNumer = 0
     var rollingAccuracyDenom = 0
     var sumAUC = 0.0
@@ -289,6 +288,10 @@ object Evaluate extends Client {
           sumAUC += (rollingAccuracyNumer.toDouble / rollingAccuracyDenom.toDouble)
         }
       }
+    }
+    if (!mostToLeastConfident.last._2) {
+      sumAUC += (rollingAccuracyNumer.toDouble / rollingAccuracyDenom.toDouble)
+      datasetTrueSize += 1
     }
     sumAUC / datasetTrueSize
   }
