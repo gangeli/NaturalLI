@@ -171,8 +171,8 @@ trait Evaluator {
     def dumpResult(results:Seq[ResultPoint], tag:String = ""):Unit = {
       val guessAndGold = results.map( r => (r.guess, r.gold) )
       val fmt = (x:Double) => Utils.percent.format(x)
-      print(s"Accuracy $tag  : ${fmt(accuracy(guessAndGold))}")
-      print(s"         $tag P: ${fmt(p(guessAndGold))} R: ${fmt(r(guessAndGold))} F1: ${fmt(f1(guessAndGold))}")
+      print(s"$tag Accuracy: ${fmt(accuracy(guessAndGold))}")
+      print(s"$tag        P: ${fmt(p(guessAndGold))} R: ${fmt(r(guessAndGold))} F1: ${fmt(f1(guessAndGold))}")
     }
 
 
@@ -208,10 +208,18 @@ trait Evaluator {
 
     // Run PR curve
     assert (sortedResults.isEmpty || sortedResults.head.prob <= sortedResults.last.prob)
-    print("Optimal F1: " + (0 until sortedResults.length).map{ (falseUntil:Int) =>
-      f1(sortedResults.take(falseUntil).map{ x => (false, x.gold) }.toList :::
+    val (optimalThreshold, optimalP, optimalR, optimalF1) =(0 until sortedResults.length).map{ (falseUntil:Int) =>
+      val (p, r, f1) = PRF1(sortedResults.take(falseUntil).map{ x => (false, x.gold) }.toList :::
         sortedResults.drop(falseUntil).map{ x => (true, x.gold) }.toList)
-    }.filter( x => !x.isNaN && !x.isInfinite ).max)
+      (falseUntil, p, r, f1)
+    }.filter{ case (t, p, r, f1) => !f1.isNaN && !f1.isInfinite }.maxBy( _._4 )
+    val tunedResults: List[(Boolean, Boolean)] = sortedResults.take(optimalThreshold).map{ x => (false, x.gold) }.toList ::: sortedResults.drop(optimalThreshold).map{ x => (true, x.gold) }.toList
+    val optimalAccuracy: Double = accuracy(tunedResults)
+    val optimalAUC = auc(tunedResults)
+    print(s"    Threshold: ${Utils.percent.format(sortedResults(optimalThreshold).prob)} {index=$optimalThreshold}")
+    print(s"Opt. Accuracy: ${Utils.percent.format(optimalAccuracy)}")
+    print(s"    Optimal P: ${Utils.percent.format(optimalP)} R: ${Utils.percent.format(optimalR)} F1: ${Utils.percent.format(optimalF1)}")
+    print(s"  Optimal AUC: ${Utils.percent.format(optimalAUC)}")
   }
 }
 
@@ -222,13 +230,13 @@ object Evaluate extends Client {
   def p(guessed: Seq[Boolean], golds: Seq[Boolean]):Double = {
     val correctGuess:Int = guessed.zip(golds).count{ case (guess, gold) => guess && gold }
     val guessCount:Int = guessed.count( x => x )
-    correctGuess.toDouble / guessCount.toDouble
+    if (guessCount == 0) 1.0 else correctGuess.toDouble / guessCount.toDouble
   }
 
   def r(guessed: Seq[Boolean], golds: Seq[Boolean]):Double = {
     val correctGuess:Int = guessed.zip(golds).count{ case (guess, gold) => guess && gold }
     val goldCount:Int = golds.count( x => x )
-    correctGuess.toDouble / goldCount.toDouble
+    if (goldCount == 0) 0.0 else correctGuess.toDouble / goldCount.toDouble
   }
 
   def f1(guessed: Seq[Boolean], golds: Seq[Boolean]):Double = {
@@ -258,8 +266,31 @@ object Evaluate extends Client {
     f1(guessed, gold)
   }
 
+  def PRF1(guessAndGold: Seq[(Boolean,Boolean)]):(Double,Double,Double) = {
+    val (guessed, gold) = guessAndGold.unzip
+    (p(guessed, gold), r(guessed, gold), f1(guessed, gold))
+  }
+
   def accuracy(guessAndGold: Seq[(Boolean,Boolean)]):Double = {
     guessAndGold.count{case (x, y) => x == y}.toDouble / guessAndGold.size.toDouble
+  }
+
+  def auc(guessAndGold: Seq[(Boolean,Boolean)]):Double = {
+    val mostToLeastConfident: Seq[(Boolean, Boolean)] = guessAndGold.reverse
+    val datasetTrueSize = guessAndGold.count(_._2).toDouble
+    var rollingAccuracyNumer = 0
+    var rollingAccuracyDenom = 0
+    var sumAUC = 0.0
+    for ( (guess, gold) <- mostToLeastConfident ) {
+      if (guess || gold) {
+        rollingAccuracyDenom += 1
+        if (guess == gold) { assert (guess && gold); rollingAccuracyNumer += 1 }
+        if (gold) {
+          sumAUC += (rollingAccuracyNumer.toDouble / rollingAccuracyDenom.toDouble)
+        }
+      }
+    }
+    sumAUC / datasetTrueSize
   }
 
 
@@ -301,12 +332,13 @@ object Evaluate extends Client {
    * Just evaluate the system, without running learning.
    */
   def main(args:Array[String]) {
-    initOptions(args)
-    val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
-    import Implicits.flattenWeights
-    forceTrack("Evaluating")
-    evaluate(testData, NatLog.softNatlogWeights, x => Learn.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
-    endTrack("Evaluating")
+    Props.exec(Implicits.fn2execInput1(() => {
+      val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+      import Implicits.flattenWeights
+      forceTrack("Evaluating")
+      evaluate(testData, NatLog.softNatlogWeights, x => Learn.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
+      endTrack("Evaluating")
+    }), args)
   }
 
 }

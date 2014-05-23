@@ -97,25 +97,29 @@ trait Client extends Evaluator {
     def doQuery(query:Query, host:String, port:Int):Iterable[Inference] = {
       // Set up connection
       val sock = new Socket(host, port)
-      val toServer = new DataOutputStream(sock.getOutputStream)
-      val fromServer = new DataInputStream(sock.getInputStream)
-      if (!quiet) log("connection established with server.")
+      try {
+        val toServer = new DataOutputStream(sock.getOutputStream)
+        val fromServer = new DataInputStream(sock.getInputStream)
+        if (!quiet) log("connection established with server.")
 
-      // Write query
-      query.writeTo(toServer)
-      if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes): ${query.getQueryFact.getGloss}")
-      sock.shutdownOutput()  // signal end of transmission
+        // Write query
+        query.writeTo(toServer)
+        if (!quiet) log(s"wrote query to server (${query.getSerializedSize} bytes): ${query.getQueryFact.getGloss}")
+        sock.shutdownOutput()  // signal end of transmission
 
-      // Read response
-      val response:Response = Response.parseFrom(fromServer)
-      if (response.getError) {
-        throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
+        // Read response
+        val response:Response = Response.parseFrom(fromServer)
+        if (response.getError) {
+          throw new RuntimeException(s"Error on inference server: ${if (response.hasErrorMessage) response.getErrorMessage else ""}")
+        }
+        if (!quiet) {
+          log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
+          for (inference <- response.getInferenceList) { log(recursivePrint(inference)) }
+        }
+        response.getInferenceList
+      } finally {
+        sock.close()
       }
-      if (!quiet) {
-        log(s"server returned ${response.getInferenceCount} paths after ${if (response.hasTotalTicks) response.getTotalTicks else "?"} ticks.")
-        for (inference <- response.getInferenceList) { log(recursivePrint(inference)) }
-      }
-      response.getInferenceList
     }
 
     def tag(paths:Iterable[Inference], tag:String):Iterable[Inference] = { paths.map{ i => Inference.newBuilder(i).setTag(tag).build } }
@@ -223,34 +227,6 @@ trait Client extends Evaluator {
       }
     }
 
-  }
-
-  /**
-   * Initialize the global options from command-line arguments
-   * @param args The command line arguments
-   */
-  def initOptions(args:Array[String]):Unit = {
-    if (args.length == 1) {
-      val props:Properties = new Properties
-      val config:Config = ConfigFactory.parseFile(new File(args(0))).resolve()
-      for ( entry <- config.entrySet() ) {
-        props.setProperty(entry.getKey, entry.getValue.unwrapped.toString)
-      }
-      Execution.fillOptions(classOf[Props], props)
-      StanfordRedwoodConfiguration.apply(props)
-    } else {
-      Execution.fillOptions(classOf[Props], args)
-    }
-
-    // Shutdown thread pools on exit
-    Runtime.getRuntime.addShutdownHook(new Thread() {
-      override def run():Unit = {
-        import scala.language.reflectiveCalls
-        serverBoundContext.threadPool.shutdown()
-        backupExecContext.threadPool.shutdown()
-        mainExecContext.threadPool.shutdown()
-      }
-    })
   }
 
   /**

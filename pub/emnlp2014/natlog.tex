@@ -116,18 +116,26 @@ In a similar vein, we can provide a proof for \textit{all tabby cats
     ~\le_{e \rightarrow t}~
     \denoteT{all}\left(\denoteT{tabby cats}\right)\left(\cdot\right)
   $}
-  \AxiomC{\denoteT{have tails} $~\le~$ \denoteT{have tails}}
+  \AxiomC{\denoteT{have tails} $~\le_e~$ \denoteT{have tails}}
 %  \RightLabel{\scriptsize{\denoteT{All} monotone in object}}
   \BinaryInfC{$
     \denoteT{all}\left(\denoteT{cats}\right)\left(\denoteT{have tails}\right)
     ~~\le_{t}~~
     \denoteT{all}\left(\denoteT{tabby cats}\right)\left(\denoteT{have tails}\right)
   $}
+  \RightLabel{\scriptsize{By axiom}}
+  \UnaryInfC{$
+    \denoteT{all cats have tails}
+    ~~\le_{t}~~
+    \denoteT{all tabby cats have tails}
+  $}
   \end{prooftree}
 \caption{\label{fig:catsproof}
   A proof in Natural Logic for \textit{all tabby cats have tails} from
     the premise \textit{all cats have tails}.
   Note that $\le_t$ is equivalent to entailment ($\Rightarrow$).
+  The last step, marked valid axiomatically, is elaborated in
+    Definition 8 of \newcite{key:2014icard-natlog}.
 } 
 \end{figure*}
 

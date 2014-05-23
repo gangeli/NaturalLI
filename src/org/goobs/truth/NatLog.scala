@@ -285,7 +285,7 @@ object NatLog {
       val sortedSynsets = if (typeFiltered) {
         synsets
       } else {
-        synsets.sortBy( (s:Synset) => Utils.senseIndex( (word, s.getDefinition) ) )
+        synsets.sortBy( (s:Synset) => Utils.senseIndex.get( (word, s.getDefinition) ).getOrElse(Int.MaxValue) )
       }
       // (find the best synset from synset array)
       val synsetsConsidered:mutable.HashSet[Synset] = new mutable.HashSet[Synset]
@@ -360,12 +360,19 @@ object NatLog {
         candidate
       }
       val ner:Array[String] = sentence.ner
-      val monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.word).map {
+      var monotonicity:Array[Monotonicity] = GaborMono.getInstance().annotate(sentence.word).map {
         case natlog.Monotonicity.UP => Monotonicity.UP
         case natlog.Monotonicity.DOWN => Monotonicity.DOWN
         case natlog.Monotonicity.NON => Monotonicity.FLAT
       }
-      assert (monotonicity.length == sentence.length, s"Length mismatch (${monotonicity.length} should be ${sentence.length}: " + sentence)
+      // (dirty hack to make sure monotonicity length agrees)
+      if (monotonicity.length != sentence.length) {
+        warn (s"Length mismatch (${monotonicity.length} should be ${sentence.length}: " + sentence)
+        while (monotonicity.length < sentence.length) {
+          monotonicity = monotonicity ++ Array(Monotonicity.FLAT)
+        }
+        monotonicity = monotonicity.slice(0, sentence.length)
+      }
       val chunkedWords:Array[String] = tokens.map ( (w:Int) => if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGloss(w) else Utils.wordGloss(w) )
       // (regexps)
       val NOUN = "(N.*)".r
