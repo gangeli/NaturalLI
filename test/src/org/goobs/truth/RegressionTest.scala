@@ -5,6 +5,7 @@ import org.goobs.truth.Messages.{Inference, Fact, Query}
 import edu.stanford.nlp.io.IOUtils
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.TruthValue.TruthValue
+import org.goobs.truth.Learn.WeightVector
 
 /**
  * A regression test for the inference engine
@@ -14,7 +15,7 @@ import org.goobs.truth.TruthValue.TruthValue
 object RegressionTest extends Client {
 
   /** Evaluate, optionally backing off to a larger timeout (if not solution was found */
-  private def evaluateQuery(facts:Seq[Fact], truth:TruthValue, timeout:Int):Int = {
+  private def evaluateQuery(facts:Seq[Fact], truth:TruthValue, timeout:Int, weights:WeightVector):Int = {
     import Implicits.flattenWeights
     val paths: Iterable[Inference] = issueQuery(
       facts.slice(0, facts.length - 1).foldLeft(Query.newBuilder()){ case (builder, fact:Fact) =>
@@ -22,17 +23,17 @@ object RegressionTest extends Client {
       }.setQueryFact(facts.last)
         .setUseRealWorld(false)
         .setTimeout(if (truth == TruthValue.UNKNOWN) Props.SEARCH_TIMEOUT else timeout)
-        .setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights))
+        .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
         .setCacheType("bloom")
         .build())
-    val score:Double = probability(paths, NatLog.hardNatlogWeights)
+    val score:Double = probability(paths, weights)
 
     // Check Validity
     truth match {
       case TruthValue.TRUE =>
         if (score < 0.6) {
-          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
+          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10, weights)}
           err(RED,"SHOULD BE VALID (score=" + score + ") ")
           return 1
         }
@@ -43,7 +44,7 @@ object RegressionTest extends Client {
         }
       case TruthValue.FALSE =>
         if (score > 0.4) {
-          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10)}
+          if (timeout < 1000000) { return evaluateQuery(facts, truth, timeout * 10, weights)}
           err(RED,"SHOULD BE FALSE (score=" + score + ") ")
           return 1
         }
@@ -52,7 +53,7 @@ object RegressionTest extends Client {
   }
 
   /** Run the regression test */
-  def runClient():Int = {
+  def runClient(weights:WeightVector):Int = {
     startTrack("Regression Test")
     val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
     var exitStatus = 0
@@ -85,7 +86,7 @@ object RegressionTest extends Client {
           explain(fact, "antecedent")
         }
         explain(facts.last, "consequent")
-        exitStatus += evaluateQuery(facts, truth, 10000)
+        exitStatus += evaluateQuery(facts, truth, 10000, weights)
         endTrack("Running " + line)
       }
 
@@ -102,7 +103,7 @@ object RegressionTest extends Client {
     Props.SERVER_MAIN_PORT = 41337
     Props.SERVER_BACKUP_HOST = "localhost"
     Props.SERVER_BACKUP_PORT = 41337
-    startMockServer(() => exitStatus = runClient(), printOut = true)
+    startMockServer(() => exitStatus = runClient(NatLog.hardNatlogWeights), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")
     } else {

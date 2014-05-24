@@ -53,6 +53,8 @@ public class Props {
   public static int SERVER_MAIN_PORT = 1337;
   @Option(name="server.main.threads", gloss="The number of threads to run training on. This is primarily determined by the server capacity")
   public static int SERVER_MAIN_THREADS = Execution.threads;
+  @Option(name="server.backup.do", gloss="The hostname for the inference server")
+  public static boolean SERVER_BACKUP_DO = true;
   @Option(name="server.backup.host", gloss="The hostname for the inference server")
   public static String SERVER_BACKUP_HOST = "localhost";
   @Option(name="server.backup.port", gloss="The hostname for the inference server")

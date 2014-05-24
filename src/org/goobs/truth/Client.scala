@@ -132,7 +132,7 @@ trait Client extends Evaluator {
           if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
         } (mainExecContext)
         // (step 2: map to backoff)
-        if (singleQuery) main else main.flatMap( (main: Iterable[Inference]) =>
+        if (singleQuery || !Props.SERVER_BACKUP_DO) main else main.flatMap( (main: Iterable[Inference]) =>
           if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
             val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
             // (step 3: execute backoff)

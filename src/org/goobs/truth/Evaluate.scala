@@ -106,12 +106,12 @@ trait Evaluator {
 
   /**
    * Get the probability of truth for a given set of inferences.
-   * @param inference The "guess" -- the inference paths returned by the search.
+   * @param inference The "guess" -- the (optional) best inference paths returned by the search.
    * @param wVector The weight vector at the current state of inference.
    * @return A probability 0 <= p <= 1 for whether this fact is true or not.
    */
-  def probability(inference:Iterable[Inference], wVector:Array[Double]):Double = {
-    val state:Double = inference.headOption.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
+  def probability(inference:Option[Inference], wVector:Array[Double]):Double = {
+    val state:Double = inference.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
       case CollapsedInferenceState.TRUE => 1.0
       case CollapsedInferenceState.FALSE => -1.0
       case CollapsedInferenceState.UNKNOWN => 0.0
@@ -123,17 +123,34 @@ trait Evaluator {
     assert (prob >= 0.0, "Not a probability: " + prob + " from x=" + (pred * state) + " => sigmoid=" + logistic)
     assert (prob <= 1.0, "Not a probability: " + prob + " from x=" + (pred * state) + " => sigmoid=" + logistic)
     prob
+
+  }
+
+  /**
+   * Get the probability of truth for a given set of inferences.
+   * @param inference The "guess" -- the inference paths returned by the search.
+   * @param wVector The weight vector at the current state of inference.
+   * @return A probability 0 <= p <= 1 for whether this fact is true or not.
+   */
+  def probability(inference:Iterable[Inference], wVector:Array[Double]):Double = probability(bestInference(inference, wVector), wVector)
+
+  def bestInference(inferences:Iterable[Inference], wVector:Array[Double]):Option[Inference] = {
+    if (inferences.isEmpty) {
+      None
+    } else {
+      Some(inferences.maxBy((x:Inference) => math.abs(0.5 - probability(Some(x), wVector))))
+    }
   }
 
   /**
    * Compute the subgradient of the probability in the probability() function.
-   * @param inference The "guess" -- the inference paths returned by the search.
+   * @param inference The "guess" -- the (optional) best inference path
    * @param wVector The weight vector at the current state of inference.
    * @return The subgradient of the probability.
    */
-  def probabilitySubgradient(inference:Iterable[Inference], wVector:Array[Double]):Array[Double] = {
+  def probabilitySubgradient(inference:Option[Inference], wVector:Array[Double]):Array[Double] = {
     // Compute gradient
-    val gradient = inference.headOption match {
+    val gradient = inference match {
       case Some(guessPath) =>
         guessPath.getState match {
           case CollapsedInferenceState.TRUE =>
@@ -153,7 +170,16 @@ trait Evaluator {
     assert ( gradient.drop(2).forall( x => x >= 0.0 ) || gradient.forall( x => x <= 0.0 ), "took a fishy gradient update!" )
     // Return
     gradient
+
   }
+
+  /**
+   * Compute the subgradient of the probability in the probability() function.
+   * @param inference The "guess" -- the inference paths returned by the search.
+   * @param wVector The weight vector at the current state of inference.
+   * @return The subgradient of the probability.
+   */
+  def probabilitySubgradient(inference:Iterable[Inference], wVector:Array[Double]):Array[Double] = probabilitySubgradient(bestInference(inference, wVector), wVector)
 
   def evaluate(data:DataStream,
                weightsInput:Array[Double],

@@ -8,6 +8,7 @@ import org.goobs.truth.TruthValue._
 import edu.stanford.nlp.util.Execution
 import java.sql.{ResultSet, Connection}
 import org.goobs.truth.DataSource.DataStream
+import edu.stanford.nlp.io.IOUtils
 
 
 object DataSource {
@@ -42,6 +43,56 @@ trait DataSource {
    * @return A stream of examples, annotated with their truth value.
    */
   def read(path:String):DataStream
+}
+
+/**
+ * Read the Regression Test example, given a URI (file / classpath / etc.)
+ */
+object RegressionDataSource extends DataSource {
+  /**
+   * Read queries from the specified abstract path.
+   * @param path The path to read the queries from. The meaning of this path can vary depending on the particular extractor.
+   * @return A stream of examples, annotated with their truth value.
+   */
+  override def read(path: String): DataStream = {
+    val INPUT = """\s*\[([^\]]+)\]\s*\(([^,]+),\s*([^\)]+)\)\s*""".r
+    val reader = IOUtils.getBufferedReaderFromClasspathOrFileSystem(path)
+    var line:String = reader.readLine()
+    var examples:List[(Seq[Fact],TruthValue)] = Nil
+
+    while ( line != null ) {
+      line = line.replaceAll("\\s*#.*", "")
+      if (!line.trim.equals("")) {
+        // Parse Line
+        // (truth value)
+        val truth: TruthValue = line.charAt(0) match {
+          case '✔' => TruthValue.TRUE
+          case '✘' => TruthValue.FALSE
+          case '?' => TruthValue.FALSE
+        }
+        // (unk mapping)
+        val unkProvider = Utils.newUnkProvider
+        // (parse fact)
+        val facts: Seq[Fact] = line.substring(1).split("\t").map {
+          case INPUT(rel, subj, obj) => NatLog.annotate(subj, rel, obj, unkProvider)
+          case _ => throw new IllegalArgumentException("Could not parse fact: " + line)
+        }
+        // (add fact)
+        examples = (facts, truth) :: examples
+      }
+      line = reader.readLine()
+    }
+
+    examples.toStream.map{ case (facts: Seq[Fact], gold:TruthValue) =>
+      (List(Query.newBuilder()
+        // Antecedents
+        .addAllKnownFact(facts.take(facts.length-1))
+        .setUseRealWorld(false)
+        // Consequent
+        .setQueryFact(facts.last)
+      ), gold)
+    }
+  }
 }
 
 /**

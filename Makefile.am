@@ -52,4 +52,6 @@ else
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test -R test/src/test_client.jar -o -w org.goobs.truth
 endif
 	@echo "[test] RegressionTest"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.goobs.truth.RegressionTest
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.truth.RegressionTest
+	@echo "[test] Learning RegressionTest"
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.truth.LearnRegressionTest
