@@ -22,6 +22,7 @@ object Utils {
 
   val percent = new java.text.DecimalFormat("0.00%")
   val df = new java.text.DecimalFormat("0.0000")
+  val short = new java.text.DecimalFormat("0.00")
 
   // Note: match these with CreateGraph's index creation
   val WORD_NONE:String = "__none__"

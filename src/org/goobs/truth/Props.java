@@ -101,6 +101,8 @@ public class Props {
   public static double LEARN_ONLINE_SGD_NU = 0.1;
   @Option(name="learn.offline.passes", gloss="The number of passes through the data to make")
   public static int LEARN_OFFLINE_PASSES = 10;
+  @Option(name="learn.offline.sigma", gloss="The number of passes through the data to make")
+  public static double LEARN_OFFLINE_SIGMA = 10.0;
 
   @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
   public static boolean EVALUATE_ALLOWUNK = false;

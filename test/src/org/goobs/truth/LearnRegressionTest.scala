@@ -24,7 +24,7 @@ object LearnRegressionTest extends Client {
     weights = weights.map( x => -1.0 )
 
     // Learn
-    for (pass <- 0 until 3) {
+    for (pass <- 1 to 5) {
       startTrack("Pass " + pass)
       val predictions: Iterable[(Iterable[Inference], TruthValue)] =
         evaluate(data, weights, print = x => LearnOnline.synchronized { log(BOLD,YELLOW, s"[pass $pass] " + x) }, quiet = true)
@@ -45,6 +45,7 @@ object LearnRegressionTest extends Client {
     Props.SERVER_MAIN_PORT = 41337
     Props.SERVER_BACKUP_HOST = "localhost"
     Props.SERVER_BACKUP_PORT = 41337
+    Props.LEARN_OFFLINE_SIGMA = 100.0  // barely regularize at all
     startMockServer(() => exitStatus = runClient(), printOut = false)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")

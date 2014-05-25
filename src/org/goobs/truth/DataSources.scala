@@ -68,7 +68,7 @@ object RegressionDataSource extends DataSource {
         val truth: TruthValue = line.charAt(0) match {
           case '✔' => TruthValue.TRUE
           case '✘' => TruthValue.FALSE
-          case '?' => TruthValue.FALSE
+          case '?' => TruthValue.UNKNOWN
         }
         // (unk mapping)
         val unkProvider = Utils.newUnkProvider
