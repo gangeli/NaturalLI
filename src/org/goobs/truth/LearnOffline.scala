@@ -7,6 +7,9 @@ import org.goobs.truth.TruthValue.TruthValue
 import edu.stanford.nlp.classify.{LinearClassifier, LinearClassifierFactory, RVFDataset}
 import edu.stanford.nlp.ling.{Datum, RVFDatum}
 import java.io.File
+import org.goobs.truth.Learn.WeightVector
+import edu.stanford.nlp.stats.{ClassicCounter, Counter, Counters}
+import scala.collection.JavaConversions._
 
 /**
  * Learn in batch mode; this makes use of a Logistic Regression model to find a good weight assignment.
@@ -16,24 +19,62 @@ import java.io.File
 
 object LearnOffline extends Client {
 
+  def correctTable(guess:TruthValue, gold:TruthValue):Boolean = {
+    guess match {
+      case TruthValue.TRUE =>
+        gold match {
+          case TruthValue.TRUE => true
+          case TruthValue.FALSE => false
+          case TruthValue.UNKNOWN => false
+        }
+      case TruthValue.FALSE =>
+        gold match {
+          case TruthValue.TRUE => false
+          case TruthValue.FALSE => true
+          case TruthValue.UNKNOWN => false
+        }
+      case TruthValue.UNKNOWN => throw new IllegalArgumentException("Truth table not defined for guess=UNK")
+    }
+  }
+
   def batchUpdateWeights(predictions:Iterable[(Iterable[Inference], TruthValue)], weights:Array[Double]):Array[Double] = {
-    import Implicits.flattenWeights
+    import Implicits.{flattenWeights, inflateWeights}
+    // For debugging
+    val aggregateFeats = new collection.mutable.HashMap[String, Counter[Boolean]]()
     // (1) Create Dataset
     val dataset = new RVFDataset[Boolean, String]()
     for ( (paths, gold) <- predictions;
           path <- bestInference(paths, weights) ) {
+      // Get whether we were correct
+      val prob = probability(Some(path), weights)
+      val guess = if (prob > 0.5) TruthValue.TRUE
+                  else TruthValue.FALSE
+      val isCorrect = correctTable(guess, gold)
       // Featurize
-      val features = featurize(path)
+      val features: WeightVector = featurize(path)
+      features.incrementCount("bias")
+      // Debug
+      startTrack("Analysis")
+      for (pair <- Counters.toSortedListWithCounts(features)) {
+        log(s"$gold :: ${pair.first}: ${pair.second}}")
+        if (!aggregateFeats.contains(pair.first())) { aggregateFeats(pair.first) = new ClassicCounter[Boolean] }
+        aggregateFeats(pair.first).incrementCount(isCorrect)
+      }
+      endTrack("Analysis")
       // Create Datum
-      val datum = new RVFDatum[Boolean, String](features, gold match {
-        case TruthValue.TRUE => true
-        case TruthValue.FALSE => false
-        case TruthValue.UNKNOWN => false
-        case _ => throw new IllegalStateException("Invalid gold truth: " + gold)
-      })
+      val datum = new RVFDatum[Boolean, String](features, isCorrect)
       // Add to Dataset
       dataset.add(datum)
     }
+    // Debug (print weight agreement)
+    startTrack("Aggregate Feature Counts")
+    val hardWeights = NatLog.hardNatlogWeights
+    val longestKey = hardWeights.keySet().maxBy( _.length ).length + 2
+    for ( (feature, counts) <- aggregateFeats ) {
+      " " * 10
+      log(s"$feature${" " * (longestKey - feature.length)} => C:${counts.getCount(true)}   I:${counts.getCount(false)}  {${hardWeights.getCount(feature)}}")
+    }
+    endTrack("Aggregate Feature Counts")
 
     // (2) Train Classifier
     // (train)
@@ -53,12 +94,39 @@ object LearnOffline extends Client {
 
     // (3) Update weights
     val rawWeights: Array[Double] = classifier.weightsAsMapOfCounters().get(true)
-    val maxFeatureWeight = rawWeights.drop(2).max + 1e-4
-    val minFeatureWeight = rawWeights.drop(2).min
-    //        rawWeights.map( x => x - maxFeatureWeight )
-    rawWeights.map( x => 2.0 * (x - maxFeatureWeight) / (maxFeatureWeight - minFeatureWeight) )
-    //        rawWeights.map( x => math.min(x, -1e-4) )
+    val maxFeatureWeight: Double = rawWeights.drop(2).max + 1e-4
+    val minFeatureWeight: Double = rawWeights.drop(2).min
+    val bias: Double = rawWeights(0)
+//    val newWeights = rawWeights.map( x => x - maxFeatureWeight )
+//    val newWeights = rawWeights.map( x => 2.0 * (x - maxFeatureWeight) / (maxFeatureWeight - minFeatureWeight) )
+//    val newWeights = rawWeights.map( x => math.min(x, -1e-4) )
+    val newWeights: Array[Double] = rawWeights.map{ (w:Double) =>  // do a bilinear transform from the feature value range to [-2.0, -0.0]
+      if (w < bias) {
+        val denom = math.abs(bias - minFeatureWeight)
+        val numer = math.abs(bias - w)
+        val frac = numer / denom
+        assert (-1.0 - frac <= -1.0)
+        assert (-1.0 - frac >= -2.0)
+        -1.0 - frac
+      } else {
+        val denom = math.abs(maxFeatureWeight - bias)
+        val numer = math.abs(w - bias)
+        val frac = numer / denom
+        assert (-1.0 - frac >= -1.0)
+        assert (-1.0 - frac <= -0.0)
+        -1.0 + frac
+      }
+    }
 
+    // Debug (check changed weights)
+    startTrack("Learned Weight Summary")
+    for ( (feature, counts) <- aggregateFeats ) {
+      " " * 10
+      log(s"$feature${" " * (longestKey - feature.length)} => C:${counts.getCount(true)}   I:${counts.getCount(false)}  {hard:${hardWeights.getCount(feature)}  learned:${newWeights.getCount(feature)}}")
+    }
+    endTrack("Learned Weight Summary")
+
+    newWeights
   }
 
 
