@@ -82,7 +82,7 @@ object LearnOffline extends Client {
   }
 
   def batchUpdateWeights(predictions:Iterable[(Iterable[Inference], TruthValue)], weights:Array[Double]):Array[Double] = {
-    import Implicits.inflateWeights
+    import Implicits.{inflateWeights, flattenWeights}
     // For debugging
     val aggregateFeats = new collection.mutable.HashMap[String, Counter[Boolean]]()
     // (1) Create Dataset
@@ -109,6 +109,7 @@ object LearnOffline extends Client {
       }
     }
 
+    /*
     // (2) Train Classifier
     // (train)
     def train(dataset:RVFDataset[Boolean, String]):LinearClassifier[Boolean,String] = {
@@ -203,11 +204,25 @@ object LearnOffline extends Client {
     endTrack("Hill-climbing accuracy")
 
     log(YELLOW, BOLD, s"Classifier accuracy: ${Utils.percent.format(bestAccuracy)}")
-
-    // (3) Update weights
     val rawWeights: WeightVector = bestClassifier.weightsAsMapOfCounters().get(true)
     val newWeights: Array[Double] = projectWeights(rawWeights, weights)  // do project past weights here
+    */
 
+    // (2) Compute Weights
+    val newWeights: WeightVector = {
+      val counts = new ClassicCounter[String]
+      counts.setDefaultReturnValue(-2.0)
+      for ( (feature, accuracy) <- aggregateFeats) {
+        counts.setCount(feature, (-1.0 - 1e-4) + accuracy.getCount(true) / (accuracy.getCount(true) + accuracy.getCount(false)) )
+      }
+      Counters.multiplyInPlace(counts, 2.0)
+      for (key <- weights.keySet()) {
+        if (!counts.containsKey(key)) { counts.setCount(key, weights.getCount(key)) }
+      }
+      counts
+    }
+
+    // (3) Update weights
     // Debug (check changed weights)
     startTrack("Learned Weight Summary")
     val hardWeights = NatLog.hardNatlogWeights
