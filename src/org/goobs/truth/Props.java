@@ -29,7 +29,7 @@ public class Props {
     return value;
   }
 
-  public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TEST }
+  public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TRAIN_OPTIMISTIC, MTURK_TEST, MTURK_TEST_OPTIMISTIC }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = checkEnv("PGHOST", "jonsson");
@@ -55,6 +55,8 @@ public class Props {
   public static int SERVER_MAIN_THREADS = Execution.threads;
   @Option(name="server.backup.do", gloss="The hostname for the inference server")
   public static boolean SERVER_BACKUP_DO = true;
+  @Option(name="server.backup.discount", gloss="The hostname for the inference server")
+  public static double SERVER_BACKUP_DISCOUNT = 1.0;
   @Option(name="server.backup.host", gloss="The hostname for the inference server")
   public static String SERVER_BACKUP_HOST = "localhost";
   @Option(name="server.backup.port", gloss="The hostname for the inference server")
@@ -106,6 +108,8 @@ public class Props {
 
   @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
   public static boolean EVALUATE_ALLOWUNK = false;
+  @Option(name="evaluate.model", gloss="The model to load when evaluating")
+  public static File EVALUATE_MODEL = new File("/dev/null");
 
   @Option(name="script.wordnet.path", gloss="The path to the saved wordnet ontology (see sim.jar)")
   public static String SCRIPT_WORDNET_PATH = "etc/ontology_wordnet3.1.ser.gz";

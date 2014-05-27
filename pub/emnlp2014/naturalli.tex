@@ -1,14 +1,19 @@
 \documentclass[11pt,a4paper]{article}
 % -- IMPORTS --
-% (lib)
+% (stylsheet)
 \usepackage{acl2014}
+% (general libraries)
 \usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
-\usepackage{multirow,hhline,stmaryrd,bussproofs}
-\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs}
+% (tikz dependencies)
+\usepackage{tikz}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata}
+% (print algorithms)
 \usepackage[ruled,lined,linesnumbered]{algorithm2e}
 % (custom)
 \input std-macros.tex
 \input ../macros.tex	
+\input ../figures.tex	
 % (tweaks)
 \definecolor{darkred}{rgb}{0.5451, 0.0, 0.0}
 \definecolor{darkgreen}{rgb}{0.0, 0.3922, 0.0}

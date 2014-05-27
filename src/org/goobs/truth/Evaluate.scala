@@ -111,19 +111,29 @@ trait Evaluator {
    * @return A probability 0 <= p <= 1 for whether this fact is true or not.
    */
   def probability(inference:Option[Inference], wVector:Array[Double]):Double = {
+    // Get the state
     val state:Double = inference.fold(CollapsedInferenceState.UNKNOWN)(_.getState) match {
       case CollapsedInferenceState.TRUE => 1.0
       case CollapsedInferenceState.FALSE => -1.0
       case CollapsedInferenceState.UNKNOWN => 0.0
     }
+    // Compute the probability
     val pred:Double = prediction(inference, wVector)
     val logistic = 1.0 / (1.0 + math.exp(-pred * state))
     val prob = 0.5*state + logistic
+    // Run assertions
     assert (!prob.isNaN)
     assert (prob >= 0.0, "Not a probability: " + prob + " from x=" + (pred * state) + " => sigmoid=" + logistic)
     assert (prob <= 1.0, "Not a probability: " + prob + " from x=" + (pred * state) + " => sigmoid=" + logistic)
-    prob
-
+    // Return
+    inference match {
+      case Some(path) =>
+        if (path.getTag.startsWith("backoff")) {
+          val range = Props.SERVER_BACKUP_DISCOUNT - (1.0 - Props.SERVER_BACKUP_DISCOUNT)
+          0.5 + (prob - 0.5) * range
+        } else { prob }
+      case None => prob
+    }
   }
 
   /**
@@ -237,6 +247,14 @@ trait Evaluator {
     })
     val sortedResults = Await.result(results, Duration.Inf).sortBy( x => x.prob )
     dumpResult(sortedResults)
+
+    // Save PR curve
+    Utils.printToFile(prFile){ out =>
+      out.println(s"guess\tgold\tprob")
+      for ( resultPoint <- sortedResults) {
+        out.println(s"${resultPoint.gold}\t${resultPoint.guess}\t${resultPoint.prob}")
+      }
+    }
 
     // Run baseline
     def baselineProb(queries:Iterable[Query.Builder]):Future[Double]  = Future.successful(queries.map( (q:Query.Builder) => if (q.getForceFalse) 0.0 else 1.0 )).map( _.foldLeft(1.0){ case (p:Double, guess:Double) => p * guess })
@@ -382,7 +400,10 @@ object Evaluate extends Client {
       val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
       import Implicits.flattenWeights
       forceTrack("Evaluating")
-      evaluate(testData, NatLog.softNatlogWeights, x => LearnOnline.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) })
+      evaluate(testData,
+        if (Props.EVALUATE_MODEL.getPath != "/dev/null") Learn.deserialize(Props.EVALUATE_MODEL) else NatLog.softNatlogWeights,
+        print = x => LearnOnline.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) },
+        prFile = new File("logs/lastPR.dat"))
       endTrack("Evaluating")
     }), args)
   }

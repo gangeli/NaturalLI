@@ -1,1 +1,117 @@
+
 \Section{results}{Experiments}
+We evaluate our system on two tasks: the FraCaS test suite used
+  by \newcite{key:2007maccartney-natlog} and \newcite{key:2008maccartney-natlog},
+  as well as for filtering valid and invalid extractions from the
+  ReVerb OpenIE system \cite{key:2011fader-reverb}, as per
+  \newcite{key:2013angeli-truth}.
+
+%
+% FraCaS
+%
+\Subsection{results-fracas}{FraCaS Entailment Corpus}
+The FraCaS textual entailment corpus \cite{key:1996cooper-fracas}
+  is a small corpus of entailment problems, aimed at providing a
+  comprehensive test of an entailment system's handling of various
+  entailment patterns.
+
+Following \newcite{key:2007maccartney-natlog}, we take only a subset
+  of the corpus as applicable for Natural Logic.
+12 problems were discarded as degenerate -- lacking either an antecedent or
+  a consequent.
+151 problems were discarded as involving multiple antecedents to
+  justify the inference.
+Lastly, it should be noted that many of the sections of the corpus
+  are not directly applicable to Natural Logic inferences.
+
+\begin{table}
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{
+  \begin{tabular}{|l|l|c|cc|cc|ccc|}
+    \hline
+    $\mathsection$ & Category & Count & \multicolumn{2}{|c|}{P} & \multicolumn{2}{|c|}{R} & \multicolumn{3}{|c|}{A} \\
+                   &          &       & & M08                 & & M08                 &   & M07 & M08 \\
+    \hline
+                          % Pme    P07   Rme   R08   Ame  A07  A08
+    1 & Quantifiers  & 44 & 91   & 95  & 100 & 100 & 95 & 84 & 97 \\
+    2 & Plurals      & 24 & 80   & 90  & 29  & 64  & 38 & 42 & 75 \\
+    3 & Anaphora     & 6  & 100  & 100 & 20  & 60  & 33 & 50 & 50 \\
+    4 & Ellipses     & 25 & 100  & 100 & 5   & 5   & 28 & 28 & 24 \\
+    5 & Adjectives   & 15 & 80   & 71  & 66  & 83  & 73 & 60 & 80 \\
+    6 & Comparatives & 16 & 90   & 88  & 100 & 89  & 87 & 69 & 81 \\
+    7 & Temporal     & 36 & 75   & 86  & 53  & 71  & 52 & 61 & 58 \\
+    8 & Verbs        & 8  & $-$  & 80  & 0   & 66  & 25 & 63 & 62 \\
+    9 & Attitudes    & 9  & $-$  & 100 & 0   & 83  & 22 & 55 & 89 \\
+    \hline
+\multicolumn{2}{|l|}{Applicable (1,5,6)}
+                     & 75 & 89   & 89  & 94  & 94  & 89 & 76 & 90 \\
+    \hline
+  \end{tabular}
+  }
+  \caption{
+    Results on the FraCaS textual entailment suite.
+    M07 refers to \newcite{key:2007maccartney-natlog};
+      M08 refers to \newcite{key:2008maccartney-natlog}.
+    The relevant sections of the corpus intended to be handled by this
+      system are sections 1, 5, and 6 (not 2 and 9, which are also
+      included in M08).
+    \label{tab:fracas}
+  }
+\end{center}
+\end{table}
+
+Results on the corpus are given in \reftab{fracas}.
+Since the corpus is not a blind test set, the results are presented
+  less as a comparison of performance, but rather as a comparison
+  of the expressive power of our search-based approach compared with
+  MacCartney's align-and-classify approach.
+For the experiments, costs were hard-coded to represent a strict
+  logical entailment system -- costs corresponding to valid Natural
+  Logic mutations were set to a small constant cost; other costs
+  were set to infinity.
+
+The results are generally promising.
+Note that our system is comparatively crippled in this framework
+  along at least two dimensions:
+It cannot appeal to the antecedent when constructing the search,
+  leading to the introduction of search errors as a new class of
+  error.
+Second the derivation process itself does not have access to the
+  full parse tree of the candidate fact.
+Therefore, it is unable to make large edits over constituents,
+  and is unable to appeal to the parse in its mutation decisions.
+For instance, our system has no notion of prepositional attachment.
+
+Despite this, the system performs comparable to NatLog on the sections
+  it intends to capture.
+Furthermore, precision is consistently high among all sections, although
+  recall is usually significantly lower.
+It should also be noted that \newcite{key:2008maccartney-natlog} 
+  intend to capture the inferences in sections 2 (plurals)
+  and 9 (attitudes), which we omit from our system.
+
+%
+% MTurk
+%
+\Subsection{results-mturk}{ReVerb Filtering}
+\Fig{mturk-pr}{0.60}{mturk}{
+  A PR curve showing the accuracy of extraction, given the proportion
+    of examples we provide an estimate for.
+}
+
+To evaluate our system in a more real-world setting, we adopt the
+  task of filtering semantically plausible ReVerb extractions,
+  as introduced in \newcite{key:2013angeli-truth}.
+
+In the task, 4000 randomly selected ReVerb extractions were shown to
+  Mechanical Turk workers, who ranked each extraction as either
+  \textit{correct}, \textit{plausible}, or \textit{implausible}.
+Extractions which obtained more \textit{correct} votes than
+  \textit{implausible} votes were considered true, and visa versa.
+Ties were discarded from the corpus.
+The examples are broken up into 1796 training examples ($70\%$ true)
+  and 1975 test examples ($65\%$ true).
+
+Results are given in \reffig{mturk}.
+They're not very good yet.
+Hopefully they'll get better.

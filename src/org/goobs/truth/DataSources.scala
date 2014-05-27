@@ -263,6 +263,34 @@ object AVE extends DataSource {
 }
 
 object MTurk extends DataSource {
+  import DataSource._
+
+  /**
+   * A filter for selecting queries which are under a certain length.
+   */
+  def isUnderLength(upperBoundLength:Int):(Datum) => Boolean = {
+    case (query: Seq[Query.Builder], truth: TruthValue) =>
+      query.headOption match {
+        case Some(q) => q.getQueryFact.getWordCount < upperBoundLength
+        case None => true
+      }
+  }
+
+  private lazy val UNK = Utils.wordIndexer.get(Utils.WORD_UNK)
+
+  /**
+   * Filter out queries that have an unknown word.
+   */
+  val isUnkFree:(Datum) => Boolean = {
+    case (query: Seq[Query.Builder], truth: TruthValue) =>
+      query.headOption match {
+        case Some(q) => q.getQueryFact.getWordList.forall( w => w.getWord != UNK )
+        case None => true
+      }
+  }
+
+
+
   /**
    * Read queries from the specified abstract path.
    * @param path The path to read the queries from. This should be a *.tab file (canonically, in etc/mturk/reverb_[train|test].tab).

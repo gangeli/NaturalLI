@@ -15,11 +15,29 @@ In part, this lends itself to computationally efficient inference;
 
 A working approximation for Natural Logic is as a principled formalism
   for and extension of syllogistic reasoning.
-We briefly motivate this analogy in \refsec{natlog-syllogism},
-  review recent theory on Natural Logic in
-  \refsecs{natlog-mono}{natlog-exclusion}, and propose a collapsed
-  represenation of MacCartney's entailment relations in
-  \refsec{natlog-collapsed}.
+In this analogy, the minor premise
+  (e.g., \textit{All Greeks are men}) is encoded implicitly,
+  and an inference is made from the major premise to the consequent:
+  (e.g., \textit{All men are mortal} $\Rightarrow$ \textit{All Greeks are mortal}).
+This style of reasoning is warranted from an analysis of the monotonicity
+  of quantifiers, reviewed in \refsec{natlog-mono}.
+
+The additional expressive power of Natural Logic is derived from two
+  sources: in part, the logic does not rely on template matching,
+  allowing inferences to be made over patterns nested within a larger
+  context, and allowing inferences to be chained.
+In another part, we can make use of MacCartney's expanded entailment
+  relations, described in \refsec{natlog-exclusion}.
+We conclude the section with a novel result showing that the state
+  space of the MacCartney-style derivations can be collapsed to a
+  simpler representation (\refsec{natlog-collapsed}), and by
+  elaborating on the limitations of Natural Logic (\refsec{natlog-limitations}).
+
+%We briefly motivate this analogy in \refsec{natlog-syllogism},
+%  review recent theory on Natural Logic in
+%  \refsecs{natlog-mono}{natlog-exclusion}, and propose a collapsed
+%  represenation of MacCartney's entailment relations in
+%  \refsec{natlog-collapsed}.
 %Syllogistic reasoning can be considered a first approximation to
 %  Natural Logic, as is presented in \refsec{natlog-syllogism}.
 %A brief introduction beyond this first approximation is presented
@@ -31,13 +49,6 @@ We briefly motivate this analogy in \refsec{natlog-syllogism},
 \newcite{key:2014icard-natlog} offers a more thorough summary of the
   field, and provides the source for much of the notation and
   exposition presented here.
-
-%
-% SYLLOGISM
-%
-\Subsection{natlog-syllogism}{Syllogistic Reasoning}
-\todo{write me}
-
 
 %
 % MONOTONICITY
@@ -321,17 +332,120 @@ The composition of relations through an inference chain is given in
 %The second issue is determining how these relations project through
 %  the proof tree.
 
+
+\begin{figure*}
+\begin{center}
+  \begin{tabular}{cc}
+    \resizebox{0.48\textwidth}{!}{\completeFSA} &
+      \resizebox{0.48\textwidth}{!}{\collapsedFSA} \\
+    (a) & (b)
+  \end{tabular}
+\end{center}
+\caption{
+  \label{fig:fsa}
+  (a) The join table in \reftab{join} expressed as a finite state automata.
+  Omitted edges go to the unknown state (\independent), with the exception of
+    omitted edges from $\equivalent$, which go to the state of the edge
+    type.
+  Green states (\equivalent, \forward) denote valid inferences;
+    red states (\alternate, \negate) denote invalid infences;
+    blue states (\reverse, \cover) denote inferences of unknown validity.
+  (b) The join table collapsed into the three meaningful states over truth
+  values.
+}
+\end{figure*}
+
+\reffig{fsa}a visualizes the join table as a finite state automata.
+The edges in the automata denote a step in a logical derivation;
+  for instance, attempting to derive \textit{all cats have tails}
+  from \textit{all felines have tails}.
+The label of the edge denotes the relation between the mutated
+  \textbf{entity} in the derivation.
+In our example, \textit{felines} $\forward_e$ \textit{cats},
+  and therefore we would take the edge labeled with \forward.
+
+States in the automata denote the relation between the
+  \textbf{truth value} of
+  the antecedent, and the truth value of the consequent given the
+  mutations so far.
+We may consider as a motivating example the inference from
+  \textit{all felines have tails} to \textit{no cats have tails}:
+
+\vspace{1em}
+\noindent\resizebox{0.48\textwidth}{!}{
+  \begin{tabular}{llcc}
+  \textbf{Mutation} & \textbf{Fact} & \textbf{Edge} & \textbf{State} \\
+  & \textit{all felines have tails} & & \equivalent \\
+  \textit{feline} \reverse\ \textit{cat} & \textit{all cats have tails} & \forward & \forward \\
+  \textit{all} \negate\ \textit{no} & \textit{no cats have tails} & \negate & \alternate
+  \end{tabular}
+}
+\vspace{1em}
+
+The second column shows the surface form of the fact as the derivation
+  progresses.
+The first column shows the mutation applied to the previous fact to get
+  the new surface form.
+The third column shows the edge to take in the FSA -- this is derived
+  from the projections in \reftab{projectivity}.
+For example, since \textit{all} is antitone in its first argument
+  (\textit{felines}), a mutation of type \reverse\ projects to an edge
+  type of \forward.
+The first three columns can be viewed as shorthand for a
+  formal proof tree like that provided in \reffig{catsproof}.
+The last colum shows the relationship between the first fact
+  and the fact on this row of the derivation.
+In our example derivation, we conclude that:
+
+\begin{center}
+  \textit{all felines have tails}
+  \alternate\ \textit{no cats have tails}.
+\end{center}
+
 %
 % COLLAPSED STATES
 %
 \Subsection{natlog-collapsed}{Collapsed Join Table}
 Although the full join table is useful when we would like fine-grained
-  semantic comparisons, for our application we care only about the
-  collapsed states of \textit{true}, \textit{false}, and \textit{unknown}.
-In fact, we can collapse the join table in \reftab{join} to make use
-  of only these three states losslessly.
+  semantic comparisons, for our application we care only whether
+  an inference is \textit{valid}, \textit{invalid}, and \textit{unknown}.
+To illustrate, we do not care that \textit{all felines have tails}
+  is in any particular set theoretic relation with
+  \textit{no cats have tails}; we only care that this is a verifiably
+  invalid inference.
 
-\todo{finish writing me!}
+To this end, we make two novel contributions to the theory of Natural
+  Logic:
+first, we show that the join table can be simplified in the case where
+  we only care about the validity of an inference; and, second, we
+  propose weighting the edges in this finite state automata in such
+  a way as to collapse the \textit{unknown} state into one of 
+  either \textit{valid} or \textit{invalid}, with low probability.
+
+The first of these contributions, illustrated in \reffig{fsa}b,
+  makes use of two observations.
+First, if we cluster the seven MacCartney relations\footnote{
+  The seventh relation (\independent) is not shown in the FSA for
+  clarity, but clusters into the unknown class.
+  }, the transitions into and out of each class is identical independent
+  of which specific state one is in.
+This clustering -- trivial intuitively -- is also the clustering used
+  by \newcite{key:2008maccartney-natlog} for evaluating inference
+  tasks.
+
+Furthermore, although there are transitions between the states clustered
+  into the unknown category, at no point is there a valid transition
+  from a node in the cluster to a node outside of it.
+This is a generalization of the well-known observation that long
+  derivations tend to the unknown state (\independent), from which
+  it is impossible to escape.
+Here, we observe that even if a derivation enters a seemingly-informative
+  state (\reverse, \cover) it is nonetheless doomed to produce a
+  final judgment of unknown.
+
+The second observation -- that we can run probabilistic inference and
+  collapse the unknown state into a penalty on the probability of
+  validity/invalidity -- is discussed in the next section.
 
 %
 % LIMITATIONS

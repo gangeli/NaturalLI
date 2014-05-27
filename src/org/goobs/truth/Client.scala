@@ -132,7 +132,7 @@ trait Client extends Evaluator {
           if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil else doQuery(query, Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
         } (mainExecContext)
         // (step 2: map to backoff)
-        if (singleQuery || !Props.SERVER_BACKUP_DO) main else main.flatMap( (main: Iterable[Inference]) =>
+        if (singleQuery || !Props.SERVER_BACKUP_DO) main.map( tag(_, "soft weights") )(ExecutionContext.Implicits.global) else main.flatMap( (main: Iterable[Inference]) =>
           if (main.isEmpty && (!Props.SERVER_BACKUP_HOST.equals(Props.SERVER_MAIN_HOST) || Props.SERVER_BACKUP_PORT != Props.SERVER_MAIN_PORT)) {
             val simpleQuery = Utils.simplifyQuery(query, (x:String) => NatLog.annotate(x).head)
             // (step 3: execute backoff)
@@ -239,6 +239,8 @@ trait Client extends Evaluator {
       case Props.Corpus.AVE_2008 => AVE.read(Props.DATA_AVE_PATH("2008").getPath)
       case Props.Corpus.MTURK_TRAIN => MTurk.read(Props.DATA_MTURK_TRAIN.getPath)
       case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
+      case Props.Corpus.MTURK_TRAIN_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
+      case Props.Corpus.MTURK_TEST_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TEST.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
       case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
     }
   }

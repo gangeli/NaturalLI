@@ -1,244 +1,260 @@
 \Section{inference}{Inference As Search}
-We run a search over mutations over specific words of the input candidate
-  consequent.
-The search problem is given a consequent as input.
-This is composed of the following:
+In a classical inference setting, a system is provded both the
+  query consequent, and a set of antecedents from which to derive
+  the validity of the consequent.
+Prior work on inference with Natural Logic has assumed this scenario
+  \cite{key:2008maccartney-natlog}, and taken the two-step of approach
+  of aligning the antecedent and consequent, and classifying each
+  aligned segment into a mutation relation.
+For common-sense reasoning, however, we are not given a well-defined
+  antecedent, but rather have at our disposal a large database of
+  true facts from which to derive the query.
+This makes the align-and-classify approach of previous work substantially
+  less appealing, as the antecedents are not readily available and would
+  need to be retrieved from the database.
 
-\begin{itemize}
-  \item A sentence, tokenized into coherent logical entities.
-        For instance, \textit{dog} and \textit{cat} would be entities;
-          but, so would \textit{George W. Bush} -- despite the latter covering
-          multiple words.
-  \item A monotonicity marking for each of these words.
-        This is one of: upward monotone, downward monotone, or flat (no
-          monotonicity information could be gathered).
-  \item The relevant sense of the word.
-        This is a WordNet synset when it's available; if not, this is
-          set to a special sense denoting no synset.
-        If a WordNet synset is available, it will never be set to the
-          `no synset' category.
-\end{itemize}
-
-The paths from the result of this searches are used
-  as features in the learning problem
-  (see \refsec{learn}).
+We therefore approach the problem as a search task: given the
+  query consequent, we search over the space of possible facts for
+  a valid antecedent in our database.
+The nodes in our search problem correspond to candidate facts; the
+  edges are candidate mutations; the costs over these edges encode
+  the confidence (or likelihood) that the mutation over this edge
+  maintains the truth of the antecedent.
 
 We define the problem by specifying the state space,
   the valid transitions, along with the weights of
   the transitions.
-The algorithm used is a Uniform Cost Search, leading
-  to the additional challenge of ensuring that the
-  cost of each transition is very fast -- that is,
-  on the order of microseconds to keep pace with
-  the memory accesses for the search.
+We then describe how these weights translate to the confidence of truth
+  of a fact, to be used in learning, and a generalization of
+  JC similarity \cite{key:1997jc-similarity}.
 
-%Before delving into the search problem, we define the
-%  notion of a \textbf{node}.
-%A node is, at a high level, a phrase such as one
-%  which would correspond to an argument or a relation.
-%It is:
-%\begin{itemize}
-%\item Case sensitive, but normalized to be either
-%      capitalized, all capitals, or all lowercase.
-%\item Lemmatized and normalized where appropriate.
-%      For instance, \w{has} and \w{had} are the same
-%      node. In particular, the ReVerb normalized
-%      relation is used.
-%\item In the case when the phrase maps exactly to a
-%      word form in WordNet, it is the WordNet synset.
-%\end{itemize}
 %
-%The definition of the search problem is:
-
-\Subsection{state}{State}
+% STATE
+%
+\Subsection{inference-state}{States}
 A state in the graph is defined as a partial path from the consequent to a
   valid antecedent.
-That is, a state is primarily parameterized by its candidate fact which may be
-  in the knowledge base.
-In addition, some auxilliary information is also tracked in a search state:
+That is, a state is primarily parameterized primarily by the surface
+  form of the candidate fact at this point in the (reverse) derivation.
 
-\begin{itemize}
-  \item The fact this fact mutated from.
-        This is necessary to reconstruct the final path.
-  \item The monotonicity marking of each word in the fact.
-        This is necessary for the weights, to ensure that monotonicity is
-          respected.
-  \item The synset of each word in the fact.
-        This is necessary to compute the valid mutations of that edge, according
-          to the WordNet hierarchy.
-  \item A bitmask denoting whether a word has been modified in the past.
-        This is set when a word has been modified, and then another word is
-          subsequently modified.
-        This ensures that edits on a word are contiguous.
-        We do not edit a particualr word, and then edit another word, and then
-          perform more edits on the initial word.
-\end{itemize}
+This surface form is augmented with both sense and polarity
+  information.
+Each word is allowed a sense (up to 31 possible senses), or a default
+  sense; in addition, 2 bits are reserved for marking polarity
+  (monotone, antitone, nonmonotone).
+This leaves sufficient space to store each augmented word in a 32 bit
+  integer.
+Note also that we refer to potentially arbitrary lexical items in
+  WordNet as words -- for instance, \textit{fire truck} is treated as
+  a single word.
 
-\Subsection{weights}{Weights}
-\todo{This section is now wrong}
-We can denote a state transition as $(n_{-1}, n)$ -- 
-  corresponding to a state $n$ and the previous state $n-1$.
-The weight of a transition from $(n_{-1},n)$ to
-  $(n,n_{+1})$ is given by appealing to the
-  transitions between $n_{-1}$ and $n$, and between
-  $n$ and $n_{+1}$.
+A number of important details deserve attention in our definition of
+  a search state:
 
-We denote the type of transition 
-  (e.g., ins($w$) or freebase($r$))
-  between $n_{-1}$ and $n$ to be $\phi_{-1}$, and the
-  type of transition between $n$ and $n_{+1}$ to
-  be $\phi_0$.
-For both of these, we define weights $w_{\phi_{-1}}$
-  and $w_{\phi_0}$, as well as a weight for the
-  bigram of the two: $w_{\phi_{-1}, \phi_0}$.
-Lastly, we incur a cost for exiting the domain of natural
-  logic entailments: $w_{nle}$.
-Our cost is thus given by:
+\paragraph{Lexical mutations}
+As per our definition, transitions between states are transitions 
+  between facts.
+However, the lexical resources for the mutations are over words
+  (e.g., \textit{feline} $\rightarrow$ \textit{cat}) rather than
+  entire facts.
+This motivates the inclusion of an index in our state, denoting the
+  index of the word which may be mutated.
 
-\begin{equation}
-\textrm{cost} = - w_{\phi_{0}}
-                - w_{\phi_{-1}, \phi_0}
-                - \1(\textrm{broke entailment}) \cdot w_{nle}
-\end{equation}
+Importantly, this also imposes a natural order in the construction of
+  potential antecedents during search.
+The mutation index is allowed to shift forwards through the
+  fact (at no cost), but not backwards.
+This helps make search more tractable, at the expense of rare
+  esoteric search errors.
 
-We constrain $w_{\phi} \leq 0$ to ensure that the
-  cost is always positive. 
 
-Note, furthermore, that this is a natural decomposition
-  of a log-linear model where $\phi$ denote features
-  and $w$ denote the weights of the features.
-The cost of a path will become:
+\paragraph{Predicting deletions}
+Although inserting words in a derivation (deleting words from
+  the reversed derivation) is trivial, the other direction is not.
+\naive ly, at every state in our search, we must consider every word in
+  the vocabulary as a possible antecedent from which the word was deleted
+  to produce the current state.
 
-\begin{equation}
-\sum_i cost_i = - \sum_i \left[ w_{\phi_i)} + w_{\phi_{i-1}, \phi_i}\right]
-\end{equation}
+This is largely handled by storing the database of known facts as a
+  Trie.
+Since we are constructing antecedents left-to-right, as per above,
+  we can propose candidate deletable words from the Trie, looking up
+  the partial derivation up to the mutation index.
+As a special case, when proposing words for the beginning of the
+  fact, we take all facts whose second word matches the first word
+  of the search state.
 
-If we exponentiate the negative of this, we arrive at:
+\paragraph{Tracking inference state}
+The cost of an inference at any given state depends not only on the
+  polarity of the lexical item, but also the state of the derivation
+  so far.
+We therefore augment a fact with whether the derivation is in a
+  \textit{valid} or \textit{invalid} state
 
-\begin{equation}
-\exp( \sum_i cost_i )
-  = \exp\left( \sum_i \left[ w_{\phi_i)} + w_{\phi_{i-1}, \phi_i} \right] \right)
-\end{equation}
+\paragraph{Polarity tracking}
+Mutating quantifiers can change the polarity information on a subset
+  of the words in a fact.
+Since we do not have the full parse tree at our disposal at search,
+  we track a small amount of metadata to guess the scope of the
+  mutated quantifier.
 
-Over two classes: \textit{true} and \textit{false};
-  and, defining notation where $\phi$ denotes the
-  vector of active path types taken and $w$ denotes
-  the global weight vector, we arrive at our
-  log-linear model:
-
-\begin{equation}
-P(\textit{true}) \propto e^{w^{T} \phi}
-\end{equation}
-
-This decomposition is important, as it allows our
-  search to get smarter along with our learning
-  algorithm, and allows us to find better support
-  for facts as we learn what patterns entail
-  ``good'' support.
-
-%\Subsection{boundaries}{Start and Terminal States}
-%The start state is the relevant word from the fact
-%  we are beginning from, normalized to a valid node
-%  (i.e., lemmatized, properly cased, etc.).
-%For example, the search from $a_1$ of \w{cats have tails}
-%  would be \w{cat}.
 %
-%The terminal state of the search is any node which
-%  is attached to a known fact on the correct term.
-%For example, a search ffrom $a_1$ of \w{cats have tails}
-%  would finish at \w{dog} if there is a fact in the
-%  database such as \w{dogs have tails}.
+% TRANSITIONS
+%
+\Subsection{inference-transitions}{Transitions}
+We begin by introducing some terminology.
+A \textit{transition template} is a broad class of transitions; for
+  instance WordNet hypernymy.
+A \textit{transition} or \textit{transition instance} is a particular
+  instantiation of a transition template.
+For example, the transition from \textit{cat} to \textit{feiline}.
+Lastly, an \textit{edge} in the search space connects two facts, which
+  are separated by a single transition instance.
+For example, an edge exists between 
+  \textit{some cats have tails} and \textit{some felines have tails}.
 
+Note that the edges in the search are not constructed a priori --
+  just as a theorem prover would not store all possible derivation steps.
+It is sufficient to store the transitions, and construct particular
+  edges on demand.
+At a high level, we include most relations in WordNet as transitions,
+  and parameterize insertions and deletions by the part of speech
+  of the token being inserted/deleted.
+The full table of transitions is given in \reftab{transitions}, along
+  with the relation that transition introduces, and an example edge
+  in our derivation corresponding to that transition.
 
-\Subsection{transitions}{Transitions}
-A valid transition is one between states
-  $(n_{-1}, n)$ and $(n, n_{+1})$, such that in
-  relation to $n$, $n_{+1}$ is one of:
+\begin{table*}
+\begin{center}
+  \begin{tabular}{lcl}
+    \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
+    \hline
+    WordNet hypernym                     & \forward    & \textit{some cats like milk} \forward\ \textit{some felines like milk} \\
+    WordNet hyponym                      & \reverse    & \textit{some cats like milk} \reverse\ \textit{some feilines like milk} \\
+    WordNet antonym$^\dagger$            & \alternate  & \textit{all cats like milk} \alternate\ \textit{all cats hate milk} \\
+    WordNet synonym/pertainym$^\dagger$  & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats enjoy milk} \\
+    Distributional nearest neighbor      & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats like dairy} \\
+    Delete word$^\dagger$                & \forward    & \textit{some tabby cats like milk} \forward\ \textit{some cats like milk} \\
+    Add word$^\dagger$                   & \reverse    & \textit{some cats like milk} \reverse\ \textit{some tabby cats like milk} \\
+    Quantifier weaken                    & \forward    & \textit{all cats like milk} \forward\ \textit{some cats like milk} \\
+    Quantifer strengthen                 & \reverse    & \textit{some cats like milk} \reverse\ \textit{all feilines like milk} \\
+    Quantifer negate                     & \negate     & \textit{some cats like milk} \negate\ \textit{no feilines like milk} \\
+    Quantifer synonym                    & \equivalent & \textit{some cats like milk} \equivalent\ \textit{a few cats like milk} \\
+    Change word sense                    & \equivalent & 
+  \end{tabular}
+	\caption{
+    The edges allowed during inference.
+    Entries with a dagger are parameterized by their part-of-speech
+      tag, from the restricted list of $\{$noun$,$adjective$,$verb$,$other$\}$.
+    The first column describes the type of the transition.
+    The set-theoretic relation introduced by each relation is given in
+      the second column.
+    The third column gives an example of the transition in practice,
+      as an edge in the search graph.
+		\label{tab:transitions}
+	}
+\end{center}
+\end{table*}
+
+It should be noted that the mapping from transitions to relation
+  types is intentionally imprecise.
+For instance, clearly nearest neighbors do not preserve equivalence
+  (\equivalent); more subtly, while
+  \textit{all cats like milk} \alternate\ \textit{all cats hate milk},
+  it is not the case that
+  \textit{some cats like milk} \alternate\ \textit{some cats hate milk}.\footnote{
+    The latter exmaple is a consequence of the projection table in
+    \reftab{projectivity} being overly optimistic.
+  }
+We mitigate this imprecision by introducing a cost for each transition,
+  and learning the appropriate value for this cost
+  (see \refsec{learning}).
+
+The cost of an edge is parameterized by two values; the cost of an edge
+  from fact $(f,v,p)$ with surface form $f$, validity
+  $v$ and polarity $p$ to a new fact $(f',v',p')$ using a transition
+  instance $t_i$ of type $t$ is given by
+  $f_{t_i} \cdot \theta_{t,v,p}$, where:
 
 \begin{itemize}
-\item \textbf{Add/Remove a quantifier}.
-      This is a class of transitions denoted by
-      \textit{ins($w$)} or \textit{del($w$)} 
-      where $w$ is the word being added or removed.
-      For example, transitioning from \w{cat} to
-      \w{a cat} or \w{every cat} or visa versa.
-\item \textbf{Add/Remove an adjective}.
-      Similar to above, but with adjectives. These are distinguished
-      from the above in that they have meaning for natural logic
-      entailment.
-      \todo{how do we make this efficient?}
-\item \textbf{WordNet hypernymy}.
-      This is a class of transitions denoted by
-      \textit{hyper} or \textit{hypo},
-      For example, we could transition from \w{cat}
-      to \w{feline} and eventually to \w{animal}
-\item \textbf{WordNet relations}.
-      This is a class of transitions related to the other
-      WordNet relations (e.g., antonymy), primarily to
-      capture some of the inferences in natlog.
-\item \textbf{Freebase relations}.
-      This is a class of transitions aimed primarily
-      for proper nouns, traversing Freebase relations.
-      These are denoted by \textit{freebase($r$)},
-      where $r$ denotes the freebase relation we
-      have traversed.
-      For example, \w{Barack Obama} could transition
-      to \w{USA} via the \textit{employee\_of}
-      relation.
-\item \textbf{ReVerb relation}.
-      As in the Freebase case, we can move along a
-      ReVerb relation, denoted as \textit{reverb($r$)}.
-\item \textbf{Acronym and de-acronym}.
-      Expanding or creating an acronym,denoted by
-      \textit{acronym} and \textit{deacronym}.
-\item \textbf{Nearest neighbor similarity}.
-      The fallback is to search for nearest neighbors in similarity space.
-      This is, roughly, the equivalent of the CoNLL paper.
-\item \textbf{Drop sense}. Drop the sense of a word -- this is necessary to
-      begin operating in nearest neighbors space, or even with Freebase, etc.
-      relations.
-\item \textbf{Infer sense}. Go from a sense-less word to one of its word senses.
-      For example, chosing a particular sense for \textit{cat} from the
-        initially senseless definition.
+  \indentitem\item[$f_{t_i}$:]
+    A value associated with every transition instance $t_i$, intuitively
+      corresponding to how ``far'' the endpoints of a mutation are.
+  \indentitem\item[$\theta_{t,v,p}$:]
+    A learned cost for taking a transition of type $t$, if the source
+    of the edge is in a validity state of $v$ and the word being mutated
+    has polarity $p$.
 \end{itemize}
 
-\note{Negation does strange things; flip "truth state" in forwards and reverse cases}
+The notation for $f_{t_i}$ is chosen to evoke an analogy to features,
+  and we will refer to this quantity as the feature value.
+We set $f_{t_i}$ to be 1\ in most cases;
+  the exception are the edges over the WordNet hypernym tree,
+  and the nearest neighbors edges.
+In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
+  from word $w$ to its hypernym $w'$ (and visa versa for
+  $\downarrow_{w \rightarrow w'}$), and set:
 
+\begin{align*}
+  f_{\uparrow_{w \rightarrow w'}}   &= \log \frac{p(w')}{p(w)} &= \log p(w') - \log p(w) \\
+  f_{\downarrow_{w \rightarrow w'}} &= \log \frac{p(w)}{p(w')} &= \log p(w) - \log p(w')
+\end{align*}
+
+We define $p(w)$ to be the probability (normalized frequency)
+  of a word or any of its hyponyms in the Google N-Grams corpus
+  \cite{key:2006brants-ngrams}.
+Intuitively, this ensures that relatively long paths through fine-grained
+  sections of WordNet are not unduly penalized.
+For instance, the path from \textit{cat} to \textit{animal} traverses
+  six intermediate nodes, \naive ly yielding a prohibitive
+  search depth of 6.
+
+For nearest neighbors edges, we take Neural Network embeddings learned
+  in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
+We then define $f_{NN_{w \rightarrow w'}}$
+  to be the arccosine of the cosine similarity between word vectors
+  associated with lexical items $w$ and $w'$:
+
+\begin{equation*}
+  f_{NN_{w \rightarrow w'}}
+    = \textrm{arccos} \left( \frac{w \cdot w'}{\|w\| \|w'\|} \right)
+\end{equation*}
+
+The set of features which fire along a path
+  can be expressed as a vector $\bef$.
+Each element of $\bef$ corresponds to sum of the values of that
+  feature along the path.
+Correspondingly, we define the weight vector $\btheta$ as the
+  weight for every element of $\bef$.
+The cost of a path can then be expressed as the dot product:
+  $\theta^{\textrm{T}}\bef$.
 
 %
 % Generalize JC
 %
-\Subsection{inference-jc}{Generalization of JC Similarity}
+\Subsection{inference-jc}{Generalizing Similarities}
+An elegant property of our definitions of $f_{t_i}$ is its ability to
+  generalize JC similarity, and upper-bound distributional similarity.
 Let us assume we have words $w_1$ and $w_2$, with a least common subsumer $\textrm{lcs}$.
 The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 
 \begin{equation}
 \textrm{dist}_{\textrm{jc}}(w_1, w_2)
   = \log\frac{p(\textrm{lcs})^2}{p(w_1)p(w_2)}
+\label{eqn:jc}
 \end{equation}
 
-We show that our search over the Wordnet hierarchy generalizes this similarity.
-In particular, let us define two features, $\phi_\uparrow$ and $\phi_\downarrow$,
-  corresponding to going up and down the WordNet hierarchy, respectively.
-Traversing the Wordnet hierarchy from words $w \rightarrow w'$ thus fires the $\phi$
-  features with counts:
+For simplicity, we simplify $\theta_{\uparrow,v,p}$ and $\theta_{\uparrow,v,p}$
+  as simply $\theta_\uparrow$ and $\theta_\downarrow$.
+The derivation generalizes trivially to the the case where weights are
+  further parameterized.
+Without loss of generality, we also assume that a path in our search
+  is only modifying a single word $w_1$, ending at a mutation of the
+  word $w_2$.
 
-\begin{align*}
-  \phi_\uparrow(w \rightarrow w')
-    &= \log\frac{p(w')}{p(w)} \\
-    &= \log p(w') - \log p(w) \\
-  \phi_\downarrow(w \rightarrow w')
-    &= \log p(w) - \log p(w') 
-\end{align*}
-
-We now introduce weights associated with each of these two operations, denoted
-  $\theta_\uparrow$ and $\theta_\downarrow$, for each pair of words participating
-  in a WordNet edge.
-The score of a path is then defined as the dot product of the weights and features
-  as described above: $\theta^{\textrm{T}}\phi$.
-
-We can factorize this along the path
-  $[w_1, w_1^{(1)}, \dots, \textrm{lcs}, \dots,  w_2^{(1)}, w_2]$
+We can factorize the cost of a path, $\btheta^{T}\bef$, along the path
+  from $w_1$ to $w_2$ through its lowest common subsumer (lcs),
+  $[w_1, w_1^{(1)}, \dots, \textrm{lcs}, \dots,  w_2^{(1)}, w_2]$,
   as follows:
 
 \begin{align*}
@@ -253,14 +269,14 @@ We can factorize this along the path
     \dots
 %    + \left[\log p(w_1) - \log p(w_1^{(1)})\right]
     \right) \\
-  &= \theta_\uparrow \left( \log \frac{p(\textrm{lcs}}{p(w_1)} \right) +
-     \theta_\downarrow \left( \log \frac{p(\textrm{lcs}}{p(w_2)} \right) \\
+  &= \theta_\uparrow \left( \log \frac{p(\textrm{lcs})}{p(w_1)} \right) +
+     \theta_\downarrow \left( \log \frac{p(\textrm{lcs})}{p(w_2)} \right) \\
   &= \log \frac{ p(\textrm{lcs})^{\theta_\uparrow + \theta_\downarrow} }
                { p(w_1)^{\theta_\uparrow} + p(w_2)^{\theta_\downarrow} }
 \end{align*}
 
 Note that setting both $\theta_\uparrow$ and $\theta_\downarrow$ to 1 exactly
-  yield JC similarity.
+  yield the Formula \refeqn{jc} for JC distance.
 
 It is also worth noting that the nearest neighbors path provides an
   upper bound on the true similarity between the start and end words
@@ -270,3 +286,55 @@ In this way, the search based approach presented here can be thought
   have similar properties (e.g., as presented in
   \newcite{key:2013angeli-truth}) using both common classes of similarity
   metrics.
+
+%
+% PROBABILITY
+%
+\Subsection{inference-prob}{Confidence Estimation}
+The last component in inference is translating a search path into a
+  probability of truth.
+We notice from \refsec{inference-transitions} that the \textit{cost}
+  of a path can be represented as $\btheta^{T} \bef$.
+We can normalize this value by negating every element of the weight
+  vector and passing it through a sigmoid:
+
+\begin{equation*}
+\textrm{confidence} = \frac{1}{1 + e^{\btheta^{T} \bef}}
+\end{equation*}
+
+Importantly, note that the cost vector must be non-negative for the
+  search to be well-defined, and therefore the confidence value will
+  be constrained to be between 0 and $\frac{1}{2}$.
+
+At this point, we have a confidence that the given path has not violated
+  strict Natural Logic.
+However, to translate this value into a probability
+  we need to incorporate whether the inference path is
+  confidently valid, or confidently invalid.
+To illustrate, a fact with a low confidence should translate to a
+  probability of $\frac{1}{2}$, rather than a probability of 0.
+
+We therefore define the probability of validity as follows.
+We take $v$ to be 1 if the final fact of our derivation is in the
+  \textit{valid} state with respect to the antecedent,
+  and -1 if this fact is in the \textit{invalid} state.
+In practice, as our search is reversed, we take the state of the
+  antecedent in our database when compared to the consequent, rather
+  than visa versa.
+For completeness, if no path is given we can set $v=0$.
+The probability of validity then becomes:
+
+\begin{equation}
+  p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \btheta^{T} \bef}}
+  \label{eqn:prob}
+\end{equation}
+
+Note that in the case where $v=-1$, the above expression reduces to
+  $\frac{1}{2} - \textrm{confidence}$; in the case where $v=0$ it
+  reduces to simply $\frac{1}{2}$.
+Furthermore, note that the probability of truth makes use of the same
+  parameters as the cost in the search.
+Thus, as better weights are learned, the search is likewise more likely
+  to produce derivations which would confidently support or disprove the
+  query.
+We proceed to describe how these weights are learned.

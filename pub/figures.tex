@@ -1,0 +1,71 @@
+
+%
+% -----
+% The full Finite State Automata over inference states
+% -----
+%
+\newcommand\completeFSA{
+  \begin{tikzpicture}[shorten >=1pt,node distance=2.0cm,auto,semithick,inner sep=2pt,bend angle=15,
+    % (styles)
+    every state/.style={draw=red!50,very thick,fill=red!10},
+    accepting/.style={draw=blue!50,very thick,fill=blue!10},
+    initial/.style={draw=green!50,very thick,fill=green!10}
+    ]
+
+    % (states)
+    \node[state,initial]   (equivalent)                             {\equivalent};
+    \node[state,accepting] (reverse)    [above right=of equivalent] {\reverse};
+    \node[state,accepting] (cover)      [right=of reverse]          {\cover};
+    \node[state]           (negate)     [below right=of cover]      {\negate};
+    \node[state,initial]   (forward)    [below right=of equivalent] {\forward};
+    \node[state]           (alternate)  [right=of forward]          {\alternate};
+
+    % (paths)
+    \path[<->] (equivalent) edge              node {\negate}             (negate);
+    \path[->]  (negate)     edge [bend right] node {\forward}            (cover)
+                            edge [bend left]  node {\alternate}          (reverse)
+                            edge [bend left]  node {\reverse}            (alternate)
+                            edge [bend right] node {\cover}              (forward)
+                            edge [loop right] node {\equivalent}         (negate)
+               (reverse)    edge [bend left]  node {\negate\cover}       (cover)
+                            edge [loop above] node {\reverse\equivalent} (reverse)
+               (cover)      edge [bend left]  node {\negate\alternate}   (reverse)
+                            edge [loop above] node {\forward\equivalent} (cover)
+               (forward)    edge [bend left] node {\negate\alternate}   (alternate)
+                            edge [loop below] node {\forward\equivalent} (forward)
+               (alternate)  edge [bend left]  node {\negate\cover}       (forward)
+                            edge [loop below] node {\reverse\equivalent} (alternate)
+               ;
+  \end{tikzpicture}
+}
+
+%
+% -----
+% A Finite State Automata for the collapsed inference states
+% -----
+%
+\newcommand\collapsedFSA{
+  \begin{tikzpicture}[shorten >=1pt,node distance=2.0cm,auto,semithick,inner sep=2pt,bend angle=30,
+    % (styles)
+    every state/.style={draw=red!50,very thick,fill=red!10},
+    accepting/.style={draw=blue!50,very thick,fill=blue!10},
+    initial/.style={draw=green!50,very thick,fill=green!10}
+    ]
+
+    % (states)
+    \node[state,initial]   (valid)                               {$~~x \Rightarrow y~~$};
+    \node[state,accepting] (unknown)    [above right=of valid]   {$~~x \nRightarrow y~~$};
+    \node[state]           (invalid)    [below right=of unknown] {$x \Rightarrow \lnot y$};
+    
+    % (edges)
+    \path[->]  (valid)      edge [bend left]  node {\negate\alternate}   (invalid)
+                            edge [bend left]  node {\reverse\cover}      (unknown)
+                            edge [loop left]  node {\equivalent\forward} (valid)
+               (invalid)    edge [bend left]  node {\negate\cover}       (valid)
+                            edge [bend right] node {\alternate\forward}  (unknown)
+                            edge [loop right] node {\equivalent\reverse} (invalid)
+               (unknown)    edge [loop above] node {any}                 (unknown)
+               ;
+
+  \end{tikzpicture}
+}

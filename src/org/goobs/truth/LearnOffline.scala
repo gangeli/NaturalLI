@@ -253,7 +253,9 @@ object LearnOffline extends Client {
       endTrack("Learning")
 
       forceTrack("Evaluating")
-      evaluate(testData, weights, x => LearnOnline.synchronized { log(BOLD,YELLOW, x) })
+      evaluate(testData, weights,
+        print = x => LearnOnline.synchronized { log(BOLD,YELLOW, x) },
+        prFile = new File("logs/lastPR.dat"))
       endTrack("Evaluating")
     }), args)
   }
