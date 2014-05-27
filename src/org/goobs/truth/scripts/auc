@@ -59,8 +59,8 @@ set border 19
 set xtics nomirror
 set ytics nomirror
 
-set terminal postscript eps enhanced solid color fontfile "etc/sfrm1000.pfb" "SFRM1000" 16
-set output "pr.eps"
+set terminal pdf enhanced solid color font "etc/sfrm1000.pfb"
+set output "pr.pdf"
 
 set style line 1 lw 5
 

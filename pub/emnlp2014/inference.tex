@@ -1,5 +1,5 @@
 \Section{inference}{Inference As Search}
-In a classical inference setting, a system is provded both the
+In a classical inference setting, a system is provided both the
   query consequent, and a set of antecedents from which to derive
   the validity of the consequent.
 Prior work on inference with Natural Logic has assumed this scenario
@@ -34,14 +34,14 @@ We then describe how these weights translate to the confidence of truth
 \Subsection{inference-state}{States}
 A state in the graph is defined as a partial path from the consequent to a
   valid antecedent.
-That is, a state is primarily parameterized primarily by the surface
+That is, a state is primarily parametrized primarily by the surface
   form of the candidate fact at this point in the (reverse) derivation.
 
 This surface form is augmented with both sense and polarity
   information.
 Each word is allowed a sense (up to 31 possible senses), or a default
   sense; in addition, 2 bits are reserved for marking polarity
-  (monotone, antitone, nonmonotone).
+  (monotone, antitone, non-monotone).
 This leaves sufficient space to store each augmented word in a 32 bit
   integer.
 Note also that we refer to potentially arbitrary lexical items in
@@ -95,7 +95,7 @@ We therefore augment a fact with whether the derivation is in a
 Mutating quantifiers can change the polarity information on a subset
   of the words in a fact.
 Since we do not have the full parse tree at our disposal at search,
-  we track a small amount of metadata to guess the scope of the
+  we track a small amount of meta data to guess the scope of the
   mutated quantifier.
 
 %
@@ -107,7 +107,7 @@ A \textit{transition template} is a broad class of transitions; for
   instance WordNet hypernymy.
 A \textit{transition} or \textit{transition instance} is a particular
   instantiation of a transition template.
-For example, the transition from \textit{cat} to \textit{feiline}.
+For example, the transition from \textit{cat} to \textit{feline}.
 Lastly, an \textit{edge} in the search space connects two facts, which
   are separated by a single transition instance.
 For example, an edge exists between 
@@ -118,7 +118,7 @@ Note that the edges in the search are not constructed a priori --
 It is sufficient to store the transitions, and construct particular
   edges on demand.
 At a high level, we include most relations in WordNet as transitions,
-  and parameterize insertions and deletions by the part of speech
+  and parametrize insertions and deletions by the part of speech
   of the token being inserted/deleted.
 The full table of transitions is given in \reftab{transitions}, along
   with the relation that transition introduces, and an example edge
@@ -130,21 +130,21 @@ The full table of transitions is given in \reftab{transitions}, along
     \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
     \hline
     WordNet hypernym                     & \forward    & \textit{some cats like milk} \forward\ \textit{some felines like milk} \\
-    WordNet hyponym                      & \reverse    & \textit{some cats like milk} \reverse\ \textit{some feilines like milk} \\
+    WordNet hyponym                      & \reverse    & \textit{some cats like milk} \reverse\ \textit{some felines like milk} \\
     WordNet antonym$^\dagger$            & \alternate  & \textit{all cats like milk} \alternate\ \textit{all cats hate milk} \\
     WordNet synonym/pertainym$^\dagger$  & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats enjoy milk} \\
     Distributional nearest neighbor      & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats like dairy} \\
     Delete word$^\dagger$                & \forward    & \textit{some tabby cats like milk} \forward\ \textit{some cats like milk} \\
     Add word$^\dagger$                   & \reverse    & \textit{some cats like milk} \reverse\ \textit{some tabby cats like milk} \\
     Quantifier weaken                    & \forward    & \textit{all cats like milk} \forward\ \textit{some cats like milk} \\
-    Quantifer strengthen                 & \reverse    & \textit{some cats like milk} \reverse\ \textit{all feilines like milk} \\
-    Quantifer negate                     & \negate     & \textit{some cats like milk} \negate\ \textit{no feilines like milk} \\
-    Quantifer synonym                    & \equivalent & \textit{some cats like milk} \equivalent\ \textit{a few cats like milk} \\
+    Quantifier strengthen                 & \reverse    & \textit{some cats like milk} \reverse\ \textit{all felines like milk} \\
+    Quantifier negate                     & \negate     & \textit{some cats like milk} \negate\ \textit{no felines like milk} \\
+    Quantifier synonym                    & \equivalent & \textit{some cats like milk} \equivalent\ \textit{a few cats like milk} \\
     Change word sense                    & \equivalent & 
   \end{tabular}
 	\caption{
     The edges allowed during inference.
-    Entries with a dagger are parameterized by their part-of-speech
+    Entries with a dagger are parametrized by their part-of-speech
       tag, from the restricted list of $\{$noun$,$adjective$,$verb$,$other$\}$.
     The first column describes the type of the transition.
     The set-theoretic relation introduced by each relation is given in
@@ -163,14 +163,14 @@ For instance, clearly nearest neighbors do not preserve equivalence
   \textit{all cats like milk} \alternate\ \textit{all cats hate milk},
   it is not the case that
   \textit{some cats like milk} \alternate\ \textit{some cats hate milk}.\footnote{
-    The latter exmaple is a consequence of the projection table in
+    The latter example is a consequence of the projection table in
     \reftab{projectivity} being overly optimistic.
   }
 We mitigate this imprecision by introducing a cost for each transition,
   and learning the appropriate value for this cost
   (see \refsec{learning}).
 
-The cost of an edge is parameterized by two values; the cost of an edge
+The cost of an edge is parametrized by two values; the cost of an edge
   from fact $(f,v,p)$ with surface form $f$, validity
   $v$ and polarity $p$ to a new fact $(f',v',p')$ using a transition
   instance $t_i$ of type $t$ is given by
@@ -212,7 +212,7 @@ For instance, the path from \textit{cat} to \textit{animal} traverses
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
 We then define $f_{NN_{w \rightarrow w'}}$
-  to be the arccosine of the cosine similarity between word vectors
+  to be the arc cosine of the cosine similarity between word vectors
   associated with lexical items $w$ and $w'$:
 
 \begin{equation*}
@@ -247,7 +247,7 @@ The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 For simplicity, we simplify $\theta_{\uparrow,v,p}$ and $\theta_{\uparrow,v,p}$
   as simply $\theta_\uparrow$ and $\theta_\downarrow$.
 The derivation generalizes trivially to the the case where weights are
-  further parameterized.
+  further parametrized.
 Without loss of generality, we also assume that a path in our search
   is only modifying a single word $w_1$, ending at a mutation of the
   word $w_2$.

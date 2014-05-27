@@ -1,1 +1,41 @@
 \Section{intro}{Introduction}
+\todo{catch phrase}
+The high-level goal of this work is to provide a means of inferring
+  truth from a large set of candidate common-sense antecedents,
+  preferring logically
+  valid inferences where available, but importantly backing off
+  gracefully to dubious inferences with an associated informative
+  confidence of validity.
+
+Prior work has largely focused on factoid-type knowledge base entries:
+  for instance, \textit{Barack Obama is married to Michelle}, or
+  \textit{Natasha is the daughter of Michelle Obama}.
+In this framework, inference tasks are generally cast as expanding
+  a partial knowledge base with additional high-probability facts
+  (e.g., Knowledge Base Population).
+While this approach is viable for these sorts of factoid entries,
+  the number of common-sense facts -- the vast majority of which are
+  never explicitly mentioned -- is unlikely to be amenable to this
+  strategy.
+
+We therefore re-cast the problem as querying whether an arbitrary fact
+  is true or not, given the entire knowledge base as the
+  antecedent set.
+We then approach the problem as finding a correct reverse derivation
+  from the consequent to any antecedent in our knowledge base.
+
+When possible, these derivations should be valid Natural Logic derivations;
+  however, the search is robust to proposing plausible, if not
+  strictly correct, inferences at a discount proportional to the
+  likelihood of validity.
+For instance, our approach generalizes similarity metrics, suggesting
+  that if two entities are similar to each other (e.g., cats and dogs)
+  then they are likely to share properties (e.g., have tails).
+This discount on incorrect inferences can be set to enforce strict
+  validity, but can as easily be trained on a dataset of facts labeled
+  with their truth, to calibrate the resulting probability returned
+  from the system.
+
+We evaluate the system on the FraCaS entailment suite to motivate its
+  validity as an inference engine, and evaluate in a more realistic
+  setting of filtering implausible extractions from ReVerb.
