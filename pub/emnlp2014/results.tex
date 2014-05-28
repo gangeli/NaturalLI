@@ -30,26 +30,27 @@ Lastly, it should be noted that many of the sections of the corpus
   \begin{tabular}{|l|l|c|cc|cc|ccc|}
     \hline
     $\mathsection$ & Category & Count & \multicolumn{2}{|c|}{P} & \multicolumn{2}{|c|}{R} & \multicolumn{3}{|c|}{A} \\
-                   &          &       & & M08                 & & M08                 &   & M07 & M08 \\
+                   &          &       & \blue{N} & M08          & \blue{N} & M08          & \blue{N}  & M07 & M08 \\
     \hline
-                          % Pme    P07   Rme   R08   Ame  A07  A08
-    1 & Quantifiers  & 44 & 91   & 95  & 100 & 100 & 95 & 84 & 97 \\
-    2 & Plurals      & 24 & 80   & 90  & 29  & 64  & 38 & 42 & 75 \\
-    3 & Anaphora     & 6  & 100  & 100 & 20  & 60  & 33 & 50 & 50 \\
-    4 & Ellipses     & 25 & 100  & 100 & 5   & 5   & 28 & 28 & 24 \\
-    5 & Adjectives   & 15 & 80   & 71  & 66  & 83  & 73 & 60 & 80 \\
-    6 & Comparatives & 16 & 90   & 88  & 100 & 89  & 87 & 69 & 81 \\
-    7 & Temporal     & 36 & 75   & 86  & 53  & 71  & 52 & 61 & 58 \\
-    8 & Verbs        & 8  & $-$  & 80  & 0   & 66  & 25 & 63 & 62 \\
-    9 & Attitudes    & 9  & $-$  & 100 & 0   & 83  & 22 & 55 & 89 \\
+                          % Pme           P07   Rme          R08   Ame         A07  A08
+    1 & Quantifiers  & 44 & \blue{91 }  & 95  & \blue{100} & 100 & \blue{95} & 84 & 97 \\
+    2 & Plurals      & 24 & \blue{80 }  & 90  & \blue{29 } & 64  & \blue{38} & 42 & 75 \\
+    3 & Anaphora     & 6  & \blue{100}  & 100 & \blue{20 } & 60  & \blue{33} & 50 & 50 \\
+    4 & Ellipses     & 25 & \blue{100}  & 100 & \blue{5  } & 5   & \blue{28} & 28 & 24 \\
+    5 & Adjectives   & 15 & \blue{80 }  & 71  & \blue{66 } & 83  & \blue{73} & 60 & 80 \\
+    6 & Comparatives & 16 & \blue{90 }  & 88  & \blue{100} & 89  & \blue{87} & 69 & 81 \\
+    7 & Temporal     & 36 & \blue{75 }  & 86  & \blue{53 } & 71  & \blue{52} & 61 & 58 \\
+    8 & Verbs        & 8  & \blue{$-$}  & 80  & \blue{0  } & 66  & \blue{25} & 63 & 62 \\
+    9 & Attitudes    & 9  & \blue{$-$}  & 100 & \blue{0  } & 83  & \blue{22} & 55 & 89 \\
     \hline
 \multicolumn{2}{|l|}{Applicable (1,5,6)}
-                     & 75 & 89   & 89  & 94  & 94  & 89 & 76 & 90 \\
+                     & 75 & \blue{89}   & 89  & \blue{94}  & 94  & \blue{89} & 76 & 90 \\
     \hline
   \end{tabular}
   }
   \caption{
     Results on the FraCaS textual entailment suite.
+    N is this work;
     M07 refers to \newcite{key:2007maccartney-natlog};
       M08 refers to \newcite{key:2008maccartney-natlog}.
     The relevant sections of the corpus intended to be handled by this
@@ -102,10 +103,12 @@ It should also be noted that \newcite{key:2008maccartney-natlog}
 }
 
 To evaluate our system in a more real-world setting, we adopt the
-  task of filtering semantically plausible ReVerb extractions,
+  task of predicting the truth of ReVerb extractions
   as introduced in \newcite{key:2013angeli-truth}.
+Equivalently, this can be viewed as filtering out semantically 
+  implausible extractions.
 
-In the task, 4000 randomly selected ReVerb extractions were shown to
+For this data, 4000 randomly selected ReVerb extractions were shown to
   Mechanical Turk workers, who ranked each extraction as either
   \textit{correct}, \textit{plausible}, or \textit{implausible}.
 Extractions which obtained more \textit{correct} votes than
