@@ -508,6 +508,10 @@ object CreateGraph {
         psql.prepareStatement("""CREATE INDEX edge_type_index ON edge (type);""").execute()
         psql.prepareStatement("""CREATE TABLE privative AS (SELECT DISTINCT source, source_sense FROM edge e1 WHERE source <> 0 AND NOT EXISTS (SELECT * FROM edge e2 WHERE e2.source=e1.source AND e2.source_sense=e1.source_sense AND e2.sink=0));""").execute()
 
+
+        println("[80] Pruning Noun NN")
+        PruneClosedClassNN.prune()
+
         println("DONE.")
       }
     }), args)

@@ -212,11 +212,11 @@ object LearnOffline extends Client {
     val newWeights: WeightVector = {
       val counts = new ClassicCounter[String]
       counts.setDefaultReturnValue(-1.0)
-      val delta = predictions.size.toDouble / 100.0
+      val delta = predictions.size.toDouble / 500.0
       for ( (feature, accuracy) <- aggregateFeats) {
         counts.setCount(feature, (-1.0 - 1e-4) + (accuracy.getCount(true) + delta) / (accuracy.getCount(true) + accuracy.getCount(false) + 2.0 * delta) )
       }
-      Counters.multiplyInPlace(counts, 2.0)
+      Counters.multiplyInPlace(counts, 3.0)
       for (key <- weights.keySet()) {
         if (!counts.containsKey(key)) { counts.setCount(key, weights.getCount(key)) }
       }
