@@ -398,10 +398,11 @@ object Evaluate extends Client {
   def main(args:Array[String]) {
     Props.exec(Implicits.fn2execInput1(() => {
       val testData:DataStream = Props.LEARN_TEST.map(mkDataset).foldLeft(Stream.Empty.asInstanceOf[DataStream]) { case (soFar:DataStream, elem:DataStream) => soFar ++ elem }
+      val model = if (Props.EVALUATE_MODEL.getPath != "/dev/null") Learn.deserialize(Props.EVALUATE_MODEL) else NatLog.softNatlogWeights
       import Implicits.flattenWeights
       forceTrack("Evaluating")
-      evaluate(testData,
-        if (Props.EVALUATE_MODEL.getPath != "/dev/null") Learn.deserialize(Props.EVALUATE_MODEL) else NatLog.softNatlogWeights,
+      log(BOLD, "using model: " + Props.EVALUATE_MODEL.getPath)
+      evaluate(testData, model,
         print = x => LearnOnline.synchronized { log(BOLD,YELLOW, "[Evaluate] " + x) },
         prFile = new File("logs/lastPR.dat"))
       endTrack("Evaluating")
