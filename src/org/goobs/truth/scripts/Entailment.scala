@@ -16,6 +16,7 @@ object Entailment extends Client {
 
   def main(args:Array[String]):Unit = {
     Props.NATLOG_INDEXER_LAZY = false
+    Props.SERVER_MAIN_PORT = 4002
     val weights = NatLog.hardNatlogWeights
 
     startMockServer( () =>

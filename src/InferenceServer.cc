@@ -402,7 +402,7 @@ void handleConnection(int socket, sockaddr_in* client,
   // (send result)
   Response response;
   for (int i = 0; i < result.paths.size(); ++i) {
-    if (query.allowlookup() || result.paths[0].path->parent != NULL) {
+    if (query.allowlookup() || result.paths[i].path->parent != NULL) {
       double score = exp(-result.paths[i].cost + (query.has_costs() ? query.costs().bias() : 0.0));
       response.add_inference()->CopyFrom(
         inferenceFromPath(result.paths[i].path, 

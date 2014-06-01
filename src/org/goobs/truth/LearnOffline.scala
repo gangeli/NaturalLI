@@ -252,7 +252,7 @@ object LearnOffline extends Client {
       endTrack("Evaluating (pre-learning)")
 
       forceTrack("Learning")
-      var weights:Array[Double] = NatLog.softNatlogWeights
+      var weights:Array[Double] = Learn.initialization
       for (pass <- 0 until Props.LEARN_OFFLINE_PASSES) {
         startTrack("Pass " + pass)
         val predictions: Iterable[(Iterable[Inference], TruthValue)] =

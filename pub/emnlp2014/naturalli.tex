@@ -4,10 +4,11 @@
 \usepackage{acl2014}
 % (general libraries)
 \usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
-\usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs}
+\usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs,mathtools,siunitx}
 % (tikz dependencies)
 \usepackage{tikz}
-\usetikzlibrary{shapes.arrows,chains,positioning,automata}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
 % (print algorithms)
 \usepackage[ruled,lined,linesnumbered]{algorithm2e}
 % (custom)
@@ -20,7 +21,7 @@
 
 % -- PAPER --
 % (metadata)
-\title{NaturaLI: Natural Logic Inference for Common Sense Reasoning}
+\title{NaturalLI: Natural Logic Inference for Common Sense Reasoning}
 \author{ 
 %Gabor Angeli \\
 %  Stanford University \\
@@ -41,7 +42,9 @@
 
 \input abstract.tex
 \input intro.tex
-\input natlog.tex
+\input maccartney.tex
+\input search.tex
+%\input natlog.tex
 \input inference.tex
 \input learning.tex
 \input results.tex

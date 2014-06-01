@@ -29,7 +29,11 @@ public class Props {
     return value;
   }
 
-  public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG, AVE_2006, AVE_2007, AVE_2008, MTURK_TRAIN, MTURK_TRAIN_OPTIMISTIC, MTURK_TEST, MTURK_TEST_OPTIMISTIC }
+  public static enum Corpus { HELD_OUT, FRACAS, FRACAS_NATLOG,
+    AVE_2006, AVE_2007, AVE_2008,
+    MTURK_TRAIN, MTURK_TRAIN_OPTIMISTIC, MTURK_TEST, MTURK_TEST_OPTIMISTIC,
+    CONCEPTNET, CONCEPTNET_MTURK_TRAIN, CONCEPTNET_MTURK_TEST }
+  public static enum Initialization { SOFT_WEIGHTS, HARD_WEIGHTS, UNIFORM }
 
   @Option(name="psql.host", gloss="The hostname for the PSQL server")
   public static String PSQL_HOST = checkEnv("PGHOST", "jonsson");
@@ -66,6 +70,8 @@ public class Props {
 
   @Option(name="search.timeout", gloss="The maximum number of ticks to run for on the server")
   public static long SEARCH_TIMEOUT = 100000;
+  @Option(name="search.allowlookup", gloss="Allow the search to return exact matches")
+  public static boolean SEARCH_ALLOWLOOKUP = true;
 
   @Option(name="natlog.ollie.jar", gloss="The path to the Ollie *.jar file")
   public static File NATLOG_OLLIE_JAR = new File("etc/ollie.jar");
@@ -86,6 +92,8 @@ public class Props {
   public static File DATA_MTURK_TRAIN = new File("etc/mturk/reverb_train.tab");
   @Option(name="data.mturk.test", gloss="The path to the MTurk annotated Reverb test examples")
   public static File DATA_MTURK_TEST = new File("etc/mturk/reverb_test.tab");
+  @Option(name="data.conceptnet.path", gloss="The path to the ConceptNet positive examples")
+  public static File DATA_CONCEPTNET_PATH = new File("etc/conceptnet/conceptnet_10orshorter_sorted.tab");
 
   @Option(name="learn.model.dir", gloss="The directory to look for models in")
   public static File LEARN_MODEL_DIR = new File("/dev/null");
@@ -103,8 +111,10 @@ public class Props {
   public static double LEARN_ONLINE_SGD_NU = 0.1;
   @Option(name="learn.offline.passes", gloss="The number of passes through the data to make")
   public static int LEARN_OFFLINE_PASSES = 10;
-  @Option(name="learn.offline.sigma", gloss="The number of passes through the data to make")
+  @Option(name="learn.offline.sigma", gloss="The regularization to apply for the logistic classifier (large is generally good)")
   public static double LEARN_OFFLINE_SIGMA = 10.0;
+  @Option(name="learn.initialization", gloss="The number of passes through the data to make")
+  public static Initialization LEARN_INITIALIZATION = Initialization.SOFT_WEIGHTS;
 
   @Option(name="evaluate.allowunk", gloss="Allow unknown as a state we are evaluating against")
   public static boolean EVALUATE_ALLOWUNK = false;

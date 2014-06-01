@@ -1,101 +1,125 @@
 \Section{inference}{Inference As Search}
-In a classical inference setting, a system is provided both the
-  query consequent, and a set of antecedents from which to derive
-  the validity of the consequent.
-Prior work on inference with Natural Logic has assumed this scenario
-  \cite{key:2008maccartney-natlog}, and taken the two-step of approach
-  of aligning the antecedent and consequent, and classifying each
-  aligned segment into a mutation relation.
-For common-sense reasoning, however, we are not given a well-defined
+%In a classical inference setting, a system is provided both the
+%  query consequent, and a set of antecedents from which to derive
+%  the validity of the consequent.
+%Prior work on inference with Natural Logic has assumed this scenario
+%  \cite{key:2008maccartney-natlog}, and taken the two-step of approach
+%  of aligning the antecedent and consequent, and classifying each
+%  aligned segment into a mutation relation.
+For common-sense reasoning, we are not given a well-defined
   antecedent, but rather have at our disposal a large database of
-  true facts from which to derive the query.
-This makes the align-and-classify approach of previous work substantially
-  less appealing, as the antecedents are not readily available and would
-  need to be retrieved from the database.
+  true facts.
+This makes the align-and-classify approach of 
+  \refsec{maccartney-proof} substantially
+  less appealing, as candidate antecedents are not readily available.
 
 We therefore approach the problem as a search task: given the
-  query consequent, we search over the space of possible facts for
+  consequent (the query), we search over the space of possible facts for
   a valid antecedent in our database.
 The nodes in our search problem correspond to candidate facts; the
-  edges are candidate mutations; the costs over these edges encode
-  the confidence (or likelihood) that the mutation over this edge
-  maintains the truth of the antecedent.
+  edges are mutations of these facts; the costs over these edges encode
+  the confidence (or likelihood) that this edge
+  maintains maintains an informative inference.
 
 We define the problem by specifying the state space,
   the valid transitions, along with the weights of
   the transitions.
 We then describe how these weights translate to the confidence of truth
-  of a fact, to be used in learning, and a generalization of
-  JC similarity \cite{key:1997jc-similarity}.
+  of a fact, and show that our search is at worst a generalization of
+  JC distance \cite{key:1997jc-similarity} -- a common WordNet similarity
+  metric.
 
 %
-% STATE
+% Node
 %
-\Subsection{inference-state}{States}
-A state in the graph is defined as a partial path from the consequent to a
-  valid antecedent.
-That is, a state is primarily parametrized primarily by the surface
-  form of the candidate fact at this point in the (reverse) derivation.
+\Subsection{inference-state}{Nodes}
+The space of possible nodes in our search is the space of possible
+  states in a derivation.
+To a first approximation, a node is a pair $(w, s)$ of a surface form
+  $w$ tagged with word sense and polarity,
+  and an inference state $s$ in our collapsed FSA (\reffig{fsa}b).
+In addition to this minimal information, a node in our search keeps
+  track of some additional information to handle various details.
 
-This surface form is augmented with both sense and polarity
-  information.
-Each word is allowed a sense (up to 31 possible senses), or a default
-  sense; in addition, 2 bits are reserved for marking polarity
-  (monotone, antitone, non-monotone).
-This leaves sufficient space to store each augmented word in a 32 bit
-  integer.
-Note also that we refer to potentially arbitrary lexical items in
-  WordNet as words -- for instance, \textit{fire truck} is treated as
-  a single word.
-
-A number of important details deserve attention in our definition of
-  a search state:
+%That is, a node is primarily parametrized primarily by the surface
+%  form of the candidate fact at this point in the (reverse) derivation.
+%
+%This surface form is augmented with both sense and polarity
+%  information.
+%Each word is allowed a sense (up to 31 possible senses), or a default
+%  sense; in addition, 2 bits are reserved for marking polarity
+%  (monotone, antitone, non-monotone).
+%This leaves sufficient space to store each augmented word in a 32 bit
+%  integer.
+%Note also that we refer to potentially arbitrary lexical items in
+%  WordNet as words -- for instance, \textit{fire truck} is treated as
+%  a single word.
 
 \paragraph{Lexical mutations}
-As per our definition, transitions between states are transitions 
+As per our definition, transitions between nodes are transitions 
   between facts.
-However, the lexical resources for the mutations are over words
-  (e.g., \textit{feline} $\rightarrow$ \textit{cat}) rather than
+However, the lexical resources for the mutations are over lexical items
+  (e.g., \textit{feline} $\reverse$ \textit{cat}) rather than
   entire facts.
-This motivates the inclusion of an index in our state, denoting the
-  index of the word which may be mutated.
-
-Importantly, this also imposes a natural order in the construction of
-  potential antecedents during search.
-The mutation index is allowed to shift forwards through the
-  fact (at no cost), but not backwards.
-This helps make search more tractable, at the expense of rare
-  esoteric search errors.
+This motivates the inclusion of an index $i$ in our node, denoting the
+  index of the item which may be mutated.
+Importantly, this also imposes a natural ordering of items to
+  mutate, making search more efficient at the expense of rare
+  search errors.
+%The mutation index is allowed to shift forwards through the
+%  fact (at no cost), but not backwards.
+%This helps make search more tractable, at the expense of rare
+%  esoteric search errors.
 
 
 \paragraph{Predicting deletions}
-Although inserting words in a derivation (deleting words from
+Although inserting lexical items in a derivation (deleting words from
   the reversed derivation) is trivial, the other direction is not.
-\naive ly, at every state in our search, we must consider every word in
-  the vocabulary as a possible antecedent from which the word was deleted
-  to produce the current state.
+For brevity, we refer to a deletion in the derivation as an insertion,
+  as from the perspective of the search algorithm constructing a reverse
+  derivation, we are inserting lexical items.
+\naive ly, at every node in our search, we must consider every item in
+  the vocabulary as a possible insertion.
 
 This is largely handled by storing the database of known facts as a
-  Trie.
-Since we are constructing antecedents left-to-right, as per above,
-  we can propose candidate deletable words from the Trie, looking up
-  the partial derivation up to the mutation index.
-As a special case, when proposing words for the beginning of the
-  fact, we take all facts whose second word matches the first word
-  of the search state.
+  trie.
+Since search mutates the fact left-to-right (as per above), we can
+  look up completions in the trie to use as candidate insertions.
+To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$
+  and mutation index $i$, we would look up completions $w_{i+1}$ for
+  $w_0,w_1,\dots,w_i$ in our trie of known facts.
 
-\paragraph{Tracking inference state}
-The cost of an inference at any given state depends not only on the
-  polarity of the lexical item, but also the state of the derivation
-  so far.
-We therefore augment a fact with whether the derivation is in a
-  \textit{valid} or \textit{invalid} state
+Although this approach works well when $i$ is relatively large, there
+  are likely many candidate insertions for small $i$.
+We special case the most extreme case for this, where $i=0$; that is, 
+  when we are inserting into the beginning of the fact.
+In this case, rather than taking all possible lexical items that start
+  any fact, we take all items which are followed by the first word of
+  our current fact.
+For instance, given a search state with fact $w_0,w_1,\dots,w_n$,
+  we would propose candidate insertions $w_{-1}$ such that
+  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact,
+  for some $w^\prime_1,\dots,w^\prime_k$.
+  
+%Since we are constructing antecedents left-to-right, as per above,
+%  we can propose candidate deletable words from the Trie, looking up
+%  the partial derivation up to the mutation index.
+%As a special case, when proposing words for the beginning of the
+%  fact, we take all facts whose second word matches the first word
+%  of the search node.
+%
+%\paragraph{Tracking inference state}
+%The cost of an inference at any given node depends not only on the
+%  polarity of the lexical item, but also the state of the derivation
+%  so far.
+%We therefore augment a fact with whether the derivation is in a
+%  \textit{valid} or \textit{invalid} state
 
 \paragraph{Polarity tracking}
-Mutating quantifiers can change the polarity information on a subset
-  of the words in a fact.
+Mutating quantifiers can change the polarity information on a span
+  in the fact.
 Since we do not have the full parse tree at our disposal at search,
-  we track a small amount of meta data to guess the scope of the
+  we track a small amount of metadata to guess the scope of the
   mutated quantifier.
 
 %
@@ -113,8 +137,7 @@ Lastly, an \textit{edge} in the search space connects two facts, which
 For example, an edge exists between 
   \textit{some cats have tails} and \textit{some felines have tails}.
 
-Note that the edges in the search are not constructed a priori --
-  just as a theorem prover would not store all possible derivation steps.
+Note that the edges in the search are not constructed \textit{a priori}.
 It is sufficient to store the transitions, and construct particular
   edges on demand.
 At a high level, we include most relations in WordNet as transitions,
@@ -130,7 +153,7 @@ The full table of transitions is given in \reftab{transitions}, along
     \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
     \hline
     WordNet hypernym                     & \forward    & \textit{some cats like milk} \forward\ \textit{some felines like milk} \\
-    WordNet hyponym                      & \reverse    & \textit{some cats like milk} \reverse\ \textit{some felines like milk} \\
+    WordNet hyponym                      & \reverse    & \textit{some felines like milk} \reverse\ \textit{some cats like milk} \\
     WordNet antonym$^\dagger$            & \alternate  & \textit{all cats like milk} \alternate\ \textit{all cats hate milk} \\
     WordNet synonym/pertainym$^\dagger$  & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats enjoy milk} \\
     Distributional nearest neighbor      & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats like dairy} \\
@@ -234,7 +257,7 @@ The cost of a path can then be expressed as the dot product:
 %
 \Subsection{inference-jc}{Generalizing Similarities}
 An elegant property of our definitions of $f_{t_i}$ is its ability to
-  generalize JC similarity, and upper-bound distributional similarity.
+  generalize JC distance, and upper-bound distributional similarity.
 Let us assume we have words $w_1$ and $w_2$, with a least common subsumer $\textrm{lcs}$.
 The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 

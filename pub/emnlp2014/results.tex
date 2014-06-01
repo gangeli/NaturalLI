@@ -1,10 +1,13 @@
-
 \Section{results}{Experiments}
 We evaluate our system on two tasks: the FraCaS test suite used
   by \newcite{key:2007maccartney-natlog} and \newcite{key:2008maccartney-natlog},
-  as well as for filtering valid and invalid extractions from the
-  ReVerb OpenIE system \cite{key:2011fader-reverb}, as per
-  \newcite{key:2013angeli-truth}.
+  evaluate the systems ability to capture Natural Logic inferences
+  even without the explicit alignments of these previous systems.
+In addition, we evaluate the system's ability to predict common-sense
+  facts from a large corpus of OpenIE extractions.
+%  as well as for filtering valid and invalid extractions from the
+%  ReVerb OpenIE system \cite{key:2011fader-reverb}, as per
+%  \newcite{key:2013angeli-truth}.
 
 %
 % FraCaS
@@ -15,21 +18,22 @@ The FraCaS textual entailment corpus \cite{key:1996cooper-fracas}
   comprehensive test of an entailment system's handling of various
   entailment patterns.
 
-Following \newcite{key:2007maccartney-natlog}, we take only a subset
-  of the corpus as applicable for Natural Logic.
+We process the corpus following \newcite{key:2007maccartney-natlog}.
 12 problems were discarded as degenerate -- lacking either an antecedent or
   a consequent.
 151 problems were discarded as involving multiple antecedents to
   justify the inference.
 Lastly, it should be noted that many of the sections of the corpus
-  are not directly applicable to Natural Logic inferences.
+  are not directly applicable to Natural Logic inferences;
+  \newcite{key:2007maccartney-natlog} identify three sections which
+  are in the scope of their system.
 
 \begin{table}
 \begin{center}
   \resizebox{0.48\textwidth}{!}{
   \begin{tabular}{|l|l|c|cc|cc|ccc|}
     \hline
-    $\mathsection$ & Category & Count & \multicolumn{2}{|c|}{P} & \multicolumn{2}{|c|}{R} & \multicolumn{3}{|c|}{A} \\
+    $\mathsection$ & Category & Count & \multicolumn{2}{|c|}{Precision} & \multicolumn{2}{|c|}{Recall} & \multicolumn{3}{|c|}{Accuracy} \\
                    &          &       & \blue{N} & M08          & \blue{N} & M08          & \blue{N}  & M07 & M08 \\
     \hline
                           % Pme           P07   Rme          R08   Ame         A07  A08
@@ -43,7 +47,7 @@ Lastly, it should be noted that many of the sections of the corpus
     8 & Verbs        & 8  & \blue{$-$}  & 80  & \blue{0  } & 66  & \blue{25} & 63 & 62 \\
     9 & Attitudes    & 9  & \blue{$-$}  & 100 & \blue{0  } & 83  & \blue{22} & 55 & 89 \\
     \hline
-\multicolumn{2}{|l|}{Applicable (1,5,6)}
+\multicolumn{2}{|l|}{\textbf{Applicable (1,5,6)}}
                      & 75 & \blue{89}   & 89  & \blue{94}  & 94  & \blue{89} & 76 & 90 \\
     \hline
   \end{tabular}
@@ -71,52 +75,166 @@ For the experiments, costs were hard-coded to represent a strict
   Logic mutations were set to a small constant cost; other costs
   were set to infinity.
 
-The results are generally promising.
+The results validate the system's ability to capture valid Natural Logic
+  inferences as well as the state-of-the-art system of
+  \newcite{key:2008maccartney-natlog}.
 Note that our system is comparatively crippled in this framework
   along at least two dimensions:
 It cannot appeal to the antecedent when constructing the search,
-  leading to the introduction of search errors as a new class of
-  error.
+  leading to the introduction of search errors which are entirely
+  absent from prior work.
 Second the derivation process itself does not have access to the
   full parse tree of the candidate fact.
-Therefore, it is unable to make large edits over constituents,
-  and is unable to appeal to the parse in its mutation decisions.
-For instance, our system has no notion of prepositional attachment.
+%Therefore, it is unable to make large edits over constituents,
+%  and is unable to appeal to the parse in its mutation decisions.
+%For instance, our system has no notion of prepositional attachment.
 
-Despite this, the system performs comparable to NatLog on the sections
-  it intends to capture.
-Furthermore, precision is consistently high among all sections, although
-  recall is usually significantly lower.
-It should also be noted that \newcite{key:2008maccartney-natlog} 
-  intend to capture the inferences in sections 2 (plurals)
-  and 9 (attitudes), which we omit from our system.
+Although precision is fairly high even on the non-applicable
+  sections of FraCaS, recall is significantly lower than prior work.
+This is a direct consequence of not having alignments to appeal to.
+For instance, we can consider two inferences:
+
+\begin{itemize}
+\setlength{\itemsep}{0pt}
+\item[] \w{Jack saw Jill is playing} $\xRightarrow{?}$ \w{Jill is playing}
+\item[] \w{Jill saw Jack is playing} $\xRightarrow{?}$ \w{Jill is playing}
+\end{itemize}
+
+It is clear from the parse of the sentence that the first is valid
+  and the second is not; however, from the perspective of the search
+  algorithm both make the same two edits: inserting \w{Jack} and \w{saw}.
+
+%For instance, differentiating between \w{Smith saw} \w{Smith thinks that}
+%  in \w{Smith saw/thinks that Jones sign the contract} is very difficult
+%  without having access to the full phrase being 
+%  an antecedent is a conjunction of the consequent and another fact.
+%However, it is nearly impossible for a search from the consequent to
+%  justify halucinating the second fact in the antecedent.
+%Similarly, in Section 9 (Attitudes), it is easy for an alignment to
+%  recognize phrases like \w{He said that $\dots$} 
+%
+%Despite this, the system performs comparable to NatLog on the sections
+%  it intends to capture.
+%Furthermore, precision is consistently high among all sections, although
+%  recall is usually significantly lower.
+%It should also be noted that \newcite{key:2008maccartney-natlog} 
+%  intend to capture the inferences in sections 2 (plurals)
+%  and 9 (attitudes), which we omit from our system.
 
 %
-% MTurk
+% ConceptNet
 %
-\Subsection{results-mturk}{ReVerb Filtering}
-\Fig{mturk-pr}{0.60}{mturk}{
-  A PR curve showing the accuracy of extraction, given the proportion
-    of examples we provide an estimate for.
-  Imagine the curve keeps going up left of 0.4 -- hopefully that's
-    what'll happen by the deadline.
-}
+\Subsection{results-conceptnet}{Common Sense Reasoning}
 
-To evaluate our system in a more real-world setting, we adopt the
-  task of predicting the truth of ReVerb extractions
-  as introduced in \newcite{key:2013angeli-truth}.
-Equivalently, this can be viewed as filtering out semantically 
-  implausible extractions.
+\begin{table}
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{
+  \begin{tabular}{l|ccc}
+    System             & Precision & Recall & Accuracy \\
+    \hline
+    Lookup             & 100.0 & 12.0 & 56.0 \\
+    NaturalLI Only     & 89.8  & 41.0 & 66.6 \\
+    NaturalLI + Lookup & 91.5  & 49.9 & 72.6  \\
+  \end{tabular}
+  }
+  \caption{
+    Accuracy inferring common-sense facts on a balanced test set.
+    Lookup queries the lemmatized lower-case fact directly in the
+      300M fact database.
+    NaturalLI Only disallows such lookups, and infers every query from
+      only unseen facts.
+    NaturalLI + Lookup takes the union of the two systems.
+    \label{tab:conceptnet}
+  }
+\end{center}
+\end{table}
 
-For this data, 4000 randomly selected ReVerb extractions were shown to
-  Mechanical Turk workers, who ranked each extraction as either
-  \textit{correct}, \textit{plausible}, or \textit{implausible}.
-Extractions which obtained more \textit{correct} votes than
-  \textit{implausible} votes were considered true, and visa versa.
-Ties were discarded from the corpus.
-The examples are broken up into 1796 training examples ($70\%$ true)
-  and 1975 test examples ($65\%$ true).
+We validate our system's ability to validate unseen common sense facts
+  from a large database of such facts.
+Whereas evaluation of FraCaS shows that our search formulation captures
+  applicable inferences as well as prior work, this evaluation presents
+  a new use-case for Natural Logic which is not trivial with prior work.
 
-Results are given in \reffig{mturk}.
-They're not very good yet.
-Hopefully they'll get better.
+For our database of facts, we run the Ollie OpenIE system
+  \cite{key:2012mausam-ollie} over Wikipedia, Simple Wikipedia,\footnote{
+    \url{http://simple.wikipedia.org/}
+  }
+  and a small subset of CommonCrawl.
+Extractions with confidence below 0.25 or which contained
+  pronouns were discarded.
+This yielded in a total of 305 million unique extractions composed
+  entirely of lexical items which mapped into our vocabulary
+  (\num{186707} words).
+Each of these extracted triples $(e_1,r,e_2)$ was then flattened into
+  a plain-text fact $e_1~r~e_2$.
+In general, each fact in the database could be arbitrary unstructured
+  text; our use of Ollie extractions is motivated by a desire to
+  extract and query concise facts.
+
+For our evaluation, we infer the top 689 most confident facts from
+  the ConceptNet project \cite{key:2011tandon-conceptnet}.
+To avoid redundancy with WordNet, we take all facts from eight
+  ConceptNet relations: 
+    MemberOf,
+    HasA,
+    UsedFor,
+    CapableOf,
+    Causes,
+    HasProperty,
+    Desires, and 
+    CreatedBy.
+We then treat the \textit{surface text} field of these facts as our
+  candidate query.
+This yields facts like the following:
+
+\begin{itemize}
+\setlength{\itemsep}{-4pt}
+\item[] \w{not all birds can fly}
+\item[] \w{noses are used to smell}
+\item[] \w{nobody wants to die}
+\item[] \w{music is used for pleasure}
+\end{itemize}
+
+For negative examples, we take the 689 ReVerb extractions
+  \cite{key:2011fader-reverb}
+  judged as false by Mechanical Turk workers \cite{2013angeli-truth}.
+This provides a set of \textit{plausible} queries, similar in many
+  ways to the database of Ollie extractions, and ensures that our
+  recall is not due to an over-zealous search.
+The search costs are tuned from a balanced set of true ConceptNet and
+  540 false ReVerb extractions.
+
+Results are shown in \reftab{conceptnet}.
+We compare against the baseline of looking up each fact verbatim in the
+  fact database.
+Note that both the query and the facts in the database are lemmatized
+  and lower-cased; therefore, it is not in principle unreasonable to
+  expect at database of 300 million extractions to contain these
+  facts.
+Nonetheless, only 12\% of facts were found via a lookup to the
+  database.
+We show that NaturalLI improves this recall four-fold, at only an
+  8.5\% drop in precision.
+Furthermore, if we prohibit matching the query fact verbatim,
+  we still recover all but 8\% of our recall.
+
+
+
+%To evaluate our system in a more real-world setting, we adopt the
+%  task of predicting the truth of ReVerb extractions
+%  as introduced in \newcite{key:2013angeli-truth}.
+%Equivalently, this can be viewed as filtering out semantically 
+%  implausible extractions.
+%
+%For this data, 4000 randomly selected ReVerb extractions were shown to
+%  Mechanical Turk workers, who ranked each extraction as either
+%  \textit{correct}, \textit{plausible}, or \textit{implausible}.
+%Extractions which obtained more \textit{correct} votes than
+%  \textit{implausible} votes were considered true, and visa versa.
+%Ties were discarded from the corpus.
+%The examples are broken up into 1796 training examples ($70\%$ true)
+%  and 1975 test examples ($65\%$ true).
+%
+%Results are given in \reffig{mturk}.
+%They're not very good yet.
+%Hopefully they'll get better.

@@ -125,7 +125,7 @@ trait Client extends Evaluator {
       if (Props.SERVER_MAIN_HOST.equalsIgnoreCase("null")) Nil
       else doQuery(Query.newBuilder(query).setCosts(Learn.weightsToCosts(NatLog.hardNatlogWeights)).build(), Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
     } (mainExecContext)
-    hard.flatMap{ (hard: Iterable[Inference]) =>
+    val responses = hard.flatMap{ (hard: Iterable[Inference]) =>
       if (hard.isEmpty) {
         // (step 1: main search)
         val main: Future[Iterable[Inference]] = Future {
@@ -168,6 +168,15 @@ trait Client extends Evaluator {
         Future.successful(tag(hard, "hard weights"))
       }
     }(ExecutionContext.Implicits.global)
+
+    // Filter exact lookups
+    if (Props.SEARCH_ALLOWLOOKUP) {
+      responses
+    } else {
+      responses.map{ (paths:Iterable[Inference]) =>
+        paths.filter( _.hasImpliedFrom )
+      }(ExecutionContext.Implicits.global)
+    }
   }
 
   def issueQuery(query:Query, quiet:Boolean=false, singleQuery:Boolean=false):Iterable[Inference] = Await.result(asyncQuery(query, quiet, singleQuery), scala.concurrent.duration.Duration.Inf)
@@ -241,6 +250,15 @@ trait Client extends Evaluator {
       case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
       case Props.Corpus.MTURK_TRAIN_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
       case Props.Corpus.MTURK_TEST_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TEST.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
+      case Props.Corpus.CONCEPTNET => ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).take(10000)
+      case Props.Corpus.CONCEPTNET_MTURK_TRAIN =>
+        val count = 540
+        ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).drop(10000).take(count) ++
+          MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter(MTurk.isFalse)
+      case Props.Corpus.CONCEPTNET_MTURK_TEST =>
+        val count = 689
+        ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).take(count) ++
+          MTurk.read(Props.DATA_MTURK_TEST.getPath).filter(MTurk.isFalse)
       case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
     }
   }

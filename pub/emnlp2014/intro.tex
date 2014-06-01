@@ -1,51 +1,110 @@
 \Section{intro}{Introduction}
-Common-sense reasoning if prevalent in a number of AI tasks;
-  although such reasoning is difficult in general, we hope to
-  capture a subset of useful phenomena.
-For instance, in computer vision it may be useful to provide priors
-  for cars generally being found on roads, or
-  computer mice being next to monitors.
-Similarly, for robotics (e.g., for illustration, a robot to help in
-  the kitchen) it may be useful to know that milk is found
-  in a refrigerator, or that tomatoes are soft and easy to crush.
+Natural Logic allows us to reason about language without
+  an intermediate logical form.
+Although projects like the Abstract Meaning Representation
+  \cite{key:2013banarescu-amr} have made headway providing a
+  broad-coverage logical representation for language, it remains 
+  appealing to use the unstructured language itself as the vessel for
+  inference.
+This is particularly true for common sense types of facts, where
+  the meaning representation is often less crisp than in Freebase-style
+  factoids.
+%In particular, Natural Logic is well-suited to capture many types
+%  of facts which are difficult to formalize 
 
-As a step in this direction, we created NaturaLI: a reasoning engine
-  based around Natural Logic to infer the truth of arbitrary query
-  facts given a large database of known facts.
-The system is intended to follow valid logical derivations when possible,
-  but also back off gracefully to dubious inferences with an
-  associated confidence of validity.
+\begin{figure}[th]
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{\teaserSearch} \\
+\end{center}
+\caption{
+  A Natural Logic inference cast as search, proving that the
+    query \w{no carnivores eat animals} is false given the known fact
+    \w{the cat ate a mouse}.
+  The valid path is one of many candidates taken; the known fact found
+    is one of many known facts in the database.
+  The edge labels denote Natural Logic inference steps, as
+    described in \refsec{maccartney-relations}.
+  \label{fig:teaser}
+}
+\end{figure}
 
-Prior work has largely focused on freebase-style factoids:
-  for instance, \textit{Barack Obama is married to Michelle}, or
-  \textit{Natasha is the daughter of Michelle Obama}.
-In this framework, inference tasks are generally cast as expanding
-  a partial knowledge base with additional high-probability facts
-  (e.g., Knowledge Base Population).
-While this approach is viable for these sorts of factoid entries,
-  the number of common-sense facts -- the vast majority of which are
-  never explicitly mentioned -- is unlikely to be amenable to this
-  strategy.
+A key application for natural language inference is, in turn,
+  database completion: given a set of facts, predict whether an
+  unseen fact should belong in the database.
+Many such databases -- e.g., output from the OpenIE
+  project \cite{key:2007banko-openie} -- are in reality semi-structured
+  or unstructured text.
+This makes Natural Logic an appealing tool for the task.
 
-We therefore re-cast the problem as querying whether an arbitrary fact
-  is true or not, given the entire knowledge base as the
-  antecedent set.
-We then approach the problem as finding a correct reverse derivation
-  from the consequent to any antecedent in our knowledge base.
+However, prior work on Natural Logic has a few shortcomings:
+  (i) it assumes we know the premise for our inference,
+  (ii) it requires explicit alignment between this premise and the
+       query,
+  and (iii) it enforces strict entailment, whereas many applications
+    could make use of probabilistic entailment accompanied by a
+    confidence.
+We address the first two shortcomings by formulating Natural Logic
+  inference as a search problem from a query to any supporting
+  premise.
+The third point is addressed by allowing imprecise inference steps,
+  at the cost of an associated learned penalty.
 
-When possible, these derivations should be valid Natural Logic derivations;
-  however, the search is robust to proposing plausible, if not
-  strictly correct, inferences at a discount proportional to the
-  likelihood of validity.
-For instance, our approach generalizes similarity metrics, suggesting
-  that if two entities are similar to each other (e.g., cats and dogs)
-  then they are likely to share properties (e.g., have tails).
-This discount on incorrect inferences can be set to enforce strict
-  validity, but can as easily be trained on a dataset of facts labeled
-  with their truth, to calibrate the resulting probability returned
-  from the system.
+This then allows us to efficiently infer whether an unseen
+  common sense fact is \textit{true} or \textit{false} on the basis
+  of a very large, noisy, unstructured collection of known facts.
+An example inference is shown in \reffig{teaser};
+  \refsec{maccartney} explains the inference steps in the search,
+  \refsecs{search}{inference} describe the search problem in detail.
 
-We evaluate the system on the FraCaS entailment suite to motivate its
-  validity as an inference engine, and evaluate in a more realistic
-  setting of predicting the truth of ReVerb extractions
-  \cite{key:2011fader-reverb} annotated with ground truth correctness.
+%Common-sense reasoning if prevalent in a number of AI tasks;
+%  although such reasoning is difficult in general, we hope to
+%  capture a subset of useful phenomena.
+%For instance, in computer vision it may be useful to provide priors
+%  for cars generally being found on roads, or
+%  for people not often drinking grass.\needcite
+%Similarly, for robotics (e.g., for illustration, a robot to help in
+%  the kitchen) it may be useful to know that milk is found
+%  in a refrigerator, or that tomatoes are soft and 
+%  easy to crush.\needcite
+%
+%
+%As a step in this direction, we created NaturaLI: a reasoning engine
+%  based around Natural Logic to infer the truth of arbitrary query
+%  facts given a large database of known facts.
+%The system is intended to follow valid logical derivations when possible,
+%  but also back off gracefully to dubious inferences with an
+%  associated confidence of validity.
+
+%Prior work has largely focused on freebase-style factoids:
+%  for instance, \textit{Barack Obama is married to Michelle}, or
+%  \textit{Natasha is the daughter of Michelle Obama}.
+%In this framework, inference tasks are generally cast as expanding
+%  a partial knowledge base with additional high-probability facts
+%  (e.g., Knowledge Base Population).
+%While this approach is viable for these sorts of factoid entries,
+%  the number of common-sense facts -- the vast majority of which are
+%  never explicitly mentioned -- is unlikely to be amenable to this
+%  strategy.
+%
+%We therefore re-cast the problem as querying whether an arbitrary fact
+%  is true or not, given the entire knowledge base as the
+%  antecedent set.
+%We then approach the problem as finding a correct reverse derivation
+%  from the consequent to any antecedent in our knowledge base.
+%
+%When possible, these derivations should be valid Natural Logic derivations;
+%  however, the search is robust to proposing plausible, if not
+%  strictly correct, inferences at a discount proportional to the
+%  likelihood of validity.
+%For instance, our approach generalizes similarity metrics, suggesting
+%  that if two entities are similar to each other (e.g., cats and dogs)
+%  then they are likely to share properties (e.g., have tails).
+%This discount on incorrect inferences can be set to enforce strict
+%  validity, but can as easily be trained on a dataset of facts labeled
+%  with their truth, to calibrate the resulting probability returned
+%  from the system.
+%
+%We evaluate the system on the FraCaS entailment suite to motivate its
+%  validity as an inference engine, and evaluate in a more realistic
+%  setting of predicting the truth of ReVerb extractions
+%  \cite{key:2011fader-reverb} annotated with ground truth correctness.

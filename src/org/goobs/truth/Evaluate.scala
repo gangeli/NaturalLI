@@ -228,7 +228,11 @@ trait Evaluator {
         guessedPath
       }).map(_.foldLeft((1.0, "")) {
         case ((p: Double, tag: String), guess: Iterable[Inference]) =>
-          (p * probability(guess, weights), guess.headOption.fold(tag)(_.getTag))
+          var prob = probability(guess, weights)
+          if (prob == 1.0 && guess.headOption.isDefined && guess.head.hasImpliedFrom) {
+            prob = 1.0 - 1e-10  // Probability 1.0 is reserved for exact lookup
+          }
+          (p * prob, guess.headOption.fold(tag)(_.getTag))
       })
     }
     val results: Future[Seq[ResultPoint]] = Future.sequence(data.map{ case (queries:Iterable[Query.Builder], gold:TruthValue) =>
@@ -263,6 +267,14 @@ trait Evaluator {
     })
     dumpResult(Await.result(baseline, Duration.Inf), "(baseline)")
 
+    // Run exact match baseline
+    val (lookupCorrect, lookupTotal) = sortedResults.foldLeft( (0,0) ){ case ((correct:Int, total:Int), result:ResultPoint) =>
+      if (result.prob == 1.0 && result.gold) { (correct + 1, total + 1) }
+      else if (result.gold) { (correct, total + 1) }
+      else { (correct, total) }
+    }
+    print(s"Lookup Recall: ${Utils.percent.format(lookupCorrect.toDouble / lookupTotal.toDouble)}")
+
     // Run PR curve
     assert (sortedResults.isEmpty || sortedResults.head.prob <= sortedResults.last.prob)
     val (optimalThreshold, optimalP, optimalR, optimalF1) =(0 until sortedResults.length).map{ (falseUntil:Int) =>
@@ -273,10 +285,10 @@ trait Evaluator {
     val tunedResults: List[(Boolean, Boolean)] = sortedResults.take(optimalThreshold).map{ x => (false, x.gold) }.toList ::: sortedResults.drop(optimalThreshold).map{ x => (true, x.gold) }.toList
     val optimalAccuracy: Double = accuracy(tunedResults)
     val optimalAUC = auc(tunedResults)
-    print(s"    Threshold: ${Utils.percent.format(sortedResults(optimalThreshold).prob)} {index=$optimalThreshold}")
-    print(s"Opt. Accuracy: ${Utils.percent.format(optimalAccuracy)}")
-    print(s"    Optimal P: ${Utils.percent.format(optimalP)} R: ${Utils.percent.format(optimalR)} F1: ${Utils.percent.format(optimalF1)}")
-    print(s"  Optimal AUC: ${Utils.percent.format(optimalAUC)}")
+    print(s"      Threshold: ${Utils.percent.format(sortedResults(optimalThreshold).prob)} {index=$optimalThreshold}")
+    print(s"  Opt. Accuracy: ${Utils.percent.format(optimalAccuracy)}")
+    print(s"      Optimal P: ${Utils.percent.format(optimalP)} R: ${Utils.percent.format(optimalR)} F1: ${Utils.percent.format(optimalF1)}")
+    print(s"    Optimal AUC: ${Utils.percent.format(optimalAUC)}")
 
     // Return
     Await.result(Future.sequence(guessedPaths), Duration.Inf)

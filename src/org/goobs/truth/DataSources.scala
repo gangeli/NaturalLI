@@ -276,6 +276,14 @@ object MTurk extends DataSource {
       }
   }
 
+  /**
+   * A filter for selecting queries which are considered false
+   */
+  def isFalse:(Datum) => Boolean = {
+    case (query: Seq[Query.Builder], truth: TruthValue) =>
+      truth == TruthValue.FALSE || truth == TruthValue.UNKNOWN
+  }
+
   private lazy val UNK = Utils.wordIndexer.get(Utils.WORD_UNK)
 
   /**
@@ -304,6 +312,25 @@ object MTurk extends DataSource {
       (queries.map{ (fact:Fact) =>
         Query.newBuilder().setQueryFact(fact).setAllowLookup(false).setUseRealWorld(true)
       }, gold)
+    }
+  }
+}
+
+object ConceptNet extends DataSource {
+  /**
+   * Read queries from the specified abstract path.
+   * @param path The path to read the queries from. This should be a *.tab file (canonically, in etc/ave/YEAR.tab).
+   * @return A stream of examples, annotated with their truth value.
+   */
+  override def read(path: String): DataStream = {
+    io.Source.fromFile(path).getLines().toStream.map{ (line:String) =>
+      val fields :Array[String]  = line.split("\t")
+      val weight:Double          = fields(0).toDouble
+      val gloss:String           = fields(1)
+      val queries:Iterable[Fact] = NatLog.annotate(gloss)
+      (queries.map{ (fact:Fact) =>
+        Query.newBuilder().setQueryFact(fact).setAllowLookup(true).setUseRealWorld(true)
+      }, TruthValue.TRUE)
     }
   }
 }

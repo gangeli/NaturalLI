@@ -828,6 +828,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
       // Add the state to the fringe
       const float mutationCost = weights->computeCost(
           parentTruth, mutation, parentMonotonicity);
+//      printf("    mutation %u -> %u @ cost %f\n", mutation.source, mutation.sink, mutationCost);
       if (mutationCost < 1e10 && (parentLength > 1 || mutation.source != 0)) {
         // Another awkward edge case.
         // We don't want to delete the last remnant of a phrase; where,

@@ -19,6 +19,10 @@ object ShutdownServer {
     // Create dummy query
     val query = Query.newBuilder().setQueryFact(Fact.newBuilder.addWord(Word.newBuilder().setWord(0).build()).build()).setUseRealWorld(false).setShutdownServer(true).build()
 
+    if (Props.SERVER_MAIN_PORT >= 1330 && Props.SERVER_MAIN_PORT < 1340) {
+      log(RED, "Cannot kill server on ports 1330 to 1340 (safety measure)! Please kill the server manually.")
+    }
+
     try {
       // Set up connection
       val sock = new Socket(Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)

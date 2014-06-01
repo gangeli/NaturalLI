@@ -1,147 +1,152 @@
-# Sanity checks
-✔[have](cats, tails)	[have](cats, tails)
-✔[will appeal to](a backyard, birds)	[will appeal to](a backyard, birds)
+## Sanity checks
+#✔[have](cats, tails)	[have](cats, tails)
+#✔[will appeal to](a backyard, birds)	[will appeal to](a backyard, birds)
+#
+##
+## Tier 1: Trivial NatLog
+##
+#
+## Trivial Mutations
+#✔[have](some cat, tail)	[have](some animal, tail)
+#✔[have](all animal, tail)	[have](all cat, tail)
+#✔[are](all dog, smart)	[are](all hunting dog, smart)
+#
+## Simultaneous mutations
+#✔[have](no imaginary animal, appendage)	[have](no imaginary cat, tail)
+#
+## Trivial Insertions (deletions in search)
+#✔[are](all dog, smart)	[are](all furry dog, smart)
+#✔[are](no good drinks, gin)	[are](no good drinks, gin sour)
+#
+## Trivial Deletions (insertions in search)
+#✔[are](some furry dog, smart)	[are](some dog, smart)
+#✔[are](some good sour drinks, gin)	[are](some good drinks, gin)
+#✔[are](some good drinks, gin sour)	[are](some good drinks, gin)
+#✔[is](some smart dog, smart)	[is](some dog, smart)
+#
+## Quantifier rewording
+#✔[is](some dog, smart)	[is](there be dog, smart)
+#✔[is](all dog, smart)	[is](every dog, smart)
+#✔[is](no dog, smart)	[is](neither dog, smart)
+#✔[are](most dogs, smart)	[are](several dogs, smart)
+#
+## Quantifier mutation
+## (monotone up)
+#✔[are](all dogs, smart)	[are](most dogs, smart)
+#✔[are](all dogs, smart)	[are](some dogs, smart)
+#?[are](most dogs, smart)	[are](all dogs, smart)
+#✔[are](most dogs, smart)	[are](some dogs, smart)
+#?[are](some dogs, smart)	[are](all dogs, smart)
+#?[are](some dogs, smart)	[are](most dogs, smart)
+## (monotone down)
+#?[chases](no dog, all cats)	[chases](no dog, most cats)
+#?[chases](no dog, all cats)	[chases](no dog, some cats)
+#✔[chases](no dog, most cats)	[chases](no dog, all cats)
+#?[chases](no dog, most cats)	[chases](no dog, some cats)
+#✔[chases](no dog, some cat)	[chases](no dog, all cat)
+#✔[chases](no dog, some cat)	[chases](no dog, most cat)
+#
+## Quantifier negation
+#✘[is](every dog, smart)	[is](no dog, smart)
+#✘[is](some dog, smart)	[is](no dog, smart)
+#✘[is](no dog, smart)	[is](some dog, smart)
+#✘[is](no dog, smart)	[is](every dog, smart)
+#
+##
+## Tier 2: Intermediate NatLog
+##
+#
+## Unknown words
+#✔[is fooer than](john, bill)	[is fooer than](john, bill)
+#?[is fooer than](john, bill)	[is bazer than](john, bill)
+#
+## Quantifier weakening/strengthening
+#✔[have](all cats, tails)	[have](a few cats, tails)
+#✔[likes](no dog, a few cats)	[likes](no dog, all cats)
+#
+## Longer-distance edits
+## (baby steps for debugging)
+##✔[are](there are some cats, smart)	[are](some cats, smart)
+#✔[which are](there are some cats, smart)	[are](some cats, smart)
+## (the complicated edit)
+#✔[which are](there are some cats, smart)	[is](some cat, smart)
+#
+## Joint quantifier modification and insertion/removal
+## (baby steps, for debugging)
+#✔[have](all cats, tails)	[have](a few cats, tails)      # all -> a few
+#✔[have](all cats, tails)	[have](all cats, a tail)       # tails -> a tail
+#✔[have](all cats, tails)	[have](all furry cats, tails)  # cats -> furry cats
+## (the actual queries we are interested in)
+#✔[have](all cats, tails)	[have](a few furry cats, tails)
+#✔[have](all cats, tails)	[have](a few cats, a tails)
+#✔[have](all cats, tails)	[have](a few furry cats, a tail)  # takes 1M ticks to get
+#
+## Intermediate Quantifier rewording
+#✔[are](most dogs, smart)	[who are](several dogs, smart)
+#
+## Intermediate Quantifier negation
+##✔[are](all dogs, smart)	[are](no dogs, not smart)  # TODO(gabor) handle this!
+#
+## Monotonicity checks
+#?[have](many cats, tails)	[have](many furry cats, tails)
+#?[have](many furry cats, tails)	[have](many cats, tails)
+#
+## Verb insertions
+#✔[runs](some man, faster than I run)	[runs](some man, faster than I)
+##✔[runs](some man, faster than I)	[runs](some man, faster than I run)  # generally, the less safe direction
+#?[play](many cats, baseball)	[watch](many cats, baseball)
+#?[play](some cats, baseball)	[watch](some cats, baseball)
+#
+## Deletion special cases (straddling the monotonicity change)
+#?[have](most furry cats, tails)	[have](most cats, tails)
+#?[have](most cats in America, tails)	[have](most cats, tails)
+#✔[have](most cats, furry tails)	[have](most cats, tails)
+#
+## Insertions at the end of a sentence
+#✔[have](all cats, fur tail)	[have](all cats, tail)
+#✔[have](all cats, tail fur)	[have](all cats, tail)
+#✔[have](no cats, tail)	[have](no cats, tail fur)
+#
+## Intensional adjectives
+#?[are](some former cats, in heaven)	[are](some cats, in heaven)
+#?[are](some cats, in heaven)	[are](some former cats, in heaven)
+#?[are](all former cats, in heaven)	[are](all cats, in heaven)
+#?[are](all cats, in heaven)	[are](all former cats, in heaven)
+#
+##
+## Tier 3: FraCaS 07 Regressions
+##
+#
+##?[finish](some delegates, the survey)	[finish](some delegates, the survey on time)  # add_? makes this possible :(
+#✔[have](cat, a more important customer than dog)	[have](cat, a more important customer than dog have)
+#✔[got](several delegates, the results published in major national newspapers)	[got](several delegates, the results published)
+#?[can travel](most cats who are residing in Europe, freely in Europe)	[can travel](most cats, freely in Europe)
+#✘[finish](no delegate, the report on time)	[finish](some Scandinavian delegate, the report on time)  # careful featurizing truth shifts!
+#?[finish](no Scandinavian delegate, the report on time)	[finish](some delegate, the report on time)  # just to check...
+#✘[spend](neither commissioner, time at home)	[spend](one of the commissioner, a lot of time at home)
+#✔[spend](neither commissioner, time at home)	[spend](neither commissioner, a lot of time at home)
+#✔[like](a few cats, dogs)	[like](at least a few cats, dogs)
+#✔[like](a few stray cats, dogs)	[like](at least a few cats, dogs)
+#
+##
+## Tier 4: FraCaS 08 Regressions
+##
+#
+#
+##
+## Tier 5: Ollie Regressions
+##
+#
+## Used to delete land (in monotone down), and then insert tail (in monotone up)
+## Fixed by disallowing deleting the last phrase in a clause.
+#?[have](a man, a lot of land)	[have](a man, a tail)
+#
+## Weird WordNet paths
+#?[dress](cat, suit)	[have](cat, tail)
 
 #
-# Tier 1: Trivial NatLog
+# Tier 6: Make sure examples in paper work
 #
-
-# Trivial Mutations
-✔[have](some cat, tail)	[have](some animal, tail)
-✔[have](all animal, tail)	[have](all cat, tail)
-✔[are](all dog, smart)	[are](all hunting dog, smart)
-
-# Simultaneous mutations
-✔[have](no imaginary animal, appendage)	[have](no imaginary cat, tail)
-
-# Trivial Insertions (deletions in search)
-✔[are](all dog, smart)	[are](all furry dog, smart)
-✔[are](no good drinks, gin)	[are](no good drinks, gin sour)
-
-# Trivial Deletions (insertions in search)
-✔[are](some furry dog, smart)	[are](some dog, smart)
-✔[are](some good sour drinks, gin)	[are](some good drinks, gin)
-✔[are](some good drinks, gin sour)	[are](some good drinks, gin)
-✔[is](some smart dog, smart)	[is](some dog, smart)
-
-# Quantifier rewording
-✔[is](some dog, smart)	[is](there be dog, smart)
-✔[is](all dog, smart)	[is](every dog, smart)
-✔[is](no dog, smart)	[is](neither dog, smart)
-✔[are](most dogs, smart)	[are](several dogs, smart)
-
-# Quantifier mutation
-# (monotone up)
-✔[are](all dogs, smart)	[are](most dogs, smart)
-✔[are](all dogs, smart)	[are](some dogs, smart)
-?[are](most dogs, smart)	[are](all dogs, smart)
-✔[are](most dogs, smart)	[are](some dogs, smart)
-?[are](some dogs, smart)	[are](all dogs, smart)
-?[are](some dogs, smart)	[are](most dogs, smart)
-# (monotone down)
-?[chases](no dog, all cats)	[chases](no dog, most cats)
-?[chases](no dog, all cats)	[chases](no dog, some cats)
-✔[chases](no dog, most cats)	[chases](no dog, all cats)
-?[chases](no dog, most cats)	[chases](no dog, some cats)
-✔[chases](no dog, some cat)	[chases](no dog, all cat)
-✔[chases](no dog, some cat)	[chases](no dog, most cat)
-
-# Quantifier negation
-✘[is](every dog, smart)	[is](no dog, smart)
-✘[is](some dog, smart)	[is](no dog, smart)
-✘[is](no dog, smart)	[is](some dog, smart)
-✘[is](no dog, smart)	[is](every dog, smart)
-
-#
-# Tier 2: Intermediate NatLog
-#
-
-# Unknown words
-✔[is fooer than](john, bill)	[is fooer than](john, bill)
-?[is fooer than](john, bill)	[is bazer than](john, bill)
-
-# Quantifier weakening/strengthening
-✔[have](all cats, tails)	[have](a few cats, tails)
-✔[likes](no dog, a few cats)	[likes](no dog, all cats)
-
-# Longer-distance edits
-# (baby steps for debugging)
-#✔[are](there are some cats, smart)	[are](some cats, smart)
-✔[which are](there are some cats, smart)	[are](some cats, smart)
-# (the complicated edit)
-✔[which are](there are some cats, smart)	[is](some cat, smart)
-
-# Joint quantifier modification and insertion/removal
-# (baby steps, for debugging)
-✔[have](all cats, tails)	[have](a few cats, tails)      # all -> a few
-✔[have](all cats, tails)	[have](all cats, a tail)       # tails -> a tail
-✔[have](all cats, tails)	[have](all furry cats, tails)  # cats -> furry cats
-# (the actual queries we are interested in)
-✔[have](all cats, tails)	[have](a few furry cats, tails)
-✔[have](all cats, tails)	[have](a few cats, a tails)
-✔[have](all cats, tails)	[have](a few furry cats, a tail)  # takes 1M ticks to get
-
-# Intermediate Quantifier rewording
-✔[are](most dogs, smart)	[who are](several dogs, smart)
-
-# Intermediate Quantifier negation
-#✔[are](all dogs, smart)	[are](no dogs, not smart)  # TODO(gabor) handle this!
-
-# Monotonicity checks
-?[have](many cats, tails)	[have](many furry cats, tails)
-?[have](many furry cats, tails)	[have](many cats, tails)
-
-# Verb insertions
-✔[runs](some man, faster than I run)	[runs](some man, faster than I)
-#✔[runs](some man, faster than I)	[runs](some man, faster than I run)  # generally, the less safe direction
-?[play](many cats, baseball)	[watch](many cats, baseball)
-?[play](some cats, baseball)	[watch](some cats, baseball)
-
-# Deletion special cases (straddling the monotonicity change)
-?[have](most furry cats, tails)	[have](most cats, tails)
-?[have](most cats in America, tails)	[have](most cats, tails)
-✔[have](most cats, furry tails)	[have](most cats, tails)
-
-# Insertions at the end of a sentence
-✔[have](all cats, fur tail)	[have](all cats, tail)
-✔[have](all cats, tail fur)	[have](all cats, tail)
-✔[have](no cats, tail)	[have](no cats, tail fur)
-
-# Intensional adjectives
-?[are](some former cats, in heaven)	[are](some cats, in heaven)
-?[are](some cats, in heaven)	[are](some former cats, in heaven)
-?[are](all former cats, in heaven)	[are](all cats, in heaven)
-?[are](all cats, in heaven)	[are](all former cats, in heaven)
-
-#
-# Tier 3: FraCaS 07 Regressions
-#
-
-#?[finish](some delegates, the survey)	[finish](some delegates, the survey on time)  # add_? makes this possible :(
-✔[have](cat, a more important customer than dog)	[have](cat, a more important customer than dog have)
-✔[got](several delegates, the results published in major national newspapers)	[got](several delegates, the results published)
-?[can travel](most cats who are residing in Europe, freely in Europe)	[can travel](most cats, freely in Europe)
-✘[finish](no delegate, the report on time)	[finish](some Scandinavian delegate, the report on time)  # careful featurizing truth shifts!
-?[finish](no Scandinavian delegate, the report on time)	[finish](some delegate, the report on time)  # just to check...
-✘[spend](neither commissioner, time at home)	[spend](one of the commissioner, a lot of time at home)
-✔[spend](neither commissioner, time at home)	[spend](neither commissioner, a lot of time at home)
-✔[like](a few cats, dogs)	[like](at least a few cats, dogs)
-✔[like](a few stray cats, dogs)	[like](at least a few cats, dogs)
-
-#
-# Tier 4: FraCaS 08 Regressions
-#
-
-
-#
-# Tier 5: Ollie Regressions
-#
-
-# Used to delete land (in monotone down), and then insert tail (in monotone up)
-# Fixed by disallowing deleting the last phrase in a clause.
-?[have](a man, a lot of land)	[have](a man, a tail)
-
-# Weird WordNet paths
-?[dress](cat, suit)	[have](cat, tail)
+✘[eat](no carnivore, rodent)	[eat](the cat, the mouse)
 
 

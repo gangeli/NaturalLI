@@ -44,14 +44,22 @@ object NatLog {
     weights.setDefaultReturnValue(default)
     // Set OK weights
 
-    def setCounts(edge:EdgeType, trueMono:Monotonicity, weight:Double) {
+    def setCounts(edge:EdgeType, trueMono:Monotonicity, weight:Double, negationInvariant:Boolean=false) {
       trueMono match {
         case Monotonicity.UP =>
           weights.setCount(monoUp_stateTrue(    edge ), weight)
-          weights.setCount(monoDown_stateFalse( edge ), weight)
+          if (negationInvariant) {
+            weights.setCount(monoUp_stateFalse( edge ), weight)
+          } else {
+            weights.setCount(monoDown_stateFalse( edge ), weight)
+          }
         case Monotonicity.DOWN =>
           weights.setCount(monoDown_stateTrue(  edge ), weight)
-          weights.setCount(monoUp_stateFalse(   edge ), weight)
+          if (negationInvariant) {
+            weights.setCount(monoDown_stateFalse( edge ), weight)
+          } else {
+            weights.setCount(monoUp_stateFalse( edge ), weight)
+          }
         case _ => throw new IllegalStateException()
       }
     }
@@ -83,7 +91,7 @@ object NatLog {
     // INVALID: add existential, monotone down (can weaken to universal)
     setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, default)
     // VALID: add existential, monotone up (weakened from generic, e.g., 'most')
-    setCounts(ADD_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion, negationInvariant=true)
     // VALID del existential, monotone up ('cats have a tail' -> 'cats have tails')
     setCounts(DEL_EXISTENTIAL, Monotonicity.UP, insertionOrDeletion)
     // INVALID del existential, monotone down (I can only think of pathological cases where you would do this)

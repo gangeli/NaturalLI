@@ -70,4 +70,18 @@ object Learn extends Client {
     case None => "<no paths>"
   }
 
+  /** Parse the initialization proprty from Props */
+  def initialization:WeightVector = {
+    Props.LEARN_INITIALIZATION match {
+      case Props.Initialization.HARD_WEIGHTS => NatLog.hardNatlogWeights
+      case Props.Initialization.SOFT_WEIGHTS => NatLog.softNatlogWeights
+      case Props.Initialization.UNIFORM => {
+        val weights = new ClassicCounter[String]
+        weights.setDefaultReturnValue(-1.0)
+        weights
+      }
+    }
+
+  }
+
 }

@@ -13,23 +13,24 @@ At each iteration, we take the costs from the previous iteration
   and run the derivation search over every example, providing
   a predicted probability of truth for each query fact.
 Optimizing the likelihood of the training data according to
-  Equation \refeqn{prob} is impractical as the objective is nonconvex\footnote{
-    Though maybe it's worthwhile to try anyways?
-  }, therefore we opt to train a simple logistic regression model
-  as a proxy.
+  Equation \refeqn{prob} is impractical as the objective is nonconvex;
+  the rest of today is intended to be spent on implementing a piecewise
+  optimization to mitigate this.
+A simple heuristic (weight = 1 - \# times this feature fired in good examples
+  / \# of times feature fired total) does ok, but is a little braindead.
 
-In particular, we construct a dataset of $(x,y)$ pairs, where $x$ is the
-  featurized path for a particular example, and $y$ is whether the
-  path ended in a correct state.
-A correct state is defined trivially between \textit{valid} and
-  \textit{invalid}.
-In cases where the gold annotation contains a state of 
-  \textit{unknown validity}, any prediction is marked incorrect.
-
-The resulting weights -- in one-to-one correspondence with the costs
-  for our search -- are then negated and normalized via a bilinear
-  transform to fall between 0 and $-5$, with a mean of $-1$.
-A default weight of $-2$ is assigned for any feature which did not
-  appear in the training data, excepting the case where a previous
-  iteration of the algorithm had set a value for that weight, in
-  which case the previous value is used.
+%In particular, we construct a dataset of $(x,y)$ pairs, where $x$ is the
+%  featurized path for a particular example, and $y$ is whether the
+%  path ended in a correct state.
+%A correct state is defined trivially between \textit{valid} and
+%  \textit{invalid}.
+%In cases where the gold annotation contains a state of 
+%  \textit{unknown validity}, any prediction is marked incorrect.
+%
+%The resulting weights -- in one-to-one correspondence with the costs
+%  for our search -- are then negated and normalized via a bilinear
+%  transform to fall between 0 and $-5$, with a mean of $-1$.
+%A default weight of $-2$ is assigned for any feature which did not
+%  appear in the training data, excepting the case where a previous
+%  iteration of the algorithm had set a value for that weight, in
+%  which case the previous value is used.
