@@ -152,8 +152,8 @@ object NatLog {
     while (iter.hasNext) {
       if (weights.getCount(iter.next()) == weights.defaultReturnValue()) { iter.remove(); }
     }
-    weights.setCount("bias", 0.0)
-    weights.setCount("resultCount", 1.0)
+    weights.setCount("bias", -1.0)
+    weights.setCount("resultCount", -1.0)
     weights
   }
 
@@ -197,7 +197,7 @@ object NatLog {
    * The goal is to use this to initialize the search.
    */
   def softNatlogWeights:WeightVector = natlogWeights(
-    strictNatLog = -0.0,
+    strictNatLog = -0.01,
     similarity = -1.0,
     wordnet = -0.25,
     badWordnet = -1.0,

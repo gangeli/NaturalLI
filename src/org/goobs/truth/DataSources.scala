@@ -333,4 +333,17 @@ object ConceptNet extends DataSource {
       }, TruthValue.TRUE)
     }
   }
+
+  /** Like the regular read() method, but more efficient when skipping a large number of examples */
+  def read(path:String, drop:Int): DataStream = {
+    io.Source.fromFile(path).getLines().drop(drop).toStream.map{ (line:String) =>
+      val fields :Array[String]  = line.split("\t")
+      val weight:Double          = fields(0).toDouble
+      val gloss:String           = fields(1)
+      val queries:Iterable[Fact] = NatLog.annotate(gloss)
+      (queries.map{ (fact:Fact) =>
+        Query.newBuilder().setQueryFact(fact).setAllowLookup(true).setUseRealWorld(true)
+      }, TruthValue.TRUE)
+    }
+  }
 }

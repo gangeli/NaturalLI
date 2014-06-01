@@ -4,14 +4,15 @@ import org.goobs.truth.DataSource.DataStream
 import edu.stanford.nlp.util.logging.Redwood.Util._
 import org.goobs.truth.Messages.Inference
 import org.goobs.truth.TruthValue.TruthValue
-import edu.stanford.nlp.classify.{RVFDataset, LinearClassifier, LinearClassifierFactory}
+import edu.stanford.nlp.classify.RVFDataset
 import edu.stanford.nlp.ling.RVFDatum
 import java.io.File
 import org.goobs.truth.Learn.WeightVector
 import edu.stanford.nlp.stats.{ClassicCounter, Counter, Counters}
 import scala.collection.JavaConversions._
-import edu.stanford.nlp.util.Factory
-import edu.stanford.nlp.optimization.{QNMinimizer, DiffFunction, Minimizer}
+import scala.collection.mutable
+import edu.stanford.nlp.optimization._
+import scala.Some
 
 /**
  * Learn in batch mode; this makes use of a Logistic Regression model to find a good weight assignment.
@@ -21,7 +22,79 @@ import edu.stanford.nlp.optimization.{QNMinimizer, DiffFunction, Minimizer}
 
 object LearnOffline extends Client {
 
-  def correctTable(guess:TruthValue, gold:TruthValue):Boolean = {
+  /**
+   * When in doubt, try to optimize the function anyways!
+   * @param correct The list of whether each example is correct or not.
+   * @param features The list of feature vectors for each example.
+   */
+  class UnregularizedObjectiveFunction(correct:Seq[Boolean], features:Seq[Array[Double]]) extends AbstractCachingDiffFunction {
+    override def initial:Array[Double] = Implicits.flattenWeights(NatLog.softNatlogWeights)
+    override lazy val domainDimension: Int = initial.length
+
+    private def dot(a:Array[Double], b:Array[Double]):Double = a.zip(b).foldLeft(0.0){ case (s, (ai, bi)) => s + ai*bi }
+    private def sigmoid(w:Array[Double], f:Array[Double]):Double = 1.0 / (1.0 + math.exp(-dot(w,f)))
+    private def sigmoidInverse(w:Array[Double], f:Array[Double]):Double = 1.0 / (1.0 + math.exp(dot(w,f)))
+
+    override def calculate(x: Array[Double]): Unit = {
+      val (likelihood, likelihoodDeriv) = correct.zip(features).foldLeft( (0.0, new Array[Double](domainDimension)) ){
+        case ((valueSoFar:Double, derivSoFar:Array[Double]), (correct:Boolean, features:Array[Double])) =>
+          assert (features.length == x.length)
+          val probAtPoint = if (correct) {
+            0.5 + 1.0 / (1.0 + math.exp(-dot(x,features)))
+          } else {
+            0.5 - 1.0 / (1.0 + math.exp(-dot(x,features)))
+          }
+          // Compute derivative
+          val constant = (if (correct) 1.0 else -1.0) * sigmoid(x, features) * sigmoidInverse(x, features) * (1.0 / probAtPoint)
+          val derivAtPoint = (0 until derivSoFar.length).map{ (i:Int) =>
+            constant * features(i)
+          }.toArray
+          // Return
+          (valueSoFar + math.log(probAtPoint), derivSoFar.zip(derivAtPoint).map{case (a, b) => a+b})
+      }
+      this.value = -likelihood
+      this.derivative = likelihoodDeriv.map( x => -x )
+    }
+  }
+
+  /**
+   * Same as the unregularized objective, but with some l2 regularization thrown in, and a tiny push to make sure weights stay negative.
+   * @param correct The list of whether each example is correct or not.
+   * @param features The list of feature vectors for each example.
+   * @param sigma The regularization constant.
+   * @param negativePush A small value to make sure the weights stay negative. The larger this is, the more negative the weights will become.
+   */
+  class ObjectiveFunction(correct:Seq[Boolean], features:Seq[Array[Double]], sigma:Double, negativePush:Double) extends UnregularizedObjectiveFunction(correct, features) {
+    private def l2norm(x:Array[Double]) = x.map( x => x * x ).sum
+
+    override def calculate(x: Array[Double]): Unit = {
+      // Do the hard work
+      super.calculate(x)
+      //  Error checks
+      // Add regularization
+      this.value += l2norm(x) / (2.0 * sigma * sigma)
+      for (v <- x.drop(Implicits.searchFeatureStart)) {
+        this.value -= negativePush * math.log(-v)
+      }
+      // Add regularization derivative
+      for (i <- 0 until x.length) {
+        derivative(i) += x(i) / (sigma * sigma)
+      }
+      for (i <- Implicits.searchFeatureStart until this.derivative.length) {
+        derivative(i) -= negativePush / x(i)
+      }
+    }
+
+  }
+
+
+  /**
+   * A table mapping a guess and gold TruthValue to whether it was correct or not.
+   * @param guess The guessed truth value.
+   * @param gold The gold truth value.
+   * @return True if this example should be marked 'correct'.
+   */
+  private def correctTable(guess:TruthValue, gold:TruthValue):Boolean = {
     guess match {
       case TruthValue.TRUE =>
         gold match {
@@ -39,7 +112,8 @@ object LearnOffline extends Client {
     }
   }
 
-  def projectWeights(weightsAsCounter:WeightVector, default:WeightVector):Array[Double] = {
+  /** Project weights in a bit of a hacky way to be all negative */
+  private def projectWeights(weightsAsCounter:WeightVector, default:WeightVector):Array[Double] = {
     // Convert weight to vector
     import Implicits.flattenWeights
     // (Copy the counter)
@@ -81,7 +155,18 @@ object LearnOffline extends Client {
     newWeights
   }
 
-  def batchUpdateWeights(predictions:Iterable[(Iterable[Inference], TruthValue)], weights:Array[Double]):Array[Double] = {
+  type Memory = mutable.Set[Integer]
+
+  def newMemory:Memory = new mutable.HashSet[Integer]
+
+  /**
+   * The main entry point for optimizing weights. Given a set of predictions, create a new optimized set of weights.
+   * @param predictions The predictions from this iteration of search.
+   * @param weights The last iteration's weights.
+   * @return A new weight vector, learned from the search this iteration.
+   */
+  def batchUpdateWeights(predictions:Iterable[(Iterable[Inference], TruthValue)],
+                         weights:Array[Double], memory:Memory):Array[Double] = {
     import Implicits.{inflateWeights, flattenWeights}
     // For debugging
     val aggregateFeats = new collection.mutable.HashMap[String, Counter[Boolean]]()
@@ -208,6 +293,7 @@ object LearnOffline extends Client {
     val newWeights: Array[Double] = projectWeights(rawWeights, weights)  // do project past weights here
     */
 
+    /*
     // (2) Compute Weights
     val newWeights: WeightVector = {
       val counts = new ClassicCounter[String]
@@ -222,6 +308,30 @@ object LearnOffline extends Client {
       }
       counts
     }
+    */
+
+    // (2) Compute Weights
+    startTrack("Minimizing")
+    // (create dataset)
+    val (correct, features) = (for (i <- 0 until dataset.size()) yield {
+      val featVector:Array[Double] = dataset.getDatum(i).asFeaturesCounter()
+      val correct:Boolean = dataset.labelIndex().get(dataset.getLabelsArray.apply(i))
+      (correct, featVector)
+    }).unzip
+    // (minimize)
+    val objective = new ObjectiveFunction(correct, features, Props.LEARN_OFFLINE_SIGMA, 1e-5)
+    val optimizer = new CGMinimizer()
+    val newWeights: Array[Double] = optimizer.minimize(objective, 1e-2, weights)
+    // (tweak)
+    val seenMask:WeightVector = new ClassicCounter[String]
+    for (feat <- aggregateFeats.keys) { seenMask.incrementCount(feat) }
+    val seenArray:Array[Double] = seenMask
+    for (i <- Implicits.searchFeatureStart until seenArray.length) {
+      if (seenArray(i) != 0.0) { memory.add(i) }
+      if (!memory(i)) { newWeights(i) = newWeights(i) / 2.0 }
+    }
+    endTrack("Minimizing")
+
 
     // (3) Update weights
     // Debug (check changed weights)
@@ -229,7 +339,6 @@ object LearnOffline extends Client {
     val hardWeights = NatLog.hardNatlogWeights
     val longestKey = hardWeights.keySet().maxBy( _.length ).length + 2
     for ( (feature, counts) <- aggregateFeats ) {
-      " " * 10
       log(s"$feature${" " * (longestKey - feature.length)} => C:${Utils.short.format(counts.getCount(true))}   I:${Utils.short.format(counts.getCount(false))}  {hard:${Utils.short.format(hardWeights.getCount(feature))}  learned:${Utils.short.format(newWeights.getCount(feature))}}")
     }
     endTrack("Learned Weight Summary")
@@ -253,11 +362,12 @@ object LearnOffline extends Client {
 
       forceTrack("Learning")
       var weights:Array[Double] = Learn.initialization
+      val memory = newMemory
       for (pass <- 0 until Props.LEARN_OFFLINE_PASSES) {
         startTrack("Pass " + pass)
         val predictions: Iterable[(Iterable[Inference], TruthValue)] =
           evaluate(trainData, weights, print = x => LearnOnline.synchronized { log(BOLD,YELLOW, s"[pass $pass] " + x) }, quiet = true)
-        weights = batchUpdateWeights(predictions, weights)
+        weights = batchUpdateWeights(predictions, weights, newMemory)
         if (Props.LEARN_MODEL_DIR.exists()) {
           Learn.serialize(weights, new File(Props.LEARN_MODEL_DIR + File.separator + "offline." + pass + ".tab"))
         }

@@ -40,6 +40,9 @@ object Implicits {
       })).toArray
   }
 
+  /** The first index of features that must be < 0 */
+  val searchFeatureStart = 2
+
   /** Implicit to convert from a weight vector to a weight counter */
   def inflateWeights(w:Array[Double], ignoreValue:Double):WeightVector = {
     val feats = new ClassicCounter[String]

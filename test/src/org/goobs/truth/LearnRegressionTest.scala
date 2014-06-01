@@ -24,11 +24,12 @@ object LearnRegressionTest extends Client {
     weights = weights.map( x => -1.0 )
 
     // Learn
+    val memory = LearnOffline.newMemory
     for (pass <- 1 to 5) {
       startTrack("Pass " + pass)
       val predictions: Iterable[(Iterable[Inference], TruthValue)] =
         evaluate(data, weights, print = x => LearnOnline.synchronized { log(BOLD,YELLOW, s"[pass $pass] " + x) }, quiet = true)
-      weights = LearnOffline.batchUpdateWeights(predictions, weights)
+      weights = LearnOffline.batchUpdateWeights(predictions, weights, memory)
       endTrack("Pass " + pass)
     }
     endTrack("Regression Learning Test")

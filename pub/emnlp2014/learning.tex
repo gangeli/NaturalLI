@@ -1,4 +1,4 @@
-\Section{learning}{Learning Transition Weights}
+\Section{learning}{Learning Transition Costs}
 The learning task can be viewed as a constrained optimization problem.
 Subject to the constraint that all elements of the cost vector \btheta\ 
   must be non-negative, we optimize the probability from
@@ -10,15 +10,56 @@ We assume that all facts in our database are true; therefore,
 
 We learn costs using an iterative algorithm.
 At each iteration, we take the costs from the previous iteration
-  and run the derivation search over every example, providing
-  a predicted probability of truth for each query fact.
-Optimizing the likelihood of the training data according to
-  Equation \refeqn{prob} is impractical as the objective is nonconvex;
-  the rest of today is intended to be spent on implementing a piecewise
-  optimization to mitigate this.
-A simple heuristic (weight = 1 - \# times this feature fired in good examples
-  / \# of times feature fired total) does ok, but is a little braindead.
+  and run search over every example to obtain candidate paths.
+At each iteration, analogous to logistic regression,
+  the log-likelihood of the training data becomes:
 
+\begin{align*}
+\l\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
+    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta^{T} f(x_i)}} \right) \\
+    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta^{T} f(x_i)}} \right)
+  \Big],
+\end{align*}
+
+\noindent where $y_i$ is 1 if the example is annotated true, and 0
+  otherwise, $f(x_i)$ are the features extracted for path $i$, and
+  $v_i$ is the inference state predicted in search, as in
+  \refsec{inference-prob}.
+The objective function becomes our negative log-likelihood, in addition
+  to an $l_2$ regularization term, and a small log term to prohibit
+  costs from becoming negative:
+
+\begin{equation*}
+O(\sD) = -\l\l_\theta(\sD) 
+  + \frac{1}{2 \sigma^2}\|\theta\|_2^2
+  - \epsilon \log(-\theta).
+\end{equation*}
+
+\noindent We set $\sigma=100$ and $\epsilon=1e^{-5}$.
+
+Although this objective is non-convex, there is a natural initialization
+  of costs to match intuitions about Natural Logic.
+We initialize the first iteration to these costs, and run
+  conjugate gradient descent to convergence on a local minima
+  on each subsequent iteration.
+Lastly, after each iteration, the cost for any feature which has
+  never fired during training is decreased by half.
+This is to encourage the search to take these expensive edges, and
+  learn an appropriate cost for them.
+
+
+
+%We learn costs using an iterative algorithm.
+%At each iteration, we take the costs from the previous iteration
+%  and run the derivation search over every example, providing
+%  a predicted probability of truth for each query fact.
+%Optimizing the likelihood of the training data according to
+%  Equation \refeqn{prob} is impractical as the objective is nonconvex;
+%  the rest of today is intended to be spent on implementing a piecewise
+%  optimization to mitigate this.
+%A simple heuristic (weight = 1 - \# times this feature fired in good examples
+%  / \# of times feature fired total) does ok, but is a little braindead.
+%
 %In particular, we construct a dataset of $(x,y)$ pairs, where $x$ is the
 %  featurized path for a particular example, and $y$ is whether the
 %  path ended in a correct state.
