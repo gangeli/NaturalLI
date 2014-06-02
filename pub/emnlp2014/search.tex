@@ -37,7 +37,7 @@ Taking notation from \refsec{maccartney-proof}, we construct a
   cumulative state of the derivation, $s_i$, outgoing transition labels
   correspond to the projected lexical relation $\rho(r_i)$,
   and transitions corresponds to the join table in \reftab{join}.
-This construction follows straighforwardly from our definition of
+This construction follows from our definition of
   $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
   for all possible pair of states $s$ and $r$, we construct a
   transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
@@ -45,15 +45,52 @@ This construction follows straighforwardly from our definition of
   omitted for clarity.
 
 Our second contribution is collapsing this automata into the three
-  meaninful states we will query: 
+  meaningful states we will query: 
     \textit{valid} ($\varphi \Rightarrow \psi$),
     \textit{invalid} ($\varphi \Rightarrow \lnot \psi$),
   and \textit{unknown validity} ($\varphi \nRightarrow \psi$).
 We can cluster states in \reffig{fsa}a into these three categories.
 The relations \equivalent\ and \forward\ correspond to valid inferences;
   \negate\ and \alternate\ correspond to invalid inferences;
-  \reverse\ and \cover\ correspond to unknown validity.
+  \reverse, \cover\ and \independent\ correspond to unknown validity.
+This clustering mirrors that used by MacCartney for his textual
+  entailment experiments.
 
+Collapsing the FSA into the form in \reffig{fsa}b becomes straightforward
+  from observing the regularities in \reffig{fsa}a.
+Valid nodes transition to invalid nodes always and only when joined
+  on the relations \negate\ and \alternate.
+Symmetrically, invalid nodes transition to valid nodes always and only
+  when joined on \negate\ and \cover.
+A similar pattern holds for transitions from valid nodes and invalid
+  nodes to the unknown nodes.
+
+Formally, for every relation $r$ and nodes $a_1$ and $a_2$ in
+  cluster $\ba$,
+  if we have transitions 
+  $a_1 \xrightarrow{r} b_1$ and $a_2 \xrightarrow{r} b_2$
+  then $b_1$ and $b_2$ are in the same cluster.
+As a concrete example, we can take $r = \negate$ and
+  the two states in the \textit{invalid} cluster:
+  $a_1 = \negate$, $a_2 = \alternate$.
+Although $\negate \xrightarrow{\negate} \equivalent$ and
+  $\alternate \xrightarrow{\negate} \forward$, both
+  \equivalent\ and \forward\ are in the same cluster (\textit{valid}).
+It is not trivial \textit{a priori} that the join table should have
+  this regularity;
+  future work in Natural Logic can safely use a join table with only
+  three rows, rather than the seven shown.
+
+A few observations deserve passing remark.
+First, even though the
+  states \reverse\ and \cover\ appear meaningful, in fact there is no
+  ``escaping'' these states to into either a valid or invalid
+  inference.
+Second, the hierarchy over relations presented in
+  \newcite{key:2012icard-natlog} becomes apparent -- in particular,
+  \negate\ always behaves as negation, whereas its two ``weaker''
+  versions (\alternate\ and \cover) only behave as negation in certain
+  contexts.
 
 %The proof system from \refsec{maccartney-proof} can be naturally cast
 %  as a finite state automata.
