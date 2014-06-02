@@ -1,60 +1,146 @@
 \Section{intro}{Introduction}
-Natural Logic allows us to reason about language without
-  an intermediate logical form.
-Although projects like the Abstract Meaning Representation
-  \cite{key:2013banarescu-amr} have made headway providing a
-  broad-coverage logical representation for language, it remains 
-  appealing to use the unstructured language itself as the vessel for
-  inference.
-This is particularly true for common sense types of facts, where
-  the meaning representation is often less crisp than in Freebase-style
-  factoids.
-%In particular, Natural Logic is well-suited to capture many types
-%  of facts which are difficult to formalize 
+We approach the task of \textit{database completion}: given a
+  database of facts, we would like to predict whether an unseen fact
+  should belong to the database.
+This is naturally cast as an inference problem from 
+  a collection of candidate premises to the truth of the query.
+For example, we would like to be able to infer 
+  that \textit{no carnivores eat animals}
+  is false given a database containing \textit{the cat ate a mouse}
+  (see \reffig{teaser}).
 
 \begin{figure}[th]
 \begin{center}
   \resizebox{0.48\textwidth}{!}{\teaserSearch} \\
 \end{center}
 \caption{
-  A Natural Logic inference cast as search, proving that the
-    query \w{no carnivores eat animals} is false given the known fact
+  Natural Logic inference cast as search, disproving the
+    query \w{no carnivores eat animals} given the premise
     \w{the cat ate a mouse}.
-  The valid path is one of many candidates taken; the known fact found
+  The valid path is one of many candidates taken; the premise
     is one of many known facts in the database.
-  The edge labels denote Natural Logic inference steps, as
-    described in \refsec{maccartney-relations}.
+  The edge labels denote Natural Logic inference steps.
   \label{fig:teaser}
 }
 \end{figure}
 
-A key application for natural language inference is, in turn,
-  database completion: given a set of facts, predict whether an
-  unseen fact should belong in the database.
-Many such databases -- e.g., output from the OpenIE
-  project \cite{key:2007banko-openie} -- are in reality semi-structured
-  or unstructured text.
-This makes Natural Logic an appealing tool for the task.
+These inferences are difficult to capture with high recall 
+  in a principled way, particularly for open-domain text.
+Learned inference rules are difficult to generalize to large sets of
+  relations, and standard IR methods easily miss small but
+  semantically important lexical differences.
+Furthermore, many methods require explicitly modeling either the
+  database, the query, or both in a formal meaning representation
+  (e.g., Freebase tuples).
 
-However, prior work on Natural Logic has a few shortcomings:
-  (i) it assumes we know the premise for our inference,
-  (ii) it requires explicit alignment between this premise and the
-       query,
-  and (iii) it enforces strict entailment, whereas many applications
-    could make use of probabilistic entailment accompanied by a
-    confidence.
-We address the first two shortcomings by formulating Natural Logic
-  inference as a search problem from a query to any supporting
-  premise.
-The third point is addressed by allowing imprecise inference steps,
-  at the cost of an associated learned penalty.
+Although projects like the Abstract Meaning Representation
+  \cite{key:2013banarescu-amr} have made headway providing a
+  broad-coverage meaning representation, it remains 
+  appealing to use the human language itself as the vessel for
+  inference.
+Moreover, OpenIE and similar projects have been very successful at
+  collecting a database of natural language snippets
+  from an ever-increasing corpus of unstructured text.
+These factors motivate our use of Natural Logic -- a proof system built
+  on the syntax of human language -- to create a system for
+  broad coverage database completion.
 
-This then allows us to efficiently infer whether an unseen
-  common sense fact is \textit{true} or \textit{false} on the basis
-  of a very large, noisy, unstructured collection of known facts.
-An example inference is shown in \reffig{teaser};
-  \refsec{maccartney} explains the inference steps in the search,
-  \refsecs{search}{inference} describe the search problem in detail.
+Prior work on Natural Logic has focused on inferences from a single
+  relevant premise to justify a conclusion, making use of only
+  formally valid inferences.
+We propose three contributions to computational Natural Logic:
+  (i) This work operates over a very large set of (generally irrelevant)
+    candidate premises simultaneously;
+  (ii) this work maintains logically valid inferences without needing
+    to appeal to explicit alignment between the premise and the query;
+  and (iii) we allow imprecise inferences at an associated learned cost
+  to provide a more broad-coverage system over real-world facts.
+%In a similar vein, prior work has made use of alignments between the
+%  premise and the conclusion, which is not present in our setting;
+%  we show that we can do well on
+%  valid Natural Logic inferences even without this explicit alignment.
+%Lastly, we allow imprecise inferences%, with an associated confidence,
+%  to provide a more broad-coverage system over real-world facts.
+
+Our approach casts inference as a search problem from a query to any
+  premise which would support that query.
+Each transition along the search denotes a (reverse) inference step 
+  in Natural Logic, and incurs a cost reflecting the confidence
+  in the validity of that step.
+This approach offers two big contributions over prior work in
+  database completion:
+  (i) it allows for unstructured text as the input database without
+    any assumptions about the schema or domain of the text,
+  and (ii) it proposes Natural Logic rather than explicit
+    inference rules as the means of proposing inferences.
+
+%
+%   ---
+%   VERSION 2 SNIPPETS
+%   ---
+%
+
+%However, prior work on Natural Logic has a few shortcomings:
+%  (i) it assumes we know the premise for our inference,
+%  (ii) it requires explicit alignment between this premise and the
+%       query,
+%  and (iii) it enforces strict entailment, whereas many applications
+%    could make use of probabilistic entailment accompanied by a
+%    confidence.
+%We address the first two shortcomings by formulating Natural Logic
+%  inference as a search problem from a query to any supporting
+%  premise.
+%The third point is addressed by allowing imprecise inference steps,
+%  at the cost of an associated learned penalty.
+% 
+%
+%Natural Logic allows us to reason using human language without
+%  appealing an intermediate logical form.
+%Although projects like the Abstract Meaning Representation
+%  \cite{key:2013banarescu-amr} have made headway providing a
+%  broad-coverage logical representation for language, it remains 
+%  appealing to use the human language itself as the vessel for
+%  inference.
+%This is particularly true for common sense types of facts, where
+%  the meaning is often less crisp than in Freebase-style
+%  factoids.
+%%In particular, Natural Logic is well-suited to capture many types
+%%  of facts which are difficult to formalize 
+%
+%A key application for natural language inference is, in turn,
+%  database completion: given a set of facts, predict whether an
+%  unseen fact should belong in the database.
+%Many such databases -- e.g., output from the OpenIE
+%  project \cite{key:2007banko-openie} -- are in reality semi-structured
+%  or unstructured text.
+%This makes Natural Logic an appealing tool for the task.
+%
+%However, prior work on Natural Logic has a few shortcomings:
+%  (i) it assumes we know the premise for our inference,
+%  (ii) it requires explicit alignment between this premise and the
+%       query,
+%  and (iii) it enforces strict entailment, whereas many applications
+%    could make use of probabilistic entailment accompanied by a
+%    confidence.
+%We address the first two shortcomings by formulating Natural Logic
+%  inference as a search problem from a query to any supporting
+%  premise.
+%The third point is addressed by allowing imprecise inference steps,
+%  at the cost of an associated learned penalty.
+%
+%This then allows us to efficiently infer whether an unseen
+%  common sense fact is \textit{true} or \textit{false} on the basis
+%  of a very large, noisy, unstructured collection of known facts.
+%An example inference is shown in \reffig{teaser};
+%  \refsec{maccartney} explains the inference steps in the search,
+%  \refsecs{search}{inference} describe the search problem in detail.
+
+%
+%   ---
+%   VERSION 1
+%   ---
+%
+
 
 %Common-sense reasoning if prevalent in a number of AI tasks;
 %  although such reasoning is difficult in general, we hope to

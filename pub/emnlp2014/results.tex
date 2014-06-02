@@ -1,7 +1,7 @@
 \Section{results}{Experiments}
 We evaluate our system on two tasks: the FraCaS test suite used
-  by \newcite{key:2007maccartney-natlog} and \newcite{key:2008maccartney-natlog},
-  evaluate the systems ability to capture Natural Logic inferences
+  by MacCartney and Manning \shortcite{key:2007maccartney-natlog,key:2008maccartney-natlog},
+  evaluates the system's ability to capture Natural Logic inferences
   even without the explicit alignments of these previous systems.
 In addition, we evaluate the system's ability to predict common-sense
   facts from a large corpus of OpenIE extractions.
@@ -13,7 +13,7 @@ In addition, we evaluate the system's ability to predict common-sense
 % FraCaS
 %
 \Subsection{results-fracas}{FraCaS Entailment Corpus}
-The FraCaS textual entailment corpus \cite{key:1996cooper-fracas}
+The FraCaS corpus \cite{key:1996cooper-fracas}
   is a small corpus of entailment problems, aimed at providing a
   comprehensive test of an entailment system's handling of various
   entailment patterns.
@@ -149,11 +149,12 @@ It is clear from the parse of the sentence that the first is valid
 \end{center}
 \end{table}
 
-We validate our system's ability to validate unseen common sense facts
+We validate our system's ability to infer unseen common sense facts
   from a large database of such facts.
 Whereas evaluation of FraCaS shows that our search formulation captures
   applicable inferences as well as prior work, this evaluation presents
-  a new use-case for Natural Logic which is not trivial with prior work.
+  a new use-case for Natural Logic which is not trivial
+  given prior work.
 
 For our database of facts, we run the Ollie OpenIE system
   \cite{key:2012mausam-ollie} over Wikipedia, Simple Wikipedia,\footnote{
@@ -209,12 +210,12 @@ We compare against the baseline of looking up each fact verbatim in the
   fact database.
 Note that both the query and the facts in the database are lemmatized
   and lower-cased; therefore, it is not in principle unreasonable to
-  expect at database of 300 million extractions to contain these
+  expect a database of 300 million extractions to contain these
   facts.
 Nonetheless, only 12\% of facts were found via a lookup to the
   database.
-We show that NaturalLI improves this recall four-fold, at only an
-  8.5\% drop in precision.
+We show that NaturalLI (allowing lookups) improves this recall
+  four-fold, at only an 8.5\% drop in precision.
 Furthermore, if we prohibit matching the query fact verbatim,
   we still recover all but 8\% of our recall.
 

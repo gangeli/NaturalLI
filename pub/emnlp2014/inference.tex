@@ -215,7 +215,7 @@ We set $f_{t_i}$ to be 1\ in most cases;
   the exception are the edges over the WordNet hypernym tree,
   and the nearest neighbors edges.
 In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
-  from word $w$ to its hypernym $w'$ (and visa versa for
+  from word $w$ to its hypernym $w'$ (and vice versa for
   $\downarrow_{w \rightarrow w'}$), and set:
 
 \begin{align*}
@@ -245,12 +245,12 @@ We then define $f_{NN_{w \rightarrow w'}}$
 
 The set of features which fire along a path
   can be expressed as a vector $\bef$.
-Each element of $\bef$ corresponds to sum of the values of that
+Each element of $\bef$ corresponds to the sum of the values of that
   feature along the path.
 Correspondingly, we define the weight vector $\btheta$ as the
   weight for every element of $\bef$.
 The cost of a path can then be expressed as the dot product:
-  $\theta^{\textrm{T}}\bef$.
+  $\theta \cdot \bef$.
 
 %
 % Generalize JC
@@ -275,13 +275,13 @@ Without loss of generality, we also assume that a path in our search
   is only modifying a single word $w_1$, ending at a mutation of the
   word $w_2$.
 
-We can factorize the cost of a path, $\btheta^{T}\bef$, along the path
+We can factorize the cost of a path, $\theta \cdot \bef$, along the path
   from $w_1$ to $w_2$ through its lowest common subsumer (lcs),
   $[w_1, w_1^{(1)}, \dots, \textrm{lcs}, \dots,  w_2^{(1)}, w_2]$,
   as follows:
 
 \begin{align*}
-\theta^{\textrm{T}}\phi
+\theta \cdot \phi
   &= \theta_\uparrow \left( 
     \left[\log p(w_1^{(1)}) - \log p(w_1)\right] +
     \dots
@@ -317,12 +317,12 @@ In this way, the search based approach presented here can be thought
 The last component in inference is translating a search path into a
   probability of truth.
 We notice from \refsec{inference-transitions} that the \textit{cost}
-  of a path can be represented as $\btheta^{T} \bef$.
+  of a path can be represented as $\btheta \cdot \bef$.
 We can normalize this value by negating every element of the weight
   vector and passing it through a sigmoid:
 
 \begin{equation*}
-\textrm{confidence} = \frac{1}{1 + e^{\btheta^{T} \bef}}
+\textrm{confidence} = \frac{1}{1 + e^{\theta \cdot \bef}}
 \end{equation*}
 
 Importantly, note that the cost vector must be non-negative for the
@@ -343,12 +343,12 @@ We take $v$ to be 1 if the final fact of our derivation is in the
   and -1 if this fact is in the \textit{invalid} state.
 In practice, as our search is reversed, we take the state of the
   antecedent in our database when compared to the consequent, rather
-  than visa versa.
+  than vice versa.
 For completeness, if no path is given we can set $v=0$.
 The probability of validity then becomes:
 
 \begin{equation}
-  p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \btheta^{T} \bef}}
+  p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \theta \cdot \bef}}
   \label{eqn:prob}
 \end{equation}
 

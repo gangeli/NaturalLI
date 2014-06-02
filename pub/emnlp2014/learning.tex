@@ -16,8 +16,8 @@ At each iteration, analogous to logistic regression,
 
 \begin{align*}
 \l\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
-    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta^{T} f(x_i)}} \right) \\
-    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta^{T} f(x_i)}} \right)
+    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot f(x_i)}} \right) \\
+    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot f(x_i)}} \right)
   \Big],
 \end{align*}
 
@@ -26,8 +26,8 @@ At each iteration, analogous to logistic regression,
   $v_i$ is the inference state predicted in search, as in
   \refsec{inference-prob}.
 The objective function becomes our negative log-likelihood, in addition
-  to an $l_2$ regularization term, and a small log term to prohibit
-  costs from becoming negative:
+  to an $l_2$ regularization term, and a log barrier function to 
+  prohibit negative costs:
 
 \begin{equation*}
 O(\sD) = -\l\l_\theta(\sD) 
