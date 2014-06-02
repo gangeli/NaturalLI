@@ -6,28 +6,44 @@
 %  \cite{key:2008maccartney-natlog}, and taken the two-step of approach
 %  of aligning the antecedent and consequent, and classifying each
 %  aligned segment into a mutation relation.
-For common-sense reasoning, we are not given a well-defined
-  antecedent, but rather have at our disposal a large database of
-  true facts.
-This makes the align-and-classify approach of 
-  \refsec{maccartney-proof} substantially
-  less appealing, as candidate antecedents are not readily available.
 
-We therefore approach the problem as a search task: given the
-  consequent (the query), we search over the space of possible facts for
-  a valid antecedent in our database.
-The nodes in our search problem correspond to candidate facts; the
-  edges are mutations of these facts; the costs over these edges encode
-  the confidence (or likelihood) that this edge
-  maintains maintains an informative inference.
+%For common-sense reasoning, we are not given a well-defined
+%  antecedent, but rather have at our disposal a large database of
+%  true facts.
+%This makes the align-and-classify approach of 
+%  \refsec{maccartney-proof} substantially
+%  less appealing, as candidate antecedents are not readily available.
 
-We define the problem by specifying the state space,
-  the valid transitions, along with the weights of
-  the transitions.
-We then describe how these weights translate to the confidence of truth
-  of a fact, and show that our search is at worst a generalization of
-  JC distance \cite{key:1997jc-similarity} -- a common WordNet similarity
-  metric.
+Natural Logic allows us to formalize our approach elegantly as
+  a single general search problem.
+Given a query, we search over the space of possible facts for
+  a valid premise in our database.
+The nodes in our search problem correspond to candidate facts
+  (\refsec{inference-state});
+  the edges are mutations of these facts (\refsec{inference-transitions}); 
+  the costs over these edges encode the confidence that this edge
+  maintains an informative inference.
+
+This approach is efficient over a large database of 300 million entries
+  without queries over the database to limit the search space; nor
+  does it make use of any sort of approximate matching against 
+  the database, beyond lemmatizing individual lexical items.
+However, occasionally approximate matches, penalized appropriately,
+  are beneficial for downstream applications.
+We show that allowing invalid transitions with appropriate costs
+  generalizes JC distance \cite{key:1997jc-similarity} -- a common
+  thesaurus-based similarity metric (\refsec{inference-jc}).
+Importantly, however, the entire inference pipeline is done
+  within the framework of weighted lexical transitions in Natural
+  Logic.
+
+%We define the problem by specifying the state space,
+%  the valid transitions, along with the weights of
+%  the transitions.
+%We then describe how these weights translate to the confidence of truth
+%  of a fact, and show that our search is at worst a generalization of
+%  JC distance \cite{key:1997jc-similarity} -- a common WordNet similarity
+%  metric.
 
 %
 % Node
@@ -55,17 +71,24 @@ In addition to this minimal information, a node in our search keeps
 %  WordNet as words -- for instance, \textit{fire truck} is treated as
 %  a single word.
 
-\paragraph{Lexical mutations}
-As per our definition, transitions between nodes are transitions 
-  between facts.
-However, the lexical resources for the mutations are over lexical items
-  (e.g., \textit{feline} $\reverse$ \textit{cat}) rather than
-  entire facts.
-This motivates the inclusion of an index $i$ in our node, denoting the
-  index of the item which may be mutated.
-Importantly, this also imposes a natural ordering of items to
-  mutate, making search more efficient at the expense of rare
-  search errors.
+\paragraph{Mutation Index}
+Edges in the graph correspond to mutations of individual lexical items.
+We maintain an index of the next item to mutate at each search state.
+Importantly, this enforces each derivation to order mutations
+  right-to-left;
+  this is computationally efficient, at the expense of rare search
+  errors.
+
+%As per our definition, transitions between nodes are transitions 
+%  between facts.
+%Lexical resources for mutations are over lexical items
+%  (e.g., \textit{feline} $\reverse$ \textit{cat}) rather than
+%  entire facts.
+%This motivates the inclusion of an index $i$ in our node, denoting the
+%  index of the item which may be mutated.
+%Importantly, this imposes a natural ordering of items to
+%  mutate, making search more efficient at the expense of rare
+%  search errors.
 %The mutation index is allowed to shift forwards through the
 %  fact (at no cost), but not backwards.
 %This helps make search more tractable, at the expense of rare
@@ -76,27 +99,25 @@ Importantly, this also imposes a natural ordering of items to
 Although inserting lexical items in a derivation (deleting words from
   the reversed derivation) is trivial, the other direction is not.
 For brevity, we refer to a deletion in the derivation as an insertion,
-  as from the perspective of the search algorithm constructing a reverse
-  derivation, we are inserting lexical items.
+  as from the perspective of search we are inserting lexical items.
+
 \naive ly, at every node in our search, we must consider every item in
   the vocabulary as a possible insertion.
-
-This is largely handled by storing the database of known facts as a
-  trie.
+Instead, we store the database as a trie.
 Since search mutates the fact left-to-right (as per above), we can
-  look up completions in the trie to use as candidate insertions.
+  look up completions in the trie as candidate insertions.
 To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$
   and mutation index $i$, we would look up completions $w_{i+1}$ for
   $w_0,w_1,\dots,w_i$ in our trie of known facts.
 
 Although this approach works well when $i$ is relatively large, there
-  are likely many candidate insertions for small $i$.
-We special case the most extreme case for this, where $i=0$; that is, 
+  are too many candidate insertions for small $i$.
+We special case the most extreme example for this, where $i=0$; that is, 
   when we are inserting into the beginning of the fact.
 In this case, rather than taking all possible lexical items that start
   any fact, we take all items which are followed by the first word of
   our current fact.
-For instance, given a search state with fact $w_0,w_1,\dots,w_n$,
+To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$,
   we would propose candidate insertions $w_{-1}$ such that
   $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact,
   for some $w^\prime_1,\dots,w^\prime_k$.
@@ -129,17 +150,19 @@ Since we do not have the full parse tree at our disposal at search,
 We begin by introducing some terminology.
 A \textit{transition template} is a broad class of transitions; for
   instance WordNet hypernymy.
-A \textit{transition} or \textit{transition instance} is a particular
+A \textit{transition} (or \textit{transition instance}) is a particular
   instantiation of a transition template.
 For example, the transition from \textit{cat} to \textit{feline}.
 Lastly, an \textit{edge} in the search space connects two facts, which
   are separated by a single transition instance.
 For example, an edge exists between 
   \textit{some cats have tails} and \textit{some felines have tails}.
+Transitions are stored statically, whereas edges are constructed
+  on demand.
 
-Note that the edges in the search are not constructed \textit{a priori}.
-It is sufficient to store the transitions, and construct particular
-  edges on demand.
+%Note that the edges in the search are not constructed \textit{a priori}.
+%It is sufficient to store the transitions, and construct particular
+%  edges on demand.
 At a high level, we include most relations in WordNet as transitions,
   and parametrize insertions and deletions by the part of speech
   of the token being inserted/deleted.
@@ -147,23 +170,40 @@ The full table of transitions is given in \reftab{transitions}, along
   with the relation that transition introduces, and an example edge
   in our derivation corresponding to that transition.
 
-\begin{table*}
+\begin{table}
 \begin{center}
+%  \begin{tabular}{lcl}
+%    \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
+%    \hline
+%    WordNet hypernym                     & \forward    & \textit{some cats like milk} \forward\ \textit{some felines like milk} \\
+%    WordNet hyponym                      & \reverse    & \textit{some felines like milk} \reverse\ \textit{some cats like milk} \\
+%    WordNet antonym$^\dagger$            & \alternate  & \textit{all cats like milk} \alternate\ \textit{all cats hate milk} \\
+%    WordNet synonym/pertainym$^\dagger$  & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats enjoy milk} \\
+%    Distributional nearest neighbor      & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats like dairy} \\
+%    Delete word$^\dagger$                & \forward    & \textit{some tabby cats like milk} \forward\ \textit{some cats like milk} \\
+%    Add word$^\dagger$                   & \reverse    & \textit{some cats like milk} \reverse\ \textit{some tabby cats like milk} \\
+%    Quantifier weaken                    & \forward    & \textit{all cats like milk} \forward\ \textit{some cats like milk} \\
+%    Quantifier strengthen                & \reverse    & \textit{some cats like milk} \reverse\ \textit{all felines like milk} \\
+%    Quantifier negate                    & \negate     & \textit{some cats like milk} \negate\ \textit{no felines like milk} \\
+%    Quantifier synonym                   & \equivalent & \textit{some cats like milk} \equivalent\ \textit{a few cats like milk} \\
+%    Change word sense                    & \equivalent & 
+%  \end{tabular}
+  
   \begin{tabular}{lcl}
-    \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
+    \textbf{Template} & \textbf{Relation} \\
     \hline
-    WordNet hypernym                     & \forward    & \textit{some cats like milk} \forward\ \textit{some felines like milk} \\
-    WordNet hyponym                      & \reverse    & \textit{some felines like milk} \reverse\ \textit{some cats like milk} \\
-    WordNet antonym$^\dagger$            & \alternate  & \textit{all cats like milk} \alternate\ \textit{all cats hate milk} \\
-    WordNet synonym/pertainym$^\dagger$  & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats enjoy milk} \\
-    Distributional nearest neighbor      & \equivalent & \textit{some cats like milk} \equivalent\ \textit{some cats like dairy} \\
-    Delete word$^\dagger$                & \forward    & \textit{some tabby cats like milk} \forward\ \textit{some cats like milk} \\
-    Add word$^\dagger$                   & \reverse    & \textit{some cats like milk} \reverse\ \textit{some tabby cats like milk} \\
-    Quantifier weaken                    & \forward    & \textit{all cats like milk} \forward\ \textit{some cats like milk} \\
-    Quantifier strengthen                 & \reverse    & \textit{some cats like milk} \reverse\ \textit{all felines like milk} \\
-    Quantifier negate                     & \negate     & \textit{some cats like milk} \negate\ \textit{no felines like milk} \\
-    Quantifier synonym                    & \equivalent & \textit{some cats like milk} \equivalent\ \textit{a few cats like milk} \\
-    Change word sense                    & \equivalent & 
+    WordNet hypernym                     & \forward    \\ 
+    WordNet hyponym                      & \reverse    \\ 
+    WordNet antonym$^\dagger$            & \alternate  \\ 
+    WordNet synonym/pertainym$^\dagger$  & \equivalent \\ 
+    Distributional nearest neighbor      & \equivalent \\ 
+    Delete word$^\dagger$                & \forward    \\ 
+    Add word$^\dagger$                   & \reverse    \\ 
+    Quantifier weaken                    & \forward    \\ 
+    Quantifier strengthen                & \reverse    \\ 
+    Quantifier negate                    & \negate     \\ 
+    Quantifier synonym                   & \equivalent \\ 
+    Change word sense                    & \equivalent \\ 
   \end{tabular}
 	\caption{
     The edges allowed during inference.
@@ -172,12 +212,12 @@ The full table of transitions is given in \reftab{transitions}, along
     The first column describes the type of the transition.
     The set-theoretic relation introduced by each relation is given in
       the second column.
-    The third column gives an example of the transition in practice,
-      as an edge in the search graph.
+%    The third column gives an example of the transition in practice,
+%      as an edge in the search graph.
 		\label{tab:transitions}
 	}
 \end{center}
-\end{table*}
+\end{table}
 
 It should be noted that the mapping from transitions to relation
   types is intentionally imprecise.
@@ -192,13 +232,13 @@ For instance, clearly nearest neighbors do not preserve equivalence
 We mitigate this imprecision by introducing a cost for each transition,
   and learning the appropriate value for this cost
   (see \refsec{learning}).
-
-The cost of an edge is parametrized by two values; the cost of an edge
+The cost of an edge
   from fact $(f,v,p)$ with surface form $f$, validity
   $v$ and polarity $p$ to a new fact $(f',v',p')$ using a transition
   instance $t_i$ of type $t$ is given by
   $f_{t_i} \cdot \theta_{t,v,p}$, where:
 
+\vspace{-0.25em}
 \begin{itemize}
   \indentitem\item[$f_{t_i}$:]
     A value associated with every transition instance $t_i$, intuitively
@@ -208,6 +248,7 @@ The cost of an edge is parametrized by two values; the cost of an edge
     of the edge is in a validity state of $v$ and the word being mutated
     has polarity $p$.
 \end{itemize}
+\vspace{-0.25em}
 
 The notation for $f_{t_i}$ is chosen to evoke an analogy to features,
   and we will refer to this quantity as the feature value.
@@ -215,13 +256,16 @@ We set $f_{t_i}$ to be 1\ in most cases;
   the exception are the edges over the WordNet hypernym tree,
   and the nearest neighbors edges.
 In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
-  from word $w$ to its hypernym $w'$ (and vice versa for
-  $\downarrow_{w \rightarrow w'}$), and set:
+  from word $w$ to its hypernym $w'$, and set:
+%  (and vice versa for
+%  $\downarrow_{w \rightarrow w'}$), and set:
 
-\begin{align*}
-  f_{\uparrow_{w \rightarrow w'}}   &= \log \frac{p(w')}{p(w)} &= \log p(w') - \log p(w) \\
-  f_{\downarrow_{w \rightarrow w'}} &= \log \frac{p(w)}{p(w')} &= \log p(w) - \log p(w')
-\end{align*}
+\vspace{-0.5em}
+\begin{equation*}
+  f_{\uparrow_{w \rightarrow w'}}   = \log \frac{p(w')}{p(w)} = \log p(w') - \log p(w)
+%  f_{\downarrow_{w \rightarrow w'}} &= \log \frac{p(w)}{p(w')} &= \log p(w) - \log p(w')
+\end{equation*}
+\vspace{-0.5em}
 
 We define $p(w)$ to be the probability (normalized frequency)
   of a word or any of its hyponyms in the Google N-Grams corpus
@@ -231,6 +275,7 @@ Intuitively, this ensures that relatively long paths through fine-grained
 For instance, the path from \textit{cat} to \textit{animal} traverses
   six intermediate nodes, \naive ly yielding a prohibitive
   search depth of 6.
+The value $f_{\downarrow_{w \rightarrow w'}}$ is set in the same way.
 
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
@@ -238,16 +283,18 @@ We then define $f_{NN_{w \rightarrow w'}}$
   to be the arc cosine of the cosine similarity between word vectors
   associated with lexical items $w$ and $w'$:
 
+\vspace{-0.5em}
 \begin{equation*}
   f_{NN_{w \rightarrow w'}}
     = \textrm{arccos} \left( \frac{w \cdot w'}{\|w\| \|w'\|} \right)
 \end{equation*}
+\vspace{-0.5em}
 
 The set of features which fire along a path
   can be expressed as a vector $\bef$.
 Each element of $\bef$ corresponds to the sum of the values of that
   feature along the path.
-Correspondingly, we define the weight vector $\btheta$ as the
+Correspondingly, we define the weight vector $\theta$ as the
   weight for every element of $\bef$.
 The cost of a path can then be expressed as the dot product:
   $\theta \cdot \bef$.
@@ -258,28 +305,32 @@ The cost of a path can then be expressed as the dot product:
 \Subsection{inference-jc}{Generalizing Similarities}
 An elegant property of our definitions of $f_{t_i}$ is its ability to
   generalize JC distance, and upper-bound distributional similarity.
-Let us assume we have words $w_1$ and $w_2$, with a least common subsumer $\textrm{lcs}$.
+Let us assume we have lexical items $w_1$ and $w_2$, with a least common 
+  subsumer $\textrm{lcs}$.
 The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 
+\vspace{-0.5em}
 \begin{equation}
 \textrm{dist}_{\textrm{jc}}(w_1, w_2)
   = \log\frac{p(\textrm{lcs})^2}{p(w_1)p(w_2)}
 \label{eqn:jc}
 \end{equation}
+\vspace{-0.5em}
 
 For simplicity, we simplify $\theta_{\uparrow,v,p}$ and $\theta_{\uparrow,v,p}$
   as simply $\theta_\uparrow$ and $\theta_\downarrow$.
-The derivation generalizes trivially to the the case where weights are
-  further parametrized.
+%The derivation generalizes trivially to the the case where weights are
+%  further parametrized.
 Without loss of generality, we also assume that a path in our search
-  is only modifying a single word $w_1$, ending at a mutation of the
-  word $w_2$.
+  is only modifying a single lexical item $w_1$, eventually 
+  reaching a mutated form $w_2$.
 
 We can factorize the cost of a path, $\theta \cdot \bef$, along the path
   from $w_1$ to $w_2$ through its lowest common subsumer (lcs),
   $[w_1, w_1^{(1)}, \dots, \textrm{lcs}, \dots,  w_2^{(1)}, w_2]$,
   as follows:
 
+\vspace{-0.5em}
 \begin{align*}
 \theta \cdot \phi
   &= \theta_\uparrow \left( 
@@ -297,18 +348,23 @@ We can factorize the cost of a path, $\theta \cdot \bef$, along the path
   &= \log \frac{ p(\textrm{lcs})^{\theta_\uparrow + \theta_\downarrow} }
                { p(w_1)^{\theta_\uparrow} + p(w_2)^{\theta_\downarrow} }
 \end{align*}
+\vspace{-0.5em}
 
 Note that setting both $\theta_\uparrow$ and $\theta_\downarrow$ to 1 exactly
   yield the Formula \refeqn{jc} for JC distance.
-
-It is also worth noting that the nearest neighbors path provides an
-  upper bound on the true similarity between the start and end words
-  in the path.
-In this way, the search based approach presented here can be thought
-  of as generalizing and formalizing the intuition that similar objects 
-  have similar properties (e.g., as presented in
-  \newcite{key:2013angeli-truth}) using both common classes of similarity
-  metrics.
+This, in addition to the inclusion of nearest neighbors as transitions,
+  allows the search to capture the intuition that similar objects
+  have similar properties
+  (e.g., as used in \newcite{key:2013angeli-truth}).
+%
+%It is also worth noting that the nearest neighbors path provides an
+%  upper bound on the true similarity between the start and end item
+%  in the path.
+%In this way, the search based approach presented here can be thought
+%  of as generalizing and formalizing the intuition that similar objects 
+%  have similar properties (e.g., as presented in
+%  \newcite{key:2013angeli-truth}) using both common classes of similarity
+%  metrics.
 
 %
 % PROBABILITY
@@ -317,13 +373,15 @@ In this way, the search based approach presented here can be thought
 The last component in inference is translating a search path into a
   probability of truth.
 We notice from \refsec{inference-transitions} that the \textit{cost}
-  of a path can be represented as $\btheta \cdot \bef$.
+  of a path can be represented as $\theta \cdot \bef$.
 We can normalize this value by negating every element of the weight
   vector and passing it through a sigmoid:
 
+\vspace{-0.5em}
 \begin{equation*}
 \textrm{confidence} = \frac{1}{1 + e^{\theta \cdot \bef}}
 \end{equation*}
+\vspace{-0.5em}
 
 Importantly, note that the cost vector must be non-negative for the
   search to be well-defined, and therefore the confidence value will
@@ -341,16 +399,18 @@ We therefore define the probability of validity as follows.
 We take $v$ to be 1 if the final fact of our derivation is in the
   \textit{valid} state with respect to the antecedent,
   and -1 if this fact is in the \textit{invalid} state.
-In practice, as our search is reversed, we take the state of the
-  antecedent in our database when compared to the consequent, rather
-  than vice versa.
+%In practice, as our search is reversed, we take the state of the
+%  antecedent in our database when compared to the consequent, rather
+%  than vice versa.
 For completeness, if no path is given we can set $v=0$.
 The probability of validity then becomes:
 
+\vspace{-0.5em}
 \begin{equation}
   p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \theta \cdot \bef}}
   \label{eqn:prob}
 \end{equation}
+\vspace{-0.5em}
 
 Note that in the case where $v=-1$, the above expression reduces to
   $\frac{1}{2} - \textrm{confidence}$; in the case where $v=0$ it
@@ -360,4 +420,4 @@ Furthermore, note that the probability of truth makes use of the same
 Thus, as better weights are learned, the search is likewise more likely
   to produce derivations which would confidently support or disprove the
   query.
-We proceed to describe how these weights are learned.
+%We proceed to describe how these weights are learned.

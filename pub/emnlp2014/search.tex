@@ -1,7 +1,7 @@
 \Section{search}{Inference as a Finite State Machine}
 
 % -- FSA Diagrams --
-\begin{figure*}
+\begin{figure*}[t]
 \begin{center}
   \begin{tabular}{cc}
     \resizebox{0.40\textwidth}{!}{\completeFSA} &
@@ -23,11 +23,12 @@
 }
 \end{figure*}
 
-We augment the proof system in \refsec{maccartney-proof} in two ways:
+This work augments the proof system from \refsec{maccartney-proof}
+  in two ways:
   we show that the proof can be viewed as a finite state machine,
-  and we show that when we only care about the validity of the final
-  inference we can losslessly collapse this finite state machine into
-  a much simpler one.
+  and we show that we can losslessly collapse this
+  finite state machine into a much simpler one with only three
+  intuitive inference states.
 These will allow us to formulate our search problem such that a path
   in search corresponds to a path through this state machine, which
   in turn specifies a logical derivation.
@@ -78,7 +79,7 @@ Although $\negate \xrightarrow{\negate} \equivalent$ and
   \equivalent\ and \forward\ are in the same cluster (\textit{valid}).
 It is not trivial \textit{a priori} that the join table should have
   this regularity;
-  future work in Natural Logic can safely use a join table with only
+  future work in Natural Logic can use a join table with only
   three rows, rather than the seven shown.
 
 A few observations deserve passing remark.
@@ -91,6 +92,11 @@ Second, the hierarchy over relations presented in
   \negate\ always behaves as negation, whereas its two ``weaker''
   versions (\alternate\ and \cover) only behave as negation in certain
   contexts.
+Lastly, with probilistic inference,
+  transitioning to the unknown state can be replaced by staying in the
+  current state at a cost to the confidence of validity.
+This allows us to make use of only two states, with associated
+  confidence.
 
 %The proof system from \refsec{maccartney-proof} can be naturally cast
 %  as a finite state automata.

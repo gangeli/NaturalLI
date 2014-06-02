@@ -250,7 +250,7 @@ trait Client extends Evaluator {
       case Props.Corpus.MTURK_TEST => MTurk.read(Props.DATA_MTURK_TEST.getPath)
       case Props.Corpus.MTURK_TRAIN_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TRAIN.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
       case Props.Corpus.MTURK_TEST_OPTIMISTIC => MTurk.read(Props.DATA_MTURK_TEST.getPath).filter(MTurk.isUnderLength(10)).filter(MTurk.isUnkFree)
-      case Props.Corpus.CONCEPTNET => ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).take(10000)
+      case Props.Corpus.CONCEPTNET => ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).take(2867)
       case Props.Corpus.CONCEPTNET_MTURK_TRAIN =>
         val count = 540
         ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath, drop=10000).take(count) ++

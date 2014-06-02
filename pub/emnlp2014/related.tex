@@ -9,11 +9,11 @@ For instance, OpenIE systems
 % NELL
 In a similar vein, NELL \cite{key:2010carlson-nell,key:2013gardnerpra-nell}
   continuously learns new high-precision facts from the internet.
-% ConceptNet
-The MIT Media Lab's \sys{ConceptNet} project
-  \cite{key:2004liu-conceptnet}
-  has been working on creating a large knowledge base emphasizing
-  common sense facts.
+%% ConceptNet
+%The MIT Media Lab's \sys{ConceptNet} project
+%  \cite{key:2004liu-conceptnet}
+%  has been working on creating a large knowledge base emphasizing
+%  common sense facts.
 
 % -- Extending OpenIE
 % (people extending OpenIE)
@@ -30,15 +30,15 @@ For instance,
 \newcite{key:2013chen-completion} and \newcite{key:2013socher-completion}
   use Neural Tensor Networks to predict unseen relation triples in
   WordNet and Freebase.
-This work runs inference over arbitrary text, without restricting itself
-  to a particular set of relations, or even entities.
 % Universal schemas
 \newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
   present a related line of work, inferring new relations between
   Freebase entities by appealing to inferences over both Freebase and
   OpenIE relations.
-This work, however, focuses primarily on common-sense reasoning rather
-  than inferring relations between named entities.
+This work runs inference over arbitrary text, without restricting itself
+  to a particular set of relations, or even entities.
+%This work, however, focuses primarily on common-sense reasoning rather
+%  than inferring relations between named entities.
 
 
 % -- GOFAI
@@ -52,8 +52,8 @@ Similarly, \newcite{key:1989pearl-probabilistic} presents a framework for
   assigning confidences to inferences which can be reasonably assumed.
 Our approach differs from these attempts in part in its use of Natural Logic
   as the underlying inference engine, and more substantially in its
-  attempt at creating a truly broad-coverage system dealing with
-  millions of candidate antecedents.
+  attempt at creating a broad-coverage system.
+%  dealing with millions of candidate antecedents.
 
 % -- Applications
 Many NLP applications query large knowledge bases.

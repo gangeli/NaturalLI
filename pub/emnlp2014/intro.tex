@@ -3,7 +3,7 @@ We approach the task of \textit{database completion}: given a
   database of facts, we would like to predict whether an unseen fact
   should belong to the database.
 This is naturally cast as an inference problem from 
-  a collection of candidate premises to the truth of the query.
+  a collection of true candidate premises to the truth of the query.
 For example, we would like to be able to infer 
   that \textit{no carnivores eat animals}
   is false given a database containing \textit{the cat ate a mouse}
@@ -26,7 +26,7 @@ For example, we would like to be able to infer
 
 These inferences are difficult to capture with high recall 
   in a principled way, particularly for open-domain text.
-Learned inference rules are difficult to generalize to large sets of
+Learned inference rules are difficult to generalize to arbitrary
   relations, and standard IR methods easily miss small but
   semantically important lexical differences.
 Furthermore, many methods require explicitly modeling either the
@@ -36,9 +36,9 @@ Furthermore, many methods require explicitly modeling either the
 Although projects like the Abstract Meaning Representation
   \cite{key:2013banarescu-amr} have made headway providing a
   broad-coverage meaning representation, it remains 
-  appealing to use the human language itself as the vessel for
+  appealing to use the human language as the vessel for
   inference.
-Moreover, OpenIE and similar projects have been very successful at
+OpenIE and similar projects have been very successful at
   collecting a database of natural language snippets
   from an ever-increasing corpus of unstructured text.
 These factors motivate our use of Natural Logic -- a proof system built
@@ -46,15 +46,17 @@ These factors motivate our use of Natural Logic -- a proof system built
   broad coverage database completion.
 
 Prior work on Natural Logic has focused on inferences from a single
-  relevant premise to justify a conclusion, making use of only
+  relevant premise, making use of only
   formally valid inferences.
 We propose three contributions to computational Natural Logic:
-  (i) This work operates over a very large set of (generally irrelevant)
+  (i) this work operates over a very large set of (generally irrelevant)
     candidate premises simultaneously;
-  (ii) this work maintains logically valid inferences without needing
-    to appeal to explicit alignment between the premise and the query;
-  and (iii) we allow imprecise inferences at an associated learned cost
-  to provide a more broad-coverage system over real-world facts.
+  (ii) this work does not
+    appeal to explicit alignment between the premise and the query;
+  and (iii) this work allows imprecise inferences at an
+    associated learned cost.
+%    to provide a broad-coverage system over real-world facts.
+
 %In a similar vein, prior work has made use of alignments between the
 %  premise and the conclusion, which is not present in our setting;
 %  we show that we can do well on
@@ -73,6 +75,8 @@ This approach offers two big contributions over prior work in
     any assumptions about the schema or domain of the text,
   and (ii) it proposes Natural Logic rather than explicit
     inference rules as the means of proposing inferences.
+Moreover, the entire inference pipeline exists within the context
+  of this search over Natural Logic inferences.
 
 %
 %   ---

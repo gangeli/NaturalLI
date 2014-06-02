@@ -1,6 +1,6 @@
 \Section{learning}{Learning Transition Costs}
 The learning task can be viewed as a constrained optimization problem.
-Subject to the constraint that all elements of the cost vector \btheta\ 
+Subject to the constraint that all elements of the cost vector $\theta$ 
   must be non-negative, we optimize the probability from
   Equation \refeqn{prob} compared against the gold annotation.
 As training data, we are given a number of facts, annotated with a
@@ -11,41 +11,49 @@ We assume that all facts in our database are true; therefore,
 We learn costs using an iterative algorithm.
 At each iteration, we take the costs from the previous iteration
   and run search over every example to obtain candidate paths.
-At each iteration, analogous to logistic regression,
+Analogous to logistic regression,
   the log-likelihood of the training data becomes:
 
+\vspace{-0.5em}
 \begin{align*}
 \l\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
     y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot f(x_i)}} \right) \\
     &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot f(x_i)}} \right)
   \Big],
 \end{align*}
+\vspace{-0.5em}
 
 \noindent where $y_i$ is 1 if the example is annotated true, and 0
   otherwise, $f(x_i)$ are the features extracted for path $i$, and
   $v_i$ is the inference state predicted in search, as in
   \refsec{inference-prob}.
 The objective function becomes our negative log-likelihood, in addition
-  to an $l_2$ regularization term, and a log barrier function to 
+  to an $l_2$ regularization term and a log barrier function to 
   prohibit negative costs:
+\vspace{-0.5em}
 
 \begin{equation*}
 O(\sD) = -\l\l_\theta(\sD) 
   + \frac{1}{2 \sigma^2}\|\theta\|_2^2
   - \epsilon \log(-\theta).
 \end{equation*}
+\vspace{-0.5em}
 
-\noindent We set $\sigma=100$ and $\epsilon=1e^{-5}$.
+Although this objective is non-convex, in practice initializing weights
+  to match Natural Logic is likely to reduce the risk of arriving at
+  local optima.
+Therefore, we \naive ly run a convex solver on the objective after
+  each iteration, initialized to the weights from the previous
+  iteration.
 
-Although this objective is non-convex, there is a natural initialization
-  of costs to match intuitions about Natural Logic.
-We initialize the first iteration to these costs, and run
-  conjugate gradient descent to convergence on a local minima
-  on each subsequent iteration.
-Lastly, after each iteration, the cost for any feature which has
-  never fired during training is decreased by half.
-This is to encourage the search to take these expensive edges, and
-  learn an appropriate cost for them.
+
+%We initialize the first iteration to these costs, and run
+%  conjugate gradient descent to convergence on a local minima
+%  on each subsequent iteration.
+%Lastly, after each iteration, the cost for any feature which has
+%  never fired during training is decreased by half.
+%This is to encourage the search to take these expensive edges, and
+%  learn an appropriate cost for them.
 
 
 

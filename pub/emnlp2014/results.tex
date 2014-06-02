@@ -19,14 +19,14 @@ The FraCaS corpus \cite{key:1996cooper-fracas}
   entailment patterns.
 
 We process the corpus following \newcite{key:2007maccartney-natlog}.
-12 problems were discarded as degenerate -- lacking either an antecedent or
-  a consequent.
-151 problems were discarded as involving multiple antecedents to
-  justify the inference.
-Lastly, it should be noted that many of the sections of the corpus
+%12 problems were discarded as degenerate -- lacking either an antecedent or
+%  a consequent.
+%151 problems were discarded as involving multiple antecedents to
+%  justify the inference.
+It should be noted that many of the sections of the corpus
   are not directly applicable to Natural Logic inferences;
   \newcite{key:2007maccartney-natlog} identify three sections which
-  are in the scope of their system.
+  are in the scope of their system, and consequently our system as well.
 
 \begin{table}
 \begin{center}
@@ -65,25 +65,26 @@ Lastly, it should be noted that many of the sections of the corpus
 \end{center}
 \end{table}
 
-Results on the corpus are given in \reftab{fracas}.
+Results on the dataset are given in \reftab{fracas}.
 Since the corpus is not a blind test set, the results are presented
   less as a comparison of performance, but rather as a comparison
   of the expressive power of our search-based approach compared with
   MacCartney's align-and-classify approach.
-For the experiments, costs were hard-coded to represent a strict
-  logical entailment system -- costs corresponding to valid Natural
-  Logic mutations were set to a small constant cost; other costs
-  were set to infinity.
+For the experiments, costs were constrained to express valid
+  Natural Logic inference as a hard constraint.
+%  logical entailment system -- costs corresponding to valid Natural
+%  Logic mutations were set to a small constant cost; other costs
+%  were set to infinity.
 
 The results validate the system's ability to capture valid Natural Logic
-  inferences as well as the state-of-the-art system of
+  inferences with similar accuracy as the state-of-the-art system of
   \newcite{key:2008maccartney-natlog}.
 Note that our system is comparatively crippled in this framework
   along at least two dimensions:
-It cannot appeal to the antecedent when constructing the search,
+It cannot appeal to the premise when constructing the search,
   leading to the introduction of search errors which are entirely
   absent from prior work.
-Second the derivation process itself does not have access to the
+Second, the derivation process itself does not have access to the
   full parse tree of the candidate fact.
 %Therefore, it is unable to make large edits over constituents,
 %  and is unable to appeal to the parse in its mutation decisions.
@@ -94,11 +95,13 @@ Although precision is fairly high even on the non-applicable
 This is a direct consequence of not having alignments to appeal to.
 For instance, we can consider two inferences:
 
+\vspace{-0.25em}
 \begin{itemize}
-\setlength{\itemsep}{0pt}
+\setlength{\itemsep}{-0.5em}
 \item[] \w{Jack saw Jill is playing} $\xRightarrow{?}$ \w{Jill is playing}
 \item[] \w{Jill saw Jack is playing} $\xRightarrow{?}$ \w{Jill is playing}
 \end{itemize}
+\vspace{-0.25em}
 
 It is clear from the parse of the sentence that the first is valid
   and the second is not; however, from the perspective of the search
@@ -134,7 +137,7 @@ It is clear from the parse of the sentence that the first is valid
     \hline
     Lookup             & 100.0 & 12.1 & 56.0 \\
     NaturalLI Only     & 91.9  & 39.5 & 68.0 \\
-    NaturalLI + Lookup & 93.3  & 48.3 & 72.6  \\
+    NaturalLI + Lookup & 93.3  & 48.3 & 72.4  \\
   \end{tabular}
   }
   \caption{
@@ -153,8 +156,8 @@ We validate our system's ability to infer unseen common sense facts
   from a large database of such facts.
 Whereas evaluation of FraCaS shows that our search formulation captures
   applicable inferences as well as prior work, this evaluation presents
-  a new use-case for Natural Logic which is not trivial
-  given prior work.
+  a novel use-case for Natural Logic.
+%  which is not trivial given prior work.
 
 For our database of facts, we run the Ollie OpenIE system
   \cite{key:2012mausam-ollie} over Wikipedia, Simple Wikipedia,\footnote{
@@ -165,7 +168,7 @@ Extractions with confidence below 0.25 or which contained
   pronouns were discarded.
 This yielded in a total of 305 million unique extractions composed
   entirely of lexical items which mapped into our vocabulary
-  (\num{186707} words).
+  (\num{186707} items).
 Each of these extracted triples $(e_1,r,e_2)$ was then flattened into
   a plain-text fact $e_1~r~e_2$.
 In general, each fact in the database could be arbitrary unstructured
@@ -188,6 +191,7 @@ We then treat the \textit{surface text} field of these facts as our
   candidate query.
 This yields facts like the following:
 
+\vspace{-0.25em}
 \begin{itemize}
 \setlength{\itemsep}{-4pt}
 \item[] \w{not all birds can fly}
@@ -195,10 +199,11 @@ This yields facts like the following:
 \item[] \w{nobody wants to die}
 \item[] \w{music is used for pleasure}
 \end{itemize}
+\vspace{-0.25em}
 
 For negative examples, we take the 689 ReVerb extractions
   \cite{key:2011fader-reverb}
-  judged as false by Mechanical Turk workers \cite{2013angeli-truth}.
+  judged as false by Mechanical Turk workers \cite{key:2013angeli-truth}.
 This provides a set of \textit{plausible} queries, similar in many
   ways to the database of Ollie extractions, and ensures that our
   recall is not due to an over-zealous search.
