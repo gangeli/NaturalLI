@@ -1,0 +1,364 @@
+\Section{maccartney}{MacCartney's Natural Logic}
+% Motivate Natural Logic
+Broadly, Natural Logic aims to capture common logical
+  inferences by appealing directly to the structure of language,
+  as opposed to running deduction on an abstract logical form.
+Natural Logic is inspired largely by the Aristotelian
+  syllogisms and subsequent traditional logics
+  \cite{key:2008vanbenthem-natlog}.
+While not all inferences in first-order logic are in Natural Logic,
+  it nonetheless allows for a wide range of intuitive inferences in
+  a computationally efficient manner.
+%That is to say, Natural Logic takes the meaning representation of a
+%  sentence to be the surface form of the sentence itself.
+%In part, this lends itself to computationally efficient inference;
+%  in another part, it frees the system from parsing to an abstract
+%  logic -- this is particularly relevant in our case, where the set
+%  of potential antecedents is very large.
+
+% Introduce MacCartney + Related Work
+We build off of the variant of Natural Logic introduced by
+  the NatLog inference system (MacCartney and Manning, 2007; 2008; 2009),
+  \nocite{key:2007maccartney-natlog}
+  \nocite{key:2008maccartney-natlog}
+  \nocite{key:2009maccartney-natlog}
+  based off of earlier theoretical work on Natural Logic and 
+  Monotonicity Calculus
+  \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
+Later work has formalized many aspects of the logic
+  \cite{key:2012icard-natlog,key:2013djalali-natlog};
+  formally we are adopting the semantics of outlined in
+  \newcite{key:2014icard-natlog}.
+%  which we appeal to but are not necessary for a 
+%  appeal to in future sections, but are not necessary for an understanding
+%  of the contributions of this work.
+%An elegant introduction to Natural Logic can be found in
+%  \newcite{key:2014icard-natlog}; a thorough treatment of
+%  MacCartney's Natural Logic can be found in \newcite{key:2009maccartney-natlog}.
+
+At a high level, Natural Logic proofs operate by mutating spans of text
+  in precise ways to ensure that the mutated sentence follows from the
+  original -- each step is much like a syllogistic inference.
+We therefore must introduce three components for a complete proof system:
+  we define the valid atomic relations between lexical entries
+  (\refsec{maccartney-relations}), the effect these mutations have
+  on the validity of the inference (\refsec{maccartney-polarity}),
+  and a practical system for executing these proofs.
+We introduce MacCartney's alignment-based approach in
+  \refsec{maccartney-proof}, and show that we can generalize and
+  simplify this system in \refsec{search}.
+
+%
+% MacCartney Relations
+%
+\Subsection{maccartney-relations}{Lexical Relations}
+
+% -- Relations Figure --
+\begin{figure}[t]
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{
+    \begin{tabular}{ccc}
+      \equivalentVenn & \forwardVenn & \reverseVenn \\
+      \negateVenn & \alternateVenn & \coverVenn
+    \end{tabular}
+  }
+\end{center}
+\caption{
+  The model-theoretic interpretation of the MacCartney relations.
+  The figure shows the relation between the denotation of
+    $\varphi$, in dark gray, compared to the denotation of
+    of $\psi$, in light gray.
+  The universe is denoted by $\sD$.
+  \label{fig:relations}
+}
+\end{figure}
+% --                 --
+
+\newcite{key:2007maccartney-natlog} introduce seven set-theoretic
+  relations between the denotations of any two lexical items.
+The denotation of a lexical item is the set of objects in the domain
+  of discourse $\sD$ which that lexical item refers to.
+For instance, the denotation of \w{cat} would be the set of all cats.
+The denotations of two lexical items can then be compared in terms of
+  set algebra: if we define the set of cats to be $\varphi$ and
+  the set of animals to be $\psi$, we can state that
+  $\varphi \subseteq \psi$.
+%This example should evoke a taste of Natural Logic: e.g., if
+%  $\varphi \subseteq \psi$, then anything which holds for all elements
+%  in $\psi$ (all animals) must hold for all elements of $\varphi$
+%  (all cats).
+
+The six informative relations are summarized in \reffig{relations};
+  a seventh relation (\independent) corresponds to to the completely
+  uninformative relation.
+For instance, the example search path in \reffig{teaser} makes use of
+  the following relations:
+
+\begin{center}
+\begin{tabular}{rcl}
+\w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
+\w{cat}        & \reverse    & \w{carnivore} \\
+\w{animals}    & \reverse    & \w{mouse} \\
+\w{mouse}      & \equivalent & \w{a mouse} \\
+\end{tabular}
+\end{center}
+
+%The middle two middle entries have straightforward interpretations:
+%  the set of cats is a subset of the set of carnivores; the set of
+%  mice is a subset of animals.
+%The last entry states that the denotation of \w{mouse} and
+%  \w{a mouse} is close enough that they can be considered equivalent.
+
+Denotations are not required to be in the space of entities.
+In the first example, the denotations of \textit{No} and \textit{The}
+  are in the space of quantifiers
+  \mbox{$e \rightarrow (e \rightarrow t)$}:
+  functions from entities $e$ to truth values $t$.
+%The first entry is somewhat subtle in that the denotation of quantifiers
+%  is not over the universe of entities $e$, but rather over functions
+%  from entities to truth values $t$:
+Our claim is really the conjunction of two claims:
+  $\forall x \forall y ~ \lnot\left(\w{no}~x~y \land \w{the}~x~y \right)$
+  and
+  $\forall x \forall y ~ \left(\w{no}~x~y \lor \w{the}~x~y\right)$.
+This is analogous to the formal construction of the
+  set-theoretic definition of \negate\ in \reffig{relations}:
+  $\varphi \cap \psi = \varnothing$ and $\varphi \cup \psi = \sD$
+  (see \newcite{key:2014icard-natlog}).
+%A more thorough treatment can be found in
+%  \newcite{key:2014icard-natlog}.
+
+%Note that \forward\ and \reverse\ are inverses.
+Examples of the last two relations (\alternate\ and \cover)
+and the complete independence relation (\independent) are given below:
+
+\begin{center}
+\begin{tabular}{rcl}
+\w{cat}        & \alternate   & \w{dog} \\
+\w{animal}     & \cover       & \w{nonhuman} \\
+\w{cat}        & \independent & \w{friendly} \\
+\end{tabular}
+\end{center}
+
+%We proceed to describe the relationship between these lexical mutations,
+%  and the validity of executing the mutation in a derivation.
+
+%
+% Monotonicity & Polarity
+%
+\Subsection{maccartney-polarity}{Monotonicity and Polarity}
+% Motivate
+We can determine the relation relation between 
+  lexical items from the previous section;
+  however, we still need a theory for how to propagate the relation
+  induced by a lexical mutation ``up the parse tree'' to become
+  a relation between two sentences.
+For example, \textit{cat} \forward\ \textit{animal},
+  and \textit{some cat meows} \forward\ \textit{some animal meows},
+  but
+  \textit{no cat barks} \reverse\ \textit{no animal barks}.
+Despite differing by the same lexical relation,
+  the first example is entailed, while the second is not.
+
+% Introduce Monotonicity
+We appeal two important concepts: \textit{monotonicity} as a
+  property of arguments to natural language quantifiers,
+  and \textit{polarity}
+  as a property of lexical items in a sentence.
+Much like monotone functions in calculus,
+  an [upwards] monotone quantifier has an output truth value which is
+  non-decreasing (i.e., material implication; true cannot become false)
+  as the input ``increases'' (i.e., in terms of set containment).
+From the example above, \textit{some} is upwards monotone in its first
+  argument, and \textit{no} is downwards monotone in its first argument.
+
+%% Explain monotone
+%To offer a concrete example, \textit{some} is a monotone quantifier taking two
+%  entities as input
+%  (i.e., \w{some $x$ $y$} -- \w{some cats eat mice}),
+%  and returning a truth value.
+%Therefore, we can replace an argument to \w{some} with a superset of that
+%  argument, and be guaranteed that the truth value of the new
+%  predicate will be ``at least'' the truth value of the original statement.
+%The ``at least'' relation on truth values is trivially defined
+%  as $F \leq T$; therefore, for two truth values $t_1$ and $t_2$,
+%  $t_1 \leq t_2$ is precisely material implication $t_1 \Rightarrow t_2$.
+%With this we can now show that, e.g., 
+%  \w{some cats eat mice} $\Rightarrow$ \w{some animals eat mice}.
+%
+%% Whirlwind through antitone + nonmonotone
+%Analogous to monotone quantifiers, we can define \textit{antitone}\footnote{
+%    Monotone and antitone are often referred to as
+%    \textit{monotone up} and \textit{monotone down}.
+%  }
+%  quantifiers as quantifiers which have an output truth value which is
+%  non-increasing as the input increases.
+%For instance, \w{no} is an antitone quantifier.
+%Note that quantifiers can have different monotonicity for each argument:
+%  \w{all} is monotone in its first and antitone in its second argument.
+%Furthermore, not all quantifiers are monotone or antitone --
+%  \w{most} is the classic example of a quantifier which is
+%  \textit{nonmonotone} in its first argument.
+
+% Polarity
+%So far we have looked only at sentences with a single quantifier;
+%  moreover, monotonicity itself is not always sufficient to warrant
+%  mutations on lexical items.
+\textit{Polarity} is
+  a property of lexical items in a sentence determined by the
+  quantifiers acting on it.
+All lexical items have \textit{upward} polarity by default;
+  upwards monotone quantifiers preserve polarity,
+  and downwards monotone quantifiers reverse polarity.
+For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
+  \w{mice} in \w{no cats don't eat mice} has upward polarity
+  (in the scope of two downward monotone quantifiers).
+
+% -- Projection Table --
+% I'm assuming the context is additive and multiplicative
+% See Lemma 2.4 (p.11) of http://link.springer.com/article/10.1007%2Fs11225-012-9425-8
+\begin{table}[t]
+	\begin{center}
+	\begin{tabular}{c|cc}
+    \textbf{Relation} & \multicolumn{2}{|c}{\textbf{Polarity of Context}} \\
+             & Upward & Downward \\
+    \hline
+    $e_1 \forward     e_2$ & $s_1 \forward     s_2$ & $s_1 \reverse     s_2$ \\ 
+    $e_1 \reverse     e_2$ & $s_1 \reverse     s_2$ & $s_1 \forward     s_2$ \\ 
+    $e_1 \alternate   e_2$ & $s_1 \alternate   s_2$ & $s_1 \cover       s_2$ \\ 
+    $e_1 \cover       e_2$ & $s_1 \cover       s_2$ & $s_1 \alternate   s_2$ \\ 
+    $e_1 \equivalent  e_2$ & $s_1 \equivalent  s_2$ & $s_1 \equivalent  s_2$ \\ 
+    $e_1 \negate      e_2$ & $s_1 \negate      s_2$ & $s_1 \negate      s_2$ \\ 
+    $e_1 \independent e_2$ & $s_1 \independent s_2$ & $s_1 \independent s_2$
+	\end{tabular}
+	%(caption)
+	\caption{
+    The projection table used for a relation between a phrase $e_1$ and
+      its candidate mutation $e_2$, in terms of the produced relation
+      between sentence $s_1$ and the new sentence $s_2$.
+    Values are given for when the entities are in a monotone and
+      antitone context.
+		\label{tab:projectivity}
+	}
+	\end{center}
+\end{table}
+
+% Projection
+The relation between two sentences differing by a single lexical
+  relation is then given in the projection table:
+  \reftab{projectivity}.\footnote{
+    Note that this table optimistically assumes every quantifier is
+    \textit{additive} and \textit{multiplicative}, as defined
+    in \newcite{key:2012icard-natlog}.
+  }
+
+
+%We now have a repertoire or lexical mutations, and a polarity marking
+%  on each lexical item.
+%We have two remaining elements to define for a full proof theory:
+%  how do lexical mutations of a word with a certain polarity
+%  \textit{trickle up} the sentence to affect the relation between
+%  entire sentences, and how do we chain individual lexical mutations
+%  together for a full derivation.
+%The first is studied in depth by \newcite{key:2012icard-natlog};\footnote{
+%    Formally, we optimistically assume every quantifier 
+%    is \textit{additive} and \textit{multiplicative}.
+%  }
+%  we axiomatically define the relation between two sentences differing
+%  by a mutation in \reftab{projectivity}.
+%The second is discussed in the next section.
+
+%
+% Inference as Alignment
+%
+\Subsection{maccartney-proof}{Proof By Alignment}
+
+% -- Join Table--
+\begin{table}[t]
+	\begin{center}
+	\begin{tabular}{|c||c|c|c|c|c|}
+    \hline
+    $\bowtie$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ \\
+    \hline
+    $\forward$ & $\forward$ & $\independent$ & $\alternate$ & $\alternate$ & $\independent$ \\
+    $\reverse$ & $\independent$ & $\reverse$ & $\cover$ & $\independent$ & $\cover$ \\
+    $\negate$ & $\cover$ & $\alternate$ & $\equivalent$ & $\reverse$ & $\forward$ \\
+    $\alternate$ & $\independent$ & $\alternate$ & $\forward$ & $\independent$ & $\forward$ \\
+    $\cover$ & $\cover$ & $\independent$ & $\reverse$ & $\reverse$ & $\independent$ \\
+    \hline
+	\end{tabular}
+	%(caption)
+	\caption{
+    The join table, as copied from \newcite{key:2012icard-natlog}.
+    Note that the $\independent$ always joins to yield $\independent$,
+    and $\equivalent$ always joins to yield the input relation.
+		\label{tab:join}
+	}
+	\end{center}
+\end{table}
+
+\newcite{key:2007maccartney-natlog} approach the inference task in
+  the context of inferring whether a single relevant premise entails
+  a query.
+%In the framework of \newcite{key:2007maccartney-natlog}, the task is
+%  to infer whether a single logical antecedent entails a query
+%  consequent.
+Their approach is to generate an alignment between the premise
+  and the query, and classify each aligned segment into one of
+  the relations in \reffig{relations}.
+Inference then reduces to projecting each of these relations
+  according to \reftab{projectivity} and iteratively \textit{joining} 
+  two projected relations together to get the final entailment
+  relation.
+This \textit{join table}, denoted as $\bowtie$, 
+  is given in \reftab{join}.
+
+To illustrate we can consider MacCartney's example inference from
+  \w{Stimpy is a cat} to \w{Stimpy is not a poodle}.
+An alignment of the two statements would provide three lexical
+  mutations:
+    \mbox{$r_1\coloneqq\w{cat}\rightarrow\w{dog}$}, 
+    \mbox{$r_2\coloneqq\cdot\rightarrow\w{not}$},
+    and \mbox{$r_3\coloneqq\w{dog}\rightarrow\w{poodle}$}.
+The initial relation $r_0$ is axiomatically \equivalent.
+Each of these then project through the projection function $\rho$
+  from \reftab{projectivity},
+  and are joined by the join relation:
+
+\begin{equation*}
+  r_0 \bowtie \rho(r_1) \bowtie \rho(r_2) \bowtie \rho(r_3)
+\end{equation*}
+
+In MacCartney's work this style of proof is presented as a table,
+  as follows.
+The last column ($s_i$) is the relation between the premise and the
+  $i^{th}$ step in the proof, and is constructed inductively as
+  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
+
+\begin{center}
+\begin{tabular}{rl|ccc}
+  \multicolumn{2}{c|}{Mutation} & $r_i$ & $\rho(r_i)$ & $s_i$ \\
+  \hline
+  $r_1$ & \w{cat}$\rightarrow$\w{dog}    & \alternate & \alternate & \alternate \\
+  $r_2$ & $\cdot\rightarrow$\w{not}      & \negate    & \negate    & \forward \\
+  $r_3$ & \w{dog}$\rightarrow$\w{poodle} & \reverse   & \forward   & \forward \\
+\end{tabular}
+\end{center}
+
+%\noindent where $x_i$ is the surface form of the fact at inference step
+%  $i$, $\beta(e_i)$ is the lexical relation, as per
+%  \reffig{relations}, $\beta(x_{i-1}, e_i)$ is the relation projected
+%  according to \reftab{projectivity}, and $\beta(x_0, x_i)$ is
+%  the relation between the antecedent and the current candidate fact.
+%$\beta(x_0, x_i)$ is obtained from repeatedly applying the join table
+%  in \reftab{join} to $\beta(x_{0}, x_{i-1})$ and $\beta(x_{i-1}, e_i)$.
+%For instance, joining $\beta(x_1, x_1)$ with $\beta(x_1, e_2)$
+%  (\alternate\ $\bowtie$ \negate) yields $\beta(x_1, x_2)$ (\forward).
+%
+%The final relation between the antecedent and the consequent is taken
+%  to be the last $\beta(x_0, x_i)$ entry.
+
+In our example, we would conclude that
+  \w{Stimpy is a cat} \forward\ \w{Stimpy is not a poodle}
+  since $s_3$ is \forward,
+  and therefore the inference is valid.
