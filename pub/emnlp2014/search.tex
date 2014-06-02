@@ -23,65 +23,97 @@
 }
 \end{figure*}
 
-The proof system from \refsec{maccartney-proof} can be naturally cast
-  as a finite state automata.
-This is appealing for at least two reasons:
-  first, it is an efficient means of keeping track of only the relevant
-  information when running Natural Logic inference as a search
-  (see \refsec{inference}).
-Second, this formulation makes clear a theoretical contribution of this
-  work: in the case where relevant output of the system is
-  only whether the derivation is \textit{valid}, \textit{invalid},
-  or \textit{unknown},
-  we can collapse the automata losslessly into only these three states.
-This is both computationally convenient, and conceptually elegant,
-  in that it makes many of the opaque patterns in the join table
-  (\reftab{join}) more clear.
+We augment the proof system in \refsec{maccartney-proof} in two ways:
+  we show that the proof can be viewed as a finite state machine,
+  and we show that when we only care about the validity of the final
+  inference we can losslessly collapse this finite state machine into
+  a much simpler one.
+These will allow us to formulate our search problem such that a path
+  in search corresponds to a path through this state machine, which
+  in turn specifies a logical derivation.
 
-In more detail, taking notation from \refsec{maccartney-proof},
-  we can take the states of our FSA to be the
-  $\beta(x_0, x_i)$ values -- the relation between the current fact
-  and the first antecedent.
-The transitions become the projected lexical relations $\beta(x_{i-1}, e_i)$;
-  note that these are deterministic from the mutation and an analysis
-  of the polarity of the lexical item.
-The FSA is then described in \reffig{fsa}a.
+Taking notation from \refsec{maccartney-proof}, we construct a
+  finite state machine such that each state corresponds to
+  cumulative state of the derivation, $s_i$, outgoing transition labels
+  correspond to the projected lexical relation $\rho(r_i)$,
+  and transitions corresponds to the join table in \reftab{join}.
+This construction follows straighforwardly from our definition of
+  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
+  for all possible pair of states $s$ and $r$, we construct a
+  transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
+\reffig{fsa}a shows our constructed automata, with trivial edges
+  omitted for clarity.
 
-We can cluster each of the states in the FSA -- that is, each of the
-  relations between the first and current fact -- into whether this
-  model-theoretic relation corresponds to a valid, invalid, or unknown
-  inference.
-Following \newcite{key:2007maccartney-natlog}, we can cluster
-  \equivalent\ and \forward\ as valid inferences.
-Provably invalid inferences correspond to \alternate\ and \negate.
-All other relations (\reverse, \cover) correspond to inferences of
-  unknown validity.
+Our second contribution is collapsing this automata into the three
+  meaninful states we will query: 
+    \textit{valid} ($\varphi \Rightarrow \psi$),
+    \textit{invalid} ($\varphi \Rightarrow \lnot \psi$),
+  and \textit{unknown validity} ($\varphi \nRightarrow \psi$).
+We can cluster states in \reffig{fsa}a into these three categories.
+The relations \equivalent\ and \forward\ correspond to valid inferences;
+  \negate\ and \alternate\ correspond to invalid inferences;
+  \reverse\ and \cover\ correspond to unknown validity.
 
-We note that there is never a case where two states in a cluster have
-  the same outgoing transition go to states in two different clusters.
-That is, for states $x$ and $y$ in the same cluster
-  (i.e., \textit{valid}, \textit{invalid}, \textit{unknown}),
-  if for relation
-  $r$, $x$ transitions to $x'$ and $y$ transitions to $y'$, it is always
-  the case that $x'$ and $y'$ are also in the same cluster.
 
-We can therefore collapse the automata into just three states, as shown
-  in \reffig{fsa}b.
-A few observations deserve passing remark.
-First, it becomes obvious from the collapsed FSA that even though the
-  states \reverse\ and \cover\ appear to track, in fact there is no
-  ``escaping'' these states back into either a valid or invalid
-  inference.
-Second, the hierarchy over relations presented in
-  \newcite{key:2012icard-natlog} becomes apparent -- in particular,
-  \negate\ always behaves as negation, whereas its two ``weaker''
-  versions (\alternate\ and \cover) still behave as negation, but in
-  fewer contexts.
-
-We have not presented both prerequisites for our inference engine
-  formulated as a search problem.
-The lexical relations from \refsec{maccartney} will define the transitions
-  in our search.
-The reformulation of Natural Logic inference as traversing an FSA will
-  allow our search to efficiently track our inference state.
-We proceed to describe the detail of our search problem.
+%The proof system from \refsec{maccartney-proof} can be naturally cast
+%  as a finite state automata.
+%This is appealing for at least two reasons:
+%  first, it is an efficient means of keeping track of only the relevant
+%  information when running Natural Logic inference as a search
+%  (see \refsec{inference}).
+%Second, this formulation makes clear a theoretical contribution of this
+%  work: in the case where relevant output of the system is
+%  only whether the derivation is \textit{valid}, \textit{invalid},
+%  or \textit{unknown},
+%  we can collapse the automata losslessly into only these three states.
+%This is both computationally convenient, and conceptually elegant,
+%  in that it makes many of the opaque patterns in the join table
+%  (\reftab{join}) more clear.
+%
+%In more detail, taking notation from \refsec{maccartney-proof},
+%  we can take the states of our FSA to be the
+%  $\beta(x_0, x_i)$ values -- the relation between the current fact
+%  and the first antecedent.
+%The transitions become the projected lexical relations $\beta(x_{i-1}, e_i)$;
+%  note that these are deterministic from the mutation and an analysis
+%  of the polarity of the lexical item.
+%The FSA is then described in \reffig{fsa}a.
+%
+%We can cluster each of the states in the FSA -- that is, each of the
+%  relations between the first and current fact -- into whether this
+%  model-theoretic relation corresponds to a valid, invalid, or unknown
+%  inference.
+%Following \newcite{key:2007maccartney-natlog}, we can cluster
+%  \equivalent\ and \forward\ as valid inferences.
+%Provably invalid inferences correspond to \alternate\ and \negate.
+%All other relations (\reverse, \cover) correspond to inferences of
+%  unknown validity.
+%
+%We note that there is never a case where two states in a cluster have
+%  the same outgoing transition go to states in two different clusters.
+%That is, for states $x$ and $y$ in the same cluster
+%  (i.e., \textit{valid}, \textit{invalid}, \textit{unknown}),
+%  if for relation
+%  $r$, $x$ transitions to $x'$ and $y$ transitions to $y'$, it is always
+%  the case that $x'$ and $y'$ are also in the same cluster.
+%
+%We can therefore collapse the automata into just three states, as shown
+%  in \reffig{fsa}b.
+%A few observations deserve passing remark.
+%First, it becomes obvious from the collapsed FSA that even though the
+%  states \reverse\ and \cover\ appear to track, in fact there is no
+%  ``escaping'' these states back into either a valid or invalid
+%  inference.
+%Second, the hierarchy over relations presented in
+%  \newcite{key:2012icard-natlog} becomes apparent -- in particular,
+%  \negate\ always behaves as negation, whereas its two ``weaker''
+%  versions (\alternate\ and \cover) still behave as negation, but in
+%  fewer contexts.
+%
+%We have not presented both prerequisites for our inference engine
+%  formulated as a search problem.
+%The lexical relations from \refsec{maccartney} will define the transitions
+%  in our search.
+%The reformulation of Natural Logic inference as traversing an FSA will
+%  allow our search to efficiently track our inference state.
+%We proceed to describe the detail of our search problem.

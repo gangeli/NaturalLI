@@ -53,9 +53,9 @@
     ]
 
     % (states)
-    \node[state,initial]   (valid)                               {$~~x \Rightarrow y~~$};
-    \node[state,accepting] (unknown)    [above right=of valid]   {$~~x \nRightarrow y~~$};
-    \node[state]           (invalid)    [below right=of unknown] {$x \Rightarrow \lnot y$};
+    \node[state,initial]   (valid)                               {$~~\varphi \Rightarrow \psi~~$};
+    \node[state,accepting] (unknown)    [above right=of valid]   {$~~\varphi \nRightarrow \psi~~$};
+    \node[state]           (invalid)    [below right=of unknown] {$\varphi \Rightarrow \lnot \psi$};
     
     % (edges)
     \path[->]  (valid)      edge [bend left]  node {\negate\alternate}   (invalid)

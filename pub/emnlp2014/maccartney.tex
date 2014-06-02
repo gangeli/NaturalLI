@@ -94,6 +94,7 @@ The six informative relations are summarized in \reffig{relations};
 For instance, the example search path in \reffig{teaser} makes use of
   the following relations:
 
+\vspace{-0.25em}
 \begin{center}
 \begin{tabular}{rcl}
 \w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
@@ -102,6 +103,7 @@ For instance, the example search path in \reffig{teaser} makes use of
 \w{mouse}      & \equivalent & \w{a mouse} \\
 \end{tabular}
 \end{center}
+\vspace{-0.25em}
 
 %The middle two middle entries have straightforward interpretations:
 %  the set of cats is a subset of the set of carnivores; the set of
@@ -213,6 +215,14 @@ All lexical items have \textit{upward} polarity by default;
 For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
   \w{mice} in \w{no cats don't eat mice} has upward polarity
   (in the scope of two downward monotone quantifiers).
+% Projection
+The relation between two sentences differing by a single lexical
+  relation is then given in the projection table
+  (\reftab{projectivity}).\footnote{
+    Note that this table optimistically assumes every quantifier is
+    \textit{additive} and \textit{multiplicative}, as defined
+    in \newcite{key:2012icard-natlog}.
+  }
 
 % -- Projection Table --
 % I'm assuming the context is additive and multiplicative
@@ -220,7 +230,7 @@ For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
 \begin{table}[t]
 	\begin{center}
 	\begin{tabular}{c|cc}
-    \textbf{Relation} & \multicolumn{2}{|c}{\textbf{Polarity of Context}} \\
+    \textbf{Relation} & \multicolumn{2}{c}{\textbf{Polarity of Context}} \\
              & Upward & Downward \\
     \hline
     $e_1 \forward     e_2$ & $s_1 \forward     s_2$ & $s_1 \reverse     s_2$ \\ 
@@ -242,15 +252,6 @@ For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
 	}
 	\end{center}
 \end{table}
-
-% Projection
-The relation between two sentences differing by a single lexical
-  relation is then given in the projection table:
-  \reftab{projectivity}.\footnote{
-    Note that this table optimistically assumes every quantifier is
-    \textit{additive} and \textit{multiplicative}, as defined
-    in \newcite{key:2012icard-natlog}.
-  }
 
 
 %We now have a repertoire or lexical mutations, and a polarity marking

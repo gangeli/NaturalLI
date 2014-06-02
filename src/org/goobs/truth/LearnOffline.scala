@@ -323,13 +323,13 @@ object LearnOffline extends Client {
     val optimizer = new CGMinimizer()
     val newWeights: Array[Double] = optimizer.minimize(objective, 1e-2, weights)
     // (tweak)
-    val seenMask:WeightVector = new ClassicCounter[String]
-    for (feat <- aggregateFeats.keys) { seenMask.incrementCount(feat) }
-    val seenArray:Array[Double] = seenMask
-    for (i <- Implicits.searchFeatureStart until seenArray.length) {
-      if (seenArray(i) != 0.0) { memory.add(i) }
-      if (!memory(i)) { newWeights(i) = newWeights(i) / 2.0 }
-    }
+//    val seenMask:WeightVector = new ClassicCounter[String]
+//    for (feat <- aggregateFeats.keys) { seenMask.incrementCount(feat) }
+//    val seenArray:Array[Double] = seenMask
+//    for (i <- Implicits.searchFeatureStart until seenArray.length) {
+//      if (seenArray(i) != 0.0) { memory.add(i) }
+//      if (!memory(i)) { newWeights(i) = newWeights(i) / 2.0 }
+//    }
     endTrack("Minimizing")
 
 
