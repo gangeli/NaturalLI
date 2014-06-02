@@ -25,11 +25,15 @@ The nodes in our search problem correspond to candidate facts
   maintains an informative inference.
 
 This approach is efficient over a large database of 300 million entries
-  without queries over the database to limit the search space; nor
-  does it make use of any sort of approximate matching against 
-  the database, beyond lemmatizing individual lexical items.
-However, occasionally approximate matches, penalized appropriately,
-  are beneficial for downstream applications.
+  without making use of explicit queries over the database;
+  nor does the approach make use of any sort of approximate
+  matching against the database, beyond lemmatizing individual 
+  lexical items.
+The motivation in prior work for these sorts of \textit{fuzzy} matches --
+  to improve the recall of candidate premises -- is captured
+  elegantly by relaxing Natural Logic itself.
+%However, occasionally approximate matches, penalized appropriately,
+%  are beneficial for downstream applications.
 We show that allowing invalid transitions with appropriate costs
   generalizes JC distance \cite{key:1997jc-similarity} -- a common
   thesaurus-based similarity metric (\refsec{inference-jc}).
@@ -49,13 +53,13 @@ Importantly, however, the entire inference pipeline is done
 % Node
 %
 \Subsection{inference-state}{Nodes}
-The space of possible nodes in our search is the space of possible
-  states in a derivation.
-To a first approximation, a node is a pair $(w, s)$ of a surface form
+The space of possible nodes in our search is the set of possible
+  partial derivations.
+To a first approximation, this is a pair $(w, s)$ of a surface form
   $w$ tagged with word sense and polarity,
   and an inference state $s$ in our collapsed FSA (\reffig{fsa}b).
-In addition to this minimal information, a node in our search keeps
-  track of some additional information to handle various details.
+In addition, our search must keep
+  track of some additional information to ensure efficiency.
 
 %That is, a node is primarily parametrized primarily by the surface
 %  form of the candidate fact at this point in the (reverse) derivation.
@@ -74,7 +78,7 @@ In addition to this minimal information, a node in our search keeps
 \paragraph{Mutation Index}
 Edges in the graph correspond to mutations of individual lexical items.
 We maintain an index of the next item to mutate at each search state.
-Importantly, this enforces each derivation to order mutations
+Importantly, this enforces that each derivation orders mutations
   right-to-left;
   this is computationally efficient, at the expense of rare search
   errors.
@@ -103,7 +107,8 @@ For brevity, we refer to a deletion in the derivation as an insertion,
 
 \naive ly, at every node in our search, we must consider every item in
   the vocabulary as a possible insertion.
-Instead, we store the database as a trie.
+We can limit the number of items we consider by storing the database
+  as a trie.
 Since search mutates the fact left-to-right (as per above), we can
   look up completions in the trie as candidate insertions.
 To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$
@@ -119,7 +124,7 @@ In this case, rather than taking all possible lexical items that start
   our current fact.
 To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$,
   we would propose candidate insertions $w_{-1}$ such that
-  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact,
+  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact
   for some $w^\prime_1,\dots,w^\prime_k$.
   
 %Since we are constructing antecedents left-to-right, as per above,
@@ -167,8 +172,7 @@ At a high level, we include most relations in WordNet as transitions,
   and parametrize insertions and deletions by the part of speech
   of the token being inserted/deleted.
 The full table of transitions is given in \reftab{transitions}, along
-  with the relation that transition introduces, and an example edge
-  in our derivation corresponding to that transition.
+  with the relation that transition introduces.
 
 \begin{table}
 \begin{center}
@@ -190,7 +194,7 @@ The full table of transitions is given in \reftab{transitions}, along
 %  \end{tabular}
   
   \begin{tabular}{lcl}
-    \textbf{Template} & \textbf{Relation} \\
+    \textbf{Transition Template} & \textbf{Relation} \\
     \hline
     WordNet hypernym                     & \forward    \\ 
     WordNet hyponym                      & \reverse    \\ 
@@ -226,7 +230,7 @@ For instance, clearly nearest neighbors do not preserve equivalence
   \textit{all cats like milk} \alternate\ \textit{all cats hate milk},
   it is not the case that
   \textit{some cats like milk} \alternate\ \textit{some cats hate milk}.\footnote{
-    The latter example is a consequence of the projection table in
+    The latter example is a consequence of the projection function in
     \reftab{projectivity} being overly optimistic.
   }
 We mitigate this imprecision by introducing a cost for each transition,
@@ -253,7 +257,7 @@ The cost of an edge
 The notation for $f_{t_i}$ is chosen to evoke an analogy to features,
   and we will refer to this quantity as the feature value.
 We set $f_{t_i}$ to be 1\ in most cases;
-  the exception are the edges over the WordNet hypernym tree,
+  the exceptions are the edges over the WordNet hypernym tree
   and the nearest neighbors edges.
 In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
   from word $w$ to its hypernym $w'$, and set:
@@ -275,7 +279,7 @@ Intuitively, this ensures that relatively long paths through fine-grained
 For instance, the path from \textit{cat} to \textit{animal} traverses
   six intermediate nodes, \naive ly yielding a prohibitive
   search depth of 6.
-The value $f_{\downarrow_{w \rightarrow w'}}$ is set in the same way.
+The value $f_{\downarrow_{w \rightarrow w'}}$ is set analogously.
 
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
@@ -304,7 +308,7 @@ The cost of a path can then be expressed as the dot product:
 %
 \Subsection{inference-jc}{Generalizing Similarities}
 An elegant property of our definitions of $f_{t_i}$ is its ability to
-  generalize JC distance, and upper-bound distributional similarity.
+  generalize JC distance.
 Let us assume we have lexical items $w_1$ and $w_2$, with a least common 
   subsumer $\textrm{lcs}$.
 The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
@@ -374,8 +378,8 @@ The last component in inference is translating a search path into a
   probability of truth.
 We notice from \refsec{inference-transitions} that the \textit{cost}
   of a path can be represented as $\theta \cdot \bef$.
-We can normalize this value by negating every element of the weight
-  vector and passing it through a sigmoid:
+We can normalize this value by negating every element of the cost
+  vector $\theta$ and passing it through a sigmoid:
 
 \vspace{-0.5em}
 \begin{equation*}

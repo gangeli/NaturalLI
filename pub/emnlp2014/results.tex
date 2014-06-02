@@ -1,5 +1,5 @@
 \Section{results}{Experiments}
-We evaluate our system on two tasks: the FraCaS test suite used
+We evaluate our system on two tasks: the FraCaS test suite, used
   by MacCartney and Manning \shortcite{key:2007maccartney-natlog,key:2008maccartney-natlog},
   evaluates the system's ability to capture Natural Logic inferences
   even without the explicit alignments of these previous systems.
@@ -15,7 +15,7 @@ In addition, we evaluate the system's ability to predict common-sense
 \Subsection{results-fracas}{FraCaS Entailment Corpus}
 The FraCaS corpus \cite{key:1996cooper-fracas}
   is a small corpus of entailment problems, aimed at providing a
-  comprehensive test of an entailment system's handling of various
+  comprehensive test of a system's handling of various
   entailment patterns.
 
 We process the corpus following \newcite{key:2007maccartney-natlog}.
@@ -173,7 +173,7 @@ Each of these extracted triples $(e_1,r,e_2)$ was then flattened into
   a plain-text fact $e_1~r~e_2$.
 In general, each fact in the database could be arbitrary unstructured
   text; our use of Ollie extractions is motivated by a desire to
-  extract and query concise facts.
+  extract short, concise facts.
 
 For our evaluation, we infer the top 689 most confident facts from
   the ConceptNet project \cite{key:2011tandon-conceptnet}.
@@ -207,7 +207,7 @@ For negative examples, we take the 689 ReVerb extractions
 This provides a set of \textit{plausible} queries, similar in many
   ways to the database of Ollie extractions, and ensures that our
   recall is not due to an over-zealous search.
-The search costs are tuned from a balanced set of true ConceptNet and
+The search costs are tuned from a balanced set of true 540 ConceptNet and
   540 false ReVerb extractions.
 
 Results are shown in \reftab{conceptnet}.
@@ -217,10 +217,10 @@ Note that both the query and the facts in the database are lemmatized
   and lower-cased; therefore, it is not in principle unreasonable to
   expect a database of 300 million extractions to contain these
   facts.
-Nonetheless, only 12\% of facts were found via a lookup to the
-  database.
+Nonetheless, only 12\% of facts were found via a direct lookup against
+  the database.
 We show that NaturalLI (allowing lookups) improves this recall
-  four-fold, at only an 8.5\% drop in precision.
+  four-fold, at only an 6.7\% drop in precision.
 Furthermore, if we prohibit matching the query fact verbatim,
   we still recover all but 8\% of our recall.
 

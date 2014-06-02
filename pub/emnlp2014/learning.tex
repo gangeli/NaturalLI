@@ -42,9 +42,11 @@ O(\sD) = -\l\l_\theta(\sD)
 Although this objective is non-convex, in practice initializing weights
   to match Natural Logic is likely to reduce the risk of arriving at
   local optima.
-Therefore, we \naive ly run a convex solver on the objective after
+Therefore, we opt to \naive ly run a convex solver on the objective after
   each iteration, initialized to the weights from the previous
   iteration.
+The weights for the first iteration are initialized to an approximation
+  of valid Natural Logic weights.
 
 
 %We initialize the first iteration to these costs, and run

@@ -1,10 +1,10 @@
 \Section{intro}{Introduction}
 We approach the task of \textit{database completion}: given a
-  database of facts, we would like to predict whether an unseen fact
+  database of true facts, we would like to predict whether an unseen fact
   should belong to the database.
-This is naturally cast as an inference problem from 
-  a collection of true candidate premises to the truth of the query.
-For example, we would like to be able to infer 
+This is most intuitively cast as an inference problem from 
+  a collection of candidate premises to the truth of the query.
+For example, we would like to infer 
   that \textit{no carnivores eat animals}
   is false given a database containing \textit{the cat ate a mouse}
   (see \reffig{teaser}).
@@ -34,12 +34,12 @@ Furthermore, many methods require explicitly modeling either the
   (e.g., Freebase tuples).
 
 Although projects like the Abstract Meaning Representation
-  \cite{key:2013banarescu-amr} have made headway providing a
-  broad-coverage meaning representation, it remains 
+  \cite{key:2013banarescu-amr} have made headway providing
+  broad-coverage meaning representations, it remains 
   appealing to use the human language as the vessel for
   inference.
-OpenIE and similar projects have been very successful at
-  collecting a database of natural language snippets
+Furthermore, OpenIE and similar projects have been very successful at
+  collecting databases of natural language snippets
   from an ever-increasing corpus of unstructured text.
 These factors motivate our use of Natural Logic -- a proof system built
   on the syntax of human language -- to create a system for
@@ -49,10 +49,10 @@ Prior work on Natural Logic has focused on inferences from a single
   relevant premise, making use of only
   formally valid inferences.
 We propose three contributions to computational Natural Logic:
-  (i) this work operates over a very large set of (generally irrelevant)
+  (i) this work operates over a very large set of
     candidate premises simultaneously;
   (ii) this work does not
-    appeal to explicit alignment between the premise and the query;
+    appeal to any explicit alignment between the premise and the query;
   and (iii) this work allows imprecise inferences at an
     associated learned cost.
 %    to provide a broad-coverage system over real-world facts.
@@ -65,9 +65,9 @@ We propose three contributions to computational Natural Logic:
 %  to provide a more broad-coverage system over real-world facts.
 
 Our approach casts inference as a search problem from a query to any
-  premise which would support that query.
+  valid supporting premise.
 Each transition along the search denotes a (reverse) inference step 
-  in Natural Logic, and incurs a cost reflecting the confidence
+  in Natural Logic, and incurs a cost reflecting the system's confidence
   in the validity of that step.
 This approach offers two big contributions over prior work in
   database completion:
@@ -75,8 +75,8 @@ This approach offers two big contributions over prior work in
     any assumptions about the schema or domain of the text,
   and (ii) it proposes Natural Logic rather than explicit
     inference rules as the means of proposing inferences.
-Moreover, the entire inference pipeline exists within the context
-  of this search over Natural Logic inferences.
+Moreover, the entire inference pipeline is implemented within the context
+  of a single search over Natural Logic inferences.
 
 %
 %   ---

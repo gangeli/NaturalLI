@@ -3,12 +3,16 @@
 Broadly, Natural Logic aims to capture common logical
   inferences by appealing directly to the structure of language,
   as opposed to running deduction on an abstract logical form.
-Natural Logic is inspired largely by the Aristotelian
-  syllogisms and subsequent traditional logics
-  \cite{key:2008vanbenthem-natlog}.
+The logic builds upon traditional rather than first-order logic
+  \cite{key:2008vanbenthem-natlog};
+  to a first approximation, Natural Logic can be seen as
+  an enhanced version Aristotle's syllogistic system.
+%Natural Logic is inspired largely by the Aristotelian
+%  syllogisms and subsequent traditional logics
+%  \cite{key:2008vanbenthem-natlog}.
 While not all inferences in first-order logic are in Natural Logic,
   it nonetheless allows for a wide range of intuitive inferences in
-  a computationally efficient manner.
+  a computationally efficient and theoretically clean way.
 %That is to say, Natural Logic takes the meaning representation of a
 %  sentence to be the surface form of the sentence itself.
 %In part, this lends itself to computationally efficient inference;
@@ -17,7 +21,7 @@ While not all inferences in first-order logic are in Natural Logic,
 %  of potential antecedents is very large.
 
 % Introduce MacCartney + Related Work
-We build off of the variant of Natural Logic introduced by
+We build off of the variant of the logic introduced by
   the NatLog inference system (MacCartney and Manning, 2007; 2008; 2009),
   \nocite{key:2007maccartney-natlog}
   \nocite{key:2008maccartney-natlog}
@@ -25,9 +29,9 @@ We build off of the variant of Natural Logic introduced by
   based off of earlier theoretical work on Natural Logic and 
   Monotonicity Calculus
   \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
-Later work has formalized many aspects of the logic
+Later work formalizes many aspects of the logic
   \cite{key:2012icard-natlog,key:2013djalali-natlog};
-  formally we are adopting the semantics of outlined in
+  we adopt the semantics of
   \newcite{key:2014icard-natlog}.
 %  which we appeal to but are not necessary for a 
 %  appeal to in future sections, but are not necessary for an understanding
@@ -39,12 +43,12 @@ Later work has formalized many aspects of the logic
 At a high level, Natural Logic proofs operate by mutating spans of text
   in precise ways to ensure that the mutated sentence follows from the
   original -- each step is much like a syllogistic inference.
-We therefore must introduce three components for a complete proof system:
-  we define the valid atomic relations between lexical entries
+We construct a complete proof system in three parts:
+  we define MacCartney's the valid atomic relations between lexical entries
   (\refsec{maccartney-relations}), the effect these mutations have
   on the validity of the inference (\refsec{maccartney-polarity}),
   and a practical system for executing these proofs.
-We introduce MacCartney's alignment-based approach in
+We review MacCartney's alignment-based approach in
   \refsec{maccartney-proof}, and show that we can generalize and
   simplify this system in \refsec{search}.
 
@@ -132,7 +136,7 @@ This is analogous to the formal construction of the
 
 %Note that \forward\ and \reverse\ are inverses.
 Examples of the last two relations (\alternate\ and \cover)
-and the complete independence relation (\independent) are given below:
+and the complete independence relation (\independent) include:
 
 \begin{center}
 \begin{tabular}{rcl}
@@ -152,9 +156,10 @@ and the complete independence relation (\independent) are given below:
 % Motivate
 We can determine the relation relation between 
   lexical items from the previous section;
-  however, we still need a theory for how to propagate the relation
-  induced by a lexical mutation ``up the parse tree'' to become
-  a relation between two sentences.
+  however, we still need a theory for how to ``project'' the relation
+  induced by a lexical mutation as a relation between the two
+  containing sentences.
+%  ``up the parse tree'' to become a relation between two sentences.
 For example, \textit{cat} \forward\ \textit{animal},
   and \textit{some cat meows} \forward\ \textit{some animal meows},
   but
@@ -169,8 +174,8 @@ We appeal two important concepts: \textit{monotonicity} as a
   as a property of lexical items in a sentence.
 Much like monotone functions in calculus,
   an [upwards] monotone quantifier has an output truth value which is
-  non-decreasing (i.e., material implication; true cannot become false)
-  as the input ``increases'' (i.e., in terms of set containment).
+  non-decreasing (i.e., material implication)
+  as the input ``increases'' (i.e., the subset relation).
 From the example above, \textit{some} is upwards monotone in its first
   argument, and \textit{no} is downwards monotone in its first argument.
 
@@ -214,7 +219,7 @@ All lexical items have \textit{upward} polarity by default;
   and downwards monotone quantifiers reverse polarity.
 For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
   \w{mice} in \w{no cats don't eat mice} has upward polarity
-  (in the scope of two downward monotone quantifiers).
+  (it is in the scope of two downward monotone quantifiers).
 % Projection
 The relation between two sentences differing by a single lexical
   relation is then given in the projection table
@@ -305,17 +310,17 @@ The relation between two sentences differing by a single lexical
 %In the framework of \newcite{key:2007maccartney-natlog}, the task is
 %  to infer whether a single logical antecedent entails a query
 %  consequent.
-Their approach is to generate an alignment between the premise
-  and the query, and classify each aligned segment into one of
+Their approach first generates an alignment between the premise
+  and the query, and then classify each aligned segment into one of
   the relations in \reffig{relations}.
-Inference then reduces to projecting each of these relations
+Inference reduces to projecting each of these relations
   according to \reftab{projectivity} and iteratively \textit{joining} 
   two projected relations together to get the final entailment
   relation.
-This \textit{join table}, denoted as $\bowtie$, 
+This join relation, denoted as $\bowtie$, 
   is given in \reftab{join}.
 
-To illustrate we can consider MacCartney's example inference from
+To illustrate, we can consider MacCartney's example inference from
   \w{Stimpy is a cat} to \w{Stimpy is not a poodle}.
 An alignment of the two statements would provide three lexical
   mutations:
@@ -325,14 +330,14 @@ An alignment of the two statements would provide three lexical
 The initial relation $r_0$ is axiomatically \equivalent.
 Each of these then project through the projection function $\rho$
   from \reftab{projectivity},
-  and are joined by the join relation:
+  and are joined using the join relation:
 
 \begin{equation*}
   r_0 \bowtie \rho(r_1) \bowtie \rho(r_2) \bowtie \rho(r_3)
 \end{equation*}
 
 In MacCartney's work this style of proof is presented as a table,
-  as follows.
+  as below.
 The last column ($s_i$) is the relation between the premise and the
   $i^{th}$ step in the proof, and is constructed inductively as
   $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
@@ -362,5 +367,5 @@ The last column ($s_i$) is the relation between the premise and the
 
 In our example, we would conclude that
   \w{Stimpy is a cat} \forward\ \w{Stimpy is not a poodle}
-  since $s_3$ is \forward,
-  and therefore the inference is valid.
+  since $s_3$ is \forward;
+  therefore the inference is valid.
