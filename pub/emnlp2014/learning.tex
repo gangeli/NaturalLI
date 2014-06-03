@@ -1,54 +1,92 @@
 \Section{learning}{Learning Transition Costs}
-The learning task can be viewed as a constrained optimization problem.
-Subject to the constraint that all elements of the cost vector $\theta$ 
-  must be non-negative, we optimize the probability from
-  Equation \refeqn{prob} compared against the gold annotation.
-As training data, we are given a number of facts, annotated with a
-  truth value of \textit{true} or \textit{false}.
-We assume that all facts in our database are true; therefore,
-  $p(\textrm{valid})$ corresponds directly to $p(\textrm{true})$.
+%The learning task can be viewed as a constrained optimization problem.
+We describe our learning procedure for the transitions costs $\theta$.
+Our training data $\sD$ consists of query facts $q$ and their associated
+  gold truth values $y$.
+Equation \refeqn{prob} gives us a probability that a particular inference
+  is \textit{valid}; trivially, we define the probability that a
+  fact is true as the probability that an inference from a premise to
+  that fact is valid.
+%  we assume that every fact in our database is true, which allows us
+%  to use the equation as a proxy for the probability that a fact
+%  is true.
+We optimize the likelihood of our gold annotations according to
+  this probability, subject to
+  the constraint that all elements in our cost vector $\theta$ be
+  non-negative.
 
-We learn costs using an iterative algorithm.
-At each iteration, we take the costs from the previous iteration
-  and run search over every example to obtain candidate paths.
-We then construct a supervised training set $\sD$ with entries
-  $((x_i, v_i), y_i)$ corresponding to the predicted path $x_i$,
-  the predicted inference state $v_i$, and the ground truth $y_i$.
-Analogous to logistic regression,
-  the log-likelihood of the training data becomes:
+We run the search algorithm described in \refsec{inference} on every
+  query $q_i \in \sD$.
+This produces the highest confidence path $x_1$, along with its
+  inference state $v_i$.
+We now have annotated tuples: $( (x_i, v_i), y_i )$ for every
+  element in our training set.
+Analogous to logistic regression, the log likelihood of our training
+  data $\sD$, subject to costs $\theta$, is:
 
-\vspace{-0.5em}
+%Subject to the constraint that all elements of the cost vector $\theta$ 
+%  must be non-negative, we optimize the probability from
+%  Equation \refeqn{prob} compared against the gold annotation.
+%As training data, we are given a number of facts, annotated with a
+%  truth value of \textit{true} or \textit{false}.
+%We assume that all facts in our database are true; therefore,
+%  $p(\textrm{valid})$ corresponds directly to $p(\textrm{true})$.
+%
+%We learn costs using an iterative algorithm.
+%At each iteration, we take the costs from the previous iteration
+%  and run search over every example to obtain candidate paths.
+%We then construct a supervised training set $\sD$ with entries
+%  $((x_i, v_i), y_i)$ corresponding to the predicted path $x_i$,
+%  the predicted inference state $v_i$, and the ground truth $y_i$.
+%Analogous to logistic regression,
+%  the log-likelihood of the training data becomes:
+
+\vspace{-0.75em}
 \begin{align*}
-\l\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
+\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
     y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot f(x_i)}} \right) \\
     &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot f(x_i)}} \right)
   \Big],
 \end{align*}
-\vspace{-0.5em}
+\vspace{-1.0em}
 
 \noindent where $y_i$ is 1 if the example is annotated true and 0
   otherwise, and $f(x_i)$ are the features extracted for path $x_i$.
-The objective function becomes our negative log-likelihood, in addition
-  to an $l_2$ regularization term and a log barrier function to 
+The objective function is the negative log likelihood with
+  an $L_2$ regularization term and a log barrier function to 
   prohibit negative costs:
-\vspace{-0.5em}
 
+\vspace{-1.0em}
 \begin{equation*}
-O(\sD) = -\l\l_\theta(\sD) 
+O(\sD) = -\l_\theta(\sD) 
   + \frac{1}{2 \sigma^2}\|\theta\|_2^2
-  - \epsilon \log(-\theta).
+  - \epsilon \log(\theta).
 \end{equation*}
-\vspace{-0.5em}
+\vspace{-1.0em}
 
-Although this objective is non-convex, in practice initializing weights
-  to match Natural Logic is likely to reduce the risk of arriving at
+We optimize this objective using conjugate gradient descent.
+Although this objective is non-convex, in practice we can find a good
+  initialization of weights to reduce the risk of arriving at
   local optima.
-Therefore, we opt to \naive ly run a convex solver on the objective after
-  each iteration, initialized to the weights from the previous
-  iteration.
-The weights for the first iteration are initialized to an approximation
-  of valid Natural Logic weights.
 
+An elegant property of this formulation is that the weights we are
+  optimizing correspond directly to the costs used during search.
+This creates a positive feedback loop -- as better weights are learned,
+  the search algorithm is more likely to find confident paths, and
+  more data is available to train from.
+We therefore run this learning step for multiple epochs,
+  re-running search after each epoch.
+The weights for the first epoch are initialized to an approximation
+  of valid Natural Logic weights.
+Subsequent epochs initialize their weights to the output of the previous
+  epoch.
+
+
+%Therefore, we opt to \naive ly run a convex solver on the objective after
+%  each iteration, initialized to the weights from the previous
+%  iteration.
+%The weights for the first iteration are initialized to an approximation
+%  of valid Natural Logic weights.
 
 %We initialize the first iteration to these costs, and run
 %  conjugate gradient descent to convergence on a local minima
