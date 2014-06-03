@@ -7,9 +7,9 @@
 \newcommand\completeFSA{
   \begin{tikzpicture}[shorten >=1pt,node distance=2.0cm,auto,semithick,inner sep=2pt,bend angle=15,
     % (styles)
-    every state/.style={draw=red!50,very thick,fill=red!10},
+    every state/.style={draw=red!100,very thick,fill=red!10},
     accepting/.style={draw=blue!50,very thick,fill=blue!10},
-    initial/.style={draw=green!50,very thick,fill=green!10}
+    initial/.style={draw=green!90,very thick,fill=green!10}
     ]
 
     % (states)
@@ -47,9 +47,9 @@
 \newcommand\collapsedFSA{
   \begin{tikzpicture}[shorten >=1pt,node distance=2.0cm,auto,semithick,inner sep=2pt,bend angle=30,
     % (styles)
-    every state/.style={draw=red!50,very thick,fill=red!10},
+    every state/.style={draw=red!100,very thick,fill=red!10},
     accepting/.style={draw=blue!50,very thick,fill=blue!10},
-    initial/.style={draw=green!50,very thick,fill=green!10}
+    initial/.style={draw=green!90,very thick,fill=green!10}
     ]
 
     % (states)
@@ -135,6 +135,9 @@
 % The MacCartney Relations (as Venn Diagrams)
 % -----
 %
+\definecolor{light}{rgb}{.926,.969,.691}
+\definecolor{dark}{rgb}{.5,.801,.730}
+%\definecolor{dark}{rgb}{.172,.5,.719}
 \newcommand\frameVenn{
   \draw (-1,-1) rectangle (1,1);
   \draw (0.8,0.8) node {$\sD$};
@@ -148,7 +151,7 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[gray] \vennA;
+      \fill[fill=dark] \vennA;
     \end{scope}
     
     \frameVenn
@@ -164,10 +167,10 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[lightgray] \vennB;
+      \fill[fill=light] \vennB;
     \end{scope}
     \begin{scope}
-      \fill[gray] \vennA;
+      \fill[fill=dark] \vennA;
     \end{scope}
     
     \frameVenn
@@ -183,10 +186,10 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[gray] \vennB;
+      \fill[fill=dark] \vennB;
     \end{scope}
     \begin{scope}
-      \fill[lightgray] \vennA;
+      \fill[fill=light] \vennA;
     \end{scope}
     
     \frameVenn
@@ -202,10 +205,10 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[gray] \vennB;
+      \fill[fill=dark] \vennB;
     \end{scope}
     \begin{scope}
-      \fill[lightgray] \vennA;
+      \fill[fill=light] \vennA;
     \end{scope}
     
     \frameVenn
@@ -221,10 +224,10 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[gray] \vennB;
+      \fill[fill=dark] \vennB;
     \end{scope}
     \begin{scope}
-      \fill[lightgray] \vennA;
+      \fill[fill=light] \vennA;
     \end{scope}
     
     \frameVenn
@@ -240,14 +243,14 @@
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
     \begin{scope}
-      \fill[gray] \vennB;
+      \fill[fill=dark] \vennB;
     \end{scope}
     \begin{scope}
-      \fill[lightgray] \vennA;
+      \fill[fill=light] \vennA;
     \end{scope}
     \begin{scope}
       \clip \vennA;
-      \fill[darkgray] \vennB;
+      \fill[pattern=north west lines, pattern color=dark] \vennB;
     \end{scope}
     
     \frameVenn

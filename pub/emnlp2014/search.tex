@@ -30,8 +30,8 @@ This work augments the proof system from \refsec{maccartney-proof}
   finite state machine into a much simpler one with only three
   intuitive inference states.
 These will allow us to formulate our search problem such that a path
-  in search corresponds to a path through this state machine, which
-  in turn specifies a logical derivation.
+  in search corresponds to a path through this collapsed state machine.
+%  which in turn specifies a logical derivation.
 
 Taking notation from \refsec{maccartney-proof}, we construct a
   finite state machine over states $s$.
@@ -42,7 +42,7 @@ Outgoing transition labels
   transitions corresponds to the join table in \reftab{join}.
 This construction follows from our definition of
   $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
-  for all possible pair of states $s$ and $r$, we construct a
+  for all possible pairs of state $s$ and relation $r$, we construct a
   transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
 \reffig{fsa}a shows our constructed automata, with trivial edges
   omitted for clarity.
@@ -79,7 +79,7 @@ Although $\negate \xrightarrow{\negate} \equivalent$ and
   $\alternate \xrightarrow{\negate} \forward$, both
   \equivalent\ and \forward\ are in the same cluster (\textit{valid}).
 It is not trivial \textit{a priori} that the join table should have
-  this regularity, although it certainly simplifies logic for
+  this regularity, although it certainly simplifies the logic for
   inference tasks.
 %  future work in Natural Logic can use a join table with only
 %  three rows, rather than the seven shown.
@@ -97,8 +97,8 @@ Second, the hierarchy over relations presented in
 Lastly, with probabilistic inference,
   transitioning to the unknown state can be replaced by staying in the
   current state at a cost to the confidence of validity.
-This allows us to make use of only two states, with associated
-  confidence.
+This allows us to make use of only two states:
+  \textit{valid} and \textit{invalid}.
 
 %The proof system from \refsec{maccartney-proof} can be naturally cast
 %  as a finite state automata.

@@ -3,10 +3,10 @@
 Broadly, Natural Logic aims to capture common logical
   inferences by appealing directly to the structure of language,
   as opposed to running deduction on an abstract logical form.
-The logic builds upon traditional rather than first-order logic
-  \cite{key:2008vanbenthem-natlog};
+The logic builds upon traditional rather than first-order logic;
   to a first approximation, Natural Logic can be seen as
-  an enhanced version Aristotle's syllogistic system.
+  an enhanced version Aristotle's syllogistic system
+  \cite{key:2008vanbenthem-natlog}.
 %Natural Logic is inspired largely by the Aristotelian
 %  syllogisms and subsequent traditional logics
 %  \cite{key:2008vanbenthem-natlog}.
@@ -44,7 +44,7 @@ At a high level, Natural Logic proofs operate by mutating spans of text
   in precise ways to ensure that the mutated sentence follows from the
   original -- each step is much like a syllogistic inference.
 We construct a complete proof system in three parts:
-  we define MacCartney's the valid atomic relations between lexical entries
+  we define MacCartney's valid atomic relations between lexical entries
   (\refsec{maccartney-relations}), the effect these mutations have
   on the validity of the inference (\refsec{maccartney-polarity}),
   and a practical system for executing these proofs.
@@ -70,8 +70,7 @@ We review MacCartney's alignment-based approach in
 \caption{
   The model-theoretic interpretation of the MacCartney relations.
   The figure shows the relation between the denotation of
-    $\varphi$, in dark gray, compared to the denotation of
-    of $\psi$, in light gray.
+    $\varphi$ (dark) and $\psi$ (light).
   The universe is denoted by $\sD$.
   \label{fig:relations}
 }
@@ -83,7 +82,7 @@ We review MacCartney's alignment-based approach in
 The denotation of a lexical item is the set of objects in the domain
   of discourse $\sD$ which that lexical item refers to.
 For instance, the denotation of \w{cat} would be the set of all cats.
-The denotations of two lexical items can then be compared in terms of
+Two denotations can then be compared in terms of
   set algebra: if we define the set of cats to be $\varphi$ and
   the set of animals to be $\psi$, we can state that
   $\varphi \subseteq \psi$.
@@ -102,7 +101,7 @@ For instance, the example search path in \reffig{teaser} makes use of
 \begin{center}
 \begin{tabular}{rcl}
 \w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
-\w{cat}        & \reverse    & \w{carnivore} \\
+\w{cat}        & \forward    & \w{carnivore} \\
 \w{animals}    & \reverse    & \w{mouse} \\
 \w{mouse}      & \equivalent & \w{a mouse} \\
 \end{tabular}
@@ -154,7 +153,7 @@ and the complete independence relation (\independent) include:
 %
 \Subsection{maccartney-polarity}{Monotonicity and Polarity}
 % Motivate
-We can determine the relation relation between 
+We can determine the relation between 
   lexical items from the previous section;
   however, we still need a theory for how to ``project'' the relation
   induced by a lexical mutation as a relation between the two
@@ -311,7 +310,7 @@ The relation between two sentences differing by a single lexical
 %  to infer whether a single logical antecedent entails a query
 %  consequent.
 Their approach first generates an alignment between the premise
-  and the query, and then classify each aligned segment into one of
+  and the query, and then classifies each aligned segment into one of
   the relations in \reffig{relations}.
 Inference reduces to projecting each of these relations
   according to \reftab{projectivity} and iteratively \textit{joining} 
@@ -336,8 +335,7 @@ Each of these then project through the projection function $\rho$
   r_0 \bowtie \rho(r_1) \bowtie \rho(r_2) \bowtie \rho(r_3)
 \end{equation*}
 
-In MacCartney's work this style of proof is presented as a table,
-  as below.
+In MacCartney's work this style of proof is presented as a table.
 The last column ($s_i$) is the relation between the premise and the
   $i^{th}$ step in the proof, and is constructed inductively as
   $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:

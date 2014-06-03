@@ -29,7 +29,7 @@ This approach is efficient over a large database of 300 million entries
   nor does the approach make use of any sort of approximate
   matching against the database, beyond lemmatizing individual 
   lexical items.
-The motivation in prior work for these sorts of \textit{fuzzy} matches --
+The motivation in prior work for approximate matches --
   to improve the recall of candidate premises -- is captured
   elegantly by relaxing Natural Logic itself.
 %However, occasionally approximate matches, penalized appropriately,
@@ -58,8 +58,8 @@ The space of possible nodes in our search is the set of possible
 To a first approximation, this is a pair $(w, s)$ of a surface form
   $w$ tagged with word sense and polarity,
   and an inference state $s$ in our collapsed FSA (\reffig{fsa}b).
-In addition, our search must keep
-  track of some additional information to ensure efficiency.
+In addition, our search keeps
+  track of some additional information for efficiency.
 
 %That is, a node is primarily parametrized primarily by the surface
 %  form of the candidate fact at this point in the (reverse) derivation.
@@ -105,7 +105,7 @@ Although inserting lexical items in a derivation (deleting words from
 For brevity, we refer to a deletion in the derivation as an insertion,
   as from the perspective of search we are inserting lexical items.
 
-\naive ly, at every node in our search, we must consider every item in
+\Naive ly, at every node in our search we must consider every item in
   the vocabulary as a possible insertion.
 We can limit the number of items we consider by storing the database
   as a trie.
@@ -240,7 +240,7 @@ The cost of an edge
   from fact $(f,v,p)$ with surface form $f$, validity
   $v$ and polarity $p$ to a new fact $(f',v',p')$ using a transition
   instance $t_i$ of type $t$ is given by
-  $f_{t_i} \cdot \theta_{t,v,p}$, where:
+  $f_{t_i} \cdot \theta_{t,v,p}$, defined as:
 
 \vspace{-0.25em}
 \begin{itemize}
@@ -249,7 +249,7 @@ The cost of an edge
       corresponding to how ``far'' the endpoints of a mutation are.
   \indentitem\item[$\theta_{t,v,p}$:]
     A learned cost for taking a transition of type $t$, if the source
-    of the edge is in a validity state of $v$ and the word being mutated
+    of the edge is in a inference state of $v$ and the word being mutated
     has polarity $p$.
 \end{itemize}
 \vspace{-0.25em}
@@ -266,7 +266,7 @@ In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
 
 \vspace{-0.5em}
 \begin{equation*}
-  f_{\uparrow_{w \rightarrow w'}}   = \log \frac{p(w')}{p(w)} = \log p(w') - \log p(w)
+  f_{\uparrow_{w \rightarrow w'}}   = \log \frac{p(w')}{p(w)} = \log p(w') - \log p(w).
 %  f_{\downarrow_{w \rightarrow w'}} &= \log \frac{p(w)}{p(w')} &= \log p(w) - \log p(w')
 \end{equation*}
 \vspace{-0.5em}
@@ -290,7 +290,7 @@ We then define $f_{NN_{w \rightarrow w'}}$
 \vspace{-0.5em}
 \begin{equation*}
   f_{NN_{w \rightarrow w'}}
-    = \textrm{arccos} \left( \frac{w \cdot w'}{\|w\| \|w'\|} \right)
+    = \textrm{arccos} \left( \frac{w \cdot w'}{\|w\| \|w'\|} \right).
 \end{equation*}
 \vspace{-0.5em}
 
@@ -316,7 +316,7 @@ The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 \vspace{-0.5em}
 \begin{equation}
 \textrm{dist}_{\textrm{jc}}(w_1, w_2)
-  = \log\frac{p(\textrm{lcs})^2}{p(w_1)p(w_2)}
+  = \log\frac{p(\textrm{lcs})^2}{p(w_1)p(w_2)}.
 \label{eqn:jc}
 \end{equation}
 \vspace{-0.5em}
@@ -350,7 +350,7 @@ We can factorize the cost of a path, $\theta \cdot \bef$, along the path
   &= \theta_\uparrow \left( \log \frac{p(\textrm{lcs})}{p(w_1)} \right) +
      \theta_\downarrow \left( \log \frac{p(\textrm{lcs})}{p(w_2)} \right) \\
   &= \log \frac{ p(\textrm{lcs})^{\theta_\uparrow + \theta_\downarrow} }
-               { p(w_1)^{\theta_\uparrow} + p(w_2)^{\theta_\downarrow} }
+               { p(w_1)^{\theta_\uparrow} + p(w_2)^{\theta_\downarrow} }.
 \end{align*}
 \vspace{-0.5em}
 
@@ -383,7 +383,7 @@ We can normalize this value by negating every element of the cost
 
 \vspace{-0.5em}
 \begin{equation*}
-\textrm{confidence} = \frac{1}{1 + e^{\theta \cdot \bef}}
+\textrm{confidence} = \frac{1}{1 + e^{\theta \cdot \bef}}.
 \end{equation*}
 \vspace{-0.5em}
 
@@ -398,7 +398,6 @@ However, to translate this value into a probability
   confidently valid, or confidently invalid.
 To illustrate, a fact with a low confidence should translate to a
   probability of $\frac{1}{2}$, rather than a probability of 0.
-
 We therefore define the probability of validity as follows.
 We take $v$ to be 1 if the final fact of our derivation is in the
   \textit{valid} state with respect to the antecedent,
@@ -407,11 +406,11 @@ We take $v$ to be 1 if the final fact of our derivation is in the
 %  antecedent in our database when compared to the consequent, rather
 %  than vice versa.
 For completeness, if no path is given we can set $v=0$.
-The probability of validity then becomes:
+The probability of validity becomes:
 
 \vspace{-0.5em}
 \begin{equation}
-  p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \theta \cdot \bef}}
+  p(\textrm{valid}) = \frac{v}{2} + \frac{1}{1 + e^{v \theta \cdot \bef}}.
   \label{eqn:prob}
 \end{equation}
 \vspace{-0.5em}
