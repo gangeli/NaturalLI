@@ -103,7 +103,7 @@ Importantly, this enforces that each derivation orders mutations
 Although inserting lexical items in a derivation (deleting words from
   the reversed derivation) is trivial, the other direction is not.
 For brevity, we refer to a deletion in the derivation as an insertion,
-  as from the perspective of search we are inserting lexical items.
+  since from the perspective of search we are inserting lexical items.
 
 \Naive ly, at every node in our search we must consider every item in
   the vocabulary as a possible insertion.
@@ -117,7 +117,7 @@ To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$
 
 Although this approach works well when $i$ is relatively large, there
   are too many candidate insertions for small $i$.
-We special case the most extreme example for this, where $i=0$; that is, 
+We special case the most extreme example for this, where $i=0$ -- that is, 
   when we are inserting into the beginning of the fact.
 In this case, rather than taking all possible lexical items that start
   any fact, we take all items which are followed by the first word of
@@ -230,7 +230,7 @@ For instance, clearly nearest neighbors do not preserve equivalence
   \textit{all cats like milk} \alternate\ \textit{all cats hate milk},
   it is not the case that
   \textit{some cats like milk} \alternate\ \textit{some cats hate milk}.\footnote{
-    The latter example is a consequence of the projection function in
+    The latter example is actually a consequence of the projection function in
     \reftab{projectivity} being overly optimistic.
   }
 We mitigate this imprecision by introducing a cost for each transition,
@@ -246,7 +246,7 @@ The cost of an edge
 \begin{itemize}
   \indentitem\item[$f_{t_i}$:]
     A value associated with every transition instance $t_i$, intuitively
-      corresponding to how ``far'' the endpoints of a mutation are.
+      corresponding to how ``far'' the endpoints of the transition are.
   \indentitem\item[$\theta_{t,v,p}$:]
     A learned cost for taking a transition of type $t$, if the source
     of the edge is in a inference state of $v$ and the word being mutated
@@ -316,7 +316,7 @@ The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 \vspace{-0.5em}
 \begin{equation}
 \textrm{dist}_{\textrm{jc}}(w_1, w_2)
-  = \log\frac{p(\textrm{lcs})^2}{p(w_1)p(w_2)}.
+  = \log\frac{p(\textrm{lcs})^2}{p(w_1) \cdot p(w_2)}.
 \label{eqn:jc}
 \end{equation}
 \vspace{-0.5em}
@@ -350,7 +350,7 @@ We can factorize the cost of a path, $\theta \cdot \bef$, along the path
   &= \theta_\uparrow \left( \log \frac{p(\textrm{lcs})}{p(w_1)} \right) +
      \theta_\downarrow \left( \log \frac{p(\textrm{lcs})}{p(w_2)} \right) \\
   &= \log \frac{ p(\textrm{lcs})^{\theta_\uparrow + \theta_\downarrow} }
-               { p(w_1)^{\theta_\uparrow} + p(w_2)^{\theta_\downarrow} }.
+               { p(w_1)^{\theta_\uparrow} \cdot p(w_2)^{\theta_\downarrow} }.
 \end{align*}
 \vspace{-0.5em}
 

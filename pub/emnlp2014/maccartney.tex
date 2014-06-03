@@ -10,7 +10,8 @@ The logic builds upon traditional rather than first-order logic;
 %Natural Logic is inspired largely by the Aristotelian
 %  syllogisms and subsequent traditional logics
 %  \cite{key:2008vanbenthem-natlog}.
-While not all inferences in first-order logic are in Natural Logic,
+While not all inferences in first-order logic are captured by 
+  Natural Logic,
   it nonetheless allows for a wide range of intuitive inferences in
   a computationally efficient and theoretically clean way.
 %That is to say, Natural Logic takes the meaning representation of a
@@ -221,8 +222,8 @@ For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
   (it is in the scope of two downward monotone quantifiers).
 % Projection
 The relation between two sentences differing by a single lexical
-  relation is then given in the projection table
-  (\reftab{projectivity}).\footnote{
+  relation is then given by the projection function in
+  \reftab{projectivity}.\footnote{
     Note that this table optimistically assumes every quantifier is
     \textit{additive} and \textit{multiplicative}, as defined
     in \newcite{key:2012icard-natlog}.
@@ -327,7 +328,7 @@ An alignment of the two statements would provide three lexical
     \mbox{$r_2\coloneqq\cdot\rightarrow\w{not}$},
     and \mbox{$r_3\coloneqq\w{dog}\rightarrow\w{poodle}$}.
 The initial relation $r_0$ is axiomatically \equivalent.
-Each of these then project through the projection function $\rho$
+Each of these are then projected with the projection function $\rho$
   from \reftab{projectivity},
   and are joined using the join relation:
 

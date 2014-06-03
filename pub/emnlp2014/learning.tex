@@ -11,6 +11,9 @@ We assume that all facts in our database are true; therefore,
 We learn costs using an iterative algorithm.
 At each iteration, we take the costs from the previous iteration
   and run search over every example to obtain candidate paths.
+We then construct a supervised training set $\sD$ with entries
+  $((x_i, v_i), y_i)$ corresponding to the predicted path $x_i$,
+  the predicted inference state $v_i$, and the ground truth $y_i$.
 Analogous to logistic regression,
   the log-likelihood of the training data becomes:
 
@@ -23,10 +26,8 @@ Analogous to logistic regression,
 \end{align*}
 \vspace{-0.5em}
 
-\noindent where $y_i$ is 1 if the example is annotated true, and 0
-  otherwise, $f(x_i)$ are the features extracted for path $i$, and
-  $v_i$ is the inference state predicted in search, as in
-  \refsec{inference-prob}.
+\noindent where $y_i$ is 1 if the example is annotated true and 0
+  otherwise, and $f(x_i)$ are the features extracted for path $x_i$.
 The objective function becomes our negative log-likelihood, in addition
   to an $l_2$ regularization term and a log barrier function to 
   prohibit negative costs:
