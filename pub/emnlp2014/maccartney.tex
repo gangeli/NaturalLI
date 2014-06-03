@@ -1,19 +1,21 @@
 \Section{maccartney}{MacCartney's Natural Logic}
 % Motivate Natural Logic
-Broadly, Natural Logic aims to capture common logical
+Natural Logic aims to capture common logical
   inferences by appealing directly to the structure of language,
   as opposed to running deduction on an abstract logical form.
 The logic builds upon traditional rather than first-order logic;
   to a first approximation, Natural Logic can be seen as
   an enhanced version Aristotle's syllogistic system
   \cite{key:2008vanbenthem-natlog}.
+A working understanding of the logic as syllogistic reasoning
+  is sufficient to understand the later contributions of the paper.
 %Natural Logic is inspired largely by the Aristotelian
 %  syllogisms and subsequent traditional logics
 %  \cite{key:2008vanbenthem-natlog}.
-While not all inferences in first-order logic are captured by 
+While some inferences in first-order logic are not captured by 
   Natural Logic,
   it nonetheless allows for a wide range of intuitive inferences in
-  a computationally efficient and theoretically clean way.
+  a computationally efficient and conceptually clean way.
 %That is to say, Natural Logic takes the meaning representation of a
 %  sentence to be the surface form of the sentence itself.
 %In part, this lends itself to computationally efficient inference;
@@ -42,10 +44,10 @@ Later work formalizes many aspects of the logic
 %  MacCartney's Natural Logic can be found in \newcite{key:2009maccartney-natlog}.
 
 At a high level, Natural Logic proofs operate by mutating spans of text
-  in precise ways to ensure that the mutated sentence follows from the
+  to ensure that the mutated sentence follows from the
   original -- each step is much like a syllogistic inference.
 We construct a complete proof system in three parts:
-  we define MacCartney's valid atomic relations between lexical entries
+  we define MacCartney's atomic relations between lexical entries
   (\refsec{maccartney-relations}), the effect these mutations have
   on the validity of the inference (\refsec{maccartney-polarity}),
   and a practical system for executing these proofs.
@@ -61,7 +63,7 @@ We review MacCartney's alignment-based approach in
 % -- Relations Figure --
 \begin{figure}[t]
 \begin{center}
-  \resizebox{0.48\textwidth}{!}{
+  \resizebox{0.46\textwidth}{!}{
     \begin{tabular}{ccc}
       \equivalentVenn & \forwardVenn & \reverseVenn \\
       \negateVenn & \alternateVenn & \coverVenn
@@ -138,6 +140,7 @@ This is analogous to the formal construction of the
 Examples of the last two relations (\alternate\ and \cover)
 and the complete independence relation (\independent) include:
 
+\vspace{-0.25em}
 \begin{center}
 \begin{tabular}{rcl}
 \w{cat}        & \alternate   & \w{dog} \\
@@ -145,6 +148,7 @@ and the complete independence relation (\independent) include:
 \w{cat}        & \independent & \w{friendly} \\
 \end{tabular}
 \end{center}
+\vspace{-0.25em}
 
 %We proceed to describe the relationship between these lexical mutations,
 %  and the validity of executing the mutation in a derivation.
@@ -217,7 +221,8 @@ From the example above, \textit{some} is upwards monotone in its first
 All lexical items have \textit{upward} polarity by default;
   upwards monotone quantifiers preserve polarity,
   and downwards monotone quantifiers reverse polarity.
-For example, \w{cats} in \w{all cats eat mice} has downward polarity; or,
+For example, \w{mice} in \w{no cats eat mice} has downward polarity,
+  whereas
   \w{mice} in \w{no cats don't eat mice} has upward polarity
   (it is in the scope of two downward monotone quantifiers).
 % Projection
@@ -238,21 +243,22 @@ The relation between two sentences differing by a single lexical
     \textbf{Relation} & \multicolumn{2}{c}{\textbf{Polarity of Context}} \\
              & Upward & Downward \\
     \hline
-    $e_1 \forward     e_2$ & $s_1 \forward     s_2$ & $s_1 \reverse     s_2$ \\ 
-    $e_1 \reverse     e_2$ & $s_1 \reverse     s_2$ & $s_1 \forward     s_2$ \\ 
-    $e_1 \alternate   e_2$ & $s_1 \alternate   s_2$ & $s_1 \cover       s_2$ \\ 
-    $e_1 \cover       e_2$ & $s_1 \cover       s_2$ & $s_1 \alternate   s_2$ \\ 
-%    $e_1 \equivalent  e_2$ & $s_1 \equivalent  s_2$ & $s_1 \equivalent  s_2$ \\ 
-    $e_1 \negate      e_2$ & $s_1 \negate      s_2$ & $s_1 \negate      s_2$ \\ 
-%    $e_1 \independent e_2$ & $s_1 \independent s_2$ & $s_1 \independent s_2$
+     $e_1 \forward     $ & $s_1 \forward     s_2$ & $s_1 \reverse     s_2$ \\ 
+     $e_1 \reverse     $ & $s_1 \reverse     s_2$ & $s_1 \forward     s_2$ \\ 
+     $e_1 \alternate   $ & $s_1 \alternate   s_2$ & $s_1 \cover       s_2$ \\ 
+     $e_1 \cover       $ & $s_1 \cover       s_2$ & $s_1 \alternate   s_2$ \\ 
+%    $e_1 \equivalent  $ & $s_1 \equivalent  s_2$ & $s_1 \equivalent  s_2$ \\ 
+     $e_1 \negate      $ & $s_1 \negate      s_2$ & $s_1 \negate      s_2$ \\ 
+%    $e_1 \independent $ & $s_1 \independent s_2$ & $s_1 \independent s_2$
 	\end{tabular}
 	%(caption)
 	\caption{
-    The projection table used for a relation between a phrase $e_1$ and
-      its candidate mutation $e_2$, in terms of the produced relation
+    The projection function $\rho$ used for a relation between
+       a lexical item $e_1$ and
+      its candidate mutation $e_2$, in terms of the projected relation
       between sentence $s_1$ and the new sentence $s_2$.
-    Values are given for when the entities are in a monotone and
-      antitone context.
+    Values are given for when the entities are in an upwards and
+      downwards polarity.
     Note that \equivalent\ and \independent\ project up unchanged.
 		\label{tab:projectivity}
 	}
@@ -327,15 +333,16 @@ An alignment of the two statements would provide three lexical
     \mbox{$r_1\coloneqq\w{cat}\rightarrow\w{dog}$}, 
     \mbox{$r_2\coloneqq\cdot\rightarrow\w{not}$},
     and \mbox{$r_3\coloneqq\w{dog}\rightarrow\w{poodle}$}.
-The initial relation $r_0$ is axiomatically \equivalent.
+%The initial relation $r_0$ is axiomatically \equivalent.
 Each of these are then projected with the projection function $\rho$
   from \reftab{projectivity},
   and are joined using the join relation:
 
 \begin{equation*}
-  r_0 \bowtie \rho(r_1) \bowtie \rho(r_2) \bowtie \rho(r_3)
+  r_0 \bowtie \rho(r_1) \bowtie \rho(r_2) \bowtie \rho(r_3),
 \end{equation*}
 
+\noindent where the initial relation $r_0$ is axiomatically \equivalent.
 In MacCartney's work this style of proof is presented as a table.
 The last column ($s_i$) is the relation between the premise and the
   $i^{th}$ step in the proof, and is constructed inductively as
