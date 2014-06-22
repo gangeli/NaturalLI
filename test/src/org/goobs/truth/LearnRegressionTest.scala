@@ -53,7 +53,7 @@ object LearnRegressionTest extends Client {
     } else {
       log(RED, "FAILED " + exitStatus + " TESTS")
     }
-    if (exitStatus > 2) {
+    if (exitStatus > 4) {
       System.exit(exitStatus)
     } else {
       System.exit(0)

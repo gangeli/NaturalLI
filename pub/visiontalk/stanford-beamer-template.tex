@@ -1,0 +1,40 @@
+\documentclass[hyperref={pdfpagelabels=false}]{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{graphicx}
+\usepackage{mathptmx}           % replacement for obsolete \usepackage{times}
+\usepackage[scaled=.90]{helvet} % replacement for obsolete \usepackage{times}
+\usepackage{courier}            % replacement for obsolete \usepackage{times}
+
+% set up Beamer style with Stanford colors and logo
+% logo is available at http://nlp.stanford.edu/local/nlp-logos/nlp-logo.pdf
+\useinnertheme{rounded}
+\useoutertheme{infolines}
+\usecolortheme{beaver}
+\setbeamercolor{block title}{fg=white,bg=darkred!75!black}
+\setbeamercolor{block body}{parent=normal text,bg=black!5!bg}
+\setbeamercolor{item projected}{bg=darkred}
+\logo{\includegraphics[height=1cm]{nlp-logo.pdf}}
+
+% title page information
+\title{}
+\subtitle{}
+\author{}
+\date{\today}
+\institute[Stanford]{Stanford University}
+
+% presentation content
+\begin{document}
+\begin{frame}
+\titlepage
+\end{frame}
+
+\section*{Outline}
+\begin{frame}{Outline}
+\tableofcontents
+\end{frame}
+
+\section{Section}
+\begin{frame}{Title}
+\end{frame}
+\end{document}
+

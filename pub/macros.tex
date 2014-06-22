@@ -17,3 +17,9 @@
 \def\red#1{\textcolor{red}{#1}}
 \def\green#1{\textcolor{green}{#1}}
 \def\yellow#1{\textcolor{yellow}{#1}}
+
+\newcommand\h[1]{\textbf{#1}}
+\newcommand\hh[1]{\textbf{\textcolor[rgb]{0.5,0,0}{#1}}}
+\makeatletter
+\newcommand{\xRightarrow}[2][]{\ext@arrow 0359\Rightarrowfill@{#1}{#2}}
+\makeatother
