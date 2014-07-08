@@ -1,0 +1,66 @@
+body {
+  padding-top: 40px;
+  padding-bottom: 40px;
+  background-color: #eee;
+}
+
+.form-query .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 12px;
+}
+.form-query .form-control:focus {
+  z-index: 2;
+}
+
+#truth-value {
+  font-weight: bold;
+  font-size: xx-large;
+}
+.truth-value-true {
+  color:  green;
+}
+.truth-value-false {
+  color:  red;
+}
+.truth-value-unknown {
+  color:  yellow;
+}
+.truth-value-error {
+  color:  red;
+}
+
+.justification-entry {
+  font-size: large;
+}
+
+
+.justification-table {
+	font-size: 12px;
+	border-collapse: collapse;
+	text-align: left;
+	width: 100%;
+}
+.justification-table th {
+	font-size: 14px;
+	font-weight: normal;
+	color: #039;
+	padding: 10px 8px;
+	border-bottom: 2px solid #6678b1;
+}
+.justification-table td {
+	color: #669;
+	padding: 9px 8px 0px 8px;
+}
+.justification-table th  td {
+  padding-left: 50px;
+  padding-right: 50px;
+  text-align: center;
+}
+.justification-table tbody tr:hover td {
+	color: #009;
+}

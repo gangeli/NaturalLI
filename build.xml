@@ -1,6 +1,8 @@
 <!-- This is only a wrapper for producing JUnit XML output -->
-<project name="truth" default="test" basedir=".">
+<project name="NaturalLI" default="test" basedir=".">
+  <property name="source.path"     value="${basedir}/src" />
   <property name="tests.path"      value="${basedir}/test/src" />
+  <property name="lib.path"        value="${basedir}/lib" />
   <property environment="env"/>
   
   <target name="classpath" description="Sets the classpath">
@@ -54,5 +56,32 @@
       <reporter type="stdout"/>
       <reporter type="junitxml" directory="${basedir}/test/"/>
     </scalatest>
+  </target>
+
+  <target name="war" depends="classpath"
+          description="Build a deployable WAR for the demo">
+    <war destfile="${source.path}/naturalli.war"
+         webxml="${source.path}/org/goobs/naturalli/demo/WEB-INF/naturalli.xml">
+      <lib dir="${source.path}/">
+        <include name="naturalli_client.jar"/>
+      </lib>
+      <lib dir="${lib.path}/demo">
+        <include name="*.jar"/>
+      </lib>
+      <lib dir="${lib.path}/">
+        <include name="corenlp-scala.jar"/>
+        <include name="jaws.jar"/>
+        <include name="postgresql.jar"/>
+        <include name="trove.jar"/>
+        <include name="protobuf.jar"/>
+      </lib>
+      <lib dir="/u/nlp/data/StanfordCoreNLPModels/">
+        <include name="stanford-corenlp-models-current.jar"/>
+        <include name="stanford-corenlp-caseless-models-current.jar"/>
+      </lib>
+      <lib dir="${env.SCALA_HOME}/lib/">
+        <include name="scala-library.jar"/>
+      </lib>
+    </war>
   </target>
 </project>

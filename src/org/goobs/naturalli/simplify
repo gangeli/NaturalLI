@@ -1,0 +1,18 @@
+#!/bin/bash
+exec scala -J-Xmx2g -classpath corenlp-scala.jar:${JAVANLP_HOME}/projects/core/classes:/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar "$0" "$@"
+!#
+
+/*
+ * NOTE: You should make sure the following are in you classpath in the line above:
+ *  - corenlp-scala.jar (git@github.com:gangeli/CoreNLP-Scala.git)
+ *  - CoreNLP (http://nlp.stanford.edu/software/corenlp.shtml)
+ *  - CoreNLP models
+ */
+
+import edu.stanford.nlp.Sentence
+
+//edu.stanford.nlp.NLPConfig.caseless
+
+for (line <- io.Source.stdin.getLines()) {
+  println( new Sentence(line).lemma.mkString(" ") )
+}

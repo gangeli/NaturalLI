@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE web-app PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN" "http://java.sun.com/j2ee/dtds/web-app_2.3.dtd">
+
+<web-app>
+    <display-name>NaturalLI Java Backend</display-name>
+    <description>
+        The Java/NLP backend for NaturalLI.
+    </description>
+
+    <!-- CORS Filter -->
+    <filter>
+        <filter-name>cors-ebay</filter-name>
+        <filter-class>org.ebaysf.web.cors.CORSFilter</filter-class>
+        <init-param>
+            <param-name>cors.allowed.origins</param-name>
+            <param-value>http://171.64.66.31,http://localhost:8080,http://localhost,https://localhost,http://nlp.stanford.edu,https://nlp.stanford.edu</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cors.allowed.methods</param-name>
+            <param-value>GET,POST,HEAD,OPTIONS,PUT</param-value>
+        </init-param>
+        <init-param>
+            <param-name>cors.logging.enabled</param-name>
+            <param-value>true</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>cors-ebay</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>NaturalLI</servlet-name>
+        <servlet-class>org.goobs.naturalli.demo.NaturalLI</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>NaturalLI</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+</web-app>
+

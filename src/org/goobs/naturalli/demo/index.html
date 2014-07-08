@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NaturalLI: Natural [Logic|Language] Inference</title>
+    <!-- Some Setup -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- JQuery from Google -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <!-- Bootstrap -->
+	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <!-- Naturalli -->
+    <link rel="stylesheet" href="naturalli.css">
+    <script src="naturalli.js"></script>
+</head>
+
+
+<body>
+    <div class="container">
+        <!-- Logo -->
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <img src="logo.png" height="200px" style="margin-bottom: 2em;"/>
+            </div>
+        </div>
+
+        <!-- Query Box -->
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <form id="form-query" class="form-query" role="form" action="http://plato42.stanford.edu:8080/naturalli/">
+                    <div class="form-group">
+                        <input type="text" name="q" class="form-control input-lg" placeholder="e.g., Cats have tails"
+
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-2"></div>
+        </div>
+
+        <!-- Truth Value -->
+        <div id="truth-row" class="row" style="margin-top:2em;">
+            <div class="col-md-4 col-md-offset-5">
+                <span id="truth-value"></span>
+            </div>
+        </div>
+
+        <!-- Justification Toggle -->
+        <div id="justification-toggle-row" class="row" style="margin-top:1em">
+            <div class="col-md-12 col-md-offset-5">
+                <a id="justification-toggle" href="#" ><span id='justification-toggle-icon' class="glyphicon glyphicon-expand" style="margin-right:0.5em;"></span>Justification</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Justification -->
+    <div id="justification-container" class="container collapse">
+        <div class="row">
+            <div class="col-md-12 col-md-offset-2"></div>
+        </div>
+
+    </div> <!-- /container -->
+</body>
+</html>

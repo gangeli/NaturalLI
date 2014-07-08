@@ -521,7 +521,9 @@ int startServer(int port) {
  * In practice, this is a NOOP.
  */
 void signalHandler(int32_t s){
-  printf("Caught signal %d; ignoring...\n",s);
+  printf("(caught signal %d)\n",s);
+  printf("What do we say to the God of death?\n");
+  printf("  \"Not today...\"\n");
 }
 
 

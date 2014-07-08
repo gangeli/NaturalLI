@@ -53,7 +53,7 @@ if IS_GCC
 endif
 endif
 
-test_client.jar: $(wildcard org/goobs/truth/*.scala) $(wildcard org/goobs/truth/*.java) $(wildcard org/goobs/truth/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/truth/*.java) 
+test_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/naturalli/*.java) 
 	$(MAKE) -C ../../src naturalli_client.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`

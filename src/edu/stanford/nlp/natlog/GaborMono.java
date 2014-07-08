@@ -30,9 +30,9 @@ public class GaborMono implements Mono {
 
     // downward-monotone operators ----------------------------------------------
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
-          (q.trigger == org.goobs.truth.Quantifier.TriggerType.UNARY_NOT || q.trigger == org.goobs.truth.Quantifier.TriggerType.NO)) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.NONE &&
+          (q.trigger == org.goobs.naturalli.Quantifier.TriggerType.UNARY_NOT || q.trigger == org.goobs.naturalli.Quantifier.TriggerType.NO)) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -44,9 +44,9 @@ public class GaborMono implements Mono {
         Monotonicity.DOWN));
 
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
-          q.trigger == org.goobs.truth.Quantifier.TriggerType.UNARY_NOT_IN) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.NONE &&
+          q.trigger == org.goobs.naturalli.Quantifier.TriggerType.UNARY_NOT_IN) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -72,9 +72,9 @@ public class GaborMono implements Mono {
 
     // down-down operators ------------------------------------------------------
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.NONE &&
-          (q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT || q.trigger == org.goobs.truth.Quantifier.TriggerType.NO)) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.NONE &&
+          (q.trigger == org.goobs.naturalli.Quantifier.TriggerType.DEFAULT || q.trigger == org.goobs.naturalli.Quantifier.TriggerType.NO)) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -98,9 +98,9 @@ public class GaborMono implements Mono {
     // down-up operators --------------------------------------------------------
 
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.FORALL &&
-          q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.FORALL &&
+          q.trigger == org.goobs.naturalli.Quantifier.TriggerType.DEFAULT) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -114,8 +114,8 @@ public class GaborMono implements Mono {
         Monotonicity.UP));
 
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.FEW) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.FEW) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -134,9 +134,9 @@ public class GaborMono implements Mono {
 
     // non-up operators ---------------------------------------------------------
     regexps = new ArrayList<>();
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
-      if (q.closestMeaning == org.goobs.truth.Quantifier.LogicalQuantifier.MOST &&
-          q.trigger == org.goobs.truth.Quantifier.TriggerType.DEFAULT) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
+      if (q.closestMeaning == org.goobs.naturalli.Quantifier.LogicalQuantifier.MOST &&
+          q.trigger == org.goobs.naturalli.Quantifier.TriggerType.DEFAULT) {
         assert q.surfaceForm.length == 1;
         regexps.add("[" + q.surfaceForm[0].charAt(0) + Character.toUpperCase(q.surfaceForm[0].charAt(0)) + "]" + q.surfaceForm[0].substring(1).toLowerCase());
         if (!q.surfaceForm[0].equals(q.literalSurfaceForm[0])) { regexps.add("[" + q.literalSurfaceForm[0].charAt(0) + Character.toUpperCase(q.literalSurfaceForm[0].charAt(0)) + "]" + q.literalSurfaceForm[0].substring(1).toLowerCase()); }
@@ -319,7 +319,7 @@ public class GaborMono implements Mono {
         // it is).
         OUTER: for (int start = 0; start < Math.min(2, span.size() - 1); ++start) {
           for (int len = span.size() - start - 1; len > 0; --len) {
-            if (org.goobs.truth.Quantifier.quantifierGlosses.contains(StringUtils.join(yield.subList(span.start() + start, span.start() + start + len), " ").toLowerCase())) {
+            if (org.goobs.naturalli.Quantifier.quantifierGlosses.contains(StringUtils.join(yield.subList(span.start() + start, span.start() + start + len), " ").toLowerCase())) {
               span.setStart(span.start() + start + len);
               break OUTER;
             }
@@ -343,7 +343,7 @@ public class GaborMono implements Mono {
 
     // Make sure any beginning quantifier is Monotone up
     // This is really to mitigate parse errors
-    for (org.goobs.truth.Quantifier quantifier : org.goobs.truth.Quantifier.values()) {
+    for (org.goobs.naturalli.Quantifier quantifier : org.goobs.naturalli.Quantifier.values()) {
       String[] surfaceForm = quantifier.surfaceForm;
       if (yield.size() >= surfaceForm.length) {
         String[] yieldBegin = yield.subList(0, surfaceForm.length).toArray(new String[surfaceForm.length]);
@@ -373,14 +373,14 @@ public class GaborMono implements Mono {
     // Add 'most' quantifier if none given
     boolean hasQuantifier = false;
     String gloss = StringUtils.join(words, " ");
-    for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+    for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
       if (gloss.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
     }
     if (!hasQuantifier) {
       Annotation ann = new Annotation(gloss);
       pipeline.annotate(ann);
       String lemmatized = StringUtils.join( ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class), " ");
-      for (org.goobs.truth.Quantifier q : org.goobs.truth.Quantifier.values()) {
+      for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
         if (lemmatized.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
       }
       if (!hasQuantifier) {

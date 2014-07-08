@@ -1,5 +1,5 @@
 
-option java_package = "org.goobs.truth";
+option java_package = "org.goobs.naturalli";
 
 /** An enumeration of monotonicity markings (upwards, downwards, or flat) */
 enum Monotonicity {
