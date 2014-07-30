@@ -42,7 +42,7 @@ naturalli_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goo
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
 	@echo "Compiling Demo (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -d . -cp .:${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find ./org/goobs/naturalli/demo -name "*.java"`
-	jar cf naturalli_client.jar -C . .
+	${JDK_HOME}/bin/jar cf naturalli_client.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 naturalli.war: naturalli_client.jar $(wildcard org/goobs/naturalli/demo/*.java) 

@@ -2,6 +2,16 @@ NaturalLI
 ===========
 **Natural [Language|Logic] Inference**
 
+NaturalLI is a Natural Logic reasoning engine aimed at fast inference
+from a large database of known facts.
+The project's primary goal is to infer whether arbitrary common-sense
+facts are true, given a large database of known facts.
+The system is described in:
+
+    Gabor Angeli and Christopher D. Manning.
+    "NaturalLI: Natural Logic for Common Sense Reasoning."
+    EMNLP 2014.
+
 The program is composed of two main components:
 
   * A *server*, in C++, which handles the actual inference search.
@@ -15,22 +25,16 @@ The program is composed of two main components:
     of the output of the server.
     This is the entry point most users are looking for.
 
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
-**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
-
-- [NaturalLI](#naturalli)
-  - [Installation](#installation)
-    - [Prerequisites](#prerequisites)
-    - [Server (C++)](#server-c)
-    - [Client (Java)](#client-java)
-    - [Database](#database)
-      - [Install Postgres](#install-postgres)
-      - [Import Data](#import-data)
-    - [Optimization](#optimization)
-  - [Tests](#tests)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+The rest of this README is laid out as follows:
+- [Installation](#installation)
+  - [Prerequisites](#prerequisites)
+  - [Server (C++)](#server-c)
+  - [Client (Java)](#client-java)
+  - [Database](#database)
+    - [Install Postgres](#install-postgres)
+    - [Import Data](#import-data)
+  - [Optimization](#optimization)
+- [Tests](#tests)
 
 Installation
 ----------

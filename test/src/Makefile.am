@@ -59,7 +59,7 @@ test_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/na
 	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
 	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_client.jar `find . -name "*.scala"` `find . -name "*.java"`
-	jar cf test_client.jar `find . -name "*.class"`
-	jar uf test_client.jar `find . -name "*.dat"`
-	jar uf test_client.jar `find . -name "*.scala"`
+	${JDK_HOME}/bin/jar cf test_client.jar `find . -name "*.class"`
+	${JDK_HOME}/bin/jar uf test_client.jar `find . -name "*.dat"`
+	${JDK_HOME}/bin/jar uf test_client.jar `find . -name "*.scala"`
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
