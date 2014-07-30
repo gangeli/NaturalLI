@@ -96,6 +96,11 @@ Other possibly relevant paths are:
     --with-protoc=/path/to/PROTOC_HOME    # protoc should be bin/protoc
     --with-postgresql=/path/to/pg_config  # look for pg_config here
 
+    # Paths to CoreNLP jars
+    --with-corenlp=/path/to/stanford-corenlp-XYZ.jar
+    --with-corenlp-models=/path/to/stanford-corenlp-models-XYZ.jar
+    --with-corenlp-caseless-models=/path/to/stanford-corenlp-caseless-models-XYZ.jar
+
 Other possibly useful options are:
 
     --enable-debug                        # compile with asserts and profiling
