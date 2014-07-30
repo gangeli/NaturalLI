@@ -24,24 +24,28 @@ echo "-- MAKE --"
 make clean
 make all check TESTS_ENVIRONMENT=true 
 
-#echo "-- C++ TESTS --"
+echo "-- C++ TESTS --"
 #test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 #test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
-#
-#echo "-- C++SPECIAL TESTS --"
-#echo "(no debugging)"
-#make clean
-#./configure \
-#  --with-scala=$SCALA_HOME \
-#  --with-java=/usr/lib/jvm/java-8-oracle
+
+echo "-- C++SPECIAL TESTS --"
+echo "(no debugging)"
+make clean
+./configure \
+  --with-scala=$SCALA_HOME \
+  --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
 #make all check
-#echo "(high memory mode)"
-#make clean
-#./configure \
-#  --with-scala=$SCALA_HOME \
-#  --with-java=/usr/lib/jvm/java-8-oracle \
-#  --enable-debug \
-#  HIGH_MEMORY=true
+echo "(high memory mode)"
+make clean
+./configure \
+  --with-scala=$SCALA_HOME \
+  --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+  --enable-debug \
+  HIGH_MEMORY=true
 #make all check
 
 echo "-- JAVA TESTS --"
