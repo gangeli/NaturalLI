@@ -99,6 +99,24 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
                   vector ])
 
+AC_ARG_WITH([corenlp],
+  [AS_HELP_STRING([--with-corenlp=/path/to/jar/file],[The path to the CoreNLP jar file])],
+  [CORENLP="$with_corenlp"],
+  [AC_MSG_NOTICE([a custom location for CoreNLP can be specified using --with-corenlp])]
+)
+
+AC_ARG_WITH([corenlp-models],
+  [AS_HELP_STRING([--with-corenlp-models=/path/to/jar/file],[The path to the CoreNLP models jar file])],
+  [CORENLP_MODELS="$with_corenlp-models"],
+  [AC_MSG_NOTICE([a custom location for the CoreNLP models can be specified using --with-corenlp-models])]
+)
+
+AC_ARG_WITH([corenlp-caseless-models],
+  [AS_HELP_STRING([--with-corenlp-caseless-models=/path/to/jar/file],[The path to the CoreNLP caseless models jar file])],
+  [CORENLP_CASELESS_MODELS="$with_corenlp-caseless-models"],
+  [AC_MSG_NOTICE([a custom location for the CoreNLP caseless models can be specified using --with-corenlp-models])]
+)
+
 # (unordered map)
 AX_CXX_HEADER_UNORDERED_MAP
 # (openmp)

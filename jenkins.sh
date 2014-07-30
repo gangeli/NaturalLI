@@ -8,10 +8,6 @@ echo "JavaNLP at: $JAVANLP_HOME"
 export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
-echo "-- SETUP --"
-rm lib/stanford-corenlp-*
-ln -s $HOME/stanford-corenlp-* lib/
-
 echo "-- CLEAN --"
 make distclean
 git clean -f
@@ -22,6 +18,8 @@ echo "-- MAKE --"
 ./configure \
   --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug
 make clean
 make all check TESTS_ENVIRONMENT=true 

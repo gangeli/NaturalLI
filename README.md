@@ -8,9 +8,7 @@ The project's primary goal is to infer whether arbitrary common-sense
 facts are true, given a large database of known facts.
 The system is described in:
 
-    Gabor Angeli and Christopher D. Manning.
-    "NaturalLI: Natural Logic for Common Sense Reasoning."
-    EMNLP 2014.
+    Gabor Angeli and Christopher D. Manning. "NaturalLI: Natural Logic for Common Sense Reasoning." EMNLP 2014.
 
 The program is composed of two main components:
 
@@ -215,7 +213,7 @@ went well by verifying that you get similar output from:
     your_db_name=> \dt+
                                   List of relations
      Schema |    Name    | Type  | Owner         |    Size    | Description 
-    --------+------------------+-------+--------+------------+-------------
+    --------+------------+-------+---------------+------------+-------------
      public | edge       | table | your_username | 580 MB     | 
      public | edge_type  | table | your_username | 8192 bytes | 
      public | fact       | table | your_username | 26 GB      | 
