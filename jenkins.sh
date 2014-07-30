@@ -37,7 +37,7 @@ make clean
   --with-java=/usr/lib/jvm/java-8-oracle \
   --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar
 make all check
 echo "(high memory mode)"
 make clean
