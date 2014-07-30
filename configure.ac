@@ -93,29 +93,39 @@ AC_SUBST([GTEST_CXXFLAGS])
 AC_SUBST([GTEST_LDFLAGS])
 AC_SUBST([GTEST_LIBS])
 
-AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
-                  cstdlib cstring ctime exception map netinet/in.h \
-                  queue set sstream stdio.h stdlib.h string \
-                  sys/errno.h sys/resource.h sys/socket.h sys/types.h \
-                  vector ])
-
+# (CoreNLP jar)
+AC_SUBST(CORENLP)
+CORENLP=lib/stanford-corenlp.jar
 AC_ARG_WITH([corenlp],
   [AS_HELP_STRING([--with-corenlp=/path/to/jar/file],[The path to the CoreNLP jar file])],
   [CORENLP="$with_corenlp"],
   [AC_MSG_NOTICE([a custom location for CoreNLP can be specified using --with-corenlp])]
 )
 
+# (CoreNLP models)
+AC_SUBST(CORENLP_MODELS)
+CORENLP_MODELS=/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar
 AC_ARG_WITH([corenlp-models],
   [AS_HELP_STRING([--with-corenlp-models=/path/to/jar/file],[The path to the CoreNLP models jar file])],
   [CORENLP_MODELS="$with_corenlp-models"],
   [AC_MSG_NOTICE([a custom location for the CoreNLP models can be specified using --with-corenlp-models])]
 )
 
+# (CoreNLP caseless models)
+AC_SUBST(CORENLP_CASELESS_MODELS)
+CORENLP_CASELESS_MODELS=/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar
 AC_ARG_WITH([corenlp-caseless-models],
   [AS_HELP_STRING([--with-corenlp-caseless-models=/path/to/jar/file],[The path to the CoreNLP caseless models jar file])],
   [CORENLP_CASELESS_MODELS="$with_corenlp-caseless-models"],
   [AC_MSG_NOTICE([a custom location for the CoreNLP caseless models can be specified using --with-corenlp-models])]
 )
+
+# (check headers)
+AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
+                  cstdlib cstring ctime exception map netinet/in.h \
+                  queue set sstream stdio.h stdlib.h string \
+                  sys/errno.h sys/resource.h sys/socket.h sys/types.h \
+                  vector ])
 
 # (unordered map)
 AX_CXX_HEADER_UNORDERED_MAP

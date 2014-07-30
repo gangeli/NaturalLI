@@ -259,3 +259,11 @@ To run the Java/Scala tests, run:
 
      $ make java_test
 
+Note that for the java tests, you will almost certainly need to
+set the path for CoreNLP and the CoreNLP models in the
+[configure script](#server-c):
+    
+    --with-corenlp=/path/to/stanford-corenlp-XYZ.jar
+    --with-corenlp-models=/path/to/stanford-corenlp-models-XYZ.jar
+    --with-corenlp-caseless-models=/path/to/stanford-corenlp-caseless-models-XYZ.jar
+

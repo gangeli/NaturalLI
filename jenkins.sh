@@ -24,25 +24,25 @@ echo "-- MAKE --"
 make clean
 make all check TESTS_ENVIRONMENT=true 
 
-echo "-- C++ TESTS --"
-test/src/test_server --gtest_output=xml:test/test_server.junit.xml
-test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
-
-echo "-- C++SPECIAL TESTS --"
-echo "(no debugging)"
-make clean
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle
-make all check
-echo "(high memory mode)"
-make clean
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle \
-  --enable-debug \
-  HIGH_MEMORY=true
-make all check
+#echo "-- C++ TESTS --"
+#test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+#test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
+#
+#echo "-- C++SPECIAL TESTS --"
+#echo "(no debugging)"
+#make clean
+#./configure \
+#  --with-scala=$SCALA_HOME \
+#  --with-java=/usr/lib/jvm/java-8-oracle
+#make all check
+#echo "(high memory mode)"
+#make clean
+#./configure \
+#  --with-scala=$SCALA_HOME \
+#  --with-java=/usr/lib/jvm/java-8-oracle \
+#  --enable-debug \
+#  HIGH_MEMORY=true
+#make all check
 
 echo "-- JAVA TESTS --"
 make java_test

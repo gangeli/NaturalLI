@@ -48,7 +48,8 @@ java_test: src/naturalli_client.jar test/src/test_client.jar
 	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
-	ant test
+	@echo "[test] (using ant)"
+	CLASSPATH="" CORENLP_JAR="${CORENLP}" CORENLP_MODELS_JAR="${CORENLP_MODELS}" CORENLP_CASELESS_MODELS_JAR="${CORENLP_CASELESS_MODELS}" ant test
 else
 	@echo "  (could not find ant -- running directly)"
 	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.naturalli.QuantifierTest

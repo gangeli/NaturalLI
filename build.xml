@@ -23,6 +23,9 @@
         <include name="*.jar"/>
       </fileset>
       <pathelement path="${env.JAVANLP_HOME}/projects/core/classes"/>
+      <pathelement path="${env.CORENLP_JAR}"/>
+      <pathelement path="${env.CORENLP_MODELS_JAR}"/>
+      <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
     </path>
 
     <path id="classpath-scalatest-bootstrap">
@@ -37,8 +40,12 @@
     <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
       <classpath refid="classpath"/>
     </taskdef>
+      
+    <echo message="CoreNLP: ${env.CORENLP_JAR}"/>
+    <echo message="CoreNLP models: ${env.CORENLP_MODELS_JAR}"/>
+    <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
     
-    <junit fork="true" maxmemory="1g" printsummary="off" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
+    <junit fork="true" maxmemory="1g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
       <formatter type="xml"/>
       <batchtest fork="yes" todir="${basedir}/test/">
