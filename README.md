@@ -18,18 +18,21 @@ The program is composed of two main components:
 Installation
 ----------
 This section describes the installation of the system.
-Now, before anyone starts complaining about how godawfully long
-this section is (true story: all build systems suck), you're always
-entitled to try the version I use at home; the rest of the section can
-be thought of as debugging help.
+Now, before anyone starts complaining about how long
+this section is, or how autoconf is awful
+(true story: all build systems are awful), you're always
+entitled to try the version I use at home:
 
     ./configure CXX=clang++-3.4
     make -j4
     ./run FraCaS
 
-Both the server and client are configured using autoconf, and so
-you should follow the configuration instructions for the server
-before installing the client.
+The rest of the section can be thought of as debugging help.
+Both the server and client are configured using autoconf and built
+using Make.
+The rest of this section will describe the prerequisites you'll need
+installed on your system, followed by instructions on configuring
+and installing the server and client component.
 
 ###Prerequisites
 The code tries to have relatively few dependencies.
@@ -37,7 +40,7 @@ Many of the java dependencies are simply bundled into the `lib`
 directory; the remaining dependencies are:
 
 General:
-  * Java 7 JDK
+  * Java 8 JDK (with minor tweaks it should compile on Java 7)
   * Scala 2.11.0 (2.10 compiles with classpath tweaks)
 
 Java (too large to include in Git):
@@ -67,6 +70,9 @@ it may be useful to just download the version required for this code
 and link to it via the `with-scala` option:
     
     --with-scala=/path/to/SCALA_HOME      # scalac should be bin/scalac
+
+Other possibly relevant paths are:
+
     --with-java=/path/to/JDK_HOME         # javac should be bin/javac
     --with-protoc=/path/to/PROTOC_HOME    # protoc should be bin/protoc
     --with-postgresql=/path/to/pg_config  # look for pg_config here
@@ -89,10 +95,7 @@ or, preferably, with:
 
 The relevant variables are as follows.
 The only essential ones should be the postgres configuration variables
-at the beginning.
-These can be debugged by setting them on the console and running
-`psql` -- you should connect to the database without needing any
-command line arguments.
+at the beginning:
 
     PGHOST=<postgres hostname>
     PGPORT=<postgres port>
@@ -100,20 +103,26 @@ command line arguments.
     PGPASSWORD=<postgres password>
     DBNAME=<postgres database name>
 
+These can be debugged by setting them on the console and running
+`psql` -- you should connect to the database without needing any
+command line arguments.
+See the section on configuring Postgres below.
+
 The other variables either set up some constants in the database,
-or set various parameters (these should not need changing).
+or set various parameters; if you've imported the default data into
+Postgres, these should not need changing.
 
     PG_TABLE_WORD=<the table name for the word indexer; default=word>
     PG_TABLE_EDGE=<the table name for the edges in the graph; default=edge>
     PG_TABLE_FACT=<the table name for the knowledge base; default=fact>
     PG_TABLE_PRIVATIVE=<the table of privative adjectives; default=privative>
 
-    MAX_FACT_LENGTH=<the maximum fact length in words; between 1 and 255>
-    MAX_COMPLETIONS=<the maximum number of insertions to consider; default=25>
+    MAX_FACT_LENGTH=<the maximum fact length in words; between 1 and 255. default=255>
+    MAX_COMPLETIONS=<the maximum number of insertions to consider. default=25>
 
-    SEARCH_TIMEOUT=<default search timeout in queue pops>
-    MIN_FACT_COUNT=<the minimum count for a valid fact>
-    HIGH_MEMORY=<enable memory-intensive optmization for small databases>
+    SEARCH_TIMEOUT=<default search timeout in queue pops. default=100k>
+    MIN_FACT_COUNT=<the minimum count for a valid fact. default=1>
+    HIGH_MEMORY=<enable memory-intensive optmization for small databases. default=0>
 
 Some other potentially useful variables to set may be:
 
@@ -121,10 +130,78 @@ Some other potentially useful variables to set may be:
 
 ###Client (Java)
 For now, `make src/naturalli_client.jar` pretty much works.
-You're on your own in terms of setting up the classpath / etc. though
+Make sure you're running the right version of Java (Java 8), and a
+recent version of Scala (2.11, though 2.10 likely compiles as well).
+If both of these conditions are met and it still throws an error, please
+let me know!
+Or better yet, submit a patch!
 
-###Data (Postgres)
-Some day this will be in an easily distributable form...
+However, I don't plan on supporting older versions of Java or Scala.
+
+###Database
+
+####Install Postgres
+_(If you're in the Stanford NLP group, skip this section and talk to me)_
+
+You will need a Postgres instance running which is accessible by both
+the client and the server program.
+Make sure you have at least 40GB of free space on the instance.
+
+The following are necessary and recommended tweaks to `postgres.conf` 
+in the data directory:
+
+    # Necessary
+    listen_addresses = '*'
+    # Recommended
+    max_connections = 512
+    shared_buffers = 1GB
+
+In addition, you should configure `pg_hba.conf` to allow for connections
+from both the server and client.
+
+####Import Data
+Now that you have a running Postgres instance, you should import the
+mutation graph and the database of facts.
+For this, you'll need three files:
+
+    http://nlp.stanford.edu/projects/naturalli/naturalli_schema.sql
+    http://nlp.stanford.edu/projects/naturalli/naturalli_data.sql.gz  # Warning! 3.7GB!
+    http://nlp.stanford.edu/projects/naturalli/naturalli_indexes.sql
+
+The first is the schema definition, the second is the actual data, and
+the third contains the recommended indexes over the data.
+If you really want to, you can probably skip the third file.
+
+Next, we import the data. For this part, I'll assume you have the
+following environment variables set:
+
+    PGHOST=<postgres hostname>
+    PGPORT=<postgres port>
+    PGUSER=<postgres username>
+    PGPASSWORD=<postgres password>
+    DBNAME=<postgres database name>
+
+You can then import the data with:
+
+    $ psql $DBNAME < naturalli_schema.sql
+    $ gunzip naturalli_data.sql.gz | psql $DBNAME
+    $ psql $DBNAME < naturalli_indexes.sql
+
+With that, you should be all set! You can validate that everything
+went well by verifying that you get similar output from:
+
+    $ psql $DBNAME
+    your_db_name=> \dt+
+                                  List of relations
+     Schema |    Name    | Type  | Owner         |    Size    | Description 
+    --------+------------------+-------+--------+------------+-------------
+     public | edge       | table | your_username | 580 MB     | 
+     public | edge_type  | table | your_username | 8192 bytes | 
+     public | fact       | table | your_username | 26 GB      | 
+     public | privative  | table | your_username | 328 kB     | 
+     public | word       | table | your_username | 8616 kB    | 
+     public | word_sense | table | your_username | 41 MB      | 
+    (6 rows)
 
 ###Optimization
 By default, autoconf compiles with `-02 -g`. 
@@ -138,11 +215,22 @@ For a better debugging experience, add the line:
     
     CXXFLAGS="-00 -ggdb"
 
-###Database
+Tests
+-----
+If you have configured everything correctly, running:
 
-For now, the easiest way to connect to the database is to tunnel to
-`john0`. With access to the NLP machines, this can be done with:
+    $ make check
 
-    ssh -L 4243:john0:4243 angeli@jamie -N
+should compile and run without error.
+If the database is not accessible from the current machine, 
+or the data has not been loaded properly, then `PostgresTest` will 
+throw a slew of errors.
 
+If you'd like to run more in-depth tests, you can run:
+
+     $ test/src/itest_server
+
+To run the Java/Scala tests, run:
+
+     $ make java_test
 

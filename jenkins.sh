@@ -21,7 +21,7 @@ autoreconf
 echo "-- MAKE --"
 ./configure \
   --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-7-oracle \
+  --with-java=/usr/lib/jvm/java-8-oracle \
   --enable-debug
 make clean
 make all check TESTS_ENVIRONMENT=true 
@@ -35,13 +35,13 @@ echo "(no debugging)"
 make clean
 ./configure \
   --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-7-oracle
+  --with-java=/usr/lib/jvm/java-8-oracle
 make all check
 echo "(high memory mode)"
 make clean
 ./configure \
   --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-7-oracle \
+  --with-java=/usr/lib/jvm/java-8-oracle \
   --enable-debug \
   HIGH_MEMORY=true
 make all check
