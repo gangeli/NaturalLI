@@ -15,6 +15,23 @@ The program is composed of two main components:
     of the output of the server.
     This is the entry point most users are looking for.
 
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
+
+- [NaturalLI](#naturalli)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Server (C++)](#server-c)
+    - [Client (Java)](#client-java)
+    - [Database](#database)
+      - [Install Postgres](#install-postgres)
+      - [Import Data](#import-data)
+    - [Optimization](#optimization)
+  - [Tests](#tests)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 Installation
 ----------
 This section describes the installation of the system.
