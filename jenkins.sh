@@ -26,8 +26,8 @@ make clean
 make all check TESTS_ENVIRONMENT=true 
 
 echo "-- C++ TESTS --"
-#test/src/test_server --gtest_output=xml:test/test_server.junit.xml
-#test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
+test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
 echo "-- C++SPECIAL TESTS --"
 echo "(no debugging)"
@@ -38,7 +38,7 @@ make clean
   --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-#make all check
+make all check
 echo "(high memory mode)"
 make clean
 ./configure \
@@ -49,7 +49,7 @@ make clean
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug \
   HIGH_MEMORY=true
-#make all check
+make all check
 
 echo "-- JAVA TESTS --"
 make java_test
