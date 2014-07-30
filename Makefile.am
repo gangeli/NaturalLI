@@ -17,7 +17,7 @@ clean-local:
 
 # (some paths)
 LIB=${realpath lib}
-JAVANLP=${JAVANLP_HOME}/projects/core/classes:${JAVANLP_HOME}/projects/more/classes:${JAVANLP_HOME}/projects/research/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:${JAVANLP_HOME}/projects/scala-2.10/classes:lib/stanford-corenlp.jar:lib/stanford-corenlp-caseless-models-current.jar:lib/stanford-corenlp-models-current.jar:${CORENLP}:${CORENLP_MODELS}:${CORENLP_CASELESS_MODELS}
+JAVANLP=${CORENLP}:${CORENLP_MODELS}:${CORENLP_CASELESS_MODELS}
 # ((export classpath))
 if SCALA_2_11
   export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim-1.0.jar:${LIB}/jaws.jar:${LIB}/trove.jar:${LIB}/protobuf.jar:${LIB}/postgresql.jar:${LIB}/scripts/gson-2.2.4.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar:${SCALA_HOME}/lib/config-1.2.0.jar
