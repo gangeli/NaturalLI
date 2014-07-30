@@ -1,7 +1,7 @@
 package edu.stanford.nlp.natlog;
 
 import edu.stanford.nlp.util.StringUtils;
-import org.goobs.truth.Quantifier;
+import org.goobs.naturalli.Quantifier;
 import org.junit.Test;
 
 import java.util.ArrayList;
