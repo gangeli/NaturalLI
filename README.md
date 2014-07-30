@@ -130,7 +130,7 @@ at the beginning:
 These can be debugged by setting them on the console and running
 `psql` -- you should connect to the database without needing any
 command line arguments.
-See the section on configuring Postgres below.
+See the section on [configuring Postgres](#database) below.
 
 The other variables either set up some constants in the database,
 or set various parameters; if you've imported the default data into
@@ -156,11 +156,12 @@ Some other potentially useful variables to set may be:
 For now, `make src/naturalli_client.jar` pretty much works.
 Make sure you're running the right version of Java (Java 8), and a
 recent version of Scala (2.11, though 2.10 likely compiles as well).
+Also, make sure either CoreNLP (and the associated models) are in the
+`lib` directory, or the appropriate options were set during
+configuration (see [the configuration paths described here](#server-c))
 If both of these conditions are met and it still throws an error, please
 let me know!
 Or better yet, submit a patch!
-
-However, I don't plan on supporting older versions of Java or Scala.
 
 ###Database
 
