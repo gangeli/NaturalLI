@@ -18,6 +18,7 @@ echo "-- MAKE --"
 ./configure \
   --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug
@@ -34,6 +35,7 @@ make clean
 ./configure \
   --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
 #make all check
@@ -42,6 +44,7 @@ make clean
 ./configure \
   --with-scala=$SCALA_HOME \
   --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug \
