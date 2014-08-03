@@ -275,104 +275,93 @@ uint64_t TrieRoot::memoryUsage(uint64_t* onFacts,
 //
 // LossyTrie::LossyTrie
 //
-LossyTrie::LossyTrie(uint32_t* completionCounts, 
-                     const uint32_t completionCountsLength
-    ) : completions(completionCountsLength) {
-
+LossyTrie::LossyTrie(const HashIntMap& counts
+    ) : completions(counts) {
   // Compile completions graph
   // (collect statistics)
-  uint64_t sum = 0;
-  uint32_t nonEmpty = 0;
-  for (uint32_t i = 0; i < completionCountsLength; ++i) {
-    uint16_t count = completionCounts[i];
-    if (count > 255) { count = 255; }
-    sum += count;
-    if (count > 0) { nonEmpty += 1; }
-  }
+  uint64_t sum = counts.sum();
+  uint32_t nonEmpty = counts.size();
   // (create variables)
   assert (sum < (0x1 << 31));  // make sure we won't overflow a uint32_t
   uint64_t size = 
       sum * sizeof(packed_insertion) +   // for the data
-      sum * sizeof(uint8_t) +            // for the 'complete fact' indicator
+      sum * sizeof(bool) +               // for the 'complete fact' indicator
       sizeof(uint8_t);                   // for the 'null pointer'
   printf("Allocating for %lu completions, over %u subfacts; the data will use %lu MB memory.\n",
          sum, nonEmpty, (size / 1000000));
   this->completionData = (uint8_t*) malloc(size);
+  memset(this->completionData, 0, size);
 
   // Partition completions data
   uint32_t completionDataPointer = 1;
-  for (int i = 0; i < completionCountsLength; ++i) {
-    if (completionCounts[i] > 0) {
-      // (allocate space)
-      uint32_t newPointer = completionDataPointer
-        + completionCounts[i] * (sizeof(packed_insertion) + sizeof(uint8_t));
-      // (set pointer)
-      //    this is the beginning of the packed_insertion array
-      completionCounts[i] = completionDataPointer + sizeof(uint8_t);
-      // (update next pointer)
-      completionDataPointer = newPointer;
-    } else {
-      completionCounts[i] = 0;
-    }
-  }
+  auto countToAddr = [&completionDataPointer](uint32_t count) -> uint32_t { 
+    // (allocate space)
+    uint32_t pointer = completionDataPointer;
+    completionDataPointer = completionDataPointer
+      + count * (sizeof(packed_insertion) + sizeof(bool));
+    return pointer + sizeof(bool);
+  };
+  completions.mapValues(countToAddr);
 }
 
 //
 // LossyTrie::~LossyTrie
 //
 LossyTrie::~LossyTrie() {
-  free(completions);
   free(completionData);
-}
-
-//
-// LossyTrie::numCompletions
-//
-uint8_t LossyTrie::numCompletions(const uint32_t& hash) const {
-  uint8_t* pointer = (uint8_t*) (&completions[hash]);
-  uint8_t* lengthPointer = pointer - sizeof(uint32_t) - 2 * sizeof(uint8_t);
-  return *lengthPointer;
-}
-
-//
-// LossyTrie::isComplete
-//
-bool LossyTrie::isComplete(const uint32_t& hash) const {
-  uint8_t* pointer = (uint8_t*) (&completions[hash]);
-  uint8_t* containsPointer = pointer - sizeof(uint32_t) - 1 * sizeof(uint8_t);
-  return (*containsPointer) != 0;
-}
-
-//
-// LossyTrie::checksumMatches
-//
-bool LossyTrie::checksumMatches(const uint32_t& hash,
-                                const uint32_t& secondaryHash) const {
-  uint8_t* pointer = (uint8_t*) (&completions[hash]);
-  uint32_t* checksumPointer = (uint32_t*) (pointer - sizeof(uint32_t));
-  return secondaryHash == *checksumPointer;
 }
 
 //
 // LossyTrie::addCompletion
 //
-void LossyTrie::addCompletion(const uint32_t& hash, 
-                              const uint32_t& auxHash,
-                              const packed_insertion& insertion,
-                              const uint8_t& insertionIndex,
-                              const bool& isCompleteFact) {
-  uint8_t* pointer = (uint8_t*) (&completions[hash]);
-  // Register whether this fact is complete or not
-  uint8_t* completePointer = pointer - sizeof(uint32_t) - 1 * sizeof(uint8_t);
-  *completePointer = (isCompleteFact ? 1 : 0);
-  // Register the checksum of this fact
-  uint32_t* checksumPointer = (uint32_t*) (pointer - sizeof(uint32_t));
-  *checksumPointer = auxHash;
-  // Register the data (if applicable)
-  if (!isCompleteFact) {
-    packed_insertion* insertionPointer = (packed_insertion*) pointer;
-    insertionPointer[insertionIndex] = insertion;
+void LossyTrie::addCompletion(const uint32_t* fact, 
+                              const uint32_t& factLength, 
+                              const word& source,
+                              const uint8_t& sourceSense,
+                              const uint8_t& edgeType) {
+  // Create the edge
+  packed_insertion edge;
+  edge.source = source;
+  edge.sense = sourceSense;
+  edge.type = edgeType - EDGE_DELS_BEGIN;
+  edge.endOfList = 1;
+  // Compute the hashes
+  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
+  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+  // Do the lookup
+  uint32_t pointer;
+  if (!completions.get(mainHash, auxHash, &pointer)) {
+    printf("No pointer was allocated for completion!\n");
+    std::exit(1);
   }
+  packed_insertion* insertions = (packed_insertion*) &(completionData[pointer]);
+  // Find a free spot
+  uint16_t index = 0;
+  if (insertions[index].source != 0) {
+    while (!insertions[index].endOfList) { index += 1; }
+    insertions[index].endOfList = 0;
+    index += 1;
+  }
+  // Set the insertion
+  insertions[index] = edge;
+}
+  
+//
+// LossyTrie::addFact
+//
+void LossyTrie::addFact(const uint32_t* fact, 
+                        const uint32_t& factLength) {
+  // Compute the hashes
+  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
+  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+  // Do the lookup
+  uint32_t pointer;
+  if (!completions.get(mainHash, auxHash, &pointer)) {
+    printf("No pointer was allocated for completion!\n");
+    std::exit(1);
+  }
+  // Set the 'is fact' indicator'
+  completionData[pointer - 1] = true;
 }
 
 //
@@ -496,137 +485,139 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
 
 
 LossyTrie* ReadLossyFactTrie() {
-  char query[128];
+  return NULL;
 
-  // Read valid deletions
-  printf("Reading registered deletions...\n");
-  btree_map<word,vector<edge>> word2senses;
-  // (query)
-  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
-  PGIterator wordIter = PGIterator(query);
-  uint32_t numValidInsertions = 0;
-  while (wordIter.hasNext()) {
-    // Get fact
-    PGRow row = wordIter.next();
-    // Create edge
-    edge e;
-    e.source       = fast_atoi(row[0]);
-    assert (atoi(row[0]) == fast_atoi(row[0]));
-    e.source_sense = fast_atoi(row[1]);
-    assert (atoi(row[1]) == fast_atoi(row[1]));
-    e.type  = fast_atoi(row[2]);
-    assert (atoi(row[2]) == fast_atoi(row[2]));
-    e.cost  = 1.0f;
-    // Register edge
-    word2senses[e.source].push_back(e);
-    numValidInsertions += 1;
-  }
-  printf("  Done. %u words have sense tags\n", numValidInsertions);
-
-  // Construct the query
-  printf("Pass 1: collect statistics...\n");
-  snprintf(query, 127,
-           "SELECT gloss, weight FROM %s ORDER BY gloss,weight DESC LIMIT 1000;",
-           PG_TABLE_FACT);
-  PGIterator iter = PGIterator(query);
-  uint32_t buffer[256];
-  uint8_t bufferLength;
-
-  // Collect completion statistics
-  uint32_t completionsLength = 0x1 << 10;
-  uint32_t* completions = (uint32_t*) malloc(completionsLength * sizeof(uint16_t));
-  memset(completions, 0, completionsLength * sizeof(uint16_t));
-  while (iter.hasNext()) {
-    // (query Postgres)
-    PGRow row = iter.next();
-    // (check minimum weight)
-    uint32_t weight = fast_atoi(row[1]);
-    if (weight >= MIN_FACT_COUNT) {
-      // (define variables)
-      const char* gloss = row[0];
-      stringstream stream (&gloss[1]);
-      string substr;
-      bufferLength = 0;
-      // (read fact gloss)
-      while( getline (stream, substr, ',' ) ) {
-        // (parse the word)
-        word w = fast_atoi(substr.c_str());
-        // (save the word)
-        buffer[bufferLength] = w;
-        bufferLength += 1;
-      }
-      // (hash the fact)
-      uint32_t factHash = fnv_32a_buf(buffer, bufferLength * sizeof(uint32_t), FNV1_32_INIT);
-      // (hash the completions)
-      for (int len = 1; len < bufferLength - 1; ++len) {
-        uint64_t subFactHash = fnv_64a_buf(buffer, len * sizeof(uint32_t), FNV1_64_INIT);
-        word nextWord = buffer[len];
-        completions[subFactHash % completionsLength] += word2senses[nextWord].size();
-      }
-    }
-  }
-  printf("  pass 1 done.\n");
-
-  // Create Trie
-  LossyTrie* trie = new LossyTrie(completions, completionsLength);
-
-  // Re-read table
-  printf("Pass 2: collecting data...\n");
-  iter = PGIterator(query);
-  uint32_t nextInsertionIndex[256];
-  memset(nextInsertionIndex, 0, 256 * sizeof(uint32_t));
-  uint64_t factsCollected = 0;
-  while (iter.hasNext()) {
-    // (query Postgres)
-    PGRow row = iter.next();
-    // (check minimum weight)
-    uint32_t weight = fast_atoi(row[1]);
-    if (weight >= MIN_FACT_COUNT) {
-      // (define variables)
-      const char* gloss = row[0];
-      stringstream stream (&gloss[1]);
-      string substr;
-      bufferLength = 0;
-      // (read fact gloss)
-      while( getline (stream, substr, ',' ) ) {
-        // (parse the word)
-        word w = fast_atoi(substr.c_str());
-        // (save the word)
-        buffer[bufferLength] = w;
-        bufferLength += 1;
-      }
-      // (populate the completions)
-      for (int len = 1; len < bufferLength; ++len) {
-        if (len < bufferLength - 1) {
-          btree_map<word,vector<edge>>::iterator iter = 
-            word2senses.find( buffer[len-1] );
-          if (iter != word2senses.end() && iter->second.size() > 1) {
-            for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
-              edge& insertion = iter->second[sense];
-              word source = (len == bufferLength) ? 0 : buffer[len];
-              uint8_t sourceSense = insertion.source_sense;
-              uint8_t edgeType = insertion.type;
-              uint8_t insertionIndex = 0; // TODO
-              trie->addCompletion(buffer, len, source, sourceSense, edgeType,
-                                  insertionIndex, len == bufferLength);
-            }
-          }
-        } else {
-          uint8_t insertionIndex = 0;  // TODO
-          trie->addCompletion(buffer, len, 0, 0, 0,
-                              insertionIndex, true);
-        }
-      }
-    }
-
-    // Debug
-    factsCollected += 1;
-    if (factsCollected % 1000000 == 0) {
-      printf("  loaded %luM facts\n", factsCollected / 1000000);
-    }
-  }
-  printf("  pass 2 done.\n");
-
-  // Return
-  return trie;
+//  char query[128];
+//
+//  // Read valid deletions
+//  printf("Reading registered deletions...\n");
+//  btree_map<word,vector<edge>> word2senses;
+//  // (query)
+//  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
+//  PGIterator wordIter = PGIterator(query);
+//  uint32_t numValidInsertions = 0;
+//  while (wordIter.hasNext()) {
+//    // Get fact
+//    PGRow row = wordIter.next();
+//    // Create edge
+//    edge e;
+//    e.source       = fast_atoi(row[0]);
+//    assert (atoi(row[0]) == fast_atoi(row[0]));
+//    e.source_sense = fast_atoi(row[1]);
+//    assert (atoi(row[1]) == fast_atoi(row[1]));
+//    e.type  = fast_atoi(row[2]);
+//    assert (atoi(row[2]) == fast_atoi(row[2]));
+//    e.cost  = 1.0f;
+//    // Register edge
+//    word2senses[e.source].push_back(e);
+//    numValidInsertions += 1;
+//  }
+//  printf("  Done. %u words have sense tags\n", numValidInsertions);
+//
+//  // Construct the query
+//  printf("Pass 1: collect statistics...\n");
+//  snprintf(query, 127,
+//           "SELECT gloss, weight FROM %s ORDER BY gloss,weight DESC LIMIT 1000;",
+//           PG_TABLE_FACT);
+//  PGIterator iter = PGIterator(query);
+//  uint32_t buffer[256];
+//  uint8_t bufferLength;
+//
+//  // Collect completion statistics
+//  uint32_t completionsLength = 0x1 << 10;
+//  uint32_t* completions = (uint32_t*) malloc(completionsLength * sizeof(uint16_t));
+//  memset(completions, 0, completionsLength * sizeof(uint16_t));
+//  while (iter.hasNext()) {
+//    // (query Postgres)
+//    PGRow row = iter.next();
+//    // (check minimum weight)
+//    uint32_t weight = fast_atoi(row[1]);
+//    if (weight >= MIN_FACT_COUNT) {
+//      // (define variables)
+//      const char* gloss = row[0];
+//      stringstream stream (&gloss[1]);
+//      string substr;
+//      bufferLength = 0;
+//      // (read fact gloss)
+//      while( getline (stream, substr, ',' ) ) {
+//        // (parse the word)
+//        word w = fast_atoi(substr.c_str());
+//        // (save the word)
+//        buffer[bufferLength] = w;
+//        bufferLength += 1;
+//      }
+//      // (hash the fact)
+//      uint32_t factHash = fnv_32a_buf(buffer, bufferLength * sizeof(uint32_t), FNV1_32_INIT);
+//      // (hash the completions)
+//      for (int len = 1; len < bufferLength - 1; ++len) {
+//        uint64_t subFactHash = fnv_64a_buf(buffer, len * sizeof(uint32_t), FNV1_64_INIT);
+//        word nextWord = buffer[len];
+//        completions[subFactHash % completionsLength] += word2senses[nextWord].size();
+//      }
+//    }
+//  }
+//  printf("  pass 1 done.\n");
+//
+//  // Create Trie
+//  LossyTrie* trie = new LossyTrie(completions, completionsLength);
+//
+//  // Re-read table
+//  printf("Pass 2: collecting data...\n");
+//  iter = PGIterator(query);
+//  uint32_t nextInsertionIndex[256];
+//  memset(nextInsertionIndex, 0, 256 * sizeof(uint32_t));
+//  uint64_t factsCollected = 0;
+//  while (iter.hasNext()) {
+//    // (query Postgres)
+//    PGRow row = iter.next();
+//    // (check minimum weight)
+//    uint32_t weight = fast_atoi(row[1]);
+//    if (weight >= MIN_FACT_COUNT) {
+//      // (define variables)
+//      const char* gloss = row[0];
+//      stringstream stream (&gloss[1]);
+//      string substr;
+//      bufferLength = 0;
+//      // (read fact gloss)
+//      while( getline (stream, substr, ',' ) ) {
+//        // (parse the word)
+//        word w = fast_atoi(substr.c_str());
+//        // (save the word)
+//        buffer[bufferLength] = w;
+//        bufferLength += 1;
+//      }
+//      // (populate the completions)
+//      for (int len = 1; len < bufferLength; ++len) {
+//        if (len < bufferLength - 1) {
+//          btree_map<word,vector<edge>>::iterator iter = 
+//            word2senses.find( buffer[len-1] );
+//          if (iter != word2senses.end() && iter->second.size() > 1) {
+//            for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
+//              edge& insertion = iter->second[sense];
+//              word source = (len == bufferLength) ? 0 : buffer[len];
+//              uint8_t sourceSense = insertion.source_sense;
+//              uint8_t edgeType = insertion.type;
+//              uint8_t insertionIndex = 0; // TODO
+//              trie->addCompletion(buffer, len, source, sourceSense, edgeType,
+//                                  insertionIndex, len == bufferLength);
+//            }
+//          }
+//        } else {
+//          uint8_t insertionIndex = 0;  // TODO
+//          trie->addCompletion(buffer, len, 0, 0, 0,
+//                              insertionIndex, true);
+//        }
+//      }
+//    }
+//
+//    // Debug
+//    factsCollected += 1;
+//    if (factsCollected % 1000000 == 0) {
+//      printf("  loaded %luM facts\n", factsCollected / 1000000);
+//    }
+//  }
+//  printf("  pass 2 done.\n");
+//
+//  // Return
+//  return trie;
 }

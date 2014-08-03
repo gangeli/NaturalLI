@@ -42,10 +42,10 @@ typedef struct {
 #else
 typedef struct alignas(6) {
 #endif
-  uint8_t sense:5,     // The sense of the word being inserted
-          type:10;     // The type of the edge being inserted
-          endOfList:1  // A marker for whether this is the last insertion
-  word    source;      // The word being inserted ('deleted' in the proof, thus source)
+  uint8_t sense:5,      // The sense of the word being inserted
+          type:8,       // The type of the edge being inserted
+          endOfList:1;  // A marker for whether this is the last insertion
+  word    source;       // The word being inserted ('deleted' in the proof, thus source)
 #ifdef __GNUG__
 } __attribute__ ((__packed__)) packed_insertion;
 #else
@@ -253,53 +253,44 @@ class LossyTrie {
  public:
   /**
    * Create a new LossyTrie.
-   * Note that completionCounts now belongs to this Trie, and is no longer
-   * valid in any sense for anyone using it afterwards. It won't even
-   * be holding counts anymore at all.
-   *
-   * So, really, this function should never be called by an end-user.
    */
-  LossyTrie(uint32_t* completionCounts, const uint32_t completionCountsLength);
+  LossyTrie(const HashIntMap& countsBecomesPointers);
 
   /**
    * The destructor. Cleans up the completions and completion data arrays.
    */
-   ~LossyTrie();
-  
-  
-  /**
-   * Add a completion from all the relevant data needed to update the
-   * internal state of the Trie.
-   */
-  void addCompletion(const uint32_t& hash, 
-                     const uint32_t& auxHash, 
-                     const packed_insertion& insertion,
-                     const uint8_t& insertionIndex,
-                     const bool& isCompleteFact);
+  ~LossyTrie();
+
   
   /**
-   * A wrapper around addCompletion() to be more friendly to the
-   * caller; e.g., abstract away some of the bit twiddling hacks.
+   * Add the given fact completion to the database.
    */
   void addCompletion(const uint32_t* fact, 
-                     const uint32_t factLength, 
+                     const uint32_t& factLength, 
                      const word& source,
                      const uint8_t& sourceSense,
-                     const uint8_t& edgeType,
-                     const uint8_t& insertionIndex,
-                     const bool& isCompleteFact) {
-    packed_insertion edge;
-    edge.source = source;
-    edge.sense = sourceSense;
-    edge.type = edgeType - EDGE_DELS_BEGIN;
-    uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
-    uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
-    addCompletion(mainHash, auxHash, edge, insertionIndex, isCompleteFact);
-  }
+                     const uint8_t& edgeType);
   
-  //
-  // Public only for unit testing purposes
-  //
+  /**
+   * Add a given complete fact to the database
+   */
+  void addFact(const uint32_t* fact, 
+               const uint32_t& factLength);
+
+
+ private:
+  /**
+   * The map keyed on the fact's hash, with values corresponding
+   * to the completion data for that fact or partial fact.
+   */
+  HashIntMap completions;
+
+  /**
+   * The blob of bytes used to store the completion data.
+   * There's no length, because the length is irrelevant anyways.
+   * This is just a blob of data.
+   */
+  uint8_t* completionData;
   
   /**
    * Compute the hash of a fact, to be used for lookup in the hash
@@ -327,55 +318,6 @@ class LossyTrie {
     return fnv_32a_buf(taglessFact, factLength * sizeof(uint32_t), 
                        1154);
   }
-
-  /**
-   * Return the number of completions for the hash of a given fact
-   */
-  uint8_t numCompletions(const uint32_t& hash) const;
-  /**
-   * Return the number of completions for a given fact.
-   */
-  inline uint8_t numCompletions(const tagged_word* fact, const uint8_t& factLength) const {
-    return numCompletions(hash(fact, factLength));
-  }
-
-  /**
-   * Returns whether the hash of this fact is a complete fact, as
-   * opposed to a partial completion of a fact.
-   */
-  bool isComplete(const uint32_t& hash) const;
-
-  /**
-   * Returns whether the checksum of the fact at the given hash
-   * matches the secondary hash of the fact given.
-   */
-  bool checksumMatches(const uint32_t& hash, const uint32_t& secondaryHash) const;
-
-  /**
-   * The most basic contains method. Checks if the given fact is
-   * contained in the Trie. That is, checks if the fact is registered
-   * at all in the Trie, and then checks to make sure this registered
-   * fact is a complete fact (as opposed to a partial completion).
-   */
-  inline bool contains(const tagged_word* fact, const uint8_t& factLength) const {
-    const uint32_t mainHash = hash(fact, factLength);
-    return isComplete(mainHash) &&
-           checksumMatches(mainHash, auxHash(fact, factLength));
-  }
-
- private:
-  /**
-   * The map keyed on the fact's hash, with values corresponding
-   * to the completion data for that fact or partial fact.
-   */
-  HashIntMap completions;
-
-  /**
-   * The blob of bytes used to store the completion data.
-   * There's no length, because the length is irrelevant anyways.
-   * This is just a blob of data.
-   */
-  uint8_t* completionData;
 
 };
 
