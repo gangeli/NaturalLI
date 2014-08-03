@@ -17,12 +17,14 @@ BUILT_SOURCES = Messages.proto
 naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.cc Postgres.cc         Utils.cc \
                  Graph.cc  InferenceServer.cc  Search.cc \
+                 Map.cc \
                  Bloom.h   Graph.h        Utils.h \
                  Types.h   Messages.pb.h  Search.h \
-                 FactDB.h  Postgres.h     Trie.h
+                 FactDB.h  Postgres.h     Trie.h \
+                 Map.h
 
 naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS} ${OPENMP_CFLAGS}
-naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32
+naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64
 if HAVE_TCMALLOC
   naturalli_server_LDADD += -ltcmalloc
 endif

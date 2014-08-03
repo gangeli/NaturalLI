@@ -3,7 +3,7 @@ SUBDIRS = gtest
 clean-local:
 	rm -f *.gcno *.gcda
 
-_OBJS_SPEC = Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
+_OBJS_SPEC = Map.o Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
              Bloom.o Messages.pb.o
 OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
@@ -24,14 +24,14 @@ check_PROGRAMS = test_server itest_server
 AM_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} \
               -isystem gtest/include -I${MAIN_SRC} ${GTEST_CPPFLAGS}
 AM_CXXFLAGS = ${GTEST_CXXFLAGS} -std=c++0x
-AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 \
+AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 -lfnv64 \
                ${GTEST_LDFLAGS} ${GTEST_LIBS} \
                -Lgtest/lib -lgtest gtest/gtest_main.o
 
 
 test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
                       TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
-                      TestMessages.pb.cc  TestUtils.cc TestTypes.cc
+                      TestMap.cc TestMessages.pb.cc  TestUtils.cc TestTypes.cc
 test_server_LDADD =  ${OBJS}
 
 itest_server_SOURCES= ITest.cc
