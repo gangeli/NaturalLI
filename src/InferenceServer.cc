@@ -313,7 +313,8 @@ void handleConnection(int socket, sockaddr_in* client,
       // Read the real knowledge base
       factDBReadLock.lock();
       if (*dbOrNull == NULL) {
-        *dbOrNull = ReadFactTrie(graph);
+//        *dbOrNull = ReadOldFactTrie(graph);
+        *dbOrNull = ReadFactTrie();
         factDB = *dbOrNull;
       }
       factDBReadLock.unlock();
@@ -538,12 +539,9 @@ int32_t main( int32_t argc, char *argv[] ) {
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   // (catch signals)
-//  sigaction(SIGINT, &sigIntHandler, NULL);
-//  sigaction(SIGPIPE, &sigIntHandler, NULL);
+  sigaction(SIGINT, &sigIntHandler, NULL);
+  sigaction(SIGPIPE, &sigIntHandler, NULL);
 
   // (start server)
-//  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
-
-  printf("---START---\n");
-  ReadLossyFactTrie(1000000);
+  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
 }

@@ -357,13 +357,13 @@ class LossyTrie : public FactDB {
  * @param maxFactsToRead Cap the number of facts read to this amount, 
  *        ordered by the fact's weight in the database
  */
-FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph);
+FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph);
 
 /** Read all facts in the database; @see ReadFactTrie(uint64_t) */
-inline FactDB* ReadFactTrie(const Graph* graph) { return ReadFactTrie(std::numeric_limits<uint64_t>::max(), graph); }
+inline FactDB* ReadOldFactTrie(const Graph* graph) { return ReadOldFactTrie(std::numeric_limits<uint64_t>::max(), graph); }
 
-LossyTrie* ReadLossyFactTrie(const uint64_t& maxFactsToRead);
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead);
 
-LossyTrie* ReadLossyFactTrie();
+FactDB* ReadFactTrie();
 
 #endif

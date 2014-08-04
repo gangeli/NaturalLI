@@ -485,7 +485,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
 //
 // ReadFactTrie
 //
-FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
+FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   Trie* facts = new TrieRoot();
   char query[127];
 
@@ -773,7 +773,7 @@ void addFacts(
 /**
  * Read a LossyFactTrie from the database.
  */
-LossyTrie* ReadLossyFactTrie(const uint64_t& maxFactsToRead) {
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
   // Word senses
   btree_map<word, vector<edge>> word2sense = getWord2Senses();
 
@@ -793,6 +793,6 @@ LossyTrie* ReadLossyFactTrie(const uint64_t& maxFactsToRead) {
   return trie;
 }
   
-LossyTrie* ReadLossyFactTrie() {
-  return ReadLossyFactTrie(std::numeric_limits<uint64_t>::max());
+FactDB* ReadFactTrie() {
+  return ReadFactTrie(std::numeric_limits<uint64_t>::max());
 }
