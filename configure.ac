@@ -172,6 +172,7 @@ AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,  ${SEARCH_TIMEOUT:=100000},  [The maximum num
 AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,  ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
 AC_DEFINE_UNQUOTED(HIGH_MEMORY,     ${HIGH_MEMORY:=0},  [If true, use more memory in exchange for better performance.])
 AC_DEFINE_UNQUOTED(FACT_MAP_SIZE,   ${FACT_MAP_SIZE:=30},  [The bitshift for the fact database partial completion map size. i.e., 30 = 2^30 elements])
+AC_DEFINE_UNQUOTED(GREEDY_LOAD,     ${GREEDY_LOAD:=0},  [If true, greedily load the fact database, even if no one is requesting it.])
 
 AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile \
                  test/src/Makefile test/src/gtest/Makefile ])

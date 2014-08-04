@@ -457,7 +457,11 @@ int startServer(int port) {
 
   // -- Initialize Global Variables --
   Graph*         graph   = ReadGraph();
+#ifdef GREEDY_LOAD
+  FactDB*        db      = ReadFactTrie();
+#else
   FactDB*        db      = NULL;  // lazy load me
+#endif
   // --                             --
 
   // set the socket for listening (queue backlog of 5)

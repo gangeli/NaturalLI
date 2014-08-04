@@ -4,6 +4,10 @@
    2^30 elements */
 #undef FACT_MAP_SIZE
 
+/* If true, greedily load the fact database, even if no one is requesting it.
+   */
+#undef GREEDY_LOAD
+
 /* Define to 1 if you have the <algorithm> header file. */
 #undef HAVE_ALGORITHM
 

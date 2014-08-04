@@ -149,6 +149,7 @@ Postgres, these should not need changing.
     MIN_FACT_COUNT=<the minimum count for a valid fact. default=1>
     HIGH_MEMORY=<enable memory-intensive optmization for small databases. default=0>
     FACT_MAP_SIZE=<size of fact map, as 2^x. default=30>
+    GREEDY_LOAD=<greedily load the fact database. default=0>
 
 Some other potentially useful variables to set may be:
 
