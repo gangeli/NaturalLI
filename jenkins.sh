@@ -21,7 +21,8 @@ echo "-- MAKE --"
   --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-  --enable-debug
+  --enable-debug \
+  FACT_MAP_SIZE=27
 make clean
 make all check TESTS_ENVIRONMENT=true 
 
@@ -37,7 +38,8 @@ make clean
   --with-java=/usr/lib/jvm/java-8-oracle \
   --with-corenlp=$HOME/stanford-corenlp.jar \
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+  FACT_MAP_SIZE=27
 make all check
 echo "(high memory mode)"
 make clean
@@ -48,7 +50,9 @@ make clean
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug \
-  HIGH_MEMORY=true
+  HIGH_MEMORY=true \
+  FACT_MAP_SIZE=27
+
 make all check
 
 echo "-- JAVA TESTS --"

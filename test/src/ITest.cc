@@ -103,9 +103,9 @@ TEST(TrieITest, CompletionsValid) {
         db->contains(&word, 1, 0, edges);
         // Make sure the response [insertable facts] is valid
         for (uint32_t i = 0; i < MAX_COMPLETIONS; ++i) {
+          ASSERT_LT(edges[i].source, numWords);
           if (edges[i].source == 0) { break; }
           EXPECT_LT(edges[i].type, NUM_EDGE_TYPES);
-          EXPECT_LT(edges[i].source, numWords);
           EXPECT_LT(edges[i].source_sense, 32);
           EXPECT_EQ(0, edges[i].sink);
           EXPECT_EQ(0, edges[i].sink_sense);

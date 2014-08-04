@@ -33,6 +33,7 @@ The rest of this README is laid out as follows:
     - [Import Data](#import-data)
   - [Optimization](#optimization)
 - [Tests](#tests)
+  - [Common Bugs](#common-bugs)
 
 Installation
 ----------
@@ -147,6 +148,7 @@ Postgres, these should not need changing.
     SEARCH_TIMEOUT=<default search timeout in queue pops. default=100k>
     MIN_FACT_COUNT=<the minimum count for a valid fact. default=1>
     HIGH_MEMORY=<enable memory-intensive optmization for small databases. default=0>
+    FACT_MAP_SIZE=<size of fact map, as 2^x. default=30>
 
 Some other potentially useful variables to set may be:
 
@@ -268,3 +270,10 @@ set the path for CoreNLP and the CoreNLP models in the
     --with-corenlp-models=/path/to/stanford-corenlp-models-XYZ.jar
     --with-corenlp-caseless-models=/path/to/stanford-corenlp-caseless-models-XYZ.jar
 
+###Common Bugs
+
+  - **I get an error 'Overflowed allocated HashIntMap buckets'.**
+    This is caused by the number of facts overflowing the hash map
+    buckets. You can fix this by setting FACT_MAP_SIZE to a value
+    larger than 30 in the config file. Note that it can't go above
+    32; if you're still getting the error, let me know!

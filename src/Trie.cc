@@ -12,7 +12,7 @@
 #include "Postgres.h"
 #include "Utils.h"
 
-#define MAP_SIZE 0x1 << 25
+#define MAP_SIZE 0x1 << FACT_MAP_SIZE
 
 
 
@@ -299,7 +299,7 @@ LossyTrie::LossyTrie(const HashIntMap& counts
 
   // Partition completions data
   uint32_t completionDataPointer = 1;
-  auto countToAddr = [&completionDataPointer](uint32_t count) -> uint32_t { 
+  auto countToAddr = [&completionDataPointer](uint32_t count) -> uint32_t {
     // (allocate space)
     uint32_t pointer = completionDataPointer;
     completionDataPointer = completionDataPointer
@@ -320,7 +320,7 @@ LossyTrie::~LossyTrie() {
 //
 // LossyTrie::addCompletion
 //
-void LossyTrie::addCompletion(const uint32_t* fact, 
+bool LossyTrie::addCompletion(const uint32_t* fact, 
                               const uint32_t& factLength, 
                               const word& source,
                               const uint8_t& sourceSense,
@@ -343,25 +343,29 @@ void LossyTrie::addCompletion(const uint32_t* fact,
   // Set the 'has completions' indicator'
   completionData[pointer - 1] |= 0x2;
   packed_insertion* insertions = (packed_insertion*) &(completionData[pointer]);
+  bool added = false;
   if ( (completionData[pointer - 1] & 0x4) == 0) {  // check if bucket is full
-    // Find a free spot
-    uint16_t index = 0;
-    if (insertions[index].source != 0) {
-      while (!insertions[index].endOfList && index < MAX_COMPLETIONS) {
+    if (insertions[0].source == 0) {
+      insertions[0] = edge;
+    } else {
+      // Find a free spot
+      uint16_t index = 0;
+      while (!insertions[index].endOfList && index < MAX_COMPLETIONS - 1) {
         index += 1;
       }
-      insertions[index].endOfList = 0;
-      index += 1;
-    }
-    // Set the insertion
-    if (index < MAX_COMPLETIONS) {
-      // Case: add this edge
-      insertions[index] = edge;
-    } else {
-      // Case: this slot's full
-      completionData[pointer - 1] |= 0x4;
+      if (index < MAX_COMPLETIONS - 1) {
+        // Case: add a new edge
+        insertions[index].endOfList = 0;
+        insertions[index + 1] = edge;
+        added = true;
+      } else {
+        // Case: this slot's full
+        completionData[pointer - 1] |= 0x4;
+      }
     }
   }
+
+  return added;
 }
   
 //
@@ -440,6 +444,9 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
           insertions[index].sink_sense = 0;
           insertions[index].type = toRead[index].type;
           insertions[index].cost = 1.0f;
+          assert (insertions[index].source < 1000000);  // sanity check: vocab < 1M words (if this is wrong, remove this line)
+          assert (insertions[index].type < NUM_EDGE_TYPES);
+          assert (insertions[index].source_sense < 32);
         } while (index < MAX_COMPLETIONS && !toRead[index].endOfList);
       }
       // End insertions array
@@ -447,6 +454,9 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
       if (index < MAX_COMPLETIONS) {
         insertions[index].source = 0;
       }
+    } else {
+      // Case: partial fact doesn't exist; no completions
+      insertions[0].source = 0;
     }
 
   } else if (factLength == 0) {
@@ -456,7 +466,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
   } else {
     // Case: prefix completion
     btree_map<word,vector<packed_insertion>>::const_iterator inserts
-        = beginInsertions.find( taggedFact[0].word );
+        = beginInsertions.find( fact[0] );
     if (inserts != beginInsertions.end()) {
       vector<packed_insertion> toRead = inserts->second;
       uint16_t numCompletions = toRead.size() < MAX_COMPLETIONS ? toRead.size() : MAX_COMPLETIONS;
@@ -467,6 +477,9 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
         insertions[index].sink_sense = 0;
         insertions[index].type = toRead[index].type;
         insertions[index].cost = 1.0f;
+        assert (insertions[index].source < 1000000);  // sanity check: vocab < 1M words (if this is wrong, remove this line)
+        assert (insertions[index].type < NUM_EDGE_TYPES);
+        assert (insertions[index].source_sense < 32);
       }
       if (numCompletions < MAX_COMPLETIONS) {
         insertions[numCompletions].source = 0;
@@ -693,11 +706,12 @@ template<typename Functor> inline void foreachFact(Functor fn,
       fn(buffer, bufferLength);
     }
     // Debug
-    if (factsRead % 1000 == 0) {
-      printf("  iterated over %luk facts\n", factsRead / 1000);
+    if (factsRead % 1000000 == 0) {
+      printf("  iterated over %luM facts\n", factsRead / 1000000);
     }
     factsRead += 1;
   }
+  printf("  iterated over %lu facts\n", factsRead);
 }
 
 /**
@@ -718,7 +732,7 @@ void completionCounts(
     }
     uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
     uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
-    counts->increment(mainHash, auxHash, 0);
+    counts->increment(mainHash, auxHash, 0, MAX_COMPLETIONS);
   };
   // Run function
   printf("Pass 1: collect statistics...\n");
@@ -733,15 +747,16 @@ void completionCounts(
 void addFacts(
     btree_map<word, vector<edge>>& word2sense,
     LossyTrie* trie,
-    const uint64_t maxFactsToRead) {
+    const uint64_t maxFactsToRead,
+    HashIntMap* counts) {
   // Define function
-  auto fn = [&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
+  auto fn = [&counts,&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
     // Add prefix completion
     if (factLength > 1) {
-      auto iter = word2sense.find( fact[0] );
-      if (iter != word2sense.end() && iter->second.size() > 1) {
-        for (uint32_t sense = 0; sense < iter->second.size(); ++sense) {
-          edge& insertion = iter->second[sense];
+      vector<edge> senses = word2sense[ fact[0] ];
+      if (senses.size() > 0) {
+        for (uint32_t sense = 0; sense < senses.size(); ++sense) {
+          edge& insertion = senses[sense];
           trie->addBeginInsertion(fact[0], insertion.source_sense,
                                   insertion.type, fact[1]);
         }
@@ -749,14 +764,23 @@ void addFacts(
     }
     // Add completions
     for (uint8_t len = 1; len < factLength; ++len) {
-      auto iter = word2sense.find( fact[len] );
-      if (iter != word2sense.end() && iter->second.size() > 1) {
-        for (uint32_t sense = 0; sense < iter->second.size(); ++sense) {
-          edge& insertion = iter->second[sense];
-          trie->addCompletion(fact, len,
+      vector<edge> senses = word2sense[ fact[len] ];
+      if (senses.size() > 0) {
+        uint32_t added = 0;
+        for (uint32_t sense = 0; sense < senses.size(); ++sense) {
+          edge& insertion = senses[sense];
+          added += (trie->addCompletion(fact, len,
                               insertion.source, insertion.source_sense,
-                              insertion.type);
+                              insertion.type) ? 1 : 0);
         }
+        // DEBUG -- REMOVE ME TODO(gabor);
+        uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  FNV1_32_INIT);
+        uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
+        uint32_t value;
+        counts->get(mainHash, auxHash, &value );
+        assert(value >= added);
+        counts->put(mainHash, auxHash, value - added );
+        // END DEBUG
       }
     }
     // Add complete fact
@@ -778,16 +802,14 @@ FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
   btree_map<word, vector<edge>> word2sense = getWord2Senses();
 
   // Completion counts
-  HashIntMap countsThenPointers(MAP_SIZE);
-  completionCounts(word2sense, &countsThenPointers, maxFactsToRead);
+  HashIntMap counts(MAP_SIZE);
+  completionCounts(word2sense, &counts, maxFactsToRead);
 
   // Allocate Trie
-  // ^^ countsThenPointers is still a map of counts ^^
-  LossyTrie* trie = new LossyTrie(countsThenPointers);
-  // vv countsThenPointers is now a map of pointers vv
+  LossyTrie* trie = new LossyTrie(counts);
 
   // Populate the data
-  addFacts(word2sense, trie, maxFactsToRead);
+  addFacts(word2sense, trie, maxFactsToRead, &counts);
 
   // Return
   return trie;

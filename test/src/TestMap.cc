@@ -77,6 +77,32 @@ TEST_F(MapTest, ZeroPut) {
   EXPECT_EQ(0, value);
 }
 
+TEST_F(MapTest, Increment) {
+  uint32_t value;
+  EXPECT_FALSE(smallMap->get(0, 42, &value));
+  smallMap->increment(0, 42, 5);
+  // (should increment from zero)
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(5, value);
+  // (increment again)
+  smallMap->increment(0, 42, 7);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(12, value);
+}
+
+TEST_F(MapTest, IncrementWithCap) {
+  uint32_t value;
+  EXPECT_FALSE(smallMap->get(0, 42, &value));
+  smallMap->increment(0, 42, 5, 10);
+  // (should increment from zero)
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(5, value);
+  // (increment again)
+  smallMap->increment(0, 42, 7, 10);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(10, value);
+}
+
 TEST_F(MapTest, Overwrite) {
   smallMap->put(0, 42, 1001);
   uint32_t value;

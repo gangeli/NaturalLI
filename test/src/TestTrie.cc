@@ -321,13 +321,13 @@ class LossyTrieTest : public ::testing::Test {
     trie->addFact(factB, 2);
     trie->addFact(factC, 2);
     // (completions)
-    trie->addCompletion(factA, 1, factA[1], 42, 42);
-    trie->addCompletion(factB, 1, factB[1], 42, 42);
-    trie->addCompletion(factC, 1, factC[1], 42, 42);
+    trie->addCompletion(factA, 1, factA[1], 31, 7);
+    trie->addCompletion(factB, 1, factB[1], 31, 7);
+    trie->addCompletion(factC, 1, factC[1], 31, 7);
     // (prefix completions)
-    trie->addBeginInsertion(1, 42, 42, 2);
-    trie->addBeginInsertion(1, 42, 42, 3);
-    trie->addBeginInsertion(5, 42, 42, 6);
+    trie->addBeginInsertion(1, 31, 7, 2);
+    trie->addBeginInsertion(1, 31, 7, 3);
+    trie->addBeginInsertion(5, 31, 7, 6);
   }
 
   virtual void TearDown() {
@@ -380,6 +380,19 @@ TEST_F(LossyTrieTest, CompletionsSimple) {
   // Completions from [1, 2]
   EXPECT_TRUE(trie->contains(factA, 2, 1, insertions));
   ASSERT_EQ(0, insertions[0].source);
+}
+
+/**
+ *
+ */
+TEST_F(LossyTrieTest, CompletionsOtherFields) {
+  // Populate Trie
+  edge insertions[MAX_COMPLETIONS];
+  // Completions from [1]
+  EXPECT_TRUE(trie->contains(factA, 2, 0, insertions));
+  ASSERT_EQ(2, insertions[0].source);
+  ASSERT_EQ(31, insertions[0].source_sense);
+  ASSERT_EQ(7, insertions[0].type);
 }
 
 /**

@@ -263,10 +263,16 @@ class LossyTrie : public FactDB {
   ~LossyTrie();
 
   
+  /** {@inheritDoc} */
+  virtual const bool contains(const tagged_word* words, 
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const;
+  
   /**
    * Add the given fact completion to the database.
    */
-  void addCompletion(const uint32_t* fact, 
+  bool addCompletion(const uint32_t* fact, 
                      const uint32_t& factLength, 
                      const word& source,
                      const uint8_t& sourceSense,
@@ -285,12 +291,6 @@ class LossyTrie : public FactDB {
                          const uint8_t w0Sense,
                          const uint8_t w0Type,
                          const word& w1);
-  
-  /** {@inheritDoc} */
-  virtual const bool contains(const tagged_word* words, 
-                              const uint8_t& wordLength,
-                              const int16_t& mutationIndex,
-                              edge* insertions) const;
   
   /** A simple wrapper around contains() to be more user-friendly */
   inline const bool contains(const tagged_word* words, 
