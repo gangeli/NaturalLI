@@ -3,8 +3,8 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
-val c = guessClassOrElse("org.goobs.truth.Client")
-val conf = guessConfOrElse("src/org/goobs/truth/conf/base.conf")
+val c = guessClassOrElse("org.goobs.naturalli.Client")
+val conf = guessConfOrElse("src/org/goobs/naturalli/conf/base.conf")
 
 println("running " + c)
 val program:List[String] = ("java"
@@ -66,8 +66,8 @@ def guessClassOrElse(default:String):String = {
     soFar.orElse(tryLoad(arg))
       .orElse(tryLoad("org" + arg))
       .orElse(tryLoad("org.goobs." + arg))
-      .orElse(tryLoad("org.goobs.truth." + arg))
-      .orElse(tryLoad("org.goobs.truth.scripts." + arg))
+      .orElse(tryLoad("org.goobs.naturalli." + arg))
+      .orElse(tryLoad("org.goobs.naturalli.scripts." + arg))
   }).getOrElse(default)
 }
 
@@ -83,10 +83,10 @@ def guessConfOrElse(default:String):String = {
   (args.foldLeft( None.asInstanceOf[Option[String]] ){ case (soFar:Option[String], arg:String) =>
     soFar.orElse(tryLoad(arg))
       .orElse(tryLoad("conf/" + arg))
-      .orElse(tryLoad("truth/conf/" + arg))
-      .orElse(tryLoad("goobs/truth/conf/" + arg))
-      .orElse(tryLoad("org/goobs/truth/conf/" + arg))
-      .orElse(tryLoad("src/org/goobs/truth/conf/" + arg))
+      .orElse(tryLoad("naturalli/conf/" + arg))
+      .orElse(tryLoad("goobs/naturalli/conf/" + arg))
+      .orElse(tryLoad("org/goobs/naturalli/conf/" + arg))
+      .orElse(tryLoad("src/org/goobs/naturalli/conf/" + arg))
       .orElse(tryLoad("naturalli/conf/" + arg))
       .orElse(tryLoad("goobs/naturalli/conf/" + arg))
       .orElse(tryLoad("org/goobs/naturalli/conf/" + arg))
