@@ -11,7 +11,11 @@ for file in `find lib -name "*.jar"`; do
 done
 
 function client() {
-  make -C src client.jar && scala -J-mx1g -cp $CLASSPATH:src/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Client
+  make src/naturalli_client.jar && scala -J-mx1g -cp $CLASSPATH:src/client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.Truth
+}
+
+function create-graph() {
+  make src/naturalli_client.jar && scala -J-mx1g -cp $CLASSPATH:src/naturalli_client.jar -J-Dwordnet.database.dir=etc/WordNet-3.1/dict/ org.goobs.truth.scripts.CreateGraph
 }
 
 function configure() {
