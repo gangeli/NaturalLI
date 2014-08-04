@@ -747,10 +747,9 @@ void completionCounts(
 void addFacts(
     btree_map<word, vector<edge>>& word2sense,
     LossyTrie* trie,
-    const uint64_t maxFactsToRead,
-    HashIntMap* counts) {
+    const uint64_t maxFactsToRead) {
   // Define function
-  auto fn = [&counts,&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
+  auto fn = [&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
     // Add prefix completion
     if (factLength > 1) {
       vector<edge> senses = word2sense[ fact[0] ];
@@ -773,14 +772,6 @@ void addFacts(
                               insertion.source, insertion.source_sense,
                               insertion.type) ? 1 : 0);
         }
-        // DEBUG -- REMOVE ME TODO(gabor);
-        uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  FNV1_32_INIT);
-        uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
-        uint32_t value;
-        counts->get(mainHash, auxHash, &value );
-        assert(value >= added);
-        counts->put(mainHash, auxHash, value - added );
-        // END DEBUG
       }
     }
     // Add complete fact
@@ -809,7 +800,7 @@ FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
   LossyTrie* trie = new LossyTrie(counts);
 
   // Populate the data
-  addFacts(word2sense, trie, maxFactsToRead, &counts);
+  addFacts(word2sense, trie, maxFactsToRead);
 
   // Return
   return trie;
