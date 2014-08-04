@@ -545,5 +545,5 @@ int32_t main( int32_t argc, char *argv[] ) {
 //  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
 
   printf("---START---\n");
-  ReadLossyFactTrie();
+  ReadLossyFactTrie(1000000);
 }

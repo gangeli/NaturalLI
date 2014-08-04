@@ -268,3 +268,141 @@ TEST_F(TrieTest, EnsureTrieSize) {
   EXPECT_EQ(32, onCompletionCaching);
 #endif
 }
+
+
+//
+// ----------------------------------------------------------------------------
+//
+
+
+// 1, 2
+// 1, 3
+// 5, 6
+class LossyTrieTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    HashIntMap map(10);
+    uint32_t mainHash, auxHash;
+    factA[0] = 1;
+    factA[1] = 2;
+    mainHash = fnv_32a_buf((uint8_t*) factA, 2 * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) factA, 2 * sizeof(uint32_t),  1154);
+    map.put(mainHash, auxHash, 0);
+    factB[0] = 1;
+    factB[1] = 3;
+    mainHash = fnv_32a_buf((uint8_t*) factB, 2 * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) factB, 2 * sizeof(uint32_t),  1154);
+    map.put(mainHash, auxHash, 0);
+    factC[0] = 5;
+    factC[1] = 6;
+    mainHash = fnv_32a_buf((uint8_t*) factC, 2 * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) factC, 2 * sizeof(uint32_t),  1154);
+    map.put(mainHash, auxHash, 0);
+    // 2 completions from [1, ...]
+    mainHash = fnv_32a_buf((uint8_t*) factA, 1 * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) factA, 1 * sizeof(uint32_t),  1154);
+    map.put(mainHash, auxHash, 2);
+    // 1 completion from [5, ...]
+    mainHash = fnv_32a_buf((uint8_t*) factC, 1 * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) factC, 1 * sizeof(uint32_t),  1154);
+    map.put(mainHash, auxHash, 1);
+    trie = new LossyTrie(map);
+
+    // Some bad facts
+    factBadA[0] = 1;
+    factBadA[1] = 4;
+    factPrefixA[0] = 2;
+    factPrefixB[0] = 3;
+    factPrefixC[0] = 6;
+    
+    // Populate Trie
+    // (facts)
+    trie->addFact(factA, 2);
+    trie->addFact(factB, 2);
+    trie->addFact(factC, 2);
+    // (completions)
+    trie->addCompletion(factA, 1, factA[1], 42, 42);
+    trie->addCompletion(factB, 1, factB[1], 42, 42);
+    trie->addCompletion(factC, 1, factC[1], 42, 42);
+    // (prefix completions)
+    trie->addBeginInsertion(1, 42, 42, 2);
+    trie->addBeginInsertion(1, 42, 42, 3);
+    trie->addBeginInsertion(5, 42, 42, 6);
+  }
+
+  virtual void TearDown() {
+    delete trie;
+  }
+  
+  LossyTrie* trie;
+  word factA[2];
+  word factB[2];
+  word factC[2];
+  word factBadA[2];
+  word factPrefixA[1];
+  word factPrefixB[1];
+  word factPrefixC[1];
+};
+
+/**
+ *
+ */
+TEST_F(LossyTrieTest, AddFactCrashTest) { }
+
+/**
+ *
+ */
+TEST_F(LossyTrieTest, ContainsFact) {
+  EXPECT_TRUE(trie->contains(factA, 2));
+  EXPECT_TRUE(trie->contains(factB, 2));
+  EXPECT_TRUE(trie->contains(factC, 2));
+  EXPECT_FALSE(trie->contains(factBadA, 2));
+  EXPECT_FALSE(trie->contains(factA, 1));
+  EXPECT_FALSE(trie->contains(factB, 1));
+  EXPECT_FALSE(trie->contains(factC, 1));
+}
+
+/**
+ *
+ */
+TEST_F(LossyTrieTest, CompletionsSimple) {
+  // Populate Trie
+  edge insertions[MAX_COMPLETIONS];
+  // Completions from [1]
+  EXPECT_TRUE(trie->contains(factA, 2, 0, insertions));
+  ASSERT_EQ(2, insertions[0].source);
+  ASSERT_EQ(3, insertions[1].source);
+  ASSERT_EQ(0, insertions[2].source);
+  // Completions from [5]
+  EXPECT_TRUE(trie->contains(factC, 2, 0, insertions));
+  ASSERT_EQ(6, insertions[0].source);
+  ASSERT_EQ(0, insertions[1].source);
+  // Completions from [1, 2]
+  EXPECT_TRUE(trie->contains(factA, 2, 1, insertions));
+  ASSERT_EQ(0, insertions[0].source);
+}
+
+/**
+ *
+ */
+TEST_F(LossyTrieTest, CompletionsPrefix) {
+  // Populate Trie
+  edge insertions[MAX_COMPLETIONS];
+  // Prefix completions from [2]
+  insertions[0].source = 999;
+  EXPECT_FALSE(trie->contains(factPrefixA, 2, -1, insertions));
+  ASSERT_EQ(1, insertions[0].source);
+  ASSERT_EQ(0, insertions[1].source);
+  // Prefix completions from [3]
+  insertions[0].source = 999;
+  EXPECT_FALSE(trie->contains(factPrefixB, 3, -1, insertions));
+  ASSERT_EQ(1, insertions[0].source);
+  ASSERT_EQ(0, insertions[1].source);
+  // Prefix completions from [6]
+  insertions[0].source = 999;
+  EXPECT_FALSE(trie->contains(factPrefixC, 6, -1, insertions));
+  ASSERT_EQ(5, insertions[0].source);
+  ASSERT_EQ(0, insertions[1].source);
+}
+
+

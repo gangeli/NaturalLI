@@ -2,6 +2,7 @@
 #define MAP_H
 
 #include <stdint.h>
+#include <limits>
 
 /**
  * A really funky open-address hash map that's intended to be used by
@@ -18,7 +19,15 @@ class HashIntMap {
            const uint32_t& value);
   
   void increment(const uint32_t& hash,
-                 const uint32_t& secondHash);
+                 const uint32_t& secondHash,
+                 const uint32_t& incr,
+                 const uint32_t& limit);
+  
+  inline void increment(const uint32_t& hash,
+                        const uint32_t& secondHash,
+                        const uint32_t& incr) {
+    increment(hash, secondHash, incr, std::numeric_limits<uint32_t>::max());
+  }
   
   bool get(const uint32_t& hash,
            const uint32_t& secondHash,

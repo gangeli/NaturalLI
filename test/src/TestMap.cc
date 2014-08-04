@@ -68,6 +68,15 @@ TEST_F(MapTest, SimplePutGet) {
   EXPECT_FALSE(smallMap->get(1, 43, &value));
 }
 
+TEST_F(MapTest, ZeroPut) {
+  uint32_t value;
+  EXPECT_FALSE(smallMap->get(0, 42, &value));
+  smallMap->put(0, 42, 0);
+  // (should contain right value)
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(0, value);
+}
+
 TEST_F(MapTest, Overwrite) {
   smallMap->put(0, 42, 1001);
   uint32_t value;

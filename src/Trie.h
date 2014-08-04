@@ -249,10 +249,11 @@ class TrieRoot : public Trie {
 };
 
 
-class LossyTrie {
+class LossyTrie : public FactDB {
  public:
   /**
    * Create a new LossyTrie.
+   * Note that the 
    */
   LossyTrie(const HashIntMap& countsBecomesPointers);
 
@@ -272,11 +273,53 @@ class LossyTrie {
                      const uint8_t& edgeType);
   
   /**
-   * Add a given complete fact to the database
+   * Add a given complete fact to the database.
    */
   void addFact(const uint32_t* fact, 
                const uint32_t& factLength);
-
+  
+  /**
+   * Register w0 as a potential prefix insertion for w1.
+   */
+  void addBeginInsertion(const word& w0, 
+                         const uint8_t w0Sense,
+                         const uint8_t w0Type,
+                         const word& w1);
+  
+  /** {@inheritDoc} */
+  virtual const bool contains(const tagged_word* words, 
+                              const uint8_t& wordLength,
+                              const int16_t& mutationIndex,
+                              edge* insertions) const;
+  
+  /** A simple wrapper around contains() to be more user-friendly */
+  inline const bool contains(const tagged_word* words, 
+                             const uint8_t& wordLength) {
+    edge insertions[MAX_COMPLETIONS];
+    return contains(words, wordLength, 0, insertions);
+  }
+  
+  /** A simple wrapper around contains() to be more user-friendly */
+  inline const bool contains(const word* words, 
+                             const uint8_t& wordLength) {
+    tagged_word taggedWord[wordLength];
+    for (int i = 0; i < wordLength; ++i) {
+      taggedWord[i] = getTaggedWord(words[i], 0, MONOTONE_UP);
+    }
+    return contains(taggedWord, wordLength);
+  }
+  
+  /** A simple wrapper around contains() to be more user-friendly */
+  inline const bool contains(const word* words, 
+                             const uint8_t& wordLength,
+                             const uint16_t& mutationIndex,
+                             edge* insertions) {
+    tagged_word taggedWord[wordLength];
+    for (int i = 0; i < wordLength; ++i) {
+      taggedWord[i] = getTaggedWord(words[i], 0, MONOTONE_UP);
+    }
+    return contains(taggedWord, wordLength, mutationIndex, insertions);
+  }
 
  private:
   /**
@@ -289,35 +332,22 @@ class LossyTrie {
    * The blob of bytes used to store the completion data.
    * There's no length, because the length is irrelevant anyways.
    * This is just a blob of data.
+   * 
+   * Format:
+   *   [<1 byte>]
+   *              v pointer points here
+   *   [?????CBA][packed_insertion][packed_insertion]...
+   *   A = isCompleteFact bit
+   *   B = hasCompletions bit
+   *   C = isFull bit
    */
   uint8_t* completionData;
-  
+
   /**
-   * Compute the hash of a fact, to be used for lookup in the hash
-   * table.
+   *
    */
-  inline uint32_t hash(const tagged_word* fact, const uint8_t factLength) const {
-    word taglessFact[factLength];
-    for (uint32_t i = 0; i < factLength; ++i) {
-      taglessFact[i] = fact[i].word;
-    }
-    return fnv_32a_buf(taglessFact, factLength * sizeof(uint32_t), 
-                       FNV1_32_INIT);
-  }
+  btree::btree_map<word,std::vector<packed_insertion>> beginInsertions;
   
-  /**
-   * Compute an auxilliary hash of the fact, to be used to verify that
-   * we have actually hit the right fact, and are not just hitting
-   * a hash collision.
-   */
-  inline uint32_t auxHash(const tagged_word* fact, const uint8_t factLength) const {
-    word taglessFact[factLength];
-    for (uint32_t i = 0; i < factLength; ++i) {
-      taglessFact[i] = fact[i].word;
-    }
-    return fnv_32a_buf(taglessFact, factLength * sizeof(uint32_t), 
-                       1154);
-  }
 
 };
 
@@ -331,6 +361,8 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph);
 
 /** Read all facts in the database; @see ReadFactTrie(uint64_t) */
 inline FactDB* ReadFactTrie(const Graph* graph) { return ReadFactTrie(std::numeric_limits<uint64_t>::max(), graph); }
+
+LossyTrie* ReadLossyFactTrie(const uint64_t& maxFactsToRead);
 
 LossyTrie* ReadLossyFactTrie();
 

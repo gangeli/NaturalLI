@@ -28,6 +28,9 @@ class FactDB {
    * @param words         The fact to look up.
    * @param wordLength    The length of the word array to look up.
    * @param mutationIndex The index we are mutating; this is primarly for populating the insertions.
+   *                      We count insertions from the right of this index;
+   *                      thus, this can be negative in the special case that
+   *                      we're inserting to the beginning of the sentence.
    * @param insertions    [Output] The edges we can insert after the mutation index.
    *
    * @return True if the fact is in the database.

@@ -12,6 +12,8 @@
 #include "Postgres.h"
 #include "Utils.h"
 
+#define MAP_SIZE 0x1 << 25
+
 
 
 using namespace std;
@@ -285,10 +287,13 @@ LossyTrie::LossyTrie(const HashIntMap& counts
   assert (sum < (0x1 << 31));  // make sure we won't overflow a uint32_t
   uint64_t size = 
       sum * sizeof(packed_insertion) +   // for the data
-      sum * sizeof(bool) +               // for the 'complete fact' indicator
+      sum * sizeof(uint8_t) +            // for the 'complete fact' indicator
       sizeof(uint8_t);                   // for the 'null pointer'
-  printf("Allocating for %lu completions, over %u subfacts; the data will use %lu MB memory.\n",
-         sum, nonEmpty, (size / 1000000));
+  if (sum > 1024) {
+    printf("Allocating for %lu completions, over %u subfacts.\n",
+           sum, nonEmpty);
+    printf("  the data will use %lu MB memory.\n", size / 1000000);
+  }
   this->completionData = (uint8_t*) malloc(size);
   memset(this->completionData, 0, size);
 
@@ -298,8 +303,9 @@ LossyTrie::LossyTrie(const HashIntMap& counts
     // (allocate space)
     uint32_t pointer = completionDataPointer;
     completionDataPointer = completionDataPointer
-      + count * (sizeof(packed_insertion) + sizeof(bool));
-    return pointer + sizeof(bool);
+      + (count * sizeof(packed_insertion))  // data
+      + sizeof(uint8_t);                    // flags
+    return pointer + sizeof(uint8_t);
   };
   completions.mapValues(countToAddr);
 }
@@ -323,7 +329,7 @@ void LossyTrie::addCompletion(const uint32_t* fact,
   packed_insertion edge;
   edge.source = source;
   edge.sense = sourceSense;
-  edge.type = edgeType - EDGE_DELS_BEGIN;
+  edge.type = edgeType;
   edge.endOfList = 1;
   // Compute the hashes
   uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
@@ -334,18 +340,45 @@ void LossyTrie::addCompletion(const uint32_t* fact,
     printf("No pointer was allocated for completion!\n");
     std::exit(1);
   }
+  // Set the 'has completions' indicator'
+  completionData[pointer - 1] |= 0x2;
   packed_insertion* insertions = (packed_insertion*) &(completionData[pointer]);
-  // Find a free spot
-  uint16_t index = 0;
-  if (insertions[index].source != 0) {
-    while (!insertions[index].endOfList) { index += 1; }
-    insertions[index].endOfList = 0;
-    index += 1;
+  if ( (completionData[pointer - 1] & 0x4) == 0) {  // check if bucket is full
+    // Find a free spot
+    uint16_t index = 0;
+    if (insertions[index].source != 0) {
+      while (!insertions[index].endOfList && index < MAX_COMPLETIONS) {
+        index += 1;
+      }
+      insertions[index].endOfList = 0;
+      index += 1;
+    }
+    // Set the insertion
+    if (index < MAX_COMPLETIONS) {
+      // Case: add this edge
+      insertions[index] = edge;
+    } else {
+      // Case: this slot's full
+      completionData[pointer - 1] |= 0x4;
+    }
   }
-  // Set the insertion
-  insertions[index] = edge;
 }
   
+//
+// LossyTrie::addBeginInsertion
+//
+void LossyTrie::addBeginInsertion(const word& w0, 
+                                  const uint8_t w0Sense,
+                                  const uint8_t w0Type,
+                                  const word& w1) {
+  packed_insertion edge;
+  edge.source = w0;
+  edge.sense = w0Sense;
+  edge.type = w0Type;
+  edge.endOfList = 0;
+  beginInsertions[w1].push_back(edge);
+}
+
 //
 // LossyTrie::addFact
 //
@@ -361,7 +394,88 @@ void LossyTrie::addFact(const uint32_t* fact,
     std::exit(1);
   }
   // Set the 'is fact' indicator'
-  completionData[pointer - 1] = true;
+  completionData[pointer - 1] |= 0x1;
+}
+  
+//
+// LossyTrie::contains
+//
+const bool LossyTrie::contains(const tagged_word* taggedFact, 
+                               const uint8_t& factLength,
+                               const int16_t& mutationIndex,
+                               edge* insertions) const {
+  // Hash the fact
+  word fact[factLength];
+  for (uint32_t i = 0; i < factLength; ++i) {
+    fact[i] = taggedFact[i].word;
+  }
+  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
+  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+
+  // Look up the containment info
+  bool contains = false;
+  uint32_t pointer;
+  if (completions.get(mainHash, auxHash, &pointer)) {
+    contains = (completionData[pointer - 1] & 0x1) != 0;
+  }
+
+  // Look up completions
+  if (mutationIndex >= 0) {
+    // Case: regular completion
+    mainHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  FNV1_32_INIT);
+    auxHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  1154);
+    if (completions.get(mainHash, auxHash, &pointer)) {
+      // Check the 'has completions' indicator
+      bool hasCompletions = (completionData[pointer - 1] & 0x2) != 0;
+      uint16_t index = -1;
+      // Populate completions
+      if (hasCompletions) {
+        packed_insertion* toRead = (packed_insertion*) &(completionData[pointer]);
+        // Populate insertions
+        do {
+          index += 1;
+          insertions[index].source = toRead[index].source;
+          insertions[index].source_sense = toRead[index].sense;
+          insertions[index].sink = 0;
+          insertions[index].sink_sense = 0;
+          insertions[index].type = toRead[index].type;
+          insertions[index].cost = 1.0f;
+        } while (index < MAX_COMPLETIONS && !toRead[index].endOfList);
+      }
+      // End insertions array
+      index += 1;
+      if (index < MAX_COMPLETIONS) {
+        insertions[index].source = 0;
+      }
+    }
+
+  } else if (factLength == 0) {
+    // Case: degenerate
+    insertions[0].source = 0;
+
+  } else {
+    // Case: prefix completion
+    btree_map<word,vector<packed_insertion>>::const_iterator inserts
+        = beginInsertions.find( taggedFact[0].word );
+    if (inserts != beginInsertions.end()) {
+      vector<packed_insertion> toRead = inserts->second;
+      uint16_t numCompletions = toRead.size() < MAX_COMPLETIONS ? toRead.size() : MAX_COMPLETIONS;
+      for (uint16_t index = 0; index < numCompletions; ++index) {
+        insertions[index].source = toRead[index].source;
+        insertions[index].source_sense = toRead[index].sense;
+        insertions[index].sink = 0;
+        insertions[index].sink_sense = 0;
+        insertions[index].type = toRead[index].type;
+        insertions[index].cost = 1.0f;
+      }
+      if (numCompletions < MAX_COMPLETIONS) {
+        insertions[numCompletions].source = 0;
+      }
+    }
+  }
+
+  // Return
+  return contains;
 }
 
 //
@@ -482,142 +596,203 @@ FactDB* ReadFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   
 
 
+/**
+ * Return a map from a word, to the possible insertion types and word
+ * senses of that word to be inserted.
+ * This is represented as a vector of edges, where the source and
+ * source sense are the relevant variables for the insertion.
+ */
+btree_map<word, vector<edge>> getWord2Senses() {
+  // Read valid deletions
+  printf("Reading registered deletions...\n");
+  btree_map<word,vector<edge>> word2senses;
+
+  // Query
+  char query[128];
+  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
+  PGIterator wordIter = PGIterator(query);
+  uint32_t numValidInsertions = 0;
+  while (wordIter.hasNext()) {
+    // Get fact
+    PGRow row = wordIter.next();
+    // Create edge
+    edge e;
+    e.source       = fast_atoi(row[0]);
+    assert (atoi(row[0]) == fast_atoi(row[0]));
+    e.source_sense = fast_atoi(row[1]);
+    assert (atoi(row[1]) == fast_atoi(row[1]));
+    e.type  = fast_atoi(row[2]);
+    assert (atoi(row[2]) == fast_atoi(row[2]));
+    e.cost  = 1.0f;
+    // Register edge
+    word2senses[e.source].push_back(e);
+    numValidInsertions += 1;
+  }
+  printf("  Done. %u words have sense tags\n", numValidInsertions);
+
+  // Return
+  return word2senses;
+}
+  
+/**
+ * Apply the given function to every fact in the fact database.
+ * This is a linear scan through the database.
+ * The function takes as input a word array and a length, and returns
+ * void as output. For example:
+ *
+ * <code>
+ *   auto fn = [](word* fact, uint8_t factLength) -> void { }
+ * </code>
+ */
+template<typename Functor> inline void foreachFact(Functor fn,
+                                                   const uint64_t& maxFactsToRead) {
+  // Construct the query
+  char query[128];
+  if (maxFactsToRead == std::numeric_limits<uint64_t>::max()) {
+    snprintf(query, 127,
+             "SELECT gloss, weight FROM %s ORDER BY weight DESC;",
+             PG_TABLE_FACT);
+  } else {
+    snprintf(query, 127,
+             "SELECT gloss, weight FROM %s ORDER BY weight DESC LIMIT %lu;",
+             PG_TABLE_FACT,
+             maxFactsToRead);
+  }
+  printf("  %s\n", query);
+  PGIterator iter = PGIterator(query);
+  word buffer[256];
+  uint8_t bufferLength;
+  uint64_t factsRead = 0;
+
+  // Collect completion statistics
+  uint32_t completionsLength = 0x1 << 10;
+  uint32_t* completions = (uint32_t*) malloc(completionsLength * sizeof(uint16_t));
+  memset(completions, 0, completionsLength * sizeof(uint16_t));
+  while (iter.hasNext()) {
+    // (query Postgres)
+    PGRow row = iter.next();
+    // (check minimum weight)
+    uint32_t weight = fast_atoi(row[1]);
+    if (weight >= MIN_FACT_COUNT) {
+      // (define variables)
+      const char* gloss = row[0];
+      stringstream stream (&gloss[1]);
+      string substr;
+      bufferLength = 0;
+      // (read fact gloss)
+      while( getline (stream, substr, ',' ) ) {
+        // (parse the word)
+        word w = fast_atoi(substr.c_str());
+        // (save the word)
+        buffer[bufferLength] = w;
+        bufferLength += 1;
+      }
+      // (hash the fact)
+      uint32_t factHash = fnv_32a_buf(buffer, bufferLength * sizeof(uint32_t), FNV1_32_INIT);
+      // (apply the function)
+      fn(buffer, bufferLength);
+    }
+    // Debug
+    if (factsRead % 1000 == 0) {
+      printf("  iterated over %luk facts\n", factsRead / 1000);
+    }
+    factsRead += 1;
+  }
+}
+
+/**
+ * Get the number of completions for every partial fact in the
+ * fact database. These are stored in the counts output map.
+ */
+void completionCounts(
+    btree_map<word, vector<edge>>& word2sense,
+    HashIntMap* counts,
+    const uint64_t maxFactsToRead) {
+  // Define function
+  auto fn = [&word2sense,&counts](word* fact, uint8_t factLength) -> void { 
+    for (uint8_t len = 1; len < factLength; ++len) {
+      uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  FNV1_32_INIT);
+      uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
+      word nextWord = fact[len];
+      counts->increment(mainHash, auxHash, word2sense[nextWord].size(), MAX_COMPLETIONS);
+    }
+    uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
+    uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+    counts->increment(mainHash, auxHash, 0);
+  };
+  // Run function
+  printf("Pass 1: collect statistics...\n");
+  foreachFact( fn, maxFactsToRead );
+  printf("  pass 1 done.\n");
+}
+
+/**
+ * Add all the facts to the LossyTrie. Note that the Trie must have
+ * been initialized with the completionCounts() function above.
+ */
+void addFacts(
+    btree_map<word, vector<edge>>& word2sense,
+    LossyTrie* trie,
+    const uint64_t maxFactsToRead) {
+  // Define function
+  auto fn = [&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
+    // Add prefix completion
+    if (factLength > 1) {
+      auto iter = word2sense.find( fact[0] );
+      if (iter != word2sense.end() && iter->second.size() > 1) {
+        for (uint32_t sense = 0; sense < iter->second.size(); ++sense) {
+          edge& insertion = iter->second[sense];
+          trie->addBeginInsertion(fact[0], insertion.source_sense,
+                                  insertion.type, fact[1]);
+        }
+      }
+    }
+    // Add completions
+    for (uint8_t len = 1; len < factLength; ++len) {
+      auto iter = word2sense.find( fact[len] );
+      if (iter != word2sense.end() && iter->second.size() > 1) {
+        for (uint32_t sense = 0; sense < iter->second.size(); ++sense) {
+          edge& insertion = iter->second[sense];
+          trie->addCompletion(fact, len,
+                              insertion.source, insertion.source_sense,
+                              insertion.type);
+        }
+      }
+    }
+    // Add complete fact
+    trie->addFact(fact, factLength);
+  };
+  // Run function
+  printf("Pass 2: Collect facts...\n");
+  foreachFact( fn, maxFactsToRead );
+  printf("  pass 2 done.\n");
+
+}
 
 
+/**
+ * Read a LossyFactTrie from the database.
+ */
+LossyTrie* ReadLossyFactTrie(const uint64_t& maxFactsToRead) {
+  // Word senses
+  btree_map<word, vector<edge>> word2sense = getWord2Senses();
+
+  // Completion counts
+  HashIntMap countsThenPointers(MAP_SIZE);
+  completionCounts(word2sense, &countsThenPointers, maxFactsToRead);
+
+  // Allocate Trie
+  // ^^ countsThenPointers is still a map of counts ^^
+  LossyTrie* trie = new LossyTrie(countsThenPointers);
+  // vv countsThenPointers is now a map of pointers vv
+
+  // Populate the data
+  addFacts(word2sense, trie, maxFactsToRead);
+
+  // Return
+  return trie;
+}
+  
 LossyTrie* ReadLossyFactTrie() {
-  return NULL;
-
-//  char query[128];
-//
-//  // Read valid deletions
-//  printf("Reading registered deletions...\n");
-//  btree_map<word,vector<edge>> word2senses;
-//  // (query)
-//  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
-//  PGIterator wordIter = PGIterator(query);
-//  uint32_t numValidInsertions = 0;
-//  while (wordIter.hasNext()) {
-//    // Get fact
-//    PGRow row = wordIter.next();
-//    // Create edge
-//    edge e;
-//    e.source       = fast_atoi(row[0]);
-//    assert (atoi(row[0]) == fast_atoi(row[0]));
-//    e.source_sense = fast_atoi(row[1]);
-//    assert (atoi(row[1]) == fast_atoi(row[1]));
-//    e.type  = fast_atoi(row[2]);
-//    assert (atoi(row[2]) == fast_atoi(row[2]));
-//    e.cost  = 1.0f;
-//    // Register edge
-//    word2senses[e.source].push_back(e);
-//    numValidInsertions += 1;
-//  }
-//  printf("  Done. %u words have sense tags\n", numValidInsertions);
-//
-//  // Construct the query
-//  printf("Pass 1: collect statistics...\n");
-//  snprintf(query, 127,
-//           "SELECT gloss, weight FROM %s ORDER BY gloss,weight DESC LIMIT 1000;",
-//           PG_TABLE_FACT);
-//  PGIterator iter = PGIterator(query);
-//  uint32_t buffer[256];
-//  uint8_t bufferLength;
-//
-//  // Collect completion statistics
-//  uint32_t completionsLength = 0x1 << 10;
-//  uint32_t* completions = (uint32_t*) malloc(completionsLength * sizeof(uint16_t));
-//  memset(completions, 0, completionsLength * sizeof(uint16_t));
-//  while (iter.hasNext()) {
-//    // (query Postgres)
-//    PGRow row = iter.next();
-//    // (check minimum weight)
-//    uint32_t weight = fast_atoi(row[1]);
-//    if (weight >= MIN_FACT_COUNT) {
-//      // (define variables)
-//      const char* gloss = row[0];
-//      stringstream stream (&gloss[1]);
-//      string substr;
-//      bufferLength = 0;
-//      // (read fact gloss)
-//      while( getline (stream, substr, ',' ) ) {
-//        // (parse the word)
-//        word w = fast_atoi(substr.c_str());
-//        // (save the word)
-//        buffer[bufferLength] = w;
-//        bufferLength += 1;
-//      }
-//      // (hash the fact)
-//      uint32_t factHash = fnv_32a_buf(buffer, bufferLength * sizeof(uint32_t), FNV1_32_INIT);
-//      // (hash the completions)
-//      for (int len = 1; len < bufferLength - 1; ++len) {
-//        uint64_t subFactHash = fnv_64a_buf(buffer, len * sizeof(uint32_t), FNV1_64_INIT);
-//        word nextWord = buffer[len];
-//        completions[subFactHash % completionsLength] += word2senses[nextWord].size();
-//      }
-//    }
-//  }
-//  printf("  pass 1 done.\n");
-//
-//  // Create Trie
-//  LossyTrie* trie = new LossyTrie(completions, completionsLength);
-//
-//  // Re-read table
-//  printf("Pass 2: collecting data...\n");
-//  iter = PGIterator(query);
-//  uint32_t nextInsertionIndex[256];
-//  memset(nextInsertionIndex, 0, 256 * sizeof(uint32_t));
-//  uint64_t factsCollected = 0;
-//  while (iter.hasNext()) {
-//    // (query Postgres)
-//    PGRow row = iter.next();
-//    // (check minimum weight)
-//    uint32_t weight = fast_atoi(row[1]);
-//    if (weight >= MIN_FACT_COUNT) {
-//      // (define variables)
-//      const char* gloss = row[0];
-//      stringstream stream (&gloss[1]);
-//      string substr;
-//      bufferLength = 0;
-//      // (read fact gloss)
-//      while( getline (stream, substr, ',' ) ) {
-//        // (parse the word)
-//        word w = fast_atoi(substr.c_str());
-//        // (save the word)
-//        buffer[bufferLength] = w;
-//        bufferLength += 1;
-//      }
-//      // (populate the completions)
-//      for (int len = 1; len < bufferLength; ++len) {
-//        if (len < bufferLength - 1) {
-//          btree_map<word,vector<edge>>::iterator iter = 
-//            word2senses.find( buffer[len-1] );
-//          if (iter != word2senses.end() && iter->second.size() > 1) {
-//            for (uint32_t sense = 1; sense < iter->second.size(); ++sense) {
-//              edge& insertion = iter->second[sense];
-//              word source = (len == bufferLength) ? 0 : buffer[len];
-//              uint8_t sourceSense = insertion.source_sense;
-//              uint8_t edgeType = insertion.type;
-//              uint8_t insertionIndex = 0; // TODO
-//              trie->addCompletion(buffer, len, source, sourceSense, edgeType,
-//                                  insertionIndex, len == bufferLength);
-//            }
-//          }
-//        } else {
-//          uint8_t insertionIndex = 0;  // TODO
-//          trie->addCompletion(buffer, len, 0, 0, 0,
-//                              insertionIndex, true);
-//        }
-//      }
-//    }
-//
-//    // Debug
-//    factsCollected += 1;
-//    if (factsCollected % 1000000 == 0) {
-//      printf("  loaded %luM facts\n", factsCollected / 1000000);
-//    }
-//  }
-//  printf("  pass 2 done.\n");
-//
-//  // Return
-//  return trie;
+  return ReadLossyFactTrie(std::numeric_limits<uint64_t>::max());
 }
