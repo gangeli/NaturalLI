@@ -162,7 +162,7 @@ inference_function edge2function(const edge_type& type) {
       function = FUNCTION_EQUIVALENT;
       break;
     default:
-      printf("Unknown edge type: %u", type);
+      printf("Unknown edge type: %u\n", type);
       std::exit(1);
       break;
   }
