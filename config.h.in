@@ -1,7 +1,7 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
-/* The bitshift for the fact database partial completion map size. i.e., 30 =
-   2^30 elements */
+/* The bitshift for the fact database partial completion map size. i.e., 32 =
+   2^32 elements */
 #undef FACT_MAP_SIZE
 
 /* If true, greedily load the fact database, even if no one is requesting it.

@@ -12,7 +12,7 @@
 #include "Postgres.h"
 #include "Utils.h"
 
-#define MAP_SIZE 0x1 << FACT_MAP_SIZE
+#define MAP_SIZE (0x1l << FACT_MAP_SIZE) - 1
 
 
 
@@ -678,7 +678,7 @@ template<typename Functor> inline void foreachFact(Functor fn,
   uint64_t factsRead = 0;
 
   // Collect completion statistics
-  uint32_t completionsLength = 0x1 << 10;
+  uint64_t completionsLength = 0x1 << 10;
   uint32_t* completions = (uint32_t*) malloc(completionsLength * sizeof(uint16_t));
   memset(completions, 0, completionsLength * sizeof(uint16_t));
   while (iter.hasNext()) {
