@@ -457,7 +457,10 @@ int startServer(int port) {
 
   // -- Initialize Global Variables --
   Graph*         graph   = ReadGraph();
-#ifdef GREEDY_LOAD
+#ifndef GREEDY_LOAD
+  #define GREEDY_LOAD 0
+#endif
+#if GREEDY_LOAD==1
   FactDB*        db      = ReadFactTrie();
 #else
   FactDB*        db      = NULL;  // lazy load me
