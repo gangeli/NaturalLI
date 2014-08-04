@@ -9,10 +9,10 @@ export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
 echo "-- CLEAN --"
-make distclean
-git clean -f
 ./autogen.sh
 autoreconf
+make distclean
+git clean -f
 
 echo "-- MAKE --"
 ./configure \

@@ -104,6 +104,30 @@ string toString(const edge_type& edge) {
   }
 }
 
+string toString(const time_t& elapsedTime) {
+  // Compute fields
+  uint64_t seconds = elapsedTime / CLOCKS_PER_SEC;
+  uint64_t minutes = seconds / 60;
+  seconds = seconds % 60;
+  uint64_t hours = minutes / 60;
+  minutes = minutes % 60;
+  uint64_t days = hours / 24;
+  hours = hours % 24;
+  // Create string
+  char buffer[128];
+  if (days == 0 && hours == 0 && minutes == 0) {
+    snprintf(buffer, 127, "%lus", seconds);
+  } else if (days == 0 && hours == 0) {
+    snprintf(buffer, 127, "%lum %lus", minutes, seconds);
+  } else if (days == 0) {
+    snprintf(buffer, 127, "%luh %lum %lus", hours, minutes, seconds);
+  } else {
+    snprintf(buffer, 127, "%lud %luh %lum %lus", days, hours, minutes, seconds);
+  }
+  // Return
+  return string(buffer);
+}
+
 inference_function edge2function(const edge_type& type) {
   inference_function function;
   switch (type) {

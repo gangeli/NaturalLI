@@ -5,6 +5,7 @@
 #include <cstring>
 #include <string>
 #include <sstream>
+#include <ctime>
 #ifdef HAVE_OPENMP
   #include <omp.h>
 #endif
@@ -659,6 +660,7 @@ btree_map<word, vector<edge>> getWord2Senses() {
  */
 template<typename Functor> inline void foreachFact(Functor fn,
                                                    const uint64_t& maxFactsToRead) {
+  clock_t beginTime = clock();
   // Construct the query
   char query[128];
   if (maxFactsToRead == std::numeric_limits<uint64_t>::max()) {
@@ -707,11 +709,13 @@ template<typename Functor> inline void foreachFact(Functor fn,
     }
     // Debug
     if (factsRead % 1000000 == 0) {
-      printf("  iterated over %luM facts\n", factsRead / 1000000);
+      printf("  iterated over %luM facts [%s]\n", factsRead / 1000000,
+          toString(clock() - beginTime).c_str());
     }
     factsRead += 1;
   }
-  printf("  iterated over %lu facts\n", factsRead);
+  printf("  iterated over %lu facts [%s]\n", factsRead, 
+         toString(clock() - beginTime).c_str());
 }
 
 /**

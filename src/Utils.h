@@ -1,6 +1,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <ctime>
 #include <vector>
 #include <string>
 #include <stdio.h>
@@ -28,6 +29,11 @@ std::string toString(const Graph& graph, SearchType& searchType, const Path* pat
  * Print out the edge type being taken.
  */
 std::string toString(const edge_type& edge);
+
+/**
+ * Print out elapsed time in days+hours+minutes+seconds.
+ */
+std::string toString(const time_t& elapsedTime);
 
 /**
  *  The fact (lemur, have, tail)
