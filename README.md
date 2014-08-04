@@ -150,7 +150,8 @@ Postgres, these should not need changing.
 
 Some other potentially useful variables to set may be:
 
-    CXX=<c++ compiler; g++ and clang++ 3.4 or later have been tested)
+    CXX=<c++ compiler; GCC 4.5 or later and Clang++ 3.4 or later have been tested)
+        NOTE: set CXX=gcc not CXX=g++ if you want to use GCC.
 
 ###Client (Java)
 For now, `make src/naturalli_client.jar` pretty much works.
