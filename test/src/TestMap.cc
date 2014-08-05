@@ -16,6 +16,10 @@ class MapTest : public ::testing::Test {
   HashIntMap* smallMap;
 };
 
+TEST_F(MapTest, MapEntrySize) {
+  EXPECT_EQ(8, sizeof(map_entry));
+}
+
 TEST_F(MapTest, Creation) { }
 
 TEST_F(MapTest, Buckets) {
@@ -38,7 +42,7 @@ TEST_F(MapTest, Sum) {
 
 TEST_F(MapTest, Map) {
   // Initialize
-  uint32_t value;
+  uint64_t value;
   smallMap->put(0, 42, 1001);
   smallMap->put(3, 44, 1002);
   // Check gets
@@ -47,7 +51,7 @@ TEST_F(MapTest, Map) {
   EXPECT_TRUE(smallMap->get(3, 44, &value));
   EXPECT_EQ(1002, value);
   // Map
-  auto fn = [](uint32_t count) -> uint32_t { 
+  auto fn = [](uint64_t count) -> uint64_t { 
     return count + 5;
   };
   smallMap->mapValues(fn);
@@ -60,7 +64,7 @@ TEST_F(MapTest, Map) {
 
 TEST_F(MapTest, SimplePutGet) {
   smallMap->put(0, 42, 1001);
-  uint32_t value;
+  uint64_t value;
   // (should contain right value)
   EXPECT_TRUE(smallMap->get(0, 42, &value));
   EXPECT_EQ(1001, value);
@@ -69,7 +73,7 @@ TEST_F(MapTest, SimplePutGet) {
 }
 
 TEST_F(MapTest, ZeroPut) {
-  uint32_t value;
+  uint64_t value;
   EXPECT_FALSE(smallMap->get(0, 42, &value));
   smallMap->put(0, 42, 0);
   // (should contain right value)
@@ -78,7 +82,7 @@ TEST_F(MapTest, ZeroPut) {
 }
 
 TEST_F(MapTest, Increment) {
-  uint32_t value;
+  uint64_t value;
   EXPECT_FALSE(smallMap->get(0, 42, &value));
   smallMap->increment(0, 42, 5);
   // (should increment from zero)
@@ -91,7 +95,7 @@ TEST_F(MapTest, Increment) {
 }
 
 TEST_F(MapTest, IncrementWithCap) {
-  uint32_t value;
+  uint64_t value;
   EXPECT_FALSE(smallMap->get(0, 42, &value));
   smallMap->increment(0, 42, 5, 10);
   // (should increment from zero)
@@ -105,7 +109,7 @@ TEST_F(MapTest, IncrementWithCap) {
 
 TEST_F(MapTest, Overwrite) {
   smallMap->put(0, 42, 1001);
-  uint32_t value;
+  uint64_t value;
   // Initial value
   EXPECT_TRUE(smallMap->get(0, 42, &value));
   EXPECT_EQ(1001, value);
@@ -117,7 +121,7 @@ TEST_F(MapTest, Overwrite) {
 
 TEST_F(MapTest, Checksum) {
   smallMap->put(0, 42, 1001);
-  uint32_t value;
+  uint64_t value;
   // (should contain right value)
   EXPECT_TRUE(smallMap->get(0, 42, &value));
   EXPECT_EQ(1001, value);
@@ -130,7 +134,7 @@ TEST_F(MapTest, FillMap) {
   smallMap->put(1, 43, 1002);
   smallMap->put(2, 44, 1003);
   smallMap->put(3, 45, 1004);
-  uint32_t value;
+  uint64_t value;
   // (should contain right values)
   EXPECT_TRUE(smallMap->get(0, 42, &value));
   EXPECT_EQ(1001, value);
@@ -149,7 +153,7 @@ TEST_F(MapTest, FillMapModAround) {
   smallMap->put(2, 43, 1002);
   smallMap->put(3, 44, 1003);
   smallMap->put(4, 45, 1004);
-  uint32_t value;
+  uint64_t value;
   // (should contain right values)
   EXPECT_TRUE(smallMap->get(1, 42, &value));
   EXPECT_EQ(1001, value);
@@ -165,7 +169,7 @@ TEST_F(MapTest, FillMapModAround) {
 
 TEST_F(MapTest, CopyConstructor) {
   smallMap->put(0, 42, 1001);
-  uint32_t value;
+  uint64_t value;
   // Initial value
   EXPECT_TRUE(smallMap->get(0, 42, &value));
   EXPECT_EQ(1001, value);
@@ -180,4 +184,49 @@ TEST_F(MapTest, CopyConstructor) {
   // Make sure it didn't change other
   EXPECT_TRUE(other.get(0, 42, &value));
   EXPECT_EQ(1001, value);
+}
+
+TEST_F(MapTest, LargeDatum) {
+  uint64_t value;
+  // (0x1 << 32) - 1
+  uint64_t uint32Limit = (0x1l << 32) - 1;
+  smallMap->put(0, 42, uint32Limit);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(uint32Limit, value);
+  // (clear)
+  smallMap->put(0, 42, 0);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(0, value);
+  // (0x1 << 32)
+  uint64_t uint32Overflow = (0x1l << 32);
+  smallMap->put(0, 42, uint32Overflow);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(uint32Overflow, value);
+  // (clear)
+  smallMap->put(0, 42, 0);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(0, value);
+  // (0x1 << 42) - 1
+  uint64_t barelyOK = (0x1l << 38) - 1;
+  smallMap->put(0, 42, barelyOK);
+  EXPECT_TRUE(smallMap->get(0, 42, &value));
+  EXPECT_EQ(barelyOK, value);
+}
+
+TEST_F(MapTest, LargeChecksum) {
+  uint64_t value;
+  // (0x1 << 22) - 1
+  uint32_t checksumLimit = (0x1l << 25) - 1;
+  smallMap->put(0, checksumLimit, 10);
+  EXPECT_TRUE(smallMap->get(0, checksumLimit, &value));
+  EXPECT_EQ(10, value);
+  // (0x1 << 22) - 2
+  // (should not be contained -- we never added it)
+  uint32_t checksumUnderlimit = (0x1l << 25) - 2;
+  EXPECT_FALSE(smallMap->get(0, checksumUnderlimit, &value));
+  // (0x1 << 22)
+  // (overflows the checksum -- false positive containment
+  uint64_t checksumOverflow = ((0x1l << 25) - 1) | (0x1l << 26);
+  EXPECT_TRUE(smallMap->get(0, checksumOverflow, &value));
+  EXPECT_EQ(10, value);
 }

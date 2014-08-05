@@ -336,7 +336,7 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
   uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
   uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
   // Do the lookup
-  uint32_t pointer;
+  uint64_t pointer;
   if (!completions.get(mainHash, auxHash, &pointer)) {
     printf("No pointer was allocated for completion!\n");
     std::exit(1);
@@ -393,7 +393,7 @@ void LossyTrie::addFact(const uint32_t* fact,
   uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
   uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
   // Do the lookup
-  uint32_t pointer;
+  uint64_t pointer;
   if (!completions.get(mainHash, auxHash, &pointer)) {
     printf("No pointer was allocated for completion!\n");
     std::exit(1);
@@ -419,7 +419,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
 
   // Look up the containment info
   bool contains = false;
-  uint32_t pointer;
+  uint64_t pointer;
   if (completions.get(mainHash, auxHash, &pointer)) {
     contains = (completionData[pointer - 1] & 0x1) != 0;
   }

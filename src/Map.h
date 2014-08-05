@@ -3,6 +3,23 @@
 
 #include <stdint.h>
 #include <limits>
+#include <assert.h>
+
+#define __MAP_CHECKSUM_LEFTSHIFT 7
+
+#ifdef __GNUG__
+typedef struct {
+#else
+typedef struct alignas(8) {
+#endif
+  uint64_t checksum:25,
+           pointer:38;
+  bool     occupied:1;
+#ifdef __GNUG__
+} __attribute__ ((__packed__)) map_entry;
+#else
+} map_entry;
+#endif
 
 /**
  * A really funky open-address hash map that's intended to be used by
@@ -16,22 +33,22 @@ class HashIntMap {
 
   void put(const uint32_t& hash,
            const uint32_t& secondHash,
-           const uint32_t& value);
+           const uint64_t& value);
   
   void increment(const uint32_t& hash,
                  const uint32_t& secondHash,
-                 const uint32_t& incr,
-                 const uint32_t& limit);
+                 const uint64_t& incr,
+                 const uint64_t& limit);
   
   inline void increment(const uint32_t& hash,
                         const uint32_t& secondHash,
-                        const uint32_t& incr) {
+                        const uint64_t& incr) {
     increment(hash, secondHash, incr, std::numeric_limits<uint32_t>::max());
   }
   
   bool get(const uint32_t& hash,
            const uint32_t& secondHash,
-           uint32_t* toSet) const;
+           uint64_t* toSet) const;
 
 
 
@@ -63,27 +80,42 @@ class HashIntMap {
   }
 
  private:
-  uint64_t* data;
+  map_entry* data;
   uint64_t  dataLength;
 
-  inline uint32_t getChecksum(const uint64_t& cell) const {
-    return cell >> 32;
-  }
-  inline uint32_t checkChecksum(const uint64_t& cell, const uint32_t& checksum) const {
-    uint32_t empiricalChecksum = cell >> 32;
-    return empiricalChecksum == 0 || empiricalChecksum == checksum;
-  }
-  inline void setChecksum(uint64_t* cell, const uint32_t& checksum) {
-    uint64_t checksumLong = checksum;
-    *cell = (*cell) | (checksumLong << 32);
+  inline uint32_t occupied(const map_entry& cell) const {
+    return cell.occupied;
   }
   
-  inline uint32_t getDatum(const uint64_t& cell) const {
-    return (cell << 32) >> 32;
+  inline uint32_t getChecksum(const map_entry& cell) const {
+    return cell.checksum;
   }
-  inline void setDatum(uint64_t* cell, const uint32_t& datum) {
-    uint64_t datumLong = datum;
-    *cell = (((*cell) >> 32) << 32) | datumLong;
+  inline void setChecksum(map_entry* cell, const uint32_t& checksum) {
+    cell->checksum = checksum;
+  }
+  
+  inline uint64_t getDatum(const map_entry& cell) const {
+    return cell.pointer;
+  }
+  inline void setDatum(map_entry* cell, const uint64_t& datum) {
+    assert( ((datum << 25) >> 25) == datum );
+    cell->pointer = datum;
+  }
+  
+  inline uint32_t canOccupy(const map_entry& cell, const uint32_t& checksum) const {
+    if (!cell.occupied) { return true; }
+    uint32_t empiricalChecksum = cell.checksum;
+    uint32_t knownChecksum = (checksum << __MAP_CHECKSUM_LEFTSHIFT) >> __MAP_CHECKSUM_LEFTSHIFT;
+    return empiricalChecksum == knownChecksum;
+  }
+  
+  inline void occupy(map_entry* cell,
+                     const uint32_t& checksum,
+                     const uint64_t& datum) {
+    assert( canOccupy(*cell, checksum) );
+    setChecksum(cell, checksum);
+    setDatum(cell, datum);
+    cell->occupied = true;
   }
 };
 

@@ -10,16 +10,16 @@
 // HashIntMap::HashIntMap
 //
 HashIntMap::HashIntMap(const uint64_t& size) : dataLength(size) {
-  this->data = (uint64_t*) malloc(size * sizeof(uint64_t));
-  memset(this->data, 0, size * sizeof(uint64_t));
+  this->data = (map_entry*) malloc(size * sizeof(map_entry));
+  memset(this->data, 0, size * sizeof(map_entry));
 }
   
 //
 // HashIntMap::HashIntMap
 //
 HashIntMap::HashIntMap(const HashIntMap& other) : dataLength(other.buckets()) {
-  this->data = (uint64_t*) malloc(dataLength * sizeof(uint64_t));
-  memcpy(this->data, other.data, dataLength * sizeof(uint64_t));
+  this->data = (map_entry*) malloc(dataLength * sizeof(map_entry));
+  memcpy(this->data, other.data, dataLength * sizeof(map_entry));
 }
 
 //
@@ -34,18 +34,19 @@ HashIntMap::~HashIntMap() {
 //
 void HashIntMap::put(const uint32_t& hash,
                      const uint32_t& secondHash,
-                     const uint32_t& value) {
+                     const uint64_t& value) {
   uint64_t index = hash % this->dataLength;
   uint64_t originalIndex = index;
-  while (!checkChecksum(this->data[index], secondHash)) {
+  // Find a free bucket
+  while (!canOccupy(this->data[index], secondHash)) {
     index = (index + 1) % this->dataLength;
     if (index == originalIndex) {
       printf("Overflowed allocated HashIntMap buckets [1]!\n");
       exit(1);
     }
   }
-  setChecksum(&(this->data[index]), secondHash);
-  setDatum(&(this->data[index]), value);
+  // Occupy it
+  occupy(&(this->data[index]), secondHash, value);
 }
 
 //
@@ -53,21 +54,23 @@ void HashIntMap::put(const uint32_t& hash,
 //
 void HashIntMap::increment(const uint32_t& hash,
                            const uint32_t& secondHash,
-                           const uint32_t& incr,
-                           const uint32_t& limit) {
+                           const uint64_t& incr,
+                           const uint64_t& limit) {
   uint64_t index = hash % this->dataLength;
   uint64_t originalIndex = index;
-  while (!checkChecksum(this->data[index], secondHash)) {
+  // Find a free bucket
+  while (!canOccupy(this->data[index], secondHash)) {
     index = (index + 1) % this->dataLength;
     if (index == originalIndex) {
       printf("Overflowed allocated HashIntMap buckets [2]!\n");
       exit(1);
     }
   }
-  setChecksum(&(this->data[index]), secondHash);
-  uint32_t value = getDatum(this->data[index] + incr);
+  // Increment the value
+  uint64_t value = getDatum(this->data[index]) + incr;
   if (value > limit) { value = limit; }
-  setDatum(&(this->data[index]), value);
+  // Occupy the bucket
+  occupy(&(this->data[index]), secondHash, value);
 }
  
 //
@@ -75,22 +78,24 @@ void HashIntMap::increment(const uint32_t& hash,
 //
 bool HashIntMap::get(const uint32_t& hash,
                      const uint32_t& secondHash,
-                     uint32_t* toSet) const {
+                     uint64_t* toSet) const {
   uint64_t index = hash % this->dataLength;
   uint64_t originalIndex = index;
-  uint64_t checksum = 0;
+  const uint32_t checksum = (secondHash << __MAP_CHECKSUM_LEFTSHIFT) >> __MAP_CHECKSUM_LEFTSHIFT;
+
+  // If this cell isn't occupied, we're out of luck
+  if (!occupied(this->data[index])) { return false; }
+  // If it is, let's see if it's the right checksum
   do {
-    checksum = getChecksum(this->data[index]);
-    if (checksum == secondHash) {
+    // We're at index i; check the checksum
+    if (getChecksum(this->data[index]) == checksum) {
+      // Hooray, it matches!
       *toSet = getDatum(this->data[index]);
       return true;
     }
+    // Doesn't match -- continue looking
     index = (index + 1) % this->dataLength;
-    if (checksum != 0 && index == originalIndex) {
-      printf("Overflowed allocated HashIntMap buckets [3]!\n");
-      exit(1);
-    }
-  } while (checksum != 0);
+  } while (occupied(this->data[index]));
   return false;
 }
 

@@ -24,7 +24,7 @@ uint64_t rdtsc(){
 
 using namespace std;
 #define NUM_FACTS_TO_CHECK    1000000
-#define NUM_WORDS_TO_CONSIDER 1000000
+#define NUM_WORDS_TO_CONSIDER 100000
 
 /**
  * Make sure that we are reading the fact database in a repeatable order.
