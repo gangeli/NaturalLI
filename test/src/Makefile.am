@@ -41,16 +41,13 @@ itest_server_LDADD =  ${OBJS}
 if HAVE_TCMALLOC
   test_server_LDADD += -ltcmalloc
   itest_server_LDADD += -ltcmalloc
-endif
-
 if DEBUG
   test_server_LDADD += -lprofiler
   itest_server_LDADD += -lprofiler
 if IS_GCC
-  test_server_CXXFLAGS = -ggdb -fprofile-arcs -ftest-coverage -fPIC
-  test_server_LDADD += -lgcov
-  itest_server_CXXFLAGS = -ggdb -fprofile-arcs -ftest-coverage -fPIC
+  test_server_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC
   itest_server_LDADD += -lgcov
+endif
 endif
 endif
 
