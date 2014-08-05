@@ -2,6 +2,8 @@
 #
 
 set -e
+set -o xtrace
+
 export MAXMEM_GB=6
 export JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
 echo "JavaNLP at: $JAVANLP_HOME"
@@ -32,13 +34,13 @@ test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
 echo "-- MAKE DIST --"
-tar xfz `find . -name "naturalli-*.tar.gz"
-cd `find . -type d -name "naturalli-*"
+tar xfz `find . -name "naturalli-*.tar.gz"`
+cd `find . -type d -name "naturalli-*"`
 configure
 make all check
 make java_test  # but skip itests (those are slow...)
 cd ..
-rm -rf `find . -type d -name "naturalli-*"
+rm -rf `find . -type d -name "naturalli-*"`
 
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
