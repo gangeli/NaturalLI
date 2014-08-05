@@ -32,10 +32,11 @@ longlong.h:
 	@echo 'longlong.h formed'
 
 BUILT_SOURCES = longlong.h
+EXTRA_DIST = test_fnv.c
 
 lib_LTLIBRARIES=libfnv64.la libfnv32.la
-libfnv64_la_SOURCES=fnv.h hash_64a.c longlong.h
-libfnv32_la_SOURCES=fnv.h hash_32a.c longlong.h
+libfnv64_la_SOURCES=fnv.h hash_64a.c longlong.h have_ulong64.c
+libfnv32_la_SOURCES=fnv.h hash_32a.c longlong.h have_ulong64.c
 
 clean-local:
 	rm -f longlong.h

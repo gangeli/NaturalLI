@@ -51,9 +51,6 @@ make all check
 echo "(high memory mode)"
 configure HIGH_MEMORY=1
 make all check
-echo "(gcc)"
-configure CXX=gcc
-make all check
 echo "(fewer completions)"
 configure MAX_COMPLETIONS=10
 make all check
