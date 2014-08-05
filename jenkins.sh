@@ -36,7 +36,7 @@ echo "(no debugging)"
 configure --disable-debug
 make all check
 echo "(high memory mode)"
-./configure HIGH_MEMORY=1
+configure HIGH_MEMORY=1
 make all check
 echo "(gcc)"
 configure CXX=gcc
