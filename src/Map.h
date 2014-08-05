@@ -73,8 +73,8 @@ class HashIntMap {
   template<typename Functor> inline void mapValues(Functor fn) {
     for (uint64_t i = 0; i < dataLength; ++i) {
       if (getChecksum(data[i]) != 0) { 
-        uint32_t newCount = fn(getDatum(data[i]));
-        setDatum(&(data[i]), newCount);
+        uint64_t newDatum = fn(getDatum(data[i]));
+        setDatum(&(data[i]), newDatum);
       }
     }
   }

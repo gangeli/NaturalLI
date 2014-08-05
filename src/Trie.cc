@@ -288,7 +288,7 @@ LossyTrie::LossyTrie(const HashIntMap& counts
   assert (sum < (0x1 << 31));  // make sure we won't overflow a uint32_t
   uint64_t size = 
       sum * sizeof(packed_insertion) +   // for the data
-      sum * sizeof(uint8_t) +            // for the 'complete fact' indicator
+      sum * sizeof(lossy_trie_data) +    // for the metadata
       sizeof(uint8_t);                   // for the 'null pointer'
   if (sum > 1024) {
     printf("Allocating for %lu completions, over %u subfacts.\n",
@@ -299,14 +299,14 @@ LossyTrie::LossyTrie(const HashIntMap& counts
   memset(this->completionData, 0, size);
 
   // Partition completions data
-  uint32_t completionDataPointer = 1;
-  auto countToAddr = [&completionDataPointer](uint32_t count) -> uint32_t {
+  uint64_t completionDataPointer = 1;
+  auto countToAddr = [&completionDataPointer](uint64_t count) -> uint64_t {
     // (allocate space)
-    uint32_t pointer = completionDataPointer;
+    uint64_t pointer = completionDataPointer;
     completionDataPointer = completionDataPointer
       + (count * sizeof(packed_insertion))  // data
-      + sizeof(uint8_t);                    // flags
-    return pointer + sizeof(uint8_t);
+      + sizeof(lossy_trie_data);            // flags
+    return pointer + sizeof(lossy_trie_data);
   };
   completions.mapValues(countToAddr);
 }
