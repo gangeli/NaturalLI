@@ -72,12 +72,14 @@ inference_function edge2function(const edge_type& type);
 inline uint32_t fast_atoi( const char * str ) {
   assert (str[0] > '0' || str[1] == '\0');  // note: no leading zeroes
   uint32_t val = 0;
-  while( *str != '\0') {
-    if (str[0] == '}') { return val; } // <-- bit of an awful hack here, for the sake of Postgresql
+  char c = *str;
+  while( c != '\0' ) {
     assert (str[0] >= '0');
     assert (str[0] <= '9');
-    val = val*10 + (str[0] - '0');
-    str = &(str[1]);
+    val = val*10 + (c - '0');
+    str += 1;
+    c = *str;
+    if (c == '}') { return val; }
   }
   return val;
 }

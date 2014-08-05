@@ -3,6 +3,7 @@
 #include <cstring>
 
 #include "Graph.h"
+#include "Utils.h"
 #include "Postgres.h"
 #include "btree_set.h"
 
@@ -143,11 +144,11 @@ Graph* readGraph(const uint32_t numWords,
   while (edgeIter->hasNext()) {
     PGRow row = edgeIter->next();
     edge e;
-    e.source       = atoi(row[0]);
-    e.source_sense = atoi(row[1]);
-    e.sink         = atoi(row[2]);
-    e.sink_sense   = atoi(row[3]);
-    e.type         = atoi(row[4]);
+    e.source       = fast_atoi(row[0]);
+    e.source_sense = fast_atoi(row[1]);
+    e.sink         = fast_atoi(row[2]);
+    e.sink_sense   = fast_atoi(row[3]);
+    e.type         = fast_atoi(row[4]);
     e.cost         = atof(row[5]);
     const word& sink = e.sink;
     if (edgesSizes[sink] >= edgeCapacities[sink] - 1) {

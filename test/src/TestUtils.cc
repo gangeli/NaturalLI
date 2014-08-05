@@ -90,3 +90,39 @@ TEST_F(UtilsTest, FastATOIPeculiarities) {
   // if we can just accept the final '}' and discard it in atoi()
   EXPECT_EQ(104235, fast_atoi("104235}"));
 }
+
+//TEST_F(UtilsTest, FastATOISpeed) {  // should pass without asserts
+//  // Allocate buffers
+//  const uint32_t count = 10000000;
+//  char* strings[count];
+//  for (uint32_t i = 0; i < count; ++i) {
+//    strings[i] = (char*) malloc(16 * sizeof(char));
+//    snprintf(strings[i], 15, "%u", i);
+//  }
+//
+//  // Fast ATOI
+//  time_t fastAtoiStart = clock();
+//  for (uint32_t i = 0; i < count; ++i) {
+//    EXPECT_EQ(i, fast_atoi(strings[i]));
+//  }
+//  time_t fastAtoiStop = clock();
+//
+//  // ATOI
+//  time_t atoiStart = clock();
+//  for (uint32_t i = 0; i < count; ++i) {
+//    EXPECT_EQ(i, atoi(strings[i]));
+//  }
+//  time_t atoiStop = clock();
+//
+//  // Timing
+//  printf("fast=%u; atoi=%u\n",
+//    (fastAtoiStop - fastAtoiStart),
+//    (atoiStop - atoiStart));
+//  EXPECT_LE(fastAtoiStop - fastAtoiStart,
+//            atoiStop - atoiStart);
+//  
+//  // Clean up
+//  for (uint32_t i = 0; i < 10000; ++i) {
+//    free(strings[i]);
+//  }
+//}

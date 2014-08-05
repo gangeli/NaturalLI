@@ -380,7 +380,6 @@ TEST_F(LossyTrieTest, LossyTrieDataStorageAssumptions) {
   t.hasCompletions = false;
   t.isFull = false;
   uint8_t asByte = *((uint8_t*) &t);
-  printf("%x\n", asByte);
   EXPECT_EQ(0x1F, asByte >> 3);
 }
 

@@ -331,7 +331,7 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
   edge.source = source;
   edge.sense = sourceSense;
   edge.type = edgeType;
-  edge.endOfList = 1;
+  edge.endOfList = true;
   // Compute the hashes
   uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
   uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
@@ -343,16 +343,17 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
   }
 
   // Set the 'has completions' indicator
-  metadata(pointer).hasCompletions = true;
+  lossy_trie_data& meta = metadata(pointer);
+  meta.hasCompletions = true;
   assert (metadata(pointer).hasCompletions);
   // Set magic bits for debugging
-  metadata(pointer).magicBits = __LOSSY_TRIE_MAGIC_BITS;
+  meta.magicBits = __LOSSY_TRIE_MAGIC_BITS;
   assert(metadata(pointer).magicBits == __LOSSY_TRIE_MAGIC_BITS);
 
   // Add insertion
   packed_insertion* insertions = (packed_insertion*) &(completionData[pointer]);
   bool added = false;
-  if ( !metadata(pointer).isFull ) {  // check if bucket is full
+  if ( !meta.isFull ) {  // check if bucket is full
     if (insertions[0].source == 0) {
       insertions[0] = edge;
     } else {
@@ -364,12 +365,11 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
       if (index < MAX_COMPLETIONS - 1) {
         // Case: add a new edge
         insertions[index].endOfList = 0;
-        assert(isValidCell(insertions[index + 1]));
         insertions[index + 1] = edge;
         added = true;
       } else {
         // Case: this slot's full
-        metadata(pointer).isFull = true;
+        meta.isFull = true;
         assert (metadata(pointer).isFull);
       }
     }
@@ -408,10 +408,11 @@ void LossyTrie::addFact(const uint32_t* fact,
     std::exit(1);
   }
   // Set the 'is fact' indicator'
-  metadata(pointer).isFact = true;
+  lossy_trie_data& meta = metadata(pointer);
+  meta.isFact = true;
   assert(metadata(pointer).isFact);
   // Set magic bits for debugging
-  metadata(pointer).magicBits = __LOSSY_TRIE_MAGIC_BITS;
+  meta.magicBits = __LOSSY_TRIE_MAGIC_BITS;
   assert(metadata(pointer).magicBits == __LOSSY_TRIE_MAGIC_BITS);
 }
   
@@ -443,8 +444,9 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
     mainHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  FNV1_32_INIT);
     auxHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  1154);
     if (completions.get(mainHash, auxHash, &pointer)) {
+      const lossy_trie_data& meta = metadata(pointer);
       // Check the 'has completions' indicator
-      bool hasCompletions = metadata(pointer).hasCompletions;
+      bool hasCompletions = meta.hasCompletions;
       uint16_t index = -1;
       // Populate completions
       if (hasCompletions) {
@@ -452,20 +454,6 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
         // Populate insertions
         do {
           index += 1;
-          // vv DEBUG TODO(gabor) REMOVE ME vv
-          if (!isValidCell(toRead[index])) {
-            printf("[index=%u] %x; or %x:%x:%x:%x:%x:%x; which is %u, %u, %u\n",
-                index, *((uint8_t*) &(toRead[index])),
-                *(((uint8_t*) &(toRead[index])) + 0),
-                *(((uint8_t*) &(toRead[index])) + 1),
-                *(((uint8_t*) &(toRead[index])) + 2),
-                *(((uint8_t*) &(toRead[index])) + 3),
-                *(((uint8_t*) &(toRead[index])) + 4),
-                *(((uint8_t*) &(toRead[index])) + 5),
-                toRead[index].source, toRead[index].sense, toRead[index].type);
-          }
-          // ^^ END DEBUG ^^
-          assert(isValidCell(toRead[index]));
           insertions[index].source = toRead[index].source;
           insertions[index].source_sense = toRead[index].sense;
           insertions[index].sink = 0;
@@ -499,7 +487,6 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
       vector<packed_insertion> toRead = inserts->second;
       uint16_t numCompletions = toRead.size() < MAX_COMPLETIONS ? toRead.size() : MAX_COMPLETIONS;
       for (uint16_t index = 0; index < numCompletions; ++index) {
-        assert(isValidCell(toRead[index]));
         insertions[index].source = toRead[index].source;
         insertions[index].source_sense = toRead[index].sense;
         insertions[index].sink = 0;
@@ -639,15 +626,32 @@ FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
 
 
 /**
+ * Get the number of words in the vocabulary, as given by
+ * Postgresql.
+ */
+uint32_t vocabSize() {
+  char query[128];
+  snprintf(query, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD);
+  printf("Couting vocabulary: %s\n", query);
+  PGIterator countIter = PGIterator(query);
+  if (!countIter.hasNext()) {
+    printf("Could not count word table: %s\n", PG_TABLE_WORD);
+    std::exit(1);
+  }
+  PGRow row = countIter.next();
+  return fast_atoi(row[0]);
+}
+
+
+/**
  * Return a map from a word, to the possible insertion types and word
  * senses of that word to be inserted.
  * This is represented as a vector of edges, where the source and
  * source sense are the relevant variables for the insertion.
  */
-btree_map<word, vector<edge>> getWord2Senses() {
-  // Read valid deletions
+vector<vector<edge>> getWord2Senses(const uint32_t& vocabSize) {
   printf("Reading registered deletions...\n");
-  btree_map<word,vector<edge>> word2senses;
+  vector<vector<edge>> word2senses(vocabSize);
 
   // Query
   char query[128];
@@ -751,7 +755,7 @@ template<typename Functor> inline void foreachFact(Functor fn,
  * fact database. These are stored in the counts output map.
  */
 void completionCounts(
-    btree_map<word, vector<edge>>& word2sense,
+    const vector<vector<edge>> word2sense,
     HashIntMap* counts,
     const uint64_t maxFactsToRead) {
   // Define function
@@ -760,7 +764,9 @@ void completionCounts(
       uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  FNV1_32_INIT);
       uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
       word nextWord = fact[len];
-      counts->increment(mainHash, auxHash, word2sense[nextWord].size(), MAX_COMPLETIONS);
+      uint32_t numSenses = word2sense[nextWord].size();
+      if (numSenses > 4) { numSenses = 4; }
+      counts->increment(mainHash, auxHash, numSenses, MAX_COMPLETIONS);
     }
     uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
     uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
@@ -777,7 +783,7 @@ void completionCounts(
  * been initialized with the completionCounts() function above.
  */
 void addFacts(
-    btree_map<word, vector<edge>>& word2sense,
+    const vector<vector<edge>> word2sense,
     LossyTrie* trie,
     const uint64_t maxFactsToRead) {
   // Define function
@@ -786,7 +792,9 @@ void addFacts(
     if (factLength > 1) {
       vector<edge> senses = word2sense[ fact[0] ];
       if (senses.size() > 0) {
-        for (uint32_t sense = 0; sense < senses.size(); ++sense) {
+        uint32_t numSenses = senses.size();
+        if (numSenses > 4) { numSenses = 4; }
+        for (uint32_t sense = 0; sense < numSenses; ++sense) {
           edge& insertion = senses[sense];
           trie->addBeginInsertion(fact[0], insertion.source_sense,
                                   insertion.type, fact[1]);
@@ -798,7 +806,9 @@ void addFacts(
       vector<edge> senses = word2sense[ fact[len] ];
       if (senses.size() > 0) {
         uint32_t added = 0;
-        for (uint32_t sense = 0; sense < senses.size(); ++sense) {
+        uint32_t numSenses = senses.size();
+        if (numSenses > 4) { numSenses = 4; }
+        for (uint32_t sense = 0; sense < numSenses; ++sense) {
           edge& insertion = senses[sense];
           added += (trie->addCompletion(fact, len,
                               insertion.source, insertion.source_sense,
@@ -821,19 +831,17 @@ void addFacts(
  * Read a LossyFactTrie from the database.
  */
 FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
+  // Get vocabulary size
+  uint32_t vocab = vocabSize();
   // Word senses
-  btree_map<word, vector<edge>> word2sense = getWord2Senses();
-
+  vector<vector<edge>> word2sense = getWord2Senses(vocab);
   // Completion counts
   HashIntMap counts(MAP_SIZE);
   completionCounts(word2sense, &counts, maxFactsToRead);
-
   // Allocate Trie
   LossyTrie* trie = new LossyTrie(counts);
-
   // Populate the data
   addFacts(word2sense, trie, maxFactsToRead);
-
   // Return
   return trie;
 }
