@@ -41,6 +41,7 @@ class InMemoryGraph : public Graph {
   uint32_t* edgesSizes;
   uint64_t size;
   btree::btree_set<tagged_word> invalidDeletions;
+  vector<bool> invalidDeletionWords;
   
  public:
   InMemoryGraph(char** index2gloss,
@@ -48,9 +49,27 @@ class InMemoryGraph : public Graph {
                 uint32_t* edgesSizes,
                 uint64_t size,
                 btree::btree_set<tagged_word> invalidDeletions)
-    : index2gloss(index2gloss), edgesBySink(edgesBySink), 
-      edgesSizes(edgesSizes), size(size),
-      invalidDeletions(invalidDeletions) { }
+        : index2gloss(index2gloss), edgesBySink(edgesBySink), 
+          edgesSizes(edgesSizes), size(size),
+          invalidDeletions(invalidDeletions) {
+    // Create fast bitvector for words which may be invalid to delete
+    // (get vocabulary size)
+    uint32_t vocabSize = 0;
+    for (auto iter = invalidDeletions.begin();
+              iter != invalidDeletions.end(); ++iter) {
+      vocabSize = iter->word > vocabSize ? iter->word : vocabSize;
+    }
+    invalidDeletionWords = vector<bool>(vocabSize);
+    // (clear vector -- just in case)
+    for (uint32_t i = 0; i < vocabSize; ++i) {
+      invalidDeletionWords[i] = false;
+    }
+    // (set fields)
+    for (auto iter = invalidDeletions.begin();
+              iter != invalidDeletions.end(); ++iter) {
+      invalidDeletionWords[iter->word] = true;
+    }
+  }
 
   ~InMemoryGraph() {
     for (int i = 0; i < size; ++i) { 
@@ -88,8 +107,12 @@ class InMemoryGraph : public Graph {
   }
   
   virtual const bool containsDeletion(const edge& deletion) const {
-    tagged_word w = getTaggedWord(deletion.source,  deletion.source_sense, MONOTONE_DEFAULT);
-    return invalidDeletions.find( w ) == invalidDeletions.end();
+    if (invalidDeletionWords[deletion.source]) {
+      tagged_word w = getTaggedWord(deletion.source,  deletion.source_sense, MONOTONE_DEFAULT);
+      return invalidDeletions.find( w ) == invalidDeletions.end();
+    } else {
+      return true;
+    }
   }
 };
 

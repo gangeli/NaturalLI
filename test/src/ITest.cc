@@ -47,7 +47,8 @@ TEST(PostgresITest, RepeatableFactOrdering) {
 TEST(TrieITest, FactsAppearInRealFactDB) {
   vector<vector<word>> facts = ReadLiteralFacts( NUM_FACTS_TO_CHECK );
   printf("Read facts as vector\n");
-  FactDB*              db    = ReadFactTrie(     NUM_FACTS_TO_CHECK );
+  Graph* graph = ReadGraph();
+  FactDB*              db    = ReadFactTrie(     NUM_FACTS_TO_CHECK, graph );
   printf("Read facts as Trie\n");
 
   printf("Checking containment...\n");
@@ -76,8 +77,8 @@ TEST(TrieITest, FactsAppearInRealFactDB) {
 TEST(TrieITest, CompletionsValid) {
   edge edges[MAX_COMPLETIONS];
 
-  FactDB* db   = ReadFactTrie(NUM_FACTS_TO_CHECK);
   Graph* graph = ReadGraph();
+  FactDB* db   = ReadFactTrie(NUM_FACTS_TO_CHECK, graph);
   uint64_t numWords = graph->keys().size();
 
   tagged_word canInsert[256];

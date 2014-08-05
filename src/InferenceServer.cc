@@ -314,7 +314,7 @@ void handleConnection(int socket, sockaddr_in* client,
       factDBReadLock.lock();
       if (*dbOrNull == NULL) {
 //        *dbOrNull = ReadOldFactTrie(graph);
-        *dbOrNull = ReadFactTrie();
+        *dbOrNull = ReadFactTrie(graph);
         factDB = *dbOrNull;
       }
       factDBReadLock.unlock();
@@ -461,7 +461,7 @@ int startServer(int port) {
   #define GREEDY_LOAD 0
 #endif
 #if GREEDY_LOAD==1
-  FactDB*        db      = ReadFactTrie();
+  FactDB*        db      = ReadFactTrie(graph);
 #else
   FactDB*        db      = NULL;  // lazy load me
 #endif

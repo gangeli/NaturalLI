@@ -785,9 +785,10 @@ void completionCounts(
 void addFacts(
     const vector<vector<edge>> word2sense,
     LossyTrie* trie,
-    const uint64_t maxFactsToRead) {
+    const uint64_t maxFactsToRead,
+    const Graph* graph) {
   // Define function
-  auto fn = [&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
+  auto fn = [&graph,&word2sense,&trie](word* fact, uint8_t factLength) -> void { 
     // Add prefix completion
     if (factLength > 1) {
       vector<edge> senses = word2sense[ fact[0] ];
@@ -809,10 +810,12 @@ void addFacts(
         uint32_t numSenses = senses.size();
         if (numSenses > 4) { numSenses = 4; }
         for (uint32_t sense = 0; sense < numSenses; ++sense) {
-          edge& insertion = senses[sense];
-          added += (trie->addCompletion(fact, len,
-                              insertion.source, insertion.source_sense,
-                              insertion.type) ? 1 : 0);
+          edge& deletion = senses[sense];
+          if (graph == NULL || graph->containsDeletion(deletion)) {
+            added += (trie->addCompletion(fact, len,
+                                deletion.source, deletion.source_sense,
+                                deletion.type) ? 1 : 0);
+          }
         }
       }
     }
@@ -830,7 +833,7 @@ void addFacts(
 /**
  * Read a LossyFactTrie from the database.
  */
-FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead, const Graph* graph) {
   // Get vocabulary size
   uint32_t vocab = vocabSize();
   // Word senses
@@ -841,11 +844,7 @@ FactDB* ReadFactTrie(const uint64_t& maxFactsToRead) {
   // Allocate Trie
   LossyTrie* trie = new LossyTrie(counts);
   // Populate the data
-  addFacts(word2sense, trie, maxFactsToRead);
+  addFacts(word2sense, trie, maxFactsToRead, graph);
   // Return
   return trie;
-}
-  
-FactDB* ReadFactTrie() {
-  return ReadFactTrie(std::numeric_limits<uint64_t>::max());
 }
