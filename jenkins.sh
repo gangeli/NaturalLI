@@ -34,9 +34,10 @@ test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
 echo "-- MAKE DIST --"
+configure
+make dist
 tar xfz `find . -name "naturalli-*.tar.gz"`
 cd `find . -type d -name "naturalli-*"`
-configure
 make all check
 make java_test  # but skip itests (those are slow...)
 cd ..

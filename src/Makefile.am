@@ -27,15 +27,15 @@ naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
 
 naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS} ${OPENMP_CFLAGS}
 naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64
+
 if HAVE_TCMALLOC
   naturalli_server_LDADD += -ltcmalloc
-endif
-
 if DEBUG
   naturalli_server_LDADD += -lprofiler
 if IS_GCC
   naturalli_server_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC
-  naturalli_server_LDADD += -lprofiler -lgcov
+  naturalli_server_LDADD += -lgcov
+endif
 endif
 endif
 
