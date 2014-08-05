@@ -1,4 +1,5 @@
 SUBDIRS = gtest
+EXTRA_DIST = edu org
 
 clean-local:
 	rm -f *.gcno *.gcda

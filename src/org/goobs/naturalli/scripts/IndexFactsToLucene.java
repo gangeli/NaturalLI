@@ -1,4 +1,4 @@
-package org.goobs.truth.scripts;
+package org.goobs.naturalli.scripts;
 
 import org.apache.lucene.analysis.en.EnglishAnalyzer;
 import org.apache.lucene.document.Document;

@@ -136,9 +136,10 @@ AX_OPENMP
 #AX_BOOST_THREAD()
 
 # Set some useful variables
-AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"g++")
+AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"gcc" || test x"$CXX" = x"g++")
+AM_CONDITIONAL(HAVE_DEMO, ls lib/demo &> /dev/null)
 
-# optionally enable debugging
+# Optionally enable debugging
 AC_ARG_ENABLE(debug,
 AS_HELP_STRING([--enable-debug],
                [enable debugging, default: no]),

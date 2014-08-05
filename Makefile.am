@@ -1,5 +1,16 @@
 SUBDIRS = src test/src
 ACLOCAL_AMFLAGS=-I m4
+EXTRA_DIST = README.md doxygen.conf \
+             models/ConceptNet/emnlp2014_final.tab \
+             qry.jar run \
+             build.xml \
+             lib/corenlp-scala.jar lib/jaws.jar lib/postgresql.jar \
+             lib/protobuf.jar lib/trove.jar \
+             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar \
+             lib/test/scalatest_2.11-2.1.6.jar \
+             lib/scripts/gson-2.2.4.jar lib/scripts/lucene-core-4.7.0.jar \
+             lib/scripts/lucene-analyzers-common-4.7.0.jar \
+             lib/scripts/sim-1.0.jar
 
 clean-local:
 	rm -f java.hprof.txt
@@ -56,7 +67,11 @@ else
 	@echo "[test] scalatest *.scala"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test -R test/src/test_client.jar -o -w org.goobs.naturalli
 endif
-	@echo "[test] RegressionTest"
+
+java_itest: src/naturalli_client.jar test/src/test_client.jar
+	export CLASSPATH=""
+	@echo "[itest] junit *.java"
+	@echo "[itest] RegressionTest"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.RegressionTest
-	@echo "[test] Learning RegressionTest"
+	@echo "[itest] Learning RegressionTest"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.LearnRegressionTest

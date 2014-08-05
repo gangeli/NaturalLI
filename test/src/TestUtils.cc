@@ -1,5 +1,6 @@
 #include <limits.h>
 #include <bitset>
+#include <ctime>
 
 #include "gtest/gtest.h"
 
@@ -59,6 +60,16 @@ TEST_F(UtilsTest, ToStringPath) {
             toString(*graph, *searchType, animals));
   EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0; from\n  [^]animal_0 [^]have_0 [^]tail_0; from\n  [^]lemur_0 [^]have_0 [^]tail_0; from\n  <start>"),
             toString(*graph, *searchType, cats));
+}
+
+TEST_F(UtilsTest, ToStringTime) {
+  EXPECT_EQ(string("0s"), toString(0l * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("1s"), toString(1l * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("59s"), toString(59l * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("1m 0s"), toString(60l * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("1m 1s"), toString(61l * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("2h 20m 3s"), toString((2l*60l*60l + 20l*60l + 3l) * CLOCKS_PER_SEC));
+  EXPECT_EQ(string("10d 2h 20m 3s"), toString((10l*24l*60l*60l + 2l*60l*60l + 20l*60l + 3l) * CLOCKS_PER_SEC));
 }
 
 TEST_F(UtilsTest, FastATOI) {

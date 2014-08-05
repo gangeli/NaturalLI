@@ -1,5 +1,6 @@
 SUBDIRS = fnv
 bin_PROGRAMS=naturalli_server
+EXTRA_DIST = Messages.proto edu org
 
 Messages.pb.h Messages.pb.cc: Messages.proto
 	${PROTOC} -I=. --cpp_out=. Messages.proto
@@ -21,7 +22,8 @@ naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  Bloom.h   Graph.h        Utils.h \
                  Types.h   Messages.pb.h  Search.h \
                  FactDB.h  Postgres.h     Trie.h \
-                 Map.h
+                 Map.h \
+                 btree.h btree_container.h btree_map.h btree_set.h
 
 naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS} ${OPENMP_CFLAGS}
 naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64
@@ -42,8 +44,10 @@ naturalli_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goo
 	@${JDK_HOME}/bin/javac -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find . -name "*.java" -not -path "./org/goobs/naturalli/demo/*.java"`
 	@echo "Compiling (${SCALA_HOME}/bin/scalac)..."
 	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
+if HAVE_DEMO
 	@echo "Compiling Demo (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -d . -cp .:${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find ./org/goobs/naturalli/demo -name "*.java"`
+endif
 	${JDK_HOME}/bin/jar cf naturalli_client.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
