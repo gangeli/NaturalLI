@@ -347,6 +347,67 @@ class LossyTrieTest : public ::testing::Test {
 /**
  *
  */
+TEST_F(LossyTrieTest, LossyTrieDataGetSet) { 
+  lossy_trie_data t;
+  EXPECT_EQ(1, sizeof(lossy_trie_data));
+  // Get/Retrieve
+  t.magicBits = 0x1F;
+  t.isFact = true;
+  t.hasCompletions = true;
+  t.isFull = true;
+  EXPECT_EQ(0x1F, t.magicBits);
+  EXPECT_EQ(true, t.isFact);
+  EXPECT_EQ(true, t.hasCompletions);
+  EXPECT_EQ(true, t.isFull);
+  // Change bits
+  t.isFact = false;
+  t.hasCompletions = false;
+  t.isFull = false;
+  EXPECT_EQ(false, t.isFact);
+  EXPECT_EQ(false, t.hasCompletions);
+  EXPECT_EQ(false, t.isFull);
+}
+
+/**
+ * The magic bits should be the first 5 bits in the metadata.
+ * This works in conjunction with the Packed Insertion assumption
+ * to verify that we're not overwriting another bucket.
+ */
+TEST_F(LossyTrieTest, LossyTrieDataStorageAssumptions) { 
+  lossy_trie_data t;
+  t.magicBits = 0x1F;
+  t.isFact = false;
+  t.hasCompletions = false;
+  t.isFull = false;
+  uint8_t asByte = *((uint8_t*) &t);
+  printf("%x\n", asByte);
+  EXPECT_EQ(0x1F, asByte >> 3);
+}
+
+/**
+ * The source should be the first 4 bytes in the packed_insertion
+ * This works in conjunction with the Lossy Trie Data assumption
+ * to verify that we're not overwriting another bucket.
+ */
+TEST_F(LossyTrieTest, PackedInsertionStorageAssumptions) { 
+  packed_insertion p;
+  EXPECT_EQ(6, sizeof(packed_insertion));
+  p.source = 42;
+  p.sense = 0;
+  p.type = 0;
+  p.endOfList = 0;
+  // (check source)
+  uint8_t asInt = *(((uint8_t*) &p) + 2);
+  EXPECT_EQ(42, asInt);
+  // (check edge type)
+  p.type = 248;
+  asInt = *(((uint8_t*) &p));
+  EXPECT_EQ(248, asInt);
+}
+
+/**
+ *
+ */
 TEST_F(LossyTrieTest, AddFactCrashTest) { }
 
 /**

@@ -341,11 +341,18 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
     printf("No pointer was allocated for completion!\n");
     std::exit(1);
   }
-  // Set the 'has completions' indicator'
-  completionData[pointer - 1] |= 0x2;
+
+  // Set the 'has completions' indicator
+  metadata(pointer).hasCompletions = true;
+  assert (metadata(pointer).hasCompletions);
+  // Set magic bits for debugging
+  metadata(pointer).magicBits = __LOSSY_TRIE_MAGIC_BITS;
+  assert(metadata(pointer).magicBits == __LOSSY_TRIE_MAGIC_BITS);
+
+  // Add insertion
   packed_insertion* insertions = (packed_insertion*) &(completionData[pointer]);
   bool added = false;
-  if ( (completionData[pointer - 1] & 0x4) == 0) {  // check if bucket is full
+  if ( !metadata(pointer).isFull ) {  // check if bucket is full
     if (insertions[0].source == 0) {
       insertions[0] = edge;
     } else {
@@ -357,11 +364,13 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
       if (index < MAX_COMPLETIONS - 1) {
         // Case: add a new edge
         insertions[index].endOfList = 0;
+        assert(isValidCell(insertions[index + 1]));
         insertions[index + 1] = edge;
         added = true;
       } else {
         // Case: this slot's full
-        completionData[pointer - 1] |= 0x4;
+        metadata(pointer).isFull = true;
+        assert (metadata(pointer).isFull);
       }
     }
   }
@@ -399,7 +408,11 @@ void LossyTrie::addFact(const uint32_t* fact,
     std::exit(1);
   }
   // Set the 'is fact' indicator'
-  completionData[pointer - 1] |= 0x1;
+  metadata(pointer).isFact = true;
+  assert(metadata(pointer).isFact);
+  // Set magic bits for debugging
+  metadata(pointer).magicBits = __LOSSY_TRIE_MAGIC_BITS;
+  assert(metadata(pointer).magicBits == __LOSSY_TRIE_MAGIC_BITS);
 }
   
 //
@@ -421,7 +434,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
   bool contains = false;
   uint64_t pointer;
   if (completions.get(mainHash, auxHash, &pointer)) {
-    contains = (completionData[pointer - 1] & 0x1) != 0;
+    contains = metadata(pointer).isFact;
   }
 
   // Look up completions
@@ -431,7 +444,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
     auxHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  1154);
     if (completions.get(mainHash, auxHash, &pointer)) {
       // Check the 'has completions' indicator
-      bool hasCompletions = (completionData[pointer - 1] & 0x2) != 0;
+      bool hasCompletions = metadata(pointer).hasCompletions;
       uint16_t index = -1;
       // Populate completions
       if (hasCompletions) {
@@ -439,6 +452,20 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
         // Populate insertions
         do {
           index += 1;
+          // vv DEBUG TODO(gabor) REMOVE ME vv
+          if (!isValidCell(toRead[index])) {
+            printf("[index=%u] %x; or %x:%x:%x:%x:%x:%x; which is %u, %u, %u\n",
+                index, *((uint8_t*) &(toRead[index])),
+                *(((uint8_t*) &(toRead[index])) + 0),
+                *(((uint8_t*) &(toRead[index])) + 1),
+                *(((uint8_t*) &(toRead[index])) + 2),
+                *(((uint8_t*) &(toRead[index])) + 3),
+                *(((uint8_t*) &(toRead[index])) + 4),
+                *(((uint8_t*) &(toRead[index])) + 5),
+                toRead[index].source, toRead[index].sense, toRead[index].type);
+          }
+          // ^^ END DEBUG ^^
+          assert(isValidCell(toRead[index]));
           insertions[index].source = toRead[index].source;
           insertions[index].source_sense = toRead[index].sense;
           insertions[index].sink = 0;
@@ -472,6 +499,7 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
       vector<packed_insertion> toRead = inserts->second;
       uint16_t numCompletions = toRead.size() < MAX_COMPLETIONS ? toRead.size() : MAX_COMPLETIONS;
       for (uint16_t index = 0; index < numCompletions; ++index) {
+        assert(isValidCell(toRead[index]));
         insertions[index].source = toRead[index].source;
         insertions[index].source_sense = toRead[index].sense;
         insertions[index].sink = 0;

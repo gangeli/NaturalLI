@@ -42,9 +42,9 @@ typedef struct {
 #else
 typedef struct alignas(6) {
 #endif
-  uint8_t sense:5,      // The sense of the word being inserted
-          type:8,       // The type of the edge being inserted
-          endOfList:1;  // A marker for whether this is the last insertion
+  uint8_t type:8,       // The type of the edge being inserted
+          sense:5;      // The sense of the word being inserted
+  bool    endOfList:1;  // A marker for whether this is the last insertion
   word    source;       // The word being inserted ('deleted' in the proof, thus source)
 #ifdef __GNUG__
 } __attribute__ ((__packed__)) packed_insertion;
@@ -70,6 +70,7 @@ typedef struct alignas(4) {
 } trie_data;
 #endif
 
+/** A placeholder for how much space a Trie node takes */
 typedef struct {
 #if HIGH_MEMORY
   uint64_t placeholder_size[4];
@@ -77,6 +78,24 @@ typedef struct {
   uint64_t placeholder_size[3];
 #endif
 } trie_placeholder;
+
+/** A set of flags for the lossy Trie */
+#ifdef __GNUG__
+typedef struct {
+#else
+typedef struct alignas(1) {
+#endif
+  bool isFact:1,
+       hasCompletions:1,
+       isFull:1;  // note: these should come before magicBit
+  uint8_t magicBits:5;
+#ifdef __GNUG__
+} __attribute__ ((__packed__)) lossy_trie_data;
+#else
+} lossy_trie_data;
+#endif
+
+#define __LOSSY_TRIE_MAGIC_BITS 0x1F
 
 /**
  * A Trie implementation of a fact database.
@@ -344,9 +363,31 @@ class LossyTrie : public FactDB {
   uint8_t* completionData;
 
   /**
-   *
+   * A map from the second word in a fact to the first. This is used
+   * to populate completions at the beginning of a fact.
    */
   btree::btree_map<word,std::vector<packed_insertion>> beginInsertions;
+
+  /**
+   * Get the metadata for a particular cell.
+   */
+  inline lossy_trie_data& metadata(const uint64_t& pointer) {
+    return *((lossy_trie_data*) &(completionData[pointer - 1]));
+  }
+   
+  /**
+   * Get the metadata for a particular cell.
+   */
+  inline const lossy_trie_data& metadata(const uint64_t& pointer) const {
+    return *((lossy_trie_data*) &(completionData[pointer - 1]));
+  }
+  
+  /**
+   * Verify that this is indeed a valid cell to insert into.
+   */
+  inline bool isValidCell(const packed_insertion& cell) const {
+    return (*((lossy_trie_data*) &cell)).magicBits != __LOSSY_TRIE_MAGIC_BITS;
+  }
   
 
 };
