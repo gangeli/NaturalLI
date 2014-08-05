@@ -9,10 +9,8 @@ export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
 echo "-- CLEAN --"
-./autogen.sh
-autoreconf
-make distclean
 git clean -f
+./autogen.sh
 
 echo "-- MAKE --"
 ./configure \
@@ -41,6 +39,7 @@ make clean
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   FACT_MAP_SIZE=27
 make all check
+
 echo "(high memory mode)"
 make clean
 ./configure \
@@ -52,7 +51,19 @@ make clean
   --enable-debug \
   HIGH_MEMORY=true \
   FACT_MAP_SIZE=27
+make all check
 
+echo "(gcc)"
+make clean
+./configure \
+  --with-scala=$SCALA_HOME \
+  --with-java=/usr/lib/jvm/java-8-oracle \
+  --with-corenlp=$HOME/stanford-corenlp.jar \
+  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
+  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+  --enable-debug \
+  CC=gcc \
+  FACT_MAP_SIZE=27
 make all check
 
 echo "-- JAVA TESTS --"
