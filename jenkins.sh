@@ -42,7 +42,7 @@ configure
 make all check
 make java_test  # but skip itests (those are slow...)
 cd ..
-rm -rf `find . -type d -name "naturalli-*"`
+rm -r `find . -type d -name "naturalli-*"`
 
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
