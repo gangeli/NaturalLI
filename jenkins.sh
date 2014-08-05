@@ -62,7 +62,7 @@ make clean
   --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
   --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
   --enable-debug \
-  CC=gcc \
+  CXX=gcc \
   FACT_MAP_SIZE=27
 make all check
 
