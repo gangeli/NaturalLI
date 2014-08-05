@@ -5,12 +5,9 @@ EXTRA_DIST = README.md doxygen.conf \
              qry.jar run \
              build.xml \
              lib/corenlp-scala.jar lib/jaws.jar lib/postgresql.jar \
-             lib/protobuf.jar lib/trove.jar \
+             lib/protobuf.jar \
              lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar \
-             lib/test/scalatest_2.11-2.1.6.jar \
-             lib/scripts/gson-2.2.4.jar lib/scripts/lucene-core-4.7.0.jar \
-             lib/scripts/lucene-analyzers-common-4.7.0.jar \
-             lib/scripts/sim-1.0.jar
+             lib/test/scalatest_2.11-2.1.6.jar
 
 clean-local:
 	rm -f java.hprof.txt

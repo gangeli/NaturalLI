@@ -4,12 +4,11 @@ import scala.collection.JavaConversions._
 import scala.concurrent._
 
 import org.goobs.naturalli.Messages._
-import org.goobs.naturalli.scripts.ShutdownServer
 import Monotonicity._
 
 
 import java.io.{DataOutputStream, DataInputStream}
-import java.net.Socket
+import java.net.{ConnectException, Socket}
 import java.util.concurrent.{ThreadFactory, Executors}
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
@@ -188,7 +187,7 @@ trait Client extends Evaluator {
    * @return The exit code of the server process.
    */
   def startMockServer(callback:()=>Any, printOut:Boolean = false):Int = {
-    ShutdownServer.shutdown()
+    shutdownServer()
 
     // Pre-fetch the annotators while the server spins up
     val cache = new Thread() {
@@ -225,7 +224,7 @@ trait Client extends Evaluator {
 
             // Shutdown the server
             log("shutting down server...")
-            ShutdownServer.shutdown()
+            shutdownServer()
           }
         }).start()
       }
@@ -260,6 +259,26 @@ trait Client extends Evaluator {
         ConceptNet.read(Props.DATA_CONCEPTNET_PATH.getPath).take(count) ++
           MTurk.read(Props.DATA_MTURK_TEST.getPath).filter(MTurk.isFalse)
       case _ => throw new IllegalArgumentException("Unknown dataset: " + corpus)
+    }
+  }
+
+  def shutdownServer():Unit = {
+    // Create dummy query
+    val query = Query.newBuilder().setQueryFact(Fact.newBuilder.addWord(Word.newBuilder().setWord(0).build()).build()).setUseRealWorld(false).setShutdownServer(true).build()
+
+    if (Props.SERVER_MAIN_PORT >= 1330 && Props.SERVER_MAIN_PORT < 1340) {
+      log(RED, "Cannot kill server on ports 1330 to 1340 (safety measure)! Please kill the server manually.")
+    }
+
+    try {
+      // Set up connection
+      val sock = new Socket(Props.SERVER_MAIN_HOST, Props.SERVER_MAIN_PORT)
+      val toServer = new DataOutputStream(sock.getOutputStream)
+      // Write query
+      query.writeTo(toServer)
+      sock.shutdownOutput()  // signal end of transmission
+    } catch {
+      case (e:ConnectException) => warn("[shutdown]: could not connect to server")
     }
   }
 }

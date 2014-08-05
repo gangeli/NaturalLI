@@ -37,7 +37,7 @@ object PruneClosedClassNN {
               case 'f' => /* do nothing */
               case _ =>
                 count += 1
-                val index = Utils.wordIndexer.get(gloss)
+                val index = Utils.wordIndexer(gloss)
                 stmt.setInt(1, index)
                 stmt.setInt(2, index)
                 stmt.addBatch()
@@ -46,7 +46,7 @@ object PruneClosedClassNN {
         // Filter by closed class
         if (Utils.AUXILLIARY_VERBS.contains(gloss.toLowerCase) || Utils.INTENSIONAL_ADJECTIVES.contains(gloss.toLowerCase)) {
           count += 1
-          val index = Utils.wordIndexer.get(gloss)
+          val index = Utils.wordIndexer(gloss)
           stmt.setInt(1, index)
           stmt.setInt(2, index)
           stmt.addBatch()

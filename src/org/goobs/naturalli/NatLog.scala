@@ -328,12 +328,12 @@ object NatLog {
     } else { inputSentence }
 
     // Tokenize + Index
-    val unkInt = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGet(Utils.WORD_UNK) else Utils.wordIndexer.get(Utils.WORD_UNK)
+    val unkInt = if (Props.NATLOG_INDEXER_LAZY) Postgres.indexerGet(Utils.WORD_UNK) else Utils.wordIndexer(Utils.WORD_UNK)
     val index:String=>Array[Int] = {(arg:String) =>
       if (Props.NATLOG_INDEXER_LAZY) {
         Utils.index(arg, doHead = false, allowEmpty = false)(Postgres.indexerContains, Postgres.indexerGet, unkProvider)._1
       } else {
-        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.containsKey(s), (s:String) => Utils.wordIndexer.get(s), unkProvider)._1
+        Utils.index(arg, doHead = false, allowEmpty = false)((s:String) => Utils.wordIndexer.contains(s), (s:String) => Utils.wordIndexer(s), unkProvider)._1
       }}
     val abstractedTokens = sentence.words.zip(sentence.ner).foldLeft(List[(String,String)]()){ case (soFar:List[(String,String)], (w:String, ner:String)) =>
         if (soFar.isEmpty) {

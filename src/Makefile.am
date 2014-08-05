@@ -41,13 +41,20 @@ endif
 
 naturalli_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/scripts/*.scala) $(wildcard org/goobs/naturalli/demo/*.java) $(wildcard org/goobs/natualli/conf/*.conf) org/goobs/naturalli/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find . -name "*.java" -not -path "./org/goobs/naturalli/demo/*.java"`
-	@echo "Compiling (${SCALA_HOME}/bin/scalac)..."
-	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"` `find . -name "*.java"`
+	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find . -name "*.java" -not -path "./org/goobs/naturalli/demo/*.java"  -not -path "./org/goobs/naturalli/scripts/*.java"`
+	@echo "          (${SCALA_HOME}/bin/scalac)..."
+	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP} `find . -name "*.scala"  -not -path "./org/goobs/naturalli/scripts/*.scala"` `find . -name "*.java"`
+if HAVE_DEMO
+	@echo "Compiling Scripts (${JDK_HOME}/bin/javac)..."
+	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp .:${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar:. `find ./org/goobs/naturalli/scripts -name "*.java"`
+	@echo "                  (${SCALA_HOME}/bin/scalac)..."
+	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${CP}:. `find ./org/goobs/naturalli/scripts -name "*.scala"` `find . -name "*.java"`
+endif
 if HAVE_DEMO
 	@echo "Compiling Demo (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d . -cp .:${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find ./org/goobs/naturalli/demo -name "*.java"`
+	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp .:${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar:. `find ./org/goobs/naturalli/demo -name "*.java"`
 endif
+	@echo "Making Jar..."
 	${JDK_HOME}/bin/jar cf naturalli_client.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 

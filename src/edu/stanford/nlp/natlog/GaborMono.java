@@ -184,6 +184,7 @@ public class GaborMono implements Mono {
       this.arg1Monotonicity = arg1Monotonicity;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Collection<Pair<Tree, Monotonicity>> annotate(Tree input) {
       TregexMatcher triggerMatcher = trigger.matcher(input);
@@ -194,7 +195,6 @@ public class GaborMono implements Mono {
           return Collections.singletonList(Pair.makePair(arg1Matcher.getNode("proj"), arg1Monotonicity));
         }
       }
-      //noinspection unchecked
       return Collections.EMPTY_LIST;
     }
 
@@ -216,6 +216,7 @@ public class GaborMono implements Mono {
       this.arg2Monotonicity = arg2Monotonicity;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Collection<Pair<Tree, Monotonicity>> annotate(Tree input) {
       TregexMatcher triggerMatcher = trigger.matcher(input);
@@ -230,7 +231,6 @@ public class GaborMono implements Mono {
           }};
         }
       }
-      //noinspection unchecked
       return Collections.EMPTY_LIST;
     }
   }

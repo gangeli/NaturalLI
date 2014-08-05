@@ -4,7 +4,6 @@ import DataSource._
 import org.goobs.naturalli.Learn.WeightVector
 
 import edu.stanford.nlp.util.logging.Redwood.Util._
-import org.goobs.naturalli.scripts.ShutdownServer
 import org.goobs.naturalli.TruthValue.TruthValue
 
 /**
@@ -89,7 +88,7 @@ object Benchmark extends Client {
     endTrack("Evaluating")
 
     forceTrack("Shutting down server")
-    ShutdownServer.shutdown()
+    shutdownServer()
     endTrack("Shutting down server")
   }
 }

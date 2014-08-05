@@ -11,9 +11,7 @@ import edu.smu.tspell.wordnet.{Synset, SynsetType}
 
 import org.goobs.naturalli.Implicits._
 import org.goobs.naturalli.Postgres.{slurpTable, TABLE_WORD_INTERN}
-import gnu.trove.map.hash.TObjectIntHashMap
 import java.sql.ResultSet
-import gnu.trove.procedure.TObjectIntProcedure
 
 object Utils {
 
@@ -260,14 +258,14 @@ object Utils {
     (rtn.toArray, headWordIndexed)
   }
 
-  lazy val (wordIndexer, wordGloss):(TObjectIntHashMap[String],Array[String]) = {
+  lazy val (wordIndexer, wordGloss):(mutable.HashMap[String,Int],Array[String]) = {
     startTrack("Reading Word Index")
-    val wordIndexer = new TObjectIntHashMap[String]
+    val wordIndexer = new mutable.HashMap[String,Int]
     var count = 0
     slurpTable(TABLE_WORD_INTERN, {(r:ResultSet) =>
       val key:Int = r.getInt("index")
       val gloss:String = r.getString("gloss")
-      wordIndexer.put(gloss, key)
+      wordIndexer(gloss) = key
       count += 1
       if (count % 1000000 == 0) {
         logger.log("read " + (count / 1000000) + "M words; " + (Runtime.getRuntime.freeMemory / 1000000) + " MB of memory free")
@@ -275,10 +273,10 @@ object Utils {
     })
     log("read " + count + " words")
     endTrack("Reading Word Index")
-    val reverseIndex = new Array[String](wordIndexer.size())
-    wordIndexer.forEachEntry(new TObjectIntProcedure[String] {
-      override def execute(p1: String, p2: Int): Boolean = { reverseIndex(p2) = p1; true }
-    })
+    val reverseIndex = new Array[String](wordIndexer.size)
+    wordIndexer.foreach{ case (p1:String, p2:Int) =>
+      reverseIndex(p2) = p1
+    }
     (wordIndexer, reverseIndex)
   }
 

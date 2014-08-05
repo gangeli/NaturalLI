@@ -284,7 +284,7 @@ object MTurk extends DataSource {
       truth == TruthValue.FALSE || truth == TruthValue.UNKNOWN
   }
 
-  private lazy val UNK = Utils.wordIndexer.get(Utils.WORD_UNK)
+  private lazy val UNK = Utils.wordIndexer(Utils.WORD_UNK)
 
   /**
    * Filter out queries that have an unknown word.

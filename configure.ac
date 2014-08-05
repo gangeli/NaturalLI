@@ -138,6 +138,7 @@ AX_OPENMP
 # Set some useful variables
 AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"gcc" || test x"$CXX" = x"g++")
 AM_CONDITIONAL(HAVE_DEMO, ls lib/demo &> /dev/null)
+AM_CONDITIONAL(HAVE_SCRIPTS, ls lib/scripts &> /dev/null)
 
 # Optionally enable debugging
 AC_ARG_ENABLE(debug,
