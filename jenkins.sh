@@ -8,63 +8,45 @@ echo "JavaNLP at: $JAVANLP_HOME"
 export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
+function configure() {
+  ./configure \
+    --with-scala=$SCALA_HOME \
+    --with-java=/usr/lib/jvm/java-8-oracle \
+    --with-corenlp=$HOME/stanford-corenlp.jar \
+    --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
+    --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+    --enable-debug FACT_MAP_SIZE=27 $@
+  make clean
+}
+
 echo "-- CLEAN --"
 git clean -f
 ./autogen.sh
 
 echo "-- MAKE --"
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle \
-  --with-corenlp=$HOME/stanford-corenlp.jar \
-  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-  --enable-debug \
-  FACT_MAP_SIZE=27
-make clean
+configure
 make all check TESTS_ENVIRONMENT=true 
 
 echo "-- C++ TESTS --"
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
-echo "-- C++SPECIAL TESTS --"
+echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
-make clean
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle \
-  --with-corenlp=$HOME/stanford-corenlp.jar \
-  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-  FACT_MAP_SIZE=27
+configure --disable-debug
 make all check
-
 echo "(high memory mode)"
-make clean
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle \
-  --with-corenlp=$HOME/stanford-corenlp.jar \
-  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-  --enable-debug \
-  HIGH_MEMORY=true \
-  FACT_MAP_SIZE=27
+./configure HIGH_MEMORY=1
 make all check
-
 echo "(gcc)"
-make clean
-./configure \
-  --with-scala=$SCALA_HOME \
-  --with-java=/usr/lib/jvm/java-8-oracle \
-  --with-corenlp=$HOME/stanford-corenlp.jar \
-  --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-  --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-  --enable-debug \
-  CXX=gcc \
-  FACT_MAP_SIZE=27
+configure CXX=gcc
 make all check
+echo "(fewer completions)"
+configure MAX_COMPLETIONS=10
+make all check
+echo "(back to default)"
+configure  # reconfigure to default
+make all
 
 echo "-- JAVA TESTS --"
 make java_test
