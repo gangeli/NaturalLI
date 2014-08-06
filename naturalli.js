@@ -1,1 +1,0 @@
-src/org/goobs/naturalli/demo/naturalli.js
