@@ -13,8 +13,8 @@
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
     <!--[if lt IE 9]>
-      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+      <script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
     <!-- Naturalli -->
     <link rel="stylesheet" href="naturalli.css">
@@ -35,10 +35,12 @@
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-8">
-                <form id="form-query" class="form-query" role="form" action="http://plato42.stanford.edu:8080/naturalli/">
+                <form id="form-query" class="form-inline" role="form" action="http://plato42.stanford.edu:8080/naturalli/">
                     <div class="form-group">
-                        <input type="text" name="q" class="form-control input-lg" placeholder="e.g., Cats have tails"
-
+                        <div class="input-group">
+                            <input id="q" type="text" name="q" class="form-control input-lg" placeholder="e.g., Cats have tails"/>
+                            <div id="query-button" class="input-group-addon"><img src="rightarrow.png" width="30px"/></div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -55,7 +57,10 @@
         <!-- Justification Toggle -->
         <div id="justification-toggle-row" class="row" style="margin-top:1em">
             <div class="col-md-12 col-md-offset-5">
-                <a id="justification-toggle" href="#" ><span id='justification-toggle-icon' class="glyphicon glyphicon-expand" style="margin-right:0.5em;"></span>Justification</a>
+                <span id="justification-toggle">
+                    <span id="justification-toggle-icon" class="glyphicon glyphicon-expand not-selectable" style="margin-right:0.5em; cursor: pointer;"></span>
+                    <span id="justification-toggle-text" class="not-selectable" style="cursor: pointer">Justification</span>
+                </span>
             </div>
         </div>
     </div>

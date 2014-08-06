@@ -46,7 +46,7 @@ function handleError(message) {
   $("#truth-value").removeClass("truth-value-true");
   $("#truth-value").removeClass("truth-value-false");
   $("#truth-value").addClass("truth-value-error")
-  $("#truth-value").text("ERROR")
+  $("#truth-value").html('ERROR <div style="color: black; font-size: 12pt">(' + message + ')<div>');
 }
 
 function querySuccess(response) {
@@ -62,10 +62,14 @@ function querySuccess(response) {
 
 $(document).ready(function(){
   jQuery.support.cors = true;
+
+  // Justification
   $("#justification-toggle-row").hide();
 
+  // Query submit
   $( "#form-query" ).submit(function( event ) {
     event.preventDefault();
+    if ( $( '#q' ).val().trim() == '') { $( '#q' ).val('cats have tails'); }
     target = $(this).attr('action');
     getData = $(this).serialize();
     $.ajax({
@@ -76,15 +80,26 @@ $(document).ready(function(){
     });
   });
 
+  // Query button
+  $( "#query-button" ).mousedown(function(event) {
+    $( '#query-button' ).css('background', 'darkgray');
+  });
+  $( document ).mouseup(function(event) {
+    $( '#query-button' ).css('background', '');
+  });
+  $( "#query-button" ).click(function(event) {
+    $( "#form-query" ).submit();
+  });
+
   $( "#justification-toggle" ).click(function(event) {
     event.preventDefault();
     $("#justification-container").collapse('toggle');
-    if ($('#justification-toggle-icon').hasClass('glyphicon-expand')) {
-      $('#justification-toggle-icon').removeClass('glyphicon-expand');
-      $('#justification-toggle-icon').addClass('glyphicon-collapse-down');
-    } else {
+    if ($('#justification-toggle-icon').hasClass('glyphicon-collapse-down')) {
       $('#justification-toggle-icon').removeClass('glyphicon-collapse-down');
       $('#justification-toggle-icon').addClass('glyphicon-expand');
+    } else {
+      $('#justification-toggle-icon').removeClass('glyphicon-expand');
+      $('#justification-toggle-icon').addClass('glyphicon-collapse-down');
     }
   })
 });
