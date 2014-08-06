@@ -5,7 +5,7 @@ function displayTruth(source, truthValue) {
     $("#truth-value").removeClass("truth-value-false");
     $("#truth-value").removeClass("truth-value-error");
     $("#truth-value").addClass("truth-value-unknown");
-    $("#truth-value").css("padding-left", "-25px;");
+    $("#truth-value").css("margin-left", "-25px;");
   } else if (truthValue) {
     $("#truth-value").text("True");
     $("#truth-value").removeClass("truth-value-unknown");
@@ -19,44 +19,56 @@ function displayTruth(source, truthValue) {
     $("#truth-value").removeClass("truth-value-true");
     $("#truth-value").removeClass("truth-value-error");
     $("#truth-value").addClass("truth-value-false");
-    $("#truth-value").css("padding-left", "10px;");
+    $("#truth-value").css("margin-left", "10px;");
+  }
+}
+
+function getMacCartneyRelation(raw) { return raw.substring(0, 1); }
+function getMacCartneyGloss(raw) {
+  if (raw.length > 4) {
+    return '(' + raw.substring(3, raw.length - 1) + ')';
+  } else {
+    return '';
   }
 }
 
 function loadJustification(elements, truthValue, hasTruthValue, inputQuery) {
-  if (hasTruthValue) {
   $("#justification-toggle-row").show();
   html = '';
   html = html +'<div class="row"><div class="col-md-8 col-md-offset-2 justification">';
 
   // Justification Fact
   html = html + '<div class="justification-singleline">';
-  html = html + '<span class="justification-singleline-input"> ' + inputQuery + ' </span> is ' + (truthValue) + ' because ';
+  html = html + '<span class="justification-singleline-input"> ' + inputQuery + ' </span> is ' + (hasTruthValue ? truthValue : "unknown") + ' because ';
   if (elements.length == 1) {
     html = html + 'it is in our database.';
-  } else {
+  } else if (hasTruthValue) {
     html = html + 'we know: <span class="justification-singleline-fact">' + elements[0].gloss + '</span>.';
+  } else {
+    html = html + "we couldn't find justification for it.";
   }
   html = html + '</div>';
 
-  // Justification Table
-  // (table)
-  html = html +'<table class="justification-table"><thead><tr>';
-  html = html + '<th scope="col" style="width:25%;">Search cost</th>';
-  html = html + '<th scope="col" style="width:25%">MacCartney relation</th>';
-  html = html + '<th scope="col" style="text-align:left;">Fact</th></tr></thead>';
-  html = html +'<tbody>';
-  for (var i = 0; i < elements.length; ++i) {
-    html = html + '<tr>';
-    html = html +'<td>' + elements[i].cost + '</td>';
-    html = html +'<td>' + elements[i].incomingRelation + '</td>';
-    html = html +'<td style="text-align:left;">' + elements[i].gloss + '</td>';
-    html = html +'</tr>';
+  if (hasTruthValue) {
+    // Justification Table
+    // (table)
+    html = html +'<table class="justification-table"><thead><tr>';
+    html = html + '<th scope="col" style="width:25%;">Edge cost</th>';
+    html = html + '<th scope="col" style="text-align:left; width:25%" colspan=2>MacCartney relation</th>';
+    html = html + '<th scope="col" style="text-align:left;">Fact</th></tr></thead>';
+    html = html +'<tbody>';
+    for (var i = 0; i < elements.length; ++i) {
+      html = html + '<tr>';
+      html = html +'<td>' + elements[i].cost + '</td>';
+      html = html +'<td><b>' + getMacCartneyRelation(elements[i].incomingRelation) + '</b></td>';
+      html = html +'<td style="text-align:left;"><i>' + getMacCartneyGloss(elements[i].incomingRelation) + '</i></td>';
+      html = html +'<td style="text-align:left;">' + elements[i].gloss + '</td>';
+      html = html +'</tr>';
+    }
+    html = html + '</tbody></table></div></div>';
   }
-  html = html + '</tbody></table></div></div>';
+
   $('#justification-container').html(html);
-  console.log($('#justification-container').html());
-  }
 }
 
 function handleError(message) {
@@ -69,10 +81,9 @@ function handleError(message) {
 
 function querySuccess(query) {
   return function(response) {
-    console.log(response);
     if (response.success) {
       displayTruth(response.bestResponseSource, response.isTrue);
-      loadJustification(response.bestJustification, response.isTrue, response.bestJustification != "none", query);
+      loadJustification(response.bestJustification, response.isTrue, response.bestResponseSource != "none", query);
     } else {
       handleError(response.errorMessage);
     }

@@ -13,7 +13,7 @@
         <filter-class>org.ebaysf.web.cors.CORSFilter</filter-class>
         <init-param>
             <param-name>cors.allowed.origins</param-name>
-            <param-value>http://171.64.66.31,http://localhost:8080,http://localhost,https://localhost,http://nlp.stanford.edu,https://nlp.stanford.edu</param-value>
+            <param-value>http://171.64.66.31,http://localhost:8080,http://localhost,https://localhost,http://nlp.stanford.edu,https://nlp.stanford.edu,http://plato42.stanford.edu,https://plato42.stanford.edu,http://goobs.org,https://goobs.org</param-value>
         </init-param>
         <init-param>
             <param-name>cors.allowed.methods</param-name>
