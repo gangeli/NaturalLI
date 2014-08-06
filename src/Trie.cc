@@ -14,6 +14,7 @@
 #include "Utils.h"
 
 #define MAP_SIZE (0x1l << FACT_MAP_SIZE) - 1
+#define TRIE_DELETIONS_NUM_SENSES_PER_DELETE 4
 
 
 
@@ -655,7 +656,7 @@ vector<vector<edge>> getWord2Senses(const uint32_t& vocabSize) {
 
   // Query
   char query[128];
-  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY type;", PG_TABLE_EDGE);
+  snprintf(query, 127, "SELECT DISTINCT (source) source, source_sense, type FROM %s WHERE source<>0 AND sink=0 ORDER BY source_sense, type ASC;", PG_TABLE_EDGE);
   PGIterator wordIter = PGIterator(query);
   uint32_t numValidInsertions = 0;
   while (wordIter.hasNext()) {
@@ -765,7 +766,7 @@ void completionCounts(
       uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
       word nextWord = fact[len];
       uint32_t numSenses = word2sense[nextWord].size();
-      if (numSenses > 4) { numSenses = 4; }
+      if (numSenses > TRIE_DELETIONS_NUM_SENSES_PER_DELETE) { numSenses = TRIE_DELETIONS_NUM_SENSES_PER_DELETE; }
       counts->increment(mainHash, auxHash, numSenses, MAX_COMPLETIONS);
     }
     uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
@@ -794,7 +795,7 @@ void addFacts(
       vector<edge> senses = word2sense[ fact[0] ];
       if (senses.size() > 0) {
         uint32_t numSenses = senses.size();
-        if (numSenses > 4) { numSenses = 4; }
+        if (numSenses > TRIE_DELETIONS_NUM_SENSES_PER_DELETE) { numSenses = TRIE_DELETIONS_NUM_SENSES_PER_DELETE; }
         for (uint32_t sense = 0; sense < numSenses; ++sense) {
           edge& insertion = senses[sense];
           trie->addBeginInsertion(fact[0], insertion.source_sense,
@@ -808,7 +809,7 @@ void addFacts(
       if (senses.size() > 0) {
         uint32_t added = 0;
         uint32_t numSenses = senses.size();
-        if (numSenses > 4) { numSenses = 4; }
+        if (numSenses > TRIE_DELETIONS_NUM_SENSES_PER_DELETE) { numSenses = TRIE_DELETIONS_NUM_SENSES_PER_DELETE; }
         for (uint32_t sense = 0; sense < numSenses; ++sense) {
           edge& deletion = senses[sense];
           if (graph == NULL || graph->containsDeletion(deletion)) {
