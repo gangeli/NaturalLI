@@ -42,7 +42,6 @@ body {
 .justification-table {
 	font-size: 12px;
 	border-collapse: collapse;
-	text-align: left;
 	width: 100%;
 }
 .justification-table th {
@@ -51,18 +50,34 @@ body {
 	color: #039;
 	padding: 10px 8px;
 	border-bottom: 2px solid #6678b1;
+	text-align:center;
 }
 .justification-table td {
 	color: #669;
 	padding: 9px 8px 0px 8px;
+	text-align:center;
 }
 .justification-table th  td {
   padding-left: 50px;
   padding-right: 50px;
-  text-align: center;
 }
 .justification-table tbody tr:hover td {
 	color: #009;
+}
+
+.justification-singleline {
+  text-align: center;
+	color: #039;
+  font-size: 14pt;
+	margin-top: 10px;
+	margin-bottom: 25px;
+}
+.justification-singleline-input {
+	font-weight: bold;
+}
+.justification-singleline-fact {
+	color: #333;
+	font-weight: bold;
 }
 
 .not-selectable {
