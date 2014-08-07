@@ -72,6 +72,9 @@ function loadJustification(elements, truthValue, hasTruthValue, inputQuery) {
 }
 
 function handleError(message) {
+  $( "#q" ).prop('disabled', false);
+  $( "#query-button").unbind( "click" );
+  $( "#query-button" ).click(function(event) { $( "#form-query" ).submit(); });
   $("#truth-value").removeClass("truth-value-unknown");
   $("#truth-value").removeClass("truth-value-true");
   $("#truth-value").removeClass("truth-value-false");
@@ -81,6 +84,9 @@ function handleError(message) {
 
 function querySuccess(query) {
   return function(response) {
+    $( "#q" ).prop('disabled', false);
+    $( "#query-button").unbind( "click" );
+    $( "#query-button" ).click(function(event) { $( "#form-query" ).submit(); });
     if (response.success) {
       displayTruth(response.bestResponseSource, response.isTrue);
       loadJustification(response.bestJustification, response.isTrue, response.bestResponseSource != "none", query);
@@ -105,14 +111,19 @@ $(document).ready(function(){
     if ( $( '#q' ).val().trim() == '') { $( '#q' ).val('cats have tails'); }
     // (start loading icon)
     $( '#truth-value' ).html('<img src="loading.gif" style="height:75px; margin-top:-35px;"/>');
-    // (submit)
+    // (submission data)
     target = $(this).attr('action');
     getData = $(this).serialize();
+    value = $( "#q" ).val();
+    // (disable query button
+    $( "#q" ).prop('disabled', true);
+    $( "#query-button").unbind( "click" );
+    // (ajax request)
     $.ajax({
       url: target,
       data: getData,
       dataType: 'json',
-      success: querySuccess( $( '#q' ).val() )
+      success: querySuccess( value )
     });
   });
 
@@ -123,9 +134,7 @@ $(document).ready(function(){
   $( document ).mouseup(function(event) {
     $( '#query-button' ).css('background', '');
   });
-  $( "#query-button" ).click(function(event) {
-    $( "#form-query" ).submit();
-  });
+  $( "#query-button" ).click(function(event) { $( "#form-query" ).submit(); });
 
   $( "#justification-toggle" ).click(function(event) {
     event.preventDefault();
