@@ -41,9 +41,9 @@ function loadJustification(elements, truthValue, hasTruthValue, inputQuery) {
   html = html + '<div class="justification-singleline">';
   html = html + '<span class="justification-singleline-input"> ' + inputQuery + ' </span> is ' + (hasTruthValue ? truthValue : "unknown") + ' because ';
   if (elements.length == 1) {
-    html = html + 'it is in our database.';
+    html = html + "it's a known OpenIE fact.";
   } else if (hasTruthValue) {
-    html = html + 'we know: <span class="justification-singleline-fact">' + elements[0].gloss + '</span>.';
+    html = html + 'of the OpenIE fact: <span class="justification-singleline-fact">' + elements[0].gloss + '</span>.';
   } else {
     html = html + "we couldn't find justification for it.";
   }

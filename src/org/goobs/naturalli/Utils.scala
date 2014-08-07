@@ -382,26 +382,26 @@ object EdgeType extends Enumeration {
 
   def toMacCartneyRelation(t:EdgeType):String = {
     t match {
-      case WORDNET_UP => "⊒ (hypernym)"
-      case FREEBASE_UP => "⊒ (hypernym)"
+      case WORDNET_UP => "⊒ (wordnet hypernym)"
+      case FREEBASE_UP => "⊒ (wordnet hypernym)"
       case QUANTIFIER_UP => "⊒ (strengthened quantifier)"
       case DEL_NOUN => "⊒ (deleted noun)"
       case DEL_VERB => "⊒ (deleted verb)"
       case DEL_ADJ => "⊒ (deleted adjective)"
       case DEL_OTHER => "≡ (deleted misc. word)"
 
-      case WORDNET_DOWN => "⊑ (hyponym)"
-      case FREEBASE_DOWN => "⊑ (hyponym)"
+      case WORDNET_DOWN => "⊑ (freebase hyponym)"
+      case FREEBASE_DOWN => "⊑ (freebase hyponym)"
       case QUANTIFIER_DOWN => "⊑ (weakened quantifier)"
       case ADD_NOUN => "⊑ (added noun)"
       case ADD_VERB => "⊑ (added verb)"
       case ADD_ADJ => "⊑ (added adjective)"
       case ADD_OTHER => "≡ (added misc. word)"
 
-      case WORDNET_NOUN_ANTONYM => "| (noun antonym)"
-      case WORDNET_VERB_ANTONYM => "| (verb antonym)"
-      case WORDNET_ADJECTIVE_ANTONYM => "| (adjective antonym)"
-      case WORDNET_ADVERB_ANTONYM => "| (adverb antonym)"
+      case WORDNET_NOUN_ANTONYM => "| (noun wordnet antonym)"
+      case WORDNET_VERB_ANTONYM => "| (verb wordnet antonym)"
+      case WORDNET_ADJECTIVE_ANTONYM => "| (adjective wordnet antonym)"
+      case WORDNET_ADVERB_ANTONYM => "| (adverb wordnet antonym)"
 
       case WORDNET_NOUN_SYNONYM => "≡ (synonym)"
       case WORDNET_ADJECTIVE_RELATED => "≡ (related adjective)"
@@ -410,8 +410,8 @@ object EdgeType extends Enumeration {
       case MORPH_FUDGE_NUMBER => "≡ (fudged number)"
       case SENSE_REMOVE => "≡ (changed word sense)"
       case SENSE_ADD => "≡ (changed word sense)"
-      case WORDNET_ADJECTIVE_PERTAINYM => "≡ (adjective pertainym)"
-      case WORDNET_ADVERB_PERTAINYM => "≡ (adverb pertainym)"
+      case WORDNET_ADJECTIVE_PERTAINYM => "≡ (adjective wordnet pertainym)"
+      case WORDNET_ADVERB_PERTAINYM => "≡ (adverb wordnet pertainym)"
 
       case ADD_NEGATION => "^ (added negation)"
       case DEL_NEGATION => "^ (deleted negation)"
