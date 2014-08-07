@@ -5,21 +5,18 @@ function displayTruth(source, truthValue) {
     $("#truth-value").removeClass("truth-value-false");
     $("#truth-value").removeClass("truth-value-error");
     $("#truth-value").addClass("truth-value-unknown");
-    $("#truth-value").css("margin-left", "-25px;");
   } else if (truthValue) {
     $("#truth-value").text("True");
     $("#truth-value").removeClass("truth-value-unknown");
     $("#truth-value").removeClass("truth-value-false");
     $("#truth-value").removeClass("truth-value-error");
     $("#truth-value").addClass("truth-value-true");
-    $("#truth-value").css("margin-left", "15px");
   } else if (!truthValue) {
     $("#truth-value").text("False");
     $("#truth-value").removeClass("truth-value-unknown");
     $("#truth-value").removeClass("truth-value-true");
     $("#truth-value").removeClass("truth-value-error");
     $("#truth-value").addClass("truth-value-false");
-    $("#truth-value").css("margin-left", "10px;");
   }
 }
 
@@ -99,6 +96,10 @@ function querySuccess(query) {
 
 $(document).ready(function(){
   jQuery.support.cors = true;
+
+  if ($(window).width() < 650) {
+    $( '#fork' ).hide();
+  }
 
   // Justification
   $("#justification-toggle-row").hide();

@@ -24,20 +24,15 @@
 
 
 <body>
-    <a href="https://github.com/gangeli/NaturalLI"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+    <a href="https://github.com/gangeli/NaturalLI"><img id="fork" style="position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
 
     <div class="container">
-        <!-- Logo -->
-        <div class="row">
-            <div class="col-md-4 col-md-offset-4">
-                <img src="logo.png" height="200px" style="margin-bottom: 2em;"/>
-            </div>
-        </div>
-
-        <!-- Query Box -->
         <div class="row">
             <div class="col-md-2"></div>
             <div class="col-md-8">
+                <!-- Logo -->
+                <img src="logo.png" height="200px" style="margin-bottom: 2em; text-align: center; margin-left:auto; margin-right:auto; display:block;"/>
+                <!-- Query Box -->
                 <form id="form-query" class="form-inline" role="form" action="http://plato42.stanford.edu:8080/naturalli/">
                     <div class="form-group">
                         <div class="input-group">
@@ -54,14 +49,14 @@
 
         <!-- Truth Value -->
         <div id="truth-row" class="row" style="margin-top:2em;">
-            <div class="col-md-4 col-md-offset-5" >
+            <div class="col-md-offset-5 centered" >
                 <span id="truth-value" style="text-align:center;"></span>
             </div>
         </div>
 
         <!-- Justification Toggle -->
         <div id="justification-toggle-row" class="row" style="margin-top:1em;">
-            <div class="col-md-2 col-md-offset-5">
+            <div class="col-md-offset-5 centered">
                 <span id="justification-toggle">
                     <span id="justification-toggle-icon" class="glyphicon glyphicon-expand not-selectable" style="margin-right:0.5em; cursor: pointer;"></span>
                     <span id="justification-toggle-text" class="not-selectable" style="cursor: pointer">Justification</span>
