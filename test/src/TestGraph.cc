@@ -55,3 +55,22 @@ TEST_F(MockGraphTest, HasCorrectEdges) {
   EXPECT_EQ(0, mockGraph->incomingEdges(HAVE).size());
   EXPECT_EQ(0, mockGraph->incomingEdges(TAIL).size());
 }
+
+// Check invalid deletions
+TEST_F(MockGraphTest, CheckInvalidDeletions) {
+  // Initialize edge
+  edge e;
+  e.sink = 0;
+  e.sink_sense = 0;
+  e.type = 0;
+  e.source = HAVE.word;
+  // SHould be true
+  e.source_sense = 0;
+  EXPECT_TRUE(mockGraph->containsDeletion(e));
+  // Should be false
+  e.source_sense = 3;
+  EXPECT_FALSE(mockGraph->containsDeletion(e));
+  // Should be true again
+  e.source_sense = 4;
+  EXPECT_TRUE(mockGraph->containsDeletion(e));
+}

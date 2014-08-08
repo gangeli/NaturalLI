@@ -102,7 +102,7 @@ const bool Trie::contains(const tagged_word* query,
                           const uint8_t& queryLength,
                           const int16_t& mutationIndex,
                           edge* insertions,
-                              uint32_t& mutableIndex) const {
+                          uint32_t& mutableIndex) const {
   assert (queryLength > mutationIndex);
 
   // -- Part 1: Fill in completions --

@@ -259,7 +259,11 @@ Graph* ReadMockGraph() {
                  potto2lemurRow, animal2lemurRow, cat2animalRow };
   MockPGIterator edgeIter(3, edges);
   
-  MockPGIterator invalidDeletionIter(0, NULL);
+  const char* invalidDeletions[]{HAVE_STR, "3"};
+  PGRow invalidDeletionsRow(invalidDeletions); 
+  PGRow dels[]{ invalidDeletionsRow };
+  MockPGIterator invalidDeletionIter(1, dels);
   
-  return readGraph(200000, &wordIter, &edgeIter, & invalidDeletionIter, true);
+  return readGraph(200000, &wordIter, &edgeIter, 
+  & invalidDeletionIter, true);
 }

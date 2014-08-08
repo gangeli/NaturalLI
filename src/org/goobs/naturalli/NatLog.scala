@@ -135,8 +135,8 @@ object NatLog {
     // (other antonyms)
     setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.UP, default)
     setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.DOWN, default)
-    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.UP, default)
-    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.DOWN, default)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.UP, antonym)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.DOWN, default)  // only allow one adjective antonym
     // Set "don't care" weights
     weights.setCount(monoAny_stateTrue( MORPH_FUDGE_NUMBER), morphology)
     weights.setCount(monoAny_stateFalse( MORPH_FUDGE_NUMBER), morphology)

@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Condition;
@@ -52,6 +53,7 @@ public class NaturalLI extends HttpServlet {
   private static Counter<String> softWeights = NatLog.softNatlogWeights();
 
   private ExecutorService pool = Executors.newFixedThreadPool(16);
+  private ConcurrentLinkedQueue<String> queries = new ConcurrentLinkedQueue<>();
 
   @Override
   public void init(ServletConfig config) throws ServletException {
@@ -60,6 +62,19 @@ public class NaturalLI extends HttpServlet {
     Props.SERVER_MAIN_PORT = 1337;
     Props.SERVER_BACKUP_DO = false;
     Props.DEMO_DO = true;
+    Thread queryLogger = new Thread() {
+      @Override
+      public void run() {
+        try {
+          Thread.sleep(1000l * 60 * 60 * 24);
+        } catch (InterruptedException ignored) { }
+        if (queries.size() > 0) {
+          SendMail.sendTextMail("angeli@stanford.edu", "Recent NaturalLI Queries", StringUtils.join(queries, "\n"));
+        }
+      }
+    };
+    queryLogger.setDaemon(true);
+    queryLogger.start();
   }
 
   private static String toString(Messages.Fact fact) {
@@ -113,7 +128,7 @@ public class NaturalLI extends HttpServlet {
       try {
         pool.submit(() -> handleQuery(r, input, callCompleteLock, callComplete));
         callComplete.await();
-      } catch (InterruptedException e) {
+      } catch (InterruptedException ignored) {
       } finally {
         callCompleteLock.unlock();
       }
@@ -146,44 +161,73 @@ public class NaturalLI extends HttpServlet {
   }
 
   /**
+   * Run the server with a specified weight setting.
+   * @param consequent The consequent to query antecedents for.
+   * @param weights The weights to use for this query.
+   * @return Any inference paths that were returned.
+   */
+  private Iterable<Messages.Inference> query(Messages.Fact consequent, Counter<String> weights) {
+    Messages.Query query = Messages.Query.newBuilder()
+        .setQueryFact(consequent)
+        .setUseRealWorld(true)
+        .setTimeout(100000)
+        .setCosts(Learn.weightsToCosts(weights))
+        .setSearchType("ucs")
+        .setCacheType("bloom")
+        .build();
+    return Truth.issueQuery(query, false, false);
+  }
+
+  /**
    * Actually handle the query.
    */
   public void handleQuery(Response r, String input, Lock doneLockOrNull, Condition doneConditionOrNull) {
     // Register success -- can overwrite later
     r.success = true;
+    // Register the query
+    queries.add(input);
 
     // -- DO QUERY --
     Messages.Fact consequent = NatLog.annotate(input).head();
-    Messages.Query query = Messages.Query.newBuilder()
-        .setQueryFact(consequent)
-        .setUseRealWorld(true)
-        .setTimeout(100000)
-        .setCosts(Learn.weightsToCosts(softWeights))
-        .setSearchType("ucs")
-        .setCacheType("bloom")
-        .build();
-    Iterable<Messages.Inference> paths = Truth.issueQuery(query, false, false);
+    Iterable<Messages.Inference> paths = query(consequent, hardWeights);
+    r.bestResponseSource = "Strict Natural Logic";
+    if (paths.isEmpty()) {
+      paths = query(consequent, softWeights);
+      r.bestResponseSource = "Fuzzy Natural Logic";
+    }
 
     // -- PARSE QUERY --
-    if (paths.headOption().isDefined()) {
+    if (!paths.isEmpty()) {
       Messages.Inference bestPath = paths.head();
       // (parse truth)
-      r.bestResponseSource = "Strict Natural Logic";
-      switch(bestPath.getState()) {
-        case TRUE:
-          r.isTrue = true;
-          break;
-        case FALSE:
-          r.isTrue = false;
-          break;
-        case UNKNOWN:
-          r.bestResponseSource = "none";
+      r.isTrue = true;
+      Iterator<Messages.Inference> pathIter = paths.iterator();
+      boolean hasAnyJustification = false;
+      while (pathIter.hasNext()) {
+        switch (pathIter.next().getState()) {
+          case TRUE:
+            hasAnyJustification = true;
+            break;
+          case FALSE:
+            r.isTrue = false;
+            hasAnyJustification = true;
+            break;
+          case UNKNOWN:
+            break;
+        }
       }
-      // (parse score)
-      r.score = bestPath.getScore();
-      // (parse justification)
-      LinkedList<JustificationElement> justification = justification(bestPath);
-      r.bestJustification = justification.toArray(new JustificationElement[justification.size()]);
+      if (hasAnyJustification) {
+        // (parse score)
+        r.score = bestPath.getScore();
+        // (parse justification)
+        LinkedList<JustificationElement> justification = justification(bestPath);
+        r.bestJustification = justification.toArray(new JustificationElement[justification.size()]);
+      } else {
+        r.isTrue = false;
+        r.score = 999.9;
+        r.bestResponseSource = "none";
+        r.bestJustification = new JustificationElement[0];
+      }
     } else {
       // Case: no paths returned!
       r.bestResponseSource = "none";
