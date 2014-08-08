@@ -144,10 +144,12 @@
 # Weird WordNet paths
 ?[dress](cat, suit)	[have](cat, tail)
 
+# Shouldn't be able to double-negate
+?[be](professor, good)	[be](professor, good at research)
+
 #
 # Tier 6: Make sure examples in paper work
 #
 # TODO(gabor) from the weird negation bug...
 #✘[eat](no carnivore, rodent)	[eat](the cat, the mouse)
-
 

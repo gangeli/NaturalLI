@@ -41,7 +41,7 @@ src/org/goobs/naturalli/Messages.java: src/Messages.proto
 src/naturalli_client.jar: $(wildcard src/org/goobs/naturalli/*.scala) $(wildcard src/org/goobs/naturalli/*.java) $(wildcard src/org/goobs/naturalli/scripts/*.scala) $(wildcard src/org/goobs/naturalli/conf/*.conf) src/org/goobs/naturalli/Messages.java
 	$(MAKE) -C src naturalli_client.jar
 
-src/naturalli.war: src/naturalli_client.jar $(wildcard src/org/goobs/naturalli/demo/*.java) 
+src/naturalli.war: src/naturalli_client.jar $(wildcard src/org/goobs/naturalli/demo/*.java) src/org/goobs/naturalli/demo/WEB-INF/naturalli.xml
 	$(MAKE) -C src naturalli.war
 
 test/src/test_client.jar: $(wildcard test/src/org/goobs/naturalli/*.scala) $(wildcard test/src/org/goobs/naturalli/*.java) $(wildcard test/src/org/goobs/naturalli/*.dat) $(wildcard test/src/edu/stanford/nlp/natlog/*.java) $(wildcard test/src/org/goobs/naturalli/*.java) 
@@ -70,5 +70,5 @@ java_itest: src/naturalli_client.jar test/src/test_client.jar
 	@echo "[itest] junit *.java"
 	@echo "[itest] RegressionTest"
 	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.RegressionTest
-	@echo "[itest] Learning RegressionTest"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.LearnRegressionTest
+#	@echo "[itest] Learning RegressionTest"
+#	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.LearnRegressionTest

@@ -58,6 +58,6 @@ endif
 	${JDK_HOME}/bin/jar cf naturalli_client.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
-naturalli.war: naturalli_client.jar $(wildcard org/goobs/naturalli/demo/*.java) 
+naturalli.war: naturalli_client.jar $(wildcard org/goobs/naturalli/demo/*.java) org/goobs/naturalli/demo/WEB-INF/naturalli.xml
 	@echo "Creating WAR..."
 	cd ../ && ant war

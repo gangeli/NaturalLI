@@ -113,7 +113,7 @@ object NatLog {
     // INVALID: mirror universal
     setCounts(DEL_QUANTIFIER_OTHER, Monotonicity.DOWN, default)
     // (more fishy insertions or deletions)
-    setCounts(ADD_VERB, Monotonicity.DOWN, verbInsertOrDelete)
+    setCounts(ADD_VERB, Monotonicity.DOWN, default)
     setCounts(DEL_VERB, Monotonicity.UP, verbInsertOrDelete)
     // (ok quantifier swaps)
     setCounts(QUANTIFIER_UP,   Monotonicity.UP, okQuantifier)
@@ -135,8 +135,8 @@ object NatLog {
     // (other antonyms)
     setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.UP, default)
     setCounts(WORDNET_NOUN_ANTONYM, Monotonicity.DOWN, default)
-    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.UP, antonym)
-    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.DOWN, antonym)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.UP, default)
+    setCounts(WORDNET_ADJECTIVE_ANTONYM, Monotonicity.DOWN, default)
     // Set "don't care" weights
     weights.setCount(monoAny_stateTrue( MORPH_FUDGE_NUMBER), morphology)
     weights.setCount(monoAny_stateFalse( MORPH_FUDGE_NUMBER), morphology)
