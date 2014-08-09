@@ -31,22 +31,22 @@ class HashIntMap {
   HashIntMap(const HashIntMap& other);
   ~HashIntMap();
 
-  void put(const uint32_t& hash,
+  void put(const uint64_t& hash,
            const uint32_t& secondHash,
            const uint64_t& value);
   
-  void increment(const uint32_t& hash,
+  void increment(const uint64_t& hash,
                  const uint32_t& secondHash,
                  const uint64_t& incr,
                  const uint64_t& limit);
   
-  inline void increment(const uint32_t& hash,
+  inline void increment(const uint64_t& hash,
                         const uint32_t& secondHash,
                         const uint64_t& incr) {
     increment(hash, secondHash, incr, std::numeric_limits<uint32_t>::max());
   }
   
-  bool get(const uint32_t& hash,
+  bool get(const uint64_t& hash,
            const uint32_t& secondHash,
            uint64_t* toSet) const;
 
@@ -83,7 +83,7 @@ class HashIntMap {
   map_entry* data;
   uint64_t  dataLength;
 
-  inline uint32_t occupied(const map_entry& cell) const {
+  inline bool occupied(const map_entry& cell) const {
     return cell.occupied;
   }
   

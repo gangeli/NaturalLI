@@ -32,7 +32,7 @@ HashIntMap::~HashIntMap() {
 //
 // HashIntMap::put
 //
-void HashIntMap::put(const uint32_t& hash,
+void HashIntMap::put(const uint64_t& hash,
                      const uint32_t& secondHash,
                      const uint64_t& value) {
   uint64_t index = hash % this->dataLength;
@@ -52,7 +52,7 @@ void HashIntMap::put(const uint32_t& hash,
 //
 // HashIntMap::increment
 //
-void HashIntMap::increment(const uint32_t& hash,
+void HashIntMap::increment(const uint64_t& hash,
                            const uint32_t& secondHash,
                            const uint64_t& incr,
                            const uint64_t& limit) {
@@ -76,7 +76,7 @@ void HashIntMap::increment(const uint32_t& hash,
 //
 // HashIntMap::get
 //
-bool HashIntMap::get(const uint32_t& hash,
+bool HashIntMap::get(const uint64_t& hash,
                      const uint32_t& secondHash,
                      uint64_t* toSet) const {
   uint64_t index = hash % this->dataLength;

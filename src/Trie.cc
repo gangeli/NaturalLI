@@ -334,8 +334,8 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
   edge.type = edgeType;
   edge.endOfList = true;
   // Compute the hashes
-  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
-  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+  uint64_t mainHash = HASH_MAIN_64((uint8_t*) fact, factLength * sizeof(uint32_t));
+  uint32_t auxHash = HASH_MAIN_32((uint8_t*) fact, factLength * sizeof(uint32_t));
   // Do the lookup
   uint64_t pointer;
   if (!completions.get(mainHash, auxHash, &pointer)) {
@@ -365,8 +365,10 @@ bool LossyTrie::addCompletion(const uint32_t* fact,
       }
       if (index < MAX_COMPLETIONS - 1) {
         // Case: add a new edge
-        insertions[index].endOfList = 0;
+        assert (insertions[index].endOfList);
+        insertions[index].endOfList = false;
         insertions[index + 1] = edge;
+        assert (insertions[index + 1].endOfList);
         added = true;
       } else {
         // Case: this slot's full
@@ -400,8 +402,8 @@ void LossyTrie::addBeginInsertion(const word& w0,
 void LossyTrie::addFact(const uint32_t* fact, 
                         const uint32_t& factLength) {
   // Compute the hashes
-  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
-  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+  uint64_t mainHash = HASH_MAIN_64((uint8_t*) fact, factLength * sizeof(uint32_t));
+  uint32_t auxHash = HASH_MAIN_32((uint8_t*) fact, factLength * sizeof(uint32_t));
   // Do the lookup
   uint64_t pointer;
   if (!completions.get(mainHash, auxHash, &pointer)) {
@@ -429,8 +431,8 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
   for (uint32_t i = 0; i < factLength; ++i) {
     fact[i] = taggedFact[i].word;
   }
-  uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
-  uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+  uint64_t mainHash = HASH_MAIN_64((uint8_t*) fact, factLength * sizeof(uint32_t));
+  uint32_t auxHash = HASH_MAIN_32((uint8_t*) fact, factLength * sizeof(uint32_t));
 
   // Look up the containment info
   bool contains = false;
@@ -442,8 +444,8 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
   // Look up completions
   if (mutationIndex >= 0) {
     // Case: regular completion
-    mainHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) fact, (mutationIndex + 1) * sizeof(uint32_t));
     if (completions.get(mainHash, auxHash, &pointer)) {
       const lossy_trie_data& meta = metadata(pointer);
       // Check the 'has completions' indicator
@@ -461,6 +463,18 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
           insertions[index].sink_sense = 0;
           insertions[index].type = toRead[index].type;
           insertions[index].cost = 1.0f;
+          // TODO(gabor) DEBUG REMOVE ME
+          if (insertions[index].source >= 1000000 ||
+              insertions[index].type >= NUM_EDGE_TYPES ||
+              insertions[index].source_sense >= 32) {
+            printf("toRead: source=%u sense=%u type=%u\n",
+                    toRead[index].source, toRead[index].sense,toRead[index].type);
+            lossy_trie_data asMeta = *((lossy_trie_data*) &(toRead[index]));
+            
+            printf("asMeta: isFact=%u hasCompletions=%u isFull=%u magicBits=%u\n",
+                   asMeta.isFact, asMeta.hasCompletions, asMeta.isFull, asMeta.magicBits);
+          }
+          // END DEBUG
           assert (insertions[index].source < 1000000);  // sanity check: vocab < 1M words (if this is wrong, remove this line)
           assert (insertions[index].type < NUM_EDGE_TYPES);
           assert (insertions[index].source_sense < 32);
@@ -736,7 +750,7 @@ template<typename Functor> inline void foreachFact(Functor fn,
         bufferLength += 1;
       }
       // (hash the fact)
-      uint32_t factHash = fnv_32a_buf(buffer, bufferLength * sizeof(uint32_t), FNV1_32_INIT);
+      uint64_t factHash = HASH_MAIN_64(buffer, bufferLength * sizeof(uint32_t));
       // (apply the function)
       fn(buffer, bufferLength);
     }
@@ -762,15 +776,15 @@ void completionCounts(
   // Define function
   auto fn = [&word2sense,&counts](word* fact, uint8_t factLength) -> void { 
     for (uint8_t len = 1; len < factLength; ++len) {
-      uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  FNV1_32_INIT);
-      uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, len * sizeof(uint32_t),  1154);
+      uint64_t mainHash = HASH_MAIN_64((uint8_t*) fact, len * sizeof(uint32_t));
+      uint32_t auxHash = HASH_MAIN_32((uint8_t*) fact, len * sizeof(uint32_t));
       word nextWord = fact[len];
       uint32_t numSenses = word2sense[nextWord].size();
       if (numSenses > TRIE_DELETIONS_NUM_SENSES_PER_DELETE) { numSenses = TRIE_DELETIONS_NUM_SENSES_PER_DELETE; }
       counts->increment(mainHash, auxHash, numSenses, MAX_COMPLETIONS);
     }
-    uint32_t mainHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  FNV1_32_INIT);
-    uint32_t auxHash = fnv_32a_buf((uint8_t*) fact, factLength * sizeof(uint32_t),  1154);
+    uint64_t mainHash = HASH_MAIN_64((uint8_t*) fact, factLength * sizeof(uint32_t));
+    uint32_t auxHash = HASH_MAIN_32((uint8_t*) fact, factLength * sizeof(uint32_t));
     counts->increment(mainHash, auxHash, 0, MAX_COMPLETIONS);
   };
   // Run function

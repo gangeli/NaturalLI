@@ -282,29 +282,30 @@ class LossyTrieTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     HashIntMap map(10);
-    uint32_t mainHash, auxHash;
+    uint64_t mainHash;
+    uint32_t auxHash;
     factA[0] = 1;
     factA[1] = 2;
-    mainHash = fnv_32a_buf((uint8_t*) factA, 2 * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) factA, 2 * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) factA, 2 * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) factA, 2 * sizeof(uint32_t));
     map.put(mainHash, auxHash, 0);
     factB[0] = 1;
     factB[1] = 3;
-    mainHash = fnv_32a_buf((uint8_t*) factB, 2 * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) factB, 2 * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) factB, 2 * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) factB, 2 * sizeof(uint32_t));
     map.put(mainHash, auxHash, 0);
     factC[0] = 5;
     factC[1] = 6;
-    mainHash = fnv_32a_buf((uint8_t*) factC, 2 * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) factC, 2 * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) factC, 2 * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) factC, 2 * sizeof(uint32_t));
     map.put(mainHash, auxHash, 0);
     // 2 completions from [1, ...]
-    mainHash = fnv_32a_buf((uint8_t*) factA, 1 * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) factA, 1 * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) factA, 1 * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) factA, 1 * sizeof(uint32_t));
     map.put(mainHash, auxHash, 2);
     // 1 completion from [5, ...]
-    mainHash = fnv_32a_buf((uint8_t*) factC, 1 * sizeof(uint32_t),  FNV1_32_INIT);
-    auxHash = fnv_32a_buf((uint8_t*) factC, 1 * sizeof(uint32_t),  1154);
+    mainHash = HASH_MAIN_64((uint8_t*) factC, 1 * sizeof(uint32_t));
+    auxHash = HASH_MAIN_32((uint8_t*) factC, 1 * sizeof(uint32_t));
     map.put(mainHash, auxHash, 1);
     trie = new LossyTrie(map);
 

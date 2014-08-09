@@ -84,4 +84,9 @@ inline uint32_t fast_atoi( const char * str ) {
   return val;
 }
 
+#define HASH_MAIN_32(data, length) fnv_32a_buf(data, length, FNV1_32_INIT);
+#define HASH_AUX_32(data, length) fnv_32a_buf(data, length, 1154);
+#define HASH_MAIN_64(data, length) fnv_64a_buf(data, length, FNV1_64_INIT);
+#define HASH_AUX_64(data, length) fnv_64a_buf(data, length, 1154);
+
 #endif
