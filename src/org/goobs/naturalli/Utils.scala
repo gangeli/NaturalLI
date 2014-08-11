@@ -382,20 +382,20 @@ object EdgeType extends Enumeration {
 
   def toMacCartneyRelation(t:EdgeType):String = {
     t match {
-      case WORDNET_UP => "⊒ (wordnet hypernym)"
-      case FREEBASE_UP => "⊒ (wordnet hypernym)"
-      case QUANTIFIER_UP => "⊒ (strengthened quantifier)"
-      case DEL_NOUN => "⊒ (deleted noun)"
-      case DEL_VERB => "⊒ (deleted verb)"
-      case DEL_ADJ => "⊒ (deleted adjective)"
+      case WORDNET_UP => "⊑ (wordnet hypernym)"
+      case FREEBASE_UP => "⊑ (wordnet hypernym)"
+      case QUANTIFIER_UP => "⊑ (strengthened quantifier)"
+      case DEL_NOUN => "⊑ (deleted noun)"
+      case DEL_VERB => "⊑ (deleted verb)"
+      case DEL_ADJ => "⊑ (deleted adjective)"
       case DEL_OTHER => "≡ (deleted misc. word)"
 
-      case WORDNET_DOWN => "⊑ (freebase hyponym)"
-      case FREEBASE_DOWN => "⊑ (freebase hyponym)"
-      case QUANTIFIER_DOWN => "⊑ (weakened quantifier)"
-      case ADD_NOUN => "⊑ (added noun)"
-      case ADD_VERB => "⊑ (added verb)"
-      case ADD_ADJ => "⊑ (added adjective)"
+      case WORDNET_DOWN => "⊒ (freebase hyponym)"
+      case FREEBASE_DOWN => "⊒ (freebase hyponym)"
+      case QUANTIFIER_DOWN => "⊒ (weakened quantifier)"
+      case ADD_NOUN => "⊒ (added noun)"
+      case ADD_VERB => "⊒ (added verb)"
+      case ADD_ADJ => "⊒ (added adjective)"
       case ADD_OTHER => "≡ (added misc. word)"
 
       case WORDNET_NOUN_ANTONYM => "| (noun wordnet antonym)"

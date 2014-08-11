@@ -526,10 +526,11 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
 // ----------------------------------------------------------------------------
 //
 
+#ifdef OLD_TRIE
 //
 // ReadFactTrie
 //
-FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
+FactDB* ReadFactTrie(const uint64_t& maxFactsToRead, const Graph* graph) {
   Trie* facts = new TrieRoot();
   char query[127];
 
@@ -637,9 +638,11 @@ FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph) {
   printf("  done reading the fact database (%lu facts read)\n", i);
   return facts;
 }
+#endif
   
 
 
+#ifndef OLD_TRIE
 /**
  * Get the number of words in the vocabulary, as given by
  * Postgresql.
@@ -863,3 +866,4 @@ FactDB* ReadFactTrie(const uint64_t& maxFactsToRead, const Graph* graph) {
   // Return
   return trie;
 }
+#endif

@@ -393,10 +393,6 @@ class LossyTrie : public FactDB {
 };
 
 
-FactDB* ReadOldFactTrie(const uint64_t maxFactsToRead, const Graph* graph);
-
-inline FactDB* ReadOldFactTrie(const Graph* graph) { return ReadOldFactTrie(std::numeric_limits<uint64_t>::max(), graph); }
-
 /**
  * Read in the known database of facts as a Trie.
  * @param maxFactsToRead Cap the number of facts read to this amount, 

@@ -203,7 +203,7 @@ public class NaturalLI extends HttpServlet {
       r.isTrue = true;
       Iterator<Messages.Inference> pathIter = paths.iterator();
       boolean hasAnyJustification = false;
-      while (pathIter.hasNext()) {
+      if (pathIter.hasNext()) {  // switch to 'while' for noisy and
         switch (pathIter.next().getState()) {
           case TRUE:
             hasAnyJustification = true;

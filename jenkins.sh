@@ -54,6 +54,10 @@ make all check
 echo "(fewer completions)"
 configure MAX_COMPLETIONS=10
 make all check
+echo "(old trie)"
+configure OLD_TRIE=1
+make all check
+test/src/itest_server
 echo "(back to default)"
 configure  # reconfigure to default
 make all
