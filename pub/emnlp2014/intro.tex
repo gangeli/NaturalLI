@@ -1,7 +1,7 @@
 \Section{intro}{Introduction}
 We approach the task of \textit{database completion}: given a
   database of true facts, we would like to predict whether an unseen fact
-  should belong to the database.
+  should belong in the database.
 This is intuitively cast as an inference problem from 
   a collection of candidate premises to the truth of the query.
 For example, we would like to infer 
@@ -25,7 +25,8 @@ For example, we would like to infer
 \end{figure}
 
 These inferences are difficult to capture in a principled way
-  while maintaining high recall, particularly for open-domain text.
+  while maintaining high recall, particularly for 
+  large scale open-domain tasks.
 Learned inference rules are difficult to generalize to arbitrary
   relations, and standard IR methods easily miss small but
   semantically important lexical differences.
@@ -42,7 +43,7 @@ Furthermore, OpenIE and similar projects have been very successful at
   collecting databases of natural language snippets
   from an ever-increasing corpus of unstructured text.
 These factors motivate our use of Natural Logic -- a proof system built
-  on the syntax of human language -- to create a system for
+  on the syntax of human language -- for
   broad coverage database completion.
 
 Prior work on Natural Logic has focused on inferences from a single
@@ -52,8 +53,8 @@ We propose three contributions to computational Natural Logic:
   (i) our approach operates over a very large set of
     candidate premises simultaneously;
   (ii) we do not
-    require any explicit alignment between the premise and the query;
-  and (iii) we allows imprecise inferences at an
+    require explicit alignment between the premise and the query;
+  and (iii) we allow imprecise inferences at an
     associated cost learned from data.
 %    to provide a broad-coverage system over real-world facts.
 
@@ -64,8 +65,8 @@ We propose three contributions to computational Natural Logic:
 %Lastly, we allow imprecise inferences%, with an associated confidence,
 %  to provide a more broad-coverage system over real-world facts.
 
-Our approach casts inference as a search problem from a query to any
-  valid supporting premise.
+Our approach casts inference as a single unified search problem from 
+  a query to any valid supporting premise.
 Each transition along the search denotes a (reverse) inference step 
   in Natural Logic, and incurs a cost reflecting the system's confidence
   in the validity of that step.
@@ -75,8 +76,11 @@ This approach offers two big contributions over prior work in
     any assumptions about the schema or domain of the text,
   and (ii) it proposes Natural Logic rather than explicit
     inference rules as the means of proposing inferences.
-Moreover, the entire inference pipeline is implemented within the context
-  of a single search over these inferences.
+Moreover, the entire inference pipeline is implemented 
+  in a single elegant framework, which scales easily to large
+  databases.
+%  within the context
+%  of a single search over these inferences.
 
 %
 %   ---

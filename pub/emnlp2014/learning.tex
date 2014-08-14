@@ -1,12 +1,18 @@
 \Section{learning}{Learning Transition Costs}
 %The learning task can be viewed as a constrained optimization problem.
-We describe our learning procedure for the transitions costs $\theta$.
+We describe our procedure for learning the transitions costs $\theta$.
 Our training data $\sD$ consists of query facts $q$ and their associated
   gold truth values $y$.
 Equation \refeqn{prob} gives us a probability that a particular inference
-  is \textit{valid}; trivially, we define the probability that a
-  fact is true as the probability that an inference from a premise to
-  that fact is valid.
+  is \textit{valid}; this is subtly different from our objective of
+  determining if the query is \textit{true}.
+We take these two ($p(\textit{valid})$ and $p(\textit{true})$) to be
+  equivalent for our experiments, which corresponds to the often
+  incorrect assumption that our database is clean and only contains
+  true facts.
+%trivially, we define the probability that a
+%  fact is true as the probability that an inference from a premise to
+%  that fact is valid.
 %  we assume that every fact in our database is true, which allows us
 %  to use the equation as a proxy for the probability that a fact
 %  is true.
@@ -44,14 +50,14 @@ Analogous to logistic regression, the log likelihood of our training
 \vspace{-0.75em}
 \begin{align*}
 \l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
-    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot f(x_i)}} \right) \\
-    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot f(x_i)}} \right)
+    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot \bef(x_i)}} \right) \\
+    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot \bef(x_i)}} \right)
   \Big],
 \end{align*}
 \vspace{-1.0em}
 
 \noindent where $y_i$ is 1 if the example is annotated true and 0
-  otherwise, and $f(x_i)$ are the features extracted for path $x_i$.
+  otherwise, and $\bef(x_i)$ are the features extracted for path $x_i$.
 The objective function is the negative log likelihood with
   an $L_2$ regularization term and a log barrier function to 
   prohibit negative costs:

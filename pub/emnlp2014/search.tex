@@ -11,7 +11,7 @@
 \end{center}
 \caption{
   \label{fig:fsa}
-  (a) The join table in \reftab{join} expressed as a finite state automata.
+  (a) Natural logic inference expressed as a finite state automata.
   Omitted edges go to the unknown state (\independent), with the exception of
     omitted edges from $\equivalent$, which go to the state of the edge
     type.
@@ -23,28 +23,43 @@
 }
 \end{figure*}
 
-This work augments the proof system from \refsec{maccartney-proof}
-  in two ways:
-  we show that the proof can be viewed as a finite state machine,
-  and we show that we can losslessly collapse this
-  finite state machine into a much simpler one with only three
-  intuitive inference states.
-These will allow us to formulate our search problem such that a path
-  in search corresponds to a path through this collapsed state machine.
+%This work augments the proof system from \refsec{maccartney-proof}
+%  in two novel ways:
+We show that the tabular proof formulation from \refsec{maccartney-proof}
+  can be viewed as a finite state machine,
+  and present a novel observation that we can losslessly collapse this
+  finite state machine into only three intuitive inference states.
+These will allow us to formulate our search problem such that a search path
+  corresponds to an input to this collapsed state machine.
 %  which in turn specifies a logical derivation.
 
 Taking notation from \refsec{maccartney-proof}, we construct a
-  finite state machine over states $s$.
-A machine at time $i$ in state $s_i$ corresponds to relation $s_i$
-  holding between the premise and the derived fact at time $i$.
-Outgoing transition labels
-  correspond to the projected lexical relation $\rho(r)$;
-  transitions correspond to the join table in \reftab{join}.
-This construction follows from our definition of
-  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
-  for all possible pairs of state $s$ and relation $r$, we construct a
-  transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
-\reffig{fsa}a shows our constructed automata, with trivial edges
+  finite state machine over states
+  $s \in \{\textrm{\small{\forward}}, \textrm{\small{\reverse}}, \dots \}$.
+A machine in state $s_i$ corresponds to relation $s_i$
+  holding between the initial premise and the derived fact so far.
+States therefore correspond to states of \textit{logical validity}.
+Outgoing transitions correspond to \textit{inference steps}.
+Each transition is labeled with a projected relation
+  $\rho(r) \in \{\textrm{\small{\forward}}, \textrm{\small{\reverse}}, \dots\}$,
+  and spans from a source
+  state $s$ to a target $s'$ according to the join table.
+That is, the transition $s \xrightarrow{\rho(r)} s'$ exists iff
+  $s' = s \bowtie \rho(r)$.
+For example, The path in \reffig{teaser} yields to the
+  transitions 
+  $\equivalent \xrightarrow{\negate} \hspace{-0.5em} \negate \hspace{-0.5em}
+               \xrightarrow{\reverse} \alternate
+               \xrightarrow{\equivalent} \alternate
+               \xrightarrow{\reverse} \alternate$.
+%Outgoing transition labels
+%  correspond to the projected lexical relation $\rho(r)$;
+%  transitions correspond to the join table in \reftab{join}.
+%This construction follows from our definition of
+%  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
+%  for all possible pairs of state $s$ and relation $r$, we construct a
+%  transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
+\reffig{fsa}a shows this automata, with trivial edges
   omitted for clarity.
 
 Our second contribution is collapsing this automata into the three
@@ -62,14 +77,13 @@ This clustering mirrors that used by MacCartney for his textual
 Collapsing the FSA into the form in \reffig{fsa}b becomes straightforward
   from observing the regularities in \reffig{fsa}a.
 Nodes in the valid cluster transition to invalid nodes
-  always and only when joined on the relations \negate\ and \alternate.
+  always and only on the relations \negate\ and \alternate.
 Symmetrically, invalid nodes transition to valid nodes always and only
-  when joined on \negate\ and \cover.
+  on \negate\ and \cover.
 A similar pattern holds for the other transitions.
 
 Formally, for every relation $r$ and nodes $a_1$ and $a_2$ in
-  cluster $\ba$,
-  if we have transitions 
+  the same cluster, if we have transitions 
   $a_1 \xrightarrow{r} b_1$ and $a_2 \xrightarrow{r} b_2$
   then $b_1$ and $b_2$ are necessarily in the same cluster.
 As a concrete example, we can take $r = \negate$ and
@@ -96,7 +110,8 @@ Second, the hierarchy over relations presented in
   contexts.
 Lastly, with probabilistic inference,
   transitioning to the unknown state can be replaced by staying in the
-  current state at a cost to the confidence of validity.
+  current state at a (potentially arbitrarily large) cost to the 
+  confidence of validity.
 This allows us to make use of only two states:
   \textit{valid} and \textit{invalid}.
 

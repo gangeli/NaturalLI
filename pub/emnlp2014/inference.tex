@@ -23,8 +23,11 @@ The nodes in our search problem correspond to candidate facts
   the edges are mutations of these facts (\refsec{inference-transitions}); 
   the costs over these edges encode the confidence that this edge
   maintains an informative inference.
+This mirrors the automata defined in \refsec{search}, except importantly
+  we are constructing a reversed derivation, and are therefore
+  ``traversing'' the FSA backwards.
 
-This approach is efficient over a large database of 300 million entries
+This approach is efficient over a large database of 270 million entries
   without making use of explicit queries over the database;
   nor does the approach make use of any sort of approximate
   matching against the database, beyond lemmatizing individual 
@@ -57,9 +60,21 @@ The space of possible nodes in our search is the set of possible
   partial derivations.
 To a first approximation, this is a pair $(w, s)$ of a surface form
   $w$ tagged with word sense and polarity,
-  and an inference state $s$ in our collapsed FSA (\reffig{fsa}b).
-In addition, our search keeps
-  track of some additional information for efficiency.
+  and an inference state $s \in \{\textrm{valid}, \textrm{invalid}\}$
+  in our collapsed FSA (\reffig{fsa}b).
+For example, the search path in \reffig{teaser} traverses the nodes:
+
+\vspace{1em}
+\begin{tabular}{lr}
+  (\w{No carnivores eat animals}, & \textrm{valid}) \\
+  (\w{The carnivores eat animals}, & \textrm{invalid}) \\
+  (\w{The cat eats animals}, & \textrm{invalid}) \\
+  (\w{The cat eats an animal}, & \textrm{invalid}) \\
+  (\w{The cat ate a mouse}, & \textrm{invalid}) \\
+\end{tabular}
+\vspace{1em}
+
+In addition, our search keeps track of some additional information:
 
 %That is, a node is primarily parametrized primarily by the surface
 %  form of the candidate fact at this point in the (reverse) derivation.
@@ -79,9 +94,16 @@ In addition, our search keeps
 Edges in the graph correspond to mutations of individual lexical items.
 We maintain an index of the next item to mutate at each search state.
 Importantly, this enforces that each derivation orders mutations
-  right-to-left;
+  left-to-right;
   this is computationally efficient, at the expense of rare search
   errors.
+
+\paragraph{Polarity}
+Mutating quantifiers can change the polarity information on a span
+  in the fact.
+Since we do not have the full parse tree at our disposal at search,
+  we track a small amount of metadata to guess the scope of the
+  mutated quantifier.
 
 %As per our definition, transitions between nodes are transitions 
 %  between facts.
@@ -98,56 +120,6 @@ Importantly, this enforces that each derivation orders mutations
 %This helps make search more tractable, at the expense of rare
 %  esoteric search errors.
 
-
-\paragraph{Predicting deletions}
-Although inserting lexical items in a derivation (deleting words from
-  the reversed derivation) is trivial, the other direction is not.
-For brevity, we refer to a deletion in the derivation as an insertion,
-  since from the perspective of search we are inserting lexical items.
-
-\Naive ly, at every node in our search we must consider every item in
-  the vocabulary as a possible insertion.
-We can limit the number of items we consider by storing the database
-  as a trie.
-Since search mutates the fact left-to-right (as per above), we can
-  look up completions in the trie as candidate insertions.
-To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$
-  and mutation index $i$, we would look up completions $w_{i+1}$ for
-  $w_0,w_1,\dots,w_i$ in our trie of known facts.
-
-Although this approach works well when $i$ is relatively large, there
-  are too many candidate insertions for small $i$.
-We special case the most extreme example for this, where $i=0$ -- that is, 
-  when we are inserting into the beginning of the fact.
-In this case, rather than taking all possible lexical items that start
-  any fact, we take all items which are followed by the first word of
-  our current fact.
-To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$,
-  we would propose candidate insertions $w_{-1}$ such that
-  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact
-  for some $w^\prime_1,\dots,w^\prime_k$.
-  
-%Since we are constructing antecedents left-to-right, as per above,
-%  we can propose candidate deletable words from the Trie, looking up
-%  the partial derivation up to the mutation index.
-%As a special case, when proposing words for the beginning of the
-%  fact, we take all facts whose second word matches the first word
-%  of the search node.
-%
-%\paragraph{Tracking inference state}
-%The cost of an inference at any given node depends not only on the
-%  polarity of the lexical item, but also the state of the derivation
-%  so far.
-%We therefore augment a fact with whether the derivation is in a
-%  \textit{valid} or \textit{invalid} state
-
-\paragraph{Polarity tracking}
-Mutating quantifiers can change the polarity information on a span
-  in the fact.
-Since we do not have the full parse tree at our disposal at search,
-  we track a small amount of metadata to guess the scope of the
-  mutated quantifier.
-
 %
 % TRANSITIONS
 %
@@ -158,24 +130,67 @@ A \textit{transition template} is a broad class of transitions; for
 A \textit{transition} (or \textit{transition instance}) is a particular
   instantiation of a transition template.
 For example, the transition from \textit{cat} to \textit{feline}.
-Lastly, an \textit{edge} in the search space connects two facts, which
+Lastly, an \textit{edge} in the search space connects two nodes, which
   are separated by a single transition instance.
 For example, an edge exists between 
-  \textit{some cats have tails} and \textit{some felines have tails}.
-Transitions are stored statically, whereas edges are constructed
-  on demand.
+  \textit{some felines have tails} and \textit{some cats have tails}.
+Transition \lbrack instances\rbrack\ are stored statically in memory, 
+  whereas edges are constructed on demand.
 
+Transition templates provide a means of defining transitions and
+  subsequently edges in our search space using existing lexical
+  resources (e.g., WordNet, distributional similarity, etc.).
+We can then define a mapping from these templates to Natural Logic
+  lexical relations.
+This allows us to map every edge in our search graph back to the
+  Natural Logic relation it instantiates.
 %Note that the edges in the search are not constructed \textit{a priori}.
 %It is sufficient to store the transitions, and construct particular
 %  edges on demand.
-At a high level, we include most relations in WordNet as transitions,
+The full table of transition templates is given in \reftab{transitions},
+  along with the relation instances of that template introduce.
+We include most relations in WordNet as transitions,
   and parametrize insertions and deletions by the part of speech
   of the token being inserted/deleted.
-The full table of transitions is given in \reftab{transitions}, along
-  with the relation that transition introduces.
+
+Once we have an edge defining a lexical mutation with a Natural Logic
+  relation $r$, we can construct the corresponding end node
+  $(w', s')$ such that $w'$ is the sentence with the lexical mutation
+  applied, and $s'$ is the validity state obtained from following the
+  FSA in \refsec{search} in reverse.
+For instance, if our edge begins at $(w, s)$, and there exists
+  a transition in the FSA from $s' \xrightarrow{r} s$, then we
+  define the end point of the edge to be $(w', s')$.
+To illustrate concretely, suppose our search state is:
+
+\vspace{1em}
+\begin{tabular}{lr}
+(\textit{some felines have tails}, & valid)
+\end{tabular}
+\vspace{1em}
+
+The transition template for WordNet hypernymy gives us a transition
+  instance from \textit{feline} to \textit{cat}, corresponding to the
+  Natural Logic inference 
+  $\textit{cat} \xrightarrow{\forward} \textit{feline}$.
+Recall, we are constructing the inference in reverse, starting from
+  the consequent (query).
+We then notice that the transition 
+  $valid \xrightarrow{\forward} valid$ in the FSA ends in our current
+  inference state, and set our new inference state to be its start --
+  in this case, we maintain validity.
+
+Note that negation is somewhat subtle, as the transitions are not
+  symmetric from valid to invalid and visa versa and we do not know
+  the edge endpoint's true inference state with respect to the premise
+  yet.
+In practice, the search procedure treats all three of
+  $\{\negate, \alternate, \cover\}$ as negation, and re-score complete
+  derivations once their inference states are known.
 
 \begin{table}
 \begin{center}
+
 %  \begin{tabular}{lcl}
 %    \textbf{Template} & \textbf{Relation} & \textbf{Example edge} \\
 %    \hline
@@ -211,7 +226,7 @@ The full table of transitions is given in \reftab{transitions}, along
   \end{tabular}
 	\caption{
     The edges allowed during inference.
-    Entries with a dagger are parametrized by their part-of-speech
+    Entries with a dagger ($\dagger$) are parametrized by their part-of-speech
       tag, from the restricted list of $\{$noun$,$adjective$,$verb$,$other$\}$.
     The first column describes the type of the transition.
     The set-theoretic relation introduced by each relation is given in
@@ -223,7 +238,7 @@ The full table of transitions is given in \reftab{transitions}, along
 \end{center}
 \end{table}
 
-It should be noted that the mapping from transitions to relation
+It should be noted that the mapping from transition templates to relation
   types is intentionally imprecise.
 For instance, clearly nearest neighbors do not preserve equivalence
   (\equivalent); more subtly, while
@@ -237,10 +252,12 @@ We mitigate this imprecision by introducing a cost for each transition,
   and learning the appropriate value for this cost
   (see \refsec{learning}).
 The cost of an edge
-  from fact $(f,v,p)$ with surface form $f$, validity
-  $v$ and polarity $p$ to a new fact $(f',v',p')$ using a transition
-  instance $t_i$ of type $t$ is given by
-  $f_{t_i} \cdot \theta_{t,v,p}$, defined as:
+  from fact $(w,v)$ with surface form $w$ and validity
+  $v$ to a new fact $(w',v')$, using a transition
+  instance $t_i$ of template $t$, and mutating a word
+  with polarity $p$, is given by
+  $f_{t_i} \cdot \theta_{t,v,p}$.
+We define this as:
 
 \vspace{-0.25em}
 \begin{itemize}
@@ -249,7 +266,7 @@ The cost of an edge
     A value associated with every transition instance $t_i$, intuitively
       corresponding to how ``far'' the endpoints of the transition are.
   \indentitem\item[$\theta_{t,v,p}$:]
-    A learned cost for taking a transition of type $t$, if the source
+    A learned cost for taking a transition of template $t$, if the source
     of the edge is in a inference state of $v$ and the word being mutated
     has polarity $p$.
 \end{itemize}
@@ -272,21 +289,26 @@ In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
 \end{equation*}
 \vspace{-0.5em}
 
-We define $p(w)$ to be the probability (normalized frequency)
-  of a word or any of its hyponyms in the Google N-Grams corpus
+We define $p(w)$ to be the ``probability'' of a concept --
+  that is, the normalized frequency
+  of a word $w$ or any of its hyponyms in the Google N-Grams corpus
   \cite{key:2006brants-ngrams}.
 Intuitively, this ensures that relatively long paths through fine-grained
   sections of WordNet are not unduly penalized.
 For instance, the path from \textit{cat} to \textit{animal} traverses
   six intermediate nodes, \naive ly yielding a prohibitive
   search depth of 6.
+However, many of these transitions have low weight:
+  for instance
+  $f_{\uparrow_{\textit{cat} \rightarrow \textit{feline}}}$ is only
+  \num{0.37}.
 The value $f_{\downarrow_{w \rightarrow w'}}$ is set analogously.
 
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
 We then define $f_{NN_{w \rightarrow w'}}$
-  to be the arc cosine of the cosine similarity between word vectors
-  associated with lexical items $w$ and $w'$:
+  to be the arc cosine of the cosine similarity (i.e., the angel)
+  between word vectors associated with lexical items $w$ and $w'$:
 
 \vspace{-0.5em}
 \begin{equation*}
@@ -295,14 +317,33 @@ We then define $f_{NN_{w \rightarrow w'}}$
 \end{equation*}
 \vspace{-0.5em}
 
-The set of features which fire along a path
-  can be expressed as a vector $\bef$.
-Each element of $\bef$ corresponds to the sum of the values of that
-  feature along the path.
-Correspondingly, we define the weight vector $\theta$ as the
-  weight for every element of $\bef$.
-The cost of a path can then be expressed as the dot product:
-  $\theta \cdot \bef$.
+For instance, $f_{NN_{\textit{cat} \rightarrow \textit{dog}}} = 0.43$.
+In practice, we take the 100 nearest neighbors for each word.
+
+We can express $f_{t_i}$ as a feature vector by representing it as
+  a vector with value $f_{t_i}$ at the index corresponding to
+  $(t,v,p)$ -- the transition template, the validity of the inference,
+  and the polarity of the mutated word.
+Note that the size of this vector mirrors the size of number of
+  parameters $\theta_{t,v,p}$, and is in general smaller than the
+  number of transition instances.
+
+A search path can then be parametrized by a sequence of feature vectors
+  $f_1, f_2, \dots, f_n$, which in turn can be collapsed into a single
+  feature vector $\bef = \sum_i f_i$.
+The cost of a path is defined as $\theta \cdot \bef$, where
+  $\theta$ is the vector of $\theta_{t,v,p}$ values.
+Both $\bef$ and $\theta$ are constrained to be non-negative, or else
+  the search problem is misspecified.
+
+%The set of features which fire along a path
+%  can be expressed as a vector $\bef$.
+%Each element of $\bef$ corresponds to the sum of the values of that
+%  feature along the path.
+%Correspondingly, we define the weight vector $\theta$ as the
+%  weight for every element of $\bef$.
+%The cost of a path can then be expressed as the dot product:
+%  $\theta \cdot \bef$.
 
 %
 % Generalize JC
@@ -322,7 +363,7 @@ The JC distance $\textrm{dist}_{\textrm{jc}}(w_1, w_2)$ is:
 \end{equation}
 \vspace{-0.5em}
 
-For simplicity, we simplify $\theta_{\uparrow,v,p}$ and $\theta_{\uparrow,v,p}$
+For simplicity, we simplify $\theta_{\uparrow,v,p}$ and $\theta_{\downarrow,v,p}$
   as simply $\theta_\uparrow$ and $\theta_\downarrow$.
 %The derivation generalizes trivially to the the case where weights are
 %  further parametrized.
@@ -356,7 +397,7 @@ We can factorize the cost of a path, $\theta \cdot \bef$, along the path
 \vspace{-0.5em}
 
 Note that setting both $\theta_\uparrow$ and $\theta_\downarrow$ to 1 exactly
-  yield the Formula \refeqn{jc} for JC distance.
+  yields Formula \refeqn{jc} for JC distance.
 This, in addition to the inclusion of nearest neighbors as transitions,
   allows the search to capture the intuition that similar objects
   have similar properties
@@ -370,6 +411,41 @@ This, in addition to the inclusion of nearest neighbors as transitions,
 %  have similar properties (e.g., as presented in
 %  \newcite{key:2013angeli-truth}) using both common classes of similarity
 %  metrics.
+
+
+%
+% PROBABILITY
+%
+\Subsection{inference-deletions}{Deletions in Inference}
+Although inserting lexical items in a derivation (deleting words from
+  the reversed derivation) is trivial, the other direction is not.
+For brevity, we refer to a deletion in the derivation as an insertion,
+  since from the perspective of search we are inserting lexical items.
+
+\Naive ly, at every node in our search we must consider every item in
+  the vocabulary as a possible insertion.
+We can limit the number of items we consider by storing the database
+  as a trie.
+Since the search mutates the fact left-to-right (as per above), we can
+  consider children of a trie node as candidate insertions.
+To illustrate, given a search state with fact $w_0 w_1 \dots w_n$
+  and mutation index $i$, we would look up completions $w_{i+1}$ for
+  $w_0 w_1 \dots w_i$ in our trie of known facts.
+More concretely, if we know that \w{fluffy cats have tails}, and are
+  at a node corresponding to \w{cats like boxes}, we propose \w{fluffy}
+  as a possible insertion: \w{fluffy cats like boxes}.
+
+Although this approach works well when $i$ is relatively large, there
+  are too many candidate insertions for small $i$.
+We special case the most extreme example for this, where $i=0$ -- that is, 
+  when we are inserting into the beginning of the fact.
+In this case, rather than taking all possible lexical items that start
+  any fact, we take all items which are followed by the first word of
+  our current fact.
+To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$,
+  we would propose candidate insertions $w_{-1}$ such that
+  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact
+  for some $w^\prime_1,\dots,w^\prime_k$.
 
 %
 % PROBABILITY

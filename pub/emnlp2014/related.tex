@@ -62,13 +62,24 @@ Prominent examples include
     \cite{key:2001voorhees-trec},
   semantic parsing
     \cite{key:1996zelle-semantics,key:2007zettlemoyer-semantics,key:2013kwiatkowski-semantics,key:2014berant-semantics},
-  information extraction
-    \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre},
-  and recognizing textual entailment
-    \cite{key:2010-schoenmackers-horn,key:2011berant-entailment}.
+  and information extraction
+    \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}.
 A long-term goal of this work is to improve accuracy on these
   downstream tasks by providing a \textit{probabilistic} knowledge base
   over both explicitly known and likely true facts.
+
+% -- RTE
+This work is similar in many ways to work on 
+  recognizing textual entailment -- e.g., 
+  \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment}.
+Work by \newcite{key:2013lewis-entailment} is particularly relevant,
+  as they likewise evaluate on the FraCaS suite (Section 1 only, at
+  89\% accuracy with gold trees).
+They approach entailment by constructing a CCG parses of the query,
+  mapping questions which are paraphrases of each other to the
+  same logical form using distributional relation clustering.
+However, their system is unlikely to scale to either our large
+  database of premises, nor our breadth of relations.
 
 % Paraphrase-based Q/A
 \newcite{key:2014fader-openqa} propose a system for question answering
@@ -77,5 +88,8 @@ A long-term goal of this work is to improve accuracy on these
 This work can be thought of as an elegant framework for unifying this
   two-stage process, while explicitly tracking the ``risk'' taken with
   each paraphrase step.
-
+Furthermore, our system is able to explore mutations which are only
+  valid in one direction, rather than the bidirectional entailment of
+  paraphrases, and does not require a corpus of such paraphrases for
+  training.
   

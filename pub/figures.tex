@@ -95,14 +95,14 @@
     child {
       node[fact] {\w{\textbf{The} carnivores eat animals}} 
       child {
-        node[fact] {\w{The \textbf{cat} \\ eat animals}} 
+        node[fact] {\w{The \textbf{cat} \\ eats animals}} 
         child {
-          node[fact] {\w{The cat \\ eat \textbf{mouse}}}
+          node[fact] {\w{The cat \\ ate \textbf{an} animal}}
           child {
-            node[sink] {\w{The cat \\ ate \textbf{a} mouse}} 
-            edge from parent [goodPath] node[below] {\rotatebox{90}{$\equivalent$}}
+            node[sink] {\w{The cat \\ ate a \textbf{mouse}}} 
+            edge from parent [goodPath] node[below] {\rotatebox{90}{$\reverse$}}
           }
-          edge from parent [goodPath] node[below] {\rotatebox{90}{$\reverse$}}
+          edge from parent [goodPath] node[below] {\rotatebox{90}{$\equivalent$}}
         }
         edge from parent [goodPath] node[below] {$\rotatebox{90}{\reverse}$}
       }

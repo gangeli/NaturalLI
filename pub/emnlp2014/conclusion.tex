@@ -2,11 +2,28 @@
 We have presented NaturalLI, an inference system over
   unstructured text intended to infer common sense facts.
 We have shown that we can run inference over a large set of premises
-  while maintaining valid Natural Logic semantics, and have shown that
+  while maintaining Natural Logic semantics, and have shown that
   we can learn how to infer unseen common sense facts.
 
 Future work will focus on enriching the class of inferences we can
-  make with Natural Logic -- in particular, reasoning with meronymy
-  and relational entailment.
-Furthermore, we hope to learn lexicalized parameters,
+  make with Natural Logic.
+Formally, Natural Logic is able to reason about any partial ordering
+  over lexical items -- this paper explores the hypernymy relation
+  (subset over denotations), but the same framework elegantly extends
+  to meronymy or relational entailment.
+Furthermore, we hope to learn richer lexicalized parameters,
   and make use of the syntactic structure of a fact during search.
+
+\vspace{2ex}
+{\footnotesize
+\paragraph{\footnotesize Acknowledgements}
+We thank the anonymous reviewers for their thoughtful comments.
+We gratefully acknowledge the support of the Defense
+Advanced Research Projects Agency (DARPA) Deep Exploration and Filtering
+of Text (DEFT) Program under Air Force Research Laboratory (AFRL)
+contract no. FA8750-13-2-0040. Any opinions, findings, and conclusion or
+recommendations expressed in this material are those of the authors and
+do not necessarily reflect the view of the DARPA, AFRL, or the US
+government.
+
+}
