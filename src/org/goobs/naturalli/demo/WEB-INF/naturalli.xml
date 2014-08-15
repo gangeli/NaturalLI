@@ -39,5 +39,15 @@
         <servlet-name>NaturalLI</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Feedback</servlet-name>
+        <servlet-class>org.goobs.naturalli.demo.Feedback</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>Feedback</servlet-name>
+        <url-pattern>/feedback</url-pattern>
+    </servlet-mapping>
 </web-app>
 

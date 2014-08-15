@@ -117,22 +117,32 @@ public class NaturalLI extends HttpServlet {
     response.setHeader("Cache-Control", "no-cache");
     response.setHeader("Access-Control-Allow-Origin", "*");
 
-    String input = request.getParameter("q");
-    if (input == null || input.trim().equals("")) {
+    String source = request.getParameter("iam");
+    if (source == null || source.trim().equals("")) {
       r.success = false;
-      r.errorMessage = "No input given";
+      r.errorMessage = "Please supply a parameter 'iam=<contact info>' with your query 'q=<query'. " +
+          "This is a courtesy so we can let you know if you're overloading our servers.";
     } else {
-      final Lock callCompleteLock = new ReentrantLock();
-      final Condition callComplete = callCompleteLock.newCondition();
-      callCompleteLock.lock();
-      try {
-        pool.submit(() -> handleQuery(r, input, callCompleteLock, callComplete));
-        callComplete.await();
-      } catch (InterruptedException ignored) {
-      } finally {
-        callCompleteLock.unlock();
+      String input = request.getParameter("q");
+      if (input == null || input.trim().equals("")) {
+        r.success = false;
+        r.errorMessage = "No input given";
+      } else {
+        // -- Begin meaningful content
+        final Lock callCompleteLock = new ReentrantLock();
+        final Condition callComplete = callCompleteLock.newCondition();
+        callCompleteLock.lock();
+        try {
+          pool.submit(() -> handleQuery(r, input, callCompleteLock, callComplete));
+          callComplete.await();
+        } catch (InterruptedException ignored) {
+        } finally {
+          callCompleteLock.unlock();
+        }
+        // -- End meaningful content
       }
     }
+
 
     out.print(gson.toJson(r));
     out.close();

@@ -34,6 +34,7 @@
                 <img src="logo.png" height="200px" style="margin-bottom: 2em; text-align: center; margin-left:auto; margin-right:auto; display:block;"/>
                 <!-- Query Box -->
                 <form id="form-query" class="form-inline" role="form" action="http://plato42.stanford.edu:8080/naturalli/">
+                    <input id="iam" type="hidden" name="iam" value="web demo"/>
                     <div class="form-group">
                         <div class="input-group">
                             <input id="q" type="text" name="q" class="form-control input-lg"
@@ -49,16 +50,17 @@
 
         <!-- Truth Value -->
         <div id="truth-row" class="row" style="margin-top:2em;">
-            <div class="col-md-offset-5 centered" >
-                <span id="truth-value" style="text-align:center;"></span>
+            <div class="col-md-2"></div>
+            <div id="truth-container" class="col-md-8 centered">
             </div>
+            <div class="col-md-2"></div>
         </div>
 
         <!-- Justification Toggle -->
         <div id="justification-toggle-row" class="row" style="margin-top:1em;">
             <div class="col-md-offset-5 centered">
                 <span id="justification-toggle">
-                    <span id="justification-toggle-icon" class="glyphicon glyphicon-expand not-selectable" style="margin-right:0.5em; cursor: pointer;"></span>
+                    <span id="justification-toggle-icon" class="glyphicon glyphicon-chevron-down not-selectable" style="margin-right:0.5em; cursor: pointer;"></span>
                     <span id="justification-toggle-text" class="not-selectable" style="cursor: pointer">Justification</span>
                 </span>
             </div>

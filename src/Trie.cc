@@ -526,7 +526,10 @@ const bool LossyTrie::contains(const tagged_word* taggedFact,
 // ----------------------------------------------------------------------------
 //
 
-#ifdef OLD_TRIE
+#ifndef OLD_TRIE
+  #define OLD_TRIE 0
+#endif
+#if OLD_TRIE!=0
 //
 // ReadFactTrie
 //
@@ -642,7 +645,7 @@ FactDB* ReadFactTrie(const uint64_t& maxFactsToRead, const Graph* graph) {
   
 
 
-#ifndef OLD_TRIE
+#if OLD_TRIE==0
 /**
  * Get the number of words in the vocabulary, as given by
  * Postgresql.

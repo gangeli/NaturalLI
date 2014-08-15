@@ -33,6 +33,9 @@ body {
 .truth-value-error {
   color:  red;
 }
+.truth-gloss {
+  font-size: xx-large;
+}
 
 .justification-entry {
   font-size: large;
