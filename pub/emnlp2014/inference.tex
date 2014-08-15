@@ -22,7 +22,7 @@ The nodes in our search problem correspond to candidate facts
   (\refsec{inference-state});
   the edges are mutations of these facts (\refsec{inference-transitions}); 
   the costs over these edges encode the confidence that this edge
-  maintains an informative inference.
+  maintains an informative inference (\refsec{inference-prob}).
 This mirrors the automata defined in \refsec{search}, except importantly
   we are constructing a reversed derivation, and are therefore
   ``traversing'' the FSA backwards.
@@ -64,7 +64,7 @@ To a first approximation, this is a pair $(w, s)$ of a surface form
   in our collapsed FSA (\reffig{fsa}b).
 For example, the search path in \reffig{teaser} traverses the nodes:
 
-\vspace{1em}
+\vspace{0.5em}
 \begin{tabular}{lr}
   (\w{No carnivores eat animals}, & \textrm{valid}) \\
   (\w{The carnivores eat animals}, & \textrm{invalid}) \\
@@ -72,8 +72,11 @@ For example, the search path in \reffig{teaser} traverses the nodes:
   (\w{The cat eats an animal}, & \textrm{invalid}) \\
   (\w{The cat ate a mouse}, & \textrm{invalid}) \\
 \end{tabular}
-\vspace{1em}
+\vspace{0.5em}
 
+During search, we assume that the validity states $s$ are reversible --
+  if we know that \textit{the cat ate a mouse} is true, we can
+  infer that \textit{no carnivores eat animals} is false.
 In addition, our search keeps track of some additional information:
 
 %That is, a node is primarily parametrized primarily by the surface
@@ -91,7 +94,8 @@ In addition, our search keeps track of some additional information:
 %  a single word.
 
 \paragraph{Mutation Index}
-Edges in the graph correspond to mutations of individual lexical items.
+Edges are most naturally defined to correspond to mutations of 
+  individual lexical items.
 We maintain an index of the next item to mutate at each search state.
 Importantly, this enforces that each derivation orders mutations
   left-to-right;
@@ -148,26 +152,28 @@ This allows us to map every edge in our search graph back to the
 %It is sufficient to store the transitions, and construct particular
 %  edges on demand.
 The full table of transition templates is given in \reftab{transitions},
-  along with the relation instances of that template introduce.
+  along with the Natural Logic relation 
+  that instances of the template introduce.
 We include most relations in WordNet as transitions,
   and parametrize insertions and deletions by the part of speech
   of the token being inserted/deleted.
 
-Once we have an edge defining a lexical mutation with a Natural Logic
-  relation $r$, we can construct the corresponding end node
+Once we have an edge defining a lexical mutation with
+  an associated Natural Logic relation $r$, we can construct the 
+  corresponding end node
   $(w', s')$ such that $w'$ is the sentence with the lexical mutation
-  applied, and $s'$ is the validity state obtained from following the
-  FSA in \refsec{search} in reverse.
+  applied, and $s'$ is the validity state obtained from the
+  FSA in \refsec{search}.
 For instance, if our edge begins at $(w, s)$, and there exists
   a transition in the FSA from $s' \xrightarrow{r} s$, then we
   define the end point of the edge to be $(w', s')$.
 To illustrate concretely, suppose our search state is:
 
-\vspace{1em}
+\vspace{0.5em}
 \begin{tabular}{lr}
 (\textit{some felines have tails}, & valid)
 \end{tabular}
-\vspace{1em}
+\vspace{0.5em}
 
 The transition template for WordNet hypernymy gives us a transition
   instance from \textit{feline} to \textit{cat}, corresponding to the
@@ -177,15 +183,15 @@ Recall, we are constructing the inference in reverse, starting from
   the consequent (query).
 We then notice that the transition 
   $valid \xrightarrow{\forward} valid$ in the FSA ends in our current
-  inference state, and set our new inference state to be its start --
-  in this case, we maintain validity.
+  inference state (\textit{valid}), and set our new inference state to 
+  be its start -- in this case, we maintain validity.
 
 Note that negation is somewhat subtle, as the transitions are not
-  symmetric from valid to invalid and visa versa and we do not know
-  the edge endpoint's true inference state with respect to the premise
+  symmetric from valid to invalid and visa versa, and we do not know
+  our true inference state with respect to the premise
   yet.
 In practice, the search procedure treats all three of
-  $\{\negate, \alternate, \cover\}$ as negation, and re-score complete
+  $\{\negate, \alternate, \cover\}$ as negation, and re-scores complete
   derivations once their inference states are known.
 
 \begin{table}
@@ -254,7 +260,7 @@ We mitigate this imprecision by introducing a cost for each transition,
 The cost of an edge
   from fact $(w,v)$ with surface form $w$ and validity
   $v$ to a new fact $(w',v')$, using a transition
-  instance $t_i$ of template $t$, and mutating a word
+  instance $t_i$ of template $t$ and mutating a word
   with polarity $p$, is given by
   $f_{t_i} \cdot \theta_{t,v,p}$.
 We define this as:
@@ -272,8 +278,7 @@ We define this as:
 \end{itemize}
 \vspace{-0.25em}
 
-The notation for $f_{t_i}$ is chosen to evoke an analogy to features,
-  and we will refer to this quantity as the feature value.
+The notation for $f_{t_i}$ is chosen to evoke an analogy to features.
 We set $f_{t_i}$ to be 1\ in most cases;
   the exceptions are the edges over the WordNet hypernym tree
   and the nearest neighbors edges.
@@ -307,7 +312,7 @@ The value $f_{\downarrow_{w \rightarrow w'}}$ is set analogously.
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
 We then define $f_{NN_{w \rightarrow w'}}$
-  to be the arc cosine of the cosine similarity (i.e., the angel)
+  to be the arc cosine of the cosine similarity (i.e., the angle)
   between word vectors associated with lexical items $w$ and $w'$:
 
 \vspace{-0.5em}
@@ -324,13 +329,13 @@ We can express $f_{t_i}$ as a feature vector by representing it as
   a vector with value $f_{t_i}$ at the index corresponding to
   $(t,v,p)$ -- the transition template, the validity of the inference,
   and the polarity of the mutated word.
-Note that the size of this vector mirrors the size of number of
+Note that the size of this vector mirrors the number of cost
   parameters $\theta_{t,v,p}$, and is in general smaller than the
   number of transition instances.
 
 A search path can then be parametrized by a sequence of feature vectors
   $f_1, f_2, \dots, f_n$, which in turn can be collapsed into a single
-  feature vector $\bef = \sum_i f_i$.
+  vector $\bef = \sum_i f_i$.
 The cost of a path is defined as $\theta \cdot \bef$, where
   $\theta$ is the vector of $\theta_{t,v,p}$ values.
 Both $\bef$ and $\theta$ are constrained to be non-negative, or else
@@ -426,14 +431,12 @@ For brevity, we refer to a deletion in the derivation as an insertion,
   the vocabulary as a possible insertion.
 We can limit the number of items we consider by storing the database
   as a trie.
-Since the search mutates the fact left-to-right (as per above), we can
+Since the search mutates the fact left-to-right 
+  (as per \refsec{inference-state}), we can
   consider children of a trie node as candidate insertions.
-To illustrate, given a search state with fact $w_0 w_1 \dots w_n$
+To illustrate, given a search state with fact $w_0\,w_1 \dots w_n$
   and mutation index $i$, we would look up completions $w_{i+1}$ for
-  $w_0 w_1 \dots w_i$ in our trie of known facts.
-More concretely, if we know that \w{fluffy cats have tails}, and are
-  at a node corresponding to \w{cats like boxes}, we propose \w{fluffy}
-  as a possible insertion: \w{fluffy cats like boxes}.
+  $w_0\,w_1 \dots w_i$ in our trie of known facts.
 
 Although this approach works well when $i$ is relatively large, there
   are too many candidate insertions for small $i$.
@@ -442,10 +445,13 @@ We special case the most extreme example for this, where $i=0$ -- that is,
 In this case, rather than taking all possible lexical items that start
   any fact, we take all items which are followed by the first word of
   our current fact.
-To illustrate, given a search state with fact $w_0,w_1,\dots,w_n$,
+To illustrate, given a search state with fact $w_0\,w_1 \dots w_n$,
   we would propose candidate insertions $w_{-1}$ such that
-  $w_{-1},w_0,w^\prime_1,\dots,w^\prime_k$ is a known fact
-  for some $w^\prime_1,\dots,w^\prime_k$.
+  $w_{-1}\,w_0\,w^\prime_1 \dots w^\prime_k$ is a known fact
+  for some $w^\prime_1 \dots w^\prime_k$.
+More concretely, if we know that \w{fluffy cats have tails}, and are
+  at a node corresponding to \w{cats like boxes}, we propose \w{fluffy}
+  as a possible insertion: \w{fluffy cats like boxes}.
 
 %
 % PROBABILITY
@@ -475,7 +481,7 @@ However, to translate this value into a probability
   confidently valid, or confidently invalid.
 To illustrate, a fact with a low confidence should translate to a
   probability of $\frac{1}{2}$, rather than a probability of 0.
-We therefore define the probability of validity as follows.
+We therefore define the probability of validity as follows:
 We take $v$ to be 1 if the final fact of our derivation is in the
   \textit{valid} state with respect to the antecedent,
   and -1 if this fact is in the \textit{invalid} state.

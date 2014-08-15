@@ -30,7 +30,8 @@ We show that the tabular proof formulation from \refsec{maccartney-proof}
   and present a novel observation that we can losslessly collapse this
   finite state machine into only three intuitive inference states.
 These will allow us to formulate our search problem such that a search path
-  corresponds to an input to this collapsed state machine.
+  corresponds to an input to (i.e., path through) this collapsed state 
+  machine.
 %  which in turn specifies a logical derivation.
 
 Taking notation from \refsec{maccartney-proof}, we construct a
@@ -59,7 +60,7 @@ For example, The path in \reffig{teaser} yields to the
 %  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
 %  for all possible pairs of state $s$ and relation $r$, we construct a
 %  transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
-\reffig{fsa}a shows this automata, with trivial edges
+\reffig{fsa}a shows the automata, with trivial edges
   omitted for clarity.
 
 Our second contribution is collapsing this automata into the three

@@ -106,6 +106,8 @@ For instance, we can consider two inferences:
 It is clear from the parse of the sentence that the first is valid
   and the second is not; however, from the perspective of the search
   algorithm both make the same two edits: inserting \w{Jack} and \w{saw}.
+In order to err on the side of safety, we disallow deleting the verb
+  \w{saw}.
 
 %For instance, differentiating between \w{Smith saw} \w{Smith thinks that}
 %  in \w{Smith saw/thinks that Jones sign the contract} is very difficult
@@ -171,7 +173,7 @@ This yielded in a total of 305 million unique extractions composed
   (\num{186707} items).
 Each of these extracted triples $(e_1,r,e_2)$ was then flattened into
   a plain-text fact $e_1~r~e_2$ and lemmatized.
-This yields \num{270} unique million lemmatized premises in our database.
+This yields \num{270} million unique lemmatized premises in our database.
 In general, each fact in the database could be arbitrary unstructured
   text; our use of Ollie extractions is motivated only by a desire to
   extract short, concise facts.

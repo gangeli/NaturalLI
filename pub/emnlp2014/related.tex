@@ -15,6 +15,19 @@ In a similar vein, NELL \cite{key:2010carlson-nell,key:2013gardnerpra-nell}
 %  has been working on creating a large knowledge base emphasizing
 %  common sense facts.
 
+% -- Applications
+Many NLP applications query large knowledge bases.
+Prominent examples include
+  question answering
+    \cite{key:2001voorhees-trec},
+  semantic parsing
+    \cite{key:1996zelle-semantics,key:2007zettlemoyer-semantics,key:2013kwiatkowski-semantics,key:2014berant-semantics},
+  and information extraction
+    \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}.
+A long-term goal of this work is to improve accuracy on these
+  downstream tasks by providing a \textit{probabilistic} knowledge base
+  over both explicitly known and likely true facts.
+
 % -- Extending OpenIE
 % (people extending OpenIE)
 A natural alternative to the approach taken in this paper is to
@@ -55,19 +68,6 @@ Our approach differs from these attempts in part in its use of Natural Logic
   attempt at creating a broad-coverage system.
 %  dealing with millions of candidate antecedents.
 
-% -- Applications
-Many NLP applications query large knowledge bases.
-Prominent examples include
-  question answering
-    \cite{key:2001voorhees-trec},
-  semantic parsing
-    \cite{key:1996zelle-semantics,key:2007zettlemoyer-semantics,key:2013kwiatkowski-semantics,key:2014berant-semantics},
-  and information extraction
-    \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}.
-A long-term goal of this work is to improve accuracy on these
-  downstream tasks by providing a \textit{probabilistic} knowledge base
-  over both explicitly known and likely true facts.
-
 % -- RTE
 This work is similar in many ways to work on 
   recognizing textual entailment -- e.g., 
@@ -76,7 +76,7 @@ Work by \newcite{key:2013lewis-entailment} is particularly relevant,
   as they likewise evaluate on the FraCaS suite (Section 1 only, at
   89\% accuracy with gold trees).
 They approach entailment by constructing a CCG parses of the query,
-  mapping questions which are paraphrases of each other to the
+  while mapping questions which are paraphrases of each other to the
   same logical form using distributional relation clustering.
 However, their system is unlikely to scale to either our large
   database of premises, nor our breadth of relations.

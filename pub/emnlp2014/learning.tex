@@ -4,11 +4,11 @@ We describe our procedure for learning the transitions costs $\theta$.
 Our training data $\sD$ consists of query facts $q$ and their associated
   gold truth values $y$.
 Equation \refeqn{prob} gives us a probability that a particular inference
-  is \textit{valid}; this is subtly different from our objective of
+  is \textit{valid}; note that this is subtly different from our objective of
   determining if the query is \textit{true}.
-We take these two ($p(\textit{valid})$ and $p(\textit{true})$) to be
-  equivalent for our experiments, which corresponds to the often
-  incorrect assumption that our database is clean and only contains
+Nonetheless, we take these two ($p(\textit{valid})$ and $p(\textit{true})$) to be
+  equivalent for our experiments, which corresponds to the (often
+  incorrect) assumption that our database is clean and only contains
   true facts.
 %trivially, we define the probability that a
 %  fact is true as the probability that an inference from a premise to
