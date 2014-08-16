@@ -33,21 +33,21 @@
     <servlet>
         <servlet-name>NaturalLI</servlet-name>
         <servlet-class>org.goobs.naturalli.demo.NaturalLI</servlet-class>
+        <load-on-startup>10</load-on-startup>
     </servlet>
-
-    <servlet-mapping>
-        <servlet-name>NaturalLI</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
-
     <servlet>
         <servlet-name>Feedback</servlet-name>
         <servlet-class>org.goobs.naturalli.demo.Feedback</servlet-class>
+        <load-on-startup>20</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>Feedback</servlet-name>
-        <url-pattern>/feedback</url-pattern>
+        <url-pattern>/feedback/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>NaturalLI</servlet-name>
+        <url-pattern>/</url-pattern>
     </servlet-mapping>
 </web-app>
 

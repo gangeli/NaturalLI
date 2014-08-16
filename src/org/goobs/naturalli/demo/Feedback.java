@@ -26,10 +26,11 @@ public class Feedback extends HttpServlet {
   public void init(ServletConfig config) throws ServletException {
     String uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB;
     try {
+      Class.forName("org.postgresql.Driver");
       psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD);
       insert = psql.prepareStatement("INSERT INTO demo_feedback (id, source, query, guess, gold) VALUES (?, ?, ?, ?, ?);");
       delete = psql.prepareStatement("DELETE FROM demo_feedback WHERE id=?;");
-    } catch (SQLException e) {
+    } catch (SQLException | ClassNotFoundException e) {
       e.printStackTrace();
     }
   }
@@ -56,7 +57,7 @@ public class Feedback extends HttpServlet {
       out.close();
       return;
     }
-    String query = request.getParameter("query");
+    String query = request.getParameter("q");
     if (query == null) {
       out.println("no query (q=???) given!");
       out.close();

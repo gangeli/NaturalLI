@@ -257,4 +257,10 @@ public class NaturalLI extends HttpServlet {
     }
   }
 
+  public static void main(String[] args) {
+    Response r = new Response();
+    new NaturalLI().handleQuery(r, "cats have tails", null, null);
+    System.out.println(new Gson().toJson(r));
+  }
+
 }

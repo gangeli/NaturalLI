@@ -81,9 +81,11 @@
         <include name="trove.jar"/>
         <include name="protobuf.jar"/>
       </lib>
-      <lib dir="/u/nlp/data/StanfordCoreNLPModels/">
-        <include name="stanford-corenlp-models-current.jar"/>
-        <include name="stanford-corenlp-caseless-models-current.jar"/>
+      <lib dir="/u/nlp/data/StanfordCoreNLPModels/corenlp">
+        <include name="stanford-corenlp-2014-07-02-models.jar"/>
+      </lib>
+      <lib dir="/u/nlp/data/StanfordCoreNLPModels/corenlp-caseless">
+        <include name="stanford-corenlp-caseless-2014-02-25-models.jar"/>
       </lib>
       <lib dir="${env.SCALA_HOME}/lib/">
         <include name="scala-library.jar"/>
