@@ -285,8 +285,8 @@ The notation for $f_{t_i}$ is chosen to evoke an analogy to features.
 We set $f_{t_i}$ to be 1\ in most cases;
   the exceptions are the edges over the WordNet hypernym tree
   and the nearest neighbors edges.
-In the first case, we take $\uparrow_{w \rightarrow w'}$ as transitioning
-  from word $w$ to its hypernym $w'$, and set:
+In the first case, taking the hypernymy relation
+  from $w$ to $w'$ as $\uparrow_{w \rightarrow w'}$, we set:
 %  (and vice versa for
 %  $\downarrow_{w \rightarrow w'}$), and set:
 
@@ -326,7 +326,7 @@ We then define $f_{NN_{w \rightarrow w'}}$
 \vspace{-0.5em}
 
 For instance, $f_{NN_{\textit{cat} \rightarrow \textit{dog}}} = 0.43$.
-In practice, we take the 100 nearest neighbors for each word.
+In practice, we explore the 100 nearest neighbors for each word.
 
 We can express $f_{t_i}$ as a feature vector by representing it as
   a vector with value $f_{t_i}$ at the index corresponding to
@@ -469,7 +469,7 @@ We can normalize this value by negating every element of the cost
 
 \vspace{-0.5em}
 \begin{equation*}
-\textrm{confidence} = \frac{1}{1 + e^{\theta \cdot \bef}}.
+\textrm{confidence} = \frac{1}{1 + e^{- (-\theta \cdot \bef)}}.
 \end{equation*}
 \vspace{-0.5em}
 
@@ -487,7 +487,7 @@ To illustrate, a fact with a low confidence should translate to a
 We therefore define the probability of validity as follows:
 We take $v$ to be 1 if the final fact of our derivation is in the
   \textit{valid} state with respect to the antecedent,
-  and -1 if this fact is in the \textit{invalid} state.
+  and $-1$ if this fact is in the \textit{invalid} state.
 %In practice, as our search is reversed, we take the state of the
 %  antecedent in our database when compared to the consequent, rather
 %  than vice versa.
