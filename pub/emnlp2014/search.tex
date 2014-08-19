@@ -11,7 +11,7 @@
 \end{center}
 \caption{
   \label{fig:fsa}
-  (a) Natural logic inference expressed as a finite state automata.
+  (a) Natural logic inference expressed as a finite state automaton.
   Omitted edges go to the unknown state (\independent), with the exception of
     omitted edges from $\equivalent$, which go to the state of the edge
     type.
@@ -29,7 +29,7 @@ We show that the tabular proof formulation from \refsec{maccartney-proof}
   can be viewed as a finite state machine,
   and present a novel observation that we can losslessly collapse this
   finite state machine into only three intuitive inference states.
-These will allow us to formulate our search problem such that a search path
+These observations allow us to formulate our search problem such that a search path
   corresponds to an input to (i.e., path through) this collapsed state 
   machine.
 %  which in turn specifies a logical derivation.
@@ -47,7 +47,7 @@ Each transition is labeled with a projected relation
   state $s$ to a target $s'$ according to the join table.
 That is, the transition $s \xrightarrow{\rho(r)} s'$ exists iff
   $s' = s \bowtie \rho(r)$.
-For example, The path in \reffig{teaser} yields to the
+For example, the path in \reffig{teaser} yields the
   transitions 
   $\equivalent \xrightarrow{\negate} \hspace{-0.5em} \negate \hspace{-0.5em}
                \xrightarrow{\reverse} \alternate
@@ -60,10 +60,10 @@ For example, The path in \reffig{teaser} yields to the
 %  $s_i \coloneqq s_{i-1} \bowtie \rho(r_i)$:
 %  for all possible pairs of state $s$ and relation $r$, we construct a
 %  transition $s \xrightarrow{r} s'$ according to $s' = s \bowtie r$.
-\reffig{fsa}a shows the automata, with trivial edges
+\reffig{fsa}a shows the automaton, with trivial edges
   omitted for clarity.
 
-Our second contribution is collapsing this automata into the three
+Our second contribution is collapsing this automaton into the three
   meaningful states we use as output: 
     \textit{valid} ($\varphi \Rightarrow \psi$),
     \textit{invalid} ($\varphi \Rightarrow \lnot \psi$),

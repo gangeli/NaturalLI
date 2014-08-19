@@ -5,14 +5,14 @@ Natural Logic aims to capture common logical
   as opposed to running deduction on an abstract logical form.
 The logic builds upon traditional rather than first-order logic:
   to a first approximation, Natural Logic can be seen as
-  an enhanced version Aristotle's syllogistic system
+  an enhanced version of Aristotle's syllogistic system
   \cite{key:2008vanbenthem-natlog}.
 A working understanding of the logic as syllogistic reasoning
   is sufficient for understanding the later contributions of the paper.
 %Natural Logic is inspired largely by the Aristotelian
 %  syllogisms and subsequent traditional logics
 %  \cite{key:2008vanbenthem-natlog}.
-While some inferences in first-order logic are not captured by 
+While some inferences of first-order logic are not captured by 
   Natural Logic,
   it nonetheless allows for a wide range of intuitive inferences in
   a computationally efficient and conceptually clean way.
@@ -29,13 +29,14 @@ We build off of the variant of the logic introduced by
   \nocite{key:2007maccartney-natlog}
   \nocite{key:2008maccartney-natlog}
   \nocite{key:2009maccartney-natlog}
-  based off of earlier theoretical work on Natural Logic and 
+  based on earlier theoretical work on Natural Logic and 
   Monotonicity Calculus
   \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
 Later work formalizes many aspects of the logic
   \cite{key:2012icard-natlog,key:2013djalali-natlog};
   we adopt the formal semantics of
-  \newcite{key:2014icard-natlog}.
+  \newcite{key:2014icard-natlog}, along with much of their
+  notation.
 %  which we appeal to but are not necessary for a 
 %  appeal to in future sections, but are not necessary for an understanding
 %  of the contributions of this work.
@@ -100,7 +101,7 @@ The six informative relations are summarized in \reffig{relations};
 For instance, the example search path in \reffig{teaser} makes use of
   the following relations:
 
-\vspace{-0.25em}
+\vspace{1.0em}
 \begin{center}
 \begin{tabular}{rcl}
 \w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
@@ -109,7 +110,7 @@ For instance, the example search path in \reffig{teaser} makes use of
 \w{animal}     & \reverse    & \w{mouse} \\
 \end{tabular}
 \end{center}
-\vspace{-0.25em}
+\vspace{1.0em}
 
 %The middle two middle entries have straightforward interpretations:
 %  the set of cats is a subset of the set of carnivores; the set of
@@ -117,11 +118,12 @@ For instance, the example search path in \reffig{teaser} makes use of
 %The last entry states that the denotation of \w{mouse} and
 %  \w{a mouse} is close enough that they can be considered equivalent.
 
-Denotations are not required to be in the space of entities.
+Denotations are not required to be in the space of predicates
+  (e.g., \textit{cat}, \textit{animal}).
 In the first example, the denotations of \textit{No} and \textit{The}
-  are in the space of quantifiers
-  \mbox{$e \rightarrow (e \rightarrow t)$}:
-  functions from entities $e$ to truth values $t$.
+  are in the space of operators
+  \mbox{$p \rightarrow (p \rightarrow t)$}:
+  functions from predicates $p$ to truth values $t$.
 %The first entry is somewhat subtle in that the denotation of quantifiers
 %  is not over the universe of entities $e$, but rather over functions
 %  from entities to truth values $t$:
@@ -129,7 +131,7 @@ The \negate\ relation becomes the conjunction of two claims:
   $\forall x \forall y ~ \lnot\left(\w{no}~x~y \land \w{the}~x~y \right)$
   and
   $\forall x \forall y ~ \left(\w{no}~x~y \lor \w{the}~x~y\right)$.
-This is analogous to the formal construction of the
+This is analogous to the construction of the
   set-theoretic definition of \negate\ in \reffig{relations}:
   $\varphi \cap \psi = \varnothing$ and $\varphi \cup \psi = \sD$
   (see \newcite{key:2014icard-natlog}).
@@ -167,18 +169,18 @@ The previous section details the relation between
 For example, \textit{cat} \forward\ \textit{animal},
   and \textit{some cat meows} \forward\ \textit{some animal meows},
   but
-  \textit{no cat barks} \reverse\ \textit{no animal barks}.
+  \textit{no cat barks} \nforward\ \textit{no animal barks}.
 Despite differing by the same lexical relation,
   the first example describes a valid entailment, 
   while the second does not.
 
 % Introduce Monotonicity
-We appeal two important concepts: \textit{monotonicity} as a
-  property of arguments to natural language quantifiers,
+We appeal to two important concepts: \textit{monotonicity} as a
+  property of arguments to natural language operators,
   and \textit{polarity}
   as a property of lexical items in a sentence.
 Much like monotone functions in calculus,
-  an [upwards] monotone quantifier has an output truth value which is
+  an [upwards] monotone operator has an output truth value which is
   non-decreasing (i.e., material implication)
   as the input ``increases'' (i.e., the subset relation).
 From the example above, \textit{some} is upwards monotone in its first
@@ -218,19 +220,19 @@ From the example above, \textit{some} is upwards monotone in its first
 %  mutations on lexical items.
 \textit{Polarity} is
   a property of lexical items in a sentence determined by the
-  quantifiers acting on it.
+  operators acting on it.
 All lexical items have \textit{upward} polarity by default;
-  upwards monotone quantifiers preserve polarity,
-  and downwards monotone quantifiers reverse polarity.
+  upwards monotone operators preserve polarity,
+  and downwards monotone operators reverse polarity.
 For example, \w{mice} in \w{\textbf{no} cats eat mice} has downward 
   polarity, whereas \w{mice} in \w{\textbf{no} cats do\textbf{n't} eat mice}
   has upward polarity
-  (it is in the scope of two downward monotone quantifiers).
+  (it is in the scope of two downward monotone operators).
 % Projection
 The relation between two sentences differing by a single lexical
   relation is then given by the projection function $\rho$ in
   \reftab{projectivity}.\footnote{
-    Note that this table optimistically assumes every quantifier is
+    Note that this table optimistically assumes every operator is
     \textit{additive} and \textit{multiplicative}, as defined
     in \newcite{key:2012icard-natlog}.
   }
@@ -240,25 +242,37 @@ The relation between two sentences differing by a single lexical
 % See Lemma 2.4 (p.11) of http://link.springer.com/article/10.1007%2Fs11225-012-9425-8
 \begin{table}[t]
 	\begin{center}
-	\begin{tabular}{c|cc}
-    \textbf{Relation} & \multicolumn{2}{c}{\textbf{Polarity of Context}} \\
-             & Upward & Downward \\
+%	\begin{tabular}{c|cc}
+%    \textbf{Relation} & \multicolumn{2}{c}{\textbf{Polarity of Context}} \\
+%             & Upward & Downward \\
+%    \hline
+%     $p \forward p'    $ & $s \forward     s'$ & $s \reverse     s'$ \\ 
+%     $p \reverse p'    $ & $s \reverse     s'$ & $s \forward     s'$ \\ 
+%     $p \alternate p'  $ & $s \alternate   s'$ & $s \cover       s'$ \\ 
+%     $p \cover p'      $ & $s \cover       s'$ & $s \alternate   s'$ \\ 
+%     $p \negate p'     $ & $s \negate      s'$ & $s \negate      s'$ \\ 
+%	\end{tabular}
+  \begin{tabular}{r|ccccccc}
+    $r$ & \equivalent & \forward & \reverse & \alternate & \cover & \negate & \independent \\
     \hline
-     $e \forward e'    $ & $s \forward     s'$ & $s \reverse     s'$ \\ 
-     $e \reverse e'    $ & $s \reverse     s'$ & $s \forward     s'$ \\ 
-     $e \alternate e'  $ & $s \alternate   s'$ & $s \cover       s'$ \\ 
-     $e \cover e'      $ & $s \cover       s'$ & $s \alternate   s'$ \\ 
-     $e \negate e'     $ & $s \negate      s'$ & $s \negate      s'$ \\ 
-	\end{tabular}
+    $\rho(r)$ & \equivalent & \reverse & \forward & \cover & \alternate & \negate & \independent \\
+  \end{tabular}
 	%(caption)
 	\caption{
-    The projection function $\rho$ used for a relation between
-       a lexical item $e_1$ and
-      its candidate mutation $e_2$, in terms of the projected relation
-      between sentence $s_1$ and the new sentence $s_2$.
-    Values are given for when the entities are in an upwards and
-      downwards polarity.
-    Note that \equivalent\ and \independent\ project up unchanged.
+    The projection function $\rho$, shown for downward polarity  
+      contexts only.
+    The input $r$ is the lexical relation between two words in
+      a sentence;
+      the projected relation $\rho(r)$ is the relation between the
+      two sentences differing only by that word.
+    Note that $\rho$ is the identity function in upward polarity 
+      contexts.
+%       a lexical item $e_1$ and
+%      its candidate mutation $e_2$, in terms of the projected relation
+%      between sentence $s_1$ and the new sentence $s_2$.
+%    Values are given for when the predicates are in an upwards and
+%      downwards polarity.
+%    Note that \equivalent\ and \independent\ project up unchanged.
 		\label{tab:projectivity}
 	}
 	\end{center}
@@ -288,22 +302,26 @@ The relation between two sentences differing by a single lexical
 % -- Join Table--
 \begin{table}[t]
 	\begin{center}
-	\begin{tabular}{|c||c|c|c|c|c|}
+	\begin{tabular}{|c||c|c|c|c|c|c|c|}
     \hline
-    $\bowtie$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ \\
+    $\bowtie$ & $\equivalent$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ & $\independent$ \\
     \hline
-    $\forward$ & $\forward$ & $\independent$ & $\alternate$ & $\alternate$ & $\independent$ \\
-    $\reverse$ & $\independent$ & $\reverse$ & $\cover$ & $\independent$ & $\cover$ \\
-    $\negate$ & $\cover$ & $\alternate$ & $\equivalent$ & $\reverse$ & $\forward$ \\
-    $\alternate$ & $\independent$ & $\alternate$ & $\forward$ & $\independent$ & $\forward$ \\
-    $\cover$ & $\cover$ & $\independent$ & $\reverse$ & $\reverse$ & $\independent$ \\
+    $\equivalent$ & $\equivalent$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ & $\independent$ \\
+    $\forward$ & $\forward$ & $\forward$ & $\independent$ & $\alternate$ & $\alternate$ & $\independent$ & $\independent$ \\
+    $\reverse$ & $\reverse$ & $\independent$ & $\reverse$ & $\cover$ & $\independent$ & $\cover$ & $\independent$  \\
+    $\negate$ & $\negate$ & $\cover$ & $\alternate$ & $\equivalent$ & $\reverse$ & $\forward$ & $\independent$  \\
+    $\alternate$ & $\alternate$ & $\independent$ & $\alternate$ & $\forward$ & $\independent$ & $\forward$ & $\independent$  \\
+    $\cover$ & $\cover$ & $\cover$ & $\independent$ & $\reverse$ & $\reverse$ & $\independent$ & $\independent$  \\
+    $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ \\
     \hline
 	\end{tabular}
 	%(caption)
 	\caption{
-    The join table, as copied from \newcite{key:2012icard-natlog}.
-    Note that the $\independent$ always joins to yield $\independent$,
-    and $\equivalent$ always joins to yield the input relation.
+    The join table as shown in \newcite{key:2012icard-natlog}.
+    Entries in the table are the result of joining a row with a
+      column.
+%    Note that the $\independent$ always joins to yield $\independent$,
+%    and $\equivalent$ always joins to yield the input relation.
 		\label{tab:join}
 	}
 	\end{center}

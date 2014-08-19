@@ -1,7 +1,7 @@
 \Section{intro}{Introduction}
 We approach the task of \textit{database completion}: given a
   database of true facts, we would like to predict whether an unseen fact
-  should belong in the database.
+  is true and should belong in the database.
 This is intuitively cast as an inference problem from 
   a collection of candidate premises to the truth of the query.
 For example, we would like to infer 
@@ -14,10 +14,11 @@ For example, we would like to infer
   \resizebox{0.48\textwidth}{!}{\teaserSearch} \\
 \end{center}
 \caption{
-  Natural Logic inference cast as search, disproving the
-    query \w{no carnivores eat animals} given the premise
-    \w{the cat ate a mouse}.
-  The valid path is one of many candidates taken; the premise
+  Natural Logic inference cast as search. The path to
+    the boxed premise \w{the cat ate a mouse} disproves the
+    query \w{no carnivores eat animals}, as it passes through
+    the negation relation ($\negate$).
+  This path is one of many candidates taken; the premise
     is one of many known facts in the database.
   The edge labels denote Natural Logic inference steps.
   \label{fig:teaser}
@@ -35,7 +36,7 @@ Furthermore, many methods require explicitly modeling either the
   (e.g., Freebase tuples).
 
 Although projects like the Abstract Meaning Representation
-  \cite{key:2013banarescu-amr} have made headway providing
+  \cite{key:2013banarescu-amr} have made headway in providing
   broad-coverage meaning representations, it remains 
   appealing to use human language as the vessel for
   inference.
@@ -49,11 +50,11 @@ These factors motivate our use of Natural Logic -- a proof system built
 Prior work on Natural Logic has focused on inferences from a single
   relevant premise, making use of only
   formally valid inferences.
-We propose three contributions to computational Natural Logic:
+We improve upon computational Natural Logic in three ways:
   (i) our approach operates over a very large set of
     candidate premises simultaneously;
-  (ii) we do not
-    require explicit alignment between the premise and the query;
+  (ii) we do not require explicit alignment between a premise 
+    and the query;
   and (iii) we allow imprecise inferences at an
     associated cost learned from data.
 %    to provide a broad-coverage system over real-world facts.
@@ -74,8 +75,8 @@ This approach offers two big contributions over prior work in
   database completion:
   (i) it allows for unstructured text as the input database without
     any assumptions about the schema or domain of the text,
-  and (ii) it proposes Natural Logic rather than explicit
-    inference rules as the means of proposing inferences.
+  and (ii) it proposes Natural Logic for inference, rather than
+    translating to a formal logic syntax.
 Moreover, the entire pipeline is implemented 
   in a single elegant search framework, which scales easily to large
   databases.

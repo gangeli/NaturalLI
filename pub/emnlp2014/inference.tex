@@ -15,7 +15,7 @@
 %  less appealing, as candidate antecedents are not readily available.
 
 Natural Logic allows us to formalize our approach elegantly as
-  a single general search problem.
+  a single search problem.
 Given a query, we search over the space of possible facts for
   a valid premise in our database.
 The nodes in our search problem correspond to candidate facts
@@ -101,6 +101,9 @@ Importantly, this enforces that each derivation orders mutations
   left-to-right;
   this is computationally efficient, at the expense of rare search
   errors.
+A similar observation is noted in \newcite{key:2009maccartney-thesis},
+  where prematurely collapsing to \independent\ occasionally misses
+  inferences.
 
 \paragraph{Polarity}
 Mutating quantifiers can change the polarity information on a span
