@@ -22,7 +22,7 @@ Prominent examples include
     \cite{key:2001voorhees-trec},
   semantic parsing
     \cite{key:1996zelle-semantics,key:2007zettlemoyer-semantics,key:2013kwiatkowski-semantics,key:2014berant-semantics},
-  and information extraction
+  and information extraction systems
     \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}.
 A long-term goal of this work is to improve accuracy on these
   downstream tasks by providing a \textit{probabilistic} knowledge base
@@ -42,7 +42,9 @@ For instance,
 % Richard
 \newcite{key:2013chen-completion} and \newcite{key:2013socher-completion}
   use Neural Tensor Networks to predict unseen relation triples in
-  WordNet and Freebase.
+  WordNet and Freebase, following a line of work by
+  \newcite{key:2011bordes-completion} and
+  \newcite{key:2012jenatton-completion}.
 % Universal schemas
 \newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
   present a related line of work, inferring new relations between
@@ -59,7 +61,7 @@ In contrast, this work runs inference over arbitrary text, without
 The goal of tackling common-sense reasoning is by no means novel in
   itself.
 Work by Reiter and McCarthy \cite{key:1980reiter-logic,key:1980mccarthy-circumscription}
-  attempt to reason about the truth of a consequent
+  attempts to reason about the truth of a consequent
   in the absence of strict logical entailment.
 Similarly, \newcite{key:1989pearl-probabilistic} presents a framework for
   assigning confidences to inferences which can be reasonably assumed.
@@ -75,7 +77,7 @@ This work is similar in many ways to work on
 Work by \newcite{key:2013lewis-entailment} is particularly relevant,
   as they likewise evaluate on the FraCaS suite (Section 1 only, at
   89\% accuracy with gold trees).
-They approach entailment by constructing a CCG parses of the query,
+They approach entailment by constructing a CCG parse of the query,
   while mapping questions which are paraphrases of each other to the
   same logical form using distributional relation clustering.
 However, their system is unlikely to scale to either our large

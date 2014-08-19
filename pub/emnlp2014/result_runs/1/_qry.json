@@ -1,0 +1,18 @@
+{
+  "begin_time":   "Tue Aug 19 14:13:33 PDT 2014",
+  "end_time":     "Tue Aug 19 14:22:19 PDT 2014",
+  "elapsed_time": "08:46.616 minutes",
+
+  "host":         "jonah.stanford.edu",
+  "working_dir":  "/juice/scr20/scr/angeli/workspace/naturalli-emnlp",
+  "run_dir":      "/juice/scr20/scr/angeli/workspace/naturalli-emnlp/runs/1",
+  "git_rev":      "7f921b49ff58a3ce11116acb461f4fd09b0df8e9",
+
+  "[STDERR]                classBias=INIT_UPPER:-0.7,UPPER:-2.5,O": "0",
+  "[WARN]                    Untokenizable:  (U+19, decimal": "25)",
+  "[WARN]                  Untokenizable: � (U+FFFD, decimal": "65533)",
+  "[WARN]                    Untokenizable:  (U+7, decimal": "7)",
+  "[WARN]                    Untokenizable:  (U+14, decimal": "20)",
+  "[WARN]                  Untokenizable:  (U+19, decimal": "25)",
+  "[WARN]                    Untokenizable: � (U+FFFD, decimal": "65533)",
+}
