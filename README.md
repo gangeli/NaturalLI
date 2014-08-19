@@ -25,6 +25,7 @@ The program is composed of two main components:
 
 The rest of this README is laid out as follows:
 - [Installation](#installation)
+  - [Quick Version](#quick-version)
   - [Prerequisites](#prerequisites)
   - [Server (C++)](#server-c)
   - [Client (Java)](#client-java)
@@ -34,6 +35,7 @@ The rest of this README is laid out as follows:
   - [Optimization](#optimization)
 - [Tests](#tests)
   - [Common Bugs](#common-bugs)
+- [Replicating EMNLP Results](#replicating-emnlp-results)
 
 Installation
 ----------
@@ -53,6 +55,48 @@ using Make.
 The rest of this section will describe the prerequisites you'll need
 installed on your system, followed by instructions on configuring
 and installing the server and client component.
+
+###Quick Version
+This section is intended to be a summary of what follows.
+If all goes well, running the following should get you up and running:
+
+    # Set up code
+    git clone git@github.com:gangeli/NaturalLI.git
+    cd NaturalLI
+
+    # [optional] Configure CoreNLP
+    curl 'http://nlp.stanford.edu/software/stanford-corenlp-models-current.jar' > lib/corenlp-models.jar
+    curl 'http://nlp.stanford.edu/software/stanford-corenlp-caseless-models-current.jar' > lib/corenlp-caseless-models.jar
+    git clone git@github.com:stanfordnlp/CoreNLP.git
+    cd CoreNLP
+    ant jar
+    cd ..
+    mv CoreNLP/javanlp-core.jar lib/corenlp.jar
+
+    # Configure server (fill in variables)
+    ./configure --with-protoc=/path/to/protoc/root/ \
+                --with-postgresql=/path/to/pg_config \
+                --with-scala=/path/to/scala/home/ \
+                --with-corenlp=/path/to/stanford-corenlp.jar \
+                --with-corenlp-models=/path/to/corenlp-models.jar \
+                --with-corenlp-caseless-models=/path/to/corenlp-caseless-models.jar \
+                --prefix=/installation/directory/ \
+                CXX=/path/to/g++ \
+                PGHOST=hostname PGPORT=port DBNAME=naturalli \
+                PGUSER=user PGPASSWORD=pass \
+                GREEDY_LOAD=1
+    
+    # Start server
+    make
+    src/naturalli_server
+
+    # Evaluate (with lookup)
+    ./run Evaluate src/org/goobs/truth/conf/conceptnet.conf
+    
+    # Evaluate (without lookup)
+    cat src/org/goobs/truth/conf/conceptnet.conf | sed -e 's/#search.allowlookup/search.allowlookup/g' > /tmp/conceptnet.conf
+    mv /tmp/conceptnet.conf src/org/goobs/truth/conf/
+    ./run Evaluate src/org/goobs/truth/conf/conceptnet.conf
 
 ###Prerequisites
 The code tries to have relatively few dependencies.
@@ -278,3 +322,55 @@ set the path for CoreNLP and the CoreNLP models in the
     buckets. You can fix this by setting FACT_MAP_SIZE to a value
     larger than 30 in the config file. Note that it can't go above
     32; if you're still getting the error, let me know!
+
+
+Replicating EMNLP Results
+-----
+The safest way to replicate the exact results from the EMNLP 2014 paper 
+  is by reverting Git to the version from submission.
+Otherwise, I hope that the master branch fairly closely follows the
+  official numbers.
+Note that this will run the much larger server model
+  (~150GB memory total).
+
+    # Set up code
+    git checkout master
+    cp lib/corenlp-scala.jar /tmp/corenlp-scala.jar
+    git checkout 7f921b49ff58a3ce11116acb461f4fd09b0df8e9
+    mv /tmp/corenlp-scala.jar lib/corenlp-scala.jar
+    rm lib/stanford-corenlp-caseless-models-current.jar
+    curl 'http://nlp.stanford.edu/software/stanford-corenlp-caseless-2014-02-25-models.jar' > lib/stanford-corenlp-caseless-models-current.jar
+    rm lib/stanford-corenlp-models-current.jar
+    curl 'http://nlp.stanford.edu/software/stanford-corenlp-2014-06-28-models.jar' > lib/stanford-corenlp-models-current.jar
+    cat src/org/goobs/truth/conf/conceptnet.conf | sed -e 's/{conceptnet}/{conceptnet_mturk_test}/g' > /tmp/conceptnet.conf
+    mv /tmp/conceptnet.conf src/org/goobs/truth/conf/
+
+    # Configure server (fill in variables)
+    ./configure --with-protoc=/path/to/protoc/root/ \
+                --with-postgresql=/path/to/pg_config \
+                --prefix=/installation/directory/ \
+                CXX=/path/to/g++ \
+                PGHOST=hostname PGPORT=port DBNAME=naturalli \
+                PGUSER=user PGPASSWORD=pass
+    
+    # Start server
+    make
+    src/naturalli_server
+
+    # Connect to server (immediate)
+    make src/naturalli_client.jar
+    ./run Truth
+    # << enter a query; the server should start loading the database>>
+    
+    # Train system (once server is loaded)
+    make src/naturalli_client.jar
+    ./run LearnOffline src/org/goobs/truth/conf/conceptnet.conf
+
+    # Evaluate (with lookup)
+    ./run Evaluate src/org/goobs/truth/conf/conceptnet.conf
+    
+    # Evaluate (without lookup)
+    cat src/org/goobs/truth/conf/conceptnet.conf | sed -e 's/#search.allowlookup/search.allowlookup/g' > /tmp/conceptnet.conf
+    mv /tmp/conceptnet.conf src/org/goobs/truth/conf/
+    ./run Evaluate src/org/goobs/truth/conf/conceptnet.conf
+
