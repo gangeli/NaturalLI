@@ -74,9 +74,11 @@ If all goes well, running the following should get you up and running:
     mv CoreNLP/javanlp-core.jar lib/corenlp.jar
 
     # Configure server (fill in variables)
+    # Some of these can be omitted if they are in your path
     ./configure --with-protoc=/path/to/protoc/root/ \
                 --with-postgresql=/path/to/pg_config \
                 --with-scala=/path/to/scala/home/ \
+                --with-java=/path/to/jdk/home/ \
                 --with-corenlp=/path/to/stanford-corenlp.jar \
                 --with-corenlp-models=/path/to/corenlp-models.jar \
                 --with-corenlp-caseless-models=/path/to/corenlp-caseless-models.jar \
@@ -85,7 +87,14 @@ If all goes well, running the following should get you up and running:
                 PGHOST=hostname PGPORT=port DBNAME=naturalli \
                 PGUSER=user PGPASSWORD=pass \
                 GREEDY_LOAD=1
-    
+   
+    # Get Postgres data
+    # This assumes you have a Postgres instance, and a database called `naturalli`
+    export DBNAME=naturalli
+    curl 'http://nlp.stanford.edu/projects/naturalli/naturalli_schema.sql' > psql
+    curl 'http://nlp.stanford.edu/projects/naturalli/naturalli_data.sql.gz' | gunzip > psql
+    curl 'http://nlp.stanford.edu/projects/naturalli/naturalli_indexes.sql' > psql
+
     # Start server
     make
     src/naturalli_server
