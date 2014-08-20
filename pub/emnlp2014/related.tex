@@ -48,7 +48,7 @@ For instance,
 % Universal schemas
 \newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
   present a related line of work, inferring new relations between
-  Freebase entities by appealing to inferences over both Freebase and
+  Freebase entities via inference over both Freebase and
   OpenIE relations.
 In contrast, this work runs inference over arbitrary text, without 
   restricting itself to a particular set of relations, or even entities.
@@ -68,6 +68,10 @@ Similarly, \newcite{key:1989pearl-probabilistic} presents a framework for
 Our approach differs from these attempts in part in its use of Natural Logic
   as the underlying inference engine, and more substantially in its
   attempt at creating a broad-coverage system.
+More recently, work by \newcite{key:2002schubert-commonsense} and
+  \newcite{key:2009durme-commonsense} approach common sense reasoning
+  with \textit{episodic logic}; we differ in our focus on inferring
+  truth from an arbitrary query, and in making use of longer inferences.
 %  dealing with millions of candidate antecedents.
 
 % -- RTE
@@ -75,7 +79,7 @@ This work is similar in many ways to work on
   recognizing textual entailment -- e.g., 
   \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment}.
 Work by \newcite{key:2013lewis-entailment} is particularly relevant,
-  as they likewise evaluate on the FraCaS suite (Section 1 only, at
+  as they likewise evaluate on the FraCaS suite (Section 1;
   89\% accuracy with gold trees).
 They approach entailment by constructing a CCG parse of the query,
   while mapping questions which are paraphrases of each other to the

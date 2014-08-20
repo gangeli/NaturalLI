@@ -40,10 +40,19 @@
         <servlet-class>org.goobs.naturalli.demo.Feedback</servlet-class>
         <load-on-startup>20</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>Shutdown</servlet-name>
+        <servlet-class>org.goobs.naturalli.demo.Shutdown</servlet-class>
+        <load-on-startup>20</load-on-startup>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>Feedback</servlet-name>
         <url-pattern>/feedback/</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Shutdown</servlet-name>
+        <url-pattern>/shutdown/</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>NaturalLI</servlet-name>

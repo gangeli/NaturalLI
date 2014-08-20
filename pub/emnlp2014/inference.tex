@@ -23,7 +23,7 @@ The nodes in our search problem correspond to candidate facts
   the edges are mutations of these facts (\refsec{inference-transitions}); 
   the costs over these edges encode the confidence that this edge
   maintains an informative inference (\refsec{inference-prob}).
-This mirrors the automata defined in \refsec{search}, except importantly
+This mirrors the automaton defined in \refsec{search}, except importantly
   we are constructing a reversed derivation, and are therefore
   ``traversing'' the FSA backwards.
 
@@ -94,9 +94,9 @@ In addition, our search keeps track of some additional information:
 %  a single word.
 
 \paragraph{Mutation Index}
-Edges are most naturally defined to correspond to mutations of 
-  individual lexical items.
-We maintain an index of the next item to mutate at each search state.
+Edges between sentences are most naturally defined to correspond to 
+  mutations of individual lexical items.
+We therefore maintain an index of the next item to mutate at each search state.
 Importantly, this enforces that each derivation orders mutations
   left-to-right;
   this is computationally efficient, at the expense of rare search
@@ -106,11 +106,11 @@ A similar observation is noted in \newcite{key:2009maccartney-thesis},
   inferences.
 
 \paragraph{Polarity}
-Mutating quantifiers can change the polarity information on a span
+Mutating operators can change the polarity on a span
   in the fact.
-Since we do not have the full parse tree at our disposal at search,
+Since we do not have the full parse tree at our disposal at search time,
   we track a small amount of metadata to guess the scope of the
-  mutated quantifier.
+  mutated operator.
 
 %As per our definition, transitions between nodes are transitions 
 %  between facts.
@@ -187,7 +187,8 @@ Recall, we are constructing the inference in reverse, starting from
 We then notice that the transition 
   $valid \xrightarrow{\forward} valid$ in the FSA ends in our current
   inference state (\textit{valid}), and set our new inference state to 
-  be its start -- in this case, we maintain validity.
+  be the start state of the FSA transition -- in this case, we maintain
+  validity.
 
 Note that negation is somewhat subtle, as the transitions are not
   symmetric from valid to invalid and visa versa, and we do not know
@@ -227,10 +228,10 @@ In practice, the search procedure treats all three of
     Distributional nearest neighbor      & \equivalent \\ 
     Delete word$^\dagger$                & \forward    \\ 
     Add word$^\dagger$                   & \reverse    \\ 
-    Quantifier weaken                    & \forward    \\ 
-    Quantifier strengthen                & \reverse    \\ 
-    Quantifier negate                    & \negate     \\ 
-    Quantifier synonym                   & \equivalent \\ 
+    Operator weaken                      & \forward    \\ 
+    Operator strengthen                  & \reverse    \\ 
+    Operator negate                      & \negate     \\ 
+    Operator synonym                     & \equivalent \\ 
     Change word sense                    & \equivalent \\ 
   \end{tabular}
 	\caption{
@@ -286,7 +287,7 @@ We set $f_{t_i}$ to be 1\ in most cases;
   the exceptions are the edges over the WordNet hypernym tree
   and the nearest neighbors edges.
 In the first case, taking the hypernymy relation
-  from $w$ to $w'$ as $\uparrow_{w \rightarrow w'}$, we set:
+  from $w$ to $w'$ to be $\uparrow_{w \rightarrow w'}$, we set:
 %  (and vice versa for
 %  $\downarrow_{w \rightarrow w'}$), and set:
 
@@ -297,6 +298,7 @@ In the first case, taking the hypernymy relation
 \end{equation*}
 \vspace{-0.5em}
 
+The value $f_{\downarrow_{w \rightarrow w'}}$ is set analogously.
 We define $p(w)$ to be the ``probability'' of a concept --
   that is, the normalized frequency
   of a word $w$ or any of its hyponyms in the Google N-Grams corpus
@@ -310,7 +312,6 @@ However, many of these transitions have low weight:
   for instance
   $f_{\uparrow_{\textit{cat} \rightarrow \textit{feline}}}$ is only
   \num{0.37}.
-The value $f_{\downarrow_{w \rightarrow w'}}$ is set analogously.
 
 For nearest neighbors edges, we take Neural Network embeddings learned
   in \newcite{key:huang-vectors} corresponding to each vocabulary entry.
@@ -326,7 +327,7 @@ We then define $f_{NN_{w \rightarrow w'}}$
 \vspace{-0.5em}
 
 For instance, $f_{NN_{\textit{cat} \rightarrow \textit{dog}}} = 0.43$.
-In practice, we explore the 100 nearest neighbors for each word.
+In practice, we explore the 100 nearest neighbors of each word.
 
 We can express $f_{t_i}$ as a feature vector by representing it as
   a vector with value $f_{t_i}$ at the index corresponding to
@@ -485,9 +486,9 @@ However, to translate this value into a probability
 To illustrate, a fact with a low confidence should translate to a
   probability of $\frac{1}{2}$, rather than a probability of 0.
 We therefore define the probability of validity as follows:
-We take $v$ to be 1 if the final fact of our derivation is in the
-  \textit{valid} state with respect to the antecedent,
-  and $-1$ if this fact is in the \textit{invalid} state.
+We take $v$ to be 1 if the query is in the
+  \textit{valid} state with respect to the premise,
+  and $-1$ if the query is in the \textit{invalid} state.
 %In practice, as our search is reversed, we take the state of the
 %  antecedent in our database when compared to the consequent, rather
 %  than vice versa.

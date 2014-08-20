@@ -40,6 +40,7 @@ Taking notation from \refsec{maccartney-proof}, we construct a
 A machine in state $s_i$ corresponds to relation $s_i$
   holding between the initial premise and the derived fact so far.
 States therefore correspond to states of \textit{logical validity}.
+The start state is \equivalent.
 Outgoing transitions correspond to \textit{inference steps}.
 Each transition is labeled with a projected relation
   $\rho(r) \in \{\textrm{\small{\forward}}, \textrm{\small{\reverse}}, \dots\}$,
@@ -110,7 +111,7 @@ Second, the hierarchy over relations presented in
   versions (\alternate\ and \cover) only behave as negation in certain
   contexts.
 Lastly, with probabilistic inference,
-  transitioning to the unknown state can be replaced by staying in the
+  transitioning to the unknown state can be replaced with staying in the
   current state at a (potentially arbitrarily large) cost to the 
   confidence of validity.
 This allows us to make use of only two states:

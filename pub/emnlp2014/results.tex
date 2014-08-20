@@ -70,7 +70,7 @@ Since the corpus is not a blind test set, the results are presented
   less as a comparison of performance, but rather to validate
   the expressive power of our search-based approach against
   MacCartney's align-and-classify approach.
-For the experiments, costs were constrained to express valid
+For the experiments, costs were set to express valid
   Natural Logic inference as a hard constraint.
 %  logical entailment system -- costs corresponding to valid Natural
 %  Logic mutations were set to a small constant cost; other costs
@@ -82,8 +82,8 @@ The results show that the system is able to capture Natural Logic
 Note that our system is comparatively crippled in this framework
   along at least two dimensions:
 It cannot appeal to the premise when constructing the search,
-  leading to the introduction of search errors which are entirely
-  absent from prior work.
+  leading to the introduction of a class of search errors which 
+  are entirely absent from prior work.
 Second, the derivation process itself does not have access to the
   full parse tree of the candidate fact.
 %Therefore, it is unable to make large edits over constituents,
@@ -212,8 +212,8 @@ For negative examples, we take the 689 ReVerb extractions
   judged as false by Mechanical Turk workers \cite{key:2013angeli-truth}.
 This provides a set of plausible but nonetheless incorrect examples,
 %  similar in many ways to the database of Ollie extractions, 
-  and ensures that our recall is not due to an over-zealous search.
-The search costs are tuned from an additional set of 540 true ConceptNet and
+  and ensures that our recall is not due to over-zealous search.
+Search costs are tuned from an additional set of 540 true ConceptNet and
   540 false ReVerb extractions.
 
 Results are shown in \reftab{conceptnet}.

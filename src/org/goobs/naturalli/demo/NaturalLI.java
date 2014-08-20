@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -128,12 +129,30 @@ public class NaturalLI extends HttpServlet {
         r.success = false;
         r.errorMessage = "No input given";
       } else {
+        // Parse known fact(s)
+        List<String> knownFacts = new ArrayList<>();
+        int i = 0;
+        while (request.getParameter("p" + i) != null) {
+          knownFacts.add(request.getParameter("p" + i));
+          i += 1;
+        }
+
+        // Parse ticks
+        String ticksString = request.getParameter("ticks");
+        int ticks = 100000;
+        try {
+          if (ticksString != null) {
+            ticks = Integer.parseInt(ticksString);
+          }
+        } catch (NumberFormatException ignored) { }
+        int ticksFinal = ticks;
+
         // -- Begin meaningful content
         final Lock callCompleteLock = new ReentrantLock();
         final Condition callComplete = callCompleteLock.newCondition();
         callCompleteLock.lock();
         try {
-          pool.submit(() -> handleQuery(r, input, callCompleteLock, callComplete));
+          pool.submit(() -> handleQuery(r, input, knownFacts, ticksFinal, callCompleteLock, callComplete));
           callComplete.await();
         } catch (InterruptedException ignored) {
         } finally {
@@ -176,33 +195,47 @@ public class NaturalLI extends HttpServlet {
    * @param weights The weights to use for this query.
    * @return Any inference paths that were returned.
    */
-  private Iterable<Messages.Inference> query(Messages.Fact consequent, Counter<String> weights) {
-    Messages.Query query = Messages.Query.newBuilder()
+  private Iterable<Messages.Inference> query(Messages.Fact consequent, List<Messages.Fact> knownFacts,
+                                             int ticks, Counter<String> weights) {
+    Messages.Query.Builder query = Messages.Query.newBuilder()
         .setQueryFact(consequent)
         .setUseRealWorld(true)
-        .setTimeout(100000)
+        .setTimeout(ticks)
         .setCosts(Learn.weightsToCosts(weights))
         .setSearchType("ucs")
-        .setCacheType("bloom")
-        .build();
-    return Truth.issueQuery(query, false, false);
+        .setCacheType("bloom");
+    for (Messages.Fact knownFact : knownFacts) {
+      query.addKnownFact(knownFact).setUseRealWorld(false).setTimeout(ticks);
+    }
+    return Truth.issueQuery(query.build(), false, false);
   }
 
   /**
    * Actually handle the query.
    */
-  public void handleQuery(Response r, String input, Lock doneLockOrNull, Condition doneConditionOrNull) {
+  public void handleQuery(Response r, String input, List<String> knownFactsAsString,
+                          int ticks,
+                          Lock doneLockOrNull, Condition doneConditionOrNull) {
     // Register success -- can overwrite later
     r.success = true;
     // Register the query
     queries.add(input);
 
+    // Parse known facts
+    List<Messages.Fact> knownFacts = new ArrayList<>();
+    for (String knownFact : knownFactsAsString) {
+      Iterator<Messages.Fact> iter = NatLog.annotate(knownFact).iterator();
+      while (iter.hasNext()) {
+        knownFacts.add(iter.next());
+      }
+    }
+
     // -- DO QUERY --
     Messages.Fact consequent = NatLog.annotate(input).head();
-    Iterable<Messages.Inference> paths = query(consequent, hardWeights);
+    Iterable<Messages.Inference> paths = query(consequent, knownFacts, ticks, hardWeights);
     r.bestResponseSource = "Strict Natural Logic";
     if (paths.isEmpty()) {
-      paths = query(consequent, softWeights);
+      paths = query(consequent, knownFacts, ticks, softWeights);
       r.bestResponseSource = "Fuzzy Natural Logic";
     }
 
@@ -257,9 +290,10 @@ public class NaturalLI extends HttpServlet {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     Response r = new Response();
-    new NaturalLI().handleQuery(r, "cats have tails", null, null);
+    new NaturalLI().handleQuery(r, "cats have tails", Collections.EMPTY_LIST, 100000, null, null);
     System.out.println(new Gson().toJson(r));
   }
 
