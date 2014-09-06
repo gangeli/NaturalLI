@@ -205,8 +205,9 @@ public class NaturalLI extends HttpServlet {
         .setSearchType("ucs")
         .setCacheType("bloom");
     for (Messages.Fact knownFact : knownFacts) {
-      query.addKnownFact(knownFact).setUseRealWorld(false).setTimeout(ticks);
+      query.addKnownFact(knownFact).setUseRealWorld(false);
     }
+    query.setTimeout(ticks);
     return Truth.issueQuery(query.build(), false, false);
   }
 
