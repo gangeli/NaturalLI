@@ -1,5 +1,5 @@
 AC_PREREQ([2.62])
-AC_INIT([NaturalLI], [0.1], [angeli@stanford.edu])
+AC_INIT([NaturalLI], [1.0.0], [angeli@stanford.edu])
 AM_INIT_AUTOMAKE([-Wall no-define foreign])
 AC_LANG_DEFINES_PROVIDED
 
