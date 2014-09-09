@@ -45,6 +45,7 @@ this section is, or how autoconf is awful
 (true story: all build systems are awful), you're always
 entitled to try the version I use at home:
 
+    ./autogen.sh
     ./configure CXX=clang++-3.4
     make -j4
     ./run FraCaS
@@ -75,6 +76,7 @@ If all goes well, running the following should get you up and running:
 
     # Configure server (fill in variables)
     # Some of these can be omitted if they are in your path
+    ./autogen.sh
     ./configure --with-protoc=/path/to/protoc/root/ \
                 --with-postgresql=/path/to/pg_config \
                 --with-scala=/path/to/scala/home/ \
