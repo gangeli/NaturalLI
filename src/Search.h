@@ -30,6 +30,7 @@ typedef struct alignas(1) {
 } search_state;
 #endif
 
+
 /**
  * A state in the search space.
  * This represents a path from the query fact, to the intermediate

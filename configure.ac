@@ -136,9 +136,13 @@ AX_OPENMP
 #AX_BOOST_THREAD()
 
 # Set some useful variables
+# (compiler info)
 AM_CONDITIONAL(IS_GCC, test x"$CXX" = x"gcc" || test x"$CXX" = x"g++")
+# (functionality availability)
 AM_CONDITIONAL(HAVE_DEMO, ls lib/demo &> /dev/null)
 AM_CONDITIONAL(HAVE_SCRIPTS, ls lib/scripts &> /dev/null)
+# (cache line size)
+AC_DEFINE_UNQUOTED(CACHE_LINE_SIZE, `getconf LEVEL1_DCACHE_LINESIZE 2> /dev/null || echo "64"`, [The cache line size of the current machine])
 
 # Optionally enable debugging
 AC_ARG_ENABLE(debug,
@@ -156,6 +160,7 @@ if test x"$debug" = x"false"; then
   AC_DEFINE(NDEBUG, 1, [Disable debugging (for efficiency)])
 fi
 
+# User defined variables (or environment variables)
 AC_DEFINE_UNQUOTED(PG_HOST,         "${PGHOST:=jonsson.stanford.edu}", [The hostname of the database to connect to])
 AC_DEFINE_UNQUOTED(PG_PORT,         ${PGPORT:=5432}, [The port on which postgres is running])
 AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=naturalli}", [The database to connect to])
@@ -168,6 +173,7 @@ AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in w
 AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
+AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 25, [The maximum length of an input query fact. Must match SynSearch.h lengths])
 AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=32},  [The maximum number of completions to propose when inserting words])
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,  ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
@@ -177,6 +183,6 @@ AC_DEFINE_UNQUOTED(FACT_MAP_SIZE,   ${FACT_MAP_SIZE:=32},  [The bitshift for the
 AC_DEFINE_UNQUOTED(GREEDY_LOAD,     ${GREEDY_LOAD:=0},  [If true, greedily load the fact database, even if no one is requesting it.])
 AC_DEFINE_UNQUOTED(OLD_TRIE,        ${OLD_TRIE:=0},  [If true, load the old high-memory Trie implementation])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile \
+AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile src/knheap/Makefile \
                  test/src/Makefile test/src/gtest/Makefile ])
 AC_OUTPUT

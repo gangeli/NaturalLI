@@ -5,6 +5,7 @@ clean-local:
 	rm -f *.gcno *.gcda
 
 _OBJS_SPEC = Map.o Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
+             SynSearch.o \
              Bloom.o Messages.pb.o
 OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
@@ -32,7 +33,8 @@ AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 -lfnv6
 
 test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
                       TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
-                      TestMap.cc TestMessages.pb.cc  TestUtils.cc TestTypes.cc
+                      TestMap.cc TestMessages.pb.cc  TestUtils.cc TestTypes.cc \
+                      TestSynSearch.cc
 test_server_LDADD =  ${OBJS}
 
 itest_server_SOURCES= ITest.cc

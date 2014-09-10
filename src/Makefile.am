@@ -1,4 +1,4 @@
-SUBDIRS = fnv
+SUBDIRS = fnv knheap
 bin_PROGRAMS=naturalli_server
 EXTRA_DIST = Messages.proto edu org
 
@@ -18,9 +18,11 @@ BUILT_SOURCES = Messages.proto
 naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  FactDB.cc Postgres.cc         Utils.cc \
                  Graph.cc  InferenceServer.cc  Search.cc \
+                 SynSearch.cc \
                  Map.cc \
                  Bloom.h   Graph.h        Utils.h \
                  Types.h   Messages.pb.h  Search.h \
+                 SynSearch.h \
                  FactDB.h  Postgres.h     Trie.h \
                  Map.h \
                  btree.h btree_container.h btree_map.h btree_set.h
