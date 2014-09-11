@@ -26,7 +26,9 @@ check_PROGRAMS = test_server itest_server
 AM_CPPFLAGS = -std=c++0x ${POSTGRESQL_CFLAGS} \
               -isystem gtest/include -I${MAIN_SRC} ${GTEST_CPPFLAGS}
 AM_CXXFLAGS = ${GTEST_CXXFLAGS} -std=c++0x
-AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf -L${MAIN_SRC}/fnv -lfnv32 -lfnv64 \
+AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf \
+               -L${MAIN_SRC}/fnv -lfnv32 -lfnv64 \
+               -L${MAIN_SRC}/knheap -lknheap \
                ${GTEST_LDFLAGS} ${GTEST_LIBS} \
                -Lgtest/lib -lgtest gtest/gtest_main.o
 

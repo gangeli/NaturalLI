@@ -28,7 +28,7 @@ naturalli_server_SOURCES = Bloom.cc  Messages.pb.cc      Trie.cc \
                  btree.h btree_container.h btree_map.h btree_set.h
 
 naturalli_server_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${PROTO_CFLAGS} ${OPENMP_CFLAGS}
-naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64
+naturalli_server_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 if HAVE_TCMALLOC
   naturalli_server_LDADD += -ltcmalloc

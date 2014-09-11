@@ -1,7 +1,10 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
+#include <limits>
+
 #include "Types.h"
+#include "knheap/knheap.h"
 
 /**
  * A packed structure with the information relevant to
@@ -46,18 +49,38 @@ class SynPath {
   void mutations(SynPath* output, uint64_t* index);
   void deletions(SynPath* output, uint64_t* index);
 
+  SynPath();
+  SynPath(const SynPath& from);
+  SynPath(const float& costIfTrue, const float& costIfFalse);
+
+  inline bool operator<=(const SynPath& rhs) {
+    const float minA = costIfTrue < costIfFalse ? costIfTrue : costIfFalse;
+    const float minB = rhs.costIfTrue < rhs.costIfFalse ? rhs.costIfTrue : rhs.costIfFalse;
+    return minA <= minB;
+  }
+  
+  inline void operator=(const SynPath& from) {
+    this->costIfTrue = from.costIfTrue;
+    this->costIfFalse = from.costIfFalse;
+    this->data = from.data;
+    this->backpointer = from.backpointer;
+  }
 
  private:
-   syn_path_data data;
-   float costIfTrue,
-         costIfFalse;
-   SynPath* backpointer;
+    syn_path_data data;
+    float costIfTrue,
+          costIfFalse;
+    SynPath* backpointer;
 };
+
+const SynPath MIN_SCORE_PATH(0.0, 0.0);
+const SynPath MAX_SCORE_PATH(
+  std::numeric_limits<float>::infinity(),
+  std::numeric_limits<float>::infinity());
 
 
 class Tree {
  public:
-  
 
 };
 
