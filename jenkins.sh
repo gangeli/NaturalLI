@@ -31,7 +31,6 @@ make all check TESTS_ENVIRONMENT=true
 
 echo "-- C++ TESTS --"
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml
-test/src/itest_server --gtest_output=xml:test/itest_server.junit.xml
 
 echo "-- MAKE DIST --"
 configure
@@ -40,7 +39,6 @@ tar xfz `find . -name "naturalli-*.tar.gz"`
 cd `find . -type d -name "naturalli-*"`
 configure
 make all check
-make java_test  # but skip itests (those are slow...)
 cd ..
 rm -r `find . -type d -name "naturalli-*"`
 
@@ -48,23 +46,9 @@ echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
 configure --disable-debug
 make all check
-echo "(high memory mode)"
-configure HIGH_MEMORY=1
-make all check
-echo "(fewer completions)"
-configure MAX_COMPLETIONS=10
-make all check
-echo "(old trie)"
-configure OLD_TRIE=1
-make all check
-test/src/itest_server
 echo "(back to default)"
 configure  # reconfigure to default
 make all
-
-echo "-- JAVA TESTS --"
-make java_test
-make java_itest
 
 echo "-- COVERAGE --"
 cd src/
@@ -75,9 +59,6 @@ rm -f naturalli_server-Messages.pb.h.gcda
 gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
 gcovr -r . --xml -o coverage.xml
 cd ..
-
-echo "-- DOCUMENT --"
-doxygen doxygen.conf
 
 echo "SUCCESS!"
 exit 0

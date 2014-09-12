@@ -1,6 +1,7 @@
 #include "Utils.h"
 
 #include <string>
+#include <algorithm>
 
 #include "Types.h"
 
@@ -280,3 +281,106 @@ void print_stacktrace(FILE *out, unsigned int max_frames)
     free(funcname);
     free(symbollist);
 }
+
+
+uint8_t indexDependency(const string& dependencyAsString) {
+  string lower = dependencyAsString;
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  if (lower == "acomp") { return 1; }
+  if (lower == "advcl") { return 2; }
+  if (lower == "advmod") { return 3; }
+  if (lower == "amod") { return 4; }
+  if (lower == "appos") { return 5; }
+  if (lower == "aux") { return 6; }
+  if (lower == "auxpass") { return 7; }
+  if (lower == "cc") { return 8; }
+  if (lower == "ccomp") { return 9; }
+  if (lower == "conj") { return 10; }
+  if (lower == "cop") { return 11; }
+  if (lower == "csubj") { return 12; }
+  if (lower == "csubjpass") { return 13; }
+  if (lower == "dep") { return 14; }
+  if (lower == "det") { return 15; }
+  if (lower == "discourse") { return 16; }
+  if (lower == "dobj") { return 17; }
+  if (lower == "expl") { return 18; }
+  if (lower == "goeswith") { return 19; }
+  if (lower == "iobj") { return 20; }
+  if (lower == "mark") { return 21; }
+  if (lower == "mwe") { return 22; }
+  if (lower == "neg") { return 23; }
+  if (lower == "nn") { return 24; }
+  if (lower == "npadvmod") { return 25; }
+  if (lower == "nsubj") { return 26; }
+  if (lower == "nsubjpass") { return 27; }
+  if (lower == "num") { return 28; }
+  if (lower == "number") { return 29; }
+  if (lower == "parataxis") { return 30; }
+  if (lower == "pcomp") { return 31; }
+  if (lower == "pobj") { return 32; }
+  if (lower == "poss") { return 33; }
+  if (lower == "posseive") { return 34; }
+  if (lower == "preconj") { return 35; }
+  if (lower == "predet") { return 36; }
+  if (lower == "prep") { return 37; }
+  if (lower == "prt") { return 38; }
+  if (lower == "punct") { return 39; }
+  if (lower == "quantmod") { return 40; }
+  if (lower == "rcmod") { return 41; }
+  if (lower == "root") { return 42; }
+  if (lower == "tmod") { return 43; }
+  if (lower == "vmod") { return 44; }
+  if (lower == "xcomp") { return 45; }
+  return 0;
+}
+  
+const char* dependencyGloss(const uint8_t& indexed) {
+  if (indexed == 1) { return "acomp"; }
+  if (indexed == 2) { return "advcl"; }
+  if (indexed == 3) { return "advmod"; }
+  if (indexed == 4) { return "amod"; }
+  if (indexed == 5) { return "appos"; }
+  if (indexed == 6) { return "aux"; }
+  if (indexed == 7) { return "auxpass"; }
+  if (indexed == 8) { return "cc"; }
+  if (indexed == 9) { return "ccomp"; }
+  if (indexed == 10) { return "conj"; }
+  if (indexed == 11) { return "cop"; }
+  if (indexed == 12) { return "csubj"; }
+  if (indexed == 13) { return "csubjpass"; }
+  if (indexed == 14) { return "dep"; }
+  if (indexed == 15) { return "det"; }
+  if (indexed == 16) { return "discourse"; }
+  if (indexed == 17) { return "dobj"; }
+  if (indexed == 18) { return "expl"; }
+  if (indexed == 19) { return "goeswith"; }
+  if (indexed == 20) { return "iobj"; }
+  if (indexed == 21) { return "mark"; }
+  if (indexed == 22) { return "mwe"; }
+  if (indexed == 23) { return "neg"; }
+  if (indexed == 24) { return "nn"; }
+  if (indexed == 25) { return "npadvmod"; }
+  if (indexed == 26) { return "nsubj"; }
+  if (indexed == 27) { return "nsubjpass"; }
+  if (indexed == 28) { return "num"; }
+  if (indexed == 29) { return "number"; }
+  if (indexed == 30) { return "parataxis"; }
+  if (indexed == 31) { return "pcomp"; }
+  if (indexed == 32) { return "pobj"; }
+  if (indexed == 33) { return "poss"; }
+  if (indexed == 34) { return "posseive"; }
+  if (indexed == 35) { return "preconj"; }
+  if (indexed == 36) { return "predet"; }
+  if (indexed == 37) { return "prep"; }
+  if (indexed == 38) { return "prt"; }
+  if (indexed == 39) { return "punct"; }
+  if (indexed == 40) { return "quantmod"; }
+  if (indexed == 41) { return "rcmod"; }
+  if (indexed == 42) { return "root"; }
+  if (indexed == 43) { return "tmod"; }
+  if (indexed == 44) { return "vmod"; }
+  if (indexed == 45) { return "xcomp"; }
+  return "???";
+}
+
+

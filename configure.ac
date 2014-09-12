@@ -173,7 +173,7 @@ AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in w
 AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
-AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 25, [The maximum length of an input query fact. Must match SynSearch.h lengths])
+AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 26, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
 AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=32},  [The maximum number of completions to propose when inserting words])
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,  ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])

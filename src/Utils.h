@@ -15,6 +15,9 @@
 #include "Graph.h"
 #include "Search.h"
 
+class SearchType;  // C++ doesn't like combiling without these here?
+class Path;
+
 /**
  * Print the string gloss for the given fact.
  */
@@ -34,6 +37,16 @@ std::string toString(const edge_type& edge);
  * Print out elapsed time in days+hours+minutes+seconds.
  */
 std::string toString(const time_t& elapsedTime);
+
+/**
+ * Index a dependency arc to an integer.
+ */
+uint8_t indexDependency(const std::string& dependencyAsString);
+
+/**
+ * Get the String gloss for an indexed dependency arc.
+ */
+const char* dependencyGloss(const uint8_t& indexed);
 
 /**
  *  The fact (lemur, have, tail)
