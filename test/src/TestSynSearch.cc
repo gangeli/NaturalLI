@@ -36,13 +36,21 @@ class TreeTest : public ::testing::Test {
     tree = new Tree(string("42\t2\tnsubj\n") +
                     string("43\t0\troot\n") +
                     string("44\t2\tdobj"));
+    bigTree = new Tree(
+                       string("42\t2\tamod\n") +
+                       string("43\t3\tnsubj\n") +
+                       string("44\t0\troot\n") +
+                       string("45\t5\tamod\n") +
+                       string("46\t3\tdobj"));
   }
   
   virtual void TearDown() {
     delete tree;
+    delete bigTree;
   }
 
   const Tree* tree;
+  const Tree* bigTree;
 
 };
 
@@ -83,9 +91,9 @@ TEST_F(TreeTest, CoNLLFormatConstructor) {
   EXPECT_EQ(getTaggedWord(43, 0, 0), tree->word(1));
   EXPECT_EQ(getTaggedWord(44, 0, 0), tree->word(2));
   
-  EXPECT_EQ(1, tree->parent(0));
-  EXPECT_EQ(TREE_ROOT, tree->parent(1));
-  EXPECT_EQ(1, tree->parent(2));
+  EXPECT_EQ(1, tree->governor(0));
+  EXPECT_EQ(TREE_ROOT, tree->governor(1));
+  EXPECT_EQ(1, tree->governor(2));
   
   EXPECT_EQ("nsubj", string(dependencyGloss(tree->relation(0))));
   EXPECT_EQ("root",  string(dependencyGloss(tree->relation(1))));
@@ -162,6 +170,209 @@ TEST_F(TreeTest, Root) {
   EXPECT_EQ(1, tree->root());
 }
 
+//
+// Delete Mask (small tree)
+//
+TEST_F(TreeTest, DeleteMaskSmall) {
+  EXPECT_EQ(TREE_DELETE(TREE_DELETE(TREE_DELETE(0x0, 0), 1), 2), 
+    tree->createDeleteMask(1));
+  EXPECT_EQ(TREE_DELETE(0x0, 0),
+    tree->createDeleteMask(0));
+  EXPECT_EQ(TREE_DELETE(0x0, 2),
+    tree->createDeleteMask(2));
+}
+
+//
+// Dependents (small tree)
+//
+TEST_F(TreeTest, DependentsSmall) {
+  uint8_t indices[5];
+  uint8_t relations[5];
+  uint8_t length;
+  // From root
+  tree->dependents(1, indices, relations, &length);
+  ASSERT_EQ(2, length);
+  EXPECT_EQ(0, indices[0]);
+  EXPECT_EQ("nsubj", dependencyGloss(relations[0]));
+  EXPECT_EQ(2, indices[1]);
+  EXPECT_EQ("dobj", dependencyGloss(relations[1]));
+  // From dependents
+  tree->dependents(0, indices, relations, &length);
+  EXPECT_EQ(0, length);
+  tree->dependents(2, indices, relations, &length);
+  EXPECT_EQ(0, length);
+}
+
+//
+// Sanity Check Big Tree
+//
+TEST_F(TreeTest, SanityCheckBigTree) {
+  EXPECT_EQ(2, bigTree->root());
+  EXPECT_EQ(1, bigTree->governor(0));
+  EXPECT_EQ(2, bigTree->governor(1));
+  EXPECT_EQ(TREE_ROOT, bigTree->governor(2));
+  EXPECT_EQ(4, bigTree->governor(3));
+  EXPECT_EQ(2, bigTree->governor(4));
+}
+
+//
+// Delete Mask (big tree)
+//
+TEST_F(TreeTest, DeleteMaskBig) {
+  EXPECT_EQ(
+    TREE_DELETE(TREE_DELETE(
+      TREE_DELETE(TREE_DELETE(TREE_DELETE(0x0, 0), 1), 2), 3), 4), 
+    bigTree->createDeleteMask(2));
+  EXPECT_EQ(TREE_DELETE(0x0, 0),
+    bigTree->createDeleteMask(0));
+  EXPECT_EQ(TREE_DELETE(TREE_DELETE(0x0, 0), 1),
+    bigTree->createDeleteMask(1));
+  EXPECT_EQ(TREE_DELETE(0x0, 3),
+    bigTree->createDeleteMask(3));
+  EXPECT_EQ(TREE_DELETE(TREE_DELETE(0x0, 3), 4),
+    bigTree->createDeleteMask(4));
+}
+
+//
+// Dependents (big tree)
+//
+TEST_F(TreeTest, DependentsBig) {
+  uint8_t indices[5];
+  uint8_t relations[5];
+  uint8_t length;
+  // From root
+  bigTree->dependents(2, indices, relations, &length);
+  ASSERT_EQ(2, length);
+  EXPECT_EQ(1, indices[0]);
+  EXPECT_EQ("nsubj", dependencyGloss(relations[0]));
+  EXPECT_EQ(4, indices[1]);
+  EXPECT_EQ("dobj", dependencyGloss(relations[1]));
+  // From dependents
+  bigTree->dependents(1, indices, relations, &length);
+  ASSERT_EQ(1, length);
+  EXPECT_EQ(0, indices[0]);
+  EXPECT_EQ("amod", dependencyGloss(relations[0]));
+  bigTree->dependents(4, indices, relations, &length);
+  ASSERT_EQ(1, length);
+  EXPECT_EQ(3, indices[0]);
+  EXPECT_EQ("amod", dependencyGloss(relations[0]));
+  // From leaves
+  bigTree->dependents(0, indices, relations, &length);
+  EXPECT_EQ(0, length);
+  bigTree->dependents(3, indices, relations, &length);
+  EXPECT_EQ(0, length);
+}
+
+//
+// Hash Crash Test
+//
+TEST_F(TreeTest, HashSanityCheck) {
+  EXPECT_NE(0x0, tree->hash());
+  EXPECT_NE(0x0, bigTree->hash());
+  EXPECT_NE(tree->hash(), bigTree->hash());
+}
+
+//
+// Hash Repeatability Check
+//
+TEST_F(TreeTest, HashRepeatable) {
+  Tree t1(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t2(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  EXPECT_EQ(t1.hash(), t2.hash());
+}
+
+//
+// Hash Value Test
+//
+TEST_F(TreeTest, HashValueCheck) {
+#if TWO_PASS_HASH!=0
+  EXPECT_EQ(3957455256695363289, tree->hash());
+#else
+  EXPECT_EQ(1037381270807490254, tree->hash());
+#endif
+}
+
+//
+// Hash Field Test
+//
+TEST_F(TreeTest, HashRelevantFieldsIncluded) {
+  Tree t1(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t2(string("44\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t3(string("42\t3\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t4(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tnsubj"));
+  EXPECT_NE(t1.hash(), t2.hash());
+  EXPECT_NE(t1.hash(), t3.hash());
+  EXPECT_NE(t1.hash(), t4.hash());
+  EXPECT_NE(t2.hash(), t3.hash());
+  EXPECT_NE(t2.hash(), t4.hash());
+  EXPECT_NE(t3.hash(), t4.hash());
+}
+
+//
+// Hash Order Independence Test
+//
+TEST_F(TreeTest, HashOrderIndependent) {
+  Tree t1(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t2(string("44\t2\tdobj\n") +
+          string("43\t0\troot\n") +
+          string("42\t2\tnsubj"));
+  EXPECT_EQ(t1.hash(), t2.hash());
+}
+
+//
+// Hash Not Bag Of Words
+//
+TEST_F(TreeTest, HashNotBagOfWords) {
+  Tree t1(string("42\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("44\t2\tdobj"));
+  Tree t2(string("44\t2\tnsubj\n") +
+          string("43\t0\troot\n") +
+          string("42\t2\tdobj"));
+  EXPECT_NE(t1.hash(), t2.hash());
+}
+
+//
+// Hash Mutate (simple)
+//
+TEST_F(TreeTest, HashMutateSimple) {
+  const uint64_t originalHash = tree->hash();
+  Tree mutated(string("50\t2\tnsubj\n") +
+               string("43\t0\troot\n") +
+               string("44\t2\tdobj"));
+  const uint64_t expectedMutatedHash = mutated.hash();
+  const uint64_t actualMutatedHash
+    = tree->updateHashFromMutation( originalHash, 0x0, 0, 42, 43, 50);
+  EXPECT_EQ(expectedMutatedHash, actualMutatedHash);
+}
+
+//
+// Hash Delete (simple)
+//
+TEST_F(TreeTest, HashDeleteSimple) {
+  const uint64_t originalHash = tree->hash();
+  Tree deleted(string("43\t0\troot\n") +
+               string("44\t1\tdobj"));
+  const uint64_t expectedDeleteHash = deleted.hash();
+  const uint64_t actualDeleteHash
+    = tree->updateHashFromDeletions( originalHash, 0, 42, 43,
+                                     TREE_DELETE(0x0, 0) );
+  EXPECT_EQ(expectedDeleteHash, actualDeleteHash);
+}
 
 // ----------------------------------------------
 // KNHeap (Priority Queue)

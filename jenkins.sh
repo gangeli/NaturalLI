@@ -46,6 +46,9 @@ echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
 configure --disable-debug
 make all check
+echo "(two pass hash)"
+configure TWO_PASS_HASH=1
+make all check
 echo "(back to default)"
 configure  # reconfigure to default
 make all
