@@ -297,7 +297,7 @@ TEST_F(TreeTest, HashRepeatable) {
 //
 TEST_F(TreeTest, HashValueCheck) {
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(3957455256695363289, tree->hash());
+  EXPECT_EQ(2849546189173576891, tree->hash());
 #else
   EXPECT_EQ(1037381270807490254, tree->hash());
 #endif
