@@ -202,7 +202,11 @@ inline uint64_t mix( const uint64_t u ) {
 
 inline uint64_t hashEdge(const dependency_edge& edge) {
 #if TWO_PASS_HASH!=0
+  #ifdef __GNUG__
+    return fnv_64a_buf(const_cast<dependency_edge*>(&edge), sizeof(edge), FNV1_64_INIT);
+  #else
     return fnv_64a_buf(&edge, sizeof(edge), FNV1_64_INIT);
+  #endif
 #else
     uint64_t edgeHash;
     memcpy(&edgeHash, &edge, sizeof(uint64_t));
@@ -224,21 +228,21 @@ uint64_t Tree::hash() const {
 //
 uint64_t Tree::updateHashFromMutation(
                                       const uint64_t& oldHash,
-                                      const uint32_t& deletionMask,
                                       const uint8_t& index, 
                                       const ::word& oldWord,
                                       const ::word& governor,
                                       const ::word& newWord) const {
   uint64_t newHash = oldHash;
   // Fix incoming dependency
+//  printf("Mutating %u; dep=%u -> %u  gov=%u\n", index, oldWord, newWord, governor);
   newHash ^= hashEdge(edgeInto(index, oldWord, governor));
   newHash ^= hashEdge(edgeInto(index, newWord, governor));
   // Fix outgoing dependencies
   for (uint8_t i = 0; i < length; ++i) {
-    if (!TREE_IS_DELETED(deletionMask, i) && 
-        data[i].governor == index) {
-      printf("Also re-hashing word at %u\n", i);
-      newHash ^= hashEdge(edgeInto(i));
+    if (data[i].governor == index) {
+//      printf("  Also re-hashing word at %u; dep=%u  gov=%u -> %u\n", i,
+//              data[i].word.word, oldWord, newWord);
+      newHash ^= hashEdge(edgeInto(i, data[i].word.word, oldWord));
       newHash ^= hashEdge(edgeInto(i, data[i].word.word, newWord));
     }
   }
@@ -259,9 +263,11 @@ uint64_t Tree::updateHashFromDeletions(
   for (uint8_t i = 0; i < length; ++i) {
     if (TREE_IS_DELETED(newDeletions, i)) {
       if (i == deletionIndex) {
+//        printf("Deleting word at %u; dep=%u  gov=%u\n", i, deletionWord, governor);
         // Case: we are deleting the root of the deletion chunk
         newHash ^= hashEdge(edgeInto(i, deletionWord, governor));
       } else {
+//        printf("Deleting word at %u; dep=%u  gov=%u\n", i, edgeInto(i).dependent, edgeInto(i).governor);
         // Case: we are deleting an entire edge
         newHash ^= hashEdge(edgeInto(i));
       }

@@ -356,7 +356,21 @@ TEST_F(TreeTest, HashMutateSimple) {
                string("44\t2\tdobj"));
   const uint64_t expectedMutatedHash = mutated.hash();
   const uint64_t actualMutatedHash
-    = tree->updateHashFromMutation( originalHash, 0x0, 0, 42, 43, 50);
+    = tree->updateHashFromMutation( originalHash, 0, 42, 43, 50);
+  EXPECT_EQ(expectedMutatedHash, actualMutatedHash);
+}
+
+//
+// Hash Mutate (simple with children)
+//
+TEST_F(TreeTest, HashMutateSimpleWithChildren) {
+  const uint64_t originalHash = tree->hash();
+  Tree mutated(string("42\t2\tnsubj\n") +
+               string("50\t0\troot\n") +
+               string("44\t2\tdobj"));
+  const uint64_t expectedMutatedHash = mutated.hash();
+  const uint64_t actualMutatedHash
+    = tree->updateHashFromMutation( originalHash, 1, 43, TREE_ROOT_WORD, 50);
   EXPECT_EQ(expectedMutatedHash, actualMutatedHash);
 }
 
@@ -372,6 +386,39 @@ TEST_F(TreeTest, HashDeleteSimple) {
     = tree->updateHashFromDeletions( originalHash, 0, 42, 43,
                                      TREE_DELETE(0x0, 0) );
   EXPECT_EQ(expectedDeleteHash, actualDeleteHash);
+}
+
+//
+// Hash Delete Subtree
+//
+TEST_F(TreeTest, HashDeleteSubtree) {
+  const uint64_t originalHash = bigTree->hash();
+  Tree deleted(
+               string("44\t0\troot\n") +
+               string("45\t3\tamod\n") +
+               string("46\t1\tdobj"));
+  const uint64_t expectedDeleteHash = deleted.hash();
+  const uint32_t deleteMask = bigTree->createDeleteMask(1);
+  const uint64_t actualDeleteHash
+    = bigTree->updateHashFromDeletions( originalHash, 1, 43, 44, deleteMask );
+  EXPECT_EQ(expectedDeleteHash, actualDeleteHash);
+}
+
+//
+// Hash Multiple Steps
+//
+TEST_F(TreeTest, HashMultipleSteps) {
+  Tree source(string("42\t2\tnsubj\n") +
+              string("43\t0\troot\n") +
+              string("44\t2\tdobj"));
+  Tree target(string("50\t0\troot\n") +
+              string("51\t1\tdobj"));
+  uint64_t hash = source.hash();
+  hash = source.updateHashFromMutation( hash, 1, 43, TREE_ROOT_WORD, 50);
+  uint32_t deletionMask = source.createDeleteMask(0);
+  hash = source.updateHashFromDeletions( hash, 0, 42, 50, deletionMask);
+  hash = source.updateHashFromMutation( hash, 2, 44, 50, 51);
+  EXPECT_EQ(target.hash(), hash);
 }
 
 // ----------------------------------------------

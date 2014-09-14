@@ -15,11 +15,15 @@
   #include "fnv/fnv.h"
 #endif
 
+/** TODO(gabor)
+ *    -  syn_path_data needs to keep track of its governor too!
+ */
 
 // ----------------------------------------------
 // UTILITIES
 // ----------------------------------------------
 #define TREE_ROOT 63
+#define TREE_ROOT_WORD 0x0
 #define TREE_IS_DELETED(mask, index) (((0x1 << index) & mask) != 0)
 #define TREE_DELETE(mask, index) (mask | (0x1 << index))
 
@@ -190,7 +194,6 @@ class Tree {
    */
   uint64_t updateHashFromMutation(
                                   const uint64_t& oldHash,
-                                  const uint32_t& deletionMask,
                                   const uint8_t& index, 
                                   const ::word& oldWord,
                                   const ::word& governor,
@@ -251,7 +254,7 @@ class Tree {
                                   const ::word& wordAtIndex) const {
     const uint8_t governorIndex = data[index].governor;
     if (governorIndex == TREE_ROOT) {
-      return edgeInto(index, wordAtIndex, 0x0);
+      return edgeInto(index, wordAtIndex, TREE_ROOT_WORD);
     } else {
       return edgeInto(index, wordAtIndex, data[governorIndex].word.word);
     }
