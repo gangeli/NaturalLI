@@ -203,9 +203,9 @@ inline uint64_t mix( const uint64_t u ) {
 inline uint64_t hashEdge(const dependency_edge& edge) {
 #if TWO_PASS_HASH!=0
   #ifdef __GNUG__
-    return fnv_64a_buf(const_cast<dependency_edge*>(&edge), sizeof(edge), FNV1_64_INIT);
+    return fnv_64a_buf(const_cast<dependency_edge*>(&edge), sizeof(dependency_edge), FNV1_64_INIT);
   #else
-    return fnv_64a_buf(&edge, sizeof(edge), FNV1_64_INIT);
+    return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
   #endif
 #else
     uint64_t edgeHash;
