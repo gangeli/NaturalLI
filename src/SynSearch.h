@@ -61,6 +61,7 @@ typedef struct alignas(8) {
   uint32_t governor:25,
            dependent:25;
   uint8_t  relation:6;
+  uint8_t  placeholder:8;  // <-- should be zero
 #ifdef __GNUG__
 } __attribute__((packed)) dependency_edge;
 #else
@@ -243,6 +244,7 @@ class Tree {
                                   const ::word& wordAtIndex,
                                   const ::word& governor) const {
     dependency_edge edge;
+    edge.placeholder = 0x0;
     edge.governor = governor;
     edge.dependent = wordAtIndex;
     edge.relation = data[index].relation;

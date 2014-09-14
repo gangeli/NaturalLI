@@ -264,6 +264,13 @@ TEST_F(TreeTest, DependentsBig) {
 }
 
 //
+// Dependency Edge Size Check
+//
+TEST_F(TreeTest, DependencyEdgeFitsIn64Bits) {
+  ASSERT_EQ(8, sizeof(dependency_edge));
+}
+
+//
 // Hash Crash Test
 //
 TEST_F(TreeTest, HashSanityCheck) {
