@@ -16,6 +16,7 @@
 
 #include "Messages.pb.h" 
 #include "Search.h" 
+#include "SynSearch.h" 
 #include "Graph.h" 
 #include "Trie.h" 
 #include "Utils.h" 
@@ -551,7 +552,5 @@ int32_t main( int32_t argc, char *argv[] ) {
 //
 //  // (start server)
 //  while (startServer(argc < 2 ? SERVER_PORT : atoi(argv[1]))) { usleep(1000000); }
-
-
   
 }

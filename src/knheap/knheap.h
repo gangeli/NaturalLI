@@ -18,6 +18,9 @@ const int LogKNKMAX = 2;  // ceil(log KNK)
 template <class Key, class Value>
 struct KNElement {Key key; Value value;};
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wshift-count-negative"
+
 //////////////////////////////////////////////////////////////////////
 // fixed size binary heap
 template <class Key, class Value, int capacity>
@@ -276,6 +279,7 @@ class KNHeap {
 public:
   KNHeap(Key sup, Key infimum);
   int   getSize() const;
+  inline bool isEmpty() const { return getSize() == 0; }
   void  getMin(Key *key, Value *value);
   void  deleteMin(Key *key, Value *value);
   void  insert(Key key, Value value);
@@ -1603,4 +1607,7 @@ void merge4(KNElement<Key, Value> **f0,
   *f2   = from2;
   *f3   = from3;
 }
+
+#pragma clang diagnostic pop
+
 #endif

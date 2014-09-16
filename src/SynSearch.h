@@ -1,5 +1,5 @@
-#ifndef SEARCH_H
-#define SEARCH_H
+#ifndef SYN_SEARCH_H
+#define SYN_SEARCH_H
 
 #include <limits>
 
@@ -156,7 +156,7 @@ class Tree {
    * will never use all of that memory. This is a pointer to the
    * (relatively small) space at the end of this class.
    */
-  inline void* cacheSpace() {
+  inline void* cacheSpace() const {
     const uint64_t base = (uint64_t) this;
     const uint64_t end  = base + sizeof(*this);
     const uint64_t cache = end - availableCacheLength;
@@ -290,6 +290,7 @@ typedef struct alignas(16) {
   bool        validity:1;
   uint32_t    deleteMask:MAX_QUERY_LENGTH;  // 26
   tagged_word currentToken;
+  word        governor;
 #ifdef __GNUG__
 } __attribute__((packed)) syn_path_data;
 #else
@@ -322,6 +323,14 @@ class SynPath {
   SynPath(const SynPath& from);
   /** The initial node constructor */
   SynPath(const Tree& init);
+  /** The mutate constructor */
+  SynPath(const SynPath& from, const uint64_t& newHash,
+          const tagged_word& newToken,
+          const float& costIfTrue, const float& costIfFalse,
+          const uint32_t& backpointer);
+  /** The move index constructor */
+  SynPath(const SynPath& from, const Tree& tree,
+          const uint8_t& newIndex, const uint32_t& backpointer);
 
   /** Compares the priority keys of two path states */
   inline bool operator<=(const SynPath& rhs) const {
@@ -348,6 +357,21 @@ class SynPath {
     this->backpointer = from.backpointer;
   }
 
+  /** Returns the hash of the current fact. */
+  inline uint64_t factHash() const { return data.factHash; }
+  
+  /** Returns the current word being mutated. */
+  inline tagged_word token() const { return data.currentToken; }
+  
+  /** Returns index of the current token being mutated. */
+  inline uint8_t tokenIndex() const { return data.index; }
+  
+  /** Returns governor of the current token. */
+  inline ::word governor() const { return data.governor; }
+  
+  /** Returns a backpointer to the parent of this fact. */
+  inline uint32_t getBackpointer() const { return backpointer; }
+
   /**
    * Gets the priority key for this path. That is, the
    * minimum of the true and false costs
@@ -356,30 +380,86 @@ class SynPath {
     return costIfFalse < costIfTrue ? costIfFalse : costIfTrue;
   }
 
-  void pushChildren(const Tree& tree, const SynPath& parent,
-                    const uint16_t& maxCountToPush, SynPath* buffer) const;
-
-  /** The costs so far of this path */
-  float costIfTrue,
-        costIfFalse;
  private:
   /** The data stored in this path */
   syn_path_data data;
   /** A backpointer to the path this came from */
-  SynPath* backpointer;
+  uint32_t backpointer;
+  /** The costs so far of this path */
+  float costIfTrue,
+        costIfFalse;
 };
+
+// ----------------------------------------------
+// CHANNEL
+// ----------------------------------------------
+
+class Channel {
+ public:
+  Channel(SynPath* buffer, const uint16_t& bufferLength)
+    : buffer(buffer), bufferLength(bufferLength), pushPointer(0),
+      pullPointer(0)  { }
+ 
+  ~Channel() {
+    free(buffer);
+  }
+
+  bool push(const SynPath& value);
+  bool poll(SynPath* output);
+
+ private:
+  uint16_t pushPointer;
+  SynPath* buffer;
+  uint16_t bufferLength;
+  uint16_t pullPointer;
+};
+
 
 // ----------------------------------------------
 // SEARCH INSTANCE
 // ----------------------------------------------
 
+/**
+ * The structure representing the parameterization of the search
+ * we are intended to perform.
+ */
+typedef struct {
+  uint32_t maxTicks;
+  float costThreshold;
+  bool stopWhenResultFound;
+  bool silent;
+} syn_search_options;
+
+/**
+ * A convenient struct to store the output of the search algorithm.
+ */
 struct syn_search_response {
   std::vector<SynPath> path;
-  float cost;
   uint64_t totalTicks;
 };
 
-syn_search_response SynSearch(Graph* mutationGraph, Tree* input);
+/**
+ * Create the input options for a Search.
+ *
+ * @param maxTicks The max number of search ticks (e.g., nodes viewed)
+ *                 to explore before timing out.
+ * @param costThreshold The threshold above which nodes should not be
+ *                      visited.
+ * @param stopWhenResultFound If true, do not continue searching past
+ *                            the first result found.
+ */
+syn_search_options SynSearchOptions(
+    const uint32_t& maxTicks,
+    const float& costThreshold,
+    const bool& stopWhenResultFound,
+    const bool& silent);
 
+/**
+ * The entry method for starting a new search.
+ */
+syn_search_response SynSearch(
+    const Graph* mutationGraph,
+    const Tree* input,
+    const syn_search_options& opts);
 
 #endif

@@ -62,6 +62,13 @@ TEST_F(UtilsTest, ToStringPath) {
             toString(*graph, *searchType, cats));
 }
 
+TEST_F(UtilsTest, ToStringTree) {
+  Tree tree(string("20852\t2\tnsubj\n") +
+            string("60042\t0\troot\n") +
+            string("125248\t2\tdobj"));
+  EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0"), toString(*graph, tree));
+}
+
 TEST_F(UtilsTest, ToStringTime) {
   EXPECT_EQ(string("0s"), toString(0l * CLOCKS_PER_SEC));
   EXPECT_EQ(string("1s"), toString(1l * CLOCKS_PER_SEC));

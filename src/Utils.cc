@@ -63,6 +63,14 @@ string toString(const Graph& graph, SearchType& searchType, const Path* path) {
   }
 }
 
+std::string toString(const Graph& graph, const Tree& tree) {
+  tagged_word buffer[tree.length];
+  for (uint8_t i = 0; i < tree.length; ++i) {
+    buffer[i] = tree.word(i);
+  }
+  return toString(graph, buffer, tree.length);
+}
+
 string toString(const edge_type& edge) {
   switch (edge) {
     case WORDNET_UP                   : return "WORDNET_UP";

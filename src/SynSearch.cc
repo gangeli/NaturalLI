@@ -6,6 +6,11 @@
 #include "Utils.h"
 
 
+#define ENQUEUE_BUFFER_SIZE (CACHE_LINE_SIZE * 1)
+#define DEQUEUE_BUFFER_SIZE (CACHE_LINE_SIZE * 7)
+#define ENQUEUE_BATCH_SIZE 8
+#define DEQUEUE_BATCH_SIZE 64
+
 using namespace std;
 
 // ----------------------------------------------
@@ -16,19 +21,21 @@ inline syn_path_data mkSynPathData(
     const uint8_t&     index,
     const bool&        validity,
     const uint32_t&    deleteMask,
-    const tagged_word& currentToken) {
+    const tagged_word& currentToken,
+    const ::word       governor) {
   syn_path_data dat;
   dat.factHash = factHash;
   dat.index = index;
   dat.validity = validity;
   dat.deleteMask = deleteMask;
   dat.currentToken = currentToken;
+  dat.governor = governor;
   return dat;
 }
 
 SynPath::SynPath()
-    : costIfTrue(0.0), costIfFalse(0.0), backpointer(NULL),
-      data(mkSynPathData(42l, 255, false, 42, getTaggedWord(0, 0, 0))) { }
+    : costIfTrue(0.0), costIfFalse(0.0), backpointer(0),
+      data(mkSynPathData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) { }
 
 SynPath::SynPath(const SynPath& from)
     : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
@@ -37,13 +44,27 @@ SynPath::SynPath(const SynPath& from)
   
 SynPath::SynPath(const Tree& init)
     : costIfTrue(0.0f), costIfFalse(0.0f),
-      backpointer(NULL),
-      data(mkSynPathData(42l, 255, false, 42, getTaggedWord(0, 0, 0)))
-//      data(mkSynPathData(  // TODO(gabor)
-//      ));
-  {
-}
+      backpointer(0),
+      data(mkSynPathData(init.hash(), init.root(), true, 
+                         0x0, init.word(init.root()), TREE_ROOT_WORD))
+  { }
   
+SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
+                 const tagged_word& newToken,
+                 const float& costIfTrue, const float& costIfFalse,
+                 const uint32_t& backpointer)
+    : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
+      backpointer(backpointer),
+      data(mkSynPathData(newHash, from.data.index, from.data.validity,
+                         from.data.deleteMask, newToken,
+                         from.data.governor)) { }
+SynPath::SynPath(const SynPath& from, const Tree& tree,
+                 const uint8_t& newIndex, const uint32_t& backpointer)
+    : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
+      backpointer(backpointer),
+      data(mkSynPathData(from.data.factHash, newIndex, from.data.validity, 
+                         from.data.deleteMask, tree.word(newIndex), 
+                         tree.word(tree.governor(newIndex)).word)) { }
 
 // ----------------------------------------------
 // DEPENDENCY TREE
@@ -276,60 +297,263 @@ uint64_t Tree::updateHashFromDeletions(
   return newHash;
 }
   
+// ----------------------------------------------
+// CHANNEL
+// ----------------------------------------------
+  
+bool Channel::push(const SynPath& value) {
+  if (pushPointer == pullPointer) {
+    // Case: empty buffer
+    buffer[pushPointer] = value;
+    pushPointer += 1;
+    return true;
+  } else {
+    // Case: something in buffer
+    const uint16_t available =
+      ((pullPointer + bufferLength) - pushPointer) % bufferLength - 1;
+    if (available > 0) {
+      buffer[pushPointer] = value;
+      pushPointer = (pushPointer + 1) % bufferLength;
+      return true;
+    } else {
+      return false;
+    }
+  }
+}
+
+bool Channel::poll(SynPath* output) {
+  const uint16_t available =
+    ((pushPointer + bufferLength) - pullPointer) % bufferLength;
+  if (available > 0) {
+    *output = buffer[pullPointer];
+    pullPointer = (pullPointer + 1) % bufferLength;
+    return true;
+  } else { 
+    return false;
+  }
+}
   
 // ----------------------------------------------
 // SEARCH ALGORITHM
 // ----------------------------------------------
 
+//
+// Print the current time
+//
+void printTime(const char* format) {
+  char s[128];
+  time_t t = time(NULL);
+  struct tm* p = localtime(&t);
+  strftime(s, 1000, format, p);
+  printf("%s", s);
+}
+
+//
+// Create the input options for a search
+//
+syn_search_options SynSearchOptions(
+    const uint32_t& maxTicks,
+    const float& costThreshold,
+    const bool& stopWhenResultFound,
+    const bool& silent) {
+  syn_search_options opts;
+  opts.maxTicks = maxTicks;
+  opts.costThreshold = costThreshold;
+  opts.stopWhenResultFound = stopWhenResultFound;
+  opts.silent = silent;
+  return opts;
+}
+
+
+//
+// Handle push/pop to the priority queue
+//
 void priorityQueueWorker(
-    SynPath* enqueueBuffer, uint16_t* enqueuePointer, uint16_t* enqueueUpperBound,
-    SynPath* dequeueBuffer, uint16_t* dequeuePointer, uint16_t* dequeueUpperBound) {
+    Channel* enqueueChannel, Channel* dequeueChannel, 
+    bool* timeout, bool* pqEmpty) {
+  // Variables
+  uint64_t idleTicks = 0;
+  KNHeap<float,SynPath> pq(
+    std::numeric_limits<float>::infinity(),
+    -std::numeric_limits<float>::infinity());
+  float key;
+  SynPath value;
+
+  // Main loop
+  while (!(*timeout)) {
+    if (enqueueChannel->poll(&value)) {
+      pq.insert(value.getPriorityKey(), value);
+    } else {
+      idleTicks += 1;
+      if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+    }
+    if (!pq.isEmpty()) {
+      *pqEmpty = false;
+      pq.deleteMin(&key, &value);
+      while (!dequeueChannel->push(value)) {
+        idleTicks += 1;
+        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+      }
+    } else {
+      *pqEmpty = true;
+    }
+  }
+
+  // Debug idle ticks
+  printTime("[%c] ");
+  printf("    |PQ Normal Return| idleTicks=%lu\n", idleTicks);
 }
 
+
+//
+// Handle creating children for the priority queue
+//
 void pushChildrenWorker(
-    SynPath* enqueueBuffer, uint16_t* enqueuePointer, uint16_t* enqueueUpperBound,
-    SynPath* dequeueBuffer, uint16_t* dequeuePointer, uint16_t* dequeueUpperBound) {
+    Channel* enqueueChannel, Channel* dequeueChannel,
+    bool* timeout, bool* pqEmpty,
+    const uint32_t& maxTicks, const Graph* graph, const Tree& tree) {
+  // Variables
+  uint32_t ticks = 0;
+  uint64_t idleTicks = 0;
+  uint8_t  dependentIndices[8];
+  uint8_t  dependentRelations[8];
+  SynPath node;
+  // Main Loop
+  while (ticks <= maxTicks) {
+    // Dequeue an element
+    while (!dequeueChannel->poll(&node)) {
+      idleTicks += 1;
+      if (idleTicks % 1000000 == 0) { 
+        printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000);
+        // Check if the priority queue is empty
+        if (*pqEmpty) {
+          printTime("[%c] "); printf("    |PQ Empty|\n");
+          *timeout = true;
+          return;
+        }
+      }
+    }
+
+    // PUSH 1: Mutations
+    uint32_t numEdges;
+    const edge* edges = graph->incomingEdgesFast(node.token(), &numEdges);
+    for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
+      // (compute new fields)
+      const uint64_t newHash = tree.updateHashFromMutation(
+          node.factHash(), node.tokenIndex(), node.token().word,
+          node.governor(), edges[edgeI].source
+        );
+      const tagged_word newToken = getTaggedWord(
+          edges[edgeI].source,
+          edges[edgeI].source_sense,
+          node.token().monotonicity);
+      const float costIfTrue = 0.0;
+      const float costIfFalse = 0.0;
+      // (create child)
+      const SynPath mutatedChild(node, newHash, newToken,
+                                 costIfTrue, costIfFalse,
+                                 0);  // TODO(gabor) backpointer
+      // (push child)
+      while (!enqueueChannel->push(mutatedChild)) {
+        idleTicks += 1;
+        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000); }
+      }
+    }
+  
+    // INTERM: Get Children
+    uint8_t numDependents;
+    tree.dependents(node.tokenIndex(), 8, dependentIndices,
+                    dependentRelations, &numDependents);
+    
+    // PUSH 2: Deletions
+    // TODO
+
+    // PUSH 3: Index Move
+    for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
+      // create movement
+      const SynPath indexMovedChild(node, tree, dependentIndices[dependentI],
+                                    0);  // TODO(gabor) backpointer
+      // (push child)
+      while (!enqueueChannel->push(indexMovedChild)) {
+        idleTicks += 1;
+        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000); }
+      }
+    }
+    
+    ticks += 1;
+  }
+
+  printTime("[%c] ");
+  printf("    |CF Normal Return| idleTicks=%lu\n", idleTicks);
+  *timeout = true;
 }
 
 
-
-syn_search_response SynSearch(Graph* mutationGraph, Tree* input) {
-  SynPath* enqueueBuffer = (SynPath*) malloc(CACHE_LINE_SIZE * 8 * sizeof(SynPath*));
-  SynPath* dequeueBuffer = (SynPath*) malloc(CACHE_LINE_SIZE * sizeof(SynPath*));
+//
+// The entry method for searching
+//
+syn_search_response SynSearch(
+    const Graph* mutationGraph, 
+    const Tree* input,
+    const syn_search_options& opts) {
+  // Debug print parameters
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("|BEGIN SEARCH| fact='%s'\n", toString(*mutationGraph, *input).c_str());
+  }
 
   // Allocate some shared variables
-  uint16_t* cacheSpace = (uint16_t*) input->cacheSpace();
-  uint16_t* enqueuePointer = cacheSpace;
-  *enqueuePointer = 0;
-  uint16_t* dequeuePointer = cacheSpace + 1;
-  *dequeuePointer = 0;
-  uint16_t* processEnqueuePointer = cacheSpace + 2;
-  *processEnqueuePointer = 0;
-  uint16_t* processDequeuePointer = cacheSpace + 3;
-  *processDequeuePointer = 0;
+  Channel* cacheSpace = (Channel*) input->cacheSpace();
+  Channel* enqueueChannel = new(cacheSpace) Channel(
+    (SynPath*) malloc(ENQUEUE_BUFFER_SIZE * sizeof(SynPath)),
+    ENQUEUE_BUFFER_SIZE);
+  Channel* dequeueChannel = new(cacheSpace + 1) Channel(
+    (SynPath*) malloc(DEQUEUE_BUFFER_SIZE * sizeof(SynPath)),
+    DEQUEUE_BUFFER_SIZE);
+  bool* timeout = (bool*) (cacheSpace + 2);
+  *timeout = false;
+  bool* pqEmpty = timeout + 1;
+  *pqEmpty = false;
+
   // (sanity check)
-  if (((uint64_t) processDequeuePointer) >= ((uint64_t) input) + sizeof(Tree)) {
+  if (((uint64_t) pqEmpty) + 1 >= ((uint64_t) input) + sizeof(Tree)) {
     printf("Allocated too much into the cache memory area!\n");
     std::exit(1);
   }
 
   // Enqueue the first element
-  new(dequeueBuffer) SynPath(*input);
-  *dequeuePointer += 1;
+  if (!dequeueChannel->push(SynPath(*input))) {
+    printf("Could not push root!?\n");
+    std::exit(1);
+  }
 
   // Start threads
   std::thread priorityQueueThread(priorityQueueWorker, 
-      enqueueBuffer, enqueuePointer, processEnqueuePointer,
-      dequeueBuffer, dequeuePointer, processDequeuePointer);
-  
+      enqueueChannel, dequeueChannel, timeout, pqEmpty);
   std::thread pushChildrenThread(pushChildrenWorker, 
-      enqueueBuffer, processEnqueuePointer, enqueuePointer,
-      dequeueBuffer, processDequeuePointer, dequeuePointer);
+      enqueueChannel, dequeueChannel, timeout, pqEmpty,
+      opts.maxTicks, mutationGraph, *input);
       
 
   // Join threads
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("|AWAITING JOIN|\n");
+  }
+  // (priority queue)
+  if (!opts.silent) { printTime("[%c] "); printf("  Priority queue...\n"); }
   priorityQueueThread.join();
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("    Priority queue joined.\n");
+  }
+  // (push children)
+  if (!opts.silent) { printTime("[%c] "); printf("  Child factory...\n"); }
   pushChildrenThread.join();
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("    Child factory joined.\n");
+  }
   
   syn_search_response response;
   // TODO(gabor)

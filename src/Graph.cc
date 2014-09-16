@@ -2,8 +2,9 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "Graph.h"
 #include "Utils.h"
+#include "Graph.h"
+#include "SynSearch.h"
 #include "Postgres.h"
 #include "btree_set.h"
 

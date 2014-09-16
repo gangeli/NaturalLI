@@ -22,9 +22,30 @@ class SynPathTest : public ::testing::Test {
 TEST_F(SynPathTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
   EXPECT_EQ(26, MAX_QUERY_LENGTH);
-  EXPECT_EQ(16, sizeof(syn_path_data));
+  EXPECT_EQ(20, sizeof(syn_path_data));
   EXPECT_EQ(32, sizeof(SynPath));
   EXPECT_LE(sizeof(SynPath), CACHE_LINE_SIZE);
+}
+
+TEST_F(SynPathTest, HasZeroCostInitially) {
+  SynPath path(Tree(string("42\t2\tnsubj\n") +
+                    string("43\t0\troot\n") +
+                    string("44\t2\tdobj")
+  ));
+  EXPECT_EQ(0.0, path.getPriorityKey());
+}
+
+TEST_F(SynPathTest, InitFromTree) {
+  Tree tree(string("42\t2\tnsubj\n") +
+            string("43\t0\troot\n") +
+            string("44\t2\tdobj"));
+
+  SynPath path(tree);
+  EXPECT_EQ(tree.hash(), path.factHash());
+  EXPECT_EQ(TREE_ROOT_WORD, path.governor());
+  EXPECT_EQ(getTaggedWord(43, 0, 0), path.token());
+  EXPECT_EQ(1, path.tokenIndex());
+  EXPECT_EQ(0, path.getBackpointer());
 }
 
 // ----------------------------------------------
@@ -529,3 +550,115 @@ TEST_F(KNHeapTest, SimpleTestWithPaths) {
   EXPECT_EQ(5.0, key);
   ASSERT_EQ(0, pathHeap->getSize());
 }
+
+// ----------------------------------------------
+// Channel
+// ----------------------------------------------
+TEST(ChannelTest, Creation) {
+  Channel c((SynPath*) malloc(16 * sizeof(SynPath)), 16);
+}
+
+TEST(ChannelTest, PushPoll) {
+  SynPath path, out;
+  Channel c((SynPath*) malloc(16 * sizeof(SynPath)), 16);
+  EXPECT_FALSE(c.poll(&out));
+  EXPECT_TRUE(c.push(path));
+  EXPECT_TRUE(c.poll(&out));
+}
+
+TEST(ChannelTest, Capacity) {
+  SynPath path, out;
+  Channel c((SynPath*) malloc(4 * sizeof(SynPath)), 4);
+  EXPECT_TRUE(c.push(path));
+  EXPECT_TRUE(c.push(path));
+  EXPECT_TRUE(c.push(path));
+  ASSERT_FALSE(c.push(path));
+  EXPECT_TRUE(c.poll(&out));
+  EXPECT_TRUE(c.poll(&out));
+  EXPECT_TRUE(c.poll(&out));
+  ASSERT_FALSE(c.poll(&out));
+}
+
+TEST(ChannelTest, RandomAccessPattern) {
+  srand (42);
+  SynPath path, out;
+  Channel c((SynPath*) malloc(5 * sizeof(SynPath)), 5);
+  uint8_t size = 0;
+  for (uint32_t i = 0; i < 10000; ++i) {
+    if (size == 4) {
+      ASSERT_FALSE(c.push(path));
+      ASSERT_TRUE(c.poll(&out));
+      size -= 1;
+    } else if (size == 0) {
+      ASSERT_FALSE(c.poll(&out));
+      ASSERT_TRUE(c.push(path));
+      size += 1;
+    } else if (rand() % 2) {
+      ASSERT_TRUE(c.push(path));
+      size += 1;
+    } else {
+      ASSERT_TRUE(c.poll(&out));
+      size -= 1;
+    }
+  }
+}
+
+TEST(ChannelTest, CorrectValues) {
+  // (variables)
+  Tree a(string("20852\t2\tnsubj\n") +
+         string("60042\t0\troot\n") +
+         string("125248\t2\tdobj"));
+  Tree b(string("73918\t2\tnsubj\n") +
+         string("60042\t0\troot\n") +
+         string("125248\t2\tdobj"));
+  SynPath pathA(a);
+  SynPath pathB(b);
+  SynPath out;
+  Channel c((SynPath*) malloc(5 * sizeof(SynPath)), 5);
+  // (push)
+  ASSERT_TRUE(c.push(pathA));
+  ASSERT_TRUE(c.push(pathB));
+  // (poll)
+  ASSERT_TRUE(c.poll(&out));
+  EXPECT_EQ(pathA.factHash(), out.factHash());
+  ASSERT_TRUE(c.poll(&out));
+  EXPECT_EQ(pathB.factHash(), out.factHash());
+  // (nothing at the end)
+  EXPECT_FALSE(c.poll(&out));
+  EXPECT_EQ(pathB.factHash(), out.factHash());  // out not written
+}
+
+// ----------------------------------------------
+// Syntactic Search
+// ----------------------------------------------
+class SynSearchTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    catsHaveTails = new Tree(string("20852\t2\tnsubj\n") +
+                             string("60042\t0\troot\n") +
+                             string("125248\t2\tdobj"));
+    graph = ReadMockGraph();
+    opts = SynSearchOptions(1000, 999.0f, false, false);
+  }
+  
+  virtual void TearDown() {
+    delete catsHaveTails;
+    delete graph;
+  }
+
+  Tree* catsHaveTails;
+  Graph* graph;
+  syn_search_options opts;
+};
+
+TEST_F(SynSearchTest, ThreadsFinish) {
+  syn_search_response response = SynSearch(graph, catsHaveTails, opts);
+}
+
+//TEST_F(SynSearchTest, LiteralLookup) {
+//  syn_search_response response =
+//    SynSearch(graph, catsHaveTails);
+//  EXPECT_EQ(0, response.totalTicks);
+//  EXPECT_EQ(0.0, response.cost);
+//  EXPECT_EQ(0.0, response.path.size());
+//}
