@@ -5,6 +5,8 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
+#define SILENT false
+
 using namespace std;
 
 // ----------------------------------------------
@@ -554,13 +556,38 @@ TEST_F(KNHeapTest, SimpleTestWithPaths) {
 // ----------------------------------------------
 // Channel
 // ----------------------------------------------
-TEST(ChannelTest, Creation) {
-  Channel c((SynPath*) malloc(16 * sizeof(SynPath)), 16);
+TEST(ChannelTest, CreationAndSize) {
+  Channel c;
+  EXPECT_TRUE( sizeof(Channel) % CACHE_LINE_SIZE == 0);
+  EXPECT_EQ( 1024, sizeof(Channel) );
+}
+
+TEST(ChannelTest, CacheAligned) {
+  for (uint16_t i = 0; i < 10000; ++i) {
+    Channel* c = threadsafeChannel();
+    EXPECT_EQ(0, ((uint64_t) c) % CACHE_LINE_SIZE);
+    free(c);
+  }
+}
+
+TEST(ChannelTest, PointersOnDifferentCacheLines) {
+  Channel* c = threadsafeChannel();
+  // Set pointers
+  c->data.pushPointer = 0xFFFF;
+  c->data.pollPointer = 0xFFFF;
+  EXPECT_EQ(0xFFFF, c->data.pushPointer);
+  EXPECT_EQ(0xFFFF, c->data.pollPointer);
+  // Zero memory
+  memset((void*) c, 0, CACHE_LINE_SIZE);
+  // Check corruption
+  EXPECT_EQ(0x0, c->data.pushPointer);
+  EXPECT_EQ(0xFFFF, c->data.pollPointer);
+  free(c);
 }
 
 TEST(ChannelTest, PushPoll) {
   SynPath path, out;
-  Channel c((SynPath*) malloc(16 * sizeof(SynPath)), 16);
+  Channel c;
   EXPECT_FALSE(c.poll(&out));
   EXPECT_TRUE(c.push(path));
   EXPECT_TRUE(c.poll(&out));
@@ -568,24 +595,24 @@ TEST(ChannelTest, PushPoll) {
 
 TEST(ChannelTest, Capacity) {
   SynPath path, out;
-  Channel c((SynPath*) malloc(4 * sizeof(SynPath)), 4);
-  EXPECT_TRUE(c.push(path));
-  EXPECT_TRUE(c.push(path));
-  EXPECT_TRUE(c.push(path));
+  Channel c;
+  for (uint8_t i = 0; i < CHANNEL_BUFFER_LENGTH - 1; ++i) {
+    EXPECT_TRUE(c.push(path));
+  }
   ASSERT_FALSE(c.push(path));
-  EXPECT_TRUE(c.poll(&out));
-  EXPECT_TRUE(c.poll(&out));
-  EXPECT_TRUE(c.poll(&out));
+  for (uint8_t i = 0; i < CHANNEL_BUFFER_LENGTH - 1; ++i) {
+    EXPECT_TRUE(c.poll(&out));
+  }
   ASSERT_FALSE(c.poll(&out));
 }
 
 TEST(ChannelTest, RandomAccessPattern) {
   srand (42);
   SynPath path, out;
-  Channel c((SynPath*) malloc(5 * sizeof(SynPath)), 5);
+  Channel c;
   uint8_t size = 0;
   for (uint32_t i = 0; i < 10000; ++i) {
-    if (size == 4) {
+    if (size == CHANNEL_BUFFER_LENGTH - 1) {
       ASSERT_FALSE(c.push(path));
       ASSERT_TRUE(c.poll(&out));
       size -= 1;
@@ -614,7 +641,7 @@ TEST(ChannelTest, CorrectValues) {
   SynPath pathA(a);
   SynPath pathB(b);
   SynPath out;
-  Channel c((SynPath*) malloc(5 * sizeof(SynPath)), 5);
+  Channel c;
   // (push)
   ASSERT_TRUE(c.push(pathA));
   ASSERT_TRUE(c.push(pathB));
@@ -638,7 +665,7 @@ class SynSearchTest : public ::testing::Test {
                              string("60042\t0\troot\n") +
                              string("125248\t2\tdobj"));
     graph = ReadMockGraph();
-    opts = SynSearchOptions(1000, 999.0f, false, false);
+    opts = SynSearchOptions(1000, 999.0f, false, SILENT);
   }
   
   virtual void TearDown() {
@@ -653,6 +680,11 @@ class SynSearchTest : public ::testing::Test {
 
 TEST_F(SynSearchTest, ThreadsFinish) {
   syn_search_response response = SynSearch(graph, catsHaveTails, opts);
+}
+
+TEST_F(SynSearchTest, ExpectedTickCount) {
+  syn_search_response response = SynSearch(graph, catsHaveTails, opts);
+  EXPECT_EQ(3, response.totalTicks);
 }
 
 //TEST_F(SynSearchTest, LiteralLookup) {

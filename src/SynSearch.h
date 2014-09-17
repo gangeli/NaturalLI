@@ -394,25 +394,56 @@ class SynPath {
 // CHANNEL
 // ----------------------------------------------
 
+#define CHANNEL_BUFFER_LENGTH ((1024 - 2*CACHE_LINE_SIZE) / sizeof(SynPath))
+
+#ifdef __GNUG__
+typedef struct {
+#else
+typedef struct alignas(128) {
+#endif
+  // Push thread's memory
+  uint16_t    pushPointer:16;
+  uint8_t     __filler1[CACHE_LINE_SIZE - 2];  // pushPointer gets its own cache line
+  // Buffer
+  SynPath     buffer[CHANNEL_BUFFER_LENGTH];
+  // Poll thread's memory
+  uint8_t     __filler2[CACHE_LINE_SIZE - 2];  // pollPointer gets its own cache line
+  uint16_t    pollPointer:16;
+#ifdef __GNUG__
+} __attribute__((packed)) channel_data;
+#else
+} channel_data;
+#endif
+
+
+/**
+ * A rudimentary thread-safe lockless channel.
+ * Note that only two threads can actually communicate across a Channel.
+ * One must always be writing, and one must always be reading.
+ * Otherwise, all hell breaks loose.
+ */
 class Channel {
  public:
-  Channel(SynPath* buffer, const uint16_t& bufferLength)
-    : buffer(buffer), bufferLength(bufferLength), pushPointer(0),
-      pullPointer(0)  { }
- 
-  ~Channel() {
-    free(buffer);
+  /** Create a new channel. threadsafeChannel() is more recommended */
+  Channel() {
+    data.pushPointer = 0;
+    data.pollPointer = 0;
   }
 
+  /** Push an element onto the channel. Returns false if there is no space */
   bool push(const SynPath& value);
+  /** Poll an element from the channel. Returns false if there is nothing in the channel */
   bool poll(SynPath* output);
 
- private:
-  uint16_t pushPointer;
-  SynPath* buffer;
-  uint16_t bufferLength;
-  uint16_t pullPointer;
+  /** Public for debugging and testing only. Do not access this directly */
+  channel_data data;
 };
+
+inline Channel* threadsafeChannel() {
+  void* ptr;
+  int rc = posix_memalign(&ptr, CACHE_LINE_SIZE, sizeof(Channel));
+  return new(ptr) Channel();
+}
 
 
 // ----------------------------------------------

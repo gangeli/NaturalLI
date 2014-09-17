@@ -5,12 +5,6 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-
-#define ENQUEUE_BUFFER_SIZE (CACHE_LINE_SIZE * 1)
-#define DEQUEUE_BUFFER_SIZE (CACHE_LINE_SIZE * 7)
-#define ENQUEUE_BATCH_SIZE 8
-#define DEQUEUE_BATCH_SIZE 64
-
 using namespace std;
 
 // ----------------------------------------------
@@ -302,18 +296,18 @@ uint64_t Tree::updateHashFromDeletions(
 // ----------------------------------------------
   
 bool Channel::push(const SynPath& value) {
-  if (pushPointer == pullPointer) {
+  if (data.pushPointer == data.pollPointer) {
     // Case: empty buffer
-    buffer[pushPointer] = value;
-    pushPointer += 1;
+    data.buffer[data.pushPointer] = value;
+    data.pushPointer += 1;
     return true;
   } else {
     // Case: something in buffer
     const uint16_t available =
-      ((pullPointer + bufferLength) - pushPointer) % bufferLength - 1;
+      ((data.pollPointer + CHANNEL_BUFFER_LENGTH) - data.pushPointer) % CHANNEL_BUFFER_LENGTH - 1;
     if (available > 0) {
-      buffer[pushPointer] = value;
-      pushPointer = (pushPointer + 1) % bufferLength;
+      data.buffer[data.pushPointer] = value;
+      data.pushPointer = (data.pushPointer + 1) % CHANNEL_BUFFER_LENGTH;
       return true;
     } else {
       return false;
@@ -323,10 +317,12 @@ bool Channel::push(const SynPath& value) {
 
 bool Channel::poll(SynPath* output) {
   const uint16_t available =
-    ((pushPointer + bufferLength) - pullPointer) % bufferLength;
+    ((data.pushPointer + CHANNEL_BUFFER_LENGTH) - data.pollPointer) % CHANNEL_BUFFER_LENGTH;
   if (available > 0) {
-    *output = buffer[pullPointer];
-    pullPointer = (pullPointer + 1) % bufferLength;
+  }
+  if (available > 0) {
+    *output = data.buffer[data.pollPointer];
+    data.pollPointer = (data.pollPointer + 1) % CHANNEL_BUFFER_LENGTH;
     return true;
   } else { 
     return false;
@@ -364,13 +360,17 @@ syn_search_options SynSearchOptions(
   return opts;
 }
 
+//
+// A helper to evict the cache. This is rather expensive.
+//
+#define EVICT_CACHE  void* ptr = malloc(L3_CACHE_SIZE); memset(ptr, 0, 16777216); free(ptr);
 
 //
 // Handle push/pop to the priority queue
 //
 void priorityQueueWorker(
     Channel* enqueueChannel, Channel* dequeueChannel, 
-    bool* timeout, bool* pqEmpty) {
+    bool* timeout, bool* pqEmpty, const syn_search_options& opts) {
   // Variables
   uint64_t idleTicks = 0;
   KNHeap<float,SynPath> pq(
@@ -381,27 +381,32 @@ void priorityQueueWorker(
 
   // Main loop
   while (!(*timeout)) {
-    if (enqueueChannel->poll(&value)) {
+    // Enqueue
+    while (enqueueChannel->poll(&value)) {
       pq.insert(value.getPriorityKey(), value);
-    } else {
-      idleTicks += 1;
-      if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
     }
+
+    // Dequeue
     if (!pq.isEmpty()) {
       *pqEmpty = false;
       pq.deleteMin(&key, &value);
       while (!dequeueChannel->push(value)) {
         idleTicks += 1;
-        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
       }
     } else {
-      *pqEmpty = true;
+      if (!(*pqEmpty)){ 
+        *pqEmpty = true;
+        EVICT_CACHE;
+      }
     }
   }
 
   // Debug idle ticks
-  printTime("[%c] ");
-  printf("    |PQ Normal Return| idleTicks=%lu\n", idleTicks);
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("  |PQ Normal Return| idleTicks=%lu\n", idleTicks);
+  }
 }
 
 
@@ -411,28 +416,35 @@ void priorityQueueWorker(
 void pushChildrenWorker(
     Channel* enqueueChannel, Channel* dequeueChannel,
     bool* timeout, bool* pqEmpty,
-    const uint32_t& maxTicks, const Graph* graph, const Tree& tree) {
+    const syn_search_options& opts, const Graph* graph, const Tree& tree,
+    uint64_t* ticks) {
   // Variables
-  uint32_t ticks = 0;
   uint64_t idleTicks = 0;
+  *ticks = 0;
   uint8_t  dependentIndices[8];
   uint8_t  dependentRelations[8];
   SynPath node;
   // Main Loop
-  while (ticks <= maxTicks) {
+  while (*ticks <= opts.maxTicks) {
     // Dequeue an element
     while (!dequeueChannel->poll(&node)) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
-        printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000);
+        if (!opts.silent) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
         // Check if the priority queue is empty
         if (*pqEmpty) {
-          printTime("[%c] "); printf("    |PQ Empty|\n");
+          // (evict the cache)
+          EVICT_CACHE;
+          // (try to poll again)
+          if (dequeueChannel->poll(&node)) { break; }
+          // (priority queue really is empty)
+          if (!opts.silent) { printTime("[%c] "); printf("  |PQ Empty| ticks=%lu\n", *ticks); }
           *timeout = true;
           return;
         }
       }
     }
+    *ticks += 1;
 
     // PUSH 1: Mutations
     uint32_t numEdges;
@@ -456,7 +468,7 @@ void pushChildrenWorker(
       // (push child)
       while (!enqueueChannel->push(mutatedChild)) {
         idleTicks += 1;
-        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
     }
   
@@ -476,15 +488,15 @@ void pushChildrenWorker(
       // (push child)
       while (!enqueueChannel->push(indexMovedChild)) {
         idleTicks += 1;
-        if (idleTicks % 1000000 == 0) { printTime("[%c] "); printf("    |CF Idle| ticks=%uK  idle=%luM\n", ticks / 1000, idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
     }
-    
-    ticks += 1;
   }
 
-  printTime("[%c] ");
-  printf("    |CF Normal Return| idleTicks=%lu\n", idleTicks);
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
+  }
   *timeout = true;
 }
 
@@ -496,6 +508,7 @@ syn_search_response SynSearch(
     const Graph* mutationGraph, 
     const Tree* input,
     const syn_search_options& opts) {
+  syn_search_response response;
   // Debug print parameters
   if (!opts.silent) {
     printTime("[%c] ");
@@ -503,16 +516,12 @@ syn_search_response SynSearch(
   }
 
   // Allocate some shared variables
-  Channel* cacheSpace = (Channel*) input->cacheSpace();
-  Channel* enqueueChannel = new(cacheSpace) Channel(
-    (SynPath*) malloc(ENQUEUE_BUFFER_SIZE * sizeof(SynPath)),
-    ENQUEUE_BUFFER_SIZE);
-  Channel* dequeueChannel = new(cacheSpace + 1) Channel(
-    (SynPath*) malloc(DEQUEUE_BUFFER_SIZE * sizeof(SynPath)),
-    DEQUEUE_BUFFER_SIZE);
-  bool* timeout = (bool*) (cacheSpace + 2);
+  Channel* enqueueChannel = threadsafeChannel();
+  Channel* dequeueChannel = threadsafeChannel();
+  bool* cacheSpace = (bool*) input->cacheSpace();
+  bool* timeout = cacheSpace;
   *timeout = false;
-  bool* pqEmpty = timeout + 1;
+  bool* pqEmpty = cacheSpace + 1;
   *pqEmpty = false;
 
   // (sanity check)
@@ -529,10 +538,10 @@ syn_search_response SynSearch(
 
   // Start threads
   std::thread priorityQueueThread(priorityQueueWorker, 
-      enqueueChannel, dequeueChannel, timeout, pqEmpty);
+      enqueueChannel, dequeueChannel, timeout, pqEmpty, opts);
   std::thread pushChildrenThread(pushChildrenWorker, 
       enqueueChannel, dequeueChannel, timeout, pqEmpty,
-      opts.maxTicks, mutationGraph, *input);
+      opts, mutationGraph, *input, &(response.totalTicks));
       
 
   // Join threads
@@ -555,7 +564,6 @@ syn_search_response SynSearch(
     printf("    Child factory joined.\n");
   }
   
-  syn_search_response response;
   // TODO(gabor)
   return response;
 }
