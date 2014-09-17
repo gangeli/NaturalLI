@@ -363,7 +363,7 @@ syn_search_options SynSearchOptions(
 //
 // A helper to evict the cache. This is rather expensive.
 //
-#define EVICT_CACHE  void* ptr = malloc(L3_CACHE_SIZE); memset(ptr, 0, 16777216); free(ptr);
+#define EVICT_CACHE  void* __ptr = malloc(L3_CACHE_SIZE); memset(__ptr, 0x0, L3_CACHE_SIZE); free(__ptr);
 
 //
 // Handle push/pop to the priority queue

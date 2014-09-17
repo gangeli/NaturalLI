@@ -52,7 +52,7 @@ uint8_t indexDependency(const std::string& dependencyAsString);
 /**
  * Get the String gloss for an indexed dependency arc.
  */
-const char* dependencyGloss(const uint8_t& indexed);
+std::string dependencyGloss(const uint8_t& indexed);
 
 /**
  *  The fact (lemur, have, tail)

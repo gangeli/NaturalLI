@@ -342,7 +342,7 @@ uint8_t indexDependency(const string& dependencyAsString) {
   return 0;
 }
   
-const char* dependencyGloss(const uint8_t& indexed) {
+string dependencyGloss(const uint8_t& indexed) {
   if (indexed == 1) { return "acomp"; }
   if (indexed == 2) { return "advcl"; }
   if (indexed == 3) { return "advmod"; }
