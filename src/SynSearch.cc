@@ -384,10 +384,6 @@ syn_search_options SynSearchOptions(
 //
 #define EVICT_CACHE  void* __ptr = malloc(L3_CACHE_SIZE); memset(__ptr, 0x0, L3_CACHE_SIZE); free(__ptr);
 
-#ifndef SEARCH_CYCLE_MEMORY
-  #define SEARCH_CYCLE_MEMORY 0
-#endif
-
 //
 // Handle push/pop to the priority queue
 //
@@ -459,6 +455,8 @@ void priorityQueueWorker(
 //
 // Handle creating children for the priority queue
 //
+#pragma GCC push_options  // matches pop_options below
+#pragma GCC optimize ("unroll-loops")
 void pushChildrenWorker(
     Channel* enqueueChannel, Channel* dequeueChannel,
     SynPath* history, uint64_threadsafe_t* historySize,
@@ -496,8 +494,6 @@ void pushChildrenWorker(
     
     // Register the dequeue'd element
 #if SEARCH_CYCLE_MEMORY!=0
-#pragma GCC push_options  // matches pop_options below
-#pragma GCC optimize ("unroll-loops")
     memory[0] = history[node.getBackpointer()];
     memorySize = 1;
     for (uint8_t i = 1; i < SEARCH_CYCLE_MEMORY; ++i) {
@@ -542,7 +538,6 @@ void pushChildrenWorker(
 //        printf("  CHECK %lu  vs %lu\n", mutatedChild.factHash(), memory[i].factHash());
         isNewChild &= (mutatedChild != memory[i]);
       }
-#pragma GCC pop_options  // matches push_options above
       if (isNewChild) {
 #endif
       while (!enqueueChannel->push(mutatedChild)) {
@@ -604,6 +599,7 @@ void pushChildrenWorker(
   *timeout = true;
   EVICT_CACHE;
 }
+#pragma GCC pop_options  // matches push_options above
 
 
 //
@@ -638,9 +634,11 @@ syn_search_response SynSearch(
   *timeout = false;
   bool* pqEmpty = cacheSpace + 1;
   *pqEmpty = false;
+  bool* searchDone = cacheSpace + 2;
+  *searchDone = false;
 
   // (sanity check)
-  if (((uint64_t) pqEmpty) + 1 >= ((uint64_t) input) + sizeof(Tree)) {
+  if (((uint64_t) searchDone) + 1 >= ((uint64_t) input) + sizeof(Tree)) {
     printf("Allocated too much into the cache memory area!\n");
     std::exit(1);
   }

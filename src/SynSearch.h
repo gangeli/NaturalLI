@@ -8,16 +8,19 @@
 #include "Graph.h"
 #include "knheap/knheap.h"
 
+// Ensure definitions
 #ifndef TWO_PASS_HASH
   #define TWO_PASS_HASH 0
 #endif
+#ifndef SEARCH_CYCLE_MEMORY
+  #define SEARCH_CYCLE_MEMORY 0
+#endif
+
+// Conditional includes
 #if TWO_PASS_HASH!=0
   #include "fnv/fnv.h"
 #endif
 
-/** TODO(gabor)
- *    -  syn_path_data needs to keep track of its governor too!
- */
 
 // ----------------------------------------------
 // UTILITIES
