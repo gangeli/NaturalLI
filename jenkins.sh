@@ -45,10 +45,16 @@ rm -r `find . -type d -name "naturalli-*"`
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
 configure --disable-debug
-make all check
+make check
 echo "(two pass hash)"
 configure TWO_PASS_HASH=1
-make all check
+make check
+echo "(search cycle memory)"
+configure SEARCH_CYCLE_MEMORY=1; make check
+configure SEARCH_CYCLE_MEMORY=2; make check
+configure SEARCH_CYCLE_MEMORY=3; make check
+configure SEARCH_CYCLE_MEMORY=4; make check
+configure SEARCH_CYCLE_MEMORY=5; make check
 echo "(back to default)"
 configure  # reconfigure to default
 make all

@@ -40,9 +40,12 @@ SynPath::SynPath(const Tree& init)
     : costIfTrue(0.0f), costIfFalse(0.0f),
       backpointer(0),
       data(mkSynPathData(init.hash(), init.root(), true, 
-                         0x0, init.word(init.root()), TREE_ROOT_WORD))
+                         0x0, init.token(init.root()), TREE_ROOT_WORD))
   { }
   
+//
+// SynPath() ''mutate constructor
+//
 SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
                  const tagged_word& newToken,
                  const float& costIfTrue, const float& costIfFalse,
@@ -52,13 +55,29 @@ SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
       data(mkSynPathData(newHash, from.data.index, from.data.validity,
                          from.data.deleteMask, newToken,
                          from.data.governor)) { }
+
+//
+// SynPath() ''delete constructor
+//
+SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
+          const float& costIfTrue, const float& costIfFalse,
+          const uint32_t& addedDeletions, const uint32_t& backpointer)
+    : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
+      backpointer(backpointer),
+      data(mkSynPathData(newHash, from.data.index, from.data.validity,
+                         addedDeletions | from.data.deleteMask, from.data.currentToken,
+                         from.data.governor)) { }
+
+//
+// SynPath() ''move index constructor
+//
 SynPath::SynPath(const SynPath& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
     : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
       backpointer(backpointer),
       data(mkSynPathData(from.data.factHash, newIndex, from.data.validity, 
-                         from.data.deleteMask, tree.word(newIndex), 
-                         tree.word(tree.governor(newIndex)).word)) { }
+                         from.data.deleteMask, tree.token(newIndex), 
+                         tree.token(tree.governor(newIndex)).word)) { }
 
 // ----------------------------------------------
 // DEPENDENCY TREE
@@ -365,6 +384,10 @@ syn_search_options SynSearchOptions(
 //
 #define EVICT_CACHE  void* __ptr = malloc(L3_CACHE_SIZE); memset(__ptr, 0x0, L3_CACHE_SIZE); free(__ptr);
 
+#ifndef SEARCH_CYCLE_MEMORY
+  #define SEARCH_CYCLE_MEMORY 0
+#endif
+
 //
 // Handle push/pop to the priority queue
 //
@@ -381,9 +404,12 @@ void priorityQueueWorker(
 
   // Main loop
   while (!(*timeout)) {
+    bool somethingHappened = false;
+
     // Enqueue
     while (enqueueChannel->poll(&value)) {
       pq.insert(value.getPriorityKey(), value);
+      somethingHappened = true;
     }
 
     // Dequeue
@@ -392,17 +418,37 @@ void priorityQueueWorker(
       pq.deleteMin(&key, &value);
       while (!dequeueChannel->push(value)) {
         idleTicks += 1;
-        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+        if (idleTicks % 1000000 == 0) { 
+          EVICT_CACHE;
+          if (!opts.silent) { printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+          if (*timeout) { 
+            if (!opts.silent) {
+              printTime("[%c] ");
+              printf("  |PQ Dirty Timeout| idleTicks=%lu\n", idleTicks);
+            }
+            return;
+          }
+        }
       }
+      somethingHappened = true;
     } else {
       if (!(*pqEmpty)){ 
         *pqEmpty = true;
         EVICT_CACHE;
       }
     }
+
+    // Debug
+    if (!somethingHappened) {
+      idleTicks += 1;
+      if (idleTicks % 1000000 == 0) { 
+        EVICT_CACHE;
+        if (!opts.silent) {printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+      }
+    }
   }
 
-  // Debug idle ticks
+  // Return
   if (!opts.silent) {
     printTime("[%c] ");
     printf("  |PQ Normal Return| idleTicks=%lu\n", idleTicks);
@@ -415,6 +461,7 @@ void priorityQueueWorker(
 //
 void pushChildrenWorker(
     Channel* enqueueChannel, Channel* dequeueChannel,
+    SynPath* history, uint64_threadsafe_t* historySize,
     bool* timeout, bool* pqEmpty,
     const syn_search_options& opts, const Graph* graph, const Tree& tree,
     uint64_t* ticks) {
@@ -423,9 +470,11 @@ void pushChildrenWorker(
   *ticks = 0;
   uint8_t  dependentIndices[8];
   uint8_t  dependentRelations[8];
+  uint8_t memorySize = 0;
+  SynPath memory[SEARCH_CYCLE_MEMORY];
   SynPath node;
   // Main Loop
-  while (*ticks <= opts.maxTicks) {
+  while (*ticks < opts.maxTicks) {
     // Dequeue an element
     while (!dequeueChannel->poll(&node)) {
       idleTicks += 1;
@@ -444,6 +493,27 @@ void pushChildrenWorker(
         }
       }
     }
+    
+    // Register the dequeue'd element
+#if SEARCH_CYCLE_MEMORY!=0
+#pragma GCC push_options  // matches pop_options below
+#pragma GCC optimize ("unroll-loops")
+    memory[0] = history[node.getBackpointer()];
+    memorySize = 1;
+    for (uint8_t i = 1; i < SEARCH_CYCLE_MEMORY; ++i) {
+      if (memory[i - 1].getBackpointer() != 0) {
+        memory[i] = history[memory[i - 1].getBackpointer()];
+        memorySize = i + 1;
+      }
+    }
+    const SynPath& parent = history[node.getBackpointer()];
+#endif
+    const uint32_t myIndex = historySize->value;
+//    printf("%u>> %s (points to %u)\n", 
+//      myIndex, toString(*graph, tree, node).c_str(),
+//      node.getBackpointer());
+    history[myIndex] = node;
+    historySize->value += 1;
     *ticks += 1;
 
     // PUSH 1: Mutations
@@ -459,17 +529,30 @@ void pushChildrenWorker(
           edges[edgeI].source,
           edges[edgeI].source_sense,
           node.token().monotonicity);
-      const float costIfTrue = 0.0;
+      const float costIfTrue = 0.0;  // TODO(gabor) costs
       const float costIfFalse = 0.0;
       // (create child)
       const SynPath mutatedChild(node, newHash, newToken,
                                  costIfTrue, costIfFalse,
-                                 0);  // TODO(gabor) backpointer
+                                 myIndex);
       // (push child)
+#if SEARCH_CYCLE_MEMORY!=0
+      bool isNewChild = true;
+      for (uint8_t i = 0; i < memorySize; ++i) {
+//        printf("  CHECK %lu  vs %lu\n", mutatedChild.factHash(), memory[i].factHash());
+        isNewChild &= (mutatedChild != memory[i]);
+      }
+#pragma GCC pop_options  // matches push_options above
+      if (isNewChild) {
+#endif
       while (!enqueueChannel->push(mutatedChild)) {
         idleTicks += 1;
         if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
+//      printf("  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
+#if SEARCH_CYCLE_MEMORY!=0
+      }
+#endif
     }
   
     // INTERM: Get Children
@@ -477,18 +560,39 @@ void pushChildrenWorker(
     tree.dependents(node.tokenIndex(), 8, dependentIndices,
                     dependentRelations, &numDependents);
     
-    // PUSH 2: Deletions
-    // TODO
-
-    // PUSH 3: Index Move
     for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
-      // create movement
-      const SynPath indexMovedChild(node, tree, dependentIndices[dependentI],
-                                    0);  // TODO(gabor) backpointer
-      // (push child)
-      while (!enqueueChannel->push(indexMovedChild)) {
-        idleTicks += 1;
-        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+      const uint8_t dependentIndex = dependentIndices[dependentI];
+
+      // PUSH 2: Deletions
+      if (!node.isDeleted(dependentIndex)) {
+        // (compute deletion)
+        uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
+        uint64_t newHash = tree.updateHashFromDeletions(
+            node.factHash(), dependentIndex, tree.token(dependentIndex).word,
+            node.token().word, deletionMask);
+        const float costIfTrue = 0.0;  // TODO(gabor) costs
+        const float costIfFalse = 0.0;
+        // (create child)
+        const SynPath deletedChild(node, newHash,
+                                   costIfTrue, costIfFalse, deletionMask,
+                                   myIndex);
+        // (push child)
+        while (!enqueueChannel->push(deletedChild)) {
+          idleTicks += 1;
+          if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+        }
+//        printf("  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
+
+        // PUSH 3: Index Move
+        // (create child)
+        const SynPath indexMovedChild(node, tree, dependentIndex,
+                                      myIndex);
+        // (push child)
+        while (!enqueueChannel->push(indexMovedChild)) {
+          idleTicks += 1;
+          if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+        }
+//        printf("  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
       }
     }
   }
@@ -498,6 +602,7 @@ void pushChildrenWorker(
     printf("  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
   }
   *timeout = true;
+  EVICT_CACHE;
 }
 
 
@@ -510,14 +615,24 @@ syn_search_response SynSearch(
     const syn_search_options& opts) {
   syn_search_response response;
   // Debug print parameters
+  if (opts.maxTicks > 1000000000) {
+    printTime("[%c] ");
+    printf("|ERROR| Max number of ticks is too large: %u\n", opts.maxTicks);
+    response.totalTicks = 0;
+    return response;
+  }
   if (!opts.silent) {
     printTime("[%c] ");
     printf("|BEGIN SEARCH| fact='%s'\n", toString(*mutationGraph, *input).c_str());
   }
 
   // Allocate some shared variables
+  // (communication)
   Channel* enqueueChannel = threadsafeChannel();
   Channel* dequeueChannel = threadsafeChannel();
+  SynPath* history = (SynPath*) malloc(opts.maxTicks * sizeof(SynPath));
+  uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
+  // (from the tree cache space)
   bool* cacheSpace = (bool*) input->cacheSpace();
   bool* timeout = cacheSpace;
   *timeout = false;
@@ -531,16 +646,22 @@ syn_search_response SynSearch(
   }
 
   // Enqueue the first element
+  // (to the fringe)
   if (!dequeueChannel->push(SynPath(*input))) {
     printf("Could not push root!?\n");
     std::exit(1);
   }
+  // (to the history)
+  history[0] = SynPath(*input);
+  historySize->value += 1;
 
   // Start threads
   std::thread priorityQueueThread(priorityQueueWorker, 
       enqueueChannel, dequeueChannel, timeout, pqEmpty, opts);
   std::thread pushChildrenThread(pushChildrenWorker, 
-      enqueueChannel, dequeueChannel, timeout, pqEmpty,
+      enqueueChannel, dequeueChannel, 
+      history, historySize,
+      timeout, pqEmpty,
       opts, mutationGraph, *input, &(response.totalTicks));
       
 
@@ -563,7 +684,13 @@ syn_search_response SynSearch(
     printTime("[%c] ");
     printf("    Child factory joined.\n");
   }
+
+  // Clean up
+  delete enqueueChannel;
+  delete dequeueChannel;
+  free(history);
+  free(historySize);
   
-  // TODO(gabor)
+  // TODO(gabor) populate paths
   return response;
 }

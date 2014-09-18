@@ -240,7 +240,7 @@ Graph* ReadGraph() {
 //
 // Read Dummy Graph
 //
-Graph* ReadMockGraph() {
+Graph* ReadMockGraph(const bool& allowCycles) {
   const char* lemur[]  {LEMUR_STR,  "lemur" };  PGRow lemurRow(lemur);
   const char* animal[] {ANIMAL_STR, "animal" }; PGRow animalRow(animal);
   const char* potto[]  {POTTO_STR,  "potto" }; PGRow pottoRow(potto);
@@ -256,9 +256,16 @@ Graph* ReadMockGraph() {
   const char* animal2lemur[]{ANIMAL_STR, "0", LEMUR_STR,  "0", "1", "0.42"  }; PGRow animal2lemurRow(animal2lemur);
   const char* animal2cat[]{  ANIMAL_STR, "0", CAT_STR,    "0", "1", "42.00" }; PGRow animal2catRow(animal2cat);
   const char* cat2animal[]{  CAT_STR,    "0", ANIMAL_STR, "0", "0", "42.00" }; PGRow cat2animalRow(cat2animal);
-  PGRow edges[]{ /*lemur2pottoRow, lemur2animalRow, animal2catRow, */
-                 potto2lemurRow, animal2lemurRow, cat2animalRow };
-  MockPGIterator edgeIter(3, edges);
+  PGRow edges[] = {cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow };
+  edges[0] = potto2lemurRow;
+  edges[1] = animal2lemurRow;
+  edges[2] = cat2animalRow;
+  if (allowCycles) {
+    edges[3] = lemur2pottoRow;
+    edges[4] = lemur2animalRow;
+    edges[5] = animal2catRow;
+  }
+  MockPGIterator edgeIter(allowCycles ? 6 : 3, edges);
   
   const char* invalidDeletions[]{HAVE_STR, "3"};
   PGRow invalidDeletionsRow(invalidDeletions); 

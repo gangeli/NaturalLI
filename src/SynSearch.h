@@ -117,7 +117,7 @@ class Tree {
   /**
    * The tagged word at the given index (zero indexed).
    */
-  inline tagged_word word(const uint8_t& index) const {
+  inline tagged_word token(const uint8_t& index) const {
     return data[index].word;
   }
 
@@ -281,9 +281,9 @@ class Tree {
  * This struct should take up 16 bytes.
  */
 #ifdef __GNUG__
-typedef struct {
+struct syn_path_data {
 #else
-typedef struct alignas(16) {
+struct alignas(16) syn_path_data {
 #endif
   uint64_t    factHash:64;
   uint8_t     index:5;
@@ -291,10 +291,19 @@ typedef struct alignas(16) {
   uint32_t    deleteMask:MAX_QUERY_LENGTH;  // 26
   tagged_word currentToken;
   word        governor;
+
+  bool operator==(const syn_path_data& rhs) const {
+    return factHash == rhs.factHash &&
+           deleteMask == rhs.deleteMask &&
+           index == rhs.index &&
+           validity == rhs.validity &&
+           currentToken == rhs.currentToken &&
+           governor == rhs.governor;
+  }
 #ifdef __GNUG__
-} __attribute__((packed)) syn_path_data;
+} __attribute__((packed));
 #else
-} syn_path_data;
+};
 #endif
 
 /**
@@ -328,6 +337,13 @@ class SynPath {
           const tagged_word& newToken,
           const float& costIfTrue, const float& costIfFalse,
           const uint32_t& backpointer);
+  /**
+   * The delete branch constructor. the new deletions are
+   * <b>added to</b> the deletions already in |from|
+   */
+  SynPath(const SynPath& from, const uint64_t& newHash,
+          const float& costIfTrue, const float& costIfFalse,
+          const uint32_t& newDeletions, const uint32_t& backpointer);
   /** The move index constructor */
   SynPath(const SynPath& from, const Tree& tree,
           const uint8_t& newIndex, const uint32_t& backpointer);
@@ -349,6 +365,21 @@ class SynPath {
     return !(*this < rhs);
   }
   
+  /**
+   * Checks if the two paths are the same, <i>including</i> the
+   * mutation index but <i>NOT including</i> the costs or backpointer.
+   * To check if two paths are the same for just the fact, use the
+   * fact hash.
+   */
+  inline bool operator==(const SynPath& rhs) const {
+    return this->data == rhs.data;
+  }
+  
+  /** @see operator==(const SynPath&) */
+  inline bool operator!=(const SynPath& rhs) const {
+    return !((*this) == rhs);
+  }
+  
   /** The assignment operator */
   inline void operator=(const SynPath& from) {
     this->costIfTrue = from.costIfTrue;
@@ -368,6 +399,11 @@ class SynPath {
   
   /** Returns governor of the current token. */
   inline ::word governor() const { return data.governor; }
+  
+  /** Returns whether a given word has been deleted*/
+  inline bool isDeleted(const uint8_t& index) const { 
+    return TREE_IS_DELETED(data.deleteMask, index);
+  }
   
   /** Returns a backpointer to the parent of this fact. */
   inline uint32_t getBackpointer() const { return backpointer; }
@@ -399,7 +435,20 @@ class SynPath {
 #ifdef __GNUG__
 typedef struct {
 #else
-typedef struct alignas(128) {
+typedef struct alignas(CACHE_LINE_SIZE) {
+#endif
+  uint64_t value;
+  uint8_t     __filler1[CACHE_LINE_SIZE - 8];
+#ifdef __GNUG__
+} __attribute__((packed)) uint64_threadsafe_t;
+#else
+} uint64_threadsafe_t;
+#endif
+
+#ifdef __GNUG__
+typedef struct {
+#else
+typedef struct alignas(1024) {
 #endif
   // Push thread's memory
   uint16_t    pushPointer:16;
@@ -443,6 +492,14 @@ inline Channel* threadsafeChannel() {
   void* ptr;
   int rc = posix_memalign(&ptr, CACHE_LINE_SIZE, sizeof(Channel));
   return new(ptr) Channel();
+}
+
+inline uint64_threadsafe_t* malloc_uint64_threadsafe_t() {
+  void* ptr;
+  int rc = posix_memalign(&ptr, CACHE_LINE_SIZE, sizeof(uint64_threadsafe_t));
+  uint64_threadsafe_t* p = (uint64_threadsafe_t*) ptr;
+  p->value = 0l;
+  return p;
 }
 
 

@@ -66,9 +66,24 @@ string toString(const Graph& graph, SearchType& searchType, const Path* path) {
 std::string toString(const Graph& graph, const Tree& tree) {
   tagged_word buffer[tree.length];
   for (uint8_t i = 0; i < tree.length; ++i) {
-    buffer[i] = tree.word(i);
+    buffer[i] = tree.token(i);
   }
   return toString(graph, buffer, tree.length);
+}
+
+std::string toString(const Graph& graph, const Tree& tree, const SynPath& path) {
+  string str = "";
+  str += std::to_string(path.factHash()) + ": ";
+  for (uint8_t i = 0; i < tree.length; ++i) {
+    if (i == path.tokenIndex()) {
+      str += "*" + string(graph.gloss(path.token())) + " ";
+    } else if (path.isDeleted(i)) {
+      str += "-- ";
+    } else {
+      str += string(graph.gloss(tree.token(i))) + " ";
+    }
+  }
+  return str;
 }
 
 string toString(const edge_type& edge) {

@@ -5,7 +5,7 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define SILENT false
+#define SILENT true
 
 using namespace std;
 
@@ -48,7 +48,18 @@ TEST_F(SynPathTest, InitFromTree) {
   EXPECT_EQ(getTaggedWord(43, 0, 0), path.token());
   EXPECT_EQ(1, path.tokenIndex());
   EXPECT_EQ(0, path.getBackpointer());
+  EXPECT_EQ(path, path);
 }
+
+TEST_F(SynPathTest, AssignmentOperator) {
+  SynPath path(Tree(string("42\t2\tnsubj\n") +
+                    string("43\t0\troot\n") +
+                    string("44\t2\tdobj")
+  ));
+  SynPath path2 = path;
+  EXPECT_EQ(path, path2);
+}
+
 
 // ----------------------------------------------
 // Tree (Dependency Tree)
@@ -110,9 +121,9 @@ TEST_F(TreeTest, BitShifts) {
 // CoNLL Format
 //
 TEST_F(TreeTest, CoNLLFormatConstructor) {
-  EXPECT_EQ(getTaggedWord(42, 0, 0), tree->word(0));
-  EXPECT_EQ(getTaggedWord(43, 0, 0), tree->word(1));
-  EXPECT_EQ(getTaggedWord(44, 0, 0), tree->word(2));
+  EXPECT_EQ(getTaggedWord(42, 0, 0), tree->token(0));
+  EXPECT_EQ(getTaggedWord(43, 0, 0), tree->token(1));
+  EXPECT_EQ(getTaggedWord(44, 0, 0), tree->token(2));
   
   EXPECT_EQ(1, tree->governor(0));
   EXPECT_EQ(TREE_ROOT, tree->governor(1));
@@ -391,6 +402,18 @@ TEST_F(TreeTest, HashMutateSimple) {
 }
 
 //
+// Hash Mutate Undo (simple)
+//
+TEST_F(TreeTest, HashMutateUndoSimple) {
+  const uint64_t originalHash = tree->hash();
+  const uint64_t mutatedHash
+    = tree->updateHashFromMutation( originalHash, 0, 42, 43, 50);
+  const uint64_t undoneHash
+    = tree->updateHashFromMutation( mutatedHash, 0, 50, 43, 42);
+  EXPECT_EQ(originalHash, undoneHash);
+}
+
+//
 // Hash Mutate (simple with children)
 //
 TEST_F(TreeTest, HashMutateSimpleWithChildren) {
@@ -658,33 +681,56 @@ TEST(ChannelTest, CorrectValues) {
 // ----------------------------------------------
 // Syntactic Search
 // ----------------------------------------------
+#define SEARCH_TIMEOUT_TEST 1000
 class SynSearchTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    lemursHaveTails = new Tree(string("73918\t2\tnsubj\n") +
+                             string("60042\t0\troot\n") +
+                             string("125248\t2\tdobj"));
     catsHaveTails = new Tree(string("20852\t2\tnsubj\n") +
                              string("60042\t0\troot\n") +
                              string("125248\t2\tdobj"));
     graph = ReadMockGraph();
-    opts = SynSearchOptions(1000, 999.0f, false, SILENT);
+    cyclicGraph = ReadMockGraph(true);
+    opts = SynSearchOptions(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
   }
   
   virtual void TearDown() {
+    delete lemursHaveTails;
     delete catsHaveTails;
     delete graph;
+    delete cyclicGraph;
   }
 
+  Tree* lemursHaveTails;
   Tree* catsHaveTails;
   Graph* graph;
+  Graph* cyclicGraph;
   syn_search_options opts;
 };
 
 TEST_F(SynSearchTest, ThreadsFinish) {
-  syn_search_response response = SynSearch(graph, catsHaveTails, opts);
+  syn_search_response response = SynSearch(graph, lemursHaveTails, opts);
 }
 
-TEST_F(SynSearchTest, ExpectedTickCount) {
+TEST_F(SynSearchTest, TickCountNoMutation) {
   syn_search_response response = SynSearch(graph, catsHaveTails, opts);
-  EXPECT_EQ(3, response.totalTicks);
+  EXPECT_EQ(9, response.totalTicks);
+}
+
+TEST_F(SynSearchTest, TickCountWithMutations) {
+  syn_search_response response = SynSearch(graph, lemursHaveTails, opts);
+  EXPECT_EQ(15, response.totalTicks);
+}
+
+TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
+  syn_search_response response = SynSearch(cyclicGraph, lemursHaveTails, opts);
+#if SEARCH_CYCLE_MEMORY==0
+  EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
+#else
+  EXPECT_EQ(15, response.totalTicks);
+#endif
 }
 
 //TEST_F(SynSearchTest, LiteralLookup) {
@@ -694,3 +740,5 @@ TEST_F(SynSearchTest, ExpectedTickCount) {
 //  EXPECT_EQ(0.0, response.cost);
 //  EXPECT_EQ(0.0, response.path.size());
 //}
+
+#undef SEARCH_TIMEOUT_TEST

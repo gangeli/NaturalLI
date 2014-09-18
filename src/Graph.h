@@ -48,6 +48,9 @@ Graph* ReadGraph();
  * "lemur have tail", "animal have tail", and "cat have tail",
  * with appropriate edges defined
  */
-Graph* ReadMockGraph();
+Graph* ReadMockGraph(const bool& allowCycles);
+
+/** @see ReadMockGraph(false) */
+inline Graph* ReadMockGraph() { return ReadMockGraph(false); }
 
 #endif

@@ -35,6 +35,11 @@ std::string toString(const Graph& graph, const Tree& tree);
 std::string toString(const Graph& graph, SearchType& searchType, const Path* path);
 
 /**
+ * Print a human readable dump of a search path.
+ */
+std::string toString(const Graph& graph, const Tree& tree, const SynPath& path);
+
+/**
  * Print out the edge type being taken.
  */
 std::string toString(const edge_type& edge);

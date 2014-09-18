@@ -1,4 +1,5 @@
-SUBDIRS = gtest
+MAIN_SRC=../../src
+SUBDIRS = gtest ../../src/fnv ../../src/knheap
 EXTRA_DIST = edu org
 
 clean-local:
@@ -13,7 +14,6 @@ OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 _TEST_OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 TEST_SRC   = $(patsubst %.o,%.cc,${_TEST_OBJS})
 
-MAIN_SRC=../../src
 
 ${MAIN_SRC}/%.o: ${MAIN_SRC}/%.cc ${MAIN_SRC}/%.h
 	$(MAKE) -C ${MAIN_SRC} $<
