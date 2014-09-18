@@ -7,6 +7,7 @@
 #include "Types.h"
 #include "Graph.h"
 #include "knheap/knheap.h"
+#include "btree_set.h"
 
 // Ensure definitions
 #ifndef TWO_PASS_HASH
@@ -324,19 +325,19 @@ struct alignas(16) syn_path_data {
  * This class fits into 32 bytes; it should not exceed the size of
  * a cache line.
  */
-class SynPath {
+class SearchNode {
  public:
-  void mutations(SynPath* output, uint64_t* index);
-  void deletions(SynPath* output, uint64_t* index);
+  void mutations(SearchNode* output, uint64_t* index);
+  void deletions(SearchNode* output, uint64_t* index);
 
   /** A dummy constructor. Don't use this */
-  SynPath();
+  SearchNode();
   /** The copy constructor */
-  SynPath(const SynPath& from);
+  SearchNode(const SearchNode& from);
   /** The initial node constructor */
-  SynPath(const Tree& init);
+  SearchNode(const Tree& init);
   /** The mutate constructor */
-  SynPath(const SynPath& from, const uint64_t& newHash,
+  SearchNode(const SearchNode& from, const uint64_t& newHash,
           const tagged_word& newToken,
           const float& costIfTrue, const float& costIfFalse,
           const uint32_t& backpointer);
@@ -344,27 +345,27 @@ class SynPath {
    * The delete branch constructor. the new deletions are
    * <b>added to</b> the deletions already in |from|
    */
-  SynPath(const SynPath& from, const uint64_t& newHash,
+  SearchNode(const SearchNode& from, const uint64_t& newHash,
           const float& costIfTrue, const float& costIfFalse,
           const uint32_t& newDeletions, const uint32_t& backpointer);
   /** The move index constructor */
-  SynPath(const SynPath& from, const Tree& tree,
+  SearchNode(const SearchNode& from, const Tree& tree,
           const uint8_t& newIndex, const uint32_t& backpointer);
 
   /** Compares the priority keys of two path states */
-  inline bool operator<=(const SynPath& rhs) const {
+  inline bool operator<=(const SearchNode& rhs) const {
     return getPriorityKey() <= rhs.getPriorityKey();
   }
   /** Compares the priority keys of two path states */
-  inline bool operator<(const SynPath& rhs) const {
+  inline bool operator<(const SearchNode& rhs) const {
     return getPriorityKey() < rhs.getPriorityKey();
   }
   /** Compares the priority keys of two path states */
-  inline bool operator>(const SynPath& rhs) const {
+  inline bool operator>(const SearchNode& rhs) const {
     return !(*this <= rhs);
   }
   /** Compares the priority keys of two path states */
-  inline bool operator>=(const SynPath& rhs) const {
+  inline bool operator>=(const SearchNode& rhs) const {
     return !(*this < rhs);
   }
   
@@ -374,17 +375,17 @@ class SynPath {
    * To check if two paths are the same for just the fact, use the
    * fact hash.
    */
-  inline bool operator==(const SynPath& rhs) const {
+  inline bool operator==(const SearchNode& rhs) const {
     return this->data == rhs.data;
   }
   
-  /** @see operator==(const SynPath&) */
-  inline bool operator!=(const SynPath& rhs) const {
+  /** @see operator==(const SearchNode&) */
+  inline bool operator!=(const SearchNode& rhs) const {
     return !((*this) == rhs);
   }
   
   /** The assignment operator */
-  inline void operator=(const SynPath& from) {
+  inline void operator=(const SearchNode& from) {
     this->costIfTrue = from.costIfTrue;
     this->costIfFalse = from.costIfFalse;
     this->data = from.data;
@@ -433,7 +434,7 @@ class SynPath {
 // CHANNEL
 // ----------------------------------------------
 
-#define CHANNEL_BUFFER_LENGTH ((1024 - 2*CACHE_LINE_SIZE) / sizeof(SynPath))
+#define CHANNEL_BUFFER_LENGTH ((1024 - 2*CACHE_LINE_SIZE) / sizeof(SearchNode))
 
 #ifdef __GNUG__
 typedef struct {
@@ -457,7 +458,7 @@ typedef struct alignas(1024) {
   uint16_t    pushPointer:16;
   uint8_t     __filler1[CACHE_LINE_SIZE - 2];  // pushPointer gets its own cache line
   // Buffer
-  SynPath     buffer[CHANNEL_BUFFER_LENGTH];
+  SearchNode     buffer[CHANNEL_BUFFER_LENGTH];
   // Poll thread's memory
   uint8_t     __filler2[CACHE_LINE_SIZE - 2];  // pollPointer gets its own cache line
   uint16_t    pollPointer:16;
@@ -483,9 +484,9 @@ class Channel {
   }
 
   /** Push an element onto the channel. Returns false if there is no space */
-  bool push(const SynPath& value);
+  bool push(const SearchNode& value);
   /** Poll an element from the channel. Returns false if there is nothing in the channel */
-  bool poll(SynPath* output);
+  bool poll(SearchNode* output);
 
   /** Public for debugging and testing only. Do not access this directly */
   channel_data data;
@@ -525,7 +526,7 @@ typedef struct {
  * A convenient struct to store the output of the search algorithm.
  */
 struct syn_search_response {
-  std::vector<SynPath> path;
+  std::vector<std::vector<SearchNode>> paths;
   uint64_t totalTicks;
 };
 
@@ -550,6 +551,7 @@ syn_search_options SynSearchOptions(
  */
 syn_search_response SynSearch(
     const Graph* mutationGraph,
+    const btree::btree_set<uint64_t>& database,
     const Tree* input,
     const syn_search_options& opts);
 

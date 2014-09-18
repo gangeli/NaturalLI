@@ -10,7 +10,7 @@ using namespace std;
 // ----------------------------------------------
 // PATH ELEMENT (SEARCH NODE)
 // ----------------------------------------------
-inline syn_path_data mkSynPathData(
+inline syn_path_data mkSearchNodeData(
     const uint64_t&    factHash,
     const uint8_t&     index,
     const bool&        validity,
@@ -27,55 +27,55 @@ inline syn_path_data mkSynPathData(
   return dat;
 }
 
-SynPath::SynPath()
+SearchNode::SearchNode()
     : costIfTrue(0.0), costIfFalse(0.0), backpointer(0),
-      data(mkSynPathData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) { }
+      data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) { }
 
-SynPath::SynPath(const SynPath& from)
+SearchNode::SearchNode(const SearchNode& from)
     : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
       backpointer(from.backpointer),
       data(from.data) { }
   
-SynPath::SynPath(const Tree& init)
+SearchNode::SearchNode(const Tree& init)
     : costIfTrue(0.0f), costIfFalse(0.0f),
       backpointer(0),
-      data(mkSynPathData(init.hash(), init.root(), true, 
+      data(mkSearchNodeData(init.hash(), init.root(), true, 
                          0x0, init.token(init.root()), TREE_ROOT_WORD))
   { }
   
 //
-// SynPath() ''mutate constructor
+// SearchNode() ''mutate constructor
 //
-SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
+SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
                  const tagged_word& newToken,
                  const float& costIfTrue, const float& costIfFalse,
                  const uint32_t& backpointer)
     : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
       backpointer(backpointer),
-      data(mkSynPathData(newHash, from.data.index, from.data.validity,
+      data(mkSearchNodeData(newHash, from.data.index, from.data.validity,
                          from.data.deleteMask, newToken,
                          from.data.governor)) { }
 
 //
-// SynPath() ''delete constructor
+// SearchNode() ''delete constructor
 //
-SynPath::SynPath(const SynPath& from, const uint64_t& newHash,
+SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
           const float& costIfTrue, const float& costIfFalse,
           const uint32_t& addedDeletions, const uint32_t& backpointer)
     : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
       backpointer(backpointer),
-      data(mkSynPathData(newHash, from.data.index, from.data.validity,
+      data(mkSearchNodeData(newHash, from.data.index, from.data.validity,
                          addedDeletions | from.data.deleteMask, from.data.currentToken,
                          from.data.governor)) { }
 
 //
-// SynPath() ''move index constructor
+// SearchNode() ''move index constructor
 //
-SynPath::SynPath(const SynPath& from, const Tree& tree,
+SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
     : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
       backpointer(backpointer),
-      data(mkSynPathData(from.data.factHash, newIndex, from.data.validity, 
+      data(mkSearchNodeData(from.data.factHash, newIndex, from.data.validity, 
                          from.data.deleteMask, tree.token(newIndex), 
                          tree.token(tree.governor(newIndex)).word)) { }
 
@@ -314,7 +314,7 @@ uint64_t Tree::updateHashFromDeletions(
 // CHANNEL
 // ----------------------------------------------
   
-bool Channel::push(const SynPath& value) {
+bool Channel::push(const SearchNode& value) {
   if (data.pushPointer == data.pollPointer) {
     // Case: empty buffer
     data.buffer[data.pushPointer] = value;
@@ -334,7 +334,7 @@ bool Channel::push(const SynPath& value) {
   }
 }
 
-bool Channel::poll(SynPath* output) {
+bool Channel::poll(SearchNode* output) {
   const uint16_t available =
     ((data.pushPointer + CHANNEL_BUFFER_LENGTH) - data.pollPointer) % CHANNEL_BUFFER_LENGTH;
   if (available > 0) {
@@ -382,7 +382,11 @@ syn_search_options SynSearchOptions(
 //
 // A helper to evict the cache. This is rather expensive.
 //
-#define EVICT_CACHE  void* __ptr = malloc(L3_CACHE_SIZE); memset(__ptr, 0x0, L3_CACHE_SIZE); free(__ptr);
+inline void EVICT_CACHE() {
+  void* __ptr = malloc(L3_CACHE_SIZE); 
+  memset(__ptr, 0x0, L3_CACHE_SIZE); 
+  free(__ptr);
+}
 
 //
 // Handle push/pop to the priority queue
@@ -392,11 +396,11 @@ void priorityQueueWorker(
     bool* timeout, bool* pqEmpty, const syn_search_options& opts) {
   // Variables
   uint64_t idleTicks = 0;
-  KNHeap<float,SynPath> pq(
+  KNHeap<float,SearchNode> pq(
     std::numeric_limits<float>::infinity(),
     -std::numeric_limits<float>::infinity());
   float key;
-  SynPath value;
+  SearchNode value;
 
   // Main loop
   while (!(*timeout)) {
@@ -415,7 +419,7 @@ void priorityQueueWorker(
       while (!dequeueChannel->push(value)) {
         idleTicks += 1;
         if (idleTicks % 1000000 == 0) { 
-          EVICT_CACHE;
+          EVICT_CACHE();
           if (!opts.silent) { printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
           if (*timeout) { 
             if (!opts.silent) {
@@ -430,7 +434,7 @@ void priorityQueueWorker(
     } else {
       if (!(*pqEmpty)){ 
         *pqEmpty = true;
-        EVICT_CACHE;
+        EVICT_CACHE();
       }
     }
 
@@ -438,7 +442,7 @@ void priorityQueueWorker(
     if (!somethingHappened) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
-        EVICT_CACHE;
+        EVICT_CACHE();
         if (!opts.silent) {printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
       }
     }
@@ -459,7 +463,7 @@ void priorityQueueWorker(
 #pragma GCC optimize ("unroll-loops")
 void pushChildrenWorker(
     Channel* enqueueChannel, Channel* dequeueChannel,
-    SynPath* history, uint64_threadsafe_t* historySize,
+    SearchNode* history, uint64_threadsafe_t* historySize,
     bool* timeout, bool* pqEmpty,
     const syn_search_options& opts, const Graph* graph, const Tree& tree,
     uint64_t* ticks) {
@@ -469,8 +473,8 @@ void pushChildrenWorker(
   uint8_t  dependentIndices[8];
   uint8_t  dependentRelations[8];
   uint8_t memorySize = 0;
-  SynPath memory[SEARCH_CYCLE_MEMORY];
-  SynPath node;
+  SearchNode memory[SEARCH_CYCLE_MEMORY];
+  SearchNode node;
   // Main Loop
   while (*ticks < opts.maxTicks) {
     // Dequeue an element
@@ -481,7 +485,7 @@ void pushChildrenWorker(
         // Check if the priority queue is empty
         if (*pqEmpty) {
           // (evict the cache)
-          EVICT_CACHE;
+          EVICT_CACHE();
           // (try to poll again)
           if (dequeueChannel->poll(&node)) { break; }
           // (priority queue really is empty)
@@ -502,7 +506,7 @@ void pushChildrenWorker(
         memorySize = i + 1;
       }
     }
-    const SynPath& parent = history[node.getBackpointer()];
+    const SearchNode& parent = history[node.getBackpointer()];
 #endif
     const uint32_t myIndex = historySize->value;
 //    printf("%u>> %s (points to %u)\n", 
@@ -511,6 +515,10 @@ void pushChildrenWorker(
     history[myIndex] = node;
     historySize->value += 1;
     *ticks += 1;
+    if (!opts.silent && (*ticks) % 1000000 == 0) { 
+      printTime("[%c] "); 
+      printf("  |CF Progress| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000);
+    }
 
     // PUSH 1: Mutations
     uint32_t numEdges;
@@ -528,7 +536,7 @@ void pushChildrenWorker(
       const float costIfTrue = 0.0;  // TODO(gabor) costs
       const float costIfFalse = 0.0;
       // (create child)
-      const SynPath mutatedChild(node, newHash, newToken,
+      const SearchNode mutatedChild(node, newHash, newToken,
                                  costIfTrue, costIfFalse,
                                  myIndex);
       // (push child)
@@ -568,7 +576,7 @@ void pushChildrenWorker(
         const float costIfTrue = 0.0;  // TODO(gabor) costs
         const float costIfFalse = 0.0;
         // (create child)
-        const SynPath deletedChild(node, newHash,
+        const SearchNode deletedChild(node, newHash,
                                    costIfTrue, costIfFalse, deletionMask,
                                    myIndex);
         // (push child)
@@ -580,7 +588,7 @@ void pushChildrenWorker(
 
         // PUSH 3: Index Move
         // (create child)
-        const SynPath indexMovedChild(node, tree, dependentIndex,
+        const SearchNode indexMovedChild(node, tree, dependentIndex,
                                       myIndex);
         // (push child)
         while (!enqueueChannel->push(indexMovedChild)) {
@@ -597,23 +605,85 @@ void pushChildrenWorker(
     printf("  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
   }
   *timeout = true;
-  EVICT_CACHE;
+  EVICT_CACHE();
 }
 #pragma GCC pop_options  // matches push_options above
 
+//
+// Handle the fact lookup
+//
+void factLookupWorker(
+    vector<vector<SearchNode>>* matches, std::function<bool(uint64_t)> contains,
+    const SearchNode* history, const uint64_threadsafe_t* historySize, 
+    bool* searchDone, const syn_search_options& opts) {
+  // Variables
+  uint32_t onPrice = 0;
+  uint64_t idleTicks = 0l;
+
+
+  while (!(*searchDone)) {
+    while (onPrice < historySize->value) {
+      const SearchNode& node = history[onPrice];
+      if (contains(node.factHash())) {
+        bool unique = true;
+        for (auto iter = matches->begin(); iter != matches->end(); ++iter) {
+          vector<SearchNode> path = *iter;
+          SearchNode endOfPath = path.back();
+          if (endOfPath.factHash() == node.factHash()) {
+            unique = false;
+          }
+        }
+        if (unique) {
+          // Add this path to the result
+          // (get the complete path)
+          vector<SearchNode> path;
+          path.push_back(node);
+          if (node.getBackpointer() != 0) {
+            SearchNode head = node;
+            while (head.getBackpointer() != 0) {
+              path.push_back(head);
+              head = history[head.getBackpointer()];
+            }
+          }
+          // (reverse the path)
+          std::reverse(path.begin(), path.end());
+          // (add to the results list)
+          matches->push_back(path);
+        }
+      }
+      onPrice += 1;
+    }
+
+    // Debug print
+    idleTicks += 1;
+    if (!opts.silent && idleTicks % 1000000 == 0) { 
+      printTime("[%c] "); 
+      printf("  |Lookup Idle| idle=%luM\n", idleTicks / 1000000);
+      EVICT_CACHE();
+    }
+  }
+
+  // Return
+  if (!opts.silent) {
+    printTime("[%c] "); 
+    printf("  |Lookup normal return| resultCount=%lu  idle=%lu\n", 
+           matches->size(), idleTicks);
+  }
+}
 
 //
 // The entry method for searching
 //
 syn_search_response SynSearch(
     const Graph* mutationGraph, 
+    const btree::btree_set<uint64_t>& db,
     const Tree* input,
     const syn_search_options& opts) {
   syn_search_response response;
   // Debug print parameters
   if (opts.maxTicks > 1000000000) {
     printTime("[%c] ");
-    printf("|ERROR| Max number of ticks is too large: %u\n", opts.maxTicks);
+    printf("ERROR: Max number of ticks is too large: %u\n", opts.maxTicks);
     response.totalTicks = 0;
     return response;
   }
@@ -626,7 +696,7 @@ syn_search_response SynSearch(
   // (communication)
   Channel* enqueueChannel = threadsafeChannel();
   Channel* dequeueChannel = threadsafeChannel();
-  SynPath* history = (SynPath*) malloc(opts.maxTicks * sizeof(SynPath));
+  SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
   uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
   // (from the tree cache space)
   bool* cacheSpace = (bool*) input->cacheSpace();
@@ -645,28 +715,37 @@ syn_search_response SynSearch(
 
   // Enqueue the first element
   // (to the fringe)
-  if (!dequeueChannel->push(SynPath(*input))) {
+  if (!dequeueChannel->push(SearchNode(*input))) {
     printf("Could not push root!?\n");
     std::exit(1);
   }
   // (to the history)
-  history[0] = SynPath(*input);
+  history[0] = SearchNode(*input);
   historySize->value += 1;
 
   // Start threads
+  // (priority queue)
   std::thread priorityQueueThread(priorityQueueWorker, 
       enqueueChannel, dequeueChannel, timeout, pqEmpty, opts);
+  // (child creator)
   std::thread pushChildrenThread(pushChildrenWorker, 
       enqueueChannel, dequeueChannel, 
       history, historySize,
       timeout, pqEmpty,
       opts, mutationGraph, *input, &(response.totalTicks));
+  // (database lookup)
+  std::function<bool(uint64_t)> lookupFn = [&db](uint64_t value) -> bool {
+    auto iter = db.find( value );
+    return iter != db.end();
+  };
+  std::thread lookupThread(factLookupWorker, 
+      &(response.paths), lookupFn, history, historySize, searchDone, opts);
       
 
   // Join threads
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("|AWAITING JOIN|\n");
+    printf("AWAITING JOIN...\n");
   }
   // (priority queue)
   if (!opts.silent) { printTime("[%c] "); printf("  Priority queue...\n"); }
@@ -682,6 +761,16 @@ syn_search_response SynSearch(
     printTime("[%c] ");
     printf("    Child factory joined.\n");
   }
+  // (database lookup)
+  // (note: this must come after the above two have joined)
+  *searchDone = true;
+  EVICT_CACHE();
+  if (!opts.silent) { printTime("[%c] "); printf("  Database lookup...\n"); }
+  lookupThread.join();
+  if (!opts.silent) {
+    printTime("[%c] ");
+    printf("    Database lookup joined.\n");
+  }
 
   // Clean up
   delete enqueueChannel;
@@ -689,6 +778,7 @@ syn_search_response SynSearch(
   free(history);
   free(historySize);
   
-  // TODO(gabor) populate paths
+  // Return
+  EVICT_CACHE();
   return response;
 }

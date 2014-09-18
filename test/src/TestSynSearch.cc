@@ -2,17 +2,19 @@
 #include <config.h>
 
 #include "gtest/gtest.h"
+#include "btree_set.h"
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define SILENT true
+#define SILENT false
 
 using namespace std;
+using namespace btree;
 
 // ----------------------------------------------
-// SynPath (Search State)
+// SearchNode (Search State)
 // ----------------------------------------------
-class SynPathTest : public ::testing::Test {
+class SearchNodeTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
   }
@@ -21,28 +23,28 @@ class SynPathTest : public ::testing::Test {
   }
 };
 
-TEST_F(SynPathTest, HasExpectedSizes) {
+TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
   EXPECT_EQ(26, MAX_QUERY_LENGTH);
   EXPECT_EQ(20, sizeof(syn_path_data));
-  EXPECT_EQ(32, sizeof(SynPath));
-  EXPECT_LE(sizeof(SynPath), CACHE_LINE_SIZE);
+  EXPECT_EQ(32, sizeof(SearchNode));
+  EXPECT_LE(sizeof(SearchNode), CACHE_LINE_SIZE);
 }
 
-TEST_F(SynPathTest, HasZeroCostInitially) {
-  SynPath path(Tree(string("42\t2\tnsubj\n") +
+TEST_F(SearchNodeTest, HasZeroCostInitially) {
+  SearchNode path(Tree(string("42\t2\tnsubj\n") +
                     string("43\t0\troot\n") +
                     string("44\t2\tdobj")
   ));
   EXPECT_EQ(0.0, path.getPriorityKey());
 }
 
-TEST_F(SynPathTest, InitFromTree) {
+TEST_F(SearchNodeTest, InitFromTree) {
   Tree tree(string("42\t2\tnsubj\n") +
             string("43\t0\troot\n") +
             string("44\t2\tdobj"));
 
-  SynPath path(tree);
+  SearchNode path(tree);
   EXPECT_EQ(tree.hash(), path.factHash());
   EXPECT_EQ(TREE_ROOT_WORD, path.governor());
   EXPECT_EQ(getTaggedWord(43, 0, 0), path.token());
@@ -51,12 +53,12 @@ TEST_F(SynPathTest, InitFromTree) {
   EXPECT_EQ(path, path);
 }
 
-TEST_F(SynPathTest, AssignmentOperator) {
-  SynPath path(Tree(string("42\t2\tnsubj\n") +
+TEST_F(SearchNodeTest, AssignmentOperator) {
+  SearchNode path(Tree(string("42\t2\tnsubj\n") +
                     string("43\t0\troot\n") +
                     string("44\t2\tdobj")
   ));
-  SynPath path2 = path;
+  SearchNode path2 = path;
   EXPECT_EQ(path, path2);
 }
 
@@ -484,7 +486,7 @@ class KNHeapTest : public ::testing::Test {
     simpleHeap = new KNHeap<float,uint32_t>(
       std::numeric_limits<float>::infinity(),
       -std::numeric_limits<float>::infinity());
-    pathHeap = new KNHeap<float,SynPath>(
+    pathHeap = new KNHeap<float,SearchNode>(
       std::numeric_limits<float>::infinity(),
       -std::numeric_limits<float>::infinity());
       
@@ -496,7 +498,7 @@ class KNHeapTest : public ::testing::Test {
   }
 
   KNHeap<float,uint32_t>* simpleHeap;
-  KNHeap<float,SynPath>* pathHeap;
+  KNHeap<float,SearchNode>* pathHeap;
 };
 
 TEST_F(KNHeapTest, HaveInfinity) {
@@ -560,13 +562,13 @@ TEST_F(KNHeapTest, SimpleTestKeysDontMatchValue) {
 
 TEST_F(KNHeapTest, SimpleTestWithPaths) {
   ASSERT_EQ(0, pathHeap->getSize());
-  pathHeap->insert(1.5, SynPath());
-  pathHeap->insert(1.0, SynPath());
-  pathHeap->insert(5.0, SynPath());
+  pathHeap->insert(1.5, SearchNode());
+  pathHeap->insert(1.0, SearchNode());
+  pathHeap->insert(5.0, SearchNode());
   ASSERT_EQ(3, pathHeap->getSize());
   // Remove
   float key;
-  SynPath value;
+  SearchNode value;
   pathHeap->deleteMin(&key, &value);
   EXPECT_EQ(1.0, key);
   pathHeap->deleteMin(&key, &value);
@@ -609,7 +611,7 @@ TEST(ChannelTest, PointersOnDifferentCacheLines) {
 }
 
 TEST(ChannelTest, PushPoll) {
-  SynPath path, out;
+  SearchNode path, out;
   Channel c;
   EXPECT_FALSE(c.poll(&out));
   EXPECT_TRUE(c.push(path));
@@ -617,7 +619,7 @@ TEST(ChannelTest, PushPoll) {
 }
 
 TEST(ChannelTest, Capacity) {
-  SynPath path, out;
+  SearchNode path, out;
   Channel c;
   for (uint8_t i = 0; i < CHANNEL_BUFFER_LENGTH - 1; ++i) {
     EXPECT_TRUE(c.push(path));
@@ -631,7 +633,7 @@ TEST(ChannelTest, Capacity) {
 
 TEST(ChannelTest, RandomAccessPattern) {
   srand (42);
-  SynPath path, out;
+  SearchNode path, out;
   Channel c;
   uint8_t size = 0;
   for (uint32_t i = 0; i < 10000; ++i) {
@@ -661,9 +663,9 @@ TEST(ChannelTest, CorrectValues) {
   Tree b(string("73918\t2\tnsubj\n") +
          string("60042\t0\troot\n") +
          string("125248\t2\tdobj"));
-  SynPath pathA(a);
-  SynPath pathB(b);
-  SynPath out;
+  SearchNode pathA(a);
+  SearchNode pathB(b);
+  SearchNode out;
   Channel c;
   // (push)
   ASSERT_TRUE(c.push(pathA));
@@ -677,6 +679,7 @@ TEST(ChannelTest, CorrectValues) {
   EXPECT_FALSE(c.poll(&out));
   EXPECT_EQ(pathB.factHash(), out.factHash());  // out not written
 }
+
 
 // ----------------------------------------------
 // Syntactic Search
@@ -694,6 +697,7 @@ class SynSearchTest : public ::testing::Test {
     graph = ReadMockGraph();
     cyclicGraph = ReadMockGraph(true);
     opts = SynSearchOptions(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
+    factdb.insert(catsHaveTails->hash());
   }
   
   virtual void TearDown() {
@@ -708,24 +712,25 @@ class SynSearchTest : public ::testing::Test {
   Graph* graph;
   Graph* cyclicGraph;
   syn_search_options opts;
+  btree_set<uint64_t> factdb;
 };
 
 TEST_F(SynSearchTest, ThreadsFinish) {
-  syn_search_response response = SynSearch(graph, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
 }
 
 TEST_F(SynSearchTest, TickCountNoMutation) {
-  syn_search_response response = SynSearch(graph, catsHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, opts);
   EXPECT_EQ(9, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutations) {
-  syn_search_response response = SynSearch(graph, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
   EXPECT_EQ(15, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
-  syn_search_response response = SynSearch(cyclicGraph, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, opts);
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
 #else
@@ -733,12 +738,17 @@ TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
 #endif
 }
 
-//TEST_F(SynSearchTest, LiteralLookup) {
-//  syn_search_response response =
-//    SynSearch(graph, catsHaveTails);
-//  EXPECT_EQ(0, response.totalTicks);
-//  EXPECT_EQ(0.0, response.cost);
-//  EXPECT_EQ(0.0, response.path.size());
-//}
+TEST_F(SynSearchTest, LiteralLookup) {
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, opts);
+  EXPECT_EQ(1, response.paths.size());
+}
+
+TEST_F(SynSearchTest, LemursToCats) {
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
+  ASSERT_EQ(1, response.paths.size());
+  EXPECT_EQ(4, response.paths[0].size());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
+  EXPECT_EQ(catsHaveTails->hash(), response.paths[0].back().factHash());
+}
 
 #undef SEARCH_TIMEOUT_TEST

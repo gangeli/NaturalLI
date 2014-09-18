@@ -71,7 +71,7 @@ std::string toString(const Graph& graph, const Tree& tree) {
   return toString(graph, buffer, tree.length);
 }
 
-std::string toString(const Graph& graph, const Tree& tree, const SynPath& path) {
+std::string toString(const Graph& graph, const Tree& tree, const SearchNode& path) {
   string str = "";
   str += std::to_string(path.factHash()) + ": ";
   for (uint8_t i = 0; i < tree.length; ++i) {
