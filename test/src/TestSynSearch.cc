@@ -6,7 +6,7 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define SILENT false
+#define SILENT true
 
 using namespace std;
 using namespace btree;

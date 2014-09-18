@@ -52,8 +52,6 @@ make check
 echo "(search cycle memory)"
 configure SEARCH_CYCLE_MEMORY=1; make check
 configure SEARCH_CYCLE_MEMORY=2; make check
-configure SEARCH_CYCLE_MEMORY=3; make check
-configure SEARCH_CYCLE_MEMORY=4; make check
 configure SEARCH_CYCLE_MEMORY=5; make check
 echo "(back to default)"
 configure  # reconfigure to default
