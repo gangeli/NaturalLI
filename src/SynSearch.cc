@@ -13,14 +13,14 @@ using namespace std;
 inline syn_path_data mkSearchNodeData(
     const uint64_t&    factHash,
     const uint8_t&     index,
-    const bool&        validity,
+    const bool&        truth,
     const uint32_t&    deleteMask,
     const tagged_word& currentToken,
     const ::word       governor) {
   syn_path_data dat;
   dat.factHash = factHash;
   dat.index = index;
-  dat.validity = validity;
+  dat.truth = truth;
   dat.deleteMask = deleteMask;
   dat.currentToken = currentToken;
   dat.governor = governor;
@@ -28,16 +28,16 @@ inline syn_path_data mkSearchNodeData(
 }
 
 SearchNode::SearchNode()
-    : costIfTrue(0.0), costIfFalse(0.0), backpointer(0),
+    : cost(0.0), backpointer(0),
       data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) { }
 
 SearchNode::SearchNode(const SearchNode& from)
-    : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
+    : cost(from.cost),
       backpointer(from.backpointer),
       data(from.data) { }
   
 SearchNode::SearchNode(const Tree& init)
-    : costIfTrue(0.0f), costIfFalse(0.0f),
+    : cost(0.0f),
       backpointer(0),
       data(mkSearchNodeData(init.hash(), init.root(), true, 
                          0x0, init.token(init.root()), TREE_ROOT_WORD))
@@ -48,11 +48,10 @@ SearchNode::SearchNode(const Tree& init)
 //
 SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
                  const tagged_word& newToken,
-                 const float& costIfTrue, const float& costIfFalse,
+                 const float& cost,
                  const uint32_t& backpointer)
-    : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
-      backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, from.data.validity,
+    : cost(cost), backpointer(backpointer),
+      data(mkSearchNodeData(newHash, from.data.index, from.data.truth,
                          from.data.deleteMask, newToken,
                          from.data.governor)) { }
 
@@ -60,11 +59,10 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
 // SearchNode() ''delete constructor
 //
 SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
-          const float& costIfTrue, const float& costIfFalse,
+          const float& cost,
           const uint32_t& addedDeletions, const uint32_t& backpointer)
-    : costIfTrue(costIfTrue), costIfFalse(costIfFalse),
-      backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, from.data.validity,
+    : cost(cost), backpointer(backpointer),
+      data(mkSearchNodeData(newHash, from.data.index, from.data.truth,
                          addedDeletions | from.data.deleteMask, from.data.currentToken,
                          from.data.governor)) { }
 
@@ -73,9 +71,8 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
 //
 SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
-    : costIfTrue(from.costIfTrue), costIfFalse(from.costIfFalse),
-      backpointer(backpointer),
-      data(mkSearchNodeData(from.data.factHash, newIndex, from.data.validity, 
+    : cost(from.cost), backpointer(backpointer),
+      data(mkSearchNodeData(from.data.factHash, newIndex, from.data.truth, 
                          from.data.deleteMask, tree.token(newIndex), 
                          tree.token(tree.governor(newIndex)).word)) { }
 
@@ -83,25 +80,6 @@ SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
 // DEPENDENCY TREE
 // ----------------------------------------------
 
-//
-// Tree::Tree(params)
-//
-Tree::Tree(const uint8_t&     length, 
-           const tagged_word* words,
-           const uint8_t*     governors,
-           const uint8_t*     relations)
-       : length(length),
-         availableCacheLength(34 + (MAX_QUERY_LENGTH - length) * sizeof(dep_tree_word)) {
-  // Set trivial fields
-  for (uint8_t i = 0; i < length; ++i) {
-    data[i].word = words[i];
-    data[i].governor = governors[i];
-    data[i].relation = relations[i];
-  }
-  // Zero out cache
-  memset(cacheSpace(), 42, availableCacheLength * sizeof(uint8_t));
-}
-  
 //
 // Tree::Tree(conll)
 //
@@ -117,7 +95,7 @@ uint8_t computeLength(const string& conll) {
 
 Tree::Tree(const string& conll) 
       : length(computeLength(conll)),
-         availableCacheLength(34 + (MAX_QUERY_LENGTH - length) * sizeof(dep_tree_word)) {
+        numQuantifiers(0) {
   stringstream lineStream(conll);
   string line;
   uint8_t lineI = 0;
@@ -128,7 +106,8 @@ Tree::Tree(const string& conll)
     while (getline(fieldsStream, field, '\t')) {
       switch (fieldI) {
         case 0:
-          data[lineI].word = getTaggedWord(atoi(field.c_str()), 0, 0);
+          data[lineI].word = atoi(field.c_str());
+          data[lineI].sense = 0;
           break;
         case 1:
           data[lineI].governor = atoi(field.c_str());
@@ -150,9 +129,59 @@ Tree::Tree(const string& conll)
     }
     lineI += 1;
   }
-  // Zero out cache
-  memset(cacheSpace(), 42, availableCacheLength * sizeof(uint8_t));
 }
+  
+#pragma GCC push_options  // matches pop_options below
+#pragma GCC optimize ("unroll-loops")
+void Tree::foreachQuantifier(
+      const uint8_t& index,
+      std::function<void(quantifier_type,monotonicity)> visitor) const {
+  // Variables
+  uint8_t distance[6] = {0,0,0,0,0,0};
+  bool valid[6] = {false, false, false, false, false, false};
+  bool onSubject[6] = {false, false, false, false, false, false};
+  // Collect statistics
+  for (uint8_t i = 0; i < 6; ++i) {
+    if (index >= quantifierSpans[i].subj_begin && index < quantifierSpans[i].subj_end) {
+      onSubject[i] = true;
+      valid[i] = true;
+      const uint8_t d1 = index - quantifierSpans[i].subj_begin;
+      const uint8_t d2 = quantifierSpans[i].subj_end - index;
+      distance[i] = (d1 < d2) ? d1 : d2;
+    } else if (index >= quantifierSpans[i].obj_begin && index < quantifierSpans[i].obj_end) {
+      valid[i] = true;
+      const uint8_t d1 = index - quantifierSpans[i].obj_begin;
+      const uint8_t d2 = quantifierSpans[i].obj_end - index;
+      distance[i] = (d1 < d2) ? d1 : d2;
+    }
+  }
+  // Run foreach
+  bool somethingValid = true;
+  while (somethingValid) {
+    somethingValid = false;
+    uint8_t argmin = 255;
+    uint8_t min = 255;
+    // (get smallest distance from token)
+    for (uint8_t i = 0; i < 6; ++i) {
+      if (valid[i]) {
+        somethingValid = true;
+        if (distance[i] < min) {
+          min = distance[i];
+          argmin = i;
+        }
+      }
+    }
+    // (call visitor)
+    if (onSubject[argmin]) {
+      visitor(quantifierMonotonicities.subjType(argmin), quantifierMonotonicities.subjMono(argmin));
+    } else {
+      visitor(quantifierMonotonicities.objType(argmin), quantifierMonotonicities.objMono(argmin));
+    }
+    // (update state)
+    valid[argmin] = false;
+  }
+}
+#pragma GCC pop_options  // matches push_options above
   
 //
 // Tree::dependents()
@@ -160,7 +189,7 @@ Tree::Tree(const string& conll)
 void Tree::dependents(const uint8_t& index,
       const uint8_t& maxChildren,
       uint8_t* childrenIndices, 
-      uint8_t* childrenRelations, 
+      dep_label* childrenRelations, 
       uint8_t* childrenLength) const {
   *childrenLength = 0;
   for (uint8_t i = 0; i < length; ++i) {
@@ -276,8 +305,8 @@ uint64_t Tree::updateHashFromMutation(
     if (data[i].governor == index) {
 //      printf("  Also re-hashing word at %u; dep=%u  gov=%u -> %u\n", i,
 //              data[i].word.word, oldWord, newWord);
-      newHash ^= hashEdge(edgeInto(i, data[i].word.word, oldWord));
-      newHash ^= hashEdge(edgeInto(i, data[i].word.word, newWord));
+      newHash ^= hashEdge(edgeInto(i, data[i].word, oldWord));
+      newHash ^= hashEdge(edgeInto(i, data[i].word, newWord));
     }
   }
   // Return
@@ -310,6 +339,20 @@ uint64_t Tree::updateHashFromDeletions(
   return newHash;
 }
   
+//
+// Tree::projectLexicalRelation()
+//
+natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
+                                              const natlog_relation& lexicalRelation) const {
+  const dep_tree_word& token = data[index];
+  natlog_relation outputRelation = lexicalRelation;
+  foreachQuantifier(index, [outputRelation] (quantifier_type type, monotonicity mono) mutable -> void {
+    outputRelation = project(mono, type, outputRelation);
+  });
+  return outputRelation;
+} 
+
+
 // ----------------------------------------------
 // CHANNEL
 // ----------------------------------------------
@@ -347,7 +390,267 @@ bool Channel::poll(SearchNode* output) {
     return false;
   }
 }
-  
+
+
+// ----------------------------------------------
+// NATURAL LOGIC
+// ----------------------------------------------
+
+//
+// reverseTransition()
+//
+bool reverseTransition(const bool& endState,
+                       const natlog_relation projectedRelation) {
+  if (endState) {
+    switch (projectedRelation) {
+      case FUNCTION_FORWARD_ENTAILMENT:
+      case FUNCTION_REVERSE_ENTAILMENT:
+      case FUNCTION_ALTERNATION:
+      case FUNCTION_EQUIVALENT:
+      case FUNCTION_INDEPENDENCE:
+        return true;
+      case FUNCTION_NEGATION:
+      case FUNCTION_COVER:
+        return false;
+      default:
+        printf("Unknown function: %u", projectedRelation);
+        std::exit(1);
+        break;
+    }
+  } else {
+    switch (projectedRelation) {
+      case FUNCTION_FORWARD_ENTAILMENT:
+      case FUNCTION_REVERSE_ENTAILMENT:
+      case FUNCTION_COVER:
+      case FUNCTION_EQUIVALENT:
+      case FUNCTION_INDEPENDENCE:
+        return false;
+      case FUNCTION_NEGATION:
+      case FUNCTION_ALTERNATION:
+        return true;
+      default:
+        printf("Unknown function: %u", projectedRelation);
+        std::exit(1);
+        break;
+    }
+  }
+  printf("Reached end of reverseTransition() function -- this shouldn't happen!\n");
+  std::exit(1);
+  return false;
+}
+
+//
+// project()
+//
+uint8_t project(const monotonicity& monotonicity,
+                const quantifier_type& quantifierType,
+                const natlog_relation& lexicalFunction) {
+  switch (monotonicity) {
+    case MONOTONE_UP:
+      switch (quantifierType) {
+        case QUANTIFIER_TYPE_NONE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_ADDITIVE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_COVER;
+            case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_COVER: return FUNCTION_COVER;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_MULTIPLICATIVE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_ALTERNATION;
+            case FUNCTION_ALTERNATION: return FUNCTION_ALTERNATION;
+            case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_BOTH:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_NEGATION;
+            case FUNCTION_ALTERNATION: return FUNCTION_ALTERNATION;
+            case FUNCTION_COVER: return FUNCTION_COVER;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        default: printf("Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
+      }
+    case MONOTONE_DOWN:
+      switch (quantifierType) {
+        case QUANTIFIER_TYPE_NONE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_ADDITIVE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_ALTERNATION;
+            case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_COVER: return FUNCTION_ALTERNATION;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_MULTIPLICATIVE:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_COVER;
+            case FUNCTION_ALTERNATION: return FUNCTION_COVER;
+            case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        case QUANTIFIER_TYPE_BOTH:
+          switch (lexicalFunction) {
+            case FUNCTION_EQUIVALENT: return FUNCTION_EQUIVALENT;
+            case FUNCTION_FORWARD_ENTAILMENT: return FUNCTION_REVERSE_ENTAILMENT;
+            case FUNCTION_REVERSE_ENTAILMENT: return FUNCTION_FORWARD_ENTAILMENT;
+            case FUNCTION_NEGATION: return FUNCTION_NEGATION;
+            case FUNCTION_ALTERNATION: return FUNCTION_COVER;
+            case FUNCTION_COVER: return FUNCTION_ALTERNATION;
+            case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
+            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+          }
+          break;
+        default: printf("Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
+      }
+      break;
+    case MONOTONE_FLAT:
+      switch (lexicalFunction) {
+        case FUNCTION_EQUIVALENT:
+          return FUNCTION_EQUIVALENT;
+        case FUNCTION_FORWARD_ENTAILMENT:
+        case FUNCTION_REVERSE_ENTAILMENT:
+        case FUNCTION_NEGATION:
+        case FUNCTION_ALTERNATION:
+        case FUNCTION_COVER:
+        case FUNCTION_INDEPENDENCE:
+          return FUNCTION_INDEPENDENCE;
+        default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+      }
+      break;
+    default:
+      printf("Invalid monotonicity: %u", monotonicity);
+      std::exit(1);
+      break;
+  }
+  printf("Reached end of project() function -- this shouldn't happen!\n");
+  std::exit(1);
+  return 255;
+}
+
+//
+// SynSearch::mutationCost()
+//
+float SynSearchCosts::mutationCost(const Tree* tree,
+                                   const uint8_t& index,
+                                   const dep_label& edgeType,
+                                   const bool& endTruthValue,
+                                   bool* beginTruthValue) const {
+  const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
+  const float lexicalRelationCost
+    = mutationLexicalCost[edgeType];
+  const natlog_relation projectedFunction
+    = tree->projectLexicalRelation(index, lexicalRelation);
+  *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
+  const float transitionCost
+    = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
+  return lexicalRelationCost + transitionCost;
+}
+
+//
+// SynSearch::insertionCost()
+//
+float SynSearchCosts::insertionCost(const Tree* tree,
+                                    const uint8_t& index,
+                                    const dep_label& dependencyLabel,
+                                    const ::word& dependent,
+                                    const bool& endTruthValue,
+                                    bool* beginTruthValue) const {
+  const natlog_relation lexicalRelation
+    = dependencyInsertToLexicalFunction(dependencyLabel, dependent);
+  const float lexicalRelationCost
+    = insertionLexicalCost[dependencyLabel];
+  const natlog_relation projectedFunction
+    = tree->projectLexicalRelation(index, lexicalRelation);
+  *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
+  const float transitionCost
+    = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
+  return lexicalRelationCost + transitionCost;
+}
+
+
+//
+// createStrictCosts()
+//
+SynSearchCosts* createStrictCosts(const float& smallConstantCost,
+                                  const float& okCost,
+                                  const float& badCost) {
+  SynSearchCosts* costs = new SynSearchCosts();
+  // Set Constant Costs
+  for (uint8_t i = 0; i < NUM_MUTATION_TYPES; ++i) {
+    costs->mutationLexicalCost[i] = smallConstantCost;
+  }
+  for (uint8_t i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
+    costs->insertionLexicalCost[i] = smallConstantCost;
+    costs->deletionLexicalCost[i] = smallConstantCost;
+  }
+  // Set NatLog
+  costs->transitionCostFromTrue[FUNCTION_EQUIVALENT] = okCost;
+  costs->transitionCostFromTrue[FUNCTION_FORWARD_ENTAILMENT] = okCost;
+  costs->transitionCostFromTrue[FUNCTION_REVERSE_ENTAILMENT] = badCost;
+  costs->transitionCostFromTrue[FUNCTION_NEGATION] = okCost;
+  costs->transitionCostFromTrue[FUNCTION_ALTERNATION] = okCost;
+  costs->transitionCostFromTrue[FUNCTION_COVER] = badCost;
+  costs->transitionCostFromTrue[FUNCTION_INDEPENDENCE] = badCost;
+  costs->transitionCostFromFalse[FUNCTION_EQUIVALENT] = okCost;
+  costs->transitionCostFromFalse[FUNCTION_FORWARD_ENTAILMENT] = badCost;
+  costs->transitionCostFromFalse[FUNCTION_REVERSE_ENTAILMENT] = okCost;
+  costs->transitionCostFromFalse[FUNCTION_NEGATION] = okCost;
+  costs->transitionCostFromFalse[FUNCTION_ALTERNATION] = badCost;
+  costs->transitionCostFromFalse[FUNCTION_COVER] = okCost;
+  costs->transitionCostFromFalse[FUNCTION_INDEPENDENCE] = badCost;
+  return costs;
+}
+
+
+
 // ----------------------------------------------
 // SEARCH ALGORITHM
 // ----------------------------------------------
@@ -471,7 +774,7 @@ void pushChildrenWorker(
   uint64_t idleTicks = 0;
   *ticks = 0;
   uint8_t  dependentIndices[8];
-  uint8_t  dependentRelations[8];
+  natlog_relation  dependentRelations[8];
   uint8_t memorySize = 0;
   SearchNode memory[SEARCH_CYCLE_MEMORY];
   SearchNode node;
@@ -533,12 +836,10 @@ void pushChildrenWorker(
           edges[edgeI].source,
           edges[edgeI].source_sense,
           node.token().monotonicity);
-      const float costIfTrue = 0.0;  // TODO(gabor) costs
-      const float costIfFalse = 0.0;
+      const float cost = 0.0;  // TODO(gabor) costs
       // (create child)
       const SearchNode mutatedChild(node, newHash, newToken,
-                                 costIfTrue, costIfFalse,
-                                 myIndex);
+                                    cost, myIndex);
       // (push child)
 #if SEARCH_CYCLE_MEMORY!=0
       bool isNewChild = true;
@@ -573,12 +874,10 @@ void pushChildrenWorker(
         uint64_t newHash = tree.updateHashFromDeletions(
             node.factHash(), dependentIndex, tree.token(dependentIndex).word,
             node.token().word, deletionMask);
-        const float costIfTrue = 0.0;  // TODO(gabor) costs
-        const float costIfFalse = 0.0;
+        const float cost = 0.0;  // TODO(gabor) costs
         // (create child)
         const SearchNode deletedChild(node, newHash,
-                                   costIfTrue, costIfFalse, deletionMask,
-                                   myIndex);
+                                   cost, deletionMask, myIndex);
         // (push child)
         while (!enqueueChannel->push(deletedChild)) {
           idleTicks += 1;
@@ -624,7 +923,7 @@ void factLookupWorker(
   while (!(*searchDone)) {
     while (onPrice < historySize->value) {
       const SearchNode& node = history[onPrice];
-      if (contains(node.factHash())) {
+      if (node.truthState() && contains(node.factHash())) {
         bool unique = true;
         for (auto iter = matches->begin(); iter != matches->end(); ++iter) {
           vector<SearchNode> path = *iter;
@@ -693,19 +992,19 @@ syn_search_response SynSearch(
   }
 
   // Allocate some shared variables
-  // (communication)
-  Channel* enqueueChannel = threadsafeChannel();
-  Channel* dequeueChannel = threadsafeChannel();
-  SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
-  uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
   // (from the tree cache space)
-  bool* cacheSpace = (bool*) input->cacheSpace();
+  bool* cacheSpace = (bool*) malloc(3*sizeof(bool));
   bool* timeout = cacheSpace;
   *timeout = false;
   bool* pqEmpty = cacheSpace + 1;
   *pqEmpty = false;
   bool* searchDone = cacheSpace + 2;
   *searchDone = false;
+  // (communication)
+  Channel* enqueueChannel = threadsafeChannel();
+  Channel* dequeueChannel = threadsafeChannel();
+  SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
+  uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
 
   // (sanity check)
   if (((uint64_t) searchDone) + 1 >= ((uint64_t) input) + sizeof(Tree)) {
@@ -777,6 +1076,7 @@ syn_search_response SynSearch(
   delete dequeueChannel;
   free(history);
   free(historySize);
+  free(cacheSpace);
   
   // Return
   EVICT_CACHE();

@@ -144,6 +144,9 @@ AM_CONDITIONAL(HAVE_SCRIPTS, ls lib/scripts &> /dev/null)
 # (cache line size)
 AC_DEFINE_UNQUOTED(CACHE_LINE_SIZE, `getconf LEVEL1_DCACHE_LINESIZE 2> /dev/null || echo "64"`, [The cache line size of the current machine])
 AC_DEFINE_UNQUOTED(L3_CACHE_SIZE, `getconf LEVEL3_CACHE_SIZE 2> /dev/null || echo "20971520"`, [The cache line size of the current machine])
+# (some sizes)
+AC_DEFINE_UNQUOTED(NUM_DEPENDENCY_LABELS, 45, [The number of Stanford Dependency labels])
+AC_DEFINE_UNQUOTED(NUM_MUTATION_TYPES, 13, [The number of mutation edges])
 
 # Optionally enable debugging
 AC_ARG_ENABLE(debug,

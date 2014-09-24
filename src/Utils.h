@@ -54,6 +54,7 @@ std::string toString(const time_t& elapsedTime);
  */
 uint8_t indexDependency(const std::string& dependencyAsString);
 
+
 /**
  * Get the String gloss for an indexed dependency arc.
  */

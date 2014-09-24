@@ -83,6 +83,54 @@
 #define FUNCTION_COVER              5
 #define FUNCTION_INDEPENDENCE       6
 
+// Dependency edges
+typedef uint8_t dep_label;
+#define DEP_ACOMP 0
+#define DEP_ADVCL 1
+#define DEP_ADVMOD 2
+#define DEP_AMOD 3
+#define DEP_APPOS 4
+#define DEP_AUX 5
+#define DEP_AUXPASS 6
+#define DEP_CC 7
+#define DEP_CCOMP 8
+#define DEP_CONJ 9
+#define DEP_COP 10
+#define DEP_CSUBJ 11
+#define DEP_CSUBJPASS 12
+#define DEP_DEP 13
+#define DEP_DET 14
+#define DEP_DISCOURSE 15
+#define DEP_DOBJ 16
+#define DEP_EXPL 17
+#define DEP_GOESWITH 18
+#define DEP_IOBJ 19
+#define DEP_MARK 20
+#define DEP_MWE 21
+#define DEP_NEG 22
+#define DEP_NN 23
+#define DEP_NPADVMOD 24
+#define DEP_NSUBJ 25
+#define DEP_NSUBJPASS 26
+#define DEP_NUM 27
+#define DEP_NUMBER 28
+#define DEP_PARATAXIS 29
+#define DEP_PCOMP 30
+#define DEP_POBJ 31
+#define DEP_POSS 32
+#define DEP_POSSEIVE 33
+#define DEP_PRECONJ 34
+#define DEP_PREDET 35
+#define DEP_PREP 36
+#define DEP_PRT 37
+#define DEP_PUNCT 38
+#define DEP_QUANTMOD 39
+#define DEP_RCMOD 40
+#define DEP_ROOT 41
+#define DEP_TMOD 42
+#define DEP_VMOD 43
+#define DEP_XCOMP 44
+
 // Static Data
 #define NULL_WORD getTaggedWord(0, 0, 0)
 #define LEMUR     getTaggedWord(73918, 0, 0)

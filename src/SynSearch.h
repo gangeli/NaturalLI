@@ -22,36 +22,424 @@
   #include "fnv/fnv.h"
 #endif
 
+class Tree;
 
 // ----------------------------------------------
-// UTILITIES
+// NATURAL LOGIC
 // ----------------------------------------------
-#define TREE_ROOT 63
-#define TREE_ROOT_WORD 0x0
-#define TREE_IS_DELETED(mask, index) (((0x1 << index) & mask) != 0)
-#define TREE_DELETE(mask, index) (mask | (0x1 << index))
 
+typedef uint8_t natlog_relation;
+#define FUNCTION_WORDNET_UP                   FUNCTION_FORWARD_ENTAILMENT
+#define FUNCTION_WORDNET_DOWN                 FUNCTION_REVERSE_ENTAILMENT
+#define FUNCTION_WORDNET_NOUN_ANTONYM         FUNCTION_ALTERNATION
+#define FUNCTION_WORDNET_NOUN_SYNONYM         FUNCTION_EQUIVALENT
+#define FUNCTION_WORDNET_VERB_ANTONYM         FUNCTION_ALTERNATION
+#define FUNCTION_WORDNET_ADJECTIVE_ANTONYM    FUNCTION_NEGATION
+#define FUNCTION_WORDNET_ADVERB_ANTONYM       FUNCTION_ALTERNATION
+#define FUNCTION_WORDNET_ADJECTIVE_PERTAINYM  FUNCTION_EQUIVALENT
+#define FUNCTION_WORDNET_ADVERB_PERTAINYM     FUNCTION_EQUIVALENT
+#define FUNCTION_WORDNET_ADJECTIVE_RELATED    FUNCTION_EQUIVALENT
+#define FUNCTION_ANGLE_NN                     FUNCTION_EQUIVALENT
+#define FUNCTION_FREEBASE_UP                  FUNCTION_FORWARD_ENTAILMENT
+#define FUNCTION_FREEBASE_DOWN                FUNCTION_REVERSE_ENTAILMENT
+
+typedef uint8_t quantifier_type;
+#define QUANTIFIER_TYPE_NONE 0x0
+#define QUANTIFIER_TYPE_ADDITIVE 0x1
+#define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
+#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
+
+
+/**
+ * Translate from edge type to the Natural Logic lexical function
+ * that edge type maps to.
+ *
+ * @param edge The edge type being traversed.
+
+ * @return The Natural Logic relation corresponding to that edge.
+ */
+inline natlog_relation edgeToLexicalFunction(const dep_label& edge) {
+  switch (edge) {
+    case WORDNET_UP:                  return FUNCTION_FORWARD_ENTAILMENT;
+    case WORDNET_DOWN:                return FUNCTION_REVERSE_ENTAILMENT;
+    case WORDNET_NOUN_ANTONYM:        return FUNCTION_ALTERNATION;
+    case WORDNET_NOUN_SYNONYM:        return FUNCTION_EQUIVALENT;
+    case WORDNET_VERB_ANTONYM:        return FUNCTION_ALTERNATION;
+    case WORDNET_ADJECTIVE_ANTONYM:   return FUNCTION_NEGATION;
+    case WORDNET_ADVERB_ANTONYM:      return FUNCTION_ALTERNATION;
+    case WORDNET_ADJECTIVE_PERTAINYM: return FUNCTION_EQUIVALENT;
+    case WORDNET_ADVERB_PERTAINYM:    return FUNCTION_EQUIVALENT;
+    case WORDNET_ADJECTIVE_RELATED:   return FUNCTION_EQUIVALENT;
+    case ANGLE_NN:                    return FUNCTION_EQUIVALENT;
+    case FREEBASE_UP:                 return FUNCTION_FORWARD_ENTAILMENT;
+    case FREEBASE_DOWN:               return FUNCTION_REVERSE_ENTAILMENT;
+    default:
+      printf("No such edge: %u\n", edge);
+      std::exit(1);
+      return 255;
+  }
+}
+
+/**
+ * Translate inserting a given Stanford Dependency to the Natural Logic
+ * relation introduced.
+ *
+ * For example, inserting the relation 'amod' onto the term 'meat'
+ * to yield 'red <--amod-- meat' yields the relation:
+ *
+ *    'meat' \reverse 'red meat' ('meat' > 'red meat')
+ * 
+ * and therefore should return FUNCTION_REVERSE_ENTAILMENT.
+ *
+ * @param dep The stanford dependency being inserted.
+ *
+ * @return The Natural Logic relation expressed.
+ */
+inline natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
+                                                         const ::word& dependent) {
+  switch (dep) {
+    case DEP_ACOMP: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_ADVCL: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_ADVMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_AMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_APPOS: return FUNCTION_EQUIVALENT;
+    case DEP_AUX: return FUNCTION_FORWARD_ENTAILMENT;      // he left -> he should leave
+    case DEP_AUXPASS: return FUNCTION_FORWARD_ENTAILMENT;  // as above
+    case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;       // match DEP_CONJ
+    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;           // interesting project here... "he said x" -> "x"?
+    case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
+    case DEP_COP: return FUNCTION_EQUIVALENT;
+    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;           // don't drop subjects.
+    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;       // as above
+    case DEP_DEP: return FUNCTION_INDEPENDENCE;
+    case DEP_DET:
+      // TODO(gabor) quantifiers go here!
+      //             The relation here will depend on the quantifier type.
+      return FUNCTION_INDEPENDENCE;
+    case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;
+    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;            // don't drop objects.
+    case DEP_EXPL: return FUNCTION_EQUIVALENT;             // though we shouldn't see this...
+    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;         // also shouldn't see this
+    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;     // she gave me a rais -> she gave a raise
+    case DEP_MARK: return FUNCTION_INDEPENDENCE;
+    case DEP_MWE: return FUNCTION_INDEPENDENCE;             // shouldn't see this
+    case DEP_NEG: return FUNCTION_NEGATION;
+    case DEP_NN: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;        // not sure about this one
+    case DEP_NSUBJ: return FUNCTION_INDEPENDENCE;
+    case DEP_NSUBJPASS: return FUNCTION_INDEPENDENCE;
+    case DEP_NUM: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_NUMBER: return FUNCTION_INDEPENDENCE;
+    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;        // or, reverse?
+    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;            // though, not so in collapsed dependencies
+    case DEP_POBJ: return FUNCTION_INDEPENDENCE;             // must delete whole preposition
+    case DEP_POSS: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;         // see DEP_POSS
+    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;          // FORBIDDEN to see this
+    case DEP_PREDET: return FUNCTION_INDEPENDENCE;           // FORBIDDEN to see this
+    case DEP_PREP: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_PRT: return FUNCTION_INDEPENDENCE;
+    case DEP_PUNCT: return FUNCTION_EQUIVALENT;
+    case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;
+    case DEP_RCMOD: return FUNCTION_INDEPENDENCE;            // no documentation?
+    case DEP_ROOT: return FUNCTION_INDEPENDENCE;             // err.. never delete
+    case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_XCOMP: return FUNCTION_INDEPENDENCE;
+    default:
+      printf("No such dependency label: %u\n", dep);
+      std::exit(1);
+      return 255;
+  }
+}
+
+/**
+ * Project a lexical relation through a quantifier type
+ * (multiplicative, additive, etc.), given the monotonicity of that
+ * position in the tree with respect to the quantifier being projected
+ * through.
+ *
+ * @param monotonicity The monotonicity of the argument with respect to
+ *        the quantifier being projected through.
+ * @param quantifierType The type of quantifier being projected through,
+ *                       as per Icard's scheme.
+ * @param lexicalFunction The lexical function we are projecting.
+ *
+ * @return The projected function.
+ */
+ // don't inline! Gets called nested a lot
+natlog_relation project(const monotonicity& monotonicity,
+                        const quantifier_type& quantifierType,
+                        const natlog_relation& lexicalFunction);
+
+/**
+ * The hard state assignment from the reverse traversal of the
+ * NatLog FSA. For instance, if the end state is 'true' and the
+ * projected relation is 'cover', then the only way to get to 'true'
+ * through cover is from the 'false' state.
+ *
+ * @param endState The end of the FSA transition; this is the current
+ *                  state from the perspective of search.
+ * @param projectedRelation The projected relation over the transition.
+ *
+ * @return The hard state assignment we have transitioned to.
+ */
+bool reverseTransition(const bool& endState,
+                       const natlog_relation projectedRelation);
+
+/**
+ * A class encapsulating the costs incurred during a search instance.
+ */
+class SynSearchCosts {
+ public:
+  /** The cost of a mutation */
+  float mutationCost(const Tree* tree,
+                     const uint8_t& index,
+                     const uint8_t& edgeType,
+                     const bool& endTruthValue,
+                     bool* beginTruthValue) const;
+  
+  /** The cost of an insertion (deletion in search) */
+  float insertionCost(const Tree* tree,
+                      const uint8_t& index,
+                      const dep_label& dependencyLabel,
+                      const ::word& dependent,
+                      const bool& endTruthValue,
+                      bool* beginTruthValue) const;
+
+  float mutationLexicalCost[NUM_MUTATION_TYPES];
+  float insertionLexicalCost[NUM_DEPENDENCY_LABELS];
+  float deletionLexicalCost[NUM_DEPENDENCY_LABELS];
+  float transitionCostFromTrue[8];
+  float transitionCostFromFalse[8];
+};
+
+/**
+ * Create a standard set of NatLog weights.
+ * This is useful as an initialization point for learning.
+ *
+ * @param smallConstantCost A small constant cost for all transitions.
+ * @param okCost A cost to be added to the smallConstantCost for an OK
+ *               transition.
+ * @param badCost A cost to be added to the smallConstantCost for a bad
+ *                transition.
+ *
+ * @return A search cost vector representing these weights.
+ */
+SynSearchCosts* createStrictCosts(const float& smallConstantCost,
+                                  const float& okCost,
+                                  const float& badCost);
+
+/** Create a version of the weights encoding strict natural logic inference */
+inline SynSearchCosts* strictNaturalLogicCosts() {
+  return createStrictCosts(0.01f, 0.0f, std::numeric_limits<float>::infinity());
+}
+
+/** Create a version of the weights encoding soft natural logic inference */
+inline SynSearchCosts* softNaturalLogicCosts() {
+  return createStrictCosts(0.01f, 0.1f, 0.25);
+}
 
 // ----------------------------------------------
 // DEPENDENCY TREE
 // ----------------------------------------------
 
+#define TREE_ROOT 63
+#define TREE_ROOT_WORD 0x0
+#define TREE_IS_DELETED(mask, index) (((0x1 << index) & mask) != 0)
+#define TREE_DELETE(mask, index) (mask | (0x1 << index))
+
+#define MONOPAIR_UP_UP        0
+#define MONOPAIR_UP_DOWN      1
+#define MONOPAIR_UP_FLAT      2
+#define MONOPAIR_DOWN_UP      3
+#define MONOPAIR_DOWN_DOWN    4
+#define MONOPAIR_DOWN_FLAT    5
+#define MONOPAIR_FLAT_UP      6
+#define MONOPAIR_FLAT_DOWN    7
+
+#define MONO_SET__(monoVar, typeVar, subjMono, objMono, type) \
+  switch (subjMono) { \
+    case MONOTONE_UP: \
+      switch (objMono) { \
+        case MONOTONE_UP: monoVar = MONOPAIR_UP_UP; break; \
+        case MONOTONE_DOWN: monoVar = MONOPAIR_UP_DOWN; break; \
+        case MONOTONE_FLAT: monoVar = MONOPAIR_UP_FLAT; break; \
+        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
+      } \
+      break; \
+    case MONOTONE_DOWN: \
+      switch (objMono) { \
+        case MONOTONE_UP: monoVar = MONOPAIR_DOWN_UP; break; \
+        case MONOTONE_DOWN: monoVar = MONOPAIR_DOWN_DOWN; break; \
+        case MONOTONE_FLAT: monoVar = MONOPAIR_DOWN_FLAT; break; \
+        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
+      } \
+      break; \
+    case MONOTONE_FLAT: \
+      switch (objMono) { \
+        case MONOTONE_UP: monoVar = MONOPAIR_FLAT_UP; break; \
+        case MONOTONE_DOWN: monoVar = MONOPAIR_FLAT_DOWN; break; \
+        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
+      } \
+      break; \
+    default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
+  }
+
+#define MONO_SUBJ__(monoVar) \
+  switch (monoVar) { \
+    case MONOPAIR_UP_UP: \
+    case MONOPAIR_UP_DOWN: \
+    case MONOPAIR_UP_FLAT: \
+      return MONOTONE_UP; \
+    case MONOPAIR_DOWN_UP: \
+    case MONOPAIR_DOWN_DOWN: \
+    case MONOPAIR_DOWN_FLAT: \
+      return MONOTONE_DOWN; \
+    case MONOPAIR_FLAT_UP: \
+    case MONOPAIR_FLAT_DOWN: \
+      return MONOTONE_FLAT; \
+    default: printf("Invalid monotonicity pair: %u\n", monoVar); std::exit(1); \
+  }
+
+#define MONO_OBJ__(monoVar) \
+  switch (monoVar) { \
+    case MONOPAIR_UP_UP: \
+    case MONOPAIR_DOWN_UP: \
+    case MONOPAIR_FLAT_UP: \
+      return MONOTONE_UP; \
+    case MONOPAIR_UP_DOWN: \
+    case MONOPAIR_DOWN_DOWN: \
+    case MONOPAIR_FLAT_DOWN: \
+      return MONOTONE_DOWN; \
+    case MONOPAIR_UP_FLAT: \
+    case MONOPAIR_DOWN_FLAT: \
+      return MONOTONE_FLAT; \
+    default: printf("Invalid monotonicity pair: %u\n", monoVar); std::exit(1); \
+  }
+
+/**
+ * Information about a set of 6 quantifiers.
+ * Implicit assumption: no sentence will have more than 6 quantifiers.
+ */
+#ifdef __GNUG__
+struct quantifier_monotonicities {
+#else
+struct alignas(4) quantifier_monotonicities {
+#endif
+  monotonicity     q0_mono:3,
+                   q1_mono:3,
+                   q2_mono:3,
+                   q3_mono:3,
+                   q4_mono:3,
+                   q5_mono:3;
+  quantifier_type q0_type:2,
+                  q1_type:2,
+                  q2_type:2,
+                  q3_type:2,
+                  q4_type:2,
+                  q5_type:2;
+
+  void set(const uint8_t& i,
+           const monotonicity& subjMono,
+           const monotonicity& objMono,
+           const quantifier_type& type) {
+    switch (i) {
+      case 0:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      case 1:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      case 2:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      case 3:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      case 4:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      case 5:
+        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
+      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
+    }
+  }
+  
+  // TODO(gabor) the type should really be subj/obj dependent
+  inline quantifier_type subjType(const uint8_t& i) const {
+    switch (i) {
+      case 0: return q0_type;
+      case 1: return q1_type;
+      case 2: return q2_type;
+      case 3: return q3_type;
+      case 4: return q4_type;
+      case 5: return q5_type;
+      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
+    }
+  }
+  // TODO(gabor) the type should really be subj/obj dependent
+  inline quantifier_type objType(const uint8_t& i) const {
+    return subjType(i);
+  }
+
+  inline monotonicity subjMono(const uint8_t& i) const {
+    switch (i) {
+      case 0: MONO_SUBJ__(q0_mono);
+      case 1: MONO_SUBJ__(q1_mono);
+      case 2: MONO_SUBJ__(q2_mono);
+      case 3: MONO_SUBJ__(q3_mono);
+      case 4: MONO_SUBJ__(q4_mono);
+      case 5: MONO_SUBJ__(q5_mono);
+      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
+    }
+  }
+  
+  inline monotonicity objMono(const uint8_t& i) const {
+    switch (i) {
+      case 0: MONO_OBJ__(q0_mono);
+      case 1: MONO_OBJ__(q1_mono);
+      case 2: MONO_OBJ__(q2_mono);
+      case 3: MONO_OBJ__(q3_mono);
+      case 4: MONO_OBJ__(q4_mono);
+      case 5: MONO_OBJ__(q5_mono);
+      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
+    }
+  }
+#ifdef __GNUG__
+} __attribute__((packed));
+#else
+};
+#endif
+#undef MONO_SET__
+
+#ifdef __GNUG__
+struct quantifier_span {
+#else
+struct alignas(3) quantifier_span {
+#endif
+  uint8_t subj_begin:5,
+          subj_end:5,
+          obj_begin:5,
+          obj_end:5;
+#ifdef __GNUG__
+} __attribute__((packed));
+#else
+};
+#endif
+
+
 /**
  * The relevant information on a node of the dependency graph.
  */
 #ifdef __GNUG__
-typedef struct {
+struct dep_tree_word {
 #else
-typedef struct alignas(6) {
+struct alignas(6) dep_tree_word {
 #endif
-  tagged_word word;
-  uint8_t     governor:6,
-              relation:6;
-              /* <--4 bits to spare--> */
+  ::word        word:25;
+  uint8_t       sense:5,
+                governor:6,
+                relation:6;
 #ifdef __GNUG__
-} __attribute__((packed)) dep_tree_word;
+} __attribute__((packed));
 #else
-} dep_tree_word;
+};
 #endif
 
 /**
@@ -62,10 +450,10 @@ typedef struct {
 #else
 typedef struct alignas(8) {
 #endif
-  uint32_t governor:25,
-           dependent:25;
-  uint8_t  relation:6;
-  uint8_t  placeholder:8;  // <-- should be zero
+  uint32_t   governor:25,
+             dependent:25;
+  dep_label  relation:6;
+  uint8_t    placeholder:8;  // <-- should be zero
 #ifdef __GNUG__
 } __attribute__((packed)) dependency_edge;
 #else
@@ -78,18 +466,12 @@ typedef struct alignas(8) {
 class Tree {
  public:
   /**
-   * Construct a Tree from an explicit specification
-   */
-  Tree(const uint8_t& length, 
-       const tagged_word* words,
-       const uint8_t* parents,
-       const uint8_t* relations);
-  
-  /**
    * Construct a Tree from a stripped-down CoNLL format.
    * This is particularly useful for testing.
    */
   Tree(const std::string& conll);
+
+
 
   /**
    * Find the children of a particular node in the tree.
@@ -102,16 +484,60 @@ class Tree {
   void dependents(const uint8_t& index,
       const uint8_t& maxCount,
       uint8_t* childrenIndices, 
-      uint8_t* childRelations,
+      dep_label* childRelations,
       uint8_t* childrenLength) const;
   
   /** @see children() above */
   inline void dependents(const uint8_t& index,
       uint8_t* childrenIndices, 
-      uint8_t* childRelations,
+      dep_label* childRelations,
       uint8_t* childrenLength) const {
     dependents(index, 255, childrenIndices, childRelations, childrenLength);
   }
+
+  /**
+   * Register a quantifier in the tree.
+   *
+   * @return True if the quantifier was registered, or false if there is no
+   *         remaining space for it.
+   */
+  inline bool registerQuantifier(
+      const quantifier_span& span,
+      const quantifier_type& type,
+      const monotonicity& subjMono,
+      const monotonicity& objMono) {
+    if (numQuantifiers >= 6) {
+      return false;
+    } else {
+      quantifierSpans[numQuantifiers] = span;
+      quantifierMonotonicities.set(numQuantifiers, subjMono, objMono, type);
+      numQuantifiers += 1;
+      return true;
+    }
+  }
+
+  /** If true, the word at the given index is a quantifier. */
+  inline bool isQuantifier(const uint8_t& index) const {
+    for (uint8_t i = 0; i < numQuantifiers; ++i) {
+      if (quantifierSpans[i].subj_begin == i) { return true; }
+    }
+    return false;
+  }
+
+  /**
+   * Iterates over the quantifiers of the sentence. For each
+   * quantifier, call the visitor function with that quantifier's type
+   * and monotonicity.
+   * These are guaranteed to be called in order of narrowest to broadest
+   * scope outwards from the word.
+   *
+   * @param index The index of the word to query.
+   * @param visitor A function to call for each quantifier scoping the word
+   *                at index.
+   */
+  void foreachQuantifier(
+      const uint8_t& index,
+      std::function<void(quantifier_type,monotonicity)> visitor) const ;
   
   /**
    * The index of the root of the dependency tree.
@@ -122,7 +548,7 @@ class Tree {
    * The tagged word at the given index (zero indexed).
    */
   inline tagged_word token(const uint8_t& index) const {
-    return data[index].word;
+    return getTaggedWord(data[index].word, data[index].sense, MONOTONE_UP);
   }
 
   /**
@@ -135,7 +561,7 @@ class Tree {
   /**
    * The incoming relation to a given index (zero indexed).
    */
-  inline uint8_t relation(const uint8_t& index) const {
+  inline dep_label relation(const uint8_t& index) const {
     return data[index].relation;
   }
 
@@ -154,18 +580,6 @@ class Tree {
    * Checks if this tree is not equal to another tree
    */
   bool operator!=(const Tree& rhs) const { return !(*this == rhs); }
-
-  /**
-   * This class is constructed to line up to a cache line, but
-   * will never use all of that memory. This is a pointer to the
-   * (relatively small) space at the end of this class.
-   */
-  inline void* cacheSpace() const {
-    const uint64_t base = (uint64_t) this;
-    const uint64_t end  = base + sizeof(*this);
-    const uint64_t cache = end - availableCacheLength;
-    return (void*) cache;
-  }
 
   /**
    * Compute the hash of the tree.
@@ -223,25 +637,39 @@ class Tree {
                                    const ::word& deletionWord,
                                    const ::word& governor,
                                    const uint32_t& newDeletions) const;
-
+  
+  /**
+   * Project a given lexical relation, at the given index of the tree,
+   * up through the quantifiers of the tree.
+   * 
+   * @param index The index of the token being mutated or projected through.
+   * @param lexicalRelation The root lexical relation at the given index.
+   *
+   * @return The lexical relation projected up to the root of the tree.
+   */
+  natlog_relation projectLexicalRelation( const uint8_t& index,
+                                          const natlog_relation& lexicalRelation) const;
+  
   /**
    * The number of words in this dependency graph
    */
   const uint8_t length;
 
-  /**
-   * The length of the cache at the end of this class
-   * 
-   * @see Tree::cacheSpace()
-   */
-  const uint8_t availableCacheLength;
-
  private:
   /** The actual data for this tree */
   dep_tree_word data[MAX_QUERY_LENGTH];
   
-  /** The buffer at the end of the class to fill a cache line */
-  uint8_t cache[34];  // if changed, also update availableCacheLength computation
+  /** Information about the monotonicities of the quantifiers in the sentence */
+  quantifier_monotonicities quantifierMonotonicities;
+
+  /** Information about the spans of the quantifiers in the sentence */
+  quantifier_span quantifierSpans[6];
+
+  /** The number of quantifiers in the tree. */
+  uint8_t numQuantifiers;
+
+  /** Fill up to 3 cache lines */
+  uint8_t nullBuffer[12];
 
   /** Get the incoming edge at the given index as a struct */
   inline dependency_edge edgeInto(const uint8_t& index,
@@ -262,13 +690,13 @@ class Tree {
     if (governorIndex == TREE_ROOT) {
       return edgeInto(index, wordAtIndex, TREE_ROOT_WORD);
     } else {
-      return edgeInto(index, wordAtIndex, data[governorIndex].word.word);
+      return edgeInto(index, wordAtIndex, data[governorIndex].word);
     }
   }
 
   /** See edgeInto(index, word), but using the tree's known word */
   inline dependency_edge edgeInto(const uint8_t& index) const {
-    return edgeInto(index, data[index].word.word);
+    return edgeInto(index, data[index].word);
   }
 };
 
@@ -291,7 +719,7 @@ struct alignas(16) syn_path_data {
 #endif
   uint64_t    factHash:64;
   uint8_t     index:5;
-  bool        validity:1;
+  bool        truth:1;
   uint32_t    deleteMask:MAX_QUERY_LENGTH;  // 26
   tagged_word currentToken;
   word        governor;
@@ -300,7 +728,7 @@ struct alignas(16) syn_path_data {
     return factHash == rhs.factHash &&
            deleteMask == rhs.deleteMask &&
            index == rhs.index &&
-           validity == rhs.validity &&
+           truth == rhs.truth &&
            currentToken == rhs.currentToken &&
            governor == rhs.governor;
   }
@@ -310,6 +738,7 @@ struct alignas(16) syn_path_data {
 };
 #endif
 
+
 /**
  * A state in the search space, making use of the syntactic information
  * in the state.
@@ -317,7 +746,7 @@ struct alignas(16) syn_path_data {
  * Assuming a Dependency Tree is defined somewhere else, this class
  * keeps track of the deletions made to the tree, the hash of the
  * current tree (for fact lookup), the deletions made to the tree,
- * the value of the current token being mutated, and the validity state
+ * the value of the current token being mutated, and the truth state
  * of the inference so far. In addition, it keeps track of a
  * backpointer, as well as costs for if this fact ends up being in the
  * "true" state and "false" state.
@@ -338,16 +767,15 @@ class SearchNode {
   SearchNode(const Tree& init);
   /** The mutate constructor */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
-          const tagged_word& newToken,
-          const float& costIfTrue, const float& costIfFalse,
-          const uint32_t& backpointer);
+             const tagged_word& newToken,
+             const float& cost, const uint32_t& backpointer);
   /**
    * The delete branch constructor. the new deletions are
    * <b>added to</b> the deletions already in |from|
    */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
-          const float& costIfTrue, const float& costIfFalse,
-          const uint32_t& newDeletions, const uint32_t& backpointer);
+          const float& cost, const uint32_t& newDeletions, 
+          const uint32_t& backpointer);
   /** The move index constructor */
   SearchNode(const SearchNode& from, const Tree& tree,
           const uint8_t& newIndex, const uint32_t& backpointer);
@@ -386,8 +814,7 @@ class SearchNode {
   
   /** The assignment operator */
   inline void operator=(const SearchNode& from) {
-    this->costIfTrue = from.costIfTrue;
-    this->costIfFalse = from.costIfFalse;
+    this->cost = from.cost;
     this->data = from.data;
     this->backpointer = from.backpointer;
   }
@@ -411,23 +838,27 @@ class SearchNode {
   
   /** Returns a backpointer to the parent of this fact. */
   inline uint32_t getBackpointer() const { return backpointer; }
+  
+  /** Returns the truth state of this node. */
+  inline uint32_t truthState() const { return data.truth; }
 
   /**
    * Gets the priority key for this path. That is, the
    * minimum of the true and false costs
    */
   inline float getPriorityKey() const { 
-    return costIfFalse < costIfTrue ? costIfFalse : costIfTrue;
+    return cost;
   }
 
  private:
   /** The data stored in this path */
   syn_path_data data;
+  /** The data stored in this path */
+  quantifier_monotonicities quantifierStates;  // TODO(gabor) set me in various places
   /** A backpointer to the path this came from */
   uint32_t backpointer;
   /** The costs so far of this path */
-  float costIfTrue,
-        costIfFalse;
+  float cost;
 };
 
 // ----------------------------------------------
@@ -505,7 +936,6 @@ inline uint64_threadsafe_t* malloc_uint64_threadsafe_t() {
   p->value = 0l;
   return p;
 }
-
 
 // ----------------------------------------------
 // SEARCH INSTANCE

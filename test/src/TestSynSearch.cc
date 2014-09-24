@@ -25,6 +25,7 @@ class SearchNodeTest : public ::testing::Test {
 
 TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
+  EXPECT_EQ(4, sizeof(quantifier_monotonicities));
   EXPECT_EQ(26, MAX_QUERY_LENGTH);
   EXPECT_EQ(20, sizeof(syn_path_data));
   EXPECT_EQ(32, sizeof(SearchNode));
@@ -92,6 +93,9 @@ class TreeTest : public ::testing::Test {
 
 TEST_F(TreeTest, HasExpectedSizes) {
   EXPECT_EQ(192, sizeof(Tree));  // 3 cache lines
+  EXPECT_EQ(6, sizeof(dep_tree_word));
+  EXPECT_EQ(4, sizeof(quantifier_monotonicities));
+  EXPECT_EQ(3, sizeof(quantifier_span));
 }
 
 TEST_F(TreeTest, DefinitionsOk) {
@@ -168,35 +172,6 @@ TEST_F(TreeTest, Equality) {
              string("45\t3\tamod"));
   EXPECT_NE(*tree, diff5);
   
-}
-
-//
-// Cache is where it should be
-//
-TEST_F(TreeTest, CacheWellFormed) {
-  Tree localTree(string("42\t2\tnsubj\n") +
-                 string("43\t0\troot\n") +
-                 string("44\t2\tdobj"));
-  EXPECT_EQ(*tree, localTree);
-  uint8_t len = localTree.availableCacheLength;
-  // Statically check cache length
-  EXPECT_EQ(
-    sizeof(Tree) - 3 * sizeof(dep_tree_word) - sizeof(uint8_t)
-      - sizeof(uint8_t),
-    len);
-  uint8_t* cache = (uint8_t*) localTree.cacheSpace();
-  // Repeatable calls
-  EXPECT_EQ(cache, localTree.cacheSpace());
-  // Is zeroed initially
-  for (uint8_t i = 0; i < len; ++i) {
-    EXPECT_EQ(42, cache[i]);
-  }
-  // Change cache
-  for (uint8_t i = 0; i < len; ++i) {
-    cache[i] = i;
-  }
-  // Check tree unchanged
-  EXPECT_EQ(*tree, localTree);
 }
 
 //
@@ -333,9 +308,9 @@ TEST_F(TreeTest, HashRepeatable) {
 //
 TEST_F(TreeTest, HashValueCheck) {
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(2849546189173576891, tree->hash());
+  EXPECT_EQ(2818012195690390063, tree->hash());
 #else
-  EXPECT_EQ(1037381270807490254, tree->hash());
+  EXPECT_EQ(9589546471634114165, tree->hash());
 #endif
 }
 
@@ -680,6 +655,20 @@ TEST(ChannelTest, CorrectValues) {
   EXPECT_EQ(pathB.factHash(), out.factHash());  // out not written
 }
 
+// ----------------------------------------------
+// Natural Logic
+// ----------------------------------------------
+TEST(NatLogTest, StrictCostsCompileCheck) {
+  SynSearchCosts* costs = strictNaturalLogicCosts();
+  EXPECT_TRUE(costs != NULL);
+  delete costs;
+}
+
+TEST(NatLogTest, StrictCostsCheckValues) {
+  SynSearchCosts* costs = strictNaturalLogicCosts();
+  // TODO(gabor)
+  delete costs;
+}
 
 // ----------------------------------------------
 // Syntactic Search

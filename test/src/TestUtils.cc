@@ -80,19 +80,17 @@ TEST_F(UtilsTest, ToStringTime) {
 }
 
 TEST_F(UtilsTest, DependencyGloss) {
-  EXPECT_EQ("???", dependencyGloss(0));
-  for (int i = 1; i <= 45; ++i) {
+  for (int i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
     EXPECT_NE("???", dependencyGloss(i));
   }
-  EXPECT_EQ("???", dependencyGloss(46));
+  EXPECT_EQ("???", dependencyGloss(NUM_DEPENDENCY_LABELS));
 }
 
 TEST_F(UtilsTest, DependencyIndex) {
-  EXPECT_EQ(0, indexDependency(dependencyGloss(0)));
-  for (int i = 1; i <= 45; ++i) {
+  for (int i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
     EXPECT_EQ(i, indexDependency(dependencyGloss(i)));
   }
-  EXPECT_EQ(0, indexDependency(dependencyGloss(46)));
+  EXPECT_EQ(0, indexDependency(dependencyGloss(NUM_DEPENDENCY_LABELS)));
 }
 
 TEST_F(UtilsTest, FastATOI) {
