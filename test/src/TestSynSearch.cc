@@ -204,7 +204,6 @@ void quantifierMonotonicities(const Tree& tree, const uint8_t& index,
                               const monotonicity* monotonicities) {
   uint8_t count = 0;
   tree.foreachQuantifier( index, [&count, types, monotonicities] (quantifier_type type, monotonicity mono) mutable -> void {
-    printf("COUNT %u\n", count);
     EXPECT_EQ(types[count], type);
     EXPECT_EQ(monotonicities[count], mono);
     count += 1;
