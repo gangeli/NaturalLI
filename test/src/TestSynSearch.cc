@@ -8,6 +8,17 @@
 
 #define SILENT true
 
+#define ALL_CATS_HAVE_TAILS \
+                       string(ALL_STR) + string("\t2\tdet\tanti-additive\t1-3\tmultiplicative\t3-5\n") + \
+                       string(CAT_STR) + string("\t3\tnsubj\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t3\tdobj\t-\t-\t-\t-\n")
+
+#define CATS_HAVE_TAILS \
+                       string(CAT_STR) + string("\t2\tnsubj\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t-\t-\t-\t-\n")
+
 using namespace std;
 using namespace btree;
 
@@ -25,11 +36,13 @@ class SearchNodeTest : public ::testing::Test {
 
 TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
-  EXPECT_EQ(4, sizeof(quantifier_monotonicities));
+  EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(26, MAX_QUERY_LENGTH);
   EXPECT_EQ(20, sizeof(syn_path_data));
+#if MAX_QUANTIFIER_COUNT < 10
   EXPECT_EQ(32, sizeof(SearchNode));
   EXPECT_LE(sizeof(SearchNode), CACHE_LINE_SIZE);
+#endif
 }
 
 TEST_F(SearchNodeTest, HasZeroCostInitially) {
@@ -37,7 +50,6 @@ TEST_F(SearchNodeTest, HasZeroCostInitially) {
                     string("43\t0\troot\n") +
                     string("44\t2\tdobj")
   ));
-  EXPECT_EQ(0.0, path.getPriorityKey());
 }
 
 TEST_F(SearchNodeTest, InitFromTree) {
@@ -94,7 +106,7 @@ class TreeTest : public ::testing::Test {
 TEST_F(TreeTest, HasExpectedSizes) {
   EXPECT_EQ(192, sizeof(Tree));  // 3 cache lines
   EXPECT_EQ(6, sizeof(dep_tree_word));
-  EXPECT_EQ(4, sizeof(quantifier_monotonicities));
+  EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(3, sizeof(quantifier_span));
 }
 
@@ -126,7 +138,7 @@ TEST_F(TreeTest, BitShifts) {
 //
 // CoNLL Format
 //
-TEST_F(TreeTest, CoNLLFormatConstructor) {
+TEST_F(TreeTest, CoNLLShortConstructor) {
   EXPECT_EQ(getTaggedWord(42, 0, 0), tree->token(0));
   EXPECT_EQ(getTaggedWord(43, 0, 0), tree->token(1));
   EXPECT_EQ(getTaggedWord(44, 0, 0), tree->token(2));
@@ -138,6 +150,91 @@ TEST_F(TreeTest, CoNLLFormatConstructor) {
   EXPECT_EQ("nsubj", string(dependencyGloss(tree->relation(0))));
   EXPECT_EQ("root",  string(dependencyGloss(tree->relation(1))));
   EXPECT_EQ("dobj",  string(dependencyGloss(tree->relation(2))));
+}
+
+
+uint8_t countQuantifiers(const Tree& tree, const uint8_t& index) {
+  uint8_t count = 0;
+  tree.foreachQuantifier( index, [&count] (quantifier_type type, monotonicity mono) mutable -> void {
+    count += 1;
+  });
+  return count;
+}
+
+void quantifierMonotonicities(const Tree& tree, const uint8_t& index, 
+                              const quantifier_type* types,
+                              const monotonicity* monotonicities) {
+  uint8_t count = 0;
+  tree.foreachQuantifier( index, [&count, types, monotonicities] (quantifier_type type, monotonicity mono) mutable -> void {
+    EXPECT_EQ(types[count], type);
+    EXPECT_EQ(monotonicities[count], mono);
+    count += 1;
+  });
+}
+
+//
+// Extended CoNLL Format
+//
+TEST_F(TreeTest, CoNLLLongConstructor) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+
+  // Sanity check
+  EXPECT_EQ(ALL, tree.token(0));
+  EXPECT_EQ(CAT, tree.token(1));
+  EXPECT_EQ(HAVE, tree.token(2));
+  EXPECT_EQ(TAIL, tree.token(3));
+}
+
+//
+// Simple check on quantifier scoping
+//
+TEST_F(TreeTest, QuantifierScopesSimple) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  ASSERT_EQ(1, tree.getNumQuantifiers());
+  // Check quantifier mask
+  EXPECT_TRUE(tree.isQuantifier(0));
+  EXPECT_FALSE(tree.isQuantifier(1));
+  EXPECT_FALSE(tree.isQuantifier(2));
+  EXPECT_FALSE(tree.isQuantifier(3));
+  
+  // Check quantifier scope
+  EXPECT_TRUE(tree.isQuantifier(0));
+  EXPECT_FALSE(tree.isQuantifier(1));
+  EXPECT_FALSE(tree.isQuantifier(2));
+  EXPECT_FALSE(tree.isQuantifier(3));
+  
+  // Check everything under scope
+  EXPECT_EQ(1, countQuantifiers(tree, 0));
+  EXPECT_EQ(1, countQuantifiers(tree, 1));
+  EXPECT_EQ(1, countQuantifiers(tree, 2));
+  EXPECT_EQ(1, countQuantifiers(tree, 3));
+}
+
+//
+// Quantifier monotonicity
+//
+TEST_F(TreeTest, QuantifierMonotonicity) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  monotonicity down = MONOTONE_DOWN;
+  monotonicity up = MONOTONE_UP;
+  quantifier_type additive = QUANTIFIER_TYPE_ADDITIVE;
+  quantifier_type multiplicative = QUANTIFIER_TYPE_MULTIPLICATIVE;
+  quantifierMonotonicities(tree, 0, &additive, &down);
+  quantifierMonotonicities(tree, 1, &additive, &down);
+  quantifierMonotonicities(tree, 2, &multiplicative, &up);
+  quantifierMonotonicities(tree, 3, &multiplicative, &up);
+}
+
+//
+// Quantifier monotonicity
+//
+TEST_F(TreeTest, GenericsMonotonicity) {
+  Tree tree(CATS_HAVE_TAILS);
+  monotonicity up = MONOTONE_UP;
+  quantifier_type multiplicative = QUANTIFIER_TYPE_MULTIPLICATIVE;
+  quantifierMonotonicities(tree, 0, &multiplicative, &up);
+  quantifierMonotonicities(tree, 1, &multiplicative, &up);
+  quantifierMonotonicities(tree, 2, &multiplicative, &up);
 }
 
 //
@@ -558,8 +655,8 @@ TEST_F(KNHeapTest, SimpleTestWithPaths) {
 // ----------------------------------------------
 TEST(ChannelTest, CreationAndSize) {
   Channel c;
-  EXPECT_TRUE( sizeof(Channel) % CACHE_LINE_SIZE == 0);
-  EXPECT_EQ( 1024, sizeof(Channel) );
+//  EXPECT_TRUE( sizeof(Channel) % CACHE_LINE_SIZE == 0);
+  EXPECT_EQ( 1280, sizeof(Channel) );
 }
 
 TEST(ChannelTest, CacheAligned) {
@@ -586,7 +683,7 @@ TEST(ChannelTest, PointersOnDifferentCacheLines) {
 }
 
 TEST(ChannelTest, PushPoll) {
-  SearchNode path, out;
+  ScoredSearchNode path, out;
   Channel c;
   EXPECT_FALSE(c.poll(&out));
   EXPECT_TRUE(c.push(path));
@@ -594,7 +691,7 @@ TEST(ChannelTest, PushPoll) {
 }
 
 TEST(ChannelTest, Capacity) {
-  SearchNode path, out;
+  ScoredSearchNode path, out;
   Channel c;
   for (uint8_t i = 0; i < CHANNEL_BUFFER_LENGTH - 1; ++i) {
     EXPECT_TRUE(c.push(path));
@@ -608,7 +705,7 @@ TEST(ChannelTest, Capacity) {
 
 TEST(ChannelTest, RandomAccessPattern) {
   srand (42);
-  SearchNode path, out;
+  ScoredSearchNode path, out;
   Channel c;
   uint8_t size = 0;
   for (uint32_t i = 0; i < 10000; ++i) {
@@ -638,36 +735,75 @@ TEST(ChannelTest, CorrectValues) {
   Tree b(string("73918\t2\tnsubj\n") +
          string("60042\t0\troot\n") +
          string("125248\t2\tdobj"));
-  SearchNode pathA(a);
-  SearchNode pathB(b);
-  SearchNode out;
+  ScoredSearchNode pathA(SearchNode(a), 0.0f);
+  ScoredSearchNode pathB(SearchNode(b), 0.0f);
+  ScoredSearchNode out;
   Channel c;
   // (push)
   ASSERT_TRUE(c.push(pathA));
   ASSERT_TRUE(c.push(pathB));
   // (poll)
   ASSERT_TRUE(c.poll(&out));
-  EXPECT_EQ(pathA.factHash(), out.factHash());
+  EXPECT_EQ(pathA.node.factHash(), out.node.factHash());
   ASSERT_TRUE(c.poll(&out));
-  EXPECT_EQ(pathB.factHash(), out.factHash());
+  EXPECT_EQ(pathB.node.factHash(), out.node.factHash());
   // (nothing at the end)
   EXPECT_FALSE(c.poll(&out));
-  EXPECT_EQ(pathB.factHash(), out.factHash());  // out not written
+  EXPECT_EQ(pathB.node.factHash(), out.node.factHash());  // out not written
 }
 
 // ----------------------------------------------
 // Natural Logic
 // ----------------------------------------------
-TEST(NatLogTest, StrictCostsCompileCheck) {
-  SynSearchCosts* costs = strictNaturalLogicCosts();
-  EXPECT_TRUE(costs != NULL);
-  delete costs;
+class SynSearchCostsTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    strictCosts = strictNaturalLogicCosts();
+  }
+  
+  virtual void TearDown() {
+    delete strictCosts;
+  }
+
+  SynSearchCosts* strictCosts;
+};
+
+TEST_F(SynSearchCostsTest, StrictCostsCompileCheck) {
+  EXPECT_TRUE(strictCosts != NULL);
 }
 
-TEST(NatLogTest, StrictCostsCheckValues) {
-  SynSearchCosts* costs = strictNaturalLogicCosts();
-  // TODO(gabor)
-  delete costs;
+TEST_F(SynSearchCostsTest, StrictCostsCheckValues) {
+  EXPECT_FALSE(isinf(strictCosts->transitionCostFromTrue[FUNCTION_NEGATION]));
+  EXPECT_TRUE(isinf(strictCosts->transitionCostFromTrue[FUNCTION_REVERSE_ENTAILMENT]));
+}
+
+
+TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
+  Tree tree(CATS_HAVE_TAILS);
+  bool outTruth = false;
+  float cost = strictCosts->mutationCost(
+    tree, 0, WORDNET_UP, true, &outTruth);
+  EXPECT_EQ(0.01f, cost);
+  EXPECT_EQ(true, outTruth);
+  
+  cost = strictCosts->mutationCost(
+    tree, 0, WORDNET_DOWN, true, &outTruth);
+  EXPECT_EQ(true, outTruth);
+  EXPECT_TRUE(isinf(cost));
+}
+
+TEST_F(SynSearchCostsTest, MutationsCostGenericsQuantificiation) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = false;
+  float cost = strictCosts->mutationCost(
+    tree, 1, WORDNET_DOWN, true, &outTruth);
+  EXPECT_EQ(0.01f, cost);
+  EXPECT_EQ(true, outTruth);
+
+  cost = strictCosts->mutationCost(
+    tree, 1, WORDNET_UP, true, &outTruth);
+  EXPECT_TRUE(isinf(cost));
+  EXPECT_EQ(true, outTruth);
 }
 
 // ----------------------------------------------
@@ -683,43 +819,54 @@ class SynSearchTest : public ::testing::Test {
     catsHaveTails = new Tree(string("20852\t2\tnsubj\n") +
                              string("60042\t0\troot\n") +
                              string("125248\t2\tdobj"));
+    animalsHaveTails = new Tree(string("5532\t2\tnsubj\n") +
+                             string("60042\t0\troot\n") +
+                             string("125248\t2\tdobj"));
     graph = ReadMockGraph();
     cyclicGraph = ReadMockGraph(true);
     opts = SynSearchOptions(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
     factdb.insert(catsHaveTails->hash());
+    costs = softNaturalLogicCosts();
+    strictCosts = strictNaturalLogicCosts();
   }
   
   virtual void TearDown() {
     delete lemursHaveTails;
     delete catsHaveTails;
+    delete animalsHaveTails;
     delete graph;
     delete cyclicGraph;
+    delete costs;
+    delete strictCosts;
   }
 
   Tree* lemursHaveTails;
   Tree* catsHaveTails;
+  Tree* animalsHaveTails;
   Graph* graph;
   Graph* cyclicGraph;
+  SynSearchCosts* costs;
+  SynSearchCosts* strictCosts;
   syn_search_options opts;
   btree_set<uint64_t> factdb;
 };
 
 TEST_F(SynSearchTest, ThreadsFinish) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
 }
 
 TEST_F(SynSearchTest, TickCountNoMutation) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, opts);
   EXPECT_EQ(9, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutations) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
   EXPECT_EQ(15, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
-  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, costs, opts);
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
 #else
@@ -728,16 +875,39 @@ TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
 }
 
 TEST_F(SynSearchTest, LiteralLookup) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, opts);
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, opts);
   EXPECT_EQ(1, response.paths.size());
 }
 
-TEST_F(SynSearchTest, LemursToCats) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, opts);
+TEST_F(SynSearchTest, LemursToCatsSoft) {
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(4, response.paths[0].size());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
   EXPECT_EQ(catsHaveTails->hash(), response.paths[0].back().factHash());
+}
+
+TEST_F(SynSearchTest, LemursToCatsStrict) {
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, strictCosts, opts);
+  ASSERT_EQ(0, response.paths.size());
+}
+
+TEST_F(SynSearchTest, LemursToAnimalsSoft) {
+  btree_set<uint64_t> factdb;
+  factdb.insert(lemursHaveTails->hash());
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, costs, opts);
+  ASSERT_EQ(1, response.paths.size());
+  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
+}
+
+TEST_F(SynSearchTest, LemursToAnimalsStrict) {
+  btree_set<uint64_t> factdb;
+  factdb.insert(lemursHaveTails->hash());
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, opts);
+  ASSERT_EQ(1, response.paths.size());
+  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
 }
 
 #undef SEARCH_TIMEOUT_TEST

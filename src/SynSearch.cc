@@ -28,53 +28,65 @@ inline syn_path_data mkSearchNodeData(
 }
 
 SearchNode::SearchNode()
-    : cost(0.0), backpointer(0),
-      data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) { }
+    : backpointer(0),
+      data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) {  }
 
 SearchNode::SearchNode(const SearchNode& from)
-    : cost(from.cost),
-      backpointer(from.backpointer),
-      data(from.data) { }
+    : backpointer(from.backpointer),
+      data(from.data) {
+  memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
   
 SearchNode::SearchNode(const Tree& init)
-    : cost(0.0f),
-      backpointer(0),
+    : backpointer(0),
       data(mkSearchNodeData(init.hash(), init.root(), true, 
-                         0x0, init.token(init.root()), TREE_ROOT_WORD))
-  { }
+                         0x0, init.token(init.root()), TREE_ROOT_WORD)) {
+  memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
   
 //
 // SearchNode() ''mutate constructor
 //
 SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
                  const tagged_word& newToken,
-                 const float& cost,
+                 const bool& newTruthValue,
                  const uint32_t& backpointer)
-    : cost(cost), backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, from.data.truth,
+    : backpointer(backpointer),
+      data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
                          from.data.deleteMask, newToken,
-                         from.data.governor)) { }
+                         from.data.governor)) {
+  memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
 
 //
 // SearchNode() ''delete constructor
 //
 SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
-          const float& cost,
+          const bool& newTruthValue,
           const uint32_t& addedDeletions, const uint32_t& backpointer)
-    : cost(cost), backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, from.data.truth,
+    : backpointer(backpointer),
+      data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
                          addedDeletions | from.data.deleteMask, from.data.currentToken,
-                         from.data.governor)) { }
+                         from.data.governor)) { 
+  memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
 
 //
 // SearchNode() ''move index constructor
 //
 SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
-    : cost(from.cost), backpointer(backpointer),
+    : backpointer(backpointer),
       data(mkSearchNodeData(from.data.factHash, newIndex, from.data.truth, 
                          from.data.deleteMask, tree.token(newIndex), 
-                         tree.token(tree.governor(newIndex)).word)) { }
+                         tree.token(tree.governor(newIndex)).word)) { 
+  memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
 
 // ----------------------------------------------
 // DEPENDENCY TREE
@@ -93,23 +105,70 @@ uint8_t computeLength(const string& conll) {
   return length;
 }
 
+            
+void stringToMonotonicity(string field, monotonicity* mono, quantifier_type* type) {
+  if (field == "monotone") {
+    *mono = MONOTONE_UP; *type = QUANTIFIER_TYPE_NONE;
+  } else if (field == "additive") {
+    *mono = MONOTONE_UP; *type = QUANTIFIER_TYPE_ADDITIVE;
+  } else if (field == "multiplicative") {
+    *mono = MONOTONE_UP; *type = QUANTIFIER_TYPE_MULTIPLICATIVE;
+  } else if (field == "additive-multiplicative") {
+    *mono = MONOTONE_UP; *type = QUANTIFIER_TYPE_BOTH;
+  } else if (field == "antitone") {
+    *mono = MONOTONE_DOWN; *type = QUANTIFIER_TYPE_NONE;
+  } else if (field == "anti-additive") {
+    *mono = MONOTONE_DOWN; *type = QUANTIFIER_TYPE_ADDITIVE;
+  } else if (field == "anti-multiplicative") {
+    *mono = MONOTONE_DOWN; *type = QUANTIFIER_TYPE_MULTIPLICATIVE;
+  } else if (field == "anti-additive-multiplicative") {
+    *mono = MONOTONE_DOWN; *type = QUANTIFIER_TYPE_BOTH;
+  } else if (field == "nonmonotone") {
+    *mono = MONOTONE_FLAT; *type = QUANTIFIER_TYPE_NONE;
+  } else {
+    printf("ERROR: Bad monotonicity marker: %s; assuming flat: ", field.c_str());
+  }
+}
+
+void stringToSpan(string field, uint8_t* begin, uint8_t* end) {
+  stringstream spanStream(field);
+  string spanElem;
+  bool isFirst = true;
+  while (getline(spanStream, spanElem, '-')) {
+    if (isFirst) {
+      *begin = atoi(spanElem.c_str()) - 1;
+      isFirst = false;
+    } else {
+      *end = atoi(spanElem.c_str()) - 1;
+    }
+  }
+}
+
 Tree::Tree(const string& conll) 
       : length(computeLength(conll)),
         numQuantifiers(0) {
+  // Variables
   stringstream lineStream(conll);
   string line;
   uint8_t lineI = 0;
+  monotonicity subjMono;
+  monotonicity objMono;
+  quantifier_type subjType;
+  quantifier_type objType;
+  quantifier_span span;
+  // Parse CoNLL
   while (getline(lineStream, line, '\n')) {
+    bool isQuantifier = false;
     stringstream fieldsStream(line);
     string field;
     uint8_t fieldI = 0;
     while (getline(fieldsStream, field, '\t')) {
       switch (fieldI) {
-        case 0:
+        case 0:  // Word (as integer)
           data[lineI].word = atoi(field.c_str());
           data[lineI].sense = 0;
           break;
-        case 1:
+        case 1:  // Governor
           data[lineI].governor = atoi(field.c_str());
           if (data[lineI].governor == 0) {
             data[lineI].governor = TREE_ROOT;
@@ -117,15 +176,51 @@ Tree::Tree(const string& conll)
             data[lineI].governor -= 1;
           }
           break;
-        case 2:
+        case 2:  // Label
           data[lineI].relation = indexDependency(field.c_str());
+          break;
+        case 3:  // Subject monotonicity
+          if (field != "-") {
+            isQuantifier = true;
+            stringToMonotonicity(field, &subjMono, &subjType);
+          }
+          break;
+        case 4:  // Subject span
+          if (field != "-") {
+            uint8_t begin, end;
+            stringToSpan(field, &begin, &end);
+            span.subj_begin = begin; span.subj_end = end;
+          }
+          break;
+        case 5:  // Object monotonicity
+          if (field != "-") {
+            stringToMonotonicity(field, &objMono, &objType);
+          } else {
+            objMono = MONOTONE_FLAT;
+            objType = QUANTIFIER_TYPE_NONE;
+          }
+          break;
+        case 6:  // Object span
+          if (field != "-") {
+            uint8_t begin, end;
+            stringToSpan(field, &begin, &end);
+            span.obj_begin = begin; span.obj_end = end;
+          } else {
+            span.obj_begin = 0;
+            span.obj_end = 0;
+          }
+          // Register quantifier
+          if (isQuantifier) {
+            if (!registerQuantifier(span, subjType, objType, subjMono, objMono)) {
+              printf("WARNING: Too many quantifiers; skipping at word %u\n", lineI);
+            }
+          }
           break;
       }
       fieldI += 1;
     }
-    if (fieldI != 3) {
-      printf("Bad number of CoNLL fields in line (expected 3): %s\n", line.c_str());
-      std::exit(1);
+    if (fieldI != 3 && fieldI != 7) {
+      printf("ERROR: Bad number of CoNLL fields in line (expected 3 or 7, was %u): %s\n", fieldI, line.c_str());
     }
     lineI += 1;
   }
@@ -137,11 +232,14 @@ void Tree::foreachQuantifier(
       const uint8_t& index,
       std::function<void(quantifier_type,monotonicity)> visitor) const {
   // Variables
-  uint8_t distance[6] = {0,0,0,0,0,0};
-  bool valid[6] = {false, false, false, false, false, false};
-  bool onSubject[6] = {false, false, false, false, false, false};
+  uint8_t distance[MAX_QUANTIFIER_COUNT];
+  memset(distance, 0, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
+  bool valid[MAX_QUANTIFIER_COUNT];
+  memset(valid, 0, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
+  bool onSubject[MAX_QUANTIFIER_COUNT];
   // Collect statistics
-  for (uint8_t i = 0; i < 6; ++i) {
+  for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
+    if (i >= numQuantifiers) { break; }
     if (index >= quantifierSpans[i].subj_begin && index < quantifierSpans[i].subj_end) {
       onSubject[i] = true;
       valid[i] = true;
@@ -162,7 +260,7 @@ void Tree::foreachQuantifier(
     uint8_t argmin = 255;
     uint8_t min = 255;
     // (get smallest distance from token)
-    for (uint8_t i = 0; i < 6; ++i) {
+    for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
       if (valid[i]) {
         somethingValid = true;
         if (distance[i] < min) {
@@ -172,10 +270,12 @@ void Tree::foreachQuantifier(
       }
     }
     // (call visitor)
-    if (onSubject[argmin]) {
-      visitor(quantifierMonotonicities.subjType(argmin), quantifierMonotonicities.subjMono(argmin));
-    } else {
-      visitor(quantifierMonotonicities.objType(argmin), quantifierMonotonicities.objMono(argmin));
+    if (somethingValid) {
+      if (onSubject[argmin]) {
+        visitor(quantifierMonotonicities[argmin].subj_type, quantifierMonotonicities[argmin].subj_mono);
+      } else {
+        visitor(quantifierMonotonicities[argmin].obj_type, quantifierMonotonicities[argmin].obj_mono);
+      }
     }
     // (update state)
     valid[argmin] = false;
@@ -346,7 +446,7 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
                                               const natlog_relation& lexicalRelation) const {
   const dep_tree_word& token = data[index];
   natlog_relation outputRelation = lexicalRelation;
-  foreachQuantifier(index, [outputRelation] (quantifier_type type, monotonicity mono) mutable -> void {
+  foreachQuantifier(index, [&outputRelation] (quantifier_type type, monotonicity mono) mutable -> void {
     outputRelation = project(mono, type, outputRelation);
   });
   return outputRelation;
@@ -357,7 +457,7 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
 // CHANNEL
 // ----------------------------------------------
   
-bool Channel::push(const SearchNode& value) {
+bool Channel::push(const ScoredSearchNode& value) {
   if (data.pushPointer == data.pollPointer) {
     // Case: empty buffer
     data.buffer[data.pushPointer] = value;
@@ -377,7 +477,7 @@ bool Channel::push(const SearchNode& value) {
   }
 }
 
-bool Channel::poll(SearchNode* output) {
+bool Channel::poll(ScoredSearchNode* output) {
   const uint16_t available =
     ((data.pushPointer + CHANNEL_BUFFER_LENGTH) - data.pollPointer) % CHANNEL_BUFFER_LENGTH;
   if (available > 0) {
@@ -578,16 +678,16 @@ uint8_t project(const monotonicity& monotonicity,
 //
 // SynSearch::mutationCost()
 //
-float SynSearchCosts::mutationCost(const Tree* tree,
+float SynSearchCosts::mutationCost(const Tree& tree,
                                    const uint8_t& index,
-                                   const dep_label& edgeType,
+                                   const uint8_t& edgeType,
                                    const bool& endTruthValue,
                                    bool* beginTruthValue) const {
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
   const float lexicalRelationCost
     = mutationLexicalCost[edgeType];
   const natlog_relation projectedFunction
-    = tree->projectLexicalRelation(index, lexicalRelation);
+    = tree.projectLexicalRelation(index, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
@@ -597,8 +697,8 @@ float SynSearchCosts::mutationCost(const Tree* tree,
 //
 // SynSearch::insertionCost()
 //
-float SynSearchCosts::insertionCost(const Tree* tree,
-                                    const uint8_t& index,
+float SynSearchCosts::insertionCost(const Tree& tree,
+                                    const uint8_t& governorIndex,
                                     const dep_label& dependencyLabel,
                                     const ::word& dependent,
                                     const bool& endTruthValue,
@@ -608,7 +708,7 @@ float SynSearchCosts::insertionCost(const Tree* tree,
   const float lexicalRelationCost
     = insertionLexicalCost[dependencyLabel];
   const natlog_relation projectedFunction
-    = tree->projectLexicalRelation(index, lexicalRelation);
+    = tree.projectLexicalRelation(governorIndex, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
@@ -703,7 +803,7 @@ void priorityQueueWorker(
     std::numeric_limits<float>::infinity(),
     -std::numeric_limits<float>::infinity());
   float key;
-  SearchNode value;
+  ScoredSearchNode value;
 
   // Main loop
   while (!(*timeout)) {
@@ -711,14 +811,14 @@ void priorityQueueWorker(
 
     // Enqueue
     while (enqueueChannel->poll(&value)) {
-      pq.insert(value.getPriorityKey(), value);
+      pq.insert(value.cost, value.node);
       somethingHappened = true;
     }
 
     // Dequeue
     if (!pq.isEmpty()) {
       *pqEmpty = false;
-      pq.deleteMin(&key, &value);
+      pq.deleteMin(&key, &(value.node));
       while (!dequeueChannel->push(value)) {
         idleTicks += 1;
         if (idleTicks % 1000000 == 0) { 
@@ -767,6 +867,7 @@ void priorityQueueWorker(
 void pushChildrenWorker(
     Channel* enqueueChannel, Channel* dequeueChannel,
     SearchNode* history, uint64_threadsafe_t* historySize,
+    const SynSearchCosts* costs,
     bool* timeout, bool* pqEmpty,
     const syn_search_options& opts, const Graph* graph, const Tree& tree,
     uint64_t* ticks) {
@@ -777,11 +878,11 @@ void pushChildrenWorker(
   natlog_relation  dependentRelations[8];
   uint8_t memorySize = 0;
   SearchNode memory[SEARCH_CYCLE_MEMORY];
-  SearchNode node;
+  ScoredSearchNode scoredNode;
   // Main Loop
   while (*ticks < opts.maxTicks) {
     // Dequeue an element
-    while (!dequeueChannel->poll(&node)) {
+    while (!dequeueChannel->poll(&scoredNode)) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
         if (!opts.silent) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
@@ -790,7 +891,7 @@ void pushChildrenWorker(
           // (evict the cache)
           EVICT_CACHE();
           // (try to poll again)
-          if (dequeueChannel->poll(&node)) { break; }
+          if (dequeueChannel->poll(&scoredNode)) { break; }
           // (priority queue really is empty)
           if (!opts.silent) { printTime("[%c] "); printf("  |PQ Empty| ticks=%lu\n", *ticks); }
           *timeout = true;
@@ -800,6 +901,7 @@ void pushChildrenWorker(
     }
     
     // Register the dequeue'd element
+    const SearchNode& node = scoredNode.node;
 #if SEARCH_CYCLE_MEMORY!=0
     memory[0] = history[node.getBackpointer()];
     memorySize = 1;
@@ -827,6 +929,11 @@ void pushChildrenWorker(
     uint32_t numEdges;
     const edge* edges = graph->incomingEdgesFast(node.token(), &numEdges);
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
+      bool newTruthValue;
+      const float cost = costs->mutationCost(
+          tree, node.tokenIndex(), edges[edgeI].type,
+          node.truthState(), &newTruthValue);
+      if (isinf(cost)) { continue; }
       // (compute new fields)
       const uint64_t newHash = tree.updateHashFromMutation(
           node.factHash(), node.tokenIndex(), node.token().word,
@@ -836,10 +943,9 @@ void pushChildrenWorker(
           edges[edgeI].source,
           edges[edgeI].source_sense,
           node.token().monotonicity);
-      const float cost = 0.0;  // TODO(gabor) costs
       // (create child)
       const SearchNode mutatedChild(node, newHash, newToken,
-                                    cost, myIndex);
+                                    newTruthValue, myIndex);
       // (push child)
 #if SEARCH_CYCLE_MEMORY!=0
       bool isNewChild = true;
@@ -849,7 +955,7 @@ void pushChildrenWorker(
       }
       if (isNewChild) {
 #endif
-      while (!enqueueChannel->push(mutatedChild)) {
+      while (!enqueueChannel->push(ScoredSearchNode(mutatedChild, cost))) {
         idleTicks += 1;
         if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
@@ -865,37 +971,41 @@ void pushChildrenWorker(
                     dependentRelations, &numDependents);
     
     for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
-      const uint8_t dependentIndex = dependentIndices[dependentI];
+      const uint8_t& dependentIndex = dependentIndices[dependentI];
 
       // PUSH 2: Deletions
-      if (!node.isDeleted(dependentIndex)) {
+      if (node.isDeleted(dependentIndex)) { continue; }
+      bool newTruthValue;
+      const float cost = costs->insertionCost(
+            tree, node.tokenIndex(), tree.relation(dependentIndex),
+            tree.word(dependentIndex), node.truthState(), &newTruthValue);
+      if (!isinf(cost)) {
         // (compute deletion)
         uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
         uint64_t newHash = tree.updateHashFromDeletions(
             node.factHash(), dependentIndex, tree.token(dependentIndex).word,
             node.token().word, deletionMask);
-        const float cost = 0.0;  // TODO(gabor) costs
         // (create child)
         const SearchNode deletedChild(node, newHash,
-                                   cost, deletionMask, myIndex);
+                                      newTruthValue, deletionMask, myIndex);
         // (push child)
-        while (!enqueueChannel->push(deletedChild)) {
+        while (!enqueueChannel->push(ScoredSearchNode(deletedChild, cost))) {
           idleTicks += 1;
           if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
         }
 //        printf("  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
-
-        // PUSH 3: Index Move
-        // (create child)
-        const SearchNode indexMovedChild(node, tree, dependentIndex,
-                                      myIndex);
-        // (push child)
-        while (!enqueueChannel->push(indexMovedChild)) {
-          idleTicks += 1;
-          if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
-        }
-//        printf("  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
       }
+
+      // PUSH 3: Index Move
+      // (create child)
+      const SearchNode indexMovedChild(node, tree, dependentIndex,
+                                    myIndex);
+      // (push child)
+      while (!enqueueChannel->push(ScoredSearchNode(indexMovedChild, scoredNode.cost))) {  // Copy the cost
+        idleTicks += 1;
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+      }
+//      printf("  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
     }
   }
 
@@ -976,7 +1086,7 @@ void factLookupWorker(
 syn_search_response SynSearch(
     const Graph* mutationGraph, 
     const btree::btree_set<uint64_t>& db,
-    const Tree* input,
+    const Tree* input, const SynSearchCosts* costs,
     const syn_search_options& opts) {
   syn_search_response response;
   // Debug print parameters
@@ -1014,7 +1124,7 @@ syn_search_response SynSearch(
 
   // Enqueue the first element
   // (to the fringe)
-  if (!dequeueChannel->push(SearchNode(*input))) {
+  if (!dequeueChannel->push(ScoredSearchNode(SearchNode(*input), 0.0f))) {
     printf("Could not push root!?\n");
     std::exit(1);
   }
@@ -1030,6 +1140,7 @@ syn_search_response SynSearch(
   std::thread pushChildrenThread(pushChildrenWorker, 
       enqueueChannel, dequeueChannel, 
       history, historySize,
+      costs,
       timeout, pqEmpty,
       opts, mutationGraph, *input, &(response.totalTicks));
   // (database lookup)

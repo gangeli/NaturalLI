@@ -34,28 +34,28 @@ test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 
 echo "-- MAKE DIST --"
 configure
-make -j4 dist
+make dist
 tar xfz `find . -name "naturalli-*.tar.gz"`
 cd `find . -type d -name "naturalli-*"`
 configure
-make all -j4 check
+make all check
 cd ..
 rm -r `find . -type d -name "naturalli-*"`
 
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
 configure --disable-debug
-make -j4 check
+make check
 echo "(two pass hash)"
 configure TWO_PASS_HASH=1
-make -j4 check
+make check
 echo "(search cycle memory)"
-configure SEARCH_CYCLE_MEMORY=1; make -j4 check
-configure SEARCH_CYCLE_MEMORY=2; make -j4 check
-configure SEARCH_CYCLE_MEMORY=5; make -j4 check
+configure SEARCH_CYCLE_MEMORY=1; make check
+configure SEARCH_CYCLE_MEMORY=2; make check
+configure SEARCH_CYCLE_MEMORY=5; make check
 echo "(back to default)"
 configure  # reconfigure to default
-make -j4 all
+make all
 
 echo "-- COVERAGE --"
 cd src/

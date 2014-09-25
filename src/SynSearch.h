@@ -58,7 +58,7 @@ typedef uint8_t quantifier_type;
 
  * @return The Natural Logic relation corresponding to that edge.
  */
-inline natlog_relation edgeToLexicalFunction(const dep_label& edge) {
+inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
   switch (edge) {
     case WORDNET_UP:                  return FUNCTION_FORWARD_ENTAILMENT;
     case WORDNET_DOWN:                return FUNCTION_REVERSE_ENTAILMENT;
@@ -193,15 +193,15 @@ bool reverseTransition(const bool& endState,
 class SynSearchCosts {
  public:
   /** The cost of a mutation */
-  float mutationCost(const Tree* tree,
+  float mutationCost(const Tree& tree,
                      const uint8_t& index,
                      const uint8_t& edgeType,
                      const bool& endTruthValue,
                      bool* beginTruthValue) const;
   
   /** The cost of an insertion (deletion in search) */
-  float insertionCost(const Tree* tree,
-                      const uint8_t& index,
+  float insertionCost(const Tree& tree,
+                      const uint8_t& governorIndex,
                       const dep_label& dependencyLabel,
                       const ::word& dependent,
                       const bool& endTruthValue,
@@ -258,155 +258,24 @@ inline SynSearchCosts* softNaturalLogicCosts() {
 #define MONOPAIR_FLAT_UP      6
 #define MONOPAIR_FLAT_DOWN    7
 
-#define MONO_SET__(monoVar, typeVar, subjMono, objMono, type) \
-  switch (subjMono) { \
-    case MONOTONE_UP: \
-      switch (objMono) { \
-        case MONOTONE_UP: monoVar = MONOPAIR_UP_UP; break; \
-        case MONOTONE_DOWN: monoVar = MONOPAIR_UP_DOWN; break; \
-        case MONOTONE_FLAT: monoVar = MONOPAIR_UP_FLAT; break; \
-        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
-      } \
-      break; \
-    case MONOTONE_DOWN: \
-      switch (objMono) { \
-        case MONOTONE_UP: monoVar = MONOPAIR_DOWN_UP; break; \
-        case MONOTONE_DOWN: monoVar = MONOPAIR_DOWN_DOWN; break; \
-        case MONOTONE_FLAT: monoVar = MONOPAIR_DOWN_FLAT; break; \
-        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
-      } \
-      break; \
-    case MONOTONE_FLAT: \
-      switch (objMono) { \
-        case MONOTONE_UP: monoVar = MONOPAIR_FLAT_UP; break; \
-        case MONOTONE_DOWN: monoVar = MONOPAIR_FLAT_DOWN; break; \
-        default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
-      } \
-      break; \
-    default: printf("Invalid monotonicity: %u %u\n", subjMono, objMono); std::exit(1); \
-  }
-
-#define MONO_SUBJ__(monoVar) \
-  switch (monoVar) { \
-    case MONOPAIR_UP_UP: \
-    case MONOPAIR_UP_DOWN: \
-    case MONOPAIR_UP_FLAT: \
-      return MONOTONE_UP; \
-    case MONOPAIR_DOWN_UP: \
-    case MONOPAIR_DOWN_DOWN: \
-    case MONOPAIR_DOWN_FLAT: \
-      return MONOTONE_DOWN; \
-    case MONOPAIR_FLAT_UP: \
-    case MONOPAIR_FLAT_DOWN: \
-      return MONOTONE_FLAT; \
-    default: printf("Invalid monotonicity pair: %u\n", monoVar); std::exit(1); \
-  }
-
-#define MONO_OBJ__(monoVar) \
-  switch (monoVar) { \
-    case MONOPAIR_UP_UP: \
-    case MONOPAIR_DOWN_UP: \
-    case MONOPAIR_FLAT_UP: \
-      return MONOTONE_UP; \
-    case MONOPAIR_UP_DOWN: \
-    case MONOPAIR_DOWN_DOWN: \
-    case MONOPAIR_FLAT_DOWN: \
-      return MONOTONE_DOWN; \
-    case MONOPAIR_UP_FLAT: \
-    case MONOPAIR_DOWN_FLAT: \
-      return MONOTONE_FLAT; \
-    default: printf("Invalid monotonicity pair: %u\n", monoVar); std::exit(1); \
-  }
 
 /**
- * Information about a set of 6 quantifiers.
- * Implicit assumption: no sentence will have more than 6 quantifiers.
+ * Information about a quantifier.
  */
 #ifdef __GNUG__
-struct quantifier_monotonicities {
+struct quantifier_monotonicity {
 #else
-struct alignas(4) quantifier_monotonicities {
+struct alignas(1) quantifier_monotonicity {
 #endif
-  monotonicity     q0_mono:3,
-                   q1_mono:3,
-                   q2_mono:3,
-                   q3_mono:3,
-                   q4_mono:3,
-                   q5_mono:3;
-  quantifier_type q0_type:2,
-                  q1_type:2,
-                  q2_type:2,
-                  q3_type:2,
-                  q4_type:2,
-                  q5_type:2;
-
-  void set(const uint8_t& i,
-           const monotonicity& subjMono,
-           const monotonicity& objMono,
-           const quantifier_type& type) {
-    switch (i) {
-      case 0:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      case 1:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      case 2:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      case 3:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      case 4:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      case 5:
-        MONO_SET__(q0_mono, q0_type, subjMono, objMono, type); break;
-      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
-    }
-  }
-  
-  // TODO(gabor) the type should really be subj/obj dependent
-  inline quantifier_type subjType(const uint8_t& i) const {
-    switch (i) {
-      case 0: return q0_type;
-      case 1: return q1_type;
-      case 2: return q2_type;
-      case 3: return q3_type;
-      case 4: return q4_type;
-      case 5: return q5_type;
-      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
-    }
-  }
-  // TODO(gabor) the type should really be subj/obj dependent
-  inline quantifier_type objType(const uint8_t& i) const {
-    return subjType(i);
-  }
-
-  inline monotonicity subjMono(const uint8_t& i) const {
-    switch (i) {
-      case 0: MONO_SUBJ__(q0_mono);
-      case 1: MONO_SUBJ__(q1_mono);
-      case 2: MONO_SUBJ__(q2_mono);
-      case 3: MONO_SUBJ__(q3_mono);
-      case 4: MONO_SUBJ__(q4_mono);
-      case 5: MONO_SUBJ__(q5_mono);
-      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
-    }
-  }
-  
-  inline monotonicity objMono(const uint8_t& i) const {
-    switch (i) {
-      case 0: MONO_OBJ__(q0_mono);
-      case 1: MONO_OBJ__(q1_mono);
-      case 2: MONO_OBJ__(q2_mono);
-      case 3: MONO_OBJ__(q3_mono);
-      case 4: MONO_OBJ__(q4_mono);
-      case 5: MONO_OBJ__(q5_mono);
-      default: printf("Too many quantifiers: %u\n", i); std::exit(1);
-    }
-  }
+  uint8_t subj_mono:2,
+          subj_type:2,
+          obj_mono:2,
+          obj_type:2;
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
 };
 #endif
-#undef MONO_SET__
 
 #ifdef __GNUG__
 struct quantifier_span {
@@ -464,6 +333,7 @@ typedef struct alignas(8) {
  * A dependency tree.
  */
 class Tree {
+ friend class SearchNode;
  public:
   /**
    * Construct a Tree from a stripped-down CoNLL format.
@@ -503,14 +373,18 @@ class Tree {
    */
   inline bool registerQuantifier(
       const quantifier_span& span,
-      const quantifier_type& type,
+      const quantifier_type& subjType,
+      const quantifier_type& objType,
       const monotonicity& subjMono,
       const monotonicity& objMono) {
-    if (numQuantifiers >= 6) {
+    if (numQuantifiers >= MAX_QUANTIFIER_COUNT) {
       return false;
     } else {
       quantifierSpans[numQuantifiers] = span;
-      quantifierMonotonicities.set(numQuantifiers, subjMono, objMono, type);
+      quantifierMonotonicities[numQuantifiers].subj_mono = subjMono;
+      quantifierMonotonicities[numQuantifiers].obj_mono = objMono;
+      quantifierMonotonicities[numQuantifiers].subj_type = subjType;
+      quantifierMonotonicities[numQuantifiers].obj_type = objType;
       numQuantifiers += 1;
       return true;
     }
@@ -519,7 +393,7 @@ class Tree {
   /** If true, the word at the given index is a quantifier. */
   inline bool isQuantifier(const uint8_t& index) const {
     for (uint8_t i = 0; i < numQuantifiers; ++i) {
-      if (quantifierSpans[i].subj_begin == i) { return true; }
+      if (quantifierSpans[i].subj_begin == index) { return true; }
     }
     return false;
   }
@@ -549,6 +423,13 @@ class Tree {
    */
   inline tagged_word token(const uint8_t& index) const {
     return getTaggedWord(data[index].word, data[index].sense, MONOTONE_UP);
+  }
+  
+  /**
+   * The word at the given index (zero indexed).
+   */
+  inline ::word word(const uint8_t& index) const {
+    return data[index].word;
   }
 
   /**
@@ -650,26 +531,34 @@ class Tree {
   natlog_relation projectLexicalRelation( const uint8_t& index,
                                           const natlog_relation& lexicalRelation) const;
   
+  /** Returns the number of quantifiers in the sentence. */
+  inline uint8_t getNumQuantifiers() const { return numQuantifiers; }
+
   /**
    * The number of words in this dependency graph
    */
   const uint8_t length;
 
+ protected:
+  /** Information about the monotonicities of the quantifiers in the sentence */
+  quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];
+
  private:
   /** The actual data for this tree */
   dep_tree_word data[MAX_QUERY_LENGTH];
-  
-  /** Information about the monotonicities of the quantifiers in the sentence */
-  quantifier_monotonicities quantifierMonotonicities;
 
   /** Information about the spans of the quantifiers in the sentence */
-  quantifier_span quantifierSpans[6];
+  quantifier_span quantifierSpans[MAX_QUANTIFIER_COUNT];
 
   /** The number of quantifiers in the tree. */
   uint8_t numQuantifiers;
 
   /** Fill up to 3 cache lines */
-  uint8_t nullBuffer[12];
+#if MAX_QUANTIFIER_COUNT < 10
+  uint8_t nullBuffer[26 - MAX_QUANTIFIER_COUNT*3];
+#else
+  uint8_t nullBuffer[CACHE_LINE_SIZE + 26 - MAX_QUANTIFIER_COUNT*3];
+#endif
 
   /** Get the incoming edge at the given index as a struct */
   inline dependency_edge edgeInto(const uint8_t& index,
@@ -768,34 +657,34 @@ class SearchNode {
   /** The mutate constructor */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
              const tagged_word& newToken,
-             const float& cost, const uint32_t& backpointer);
+             const bool& newTruthValue, const uint32_t& backpointer);
   /**
    * The delete branch constructor. the new deletions are
    * <b>added to</b> the deletions already in |from|
    */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
-          const float& cost, const uint32_t& newDeletions, 
+          const bool& newTruthValue, const uint32_t& newDeletions, 
           const uint32_t& backpointer);
   /** The move index constructor */
   SearchNode(const SearchNode& from, const Tree& tree,
           const uint8_t& newIndex, const uint32_t& backpointer);
 
-  /** Compares the priority keys of two path states */
-  inline bool operator<=(const SearchNode& rhs) const {
-    return getPriorityKey() <= rhs.getPriorityKey();
-  }
-  /** Compares the priority keys of two path states */
-  inline bool operator<(const SearchNode& rhs) const {
-    return getPriorityKey() < rhs.getPriorityKey();
-  }
-  /** Compares the priority keys of two path states */
-  inline bool operator>(const SearchNode& rhs) const {
-    return !(*this <= rhs);
-  }
-  /** Compares the priority keys of two path states */
-  inline bool operator>=(const SearchNode& rhs) const {
-    return !(*this < rhs);
-  }
+//  /** Compares the priority keys of two path states */
+//  inline bool operator<=(const SearchNode& rhs) const {
+//    return getPriorityKey() <= rhs.getPriorityKey();
+//  }
+//  /** Compares the priority keys of two path states */
+//  inline bool operator<(const SearchNode& rhs) const {
+//    return getPriorityKey() < rhs.getPriorityKey();
+//  }
+//  /** Compares the priority keys of two path states */
+//  inline bool operator>(const SearchNode& rhs) const {
+//    return !(*this <= rhs);
+//  }
+//  /** Compares the priority keys of two path states */
+//  inline bool operator>=(const SearchNode& rhs) const {
+//    return !(*this < rhs);
+//  }
   
   /**
    * Checks if the two paths are the same, <i>including</i> the
@@ -814,9 +703,10 @@ class SearchNode {
   
   /** The assignment operator */
   inline void operator=(const SearchNode& from) {
-    this->cost = from.cost;
     this->data = from.data;
     this->backpointer = from.backpointer;
+    memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
+      MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
   }
 
   /** Returns the hash of the current fact. */
@@ -840,32 +730,37 @@ class SearchNode {
   inline uint32_t getBackpointer() const { return backpointer; }
   
   /** Returns the truth state of this node. */
-  inline uint32_t truthState() const { return data.truth; }
-
-  /**
-   * Gets the priority key for this path. That is, the
-   * minimum of the true and false costs
-   */
-  inline float getPriorityKey() const { 
-    return cost;
-  }
+  inline bool truthState() const { return data.truth; }
 
  private:
   /** The data stored in this path */
-  syn_path_data data;
+  quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];  // TODO(gabor) set me in various places
   /** The data stored in this path */
-  quantifier_monotonicities quantifierStates;  // TODO(gabor) set me in various places
+  syn_path_data data;
   /** A backpointer to the path this came from */
   uint32_t backpointer;
-  /** The costs so far of this path */
+};
+
+struct ScoredSearchNode {
+  SearchNode node;
+  /** The score for this Search Node */
   float cost;
+  /** Create a new scored search node */
+  ScoredSearchNode(const SearchNode& node, const float& cost)
+    : node(node), cost(cost) { }
+  ScoredSearchNode() : cost(0.0f) {}
+
+  void operator=(const ScoredSearchNode& rhs) {
+    this->node = rhs.node;
+    this->cost = rhs.cost;
+  }
 };
 
 // ----------------------------------------------
 // CHANNEL
 // ----------------------------------------------
 
-#define CHANNEL_BUFFER_LENGTH ((1024 - 2*CACHE_LINE_SIZE) / sizeof(SearchNode))
+#define CHANNEL_BUFFER_LENGTH ((1280 - 2*CACHE_LINE_SIZE) / sizeof(ScoredSearchNode))
 
 #ifdef __GNUG__
 typedef struct {
@@ -883,13 +778,13 @@ typedef struct alignas(CACHE_LINE_SIZE) {
 #ifdef __GNUG__
 typedef struct {
 #else
-typedef struct alignas(1024) {
+typedef struct alignas(1280) {
 #endif
   // Push thread's memory
   uint16_t    pushPointer:16;
   uint8_t     __filler1[CACHE_LINE_SIZE - 2];  // pushPointer gets its own cache line
   // Buffer
-  SearchNode     buffer[CHANNEL_BUFFER_LENGTH];
+  ScoredSearchNode     buffer[CHANNEL_BUFFER_LENGTH];
   // Poll thread's memory
   uint8_t     __filler2[CACHE_LINE_SIZE - 2];  // pollPointer gets its own cache line
   uint16_t    pollPointer:16;
@@ -915,9 +810,9 @@ class Channel {
   }
 
   /** Push an element onto the channel. Returns false if there is no space */
-  bool push(const SearchNode& value);
+  bool push(const ScoredSearchNode& value);
   /** Poll an element from the channel. Returns false if there is nothing in the channel */
-  bool poll(SearchNode* output);
+  bool poll(ScoredSearchNode* output);
 
   /** Public for debugging and testing only. Do not access this directly */
   channel_data data;
@@ -983,6 +878,7 @@ syn_search_response SynSearch(
     const Graph* mutationGraph,
     const btree::btree_set<uint64_t>& database,
     const Tree* input,
+    const SynSearchCosts* costs,
     const syn_search_options& opts);
 
 #endif

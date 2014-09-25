@@ -133,6 +133,7 @@ typedef uint8_t dep_label;
 
 // Static Data
 #define NULL_WORD getTaggedWord(0, 0, 0)
+#define ALL       getTaggedWord(3593, 0, 0)
 #define LEMUR     getTaggedWord(73918, 0, 0)
 #define ANIMAL    getTaggedWord(5532, 0, 0)
 #define POTTO     getTaggedWord(99965, 0, 0)
@@ -143,6 +144,7 @@ typedef uint8_t dep_label;
 #define DOG       getTaggedWord(36557, 0, 0)
 #define CHASE     getTaggedWord(22520, 0, 0)
 // (static data as strings)
+#define ALL_STR    "3593"
 #define LEMUR_STR  "73918"
 #define ANIMAL_STR "5532"
 #define POTTO_STR  "99965"
