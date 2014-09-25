@@ -247,6 +247,7 @@ void Tree::foreachQuantifier(
       const uint8_t d2 = quantifierSpans[i].subj_end - index;
       distance[i] = (d1 < d2) ? d1 : d2;
     } else if (index >= quantifierSpans[i].obj_begin && index < quantifierSpans[i].obj_end) {
+      onSubject[i] = false;
       valid[i] = true;
       const uint8_t d1 = index - quantifierSpans[i].obj_begin;
       const uint8_t d2 = quantifierSpans[i].obj_end - index;
@@ -271,6 +272,17 @@ void Tree::foreachQuantifier(
     }
     // (call visitor)
     if (somethingValid) {
+//      printf("Calling visitor() on quantifier %u: %u-%u %u-%u :: %u %u; %u %u\n",
+//        argmin, 
+//        quantifierSpans[argmin].subj_begin, 
+//        quantifierSpans[argmin].subj_end,
+//        quantifierSpans[argmin].obj_begin,
+//        quantifierSpans[argmin].obj_end,
+//        quantifierMonotonicities[argmin].subj_type,
+//        quantifierMonotonicities[argmin].subj_mono,
+//        quantifierMonotonicities[argmin].obj_type,
+//        quantifierMonotonicities[argmin].obj_mono
+//        );
       if (onSubject[argmin]) {
         visitor(quantifierMonotonicities[argmin].subj_type, quantifierMonotonicities[argmin].subj_mono);
       } else {
@@ -505,10 +517,10 @@ bool reverseTransition(const bool& endState,
     switch (projectedRelation) {
       case FUNCTION_FORWARD_ENTAILMENT:
       case FUNCTION_REVERSE_ENTAILMENT:
-      case FUNCTION_ALTERNATION:
       case FUNCTION_EQUIVALENT:
       case FUNCTION_INDEPENDENCE:
         return true;
+      case FUNCTION_ALTERNATION:  // negate anyways, just at high cost
       case FUNCTION_NEGATION:
       case FUNCTION_COVER:
         return false;
@@ -521,10 +533,10 @@ bool reverseTransition(const bool& endState,
     switch (projectedRelation) {
       case FUNCTION_FORWARD_ENTAILMENT:
       case FUNCTION_REVERSE_ENTAILMENT:
-      case FUNCTION_COVER:
       case FUNCTION_EQUIVALENT:
       case FUNCTION_INDEPENDENCE:
         return false;
+      case FUNCTION_COVER:  // negate anyways, just at high cost
       case FUNCTION_NEGATION:
       case FUNCTION_ALTERNATION:
         return true;

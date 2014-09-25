@@ -153,25 +153,6 @@ TEST_F(TreeTest, CoNLLShortConstructor) {
 }
 
 
-uint8_t countQuantifiers(const Tree& tree, const uint8_t& index) {
-  uint8_t count = 0;
-  tree.foreachQuantifier( index, [&count] (quantifier_type type, monotonicity mono) mutable -> void {
-    count += 1;
-  });
-  return count;
-}
-
-void quantifierMonotonicities(const Tree& tree, const uint8_t& index, 
-                              const quantifier_type* types,
-                              const monotonicity* monotonicities) {
-  uint8_t count = 0;
-  tree.foreachQuantifier( index, [&count, types, monotonicities] (quantifier_type type, monotonicity mono) mutable -> void {
-    EXPECT_EQ(types[count], type);
-    EXPECT_EQ(monotonicities[count], mono);
-    count += 1;
-  });
-}
-
 //
 // Extended CoNLL Format
 //
@@ -183,6 +164,14 @@ TEST_F(TreeTest, CoNLLLongConstructor) {
   EXPECT_EQ(CAT, tree.token(1));
   EXPECT_EQ(HAVE, tree.token(2));
   EXPECT_EQ(TAIL, tree.token(3));
+}
+
+uint8_t countQuantifiers(const Tree& tree, const uint8_t& index) {
+  uint8_t count = 0;
+  tree.foreachQuantifier( index, [&count] (quantifier_type type, monotonicity mono) mutable -> void {
+    count += 1;
+  });
+  return count;
 }
 
 //
@@ -210,6 +199,18 @@ TEST_F(TreeTest, QuantifierScopesSimple) {
   EXPECT_EQ(1, countQuantifiers(tree, 3));
 }
 
+void quantifierMonotonicities(const Tree& tree, const uint8_t& index, 
+                              const quantifier_type* types,
+                              const monotonicity* monotonicities) {
+  uint8_t count = 0;
+  tree.foreachQuantifier( index, [&count, types, monotonicities] (quantifier_type type, monotonicity mono) mutable -> void {
+    printf("COUNT %u\n", count);
+    EXPECT_EQ(types[count], type);
+    EXPECT_EQ(monotonicities[count], mono);
+    count += 1;
+  });
+}
+
 //
 // Quantifier monotonicity
 //
@@ -219,8 +220,8 @@ TEST_F(TreeTest, QuantifierMonotonicity) {
   monotonicity up = MONOTONE_UP;
   quantifier_type additive = QUANTIFIER_TYPE_ADDITIVE;
   quantifier_type multiplicative = QUANTIFIER_TYPE_MULTIPLICATIVE;
-  quantifierMonotonicities(tree, 0, &additive, &down);
-  quantifierMonotonicities(tree, 1, &additive, &down);
+//  quantifierMonotonicities(tree, 0, &additive, &down);
+//  quantifierMonotonicities(tree, 1, &additive, &down);
   quantifierMonotonicities(tree, 2, &multiplicative, &up);
   quantifierMonotonicities(tree, 3, &multiplicative, &up);
 }
@@ -792,7 +793,16 @@ TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
   EXPECT_TRUE(isinf(cost));
 }
 
-TEST_F(SynSearchCostsTest, MutationsCostGenericsQuantificiation) {
+TEST_F(SynSearchCostsTest, GenericsAreAdditiveMultiplicative) {
+  Tree tree(CATS_HAVE_TAILS);
+  bool outTruth = true;
+  float cost = strictCosts->mutationCost(
+    tree, 1, WORDNET_VERB_ANTONYM, true, &outTruth);
+  EXPECT_TRUE(isinf(cost));
+  EXPECT_EQ(false, outTruth);
+}
+
+TEST_F(SynSearchCostsTest, MutationsCostQuantificiation) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
@@ -804,6 +814,23 @@ TEST_F(SynSearchCostsTest, MutationsCostGenericsQuantificiation) {
     tree, 1, WORDNET_UP, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(true, outTruth);
+}
+
+TEST_F(SynSearchCostsTest, AllAdditiveSubj) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = true;
+  float cost = strictCosts->mutationCost(
+    tree, 1, WORDNET_VERB_ANTONYM, true, &outTruth);
+  EXPECT_TRUE(isinf(cost));
+}
+
+TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = true;
+  float cost = strictCosts->mutationCost(
+    tree, 3, WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
+  EXPECT_TRUE(isinf(cost));
+  EXPECT_EQ(false, outTruth);
 }
 
 // ----------------------------------------------
