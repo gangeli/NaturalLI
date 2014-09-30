@@ -383,9 +383,10 @@ public class GaborMono implements Mono {
       for (org.goobs.naturalli.Quantifier q : org.goobs.naturalli.Quantifier.values()) {
         if (lemmatized.toLowerCase().startsWith(StringUtils.join(q.literalSurfaceForm, " "))) { hasQuantifier = true; }
       }
-      if (!hasQuantifier) {
-        gloss = "Most "  + gloss;
-      }
+      // TODO(gabor) this is wrong...
+//      if (!hasQuantifier) {
+//        gloss = "Most "  + gloss;
+//      }
     }
     // Annotate
     Annotation ann = new Annotation(gloss);

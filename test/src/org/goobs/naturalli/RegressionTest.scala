@@ -98,11 +98,12 @@ object RegressionTest extends Client {
   }
 
   def main(args:Array[String]) {
-    var exitStatus:Int = 0
+    var exitStatus:Int = 424242
     Props.SERVER_MAIN_HOST = "localhost"
     Props.SERVER_MAIN_PORT = 41337
     Props.SERVER_BACKUP_HOST = "localhost"
     Props.SERVER_BACKUP_PORT = 41337
+    log(BOLD, "Connecting to database at: " + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB)
     startMockServer(() => exitStatus = runClient(NatLog.hardNatlogWeights), printOut = true)
     if (exitStatus == 0) {
       log(GREEN, "TESTS PASS")

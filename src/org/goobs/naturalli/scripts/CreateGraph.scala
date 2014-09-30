@@ -24,6 +24,9 @@ import scala.util.matching
 /**
  * Populate the database graph from various resources.
  *
+ * TODO(gabor) add in special case for insert/deletion of "not"
+ * TODO(gabor) add "n't" to the vocabulary
+ *
  * @author gabor
  */
 object CreateGraph {

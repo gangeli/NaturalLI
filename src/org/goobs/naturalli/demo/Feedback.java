@@ -17,20 +17,14 @@ import java.sql.*;
  * @author Gabor Angeli
  */
 public class Feedback extends HttpServlet {
+  private final String uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB;
 
-  private Connection psql;
-  private PreparedStatement insert;
-  private PreparedStatement delete;
 
   @Override
   public void init(ServletConfig config) throws ServletException {
-    String uri = "jdbc:postgresql://" + Props.PSQL_HOST + ":" + Props.PSQL_PORT + "/" + Props.PSQL_DB;
     try {
       Class.forName("org.postgresql.Driver");
-      psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD);
-      insert = psql.prepareStatement("INSERT INTO demo_feedback (id, source, query, guess, gold) VALUES (?, ?, ?, ?, ?);");
-      delete = psql.prepareStatement("DELETE FROM demo_feedback WHERE id=?;");
-    } catch (SQLException | ClassNotFoundException e) {
+    } catch (ClassNotFoundException e) {
       e.printStackTrace();
     }
   }
@@ -68,27 +62,21 @@ public class Feedback extends HttpServlet {
 
     // Save
     try {
-      if (psql == null || insert == null) {
-        out.println("no connection to the database");
-        out.close();
-        return;
-      }
+      Connection psql = DriverManager.getConnection(uri, Props.PSQL_USERNAME, Props.PSQL_PASSWORD);
 
       // -- BEGIN CONTENT
       if (isCancel) {
-        synchronized (delete) {
-          delete.setString(1, transactionId);
-          out.print("Delete result: " + delete.execute());
-        }
+        PreparedStatement delete = psql.prepareStatement("DELETE FROM demo_feedback WHERE id=?;");
+        delete.setString(1, transactionId);
+        out.print("Delete result: " + delete.execute());
       } else {
-        synchronized (insert) {
-          insert.setString(1, transactionId);
-          insert.setString(2, source);
-          insert.setString(3, query);
-          insert.setBoolean(4, guess);
-          insert.setBoolean(5, gold);
-          out.print("Insert result: " + insert.execute());
-        }
+        PreparedStatement insert = psql.prepareStatement("INSERT INTO demo_feedback (id, source, query, guess, gold) VALUES (?, ?, ?, ?, ?);");
+        insert.setString(1, transactionId);
+        insert.setString(2, source);
+        insert.setString(3, query);
+        insert.setBoolean(4, guess);
+        insert.setBoolean(5, gold);
+        out.print("Insert result: " + insert.execute());
       }
       // -- END CONTENT
 

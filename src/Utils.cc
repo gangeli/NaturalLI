@@ -194,7 +194,7 @@ inference_function edge2function(const edge_type& type) {
       break;
     case ADD_NEGATION:
     case DEL_NEGATION:
-      function = FUNCTION_INDEPENDENCE;
+      function = FUNCTION_NEGATION;
       break;
     case QUANTIFIER_NEGATE:
       function = FUNCTION_NEGATION;

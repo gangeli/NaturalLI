@@ -151,5 +151,24 @@
 # Tier 6: Make sure examples in paper work
 #
 # TODO(gabor) from the weird negation bug...
-#✘[eat](no carnivore, rodent)	[eat](the cat, the mouse)
+✘[eat](no carnivore, rodent)	[eat](the cat, the mouse)
 
+##
+## Tier 7: For Vignesh
+##
+✘[have](all bird, feathers)	[have](all bird, no feathers)
+✘[have](birds, feathers)	[have](birds, no feathers)
+✘[have](all bird, no feathers)	[have](all bird, feathers)
+✘[have](birds, no feathers)	[have](birds, feathers)
+
+✘[wearing](person, a helmet)	[wearing](person, a no helmet)
+✘[wearing](person, a helmet)	[wearing](person, a not helmet)
+✘[wearing](person, a helmet)	[not wearing](person, a helmet)
+
+✘[not wearing](person, a helmet)	[wearing](person, a helmet)
+
+✘[is wearing](person, a helmet)	[isn't wearing](person, a helmet)
+✔[riding](person, a bicycle)	[riding](person, a vehicle)
+
+#✘[without](person, a helmet)	[not wearing](person, a helmet)  # these are hard...
+#✘[not wearing](person, a helmet)	[without](person, a helmet)

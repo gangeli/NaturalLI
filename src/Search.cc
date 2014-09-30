@@ -835,12 +835,13 @@ search_response Search(Graph* graph, FactDB* knownFacts,
         // we define a phrase as the last remaining token in a contiguous
         // monotone block (e.g., ^ ^ [v] ^ ^ ^).
         bool singletonDeletion = false;
-        if (mutation.source == 0) {
-          const monotonicity lastMonotonicity = (indexToMutate > 0)                ? parent->fact[indexToMutate - 1].monotonicity : MONOTONE_INVALID;
-          const monotonicity nextMonotonicity = (indexToMutate < parentLength - 1) ? parent->fact[indexToMutate + 1].monotonicity : MONOTONE_INVALID;
-          singletonDeletion = (lastMonotonicity != parentMonotonicity) &&
-                              (nextMonotonicity != parentMonotonicity);
-        }
+        // TODO(gabor) re-enable this for best FraCaS results
+//        if (mutation.source == 0) {
+//          const monotonicity lastMonotonicity = (indexToMutate > 0)                ? parent->fact[indexToMutate - 1].monotonicity : MONOTONE_INVALID;
+//          const monotonicity nextMonotonicity = (indexToMutate < parentLength - 1) ? parent->fact[indexToMutate + 1].monotonicity : MONOTONE_INVALID;
+//          singletonDeletion = (lastMonotonicity != parentMonotonicity) &&
+//                              (nextMonotonicity != parentMonotonicity);
+//        }
         if (!singletonDeletion) {
           // push mutation[/deletion]
           fringe->push(parent, indexToMutate,

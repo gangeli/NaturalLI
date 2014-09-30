@@ -83,10 +83,10 @@ object NatLog {
     setCounts(DEL_OTHER, Monotonicity.UP, insertionOrDeletion)
     setCounts(DEL_OTHER, Monotonicity.DOWN, insertionOrDeletion)
     // (negation is never ok to add/remove -- it doesn't project down)
-    setCounts(ADD_NEGATION, Monotonicity.UP, default)
-    setCounts(ADD_NEGATION, Monotonicity.DOWN, default)
-    setCounts(DEL_NEGATION, Monotonicity.UP, default)
-    setCounts(DEL_NEGATION, Monotonicity.DOWN, default)
+    setCounts(ADD_NEGATION, Monotonicity.UP, insertionOrDeletion)
+    setCounts(ADD_NEGATION, Monotonicity.DOWN, insertionOrDeletion)
+    setCounts(DEL_NEGATION, Monotonicity.UP, insertionOrDeletion)
+    setCounts(DEL_NEGATION, Monotonicity.DOWN, insertionOrDeletion)
     // (quantifiers we have to worry about...)
     // INVALID: add existential, monotone down (can weaken to universal)
     setCounts(ADD_EXISTENTIAL, Monotonicity.DOWN, default)
@@ -120,7 +120,7 @@ object NatLog {
     setCounts(QUANTIFIER_DOWN, Monotonicity.DOWN, okQuantifier)
     weights.setCount(monoAny_stateTrue(  QUANTIFIER_REWORD ), okQuantifier)
     weights.setCount(monoAny_stateFalse( QUANTIFIER_REWORD ), okQuantifier)
-    weights.setCount(monoAny_stateTrue(  QUANTIFIER_NEGATE ), okQuantifier)
+    weights.setCount(monoAny_stateTrue(  QUANTIFIER_NEGATE ), okQuantifier)  // warning: I don't think this plays nice with add/del_negation
     weights.setCount(monoAny_stateFalse( QUANTIFIER_NEGATE ), default)  // double negation is dangerous due to monotonicity swapping
     // (synonyms)
     setCounts(WORDNET_NOUN_SYNONYM, Monotonicity.UP, synonyms)
