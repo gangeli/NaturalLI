@@ -1,0 +1,85 @@
+\def\title{An Example Inference}
+\def\all{\monoUp{}{\textbf{All$_{\downarrow \uparrow}$}}{}{}}
+\def\cats{\monoDown{house cats}{cats}{felines}{carnivores}}
+\def\eat{\monoUp{slurp}{eat}{consume}{}}
+\def\mice{\monoUp{fieldmice}{mice}{rodents}{placentals}}
+
+\begin{frame}{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Polarity}} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Inference is reversible}}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \cats \hspace{0.25cm} \eat \mice
+\end{center}
+\end{frame}
+
+\def\tmpHeader{
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{\textit{Polarity} determines valid mutations.} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Inference is reversible}}
+\vspace{0.5cm}
+}
+
+\def\houseCats{\monoDown{kitties}{\darkgreen{house cats}}{cats}{felines}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \eat \mice
+\end{center}
+\end{frame}
+\def\houseCats{\monoDown{kitties}{house cats}{cats}{felines}}
+
+\def\consume{\monoUp{eat}{\darkgreen{consume}}{}{}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \mice
+\end{center}
+\end{frame}
+\def\consume{\monoUp{eat}{consume}{}{}}
+
+\def\fieldmice{\monoUp{pine vole}{\darkred{fieldmice}}{mice}{rodents}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \fieldmice
+\end{center}
+\end{frame}
+\def\fieldmice{\monoUp{pine vole}{fieldmice}{mice}{rodents}}
+
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \mice
+\end{center}
+\end{frame}
+
+\def\rodents{\monoUp{mice}{\darkgreen{rodents}}{placentals}{mammals}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \rodents
+\end{center}
+\end{frame}
+\def\rodents{\monoUp{mice}{rodents}{placentals}{mammals}}
+
+\def\tmpHeader{
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{\textit{Polarity} determines valid mutations.} \\
+\vspace{0.25cm}
+\hh{Inference is reversible}
+\vspace{0.5cm}
+}
+
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \rodents
+\end{center}
+\end{frame}

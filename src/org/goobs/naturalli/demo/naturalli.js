@@ -74,7 +74,7 @@ function displayTruth(source, truthValue, inputQuery) {
 
   // Set truth value
   if (source == "none") {
-    $("#truth-value").text("doesn't know if");
+    $("#truth-value").text("couldn't justify");
     $("#truth-value").removeClass("truth-value-true");
     $("#truth-value").removeClass("truth-value-false");
     $("#truth-value").removeClass("truth-value-error");
@@ -116,7 +116,7 @@ function loadJustification(elements, truthValue, hasTruthValue, inputQuery) {
   } else if (hasTruthValue) {
     html = html + 'of the OpenIE fact: <span class="justification-singleline-fact">' + elements[0].gloss + '</span>.';
   } else {
-    html = html + "we couldn't find justification for it.";
+    html = html + "we couldn't find justification for it (thus we think it's implicitly false).";
   }
   html = html + '</div>';
 

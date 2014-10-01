@@ -1,5 +1,16 @@
+\def\blue#1{\textcolor{blue}{#1}}
+\def\red#1{\textcolor{red}{#1}}
+\def\darkred#1{\textcolor{darkred}{#1}}
+\def\green#1{\textcolor{green}{#1}}
+\def\darkgreen#1{\textcolor{darkgreen}{#1}}
+\def\yellow#1{\textcolor{yellow}{#1}}
+\def\orange#1{\textcolor{orange}{#1}}
+
 \newcommand\sys[1]{\textsc{#1}}
 \newcommand\w[1]{\textit{#1}}
+\newcommand\true[1]{\green{\textit{#1}}}
+\newcommand\false[1]{\red{\textit{#1}}}
+\newcommand\unknown[1]{\orange{\textit{#1}}}
 \newcommand{\indentitem}{\setlength\itemindent{25pt}}
 
 \newcommand\denote[1]{\ensuremath{\llbracket#1\rrbracket}}
@@ -14,13 +25,15 @@
 \newcommand\negate{\ensuremath{\curlywedge}}
 \newcommand\independent{\ensuremath{\#}}
 
-\def\blue#1{\textcolor{blue}{#1}}
-\def\red#1{\textcolor{red}{#1}}
-\def\green#1{\textcolor{green}{#1}}
-\def\yellow#1{\textcolor{yellow}{#1}}
-
 \newcommand\h[1]{\textbf{#1}}
 \newcommand\hh[1]{\textbf{\textcolor[rgb]{0.5,0,0}{#1}}}
 %\makeatletter
 %\newcommand{\xRightarrow}[2][]{\ext@arrow 0359\Rightarrowfill@{#1}{#2}}
 %\makeatother
+
+\def\checkmark{\tikz\fill[scale=0.4](0,.35) -- (.25,0) -- (1,.7) -- (.25,.15) -- cycle;}
+\newcommand{\xmark}{\ding{55}}
+%\newcommand{\valid}{\ensuremath{\Rightarrow}}
+%\newcommand{\invalid}{\ensuremath{\Rightarrow\lnot}}
+\newcommand{\valid}{\ensuremath{\Leftarrow}}
+\newcommand{\invalid}{\reflectbox{\ensuremath{\Rightarrow\lnot}}}

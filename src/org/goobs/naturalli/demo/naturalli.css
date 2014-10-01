@@ -28,7 +28,7 @@ body {
   color:  red;
 }
 .truth-value-unknown {
-  color:  orange;
+  color:  red;
 }
 .truth-value-error {
   color:  red;

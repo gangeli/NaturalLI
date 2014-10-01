@@ -1,0 +1,82 @@
+\def\headerA{
+\hh{Natural Logic is syllogisms...}
+\begin{itemize}
+  \setlength{\itemsep}{0.25cm}
+  \item[$+$] nested quantifiers.
+  \item[] \textcolor{white}{quantifier mutations.}
+  \item[] \textcolor{white}{explicit negation.}
+\end{itemize}
+}
+\def\headerB{
+\hh{Natural Logic is syllogisms...}
+\begin{itemize}
+  \setlength{\itemsep}{0.25cm}
+  \item[$+$] nested quantifiers.
+  \item[$+$] quantifier mutations.
+  \item[] \textcolor{white}{explicit negation.}
+\end{itemize}
+}
+\def\headerC{
+\hh{Natural Logic is syllogisms...}
+\begin{itemize}
+  \setlength{\itemsep}{0.25cm}
+  \item[$+$] nested quantifiers.
+  \item[$+$] quantifier mutations.
+  \item[$+$] explicit negation.
+\end{itemize}
+}
+\def\title{Natural Logic Beyond Syllogisms}
+
+\def\dont{\monoUp{}{don't$_\downarrow$}{}{}}
+\def\eat{\monoDown{slurp}{\textbf{eat}}{consume}{}}
+\def\mice{\monoDown{fieldmice}{\textbf{mice}}{rodents}{placentals}}
+\begin{frame}{\title}
+\headerA
+\begin{center}
+  \scalebox{0.75}{\all \hspace{0.25cm} \cats \hspace{0.25cm} \dont \eat \mice} \\
+  \vspace{0.25cm}
+  \textcolor{white}{$\Rightarrow \lnot$ \w{(No cats don't eat fieldmice)}}
+\end{center}
+\end{frame}
+
+\def\fieldmice{\monoDown{pine vole}{\darkgreen{\textbf{fieldmice}}}{mice}{rodents}}
+\begin{frame}[noframenumbering]{\title}
+\headerA
+\begin{center}
+  \scalebox{0.75}{\all \hspace{0.25cm} \cats \hspace{0.25cm} \dont \eat \fieldmice} \\
+  \vspace{0.25cm}
+  \textcolor{white}{$\Rightarrow \lnot$ \w{(No cats don't eat fieldmice)}}
+\end{center}
+\end{frame}
+\def\eat{\monoDown{slurp}{eat}{consume}{}}
+\def\mice{\monoDown{fieldmice}{mice}{rodents}{placentals}}
+
+\def\all{\monoUp{}{\textbf{All$_{\downarrow \uparrow}$}}{\textbf{Some$_{\uparrow \uparrow}$}}{}}
+\begin{frame}[noframenumbering]{\title}
+\headerB
+\begin{center}
+  \scalebox{0.75}{\all \hspace{0.25cm} \cats \hspace{0.25cm} \dont \eat \fieldmice} \\
+  \vspace{0.25cm}
+  \textcolor{white}{$\Rightarrow \lnot$ \w{(No cats don't eat fieldmice)}}
+\end{center}
+\end{frame}
+
+\def\some{\monoUp{All$_{\downarrow \uparrow}$}{\textbf{\darkgreen{Some$_{\uparrow \uparrow}$}}}{}{}}
+\begin{frame}[noframenumbering]{\title}
+\headerB
+\begin{center}
+  \scalebox{0.75}{\some \hspace{0.25cm} \cats \hspace{0.25cm} \dont \eat \fieldmice} \\
+  \vspace{0.25cm}
+  \textcolor{white}{$\Rightarrow \lnot$ \w{(No cats don't eat fieldmice)}}
+\end{center}
+\end{frame}
+
+\def\some{\monoUp{All$_{\downarrow \uparrow}$}{\textbf{\darkgreen{Some$_{\uparrow \uparrow}$}}}{}{}}
+\begin{frame}[noframenumbering]{\title}
+\headerC
+\begin{center}
+  \scalebox{0.75}{\some \hspace{0.25cm} \cats \hspace{0.25cm} \dont \eat \fieldmice} \\
+  \vspace{0.25cm}
+  $\Rightarrow \lnot$ \w{(No cats don't eat fieldmice)}
+\end{center}
+\end{frame}
