@@ -148,6 +148,9 @@
   \tikzset{
     goodPath/.style={draw=blue}
   }
+  \tikzset{
+    strongPath/.style={draw=blue, line width=3pt}
+  }
 }
 
 \def\teaserPremises{
@@ -474,6 +477,24 @@
   \end{tikzpicture}
 }
 
+\newcommand\monoUpR[4]{
+  \monoHeader
+    \node[gray]{#4};
+    \node[gray]{#3};
+    \node[punktchain, color=blue]{$\uparrow$ #2};
+    \node[black]{#1};
+  \end{tikzpicture}
+}
+
+\newcommand\monoDownR[4]{
+  \monoHeader
+    \node[black]{#4};
+    \node[black]{#3};
+    \node[punktchain, color=blue]{$\downarrow$ #2};
+    \node[gray]{#1};
+  \end{tikzpicture}
+}
+
 \newcommand\monoFlat[4]{
   \monoHeader
     \node[gray]{#4};
@@ -481,4 +502,146 @@
     \node[punktchain, color=blue]{$---$ #2};
     \node[gray]{#1};
   \end{tikzpicture}
+}
+
+%
+% -----
+% Graph Fragments
+% -----
+%
+
+\newcommand\exampleTreeImpl[4]{
+  \setstyles
+
+  \begin{tikzpicture}[grow=down, sloped]
+  \node[fact] {\w{#1?}}
+    child {
+      node[#4] {\w{#2}} 
+      edge from parent [strongPath] node[above] {}
+    }
+    child {
+      node[fact] {\w{#3}} 
+    }
+    child {
+      node[fact] {$\dots$}
+    };
+  \end{tikzpicture}
+}
+\newcommand\exampleTree[3]{\exampleTreeImpl{#1}{#2}{#3}{fact}}
+\newcommand\exampleTreeEnd[3]{\exampleTreeImpl{#1}{#2}{#3}{sink}}
+
+\def\exampleStepOne{\exampleTree{No carnivores eat animals}
+                                {\textbf{The} carivores eat animals}
+                                {No \textbf{cats} eat animals}}
+\def\exampleStepTwo{\exampleTree{The carivores eat animals}
+                                {The \textbf{feline} eats animals}
+                                {\textbf{All} carnivores eat animals}}
+\def\exampleStepThree{\exampleTree{The feline eats animals}
+                                  {The \textbf{cat} eats animals}
+                                  {The cat eats \textbf{chordate}}}
+\def\exampleStepFour{\exampleTree{The cat eats animals}
+                                 {The cat eats \textbf{chordates}}
+                                 {The \textbf{kitty} eats animals}}
+\def\exampleStepFive{\exampleTree{The cat eats chordates}
+                                 {The cat eats \textbf{mice}}
+                                 {The cat eats \textbf{dogs}}}
+\def\exampleStepSix{\exampleTreeEnd{The cat eats mice}
+                                {The cat ate \textbf{a} mouse}
+                                {The \textbf{kitty} eats mice}}
+\def\exampleStepEnd{
+  \setstyles
+  \begin{tikzpicture}[grow=down, sloped]
+  \node[sink](main) {\w{The cat ate a mouse}};
+  \end{tikzpicture}
+}
+
+\def\exampleInsertions{\exampleTree{The cat ate mouse?}
+                                   {The cat ate \textbf{a} mouse}
+                                   {The cat ate \textbf{catnip} mice}}
+
+%
+% -----
+% Fact Trie
+% -----
+%
+\def\settriestyles{
+  \tikzstyle{level 1}=[level distance=2.5cm, sibling distance=2.0cm]
+  \tikzstyle{level 2}=[level distance=2.5cm, sibling distance=2.0cm]
+  \tikzstyle{level 3}=[level distance=2.5cm, sibling distance=2.0cm]
+  \tikzstyle{level 4}=[level distance=2.5cm, sibling distance=2.0cm]
+  \tikzstyle{trie} = [text width=1em, text centered]
+  \tikzstyle{sink} = [text width=7em, text centered, 
+                      rectangle, draw=blue]
+  \tikzstyle{othersink} = [text width=5em, text centered, 
+                      rectangle, draw=blue]
+  \tikzset{
+    goodPath/.style={draw=blue}
+  }
+  \tikzset{
+    path/.style={draw=black, line width=1pt}
+  }
+  \tikzset{
+    strongPath/.style={draw=blue, line width=3pt}
+  }
+  \tikzset{
+    dotpath/.style={draw=black, line width=1pt, dashed}
+  }
+}
+
+\newcommand\factTrie[3]{
+\begin{tikzpicture}[grow=right, sloped]
+  \settriestyles
+  \def\dot{\Huge{\ensuremath{\cdot}}}
+
+  \node[trie] {\dot}
+    child {
+      node[trie] {\dot} 
+      edge from parent [path] node[above] {\w{Socrates}}
+    }
+    child {
+      node[trie] {\dot} 
+      child {
+        node[trie] {\dot} 
+        edge from parent [path] node[above] {\w{fish}}
+      }
+      child {
+        node[trie] {\dot} 
+        child {
+          node[trie] {\dot} 
+          edge from parent [path] node[above] {\w{sleeps}}
+        }
+        child {
+          node[trie] {\dot} 
+          edge from parent [path] node[above] {\w{likes}}
+        }
+        child {
+          node[trie] {\dot}
+            child {
+              node[trie] {\dot} 
+              edge from parent [#3] node[above] {\w{a}}
+            }
+            child {
+              node[trie] {\dot} 
+              edge from parent [#2] node[above] {\w{my}}
+            }
+            child {
+              node[trie] {\dot}
+              edge from parent [#1] node[above] {\w{catnip}}
+            }
+          edge from parent [strongPath] node[above] {\w{ate}}
+        }
+        edge from parent [strongPath] node[above] {\w{cat}}
+      }
+      child {
+        node[trie] {\dot}
+        edge from parent [path] node[above] {\w{economist}}
+      }
+      edge from parent [strongPath] node[above] {\w{The}};
+    }
+    child {
+      node[trie] {\dot}
+      edge from parent [path] node[above] {\w{All}}
+    };
+
+\end{tikzpicture}
 }
