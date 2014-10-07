@@ -62,9 +62,9 @@
 \begin{frame}{\scalebox{0.95}{Natural Logic Inference for \uline{\textbf{Common Sense Reasoning}}}}
 \begin{center}
 \begin{tabular}{ll}
-  \hh{Input}  & A query fact (e.g., \w{cats have tails}). \\
+  \hh{Input}  & A query fact (e.g., \w{kittens play with yarn}). \\
   & \\
-  \hh{Output} & \textbf{True} or \textbf{False}, with some confidence.
+  \hh{Output} & \textbf{\true{True}} or \textbf{\false{False}}, with some confidence.
 \end{tabular}
 \end{center}
 \pause
@@ -116,7 +116,7 @@
 \begin{center}
   \w{Put a sarcastic comment in your talk. That's a great idea.} \\
   \begin{tabular}{l}
-    \false{Sarcastic comments are a great idea in talks.}
+    \false{Sarcasm in your talk is a great idea}
   \end{tabular}
 \end{center}
 
@@ -174,6 +174,12 @@
 %%%%%%%%%%%%%%%%%%%
 \begin{frame}{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
 \begin{center}
+  \teaserManyPremises
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
+\begin{center}
   \teaserBlindInferenceNaturalOrder
 \end{center}
 \end{frame}
@@ -188,7 +194,6 @@
 \pause
 
 \hh{A key challenge is coverage.}
-\pause
 \begin{itemize}
   \item We can greatly improve coverage with \textit{inference}.
 \end{itemize}
@@ -205,17 +210,6 @@
 \begin{itemize}
   \item \green{Many premises}; \red{few inference steps}.
 \end{itemize}
-\end{frame}
-
-\begin{frame}[noframenumbering]{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
-\begin{center}
-  \teaserBlindInferenceNaturalOrder
-\end{center}
-\end{frame}
-\begin{frame}[noframenumbering]{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
-\begin{center}
-  \teaserBlindInference
-\end{center}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%% 
@@ -257,6 +251,12 @@
 % NATLOG AS SYLLOGISMS
 %%%%%%%%%%%%%%%%%%%
 \begin{frame}{\scalebox{0.95}{\uline{\textbf{Natural Logic}} Inference for Common Sense Reasoning}}
+\begin{center}
+  \teaserBlindInference
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\scalebox{0.95}{\uline{\textbf{Natural Logic}} Inference for Common Sense Reasoning}}
 \begin{center}
   \teaserInference
 \end{center}
@@ -344,6 +344,9 @@
 % INFERENCE IS SEARCH
 %%%%%%%%%%%%%%%%%%%
 \begin{frame}{Natural Logic Inference is Search}
+   \teaserInference
+\end{frame}
+\begin{frame}[noframenumbering]{Natural Logic Inference is Search}
   \teaserFullDerivation
 \end{frame}
 
@@ -352,16 +355,16 @@
   \includegraphics[width=5cm]{../../img/dijkstras-graph.pdf}
 \end{center}
 \begin{tabular}{ll}
-  \hh{Nodes} & $($ \w{fact}, validity $\in\{\textrm{valid}, \textrm{invalid}\})$ \\
+  \hh{Nodes} & $($ \w{fact}, truth maintained $\in\{\textrm{true}, \textrm{false}\})$ \\
   & \\
   \pause
-  \hh{Start Node} & \w{query fact} \\
+  \hh{Start Node} & $($ \w{query fact}, \true{true} $)$ \\
   \hh{End Nodes}  & \w{any known fact} \\
   & \\
   \pause
   \hh{Edges} & Mutations of the current fact \\
   \pause
-  \hh{Edge Costs} & How ``wrong'' an inference step is (learned). \\
+  \hh{Edge Costs} & How ``wrong'' an inference step is (learned) \\
 \end{tabular}
 \end{frame}
 
@@ -377,18 +380,19 @@
 \begin{center}
   \begin{tabular}{p{0.4\textwidth}p{0.20\textwidth}}
     \multicolumn{1}{c}{\textbf{Template}} & \multicolumn{1}{c}{\textbf{Instance}} \\
-    & \\
     Hypernym & \w{animal} $\rightarrow$ \w{cat} \\
     Hyponym  & \w{cat} $\rightarrow$ \w{animal} \\
     Antonym  & \w{good} $\rightarrow$ \w{bad} \\
     Synonym  & \w{cat} $\rightarrow$ \w{true cat} \\
+    & \\
     Add Word  & \w{cat} $\rightarrow$ \w{$\cdot$} \\
     Delete Word  & $\cdot$ $\rightarrow$ \w{cat} \\
+    & \\
     Quantifier Weaken & \w{some} $\rightarrow$ \w{all} \\
     Quantifier Strengthen & \w{all} $\rightarrow$ \w{some} \\
     Quantifier Negate & \w{all} $\rightarrow$ \w{no} \\
     Quantifier Synonym & \w{all} $\rightarrow$ \w{every} \\
-    \pause \\
+    & \\
     Nearest Neighbor  & \w{cat} $\rightarrow$ \w{dog} \\
   \end{tabular}
 \end{center}
@@ -483,7 +487,7 @@
 %%%%%%%%%%%%%%%%%%% 
 % CONTRIBUTION: COLLAPSED INFERENCE STATES
 %%%%%%%%%%%%%%%%%%%
-\def\title{Contribution: The Missing Slides}
+\def\title{Contribution: What I didn't talk about}
 \def\blurb{
 \hh{Inference according to us:} The truth of a node is \textit{maintained} or
   \textit{flipped} based on the template of the outgoing edge}
@@ -492,18 +496,18 @@
 \end{frame}
 
 \begin{frame}[noframenumbering]{\title}
-\blurb\ \darkgreen{\textbf{and the truth of the node}}.
+\blurb\ \darkgreen{\textbf{and the truth of the parent}}.
 \end{frame}
 
 \begin{frame}[noframenumbering]{\title}
-\blurb\ and the truth of the node 
-  \darkgreen{\textbf{and the exact quantifiers in scope}}.
+\blurb\ and the truth of the parent 
+  \darkgreen{\textbf{and the particular governing quantifiers}}.
 \end{frame}
 
 \def\blurb{
 \hh{Inference according to us:} The truth of a node is \textbf{\textit{maintained} or
-  \textit{flipped}} based on the template of the outgoing edge and the truth of the node 
-  and the exact quantifiers in scope.
+  \textit{flipped}} based on the template of the outgoing edge and the truth of the parent 
+  and the particular governing quantifiers.
 }
 \begin{frame}[noframenumbering]{\title}
 \blurb
@@ -571,7 +575,6 @@
 %%%%%%%%%%%%%%%%%%%
 \begin{frame}{``Soft'' Natural Logic}
 \hh{Want to make likely (but not certain) inferences}.
-\pause
 \begin{itemize}
   \item Same motivation as Markov Logic, Probabilistic Soft Logic, etc.
   \pause
@@ -627,7 +630,7 @@
 %%%%%%%%%%%%%%%%%%% 
 % LEARNING WEIGHTS
 %%%%%%%%%%%%%%%%%%%
-\newcommand\sD{\ensuremath{\mathcal{D}}}
+\newcommand\sD{\ensuremath{D}}
 \newcommand\bef{\ensuremath{\mathbf{f}}}
 \def\header{
 \hh{Input data $\sD = \{ (x, y) \}$.}
@@ -636,6 +639,8 @@
   \item $y_i$ is the truth of that fact in $\{0, 1\}$.
 \end{itemize}
 \vspace{0.5cm}
+\pause
+
 \hh{Log Likelihood looks a lot like logistic regression...}
 }
 \newcommand\footer[3]{
