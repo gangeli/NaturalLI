@@ -9,15 +9,15 @@
 #define SILENT true
 
 #define ALL_CATS_HAVE_TAILS \
-                       string(ALL_STR) + string("\t2\tdet\tanti-additive\t1-3\tmultiplicative\t3-5\n") + \
-                       string(CAT_STR) + string("\t3\tnsubj\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t3\tdobj\t-\t-\t-\t-\n")
+                       string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t1-3\tmultiplicative\t3-5\n") + \
+                       string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t3\tdobj\t0\t-\t-\t-\t-\n")
 
 #define CATS_HAVE_TAILS \
-                       string(CAT_STR) + string("\t2\tnsubj\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t2\tdobj\t-\t-\t-\t-\n")
+                       string(CAT_STR) + string("\t2\tnsubj\t0\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t0\t-\t-\t-\t-\n")
 
 using namespace std;
 using namespace btree;

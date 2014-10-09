@@ -165,7 +165,6 @@ Tree::Tree(const string& conll)
     while (getline(fieldsStream, field, '\t')) {
       switch (fieldI) {
         case 0:  // Word (as integer)
-          // TODO(gabor) word sense?
           data[lineI].word = atoi(field.c_str());
           data[lineI].sense = 0;
           break;
@@ -180,20 +179,23 @@ Tree::Tree(const string& conll)
         case 2:  // Label
           data[lineI].relation = indexDependency(field.c_str());
           break;
-        case 3:  // Subject monotonicity
+        case 3:  // Word Sense
+          data[lineI].sense = atoi(field.c_str());
+          break;
+        case 4:  // Subject monotonicity
           if (field != "-") {
             isQuantifier = true;
             stringToMonotonicity(field, &subjMono, &subjType);
           }
           break;
-        case 4:  // Subject span
+        case 5:  // Subject span
           if (field != "-") {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
             span.subj_begin = begin; span.subj_end = end;
           }
           break;
-        case 5:  // Object monotonicity
+        case 6:  // Object monotonicity
           if (field != "-") {
             stringToMonotonicity(field, &objMono, &objType);
           } else {
@@ -201,7 +203,7 @@ Tree::Tree(const string& conll)
             objType = QUANTIFIER_TYPE_NONE;
           }
           break;
-        case 6:  // Object span
+        case 7:  // Object span
           if (field != "-") {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
@@ -220,7 +222,7 @@ Tree::Tree(const string& conll)
       }
       fieldI += 1;
     }
-    if (fieldI != 3 && fieldI != 7) {
+    if (fieldI != 3 && fieldI != 8) {
       printf("ERROR: Bad number of CoNLL fields in line (expected 3 or 7, was %u): %s\n", fieldI, line.c_str());
     }
     lineI += 1;
