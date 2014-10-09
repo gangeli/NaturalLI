@@ -16,39 +16,66 @@ import java.util.function.Function;
  */
 public class DependencyTree<E> {
   public final E[] nodes;
+  public final Optional<String[]> posTags;
   public final int[] governors;
   public final String[] governingRelations;
 
   @SuppressWarnings("unchecked")
   public DependencyTree(SemanticGraph dependencies, List<CoreLabel> sentence) {
+    // Map indices
+    int[] oldToNewIndex = new int[sentence.size()];
+    List<IndexedWord> sortedVertices = dependencies.vertexListSorted();
+    for (int i = 0; i < sortedVertices.size(); ++i) {
+      oldToNewIndex[sortedVertices.get(i).index() - 1] = i;
+    }
     // Create structures
     nodes = (E[]) new String[dependencies.size()];
+    posTags = Optional.of(new String[nodes.length]);
     Arrays.fill(nodes, "__UNK__");
     governors = new int[dependencies.size()];
-    Arrays.fill(governors, 0);
+    Arrays.fill(governors, -1);
     governingRelations = new String[dependencies.size()];
     Arrays.fill(governingRelations, "dep");
     // Copy into dependency tree
     // This is why I hate SemanticGraph as a representation...
     for (IndexedWord vertex : dependencies.vertexSet()) {
-      nodes[vertex.index() - 1] = (E) sentence.get(vertex.index() - 1).lemma();
+      nodes[oldToNewIndex[vertex.index() - 1]] = (E) sentence.get(vertex.index() - 1).lemma();
+      posTags.get()[oldToNewIndex[vertex.index() - 1]] = sentence.get(vertex.index() - 1).tag();
       Set<IndexedWord> parents = dependencies.getParents(vertex);
       assert parents.size() < 2;
       if (parents.size() == 1) {
-        governors[vertex.index() - 1] = parents.iterator().next().index();
-        governingRelations[vertex.index() - 1] = dependencies.getIncomingEdgesSorted(vertex).get(0).getRelation().getShortName();
+        governors[oldToNewIndex[vertex.index() - 1]] = oldToNewIndex[parents.iterator().next().index() - 1];
+        governingRelations[oldToNewIndex[vertex.index() - 1]] = dependencies.getIncomingEdgesSorted(vertex).get(0).getRelation().getShortName();
       }
     }
     for (IndexedWord root : dependencies.getRoots()) {
-      governingRelations[root.index() - 1] = "root";
-
+      governingRelations[oldToNewIndex[root.index() - 1]] = "root";
     }
   }
 
   public DependencyTree(E[] nodes, int[] governors, String[] governingRelations) {
     this.nodes = nodes;
+    this.posTags = Optional.empty();
     this.governors = governors;
     this.governingRelations = governingRelations;
+  }
+
+  public List<String> asList() {
+    return new AbstractList<String>() {
+      @Override
+      public String get(int index) {
+        if (nodes[index] instanceof Word) {
+          return ((Word) nodes[index]).gloss;
+        } else {
+          return nodes[index].toString();
+        }
+      }
+
+      @Override
+      public int size() {
+        return nodes.length;
+      }
+    };
   }
 
   private void foreachSpan(Consumer<Pair<Integer,Integer>> callback) {
@@ -56,12 +83,12 @@ public class DependencyTree<E> {
       LOOP: for (int candidateStart = 0; candidateStart + length <= nodes.length; ++candidateStart) {
         int candidateEnd = candidateStart + length;
         for (int k = 0; k < candidateStart; ++k) {
-          if (governors[k] - 1 >= candidateStart && governors[k] - 1 < candidateEnd) {
+          if (governors[k] >= candidateStart && governors[k] < candidateEnd) {
             continue LOOP;
           }
         }
         for (int k = candidateEnd; k < nodes.length; ++k) {
-          if (governors[k] - 1 >= candidateStart && governors[k] - 1 < candidateEnd) {
+          if (governors[k] >= candidateStart && governors[k] < candidateEnd) {
             continue LOOP;
           }
         }
@@ -73,10 +100,10 @@ public class DependencyTree<E> {
   private int findRootOfSegment(int[] parents, int[] segments, int i) {
     int currentToken = segments[i];
     int lastI = i;
-    i = parents[i] - 1;
+    i = parents[i];
     while (i >= 0 && segments[i] == currentToken) {
       lastI = i;
-      i = parents[i] - 1;
+      i = parents[i];
     }
     return lastI;
   }
@@ -98,7 +125,24 @@ public class DependencyTree<E> {
         newWords.add(wordForSpan.get());
       }
     }
+  }
 
+
+  public Pair<Integer, Integer> getSubtreeSpan(int index) {
+    int min = 999;
+    int max = -999;
+    for (int i = 0; i < nodes.length; ++i) {
+      int k = i;
+      while (k != -1) {
+        if (k == index) {
+          if (i < min) { min = i; }
+          if (i > max) { max = i; }
+          break;
+        }
+        k = this.governors[k];
+      }
+    }
+    return Pair.makePair(min, max + 1);
   }
 
 
@@ -129,12 +173,13 @@ public class DependencyTree<E> {
     Word[] nodes = new Word[newWords.size()];
     int[] governors = new int[newWords.size()];
     String[] governingRelations = new String[newWords.size()];
-    int[] oldToNewIndex = new int[this.nodes.length];
+    int[] oldToNewIndex = new int[this.nodes.length + 1];
+    oldToNewIndex[this.nodes.length] = nodes.length;
     int outputI = 0;
     // First pass: cluster edges
     for (int i = 0; i < indexMap.length; ++i) {
       oldToNewIndex[i] = outputI;
-      if (i > 0 && indexMap[i - 1] == indexMap[i]) { continue; }
+      if (i < indexMap.length - 1 &&  indexMap[i] == indexMap[i+1]) { continue; }
       nodes[outputI] = newWords.get(indexMap[i]);
       int segmentRoot = findRootOfSegment(this.governors, indexMap, i);
       governors[outputI] = this.governors[segmentRoot];
@@ -143,27 +188,35 @@ public class DependencyTree<E> {
     }
     // Second pass: fix indices
     for (int i = 0; i < governors.length; ++i) {
-      if (governors[i] != 0) {
-        governors[i] = oldToNewIndex[governors[i] - 1] + 1;
+      if (governors[i] != -1) {
+        governors[i] = oldToNewIndex[governors[i]];
       }
     }
-    // TODO(gabor) fix the word spans to match the new indices
+    // Third pass: fix spans
+    for (int i = 0; i < nodes.length; ++i) {
+      nodes[i] = nodes[i].updateSpans(oldToNewIndex);
+    }
 
     // -- Return --
     return new DependencyTree<>(nodes, governors, governingRelations);
   }
 
-  @Override
-  public String toString() {
+  public String toString(boolean prettyPrint) {
     StringBuilder b = new StringBuilder();
     for (int i = 0; i < nodes.length; ++i) {
       // Basic info
-      b.append(nodes[i].toString().replace("\t", "\\t"))
-          .append("\t").append(governors[i])
-          .append("\t").append(governingRelations[i].replace("\t", "\\t"));
+      if (prettyPrint && nodes[i] instanceof Word) {
+        b.append(StaticResources.PHRASE_GLOSSER.get(((Word) nodes[i]).index));
+      } else {
+        b.append(nodes[i].toString().replace("\t", "\\t"));
+      }
+      b.append("\t").append(governors[i] + 1)
+       .append("\t").append(governingRelations[i].replace("\t", "\\t"));
       // Additional info
       if (nodes[i] instanceof Word) {
         Word node = (Word) nodes[i];
+        // (word sense)
+        b.append("\t").append(node.sense);
         // (subject mono)
         if (node.subjMonotonicity == Monotonicity.INVALID) {
           b.append("\t").append("-");
@@ -174,7 +227,7 @@ public class DependencyTree<E> {
         if (node.subjSpan == Word.NO_SPAN) {
           b.append("\t").append("-");
         } else {
-          b.append("\t").append(node.subjSpan[0]).append("-").append(node.subjSpan[1]);
+          b.append("\t").append(node.subjSpan[0] + 1).append("-").append(node.subjSpan[1] + 1);
         }
         // (object mono)
         if (node.objMonotonicity == Monotonicity.INVALID) {
@@ -186,12 +239,17 @@ public class DependencyTree<E> {
         if (node.objSpan == Word.NO_SPAN) {
           b.append("\t").append("-");
         } else {
-          b.append("\t").append(node.objSpan[0]).append("-").append(node.objSpan[1]);
+          b.append("\t").append(node.objSpan[0] + 1).append("-").append(node.objSpan[1] + 1);
         }
       }
       // Trailing newline
       b.append("\n");
     }
     return b.toString();
+  }
+
+  @Override
+  public String toString() {
+    return toString(false);
   }
 }

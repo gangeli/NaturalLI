@@ -165,6 +165,7 @@ Tree::Tree(const string& conll)
     while (getline(fieldsStream, field, '\t')) {
       switch (fieldI) {
         case 0:  // Word (as integer)
+          // TODO(gabor) word sense?
           data[lineI].word = atoi(field.c_str());
           data[lineI].sense = 0;
           break;

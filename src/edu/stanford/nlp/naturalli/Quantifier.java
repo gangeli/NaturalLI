@@ -13,9 +13,12 @@ import java.util.Set;
  */
 public enum Quantifier {
   ALL("all", "anti-additive", "multiplicative"),
+  SOME("some", "additive", "additive"),
   NO("no", "anti-additive", "anti-additive"),
 
   UNARY_NO("no", "anti-additive"),
+  UNARY_NOT("not", "anti-additive"),
+  UNARY_NT("n't", "anti-additive"),
   // TODO(gabor)
   ;
 
