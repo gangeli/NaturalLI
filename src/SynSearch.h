@@ -74,7 +74,7 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case FREEBASE_UP:                 return FUNCTION_FORWARD_ENTAILMENT;
     case FREEBASE_DOWN:               return FUNCTION_REVERSE_ENTAILMENT;
     default:
-      printf("No such edge: %u\n", edge);
+      fprintf(stderr, "No such edge: %u\n", edge);
       std::exit(1);
       return 255;
   }
@@ -147,7 +147,7 @@ inline natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
     case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_XCOMP: return FUNCTION_INDEPENDENCE;
     default:
-      printf("No such dependency label: %u\n", dep);
+      fprintf(stderr, "No such dependency label: %u\n", dep);
       std::exit(1);
       return 255;
   }

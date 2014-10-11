@@ -9,13 +9,15 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * TODO(gabor) JavaDoc
+ * Static resources; e.g., indexers.
+ *
+ * TODO(gabor) handle numbers
  *
  * @author Gabor Angeli
  */
 public class StaticResources {
 
-  public static Map<String, Integer> PHRASE_INDEXER = Collections.unmodifiableMap(new HashMap<String, Integer>() {{
+  private static Map<String, Integer> PHRASE_INDEXER = Collections.unmodifiableMap(new HashMap<String, Integer>() {{
     for (String line : IOUtils.readLines("etc/words.tab.gz")) {
       String[] fields = line.split("\t");
       put(fields[1], Integer.parseInt(fields[0]));

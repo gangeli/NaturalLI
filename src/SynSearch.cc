@@ -100,7 +100,9 @@ uint8_t computeLength(const string& conll) {
   stringstream ss(conll);
   string item;
   while (getline(ss, item, '\n')) {
-    length += 1;
+    if (item.length() > 0) {
+      length += 1;
+    }
   }
   return length;
 }
@@ -126,7 +128,7 @@ void stringToMonotonicity(string field, monotonicity* mono, quantifier_type* typ
   } else if (field == "nonmonotone") {
     *mono = MONOTONE_FLAT; *type = QUANTIFIER_TYPE_NONE;
   } else {
-    printf("ERROR: Bad monotonicity marker: %s; assuming flat: ", field.c_str());
+    fprintf(stderr, "ERROR: Bad monotonicity marker: %s; assuming flat: ", field.c_str());
   }
 }
 
@@ -158,6 +160,7 @@ Tree::Tree(const string& conll)
   quantifier_span span;
   // Parse CoNLL
   while (getline(lineStream, line, '\n')) {
+    if (line.length() == 0) { continue; }
     bool isQuantifier = false;
     stringstream fieldsStream(line);
     string field;
@@ -215,7 +218,7 @@ Tree::Tree(const string& conll)
           // Register quantifier
           if (isQuantifier) {
             if (!registerQuantifier(span, subjType, objType, subjMono, objMono)) {
-              printf("WARNING: Too many quantifiers; skipping at word %u\n", lineI);
+              fprintf(stderr, "WARNING: Too many quantifiers; skipping at word %u\n", lineI);
             }
           }
           break;
@@ -223,7 +226,7 @@ Tree::Tree(const string& conll)
       fieldI += 1;
     }
     if (fieldI != 3 && fieldI != 8) {
-      printf("ERROR: Bad number of CoNLL fields in line (expected 3 or 7, was %u): %s\n", fieldI, line.c_str());
+      fprintf(stderr, "ERROR: Bad number of CoNLL fields in line (expected 3 or 7, was %u): %s\n", fieldI, line.c_str());
     }
     lineI += 1;
   }
@@ -275,7 +278,7 @@ void Tree::foreachQuantifier(
     }
     // (call visitor)
     if (somethingValid) {
-//      printf("Calling visitor() on quantifier %u: %u-%u %u-%u :: %u %u; %u %u\n",
+//      fprintf(stderr, "Calling visitor() on quantifier %u: %u-%u %u-%u :: %u %u; %u %u\n",
 //        argmin, 
 //        quantifierSpans[argmin].subj_begin, 
 //        quantifierSpans[argmin].subj_end,
@@ -345,7 +348,7 @@ uint8_t Tree::root() const {
       return i;
     }
   }
-  printf("No root found in tree!\n");
+  fprintf(stderr, "No root found in tree!\n");
   std::exit(1);
   return 255;
 }
@@ -412,13 +415,13 @@ uint64_t Tree::updateHashFromMutation(
                                       const ::word& newWord) const {
   uint64_t newHash = oldHash;
   // Fix incoming dependency
-//  printf("Mutating %u; dep=%u -> %u  gov=%u\n", index, oldWord, newWord, governor);
+//  fprintf(stderr, "Mutating %u; dep=%u -> %u  gov=%u\n", index, oldWord, newWord, governor);
   newHash ^= hashEdge(edgeInto(index, oldWord, governor));
   newHash ^= hashEdge(edgeInto(index, newWord, governor));
   // Fix outgoing dependencies
   for (uint8_t i = 0; i < length; ++i) {
     if (data[i].governor == index) {
-//      printf("  Also re-hashing word at %u; dep=%u  gov=%u -> %u\n", i,
+//      fprintf(stderr, "  Also re-hashing word at %u; dep=%u  gov=%u -> %u\n", i,
 //              data[i].word.word, oldWord, newWord);
       newHash ^= hashEdge(edgeInto(i, data[i].word, oldWord));
       newHash ^= hashEdge(edgeInto(i, data[i].word, newWord));
@@ -441,11 +444,11 @@ uint64_t Tree::updateHashFromDeletions(
   for (uint8_t i = 0; i < length; ++i) {
     if (TREE_IS_DELETED(newDeletions, i)) {
       if (i == deletionIndex) {
-//        printf("Deleting word at %u; dep=%u  gov=%u\n", i, deletionWord, governor);
+//        fprintf(stderr, "Deleting word at %u; dep=%u  gov=%u\n", i, deletionWord, governor);
         // Case: we are deleting the root of the deletion chunk
         newHash ^= hashEdge(edgeInto(i, deletionWord, governor));
       } else {
-//        printf("Deleting word at %u; dep=%u  gov=%u\n", i, edgeInto(i).dependent, edgeInto(i).governor);
+//        fprintf(stderr, "Deleting word at %u; dep=%u  gov=%u\n", i, edgeInto(i).dependent, edgeInto(i).governor);
         // Case: we are deleting an entire edge
         newHash ^= hashEdge(edgeInto(i));
       }
@@ -528,7 +531,7 @@ bool reverseTransition(const bool& endState,
       case FUNCTION_COVER:
         return false;
       default:
-        printf("Unknown function: %u", projectedRelation);
+        fprintf(stderr, "Unknown function: %u", projectedRelation);
         std::exit(1);
         break;
     }
@@ -544,12 +547,12 @@ bool reverseTransition(const bool& endState,
       case FUNCTION_ALTERNATION:
         return true;
       default:
-        printf("Unknown function: %u", projectedRelation);
+        fprintf(stderr, "Unknown function: %u", projectedRelation);
         std::exit(1);
         break;
     }
   }
-  printf("Reached end of reverseTransition() function -- this shouldn't happen!\n");
+  fprintf(stderr, "Reached end of reverseTransition() function -- this shouldn't happen!\n");
   std::exit(1);
   return false;
 }
@@ -572,7 +575,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
             case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_ADDITIVE:
@@ -584,7 +587,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
             case FUNCTION_COVER: return FUNCTION_COVER;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_MULTIPLICATIVE:
@@ -596,7 +599,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_ALTERNATION;
             case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_BOTH:
@@ -608,10 +611,10 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_ALTERNATION;
             case FUNCTION_COVER: return FUNCTION_COVER;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
-        default: printf("Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
+        default: fprintf(stderr, "Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
       }
     case MONOTONE_DOWN:
       switch (quantifierType) {
@@ -624,7 +627,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
             case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_ADDITIVE:
@@ -636,7 +639,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_INDEPENDENCE;
             case FUNCTION_COVER: return FUNCTION_ALTERNATION;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_MULTIPLICATIVE:
@@ -648,7 +651,7 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_COVER;
             case FUNCTION_COVER: return FUNCTION_INDEPENDENCE;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
         case QUANTIFIER_TYPE_BOTH:
@@ -660,10 +663,10 @@ uint8_t project(const monotonicity& monotonicity,
             case FUNCTION_ALTERNATION: return FUNCTION_COVER;
             case FUNCTION_COVER: return FUNCTION_ALTERNATION;
             case FUNCTION_INDEPENDENCE: return FUNCTION_INDEPENDENCE;
-            default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+            default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
           }
           break;
-        default: printf("Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
+        default: fprintf(stderr, "Unknown projectivity type for quantifier: %u", quantifierType); std::exit(1); break;
       }
       break;
     case MONOTONE_FLAT:
@@ -677,15 +680,15 @@ uint8_t project(const monotonicity& monotonicity,
         case FUNCTION_COVER:
         case FUNCTION_INDEPENDENCE:
           return FUNCTION_INDEPENDENCE;
-        default: printf("Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
+        default: fprintf(stderr, "Unknown lexical relation: %u", lexicalFunction); std::exit(1); break;
       }
       break;
     default:
-      printf("Invalid monotonicity: %u", monotonicity);
+      fprintf(stderr, "Invalid monotonicity: %u", monotonicity);
       std::exit(1);
       break;
   }
-  printf("Reached end of project() function -- this shouldn't happen!\n");
+  fprintf(stderr, "Reached end of project() function -- this shouldn't happen!\n");
   std::exit(1);
   return 255;
 }
@@ -778,7 +781,7 @@ void printTime(const char* format) {
   time_t t = time(NULL);
   struct tm* p = localtime(&t);
   strftime(s, 1000, format, p);
-  printf("%s", s);
+  fprintf(stderr, "%s", s);
 }
 
 //
@@ -838,11 +841,11 @@ void priorityQueueWorker(
         idleTicks += 1;
         if (idleTicks % 1000000 == 0) { 
           EVICT_CACHE();
-          if (!opts.silent) { printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+          if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
           if (*timeout) { 
             if (!opts.silent) {
               printTime("[%c] ");
-              printf("  |PQ Dirty Timeout| idleTicks=%lu\n", idleTicks);
+              fprintf(stderr, "  |PQ Dirty Timeout| idleTicks=%lu\n", idleTicks);
             }
             return;
           }
@@ -861,7 +864,7 @@ void priorityQueueWorker(
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
         EVICT_CACHE();
-        if (!opts.silent) {printTime("[%c] "); printf("  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
+        if (!opts.silent) {printTime("[%c] "); fprintf(stderr, "  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
       }
     }
   }
@@ -869,7 +872,7 @@ void priorityQueueWorker(
   // Return
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("  |PQ Normal Return| idleTicks=%lu\n", idleTicks);
+    fprintf(stderr, "  |PQ Normal Return| idleTicks=%lu\n", idleTicks);
   }
 }
 
@@ -900,7 +903,7 @@ void pushChildrenWorker(
     while (!dequeueChannel->poll(&scoredNode)) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
-        if (!opts.silent) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
+        if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
         // Check if the priority queue is empty
         if (*pqEmpty) {
           // (evict the cache)
@@ -908,7 +911,7 @@ void pushChildrenWorker(
           // (try to poll again)
           if (dequeueChannel->poll(&scoredNode)) { break; }
           // (priority queue really is empty)
-          if (!opts.silent) { printTime("[%c] "); printf("  |PQ Empty| ticks=%lu\n", *ticks); }
+          if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |PQ Empty| ticks=%lu\n", *ticks); }
           *timeout = true;
           return;
         }
@@ -929,7 +932,7 @@ void pushChildrenWorker(
     const SearchNode& parent = history[node.getBackpointer()];
 #endif
     const uint32_t myIndex = historySize->value;
-//    printf("%u>> %s (points to %u)\n", 
+//    fprintf(stderr, "%u>> %s (points to %u)\n", 
 //      myIndex, toString(*graph, tree, node).c_str(),
 //      node.getBackpointer());
     history[myIndex] = node;
@@ -937,7 +940,7 @@ void pushChildrenWorker(
     *ticks += 1;
     if (!opts.silent && (*ticks) % 1000000 == 0) { 
       printTime("[%c] "); 
-      printf("  |CF Progress| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000);
+      fprintf(stderr, "  |CF Progress| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000);
     }
 
     // PUSH 1: Mutations
@@ -965,16 +968,16 @@ void pushChildrenWorker(
 #if SEARCH_CYCLE_MEMORY!=0
       bool isNewChild = true;
       for (uint8_t i = 0; i < memorySize; ++i) {
-//        printf("  CHECK %lu  vs %lu\n", mutatedChild.factHash(), memory[i].factHash());
+//        fprintf(stderr, "  CHECK %lu  vs %lu\n", mutatedChild.factHash(), memory[i].factHash());
         isNewChild &= (mutatedChild != memory[i]);
       }
       if (isNewChild) {
 #endif
       while (!enqueueChannel->push(ScoredSearchNode(mutatedChild, cost))) {
         idleTicks += 1;
-        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
-//      printf("  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
+//      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
 #if SEARCH_CYCLE_MEMORY!=0
       }
 #endif
@@ -1006,9 +1009,9 @@ void pushChildrenWorker(
         // (push child)
         while (!enqueueChannel->push(ScoredSearchNode(deletedChild, cost))) {
           idleTicks += 1;
-          if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+          if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
         }
-//        printf("  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
+//        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
       }
 
       // PUSH 3: Index Move
@@ -1018,15 +1021,15 @@ void pushChildrenWorker(
       // (push child)
       while (!enqueueChannel->push(ScoredSearchNode(indexMovedChild, scoredNode.cost))) {  // Copy the cost
         idleTicks += 1;
-        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); printf("  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
-//      printf("  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
+//      fprintf(stderr, "  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
     }
   }
 
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
+    fprintf(stderr, "  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
   }
   *timeout = true;
   EVICT_CACHE();
@@ -1082,7 +1085,7 @@ void factLookupWorker(
     idleTicks += 1;
     if (!opts.silent && idleTicks % 1000000 == 0) { 
       printTime("[%c] "); 
-      printf("  |Lookup Idle| idle=%luM\n", idleTicks / 1000000);
+      fprintf(stderr, "  |Lookup Idle| idle=%luM\n", idleTicks / 1000000);
       EVICT_CACHE();
     }
   }
@@ -1090,7 +1093,7 @@ void factLookupWorker(
   // Return
   if (!opts.silent) {
     printTime("[%c] "); 
-    printf("  |Lookup normal return| resultCount=%lu  idle=%lu\n", 
+    fprintf(stderr, "  |Lookup normal return| resultCount=%lu  idle=%lu\n", 
            matches->size(), idleTicks);
   }
 }
@@ -1107,13 +1110,13 @@ syn_search_response SynSearch(
   // Debug print parameters
   if (opts.maxTicks > 1000000000) {
     printTime("[%c] ");
-    printf("ERROR: Max number of ticks is too large: %u\n", opts.maxTicks);
+    fprintf(stderr, "ERROR: Max number of ticks is too large: %u\n", opts.maxTicks);
     response.totalTicks = 0;
     return response;
   }
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("|BEGIN SEARCH| fact='%s'\n", toString(*mutationGraph, *input).c_str());
+    fprintf(stderr, "|BEGIN SEARCH| fact='%s'\n", toString(*mutationGraph, *input).c_str());
   }
 
   // Allocate some shared variables
@@ -1133,14 +1136,14 @@ syn_search_response SynSearch(
 
   // (sanity check)
   if (((uint64_t) searchDone) + 1 >= ((uint64_t) input) + sizeof(Tree)) {
-    printf("Allocated too much into the cache memory area!\n");
+    fprintf(stderr, "Allocated too much into the cache memory area!\n");
     std::exit(1);
   }
 
   // Enqueue the first element
   // (to the fringe)
   if (!dequeueChannel->push(ScoredSearchNode(SearchNode(*input), 0.0f))) {
-    printf("Could not push root!?\n");
+    fprintf(stderr, "Could not push root!?\n");
     std::exit(1);
   }
   // (to the history)
@@ -1170,31 +1173,31 @@ syn_search_response SynSearch(
   // Join threads
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("AWAITING JOIN...\n");
+    fprintf(stderr, "AWAITING JOIN...\n");
   }
   // (priority queue)
-  if (!opts.silent) { printTime("[%c] "); printf("  Priority queue...\n"); }
+  if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  Priority queue...\n"); }
   priorityQueueThread.join();
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("    Priority queue joined.\n");
+    fprintf(stderr, "    Priority queue joined.\n");
   }
   // (push children)
-  if (!opts.silent) { printTime("[%c] "); printf("  Child factory...\n"); }
+  if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  Child factory...\n"); }
   pushChildrenThread.join();
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("    Child factory joined.\n");
+    fprintf(stderr, "    Child factory joined.\n");
   }
   // (database lookup)
   // (note: this must come after the above two have joined)
   *searchDone = true;
   EVICT_CACHE();
-  if (!opts.silent) { printTime("[%c] "); printf("  Database lookup...\n"); }
+  if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  Database lookup...\n"); }
   lookupThread.join();
   if (!opts.silent) {
     printTime("[%c] ");
-    printf("    Database lookup joined.\n");
+    fprintf(stderr, "    Database lookup joined.\n");
   }
 
   // Clean up

@@ -46,7 +46,11 @@ public class Preprocess {
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String line;
     while ((line = reader.readLine()) != null) {
-      System.out.println( annotate(pipeline, StaticResources.INDEXER, line) );
+      System.err.println("Annotating '" + line + "'");
+      String annotated = annotate(pipeline, StaticResources.INDEXER, line);
+      System.err.println(annotated);
+      System.out.println(annotated);
+      System.out.flush();
     }
   }
 }

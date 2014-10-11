@@ -38,7 +38,7 @@ export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.6.jar:${LIB}/test/junit-4.11
 src/org/goobs/naturalli/Messages.java: src/Messages.proto
 	$(MAKE) -C src org/goobs/naturalli/Messages.java
 
-src/naturalli_client.jar: $(wildcard src/org/goobs/naturalli/*.scala) $(wildcard src/org/goobs/naturalli/*.java) $(wildcard src/org/goobs/naturalli/scripts/*.scala) $(wildcard src/org/goobs/naturalli/conf/*.conf) src/org/goobs/naturalli/Messages.java
+src/naturalli_client.jar: $(wildcard src/org/goobs/naturalli/*.scala) $(wildcard src/org/goobs/naturalli/*.java) $(wildcard src/org/goobs/naturalli/scripts/*.scala) $(wildcard src/org/goobs/naturalli/conf/*.conf) src/org/goobs/naturalli/Messages.java $(wildcard src/edu/stanford/nlp/naturalli/*.java)
 	$(MAKE) -C src naturalli_client.jar
 
 src/naturalli.war: src/naturalli_client.jar $(wildcard src/org/goobs/naturalli/demo/*.java) src/org/goobs/naturalli/demo/WEB-INF/naturalli.xml

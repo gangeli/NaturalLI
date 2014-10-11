@@ -29,6 +29,7 @@ AC_CHECK_PROG([javac_found],["javac"],[yes],[no],["$JDK_HOME/bin"])
 if test "x$javac_found" != "xyes"; then
   AC_MSG_ERROR([could not find javac compiler])
 fi
+AC_DEFINE_UNQUOTED(JDK_HOME, "${JDK_HOME:=${JAVA_HOME}}", [The location of the JDK])
 AM_CONDITIONAL(SCALA_2_11, `${SCALA_HOME}/bin/scalac -version | grep "2.11"`)
 
 # (scala)
@@ -101,6 +102,7 @@ AC_ARG_WITH([corenlp],
   [CORENLP="$with_corenlp"],
   [AC_MSG_NOTICE([a custom location for CoreNLP can be specified using --with-corenlp])]
 )
+AC_DEFINE_UNQUOTED(CORENLP, "${CORENLP}", [The location of CoreNLP])
 
 # (CoreNLP models)
 AC_SUBST(CORENLP_MODELS)
@@ -110,6 +112,7 @@ AC_ARG_WITH([corenlp-models],
   [CORENLP_MODELS="$with_corenlp_models"],
   [AC_MSG_NOTICE([a custom location for the CoreNLP models can be specified using --with-corenlp-models])]
 )
+AC_DEFINE_UNQUOTED(CORENLP_MODELS, "${CORENLP_MODELS}", [The location of CoreNLP models])
 
 # (CoreNLP caseless models)
 AC_SUBST(CORENLP_CASELESS_MODELS)
@@ -175,6 +178,8 @@ AC_DEFINE_UNQUOTED(PG_TABLE_WORD,      "${PG_TABLE_WORD:=word}", [The table in w
 AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
 AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
 AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
+
+AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",  [The location of the WordNet dictionary])
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
 AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 26, [The maximum length of an input query fact. Must match SynSearch.h lengths.])

@@ -3,7 +3,6 @@ package edu.stanford.nlp.naturalli;
 import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.SynsetType;
 import edu.smu.tspell.wordnet.WordNetDatabase;
-import scala.actors.threadpool.Arrays;
 
 import java.util.*;
 
