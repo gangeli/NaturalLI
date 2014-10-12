@@ -36,7 +36,7 @@ AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf \
 test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
                       TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
                       TestMap.cc TestMessages.pb.cc  TestUtils.cc TestTypes.cc \
-                      TestSynSearch.cc
+                      TestSynSearch.cc TestChannel.cc
 test_server_LDADD =  ${OBJS}
 
 itest_server_SOURCES= ITest.cc

@@ -12,8 +12,16 @@
 
 using namespace std;
 
+/**
+ * The interface for the Java pre-processor, responsible for
+ * annotating the raw text of a sentence into a dependency parse, already
+ * indexed and marked with quantifiers and quantifier properties.
+ */
 class Preprocessor {
  public:
+  /**
+   * Create a bidirectional pipe to the Java program, and start the program
+   */
   Preprocessor() {
     // Set up subprocess
     pid_t pid;
@@ -58,12 +66,19 @@ class Preprocessor {
     }
   }
 
+  /**
+   * Kill the subprocess program and close the pipes.
+   */
   ~Preprocessor() {
     close(childIn);
     close(childOut);
     kill(this->pid, SIGTERM);
   }
 
+  /**
+   * Annotate a given sentence into a Tree object which can be used 
+   * for search
+   */
   Tree* annotate(const char* sentence) {
     // Write sentence
     int sentenceLength = strlen(sentence);
@@ -97,13 +112,29 @@ class Preprocessor {
   }
 
  private:
+  /** The file descriptor of stdin of the child process */
   int childIn;
+  /** The file descriptor of stdout of the child process */
   int childOut;
+  /** The process id of the child process */
   pid_t pid;
+  /** A lock, to make sure we're not making concurrent calls to the annotator */
   mutex lock;
 };
 
 
+/**
+ * Execute a query, returning a JSON formatted response.
+ *
+ * @param proc The preprocessor to use to annotate the query string(s).
+ * @param kb An optional knowledge base to use in place of the default knowledge base.
+ * @param query The query to execute against the knowledge base.
+ * @param graph The graph of valid edge instances which can be taken.
+ * @param costs The search costs to use for this query
+ * @param options The options for the search, to be passed along directly.
+ *
+ * @return A JSON formatted response with the result of the search.
+ */
 string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& query,
                     const Graph* graph, const SynSearchCosts* costs, const syn_search_options& options) {
   // Create KB
@@ -131,6 +162,16 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
   return rtn;
 }
 
+/**
+ * Start a REPL loop over stdin and stdout.
+ * Each query consists of a number of entries (possibly zero) in the knowledge
+ * base, seperated by newlines, and then a query.
+ * A double newline signals the end of a block, where the first k-1 lines are the
+ * knowledge base, and the last line is the query.
+ *
+ * @param graph The graph containing the edge instances we can traverse.
+ * @param proc The preprocessor to use during the search.
+ */
 void repl(const Graph* graph, Preprocessor& proc) {
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts = SynSearchOptions(10000,     // maxTicks
@@ -172,18 +213,17 @@ void repl(const Graph* graph, Preprocessor& proc) {
 
 
 /**
- * The function to call for caught signals.
- * In practice, this is a NOOP.
+ * The function to call for caught signals. In practice, this is a NOOP.
  */
 void signalHandler(int32_t s){
-  printf("(caught signal %d)\n",s);
+  printf("(caught signal %d; use 'kill' to end the program)\n",s);
   printf("What do we say to the God of death?\n");
   printf("  \"Not today...\"\n");
 }
 
 
 /**
- * The server's entry point.
+ * The Entry point.
  */
 int32_t main( int32_t argc, char *argv[] ) {
   // Handle signals

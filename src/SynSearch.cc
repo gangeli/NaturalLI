@@ -3,9 +3,11 @@
 #include <thread>
 
 #include "SynSearch.h"
+#include "Channel.h"
 #include "Utils.h"
 
 using namespace std;
+using namespace moodycamel;
 
 // ----------------------------------------------
 // PATH ELEMENT (SEARCH NODE)
@@ -472,45 +474,6 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
 
 
 // ----------------------------------------------
-// CHANNEL
-// ----------------------------------------------
-  
-bool Channel::push(const ScoredSearchNode& value) {
-  if (data.pushPointer == data.pollPointer) {
-    // Case: empty buffer
-    data.buffer[data.pushPointer] = value;
-    data.pushPointer += 1;
-    return true;
-  } else {
-    // Case: something in buffer
-    const uint16_t available =
-      ((data.pollPointer + CHANNEL_BUFFER_LENGTH) - data.pushPointer) % CHANNEL_BUFFER_LENGTH - 1;
-    if (available > 0) {
-      data.buffer[data.pushPointer] = value;
-      data.pushPointer = (data.pushPointer + 1) % CHANNEL_BUFFER_LENGTH;
-      return true;
-    } else {
-      return false;
-    }
-  }
-}
-
-bool Channel::poll(ScoredSearchNode* output) {
-  const uint16_t available =
-    ((data.pushPointer + CHANNEL_BUFFER_LENGTH) - data.pollPointer) % CHANNEL_BUFFER_LENGTH;
-  if (available > 0) {
-  }
-  if (available > 0) {
-    *output = data.buffer[data.pollPointer];
-    data.pollPointer = (data.pollPointer + 1) % CHANNEL_BUFFER_LENGTH;
-    return true;
-  } else { 
-    return false;
-  }
-}
-
-
-// ----------------------------------------------
 // NATURAL LOGIC
 // ----------------------------------------------
 
@@ -813,7 +776,7 @@ inline void EVICT_CACHE() {
 // Handle push/pop to the priority queue
 //
 void priorityQueueWorker(
-    Channel* enqueueChannel, Channel* dequeueChannel, 
+    Channel<ScoredSearchNode>* enqueueChannel, Channel<ScoredSearchNode>* dequeueChannel, 
     bool* timeout, bool* pqEmpty, const syn_search_options& opts) {
   // Variables
   uint64_t idleTicks = 0;
@@ -883,7 +846,8 @@ void priorityQueueWorker(
 #pragma GCC push_options  // matches pop_options below
 #pragma GCC optimize ("unroll-loops")
 void pushChildrenWorker(
-    Channel* enqueueChannel, Channel* dequeueChannel,
+    Channel<ScoredSearchNode>* enqueueChannel, 
+    Channel<ScoredSearchNode>* dequeueChannel,
     SearchNode* history, uint64_threadsafe_t* historySize,
     const SynSearchCosts* costs,
     bool* timeout, bool* pqEmpty,
@@ -903,7 +867,7 @@ void pushChildrenWorker(
     while (!dequeueChannel->poll(&scoredNode)) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
-        if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
+        if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| (can't dequeue) ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
         // Check if the priority queue is empty
         if (*pqEmpty) {
           // (evict the cache)
@@ -975,7 +939,7 @@ void pushChildrenWorker(
 #endif
       while (!enqueueChannel->push(ScoredSearchNode(mutatedChild, cost))) {
         idleTicks += 1;
-        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
+        if (!opts.silent && idleTicks % 1000000 == 0) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| (can't enqueue) ticks=%luK  idle=%luM\n", *ticks / 1000, idleTicks / 1000000); }
       }
 //      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
 #if SEARCH_CYCLE_MEMORY!=0
@@ -1083,7 +1047,7 @@ void factLookupWorker(
 
     // Debug print
     idleTicks += 1;
-    if (!opts.silent && idleTicks % 1000000 == 0) { 
+    if (!opts.silent && idleTicks % 10000000 == 0) { 
       printTime("[%c] "); 
       fprintf(stderr, "  |Lookup Idle| idle=%luM\n", idleTicks / 1000000);
       EVICT_CACHE();
@@ -1129,8 +1093,8 @@ syn_search_response SynSearch(
   bool* searchDone = cacheSpace + 2;
   *searchDone = false;
   // (communication)
-  Channel* enqueueChannel = threadsafeChannel();
-  Channel* dequeueChannel = threadsafeChannel();
+  Channel<ScoredSearchNode> enqueueChannel(1024);
+  Channel<ScoredSearchNode> dequeueChannel(1024);
   SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
   uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
 
@@ -1142,7 +1106,7 @@ syn_search_response SynSearch(
 
   // Enqueue the first element
   // (to the fringe)
-  if (!dequeueChannel->push(ScoredSearchNode(SearchNode(*input), 0.0f))) {
+  if (!dequeueChannel.push(ScoredSearchNode(SearchNode(*input), 0.0f))) {
     fprintf(stderr, "Could not push root!?\n");
     std::exit(1);
   }
@@ -1153,10 +1117,10 @@ syn_search_response SynSearch(
   // Start threads
   // (priority queue)
   std::thread priorityQueueThread(priorityQueueWorker, 
-      enqueueChannel, dequeueChannel, timeout, pqEmpty, opts);
+      &enqueueChannel, &dequeueChannel, timeout, pqEmpty, opts);
   // (child creator)
   std::thread pushChildrenThread(pushChildrenWorker, 
-      enqueueChannel, dequeueChannel, 
+      &enqueueChannel, &dequeueChannel, 
       history, historySize,
       costs,
       timeout, pqEmpty,
@@ -1201,8 +1165,6 @@ syn_search_response SynSearch(
   }
 
   // Clean up
-  delete enqueueChannel;
-  delete dequeueChannel;
   free(history);
   free(historySize);
   free(cacheSpace);

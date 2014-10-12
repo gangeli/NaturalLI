@@ -757,10 +757,8 @@ struct ScoredSearchNode {
 };
 
 // ----------------------------------------------
-// CHANNEL
+// Threadsafe Int
 // ----------------------------------------------
-
-#define CHANNEL_BUFFER_LENGTH ((1280 - 2*CACHE_LINE_SIZE) / sizeof(ScoredSearchNode))
 
 #ifdef __GNUG__
 typedef struct {
@@ -774,55 +772,6 @@ typedef struct alignas(CACHE_LINE_SIZE) {
 #else
 } uint64_threadsafe_t;
 #endif
-
-#ifdef __GNUG__
-typedef struct {
-#else
-typedef struct alignas(1280) {
-#endif
-  // Push thread's memory
-  uint16_t    pushPointer:16;
-  uint8_t     __filler1[CACHE_LINE_SIZE - 2];  // pushPointer gets its own cache line
-  // Buffer
-  ScoredSearchNode     buffer[CHANNEL_BUFFER_LENGTH];
-  // Poll thread's memory
-  uint8_t     __filler2[CACHE_LINE_SIZE - 2];  // pollPointer gets its own cache line
-  uint16_t    pollPointer:16;
-#ifdef __GNUG__
-} __attribute__((packed)) channel_data;
-#else
-} channel_data;
-#endif
-
-
-/**
- * A rudimentary thread-safe lockless channel.
- * Note that only two threads can actually communicate across a Channel.
- * One must always be writing, and one must always be reading.
- * Otherwise, all hell breaks loose.
- */
-class Channel {
- public:
-  /** Create a new channel. threadsafeChannel() is more recommended */
-  Channel() {
-    data.pushPointer = 0;
-    data.pollPointer = 0;
-  }
-
-  /** Push an element onto the channel. Returns false if there is no space */
-  bool push(const ScoredSearchNode& value);
-  /** Poll an element from the channel. Returns false if there is nothing in the channel */
-  bool poll(ScoredSearchNode* output);
-
-  /** Public for debugging and testing only. Do not access this directly */
-  channel_data data;
-};
-
-inline Channel* threadsafeChannel() {
-  void* ptr;
-  int rc = posix_memalign(&ptr, CACHE_LINE_SIZE, sizeof(Channel));
-  return new(ptr) Channel();
-}
 
 inline uint64_threadsafe_t* malloc_uint64_threadsafe_t() {
   void* ptr;

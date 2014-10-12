@@ -43,8 +43,8 @@ endif
 
 
 naturalli_SOURCES = NaturalLI.cc Postgres.cc Utils.cc Graph.cc SynSearch.cc \
-                 Graph.h Utils.h Types.h  SynSearch.h Postgres.h \
-                 btree.h btree_container.h btree_map.h btree_set.h
+                 Graph.h Utils.h Types.h  SynSearch.h Postgres.h Channel.h \
+                 btree.h btree_container.h btree_map.h btree_set.h atomicops.h
 
 naturalli_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${OPENMP_CFLAGS}
 naturalli_LDADD=${POSTGRESQL_LDFLAGS} -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
