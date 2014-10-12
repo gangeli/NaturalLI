@@ -149,7 +149,7 @@ Graph* readGraph(const uint32_t numWords,
     index2gloss[atoi(row[0])] = gloss;
     wordI += 1;
     if (wordI % 1000000 == 0) {
-      printf("loaded %luM words\n", wordI / 1000000);
+      fprintf(stderr, "loaded %luM words\n", wordI / 1000000);
     }
   }
   
@@ -186,11 +186,11 @@ Graph* readGraph(const uint32_t numWords,
     edgesSizes[sink] += 1;
     edgeI += 1;
     if (!mock && edgeI % 1000000 == 0) {
-      printf("  loaded %luM edges\n", edgeI / 1000000);
+      fprintf(stderr, "  loaded %luM edges\n", edgeI / 1000000);
     }
   }
   free(edgeCapacities);
-  if (!mock) { printf("  %lu edges loaded.\n", edgeI); }
+  if (!mock) { fprintf(stderr, "  %lu edges loaded.\n", edgeI); }
   
   // Read invalid deletions
   btree::btree_set<tagged_word> invalidDeletions;
@@ -198,10 +198,10 @@ Graph* readGraph(const uint32_t numWords,
     PGRow row = invalidDeletionIter->next();
     invalidDeletions.insert(getTaggedWord(atoi(row[0]), atoi(row[1]), MONOTONE_DEFAULT));
   }
-  if (!mock) { printf("  %lu invalid deletions.\n", invalidDeletions.size()); }
+  if (!mock) { fprintf(stderr, "  %lu invalid deletions.\n", invalidDeletions.size()); }
   
   // Finish
-  if (!mock) { printf("%s\n", "  done reading the graph."); }
+  if (!mock) { fprintf(stderr, "%s\n", "  done reading the graph."); }
   return new InMemoryGraph(index2gloss, edges, edgesSizes, numWords, invalidDeletions);
 }
 
@@ -210,9 +210,9 @@ Graph* readGraph(const uint32_t numWords,
 // Read Real Graph
 //
 Graph* ReadGraph() {
-  printf("Reading graph...\n");
+  fprintf(stderr, "Reading graph...\n");
   // Words
-  printf("  creating word iterator...\n");
+  fprintf(stderr, "  creating word iterator...\n");
   char wordQuery[128];
   snprintf(wordQuery, 127, "SELECT COUNT(*) FROM %s;", PG_TABLE_WORD);
   const uint32_t numWords
@@ -221,14 +221,14 @@ Graph* ReadGraph() {
   PGIterator wordIter = PGIterator(wordQuery);
   
   // Edges
-  printf("  creating edge iterator...\n");
+  fprintf(stderr, "  creating edge iterator...\n");
   char edgeQuery[128];
   snprintf(edgeQuery, 127, "SELECT * FROM %s WHERE type <> %u ORDER BY type, sink_sense ASC;",
     PG_TABLE_EDGE, WORDNET_NOUN_SYNONYM); // TODO(gabor) re-enable synonyms
   PGIterator edgeIter = PGIterator(edgeQuery);
 
   // Invalid deletions
-  printf("  creating valid deletion iterator...\n");
+  fprintf(stderr, "  creating valid deletion iterator...\n");
   char invalidDeletionQuery[128];
   snprintf(invalidDeletionQuery, 127,
            "SELECT * FROM %s;", PG_TABLE_PRIVATIVE);

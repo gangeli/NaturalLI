@@ -19,7 +19,7 @@ import java.util.function.Function;
  */
 public class Preprocess {
 
-  public static boolean PRODUCTION = false;
+  public static boolean PRODUCTION = true;
 
 
   public static String annotate(StanfordCoreNLP pipeline, Function<String, Integer> indexer, String line) {
@@ -42,7 +42,7 @@ public class Preprocess {
     }});
 
     // Read input
-    System.err.println("--READY FOR INPUT--");
+    System.err.println("Preprocess ready for input");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String line;
     while ((line = reader.readLine()) != null) {

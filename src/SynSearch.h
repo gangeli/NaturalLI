@@ -864,6 +864,8 @@ struct syn_search_response {
  *                      visited.
  * @param stopWhenResultFound If true, do not continue searching past
  *                            the first result found.
+ 
+ * @param silent If true, do not print anything during search.
  */
 syn_search_options SynSearchOptions(
     const uint32_t& maxTicks,

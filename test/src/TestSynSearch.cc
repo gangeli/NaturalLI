@@ -936,4 +936,10 @@ TEST_F(SynSearchTest, LemursToAnimalsStrict) {
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
 }
 
+TEST_F(SynSearchTest, EmptyDBTest) {
+  btree_set<uint64_t> factdb;
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, opts);
+  ASSERT_EQ(0, response.paths.size());
+}
+
 #undef SEARCH_TIMEOUT_TEST
