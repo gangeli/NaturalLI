@@ -162,7 +162,7 @@ void pushChildrenWorker(
       bool newTruthValue;
       const float cost = costs->mutationCost(
           tree, node.tokenIndex(), edges[edgeI].type,
-          node.truthState(), &newTruthValue);
+          node.truthState(), &newTruthValue) * edges[edgeI].cost;
       if (isinf(cost)) { continue; }
       // (compute new fields)
       const uint64_t newHash = tree.updateHashFromMutation(

@@ -114,6 +114,7 @@ public class Word {
 
     // Find the root of the phrase
     int quantifierSide = -1;
+    int negRoot = -1;
     int root = index;
     ARITY arity = ARITY.UNK;
     while (!"root".equals(tree.governingRelations[root])) {
@@ -130,18 +131,22 @@ public class Word {
       } else if (NEG_RELATIONS.contains(tree.governingRelations[root])) {
         arity = ARITY.NEG;
         quantifierSide = root;
+        if (negRoot < 0) { negRoot = root; }
         root = tree.governors[root];
-        break;
+        // don't break -- it may still be binary
       } else {
         root = tree.governors[root];
       }
+    }
+    if (arity == ARITY.NEG) {
+      root = negRoot;
     }
 
     // Get the subject span
     Pair<Integer, Integer> subj = tree.getSubtreeSpan(quantifierSide);
     assert index < subj.second && index >= subj.first;
     rtn[0] = index + 1;
-    rtn[1] = Math.max(subj.second, root + 1);
+    rtn[1] = Math.max(subj.second, root);
 
     // Get the object span
     if (arity == ARITY.BINARY) {
@@ -149,15 +154,15 @@ public class Word {
         // Regular object
         if (tree.governors[i] == root && OBJ_RELATIONS.contains(tree.governingRelations[i])) {
           Pair<Integer, Integer> obj = tree.getSubtreeSpan(i);
-          rtn[2] = obj.first;
+          rtn[2] = Math.min(root, obj.first);
           rtn[3] = obj.second;
           break;
         }
         // Copula
         if (tree.governors[i] == root && "cop".equals(tree.governingRelations[i])) {
           Pair<Integer, Integer> obj = tree.getSubtreeSpan(i);
-          rtn[1] = Math.max(subj.second + 1, i + 1);
-          rtn[2] = Math.max(i + 1, obj.first);
+          rtn[1] = Math.max(subj.second, i);
+          rtn[2] = Math.max(i, obj.first);
           rtn[3] = Math.max(tree.governors[i] + 1, obj.second);
           break;
         }

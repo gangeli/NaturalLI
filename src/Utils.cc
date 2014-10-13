@@ -75,13 +75,13 @@ std::string toString(const Graph& graph, const Tree& tree, const SearchNode& pat
   string str = "";
   str += std::to_string(path.factHash()) + ": ";
   for (uint8_t i = 0; i < tree.length; ++i) {
-    string sense = to_string((long long int) path.token().sense);
     if (i == path.tokenIndex()) {
+    string sense = to_string((long long int) path.token().sense);
       str += "*" + string(graph.gloss(path.token())) + "_" + sense + " ";
     } else if (path.isDeleted(i)) {
       str += "-- ";
     } else {
-      str += string(graph.gloss(tree.token(i))) + "_" + sense + " ";
+      str += string(graph.gloss(tree.token(i))) + " ";
     }
   }
   return str;

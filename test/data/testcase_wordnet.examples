@@ -16,14 +16,14 @@ TRUE: Some cats like felines
 All animals have tails
 TRUE: All cats have tails
 
-Some cats have tails
+Some mammals have tails
 TRUE: Some animals have tails
 
 # Multiple hops through WordNet | one quantifier | object
-No cats like animals
-TRUE: No cats like cats
+No cat likes animals
+TRUE: No cat likes dogs
 
-Some cats like cats
-TRUE: Some cats have animals
+Some cat likes cats
+TRUE: Some cat likes animals
 
 
