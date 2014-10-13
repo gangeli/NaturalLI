@@ -122,6 +122,21 @@ class Preprocessor {
   mutex lock;
 };
 
+const char* escapeQuote(const string& input) {
+  size_t index = 0;
+  string str = string(input.c_str());
+  while (true) {
+    /* Locate the substring to replace. */
+    index = str.find("\"", index);
+    if (index == string::npos) break;
+    /* Make the replacement. */
+    str.replace(index, 1, "\\\"");
+    /* Advance index forward so the next iteration doesn't pick it up as well. */
+    index += 2;
+  }
+  return str.c_str();
+}
+
 
 /**
  * Execute a query, returning a JSON formatted response.
@@ -132,11 +147,14 @@ class Preprocessor {
  * @param graph The graph of valid edge instances which can be taken.
  * @param costs The search costs to use for this query
  * @param options The options for the search, to be passed along directly.
+ * @param truth [output] The probability that the query is true, as just a simple
+ *                       float value.
  *
  * @return A JSON formatted response with the result of the search.
  */
 string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& query,
-                    const Graph* graph, const SynSearchCosts* costs, const syn_search_options& options) {
+                    const Graph* graph, const SynSearchCosts* costs,
+                    const syn_search_options& options, double* truth) {
   // Create KB
   btree::btree_set<uint64_t> database;
   if (kb.size() == 0) {
@@ -156,9 +174,16 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
   const syn_search_response result = SynSearch(graph, database, input, costs, options);
 
   // Grok result
-  char rtn[1024];
-  snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu}", 
-           result.paths.size(), result.totalTicks);
+  // TOOD(gabor) real truth calculation
+  if (result.paths.size() > 0) {
+    *truth = 1.0;
+  } else {
+    *truth = 0.0;
+  }
+  // Generate JSON
+  char rtn[4096];
+  snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\"}", 
+           result.paths.size(), result.totalTicks, *truth, escapeQuote(query));
   return rtn;
 }
 
@@ -171,34 +196,60 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
  *
  * @param graph The graph containing the edge instances we can traverse.
  * @param proc The preprocessor to use during the search.
+ *
+ * @return The number of failed examples, if any were annotated. 0 by default.
  */
-void repl(const Graph* graph, Preprocessor& proc) {
+uint32_t repl(const Graph* graph, Preprocessor& proc) {
+  uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts = SynSearchOptions(10000,     // maxTicks
-                                             10000.0f,  // costThreshold
-                                             false,     // stopWhenResultFound
-                                             false);    // silent
+  syn_search_options opts = SynSearchOptions(100000,     // maxTicks
+                                             10000.0f,   // costThreshold
+                                             false,      // stopWhenResultFound
+                                             false);     // silent
 
   fprintf(stderr, "--NaturalLI ready for input--\n\n");
-  while (true) {
+  while (!cin.fail()) {
     // Process lines
     vector<string> lines;
     char line[256];
     memset(line, 0, sizeof(line));
-    while (true) {
-      std::cin.getline(line, 255);
+    while (!cin.fail()) {
+      cin.getline(line, 255);
       if (line[0] == '\0') { break; }
-      lines.push_back(string(line));
+      if (line[0] != '#') {
+        lines.push_back(string(line));
+      }
     }
 
     if (lines.size() > 0) {
-      // Run query
+      // Check if query is annotated with truth
       string query = lines.back();
       lines.pop_back();
-      string response =  executeQuery(proc, lines, query, graph, costs, opts);
+      bool haveExpectedTruth = false;
+      bool expectedTruth;
+      if (query.substr(0,5) == "TRUE:") {
+        haveExpectedTruth = true;
+        expectedTruth = true;
+        query = query.substr(5);
+      } else if (query.substr(0,6) == "FALSE:") {
+        haveExpectedTruth = true;
+        expectedTruth = false;
+        query = query.substr(6);
+      }
+      // Run query
+      double truth;
+      string response =  executeQuery(proc, lines, query, graph, costs, opts, &truth);
       // Print
       fprintf(stderr, "\n");
       fflush(stderr);
+      if (haveExpectedTruth) {
+        if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) { 
+          printf("PASS: ");
+        } else { 
+          printf("FAIL: ");
+          failedExamples += 1;
+        }
+      }
       printf("%s\n", response.c_str());  // Should be the only output to stdout
       fflush(stdout);
       fprintf(stderr, "\n");
@@ -207,8 +258,9 @@ void repl(const Graph* graph, Preprocessor& proc) {
   }
   
   // Should never reach here!
-  fprintf(stderr, "How did we get here!!??\n");
+  fprintf(stderr, "EOF on stdin -- exiting REPL\n");
   delete costs;
+  return failedExamples;
 }
 
 
@@ -216,7 +268,7 @@ void repl(const Graph* graph, Preprocessor& proc) {
  * The function to call for caught signals. In practice, this is a NOOP.
  */
 void signalHandler(int32_t s){
-  printf("(caught signal %d; use 'kill' to end the program)\n",s);
+  printf("(caught signal %d; use 'kill' or EOF to end the program)\n",s);
   printf("What do we say to the God of death?\n");
   printf("  \"Not today...\"\n");
 }
@@ -239,5 +291,5 @@ int32_t main( int32_t argc, char *argv[] ) {
   // Start REPL
   Preprocessor proc;
   Graph* graph = ReadGraph();
-  repl(graph, proc);
+  return repl(graph, proc);
 }

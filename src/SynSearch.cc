@@ -764,15 +764,6 @@ syn_search_options SynSearchOptions(
 }
 
 //
-// A helper to evict the cache. This is rather expensive.
-//
-inline void EVICT_CACHE() {
-  void* __ptr = malloc(L3_CACHE_SIZE); 
-  memset(__ptr, 0x0, L3_CACHE_SIZE); 
-  free(__ptr);
-}
-
-//
 // Handle push/pop to the priority queue
 //
 void priorityQueueWorker(
@@ -803,7 +794,6 @@ void priorityQueueWorker(
       while (!dequeueChannel->push(value)) {
         idleTicks += 1;
         if (idleTicks % 1000000 == 0) { 
-          EVICT_CACHE();
           if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
           if (*timeout) { 
             if (!opts.silent) {
@@ -818,7 +808,6 @@ void priorityQueueWorker(
     } else {
       if (!(*pqEmpty)){ 
         *pqEmpty = true;
-        EVICT_CACHE();
       }
     }
 
@@ -826,7 +815,6 @@ void priorityQueueWorker(
     if (!somethingHappened) {
       idleTicks += 1;
       if (idleTicks % 1000000 == 0) { 
-        EVICT_CACHE();
         if (!opts.silent) {printTime("[%c] "); fprintf(stderr, "  |PQ Idle| idle=%luM\n", idleTicks / 1000000); }
       }
     }
@@ -870,8 +858,6 @@ void pushChildrenWorker(
         if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  |CF Idle| (can't dequeue) ticks=%luK  idle=%luM  seemsDone=%u\n", *ticks / 1000, idleTicks / 1000000, *pqEmpty); }
         // Check if the priority queue is empty
         if (*pqEmpty) {
-          // (evict the cache)
-          EVICT_CACHE();
           // (try to poll again)
           if (dequeueChannel->poll(&scoredNode)) { break; }
           // (priority queue really is empty)
@@ -996,7 +982,6 @@ void pushChildrenWorker(
     fprintf(stderr, "  |CF Normal Return| ticks=%lu  idle=%lu\n", *ticks, idleTicks);
   }
   *timeout = true;
-  EVICT_CACHE();
 }
 #pragma GCC pop_options  // matches push_options above
 
@@ -1050,7 +1035,6 @@ void factLookupWorker(
     if (!opts.silent && idleTicks % 10000000 == 0) { 
       printTime("[%c] "); 
       fprintf(stderr, "  |Lookup Idle| idle=%luM\n", idleTicks / 1000000);
-      EVICT_CACHE();
     }
   }
 
@@ -1093,8 +1077,8 @@ syn_search_response SynSearch(
   bool* searchDone = cacheSpace + 2;
   *searchDone = false;
   // (communication)
-  Channel<ScoredSearchNode> enqueueChannel(1024);
-  Channel<ScoredSearchNode> dequeueChannel(1024);
+  Channel<ScoredSearchNode> enqueueChannel(1048576);
+  Channel<ScoredSearchNode> dequeueChannel(1048576);
   SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
   uint64_threadsafe_t* historySize = malloc_uint64_threadsafe_t();
 
@@ -1156,7 +1140,6 @@ syn_search_response SynSearch(
   // (database lookup)
   // (note: this must come after the above two have joined)
   *searchDone = true;
-  EVICT_CACHE();
   if (!opts.silent) { printTime("[%c] "); fprintf(stderr, "  Database lookup...\n"); }
   lookupThread.join();
   if (!opts.silent) {
@@ -1170,6 +1153,5 @@ syn_search_response SynSearch(
   free(cacheSpace);
   
   // Return
-  EVICT_CACHE();
   return response;
 }
