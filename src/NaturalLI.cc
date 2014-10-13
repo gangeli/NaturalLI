@@ -163,6 +163,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
     for (auto iter = kb.begin(); iter != kb.end(); ++iter) {
       const Tree* fact = proc.annotate(iter->c_str());
       database.insert(fact->hash());
+      fprintf(stderr, "hash: %lu\n", fact->hash());
       delete fact;
     }
   }
@@ -202,10 +203,10 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
 uint32_t repl(const Graph* graph, Preprocessor& proc) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts = SynSearchOptions(100000,     // maxTicks
-                                             10000.0f,   // costThreshold
-                                             false,      // stopWhenResultFound
-                                             false);     // silent
+  syn_search_options opts = SynSearchOptions(1000000,     // maxTicks
+                                             10000.0f,    // costThreshold
+                                             false,       // stopWhenResultFound
+                                             false);      // silent
 
   fprintf(stderr, "--NaturalLI ready for input--\n\n");
   while (!cin.fail()) {

@@ -668,23 +668,6 @@ class SearchNode {
   /** The move index constructor */
   SearchNode(const SearchNode& from, const Tree& tree,
           const uint8_t& newIndex, const uint32_t& backpointer);
-
-//  /** Compares the priority keys of two path states */
-//  inline bool operator<=(const SearchNode& rhs) const {
-//    return getPriorityKey() <= rhs.getPriorityKey();
-//  }
-//  /** Compares the priority keys of two path states */
-//  inline bool operator<(const SearchNode& rhs) const {
-//    return getPriorityKey() < rhs.getPriorityKey();
-//  }
-//  /** Compares the priority keys of two path states */
-//  inline bool operator>(const SearchNode& rhs) const {
-//    return !(*this <= rhs);
-//  }
-//  /** Compares the priority keys of two path states */
-//  inline bool operator>=(const SearchNode& rhs) const {
-//    return !(*this < rhs);
-//  }
   
   /**
    * Checks if the two paths are the same, <i>including</i> the

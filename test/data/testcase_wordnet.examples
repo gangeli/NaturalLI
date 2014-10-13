@@ -1,0 +1,29 @@
+# One hop through WordNet | one quantifier | subject
+All felines have tails
+TRUE: All cats have tails
+
+Some cats have tails
+TRUE: Some felines have tails
+
+# One hop through WordNet | one quantifier | object
+No cats like felines
+TRUE: No cats like cats
+
+Some cats like cats
+TRUE: Some cats like felines
+
+# Multiple hops through WordNet | one quantifier | subject
+All animals have tails
+TRUE: All cats have tails
+
+Some cats have tails
+TRUE: Some animals have tails
+
+# Multiple hops through WordNet | one quantifier | object
+No cats like animals
+TRUE: No cats like cats
+
+Some cats like cats
+TRUE: Some cats have animals
+
+
