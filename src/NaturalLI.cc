@@ -232,10 +232,12 @@ uint32_t repl(const Graph* graph, Preprocessor& proc) {
         haveExpectedTruth = true;
         expectedTruth = true;
         query = query.substr(5);
+        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
       } else if (query.substr(0,6) == "FALSE:") {
         haveExpectedTruth = true;
         expectedTruth = false;
         query = query.substr(6);
+        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
       }
       // Run query
       double truth;
