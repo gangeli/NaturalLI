@@ -9,7 +9,7 @@
 #define SILENT true
 
 #define ALL_CATS_HAVE_TAILS \
-                       string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t1-3\tmultiplicative\t3-5\n") + \
+                       string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\tmultiplicative\t3-5\n") + \
                        string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n") + \
                        string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
                        string(TAIL_STR) + string("\t3\tdobj\t0\t-\t-\t-\t-\n")
@@ -192,7 +192,7 @@ TEST_F(TreeTest, QuantifierScopesSimple) {
   EXPECT_FALSE(tree.isQuantifier(3));
   
   // Check everything under scope
-  EXPECT_EQ(1, countQuantifiers(tree, 0));
+  EXPECT_EQ(0, countQuantifiers(tree, 0));
   EXPECT_EQ(1, countQuantifiers(tree, 1));
   EXPECT_EQ(1, countQuantifiers(tree, 2));
   EXPECT_EQ(1, countQuantifiers(tree, 3));
@@ -547,6 +547,18 @@ TEST_F(TreeTest, HashMultipleSteps) {
   EXPECT_EQ(target.hash(), hash);
 }
 
+TEST_F(TreeTest, HashCollapseDetNeg) {
+  Tree neg(string(NO_STR) + string("\t2\tneg\t0\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+  Tree det(string(NO_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+  Tree amod(string(NO_STR) + string("\t2\tamod\t0\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(neg.hash(), det.hash());
+  EXPECT_NE(neg.hash(), amod.hash());
+  EXPECT_NE(det.hash(), amod.hash());
+}
+
 // ----------------------------------------------
 // KNHeap (Priority Queue)
 // ----------------------------------------------
@@ -679,12 +691,12 @@ TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 0), WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), WORDNET_UP, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
   
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 0), WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), WORDNET_DOWN, true, &outTruth);
   EXPECT_EQ(true, outTruth);
   EXPECT_TRUE(isinf(cost));
 }
@@ -693,7 +705,7 @@ TEST_F(SynSearchCostsTest, GenericsAreAdditiveMultiplicative) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 1), WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), WORDNET_VERB_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -702,12 +714,12 @@ TEST_F(SynSearchCostsTest, MutationsCostQuantificiation) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 1), WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), WORDNET_DOWN, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
 
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 1), WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), WORDNET_UP, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(true, outTruth);
 }
@@ -716,7 +728,7 @@ TEST_F(SynSearchCostsTest, AllAdditiveSubj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 1), WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), WORDNET_VERB_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
 }
 
@@ -724,7 +736,7 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, 3), WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 3), WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -734,6 +746,8 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
 // ----------------------------------------------
 #define SEARCH_TIMEOUT_TEST 1000
 class SynSearchTest : public ::testing::Test {
+ public:
+  SynSearchTest() : opts(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT) { }
  protected:
   virtual void SetUp() {
     lemursHaveTails = new Tree(string("73918\t2\tnsubj\n") +
@@ -747,7 +761,7 @@ class SynSearchTest : public ::testing::Test {
                              string("125248\t2\tdobj"));
     graph = ReadMockGraph();
     cyclicGraph = ReadMockGraph(true);
-    opts = SynSearchOptions(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
+    opts = syn_search_options(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
     factdb.insert(catsHaveTails->hash());
     costs = softNaturalLogicCosts();
     strictCosts = strictNaturalLogicCosts();
@@ -775,21 +789,21 @@ class SynSearchTest : public ::testing::Test {
 };
 
 TEST_F(SynSearchTest, ThreadsFinish) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
 }
 
 TEST_F(SynSearchTest, TickCountNoMutation) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, opts);
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, true, opts);
   EXPECT_EQ(9, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutations) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
   EXPECT_EQ(15, response.totalTicks);
 }
 
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
-  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, costs, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, costs, true, opts);
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
 #else
@@ -798,12 +812,12 @@ TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
 }
 
 TEST_F(SynSearchTest, LiteralLookup) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, opts);
+  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, true, opts);
   EXPECT_EQ(1, response.paths.size());
 }
 
 TEST_F(SynSearchTest, LemursToCatsSoft) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(4, response.paths[0].size());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
@@ -811,14 +825,14 @@ TEST_F(SynSearchTest, LemursToCatsSoft) {
 }
 
 TEST_F(SynSearchTest, LemursToCatsStrict) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, strictCosts, opts);
+  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, strictCosts, true, opts);
   ASSERT_EQ(0, response.paths.size());
 }
 
 TEST_F(SynSearchTest, LemursToAnimalsSoft) {
   btree_set<uint64_t> factdb;
   factdb.insert(lemursHaveTails->hash());
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, costs, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
@@ -827,7 +841,7 @@ TEST_F(SynSearchTest, LemursToAnimalsSoft) {
 TEST_F(SynSearchTest, LemursToAnimalsStrict) {
   btree_set<uint64_t> factdb;
   factdb.insert(lemursHaveTails->hash());
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
@@ -835,7 +849,7 @@ TEST_F(SynSearchTest, LemursToAnimalsStrict) {
 
 TEST_F(SynSearchTest, EmptyDBTest) {
   btree_set<uint64_t> factdb;
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, opts);
+  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, true, opts);
   ASSERT_EQ(0, response.paths.size());
 }
 

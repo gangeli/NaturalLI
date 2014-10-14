@@ -46,6 +46,14 @@ SearchNode::SearchNode(const Tree& init)
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
  
+SearchNode::SearchNode(const Tree& init, const bool& assumedInitialTruth)
+    : backpointer(0),
+      data(mkSearchNodeData(init.hash(), init.root(), assumedInitialTruth, 
+                         0x0, init.token(init.root()), TREE_ROOT_WORD)) {
+  memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
+ 
 SearchNode::SearchNode(const Tree& init, const uint8_t& index)
     : backpointer(0),
       data(mkSearchNodeData(init.hash(), index, true, 
@@ -406,7 +414,13 @@ inline uint64_t mix( const uint64_t u ) {
   return v;
 }
 
-inline uint64_t hashEdge(const dependency_edge& edge) {
+inline uint64_t hashEdge(dependency_edge edge) {
+  // Collapse relations which are 'equivalent'
+  dep_label  originalRel = edge.relation;
+  if (edge.relation == DEP_NEG) { 
+    edge.relation = DEP_DET;
+  }
+  // Hash edge
 #if TWO_PASS_HASH!=0
   #ifdef __GNUG__
     return fnv_64a_buf(const_cast<dependency_edge*>(&edge), sizeof(dependency_edge), FNV1_64_INIT);
@@ -414,10 +428,12 @@ inline uint64_t hashEdge(const dependency_edge& edge) {
     return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
   #endif
 #else
-    uint64_t edgeHash;
-    memcpy(&edgeHash, &edge, sizeof(uint64_t));
-    return mix(edgeHash);
+  uint64_t edgeHash;
+  memcpy(&edgeHash, &edge, sizeof(uint64_t));
+  return mix(edgeHash);
 #endif
+  // Revert relation
+  edge.relation = originalRel;
 }
 
   
@@ -440,14 +456,11 @@ uint64_t Tree::updateHashFromMutation(
                                       const ::word& newWord) const {
   uint64_t newHash = oldHash;
   // Fix incoming dependency
-//  fprintf(stderr, "Mutating %u; dep=%u -> %u  gov=%u\n", index, oldWord, newWord, governor);
   newHash ^= hashEdge(edgeInto(index, oldWord, governor));
   newHash ^= hashEdge(edgeInto(index, newWord, governor));
   // Fix outgoing dependencies
   for (uint8_t i = 0; i < length; ++i) {
     if (data[i].governor == index) {
-//      fprintf(stderr, "  Also re-hashing word at %u; dep=%u  gov=%u -> %u\n", i,
-//              data[i].word.word, oldWord, newWord);
       newHash ^= hashEdge(edgeInto(i, data[i].word, oldWord));
       newHash ^= hashEdge(edgeInto(i, data[i].word, newWord));
     }
@@ -469,11 +482,9 @@ uint64_t Tree::updateHashFromDeletions(
   for (uint8_t i = 0; i < length; ++i) {
     if (TREE_IS_DELETED(newDeletions, i)) {
       if (i == deletionIndex) {
-//        fprintf(stderr, "Deleting word at %u; dep=%u  gov=%u\n", i, deletionWord, governor);
         // Case: we are deleting the root of the deletion chunk
         newHash ^= hashEdge(edgeInto(i, deletionWord, governor));
       } else {
-//        fprintf(stderr, "Deleting word at %u; dep=%u  gov=%u\n", i, edgeInto(i).dependent, edgeInto(i).governor);
         // Case: we are deleting an entire edge
         newHash ^= hashEdge(edgeInto(i));
       }
@@ -766,26 +777,4 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
   costs->transitionCostFromFalse[FUNCTION_COVER] = okCost;
   costs->transitionCostFromFalse[FUNCTION_INDEPENDENCE] = badCost;
   return costs;
-}
-
-
-
-// ----------------------------------------------
-// UTILITIES
-// ----------------------------------------------
-
-//
-// Create the input options for a search
-//
-syn_search_options SynSearchOptions(
-    const uint32_t& maxTicks,
-    const float& costThreshold,
-    const bool& stopWhenResultFound,
-    const bool& silent) {
-  syn_search_options opts;
-  opts.maxTicks = maxTicks;
-  opts.costThreshold = costThreshold;
-  opts.stopWhenResultFound = stopWhenResultFound;
-  opts.silent = silent;
-  return opts;
 }

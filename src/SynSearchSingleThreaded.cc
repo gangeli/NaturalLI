@@ -54,26 +54,7 @@ inline uint64_t searchLoop(
         memorySize = i + 1;
       }
     }
-#endif
-#if SEARCH_MARKOV_MEMORY!=0 || SEARCH_CYCLE_MEMORY!=0
     const SearchNode& parent = history[node.getBackpointer()];
-#endif
-#if SEARCH_MARKOV_MEMORY!=0
-    const uint64_t historyScanBegin = historySize <= SEARCH_MARKOV_MEMORY ? 1 : historySize - SEARCH_MARKOV_MEMORY;
-    bool foundDuplicate = false;
-    const uint8_t tokenIndex = node.tokenIndex();
-    for (uint64_t indexToCheck = historyScanBegin; 
-         indexToCheck < historySize;
-         ++indexToCheck) {
-      if (history[indexToCheck].factHash() == node.factHash() &&
-          history[indexToCheck].tokenIndex() == tokenIndex) {
-        foundDuplicate = true;
-        break;
-      }
-    }
-    if (foundDuplicate) { 
-      continue;
-    }
 #endif
     // Register visited
     registerVisited(scoredNode);
@@ -95,9 +76,18 @@ inline uint64_t searchLoop(
     uint32_t numEdges;
     const tagged_word nodeToken = node.token();
     const edge* edges = graph->incomingEdgesFast(nodeToken, &numEdges);
+    const uint8_t tokenIndex = node.tokenIndex();
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       // (ignore when sense doesn't match)
       if (edges[edgeI].sink_sense != nodeToken.sense) { continue; }
+      // (ignore multiple quantifier mutations)
+      bool mutatingQuantifer;
+      if (edges[edgeI].type == QUANTIFIER_REWORD || edges[edgeI].type == QUANTIFIER_NEGATE ||
+          edges[edgeI].type == QUANTIFIER_UP || edges[edgeI].type == QUANTIFIER_DOWN) {
+        if (tree.word(tokenIndex) != node.token().word) { continue; }
+        mutatingQuantifer = true;
+      }
+      // (get cost)
       bool newTruthValue;
       const float cost = costs->mutationCost(
           tree, node, edges[edgeI].type,
@@ -115,6 +105,9 @@ inline uint64_t searchLoop(
       // (create child)
       const SearchNode mutatedChild(node, newHash, newToken,
                                     newTruthValue, myIndex);
+      if (mutatingQuantifer) {
+        // TODO(gabor) update quantifier with mutated version!
+      }
       // (push child)
 #if SEARCH_CYCLE_MEMORY!=0
       bool isNewChild = true;
@@ -185,7 +178,7 @@ syn_search_response SynSearch(
     const Graph* mutationGraph, 
     const btree::btree_set<uint64_t>& db,
     const Tree* input, const SynSearchCosts* costs,
-    const syn_search_options& opts) {
+    const bool& assumedInitialTruth, const syn_search_options& opts) {
   syn_search_response response;
 
   // Debug print parameters
@@ -210,7 +203,7 @@ syn_search_response SynSearch(
     -std::numeric_limits<float>::infinity());
   // The database lookup function
   // (the matches found)
-  vector<vector<SearchNode>>& matches = response.paths;
+  vector<syn_search_path>& matches = response.paths;
   // (the lookup function)
   std::function<bool(uint64_t)> lookupFn = [&db](uint64_t value) -> bool {
     auto iter = db.find( value );
@@ -222,7 +215,7 @@ syn_search_response SynSearch(
     if (node.truthState() && lookupFn(node.factHash())) {
       bool unique = true;
       for (auto iter = matches.begin(); iter != matches.end(); ++iter) {
-        vector<SearchNode> path = *iter;
+        vector<SearchNode> path = iter->nodeSequence;
         SearchNode endOfPath = path.back();
         if (endOfPath.factHash() == node.factHash()) {
           unique = false;
@@ -243,7 +236,7 @@ syn_search_response SynSearch(
         // (reverse the path)
         std::reverse(path.begin(), path.end());
         // (add to the results list)
-        matches.push_back(path);
+        matches.push_back(syn_search_path(path, scoredNode.cost));
       }
     }
   };
@@ -251,7 +244,7 @@ syn_search_response SynSearch(
   // -- Run Search --
   // Enqueue the first element
   // (to the fringe)
-  fringe.insert(0.0f, SearchNode(*input));
+  fringe.insert(0.0f, SearchNode(*input, assumedInitialTruth));
   // (to the history)
   history[0] = SearchNode(*input);
   historySize += 1;

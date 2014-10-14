@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cmath>
 #include <signal.h>
 #include <iostream>
 #include <iomanip>
@@ -137,6 +138,39 @@ const char* escapeQuote(const string& input) {
   return str.c_str();
 }
 
+/**
+ * Compute the confidence of a search response.
+ * Note that this is truth independent at this point.
+ *
+ * @param response The search response.
+ * @return A confidence value between 0 and 1/2;
+ */
+double confidence(const syn_search_response& response) {
+  if (response.size() == 0) { return 0.0; }
+  vector<double> confidences;
+  for (uint64_t i = 0; i < response.paths.size(); ++i) {
+    float cost = response.paths[i].cost;
+    confidences.push_back(1.0 / (1.0 + exp(cost)));
+  }
+  return *max_element(confidences.begin(), confidences.end());
+}
+
+/**
+ * Compute the truth of a fact, given a confidence and the truth state
+ * of the confidence.
+ *
+ * @param confidence The confidence of this truth value.
+ * @param truth The hypothesized truth value of the fact.
+ *
+ * @return A truth value between 0 and 1
+ */
+inline double probability(const double& confidence, const bool& truth) {
+  if (truth) {
+    return 0.5 + confidence;
+  } else {
+    return 0.5 - confidence;
+  }
+}
 
 /**
  * Execute a query, returning a JSON formatted response.
@@ -171,19 +205,37 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
   const Tree* input = proc.annotate(query.c_str());
 
   // Run Search
-  const syn_search_response result = SynSearch(graph, database, input, costs, options);
+  const syn_search_response resultIfTrue
+    = SynSearch(graph, database, input, costs, true, options);
+  const syn_search_response resultIfFalse
+    = SynSearch(graph, database, input, costs, false, options);
 
   // Grok result
-  // TOOD(gabor) real truth calculation
-  if (result.paths.size() > 0) {
-    *truth = 1.0;
+  // (confidence)
+  double confidenceOfTrue = confidence(resultIfTrue);
+  double confidenceOfFalse = confidence(resultIfFalse);
+  // (truth)
+  if (confidenceOfTrue > confidenceOfFalse) {
+    *truth = probability(confidenceOfTrue, true);
+  } else if (confidenceOfTrue < confidenceOfFalse) {
+    *truth = probability(confidenceOfFalse, false);
   } else {
-    *truth = 0.0;
+    *truth = 0.5;
   }
+//  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf: %f  truth:  %f\n",
+//         resultIfTrue.size(), resultIfFalse.size(),
+//         confidenceOfTrue, confidenceOfFalse, *truth);
+  // (sanity check)
+  if (*truth < 0.0) { *truth = 0.0; }
+  if (*truth > 1.0) { *truth = 1.0; }
+
   // Generate JSON
   char rtn[4096];
   snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\"}", 
-           result.paths.size(), result.totalTicks, *truth, escapeQuote(query));
+           resultIfTrue.size() + resultIfFalse.size(), 
+           resultIfTrue.totalTicks + resultIfFalse.totalTicks, 
+           *truth, 
+           escapeQuote(query));
   return rtn;
 }
 
@@ -202,10 +254,10 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
 uint32_t repl(const Graph* graph, Preprocessor& proc) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts = SynSearchOptions(1000000,     // maxTicks
-                                             10000.0f,    // costThreshold
-                                             false,       // stopWhenResultFound
-                                             false);      // silent
+  syn_search_options opts(1000000,     // maxTicks
+                          10000.0f,    // costThreshold
+                          false,       // stopWhenResultFound
+                          false);      // silent
 
   fprintf(stderr, "--NaturalLI ready for input--\n\n");
   while (!cin.fail()) {

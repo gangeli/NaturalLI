@@ -401,7 +401,7 @@ class Tree {
   /** If true, the word at the given index is a quantifier. */
   inline bool isQuantifier(const uint8_t& index) const {
     for (uint8_t i = 0; i < numQuantifiers; ++i) {
-      if (quantifierSpans[i].subj_begin == index) { return true; }
+      if (quantifierSpans[i].subj_begin - 1 == index) { return true; }
     }
     return false;
   }
@@ -677,6 +677,8 @@ class SearchNode {
   SearchNode(const SearchNode& from);
   /** The initial node constructor. */
   SearchNode(const Tree& init);
+  /** The initial node constructor, with an assumed truth value. */
+  SearchNode(const Tree& init, const bool& assumedTruthValue);
   /** The initial node constructor, but starting from a specific index. */
   SearchNode(const Tree& init, const uint8_t& index);
   /** The mutate constructor */
@@ -799,38 +801,62 @@ inline uint64_threadsafe_t* malloc_uint64_threadsafe_t() {
  * The structure representing the parameterization of the search
  * we are intended to perform.
  */
-typedef struct {
+struct syn_search_options {
   uint32_t maxTicks;
   float costThreshold;
   bool stopWhenResultFound;
   bool silent;
-} syn_search_options;
+
+  /**
+   * Create the input options for a Search.
+   *
+   * @param maxTicks The max number of search ticks (e.g., nodes viewed)
+   *                 to explore before timing out.
+   * @param costThreshold The threshold above which nodes should not be
+   *                      visited.
+   * @param stopWhenResultFound If true, do not continue searching past
+   *                            the first result found.
+   *
+   * @param silent If true, do not print anything during search.
+   */
+  syn_search_options( const uint32_t& maxTicks,
+                      const float& costThreshold,
+                      const bool& stopWhenResultFound,
+                      const bool& silent) {
+    this->maxTicks = maxTicks;
+    this->costThreshold = costThreshold;
+    this->stopWhenResultFound = stopWhenResultFound;
+    this->silent = silent;
+  }
+};
+
+/**
+ * A single search path.
+ */
+struct syn_search_path {
+  const std::vector<SearchNode> nodeSequence;
+  const float cost;
+
+  syn_search_path(const std::vector<SearchNode>& nodeSequence,
+                  const float& cost)
+                  : nodeSequence(nodeSequence), cost(cost) { }
+       
+  inline SearchNode operator[](const uint64_t& i) { return nodeSequence[i]; }
+  inline SearchNode front() { return nodeSequence.front(); }
+  inline SearchNode back() { return nodeSequence.back(); }
+  inline uint64_t size() const { return nodeSequence.size(); }
+};
 
 /**
  * A convenient struct to store the output of the search algorithm.
  */
 struct syn_search_response {
-  std::vector<std::vector<SearchNode>> paths;
+  std::vector<syn_search_path> paths;
   uint64_t totalTicks;
+
+  inline uint64_t size() const { return paths.size(); }
 };
 
-/**
- * Create the input options for a Search.
- *
- * @param maxTicks The max number of search ticks (e.g., nodes viewed)
- *                 to explore before timing out.
- * @param costThreshold The threshold above which nodes should not be
- *                      visited.
- * @param stopWhenResultFound If true, do not continue searching past
- *                            the first result found.
- 
- * @param silent If true, do not print anything during search.
- */
-syn_search_options SynSearchOptions(
-    const uint32_t& maxTicks,
-    const float& costThreshold,
-    const bool& stopWhenResultFound,
-    const bool& silent);
 
 /**
  * The entry method for starting a new search.
@@ -840,6 +866,7 @@ syn_search_response SynSearch(
     const btree::btree_set<uint64_t>& database,
     const Tree* input,
     const SynSearchCosts* costs,
+    const bool& assumedInitialTruth,
     const syn_search_options& opts);
 
 #endif
