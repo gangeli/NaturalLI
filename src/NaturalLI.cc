@@ -163,7 +163,6 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
     for (auto iter = kb.begin(); iter != kb.end(); ++iter) {
       const Tree* fact = proc.annotate(iter->c_str());
       database.insert(fact->hash());
-      fprintf(stderr, "hash: %lu\n", fact->hash());
       delete fact;
     }
   }
@@ -288,8 +287,8 @@ int32_t main( int32_t argc, char *argv[] ) {
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   // (catch signals)
-//  sigaction(SIGINT,  &sigIntHandler, NULL);
-//  sigaction(SIGPIPE, &sigIntHandler, NULL);
+  sigaction(SIGINT,  &sigIntHandler, NULL);
+  sigaction(SIGPIPE, &sigIntHandler, NULL);
 
   // Start REPL
   Preprocessor proc;

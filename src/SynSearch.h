@@ -61,6 +61,7 @@ typedef uint8_t quantifier_type;
  */
 inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
   switch (edge) {
+    // WordNet
     case WORDNET_UP:                  return FUNCTION_FORWARD_ENTAILMENT;
     case WORDNET_DOWN:                return FUNCTION_REVERSE_ENTAILMENT;
     case WORDNET_NOUN_ANTONYM:        return FUNCTION_ALTERNATION;
@@ -71,9 +72,18 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case WORDNET_ADJECTIVE_PERTAINYM: return FUNCTION_EQUIVALENT;
     case WORDNET_ADVERB_PERTAINYM:    return FUNCTION_EQUIVALENT;
     case WORDNET_ADJECTIVE_RELATED:   return FUNCTION_EQUIVALENT;
-    case ANGLE_NN:                    return FUNCTION_EQUIVALENT;
+    // Freebase
     case FREEBASE_UP:                 return FUNCTION_FORWARD_ENTAILMENT;
     case FREEBASE_DOWN:               return FUNCTION_REVERSE_ENTAILMENT;
+    // Nearest Neighbors
+    // TODO(gabor) replace with "equivalent," but make sure it can't hop
+    // too much (e.g., on quantifiers or when senses morph)
+    case ANGLE_NN:                    return FUNCTION_INDEPENDENCE;
+    // Quantifier Morphs
+    case QUANTIFIER_UP:               return FUNCTION_FORWARD_ENTAILMENT;
+    case QUANTIFIER_DOWN:             return FUNCTION_REVERSE_ENTAILMENT;
+    case QUANTIFIER_NEGATE:           return FUNCTION_NEGATION;
+    case QUANTIFIER_REWORD:           return FUNCTION_EQUIVALENT;
     default:
       fprintf(stderr, "No such edge: %u\n", edge);
       std::exit(1);
@@ -110,40 +120,37 @@ inline natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
     case DEP_CCOMP: return FUNCTION_INDEPENDENCE;          // interesting project here... "he said x" -> "x"?
     case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
     case DEP_COP: return FUNCTION_EQUIVALENT;
-    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;           // don't drop subjects.
-    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;       // as above
+    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;          // don't drop subjects.
+    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;      // as above
     case DEP_DEP: return FUNCTION_INDEPENDENCE;
-    case DEP_DET:
-      // TODO(gabor) quantifiers go here!
-      //             The relation here will depend on the quantifier type.
-      return FUNCTION_INDEPENDENCE;
+    case DEP_DET: return FUNCTION_EQUIVALENT;              // TODO(gabor) better treatment of generics?
     case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;
-    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;            // don't drop objects.
-    case DEP_EXPL: return FUNCTION_EQUIVALENT;              // though we shouldn't see this...
-    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;          // also shouldn't see this
-    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;      // she gave me a raise -> she gave a raise
+    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;           // don't drop objects.
+    case DEP_EXPL: return FUNCTION_EQUIVALENT;             // though we shouldn't see this...
+    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;         // also shouldn't see this
+    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;     // she gave me a raise -> she gave a raise
     case DEP_MARK: return FUNCTION_INDEPENDENCE;
-    case DEP_MWE: return FUNCTION_INDEPENDENCE;             // shouldn't see this
+    case DEP_MWE: return FUNCTION_INDEPENDENCE;            // shouldn't see this
     case DEP_NEG: return FUNCTION_NEGATION;
     case DEP_NN: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;        // not sure about this one
+    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;       // not sure about this one
     case DEP_NSUBJ: return FUNCTION_INDEPENDENCE;
     case DEP_NSUBJPASS: return FUNCTION_INDEPENDENCE;
     case DEP_NUM: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_NUMBER: return FUNCTION_INDEPENDENCE;
-    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;        // or, reverse?
-    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;            // though, not so in collapsed dependencies
-    case DEP_POBJ: return FUNCTION_INDEPENDENCE;             // must delete whole preposition
+    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;      // or, reverse?
+    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;          // though, not so in collapsed dependencies
+    case DEP_POBJ: return FUNCTION_INDEPENDENCE;           // must delete whole preposition
     case DEP_POSS: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;         // see DEP_POSS
-    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;          // FORBIDDEN to see this
-    case DEP_PREDET: return FUNCTION_INDEPENDENCE;           // FORBIDDEN to see this
+    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;       // see DEP_POSS
+    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;        // FORBIDDEN to see this
+    case DEP_PREDET: return FUNCTION_INDEPENDENCE;         // FORBIDDEN to see this
     case DEP_PREP: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_PRT: return FUNCTION_INDEPENDENCE;
     case DEP_PUNCT: return FUNCTION_EQUIVALENT;
     case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;
-    case DEP_RCMOD: return FUNCTION_INDEPENDENCE;            // no documentation?
-    case DEP_ROOT: return FUNCTION_INDEPENDENCE;             // err.. never delete
+    case DEP_RCMOD: return FUNCTION_INDEPENDENCE;          // no documentation?
+    case DEP_ROOT: return FUNCTION_INDEPENDENCE;           // err.. never delete
     case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_XCOMP: return FUNCTION_INDEPENDENCE;
@@ -624,7 +631,7 @@ struct alignas(16) syn_path_data {
   uint64_t    factHash:64;
   uint8_t     index:5;
   bool        truth:1;
-  uint32_t    deleteMask:MAX_QUERY_LENGTH;  // 26
+  uint64_t    deleteMask:MAX_QUERY_LENGTH;  // 26
   tagged_word currentToken;
   word        governor;
 

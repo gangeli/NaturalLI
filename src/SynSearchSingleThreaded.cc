@@ -42,8 +42,6 @@ inline uint64_t searchLoop(
 
   // Main Loop
   while (ticks < opts.maxTicks && dequeue(&scoredNode)) {
-    // Register the dequeue
-    registerVisited(scoredNode);
     
     // Register the dequeue'd element
     const SearchNode& node = scoredNode.node;
@@ -56,8 +54,31 @@ inline uint64_t searchLoop(
         memorySize = i + 1;
       }
     }
+#endif
+#if SEARCH_MARKOV_MEMORY!=0 || SEARCH_CYCLE_MEMORY!=0
     const SearchNode& parent = history[node.getBackpointer()];
 #endif
+#if SEARCH_MARKOV_MEMORY!=0
+    const uint64_t historyScanBegin = historySize <= SEARCH_MARKOV_MEMORY ? 1 : historySize - SEARCH_MARKOV_MEMORY;
+    bool foundDuplicate = false;
+    const uint8_t tokenIndex = node.tokenIndex();
+    for (uint64_t indexToCheck = historyScanBegin; 
+         indexToCheck < historySize;
+         ++indexToCheck) {
+      if (history[indexToCheck].factHash() == node.factHash() &&
+          history[indexToCheck].tokenIndex() == tokenIndex) {
+        foundDuplicate = true;
+        break;
+      }
+    }
+    if (foundDuplicate) { 
+      continue;
+    }
+#endif
+    // Register visited
+    registerVisited(scoredNode);
+
+    // Update history
     const uint32_t myIndex = historySize;
 //    fprintf(stderr, "%u>> %s (points to %u)\n", 
 //      myIndex, toString(*graph, tree, node).c_str(),

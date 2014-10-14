@@ -193,7 +193,8 @@ AC_DEFINE_UNQUOTED(FACT_MAP_SIZE,       ${FACT_MAP_SIZE:=32},  [The bitshift for
 AC_DEFINE_UNQUOTED(GREEDY_LOAD,         ${GREEDY_LOAD:=0},  [If true, greedily load the fact database, even if no one is requesting it.])
 AC_DEFINE_UNQUOTED(OLD_TRIE,            ${OLD_TRIE:=0},  [If true, load the old high-memory Trie implementation])
 AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=0},  [If true, pass each dependency arc through the fnv hash before XOR-ing it.])
-AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=0},  [The depth to go back checking for cycles in the search])
+AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=2},  [The depth to go back checking for cycles in the search])
+AC_DEFINE_UNQUOTED(SEARCH_MARKOV_MEMORY, ${SEARCH_MARKOV_MEMORY:=128},  [The number of nodes to search back for a duplicate entry.])
 
 AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile src/knheap/Makefile \
                  test/src/Makefile test/src/gtest/Makefile ])
