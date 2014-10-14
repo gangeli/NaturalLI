@@ -679,12 +679,12 @@ TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, 0, WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, 0), WORDNET_UP, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
   
   cost = strictCosts->mutationCost(
-    tree, 0, WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, 0), WORDNET_DOWN, true, &outTruth);
   EXPECT_EQ(true, outTruth);
   EXPECT_TRUE(isinf(cost));
 }
@@ -693,7 +693,7 @@ TEST_F(SynSearchCostsTest, GenericsAreAdditiveMultiplicative) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, 1, WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, 1), WORDNET_VERB_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -702,12 +702,12 @@ TEST_F(SynSearchCostsTest, MutationsCostQuantificiation) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, 1, WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, 1), WORDNET_DOWN, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
 
   cost = strictCosts->mutationCost(
-    tree, 1, WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, 1), WORDNET_UP, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(true, outTruth);
 }
@@ -716,7 +716,7 @@ TEST_F(SynSearchCostsTest, AllAdditiveSubj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, 1, WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, 1), WORDNET_VERB_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
 }
 
@@ -724,7 +724,7 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, 3, WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, 3), WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }

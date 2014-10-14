@@ -47,6 +47,14 @@ SearchNode::SearchNode(const Tree& init)
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
+ 
+SearchNode::SearchNode(const Tree& init, const uint8_t& index)
+    : backpointer(0),
+      data(mkSearchNodeData(init.hash(), index, true, 
+                         0x0, init.token(index), init.word(init.governor(index)))) {
+  memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
+    MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+}
   
 //
 // SearchNode() ''mutate constructor
@@ -479,12 +487,13 @@ uint64_t Tree::updateHashFromDeletions(
 //
 // Tree::projectLexicalRelation()
 //
-natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
+natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
                                               const natlog_relation& lexicalRelation) const {
+  const uint8_t index = currentNode.tokenIndex();
   const dep_tree_word& token = data[index];
   natlog_relation outputRelation = lexicalRelation;
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
-    // Get the quantifier in scipe
+    // Get the quantifier in scope
     uint8_t quantifier = this->quantifiersInScope[index][i];
     if (quantifier >= MAX_QUANTIFIER_COUNT) { break; }
     // Check if it's the subject or object
@@ -492,12 +501,12 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
     bool onSubject = index < span.subj_end && index >= span.subj_begin;
     // Visit the quantifier
     if (onSubject) {
-      const uint8_t type = this->quantifierMonotonicities[quantifier].subj_type;
-      const uint8_t mono = this->quantifierMonotonicities[quantifier].subj_mono;
+      const uint8_t type = currentNode.quantifierMonotonicities[quantifier].subj_type;
+      const uint8_t mono = currentNode.quantifierMonotonicities[quantifier].subj_mono;
       outputRelation = project(mono, type, outputRelation);
     } else {
-      const uint8_t type = this->quantifierMonotonicities[quantifier].obj_type;
-      const uint8_t mono = this->quantifierMonotonicities[quantifier].obj_mono;
+      const uint8_t type = currentNode.quantifierMonotonicities[quantifier].obj_type;
+      const uint8_t mono = currentNode.quantifierMonotonicities[quantifier].obj_mono;
       outputRelation = project(mono, type, outputRelation);
     }
   }
@@ -692,13 +701,14 @@ uint8_t project(const monotonicity& monotonicity,
 // SynSearch::mutationCost()
 //
 float SynSearchCosts::mutationCost(const Tree& tree,
-                                   const uint8_t& index,
+                                   const SearchNode& currentNode,
                                    const uint8_t& edgeType,
                                    const bool& endTruthValue,
                                    bool* beginTruthValue) const {
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
   const float lexicalRelationCost = mutationLexicalCost[edgeType];
-  const natlog_relation projectedFunction = tree.projectLexicalRelation(index, lexicalRelation);
+  const natlog_relation projectedFunction
+    = tree.projectLexicalRelation(currentNode, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
@@ -709,7 +719,7 @@ float SynSearchCosts::mutationCost(const Tree& tree,
 // SynSearch::insertionCost()
 //
 float SynSearchCosts::insertionCost(const Tree& tree,
-                                    const uint8_t& governorIndex,
+                                    const SearchNode& governor,
                                     const dep_label& dependencyLabel,
                                     const ::word& dependent,
                                     const bool& endTruthValue,
@@ -719,7 +729,7 @@ float SynSearchCosts::insertionCost(const Tree& tree,
   const float lexicalRelationCost
     = insertionLexicalCost[dependencyLabel];
   const natlog_relation projectedFunction
-    = tree.projectLexicalRelation(governorIndex, lexicalRelation);
+    = tree.projectLexicalRelation(governor, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];

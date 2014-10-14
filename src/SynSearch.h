@@ -195,14 +195,14 @@ class SynSearchCosts {
  public:
   /** The cost of a mutation */
   float mutationCost(const Tree& tree,
-                     const uint8_t& index,
+                     const SearchNode& currentNode,
                      const uint8_t& edgeType,
                      const bool& endTruthValue,
                      bool* beginTruthValue) const;
   
   /** The cost of an insertion (deletion in search) */
   float insertionCost(const Tree& tree,
-                      const uint8_t& governorIndex,
+                      const SearchNode& governor,
                       const dep_label& dependencyLabel,
                       const ::word& dependent,
                       const bool& endTruthValue,
@@ -358,7 +358,7 @@ class Tree {
       dep_label* childRelations,
       uint8_t* childrenLength) const;
   
-  /** @see children() above */
+  /** @see dependents() above */
   inline void dependents(const uint8_t& index,
       uint8_t* childrenIndices, 
       dep_label* childRelations,
@@ -537,12 +537,14 @@ class Tree {
    * Project a given lexical relation, at the given index of the tree,
    * up through the quantifiers of the tree.
    * 
-   * @param index The index of the token being mutated or projected through.
+   * @param currentNode The node being projected over, at the given index.
+   *                    This is to get the most recent quantifier markings,
+   *                    and to get the token index.
    * @param lexicalRelation The root lexical relation at the given index.
    *
    * @return The lexical relation projected up to the root of the tree.
    */
-  natlog_relation projectLexicalRelation( const uint8_t& index,
+  natlog_relation projectLexicalRelation( const SearchNode& currentNode,
                                           const natlog_relation& lexicalRelation) const;
   
   /** Returns the number of quantifiers in the sentence. */
@@ -662,12 +664,14 @@ class SearchNode {
   void mutations(SearchNode* output, uint64_t* index);
   void deletions(SearchNode* output, uint64_t* index);
 
-  /** A dummy constructor. Don't use this */
+  /** A dummy constructor. Don't use this. */
   SearchNode();
-  /** The copy constructor */
+  /** The copy constructor. */
   SearchNode(const SearchNode& from);
-  /** The initial node constructor */
+  /** The initial node constructor. */
   SearchNode(const Tree& init);
+  /** The initial node constructor, but starting from a specific index. */
+  SearchNode(const Tree& init, const uint8_t& index);
   /** The mutate constructor */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
              const tagged_word& newToken,

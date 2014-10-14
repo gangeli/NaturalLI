@@ -80,7 +80,7 @@ inline uint64_t searchLoop(
       if (edges[edgeI].sink_sense != nodeToken.sense) { continue; }
       bool newTruthValue;
       const float cost = costs->mutationCost(
-          tree, node.tokenIndex(), edges[edgeI].type,
+          tree, node, edges[edgeI].type,
           node.truthState(), &newTruthValue) * edges[edgeI].cost;
       if (isinf(cost)) { continue; }
       // (compute new fields)
@@ -122,7 +122,7 @@ inline uint64_t searchLoop(
       if (node.isDeleted(dependentIndex)) { continue; }
       bool newTruthValue;
       const float cost = costs->insertionCost(
-            tree, node.tokenIndex(), tree.relation(dependentIndex),
+            tree, node, tree.relation(dependentIndex),
             tree.word(dependentIndex), node.truthState(), &newTruthValue);
       if (!isinf(cost)) {
         // (compute deletion)
