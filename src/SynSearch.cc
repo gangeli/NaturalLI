@@ -160,6 +160,7 @@ Tree::Tree(const string& conll)
   quantifier_type subjType;
   quantifier_type objType;
   quantifier_span span;
+  
   // Parse CoNLL
   while (getline(lineStream, line, '\n')) {
     if (line.length() == 0) { continue; }
@@ -232,30 +233,58 @@ Tree::Tree(const string& conll)
     }
     lineI += 1;
   }
-}
   
-#pragma GCC push_options  // matches pop_options below
-#pragma GCC optimize ("unroll-loops")
+  // Initialize cached variables
+  for (uint8_t tokenI = 0; tokenI < MAX_QUERY_LENGTH; ++tokenI) {
+    memset(quantifiersInScope[tokenI], MAX_QUANTIFIER_COUNT, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
+    populateQuantifiersInScope(tokenI);
+  }
+}
+
+//
+// Tree::foreachQuantifier()
+//
 void Tree::foreachQuantifier(
       const uint8_t& index,
-      std::function<void(quantifier_type,monotonicity)> visitor) const {
+      std::function<void(const quantifier_type,const monotonicity)> visitor) const {
+  for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
+    // Get the quantifier in scipe
+    uint8_t quantifier = this->quantifiersInScope[index][i];
+    if (quantifier >= MAX_QUANTIFIER_COUNT) { return; }
+    // Check if it's the subject or object
+    const quantifier_span& span = this->quantifierSpans[quantifier];
+    bool onSubject = index < span.subj_end && index >= span.subj_begin;
+    // Visit the quantifier
+    if (onSubject) {
+      visitor(this->quantifierMonotonicities[quantifier].subj_type, 
+              this->quantifierMonotonicities[quantifier].subj_mono);
+    } else {
+      visitor(this->quantifierMonotonicities[quantifier].obj_type,
+              this->quantifierMonotonicities[quantifier].obj_mono);
+    }
+  }
+}
+
+//
+// Tree::populateQuantifiersInScope()
+//
+#pragma GCC push_options  // matches pop_options below
+#pragma GCC optimize ("unroll-loops")
+void Tree::populateQuantifiersInScope(const uint8_t index) {
   // Variables
   uint8_t distance[MAX_QUANTIFIER_COUNT];
   memset(distance, 0, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
   bool valid[MAX_QUANTIFIER_COUNT];
   memset(valid, 0, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
-  bool onSubject[MAX_QUANTIFIER_COUNT];
   // Collect statistics
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
     if (i >= numQuantifiers) { break; }
     if (index >= quantifierSpans[i].subj_begin && index < quantifierSpans[i].subj_end) {
-      onSubject[i] = true;
       valid[i] = true;
       const uint8_t d1 = index - quantifierSpans[i].subj_begin;
       const uint8_t d2 = quantifierSpans[i].subj_end - index;
       distance[i] = (d1 < d2) ? d1 : d2;
     } else if (index >= quantifierSpans[i].obj_begin && index < quantifierSpans[i].obj_end) {
-      onSubject[i] = false;
       valid[i] = true;
       const uint8_t d1 = index - quantifierSpans[i].obj_begin;
       const uint8_t d2 = quantifierSpans[i].obj_end - index;
@@ -263,6 +292,7 @@ void Tree::foreachQuantifier(
     }
   }
   // Run foreach
+  uint8_t outIndex = 0;
   bool somethingValid = true;
   while (somethingValid) {
     somethingValid = false;
@@ -280,26 +310,13 @@ void Tree::foreachQuantifier(
     }
     // (call visitor)
     if (somethingValid) {
-//      fprintf(stderr, "Calling visitor() on quantifier %u: %u-%u %u-%u :: %u %u; %u %u\n",
-//        argmin, 
-//        quantifierSpans[argmin].subj_begin, 
-//        quantifierSpans[argmin].subj_end,
-//        quantifierSpans[argmin].obj_begin,
-//        quantifierSpans[argmin].obj_end,
-//        quantifierMonotonicities[argmin].subj_type,
-//        quantifierMonotonicities[argmin].subj_mono,
-//        quantifierMonotonicities[argmin].obj_type,
-//        quantifierMonotonicities[argmin].obj_mono
-//        );
-      if (onSubject[argmin]) {
-        visitor(quantifierMonotonicities[argmin].subj_type, quantifierMonotonicities[argmin].subj_mono);
-      } else {
-        visitor(quantifierMonotonicities[argmin].obj_type, quantifierMonotonicities[argmin].obj_mono);
-      }
+      this->quantifiersInScope[index][outIndex] = argmin;
+      outIndex += 1;
     }
     // (update state)
     valid[argmin] = false;
   }
+  this->quantifiersInScope[index][outIndex] = MAX_QUANTIFIER_COUNT;
 }
 #pragma GCC pop_options  // matches push_options above
   
@@ -466,11 +483,26 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
                                               const natlog_relation& lexicalRelation) const {
   const dep_tree_word& token = data[index];
   natlog_relation outputRelation = lexicalRelation;
-  foreachQuantifier(index, [&outputRelation] (quantifier_type type, monotonicity mono) mutable -> void {
-    outputRelation = project(mono, type, outputRelation);
-  });
+  for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
+    // Get the quantifier in scipe
+    uint8_t quantifier = this->quantifiersInScope[index][i];
+    if (quantifier >= MAX_QUANTIFIER_COUNT) { break; }
+    // Check if it's the subject or object
+    const quantifier_span& span = this->quantifierSpans[quantifier];
+    bool onSubject = index < span.subj_end && index >= span.subj_begin;
+    // Visit the quantifier
+    if (onSubject) {
+      const uint8_t type = this->quantifierMonotonicities[quantifier].subj_type;
+      const uint8_t mono = this->quantifierMonotonicities[quantifier].subj_mono;
+      outputRelation = project(mono, type, outputRelation);
+    } else {
+      const uint8_t type = this->quantifierMonotonicities[quantifier].obj_type;
+      const uint8_t mono = this->quantifierMonotonicities[quantifier].obj_mono;
+      outputRelation = project(mono, type, outputRelation);
+    }
+  }
   return outputRelation;
-} 
+}
 
 
 // ----------------------------------------------
@@ -480,8 +512,8 @@ natlog_relation Tree::projectLexicalRelation( const uint8_t& index,
 //
 // reverseTransition()
 //
-bool reverseTransition(const bool& endState,
-                       const natlog_relation projectedRelation) {
+inline bool reverseTransition(const bool& endState,
+                              const natlog_relation projectedRelation) {
   if (endState) {
     switch (projectedRelation) {
       case FUNCTION_FORWARD_ENTAILMENT:
@@ -665,10 +697,8 @@ float SynSearchCosts::mutationCost(const Tree& tree,
                                    const bool& endTruthValue,
                                    bool* beginTruthValue) const {
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
-  const float lexicalRelationCost
-    = mutationLexicalCost[edgeType];
-  const natlog_relation projectedFunction
-    = tree.projectLexicalRelation(index, lexicalRelation);
+  const float lexicalRelationCost = mutationLexicalCost[edgeType];
+  const natlog_relation projectedFunction = tree.projectLexicalRelation(index, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];

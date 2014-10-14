@@ -73,10 +73,11 @@ inline uint64_t searchLoop(
 
     // PUSH 1: Mutations
     uint32_t numEdges;
-    const edge* edges = graph->incomingEdgesFast(node.token(), &numEdges);
+    const tagged_word nodeToken = node.token();
+    const edge* edges = graph->incomingEdgesFast(nodeToken, &numEdges);
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       // (ignore when sense doesn't match)
-      if (edges[edgeI].sink_sense != node.token().sense) { continue; }
+      if (edges[edgeI].sink_sense != nodeToken.sense) { continue; }
       bool newTruthValue;
       const float cost = costs->mutationCost(
           tree, node.tokenIndex(), edges[edgeI].type,
@@ -84,13 +85,13 @@ inline uint64_t searchLoop(
       if (isinf(cost)) { continue; }
       // (compute new fields)
       const uint64_t newHash = tree.updateHashFromMutation(
-          node.factHash(), node.tokenIndex(), node.token().word,
+          node.factHash(), node.tokenIndex(), nodeToken.word,
           node.governor(), edges[edgeI].source
         );
       const tagged_word newToken = getTaggedWord(
           edges[edgeI].source,
           edges[edgeI].source_sense,
-          node.token().monotonicity);
+          nodeToken.monotonicity);
       // (create child)
       const SearchNode mutatedChild(node, newHash, newToken,
                                     newTruthValue, myIndex);
@@ -128,7 +129,7 @@ inline uint64_t searchLoop(
         uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
         uint64_t newHash = tree.updateHashFromDeletions(
             node.factHash(), dependentIndex, tree.token(dependentIndex).word,
-            node.token().word, deletionMask);
+            nodeToken.word, deletionMask);
         // (create child)
         const SearchNode deletedChild(node, newHash,
                                       newTruthValue, deletionMask, myIndex);

@@ -69,4 +69,16 @@ public class PreprocessITest {
     );
   }
 
+  @Test
+  public void noManIsVeryBeautiful() {
+    assertEquals(
+        "no	2	neg	0	anti-additive	2-3	anti-additive	3-6\n" +
+        "man	5	nsubj	2	-	-	-	-\n" +
+        "be	5	cop	9	-	-	-	-\n" +
+        "very	5	advmod	1	-	-	-	-\n" +
+        "beautiful	0	root	1	-	-	-	-\n",
+        Preprocess.annotate(pipeline, StaticResources.INDEXER, "no man is very beautiful")
+    );
+  }
+
 }

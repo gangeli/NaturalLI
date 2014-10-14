@@ -6,7 +6,7 @@ clean-local:
 	rm -f *.gcno *.gcda
 
 _OBJS_SPEC = Map.o Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
-             SynSearch.o \
+             SynSearch.o SynSearchSingleThreaded.o \
              Bloom.o Messages.pb.o
 OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})

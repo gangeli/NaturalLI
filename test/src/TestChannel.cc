@@ -13,12 +13,6 @@ using namespace std;
 // ----------------------------------------------
 // Channel
 // ----------------------------------------------
-
-TEST(ChannelTest, CreationAndSize) {
-  Channel<int> queue(100);
-  EXPECT_EQ(88, sizeof(queue));
-}
-
 TEST(ChannelTest, PushPoll) {
   ScoredSearchNode path, out;
   Channel<ScoredSearchNode> c(1024);

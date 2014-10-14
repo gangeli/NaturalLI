@@ -23,6 +23,7 @@
 #endif
 
 class Tree;
+class SearchNode;
 
 // ----------------------------------------------
 // NATURAL LOGIC
@@ -397,7 +398,7 @@ class Tree {
     }
     return false;
   }
-
+  
   /**
    * Iterates over the quantifiers of the sentence. For each
    * quantifier, call the visitor function with that quantifier's type
@@ -405,13 +406,26 @@ class Tree {
    * These are guaranteed to be called in order of narrowest to broadest
    * scope outwards from the word.
    *
+   * Note that this is slow if you call it repeatedly, due to the memory allocation
+   * and de-allocation from the visitor function.
+   *
    * @param index The index of the word to query.
+   * @param currentSearchState The search state to use for overriding the quantifier.
    * @param visitor A function to call for each quantifier scoping the word
    *                at index.
    */
   void foreachQuantifier(
-      const uint8_t& index,
-      std::function<void(quantifier_type,monotonicity)> visitor) const ;
+        const uint8_t& index,
+        const SearchNode& currentSearchState,
+        std::function<void(const quantifier_type,const monotonicity)> visitor) const;
+
+  /**
+   * @see foreachQuantifier(uint8_t, SearchNode, function), but without overriding
+   * the quantifier definitions from the search node.
+   */
+  void foreachQuantifier(
+        const uint8_t& index,
+        std::function<void(quantifier_type,monotonicity)> visitor) const;
   
   /**
    * The index of the root of the dependency tree.
@@ -540,25 +554,21 @@ class Tree {
   const uint8_t length;
 
  protected:
-  /** Information about the monotonicities of the quantifiers in the sentence */
+  /** Information about the monotonicities of the quantifiers in the sentence. */
   quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];
 
  private:
-  /** The actual data for this tree */
+  /** The actual data for this tree. */
   dep_tree_word data[MAX_QUERY_LENGTH];
 
-  /** Information about the spans of the quantifiers in the sentence */
+  /** Information about the spans of the quantifiers in the sentence. */
   quantifier_span quantifierSpans[MAX_QUANTIFIER_COUNT];
+  
+  /** A cached data structure for which quantifiers are in scope at a given index. */
+  uint8_t quantifiersInScope[MAX_QUERY_LENGTH][MAX_QUANTIFIER_COUNT];
 
   /** The number of quantifiers in the tree. */
   uint8_t numQuantifiers;
-
-  /** Fill up to 3 cache lines */
-#if MAX_QUANTIFIER_COUNT < 10
-  uint8_t nullBuffer[26 - MAX_QUANTIFIER_COUNT*3];
-#else
-  uint8_t nullBuffer[CACHE_LINE_SIZE + 26 - MAX_QUANTIFIER_COUNT*3];
-#endif
 
   /** Get the incoming edge at the given index as a struct */
   inline dependency_edge edgeInto(const uint8_t& index,
@@ -571,6 +581,9 @@ class Tree {
     edge.relation = data[index].relation;
     return edge;
   }
+
+  /** Populate the quantifiers in scope at a particular index */
+  void populateQuantifiersInScope(const uint8_t index);
   
   /** See edgeInto(index, word, word), but using the tree's known governor */
   inline dependency_edge edgeInto(const uint8_t& index, 
@@ -644,6 +657,7 @@ struct alignas(16) syn_path_data {
  * a cache line.
  */
 class SearchNode {
+ friend class Tree;
  public:
   void mutations(SearchNode* output, uint64_t* index);
   void deletions(SearchNode* output, uint64_t* index);
@@ -715,9 +729,11 @@ class SearchNode {
   /** Returns the truth state of this node. */
   inline bool truthState() const { return data.truth; }
 
- private:
+ protected:
   /** The data stored in this path */
   quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];  // TODO(gabor) set me in various places
+
+ private:
   /** The data stored in this path */
   syn_path_data data;
   /** A backpointer to the path this came from */

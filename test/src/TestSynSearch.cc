@@ -100,11 +100,10 @@ class TreeTest : public ::testing::Test {
 
   const Tree* tree;
   const Tree* bigTree;
-
 };
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(192, sizeof(Tree));  // 3 cache lines
+  EXPECT_EQ(398, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(3, sizeof(quantifier_span));
