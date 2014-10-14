@@ -3,11 +3,9 @@
 #include <thread>
 
 #include "SynSearch.h"
-#include "Channel.h"
 #include "Utils.h"
 
 using namespace std;
-using namespace moodycamel;
 
 // ----------------------------------------------
 // PATH ELEMENT (SEARCH NODE)

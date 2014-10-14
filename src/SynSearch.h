@@ -107,7 +107,7 @@ inline natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
     case DEP_AUX: return FUNCTION_FORWARD_ENTAILMENT;      // he left -> he should leave
     case DEP_AUXPASS: return FUNCTION_FORWARD_ENTAILMENT;  // as above
     case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;       // match DEP_CONJ
-    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;           // interesting project here... "he said x" -> "x"?
+    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;          // interesting project here... "he said x" -> "x"?
     case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
     case DEP_COP: return FUNCTION_EQUIVALENT;
     case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;           // don't drop subjects.
@@ -119,9 +119,9 @@ inline natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
       return FUNCTION_INDEPENDENCE;
     case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;
     case DEP_DOBJ: return FUNCTION_INDEPENDENCE;            // don't drop objects.
-    case DEP_EXPL: return FUNCTION_EQUIVALENT;             // though we shouldn't see this...
-    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;         // also shouldn't see this
-    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;     // she gave me a rais -> she gave a raise
+    case DEP_EXPL: return FUNCTION_EQUIVALENT;              // though we shouldn't see this...
+    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;          // also shouldn't see this
+    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;      // she gave me a raise -> she gave a raise
     case DEP_MARK: return FUNCTION_INDEPENDENCE;
     case DEP_MWE: return FUNCTION_INDEPENDENCE;             // shouldn't see this
     case DEP_NEG: return FUNCTION_NEGATION;

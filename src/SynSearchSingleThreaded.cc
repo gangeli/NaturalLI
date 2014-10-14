@@ -3,7 +3,6 @@
 #include <thread>
 
 #include "SynSearch.h"
-#include "Channel.h"
 #include "Utils.h"
 
 using namespace std;
@@ -237,7 +236,7 @@ syn_search_response SynSearch(
   historySize += 1;
 
   // Run Search
-  response.totalTicks = searchLoop( 
+  response.totalTicks = searchLoop(
     // Insert to fringe
     [&fringe](const ScoredSearchNode elem) -> void { fringe.insert(elem.cost, elem.node); },
     // Pop from fringe
