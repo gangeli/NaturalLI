@@ -422,11 +422,7 @@ inline uint64_t hashEdge(dependency_edge edge) {
   }
   // Hash edge
 #if TWO_PASS_HASH!=0
-  #ifdef __GNUG__
-    return fnv_64a_buf(const_cast<dependency_edge*>(&edge), sizeof(dependency_edge), FNV1_64_INIT);
-  #else
-    return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
-  #endif
+  return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
 #else
   uint64_t edgeHash;
   memcpy(&edgeHash, &edge, sizeof(uint64_t));

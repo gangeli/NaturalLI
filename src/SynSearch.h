@@ -323,18 +323,23 @@ struct alignas(6) dep_tree_word {
  * A packed representation of a dependency edge.
  */
 #ifdef __GNUG__
-typedef struct {
+struct dependency_edge {
 #else
-typedef struct alignas(8) {
+struct dependency_edge alignas(8) {
 #endif
   uint32_t   governor:25,
              dependent:25;
   dep_label  relation:6;
   uint8_t    placeholder:8;  // <-- should be zero
+
+  dependency_edge(const uint32_t& governor,
+                  const uint32_t& dependent,
+                  const dep_label& relation
+                  ) : placeholder(0), governor(governor), dependent(dependent), relation(relation) { }
 #ifdef __GNUG__
-} __attribute__((packed)) dependency_edge;
+} __attribute__((packed));
 #else
-} dependency_edge;
+};
 #endif
 
 /**
@@ -583,12 +588,7 @@ class Tree {
   inline dependency_edge edgeInto(const uint8_t& index,
                                   const ::word& wordAtIndex,
                                   const ::word& governor) const {
-    dependency_edge edge;
-    edge.placeholder = 0x0;
-    edge.governor = governor;
-    edge.dependent = wordAtIndex;
-    edge.relation = data[index].relation;
-    return edge;
+    return dependency_edge(governor, wordAtIndex, data[index].relation);
   }
 
   /** Populate the quantifiers in scope at a particular index */
@@ -834,8 +834,8 @@ struct syn_search_options {
  * A single search path.
  */
 struct syn_search_path {
-  const std::vector<SearchNode> nodeSequence;
-  const float cost;
+  std::vector<SearchNode> nodeSequence;
+  float cost;
 
   syn_search_path(const std::vector<SearchNode>& nodeSequence,
                   const float& cost)

@@ -548,12 +548,12 @@ TEST_F(TreeTest, HashMultipleSteps) {
 }
 
 TEST_F(TreeTest, HashCollapseDetNeg) {
-  Tree neg(string(NO_STR) + string("\t2\tneg\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+  Tree neg(string(NO_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
   Tree det(string(NO_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
   Tree amod(string(NO_STR) + string("\t2\tamod\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n"));
+           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
   EXPECT_EQ(neg.hash(), det.hash());
   EXPECT_NE(neg.hash(), amod.hash());
   EXPECT_NE(det.hash(), amod.hash());
