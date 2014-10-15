@@ -162,17 +162,17 @@ typedef uint8_t dep_label;
  * metadata
  */
 #ifdef __GNUG__
-typedef struct {
+struct tagged_word {
 #else
-typedef struct alignas(4) {
+struct alignas(4) tagged_word {
 #endif
   uint32_t monotonicity:2,
-           sense:5,
-           word:25;
+           sense:SENSE_ENTROPY,
+           word:VOCABULARY_ENTROPY;
 #ifdef __GNUG__
-} tagged_word;
+};
 #else
-} __attribute__ ((__packed__)) tagged_word;
+} __attribute__ ((__packed__));
 #endif
 
 /** The == operator for two tagged words */

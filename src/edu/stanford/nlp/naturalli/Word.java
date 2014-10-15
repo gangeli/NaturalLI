@@ -46,6 +46,7 @@ public class Word {
     return Integer.toString(index);
   }
 
+  @SuppressWarnings("UnnecessaryUnboxing")
   private static int computeSense(int indexedWord, String gloss, DependencyTree<String> tree, int spanStart, int spanEnd) {
     // Check if its a quantifire
     if (Quantifier.GLOSSES.contains(gloss.toLowerCase())) {
@@ -78,7 +79,12 @@ public class Word {
 
     // match the Synset to an index
     if (synset.isPresent()) {
-      return StaticResources.SENSE_INDEXER.get(Pair.makePair(indexedWord, synset.get().getDefinition()));
+      Integer senseOrNull = StaticResources.SENSE_INDEXER.get(Pair.makePair(indexedWord, synset.get().getDefinition()));
+      if (senseOrNull == null) {
+        return 0;
+      } else {
+        return senseOrNull.intValue();
+      }
     } else {
       return 0;
     }
@@ -213,5 +219,5 @@ public class Word {
 
   public static final int[] NO_SPAN = new int[]{ -1, -1 };
 
-  public static final Word UNK = new Word("__UNK__", 0, 0, NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE, NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE);
+  public static final Word UNK = new Word("__UNK__", 1, 0, NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE, NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE);
 }

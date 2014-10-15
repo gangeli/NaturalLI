@@ -14,8 +14,14 @@ class Graph {
  public:
   virtual ~Graph() { }
 
-  /** Get all incoming edges from the given word */
-  virtual const edge* incomingEdgesFast(const tagged_word& sink, uint32_t* outputLength) const = 0;
+  /** 
+   * Get all incoming edges from the given word.
+   * This function ignores the word sense of the sink word; that must be
+   * checked by the caller of the function.
+   * TODO(gabor) this should not take a tagged word
+   * 
+   */
+  virtual const edge* incomingEdgesFast(const word& sink, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
   virtual const char* gloss(const tagged_word&) const = 0;
   /** The set of all words in the graph, created as a vector */
@@ -27,12 +33,60 @@ class Graph {
   virtual const std::vector<edge> incomingEdges(const tagged_word& sink) {
     std::vector<edge> rtn;
     uint32_t length = 0;
-    const edge* edges = incomingEdgesFast(sink, &length);
+    const edge* edges = incomingEdgesFast(sink.word, &length);
     for (int i = 0; i < length; ++i) {
-      rtn.push_back(edges[i]);
+      if (edges[i].sink_sense == sink.sense) {
+        rtn.push_back(edges[i]);
+      }
     }
     return rtn;
   }
+};
+
+/**
+ * A Graph that also allows for looking up outgoing edges.
+ * This class is far less optimized than its single directional 
+ * counterpart
+ */
+class BidirectionalGraph : Graph {
+ public:
+  BidirectionalGraph(const Graph* impl);
+  ~BidirectionalGraph() { 
+    delete impl;
+  }
+
+  /** Get all outgoing edges from a source. */
+  const std::vector<edge> outgoingEdges(const tagged_word& source) const {
+    std::vector<edge> rtn;
+    for (auto iter = outgoingEdgeData[source.word].begin(); iter != outgoingEdgeData[source.word].end(); ++iter) {
+      if (iter->source_sense == source.sense) {
+        rtn.push_back(*iter);
+      }
+    }
+    return rtn;
+  }
+  
+  /** {@inheritDoc} */
+  virtual const edge* incomingEdgesFast(const word& sink, uint32_t* outputLength) const {
+    return impl->incomingEdgesFast(sink, outputLength);
+  }
+  /** {@inheritDoc} */
+  virtual const char* gloss(const tagged_word& token) const {
+    return impl->gloss(token);
+  }
+  /** {@inheritDoc} */
+  virtual const std::vector<word> keys() const { return impl->keys(); }
+  /** {@inheritDoc} */
+  virtual const bool containsDeletion(const edge& deletion) const {
+    return impl->containsDeletion(deletion);
+  }
+
+ public:
+  const Graph* impl;
+
+ private:
+  const uint64_t size;
+  std::vector<std::vector<edge>> outgoingEdgeData;
 };
 
 /**

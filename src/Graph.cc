@@ -84,10 +84,9 @@ class InMemoryGraph : public Graph {
     free(edgesSizes);
   }
 
-  virtual const edge* incomingEdgesFast(const tagged_word& sink, uint32_t* size) const {
-    const word w = sink.word;
-    *size = edgesSizes[w];
-    return edgesBySink[w];
+  virtual const edge* incomingEdgesFast(const word& sink, uint32_t* size) const {
+    *size = edgesSizes[sink];
+    return edgesBySink[sink];
   }
 
   virtual const char* gloss(const tagged_word& word) const {
@@ -116,6 +115,23 @@ class InMemoryGraph : public Graph {
     }
   }
 };
+  
+
+//
+// BidirectionalGraph()
+//
+BidirectionalGraph::BidirectionalGraph(const Graph* impl) 
+    : impl(impl),
+      size(impl->keys().size()) {
+  outgoingEdgeData.resize(size);
+  uint32_t length;
+  for (uint32_t sink = 0; sink < size; ++sink) {
+    const edge* incomingFromSink = incomingEdgesFast(sink, &length);
+    for (uint32_t source = 0; source < length; ++source) {
+      outgoingEdgeData[source].push_back(incomingFromSink[source]);
+    }
+  }
+}
 
 //
 // Read Any Graph

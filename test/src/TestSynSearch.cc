@@ -37,8 +37,8 @@ class SearchNodeTest : public ::testing::Test {
 TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
-  EXPECT_EQ(26, MAX_QUERY_LENGTH);
-  EXPECT_EQ(20, sizeof(syn_path_data));
+  EXPECT_EQ(40, MAX_QUERY_LENGTH);
+  EXPECT_EQ(24, sizeof(syn_path_data));
 #if MAX_QUANTIFIER_COUNT < 10
   EXPECT_EQ(32, sizeof(SearchNode));
   EXPECT_LE(sizeof(SearchNode), CACHE_LINE_SIZE);
@@ -103,7 +103,7 @@ class TreeTest : public ::testing::Test {
 };
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(398, sizeof(Tree));
+  EXPECT_EQ(594, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(3, sizeof(quantifier_span));

@@ -818,7 +818,7 @@ search_response Search(Graph* graph, FactDB* knownFacts,
 
     // Do mutations
     uint32_t numMutations = 0;
-    const edge* mutations = graph->incomingEdgesFast(parentWord, &numMutations);
+    const edge* mutations = graph->incomingEdgesFast(parentWord.word, &numMutations);
     const uint8_t& parentSense = parentWord.sense;
     for (int i = 0; i < numMutations; ++i) {
       const edge& mutation = mutations[i];

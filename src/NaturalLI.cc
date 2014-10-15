@@ -78,7 +78,8 @@ class Preprocessor {
 
   /**
    * Annotate a given sentence into a Tree object which can be used 
-   * for search
+   * for search.
+   * Returns NULL if the tree is longer than allowed.
    */
   Tree* annotate(const char* sentence) {
     // Write sentence
@@ -98,10 +99,12 @@ class Preprocessor {
     int numNewlines = 0;
     string conll = "";
     char c;
+    uint32_t numLines = 0;
     while (numNewlines < 2) {
       if (read(this->childOut, &c, 1) > 0) {
         conll.append(&c, 1);
         if (c == '\n') {
+          numLines += 1;
           numNewlines += 1;
         } else {
           numNewlines = 0;
@@ -109,7 +112,11 @@ class Preprocessor {
       }
     }
     this->lock.unlock();
-    return new Tree(conll);
+    if (numLines > MAX_FACT_LENGTH) {
+      return NULL;
+    } else {
+      return new Tree(conll);
+    }
   }
 
  private:
@@ -176,7 +183,7 @@ inline double probability(const double& confidence, const bool& truth) {
  * Execute a query, returning a JSON formatted response.
  *
  * @param proc The preprocessor to use to annotate the query string(s).
- * @param kb An optional knowledge base to use in place of the default knowledge base.
+ * @param knownFacts An optional knowledge base to use in place of the default knowledge base.
  * @param query The query to execute against the knowledge base.
  * @param graph The graph of valid edge instances which can be taken.
  * @param costs The search costs to use for this query
@@ -186,29 +193,37 @@ inline double probability(const double& confidence, const bool& truth) {
  *
  * @return A JSON formatted response with the result of the search.
  */
-string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& query,
-                    const Graph* graph, const SynSearchCosts* costs,
+string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const string& query,
+                    const BidirectionalGraph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
   // Create KB
-  btree::btree_set<uint64_t> database;
-  if (kb.size() == 0) {
-    // TODO(gabor)
-  } else {
-    for (auto iter = kb.begin(); iter != kb.end(); ++iter) {
-      const Tree* fact = proc.annotate(iter->c_str());
-      database.insert(fact->hash());
+  btree::btree_set<uint64_t> kb;
+  btree::btree_set<uint64_t> auxKB;
+  for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
+    const Tree* fact = proc.annotate(iter->c_str());
+    if (fact != NULL) {
+      auxKB.insert(fact->hash());
+      ForwardPartialSearch(graph, fact, [&auxKB](SearchNode node) -> void {
+        auxKB.insert(node.factHash());
+      });
       delete fact;
+    } else {
+      fprintf(stderr, "premise is too long; ignoring: '%s'\n", iter->c_str());
     }
   }
+ 
 
   // Create Query
   const Tree* input = proc.annotate(query.c_str());
+  if (input == NULL) {
+    return "{\"success\": false, \"reason\": \"hypothesis (query) is too long\"}";
+  }
 
   // Run Search
   const syn_search_response resultIfTrue
-    = SynSearch(graph, database, input, costs, true, options);
+    = SynSearch(graph->impl, kb, auxKB, input, costs, true, options);
   const syn_search_response resultIfFalse
-    = SynSearch(graph, database, input, costs, false, options);
+    = SynSearch(graph->impl, kb, auxKB, input, costs, false, options);
 
   // Grok result
   // (confidence)
@@ -231,7 +246,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
 
   // Generate JSON
   char rtn[4096];
-  snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\"}", 
+  snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\", \"success\": true}", 
            resultIfTrue.size() + resultIfFalse.size(), 
            resultIfTrue.totalTicks + resultIfFalse.totalTicks, 
            *truth, 
@@ -251,7 +266,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& kb, const string& 
  *
  * @return The number of failed examples, if any were annotated. 0 by default.
  */
-uint32_t repl(const Graph* graph, Preprocessor& proc) {
+uint32_t repl(const BidirectionalGraph* graph, Preprocessor& proc) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
@@ -329,7 +344,7 @@ void signalHandler(int32_t s){
 
 
 /**
- * The Entry point.
+ * The Entry point for querying the truth of facts.
  */
 int32_t main( int32_t argc, char *argv[] ) {
   // Handle signals
@@ -344,6 +359,8 @@ int32_t main( int32_t argc, char *argv[] ) {
 
   // Start REPL
   Preprocessor proc;
-  Graph* graph = ReadGraph();
-  return repl(graph, proc);
+  BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
+  uint32_t retVal =  repl(graph, proc);
+  delete graph;
+  return retVal;
 }

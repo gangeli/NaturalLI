@@ -150,6 +150,8 @@ AC_DEFINE_UNQUOTED(L3_CACHE_SIZE, `getconf LEVEL3_CACHE_SIZE 2> /dev/null || ech
 # (some sizes)
 AC_DEFINE_UNQUOTED(NUM_DEPENDENCY_LABELS, 45, [The number of Stanford Dependency labels])
 AC_DEFINE_UNQUOTED(NUM_MUTATION_TYPES, 13, [The number of mutation edges])
+AC_DEFINE_UNQUOTED(VOCABULARY_ENTROPY, 25, [The number of mutation edges])
+AC_DEFINE_UNQUOTED(SENSE_ENTROPY, 5, [The number of mutation edges])
 
 # Optionally enable debugging
 AC_ARG_ENABLE(debug,
@@ -182,7 +184,7 @@ AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The 
 AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",  [The location of the WordNet dictionary])
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
-AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 26, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
+AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 40, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
 AC_DEFINE_UNQUOTED(MAX_QUANTIFIER_COUNT, ${MAX_QUANTIFIER_COUNT:=8},  [The maximum number of quantifiers allowed in a sentence.])
 AC_DEFINE_UNQUOTED(MAX_COMPLETIONS, ${MAX_COMPLETIONS:=32},  [The maximum number of completions to propose when inserting words])
 

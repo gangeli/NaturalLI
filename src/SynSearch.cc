@@ -16,48 +16,67 @@ inline syn_path_data mkSearchNodeData(
     const bool&        truth,
     const uint32_t&    deleteMask,
     const tagged_word& currentToken,
-    const ::word       governor) {
+    const ::word&      governor,
+    const uint64_t& backpointer) {
   syn_path_data dat;
   dat.factHash = factHash;
   dat.index = index;
   dat.truth = truth;
   dat.deleteMask = deleteMask;
-  dat.currentToken = currentToken;
+  dat.currentWord = currentToken.word;
+  dat.currentSense = currentToken.sense;
   dat.governor = governor;
+  dat.backpointer = backpointer;
+  return dat;
+}
+
+inline syn_path_data mkSearchNodeData(
+    const uint64_t&    factHash,
+    const uint8_t&     index,
+    const bool&        truth,
+    const uint32_t&    deleteMask,
+    const ::word&      currentWord,
+    const uint8_t&     currentSense,
+    const ::word&      governor,
+    const uint64_t& backpointer) {
+  syn_path_data dat;
+  dat.factHash = factHash;
+  dat.index = index;
+  dat.truth = truth;
+  dat.deleteMask = deleteMask;
+  dat.currentWord = currentWord;
+  dat.currentSense = currentSense;
+  dat.governor = governor;
+  dat.backpointer = backpointer;
   return dat;
 }
 
 SearchNode::SearchNode()
-    : backpointer(0),
-      data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD)) {  }
+    : data(mkSearchNodeData(42l, 255, false, 42, getTaggedWord(0, 0, 0), TREE_ROOT_WORD, 0)) {  }
 
 SearchNode::SearchNode(const SearchNode& from)
-    : backpointer(from.backpointer),
-      data(from.data) {
+    : data(from.data) {
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
   
 SearchNode::SearchNode(const Tree& init)
-    : backpointer(0),
-      data(mkSearchNodeData(init.hash(), init.root(), true, 
-                         0x0, init.token(init.root()), TREE_ROOT_WORD)) {
+    : data(mkSearchNodeData(init.hash(), init.root(), true, 
+                         0x0, init.token(init.root()), TREE_ROOT_WORD, 0)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
  
 SearchNode::SearchNode(const Tree& init, const bool& assumedInitialTruth)
-    : backpointer(0),
-      data(mkSearchNodeData(init.hash(), init.root(), assumedInitialTruth, 
-                         0x0, init.token(init.root()), TREE_ROOT_WORD)) {
+    : data(mkSearchNodeData(init.hash(), init.root(), assumedInitialTruth, 
+                         0x0, init.token(init.root()), TREE_ROOT_WORD, 0)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
  
 SearchNode::SearchNode(const Tree& init, const uint8_t& index)
-    : backpointer(0),
-      data(mkSearchNodeData(init.hash(), index, true, 
-                         0x0, init.token(index), init.word(init.governor(index)))) {
+    : data(mkSearchNodeData(init.hash(), index, true, 
+                         0x0, init.token(index), init.word(init.governor(index)), 0)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -69,10 +88,9 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
                  const tagged_word& newToken,
                  const bool& newTruthValue,
                  const uint32_t& backpointer)
-    : backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
+    : data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
                          from.data.deleteMask, newToken,
-                         from.data.governor)) {
+                         from.data.governor, backpointer)) {
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -83,10 +101,10 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
 SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
           const bool& newTruthValue,
           const uint32_t& addedDeletions, const uint32_t& backpointer)
-    : backpointer(backpointer),
-      data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
-                         addedDeletions | from.data.deleteMask, from.data.currentToken,
-                         from.data.governor)) { 
+    : data(mkSearchNodeData(newHash, from.data.index, newTruthValue,
+                         addedDeletions | from.data.deleteMask, 
+                         from.data.currentWord, from.data.currentSense,
+                         from.data.governor, backpointer)) { 
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -96,10 +114,9 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
 //
 SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
-    : backpointer(backpointer),
-      data(mkSearchNodeData(from.data.factHash, newIndex, from.data.truth, 
+    : data(mkSearchNodeData(from.data.factHash, newIndex, from.data.truth, 
                          from.data.deleteMask, tree.token(newIndex), 
-                         tree.token(tree.governor(newIndex)).word)) { 
+                         tree.token(tree.governor(newIndex)).word, backpointer)) { 
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -522,12 +539,66 @@ natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
 // ----------------------------------------------
 // NATURAL LOGIC
 // ----------------------------------------------
+natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
+                                                  const ::word& dependent) {
+  switch (dep) {
+    case DEP_ACOMP: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_ADVCL: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_ADVMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_AMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_APPOS: return FUNCTION_EQUIVALENT;
+    case DEP_AUX: return FUNCTION_FORWARD_ENTAILMENT;      // he left -> he should leave
+    case DEP_AUXPASS: return FUNCTION_FORWARD_ENTAILMENT;  // as above
+    case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;       // match DEP_CONJ
+    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;          // interesting project here... "he said x" -> "x"?
+    case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
+    case DEP_COP: return FUNCTION_INDEPENDENCE;
+    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;          // don't drop subjects.
+    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;      // as above
+    case DEP_DEP: return FUNCTION_INDEPENDENCE;
+    case DEP_DET: return FUNCTION_EQUIVALENT;              // TODO(gabor) better treatment of generics?
+    case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;
+    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;           // don't drop objects.
+    case DEP_EXPL: return FUNCTION_EQUIVALENT;             // though we shouldn't see this...
+    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;         // also shouldn't see this
+    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;     // she gave me a raise -> she gave a raise
+    case DEP_MARK: return FUNCTION_INDEPENDENCE;
+    case DEP_MWE: return FUNCTION_INDEPENDENCE;            // shouldn't see this
+    case DEP_NEG: return FUNCTION_NEGATION;
+    case DEP_NN: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;       // not sure about this one
+    case DEP_NSUBJ: return FUNCTION_INDEPENDENCE;
+    case DEP_NSUBJPASS: return FUNCTION_INDEPENDENCE;
+    case DEP_NUM: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_NUMBER: return FUNCTION_INDEPENDENCE;
+    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;      // or, reverse?
+    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;          // though, not so in collapsed dependencies
+    case DEP_POBJ: return FUNCTION_INDEPENDENCE;           // must delete whole preposition
+    case DEP_POSS: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;       // see DEP_POSS
+    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;        // FORBIDDEN to see this
+    case DEP_PREDET: return FUNCTION_INDEPENDENCE;         // FORBIDDEN to see this
+    case DEP_PREP: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_PRT: return FUNCTION_INDEPENDENCE;
+    case DEP_PUNCT: return FUNCTION_EQUIVALENT;
+    case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;
+    case DEP_RCMOD: return FUNCTION_INDEPENDENCE;          // no documentation?
+    case DEP_ROOT: return FUNCTION_INDEPENDENCE;           // err.. never delete
+    case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_XCOMP: return FUNCTION_INDEPENDENCE;
+    default:
+      fprintf(stderr, "No such dependency label: %u\n", dep);
+      std::exit(1);
+      return 255;
+  }
+}
 
 //
 // reverseTransition()
 //
-inline bool reverseTransition(const bool& endState,
-                              const natlog_relation projectedRelation) {
+bool reverseTransition(const bool& endState,
+                       const natlog_relation projectedRelation) {
   if (endState) {
     switch (projectedRelation) {
       case FUNCTION_FORWARD_ENTAILMENT:
@@ -554,6 +625,49 @@ inline bool reverseTransition(const bool& endState,
       case FUNCTION_COVER:  // negate anyways, just at high cost
       case FUNCTION_NEGATION:
       case FUNCTION_ALTERNATION:
+        return true;
+      default:
+        fprintf(stderr, "Unknown function: %u", projectedRelation);
+        std::exit(1);
+        break;
+    }
+  }
+  fprintf(stderr, "Reached end of reverseTransition() function -- this shouldn't happen!\n");
+  std::exit(1);
+  return false;
+}
+
+//
+// transition()
+//
+bool transition(const bool& startState,
+                const natlog_relation projectedRelation) {
+  if (startState) {
+    switch (projectedRelation) {
+      case FUNCTION_FORWARD_ENTAILMENT:
+      case FUNCTION_REVERSE_ENTAILMENT:
+      case FUNCTION_EQUIVALENT:
+      case FUNCTION_INDEPENDENCE:
+        return true;
+      case FUNCTION_ALTERNATION:
+      case FUNCTION_NEGATION:
+      case FUNCTION_COVER:  // negate anyways, just at high cost
+        return false;
+      default:
+        fprintf(stderr, "Unknown function: %u", projectedRelation);
+        std::exit(1);
+        break;
+    }
+  } else {
+    switch (projectedRelation) {
+      case FUNCTION_FORWARD_ENTAILMENT:
+      case FUNCTION_REVERSE_ENTAILMENT:
+      case FUNCTION_EQUIVALENT:
+      case FUNCTION_INDEPENDENCE:
+        return false;
+      case FUNCTION_COVER:
+      case FUNCTION_NEGATION:
+      case FUNCTION_ALTERNATION:  // negate anyways, just at high cost
         return true;
       default:
         fprintf(stderr, "Unknown function: %u", projectedRelation);
@@ -741,6 +855,27 @@ float SynSearchCosts::insertionCost(const Tree& tree,
   return lexicalRelationCost + transitionCost;
 }
 
+//
+// SynSearch::deletionCost()
+//
+float SynSearchCosts::deletionCost(const Tree& tree,
+                                   const SearchNode& governor,
+                                   const dep_label& dependencyLabel,
+                                   const ::word& dependent,
+                                   const bool& beginTruthValue,
+                                   bool* endTruthValue) const {
+  const natlog_relation lexicalRelation
+    = dependencyDeleteToLexicalFunction(dependencyLabel, dependent);
+  const float lexicalRelationCost
+    = insertionLexicalCost[dependencyLabel];
+  const natlog_relation projectedFunction
+    = tree.projectLexicalRelation(governor, lexicalRelation);
+  *endTruthValue = transition(endTruthValue, projectedFunction);
+  const float transitionCost
+    = (beginTruthValue ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
+  return lexicalRelationCost + transitionCost;
+}
+
 
 //
 // createStrictCosts()
@@ -774,3 +909,68 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
   costs->transitionCostFromFalse[FUNCTION_INDEPENDENCE] = badCost;
   return costs;
 }
+
+
+//
+// ForwardPartialSearch
+//
+void ForwardPartialSearch(
+    const BidirectionalGraph* mutationGraph,
+    const Tree* input,
+    std::function<void(const SearchNode&)> callback) {
+  // Initialize Search
+  vector<SearchNode> fringe;
+  fringe.push_back(SearchNode(*input));
+  uint8_t  dependentIndices[8];
+  natlog_relation  dependentRelations[8];
+  SynSearchCosts* guidingCosts = strictNaturalLogicCosts();
+  bool newTruthValue;
+  btree::btree_set<uint64_t> seen;
+
+  // Run Search
+  while (fringe.size() > 0) {
+    const SearchNode node = fringe.back();
+    fringe.pop_back();
+    if (seen.find(node.factHash()) == seen.end()) { 
+      fprintf(stderr, "  %s\n", toString(*(mutationGraph->impl), *input, node).c_str());
+      callback(node); 
+    }
+    seen.insert(node.factHash());
+
+    // Valid Mutations
+    const vector<edge> edges = mutationGraph->outgoingEdges(node.token());
+    for (auto iter = edges.begin(); iter != edges.end(); ++iter) {
+      // TODO(gabor) NER raising would go here
+    }
+
+    // Valid Deletions
+    uint8_t numDependents;
+    input->dependents(node.tokenIndex(), 8, dependentIndices,
+                    dependentRelations, &numDependents);
+    for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
+      const uint8_t& dependentIndex = dependentIndices[dependentI];
+      if (node.isDeleted(dependentIndex)) { continue; }
+      const float cost = guidingCosts->deletionCost(
+            *input, node, input->relation(dependentIndex),
+            input->word(dependentIndex), node.truthState(), &newTruthValue);
+      if (newTruthValue && !isinf(cost)) {  // TODO(gabor) handle negation deletions?
+        // Deletion
+        // (compute)
+        uint32_t deletionMask = input->createDeleteMask(dependentIndex);
+        uint64_t newHash = input->updateHashFromDeletions(
+            node.factHash(), dependentIndex, input->token(dependentIndex).word,
+            node.word(), deletionMask);
+        // (create child)
+        const SearchNode deletedChild(node, newHash, newTruthValue, deletionMask, 0);
+        fringe.push_back(deletedChild);
+        // Move
+        const SearchNode indexMovedChild(node, *input, dependentIndex, 0);
+        fringe.push_back(indexMovedChild);
+      }
+    }
+  }
+
+  delete guidingCosts;
+}
+
+

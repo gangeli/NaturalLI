@@ -75,7 +75,7 @@ inline uint64_t searchLoop(
     // PUSH 1: Mutations
     uint32_t numEdges;
     const tagged_word nodeToken = node.token();
-    const edge* edges = graph->incomingEdgesFast(nodeToken, &numEdges);
+    const edge* edges = graph->incomingEdgesFast(node.word(), &numEdges);
     const uint8_t tokenIndex = node.tokenIndex();
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       // (ignore when sense doesn't match)
@@ -176,13 +176,14 @@ inline uint64_t searchLoop(
 //
 syn_search_response SynSearch(
     const Graph* mutationGraph, 
-    const btree::btree_set<uint64_t>& db,
+    const btree::btree_set<uint64_t>& kb,
+    const btree::btree_set<uint64_t>& auxKB,
     const Tree* input, const SynSearchCosts* costs,
     const bool& assumedInitialTruth, const syn_search_options& opts) {
   syn_search_response response;
 
   // Debug print parameters
-  if (opts.maxTicks > 1000000000) {
+  if (opts.maxTicks >= 0x1 << 25) {
     printTime("[%c] ");
     fprintf(stderr, "ERROR: Max number of ticks is too large: %u\n", opts.maxTicks);
     response.totalTicks = 0;
@@ -205,12 +206,11 @@ syn_search_response SynSearch(
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
   // (the lookup function)
-  std::function<bool(uint64_t)> lookupFn = [&db](uint64_t value) -> bool {
-    auto iter = db.find( value );
-    return iter != db.end();
+  std::function<bool(uint64_t)> lookupFn = [&kb,&auxKB](uint64_t value) -> bool {
+    return kb.find(value) != kb.end() && auxKB.find(value) != kb.end();
   };
   // (register a node as visited)
-  auto registerVisited = [&db,&matches,&lookupFn,&history] (const ScoredSearchNode& scoredNode) -> void {
+  auto registerVisited = [&matches,&lookupFn,&history] (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
       bool unique = true;

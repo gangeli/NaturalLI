@@ -41,16 +41,19 @@ public class Preprocess {
       setProperty("tokenize.language", "en");
     }});
 
+
     // Read input
     System.err.println("Preprocess ready for input");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
     String line;
     while ((line = reader.readLine()) != null) {
-      System.err.println("Annotating '" + line + "'");
-      String annotated = annotate(pipeline, StaticResources.INDEXER, line);
-      System.err.println(annotated);
-      System.out.println(annotated);
-      System.out.flush();
+      if (!line.trim().equals("")) {
+        System.err.println("Annotating '" + line + "'");
+        String annotated = annotate(pipeline, StaticResources.INDEXER, line);
+        System.err.println(annotated);
+        System.out.println(annotated);
+        System.out.flush();
+      }
     }
   }
 }

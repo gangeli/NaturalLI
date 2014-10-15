@@ -1,5 +1,5 @@
 SUBDIRS = fnv knheap
-bin_PROGRAMS=naturalli naturalli_server
+bin_PROGRAMS=naturalli_mkkb naturalli naturalli_server
 EXTRA_DIST = Messages.proto edu org
 
 Messages.pb.h Messages.pb.cc: Messages.proto
@@ -60,6 +60,13 @@ if IS_GCC
 endif
 endif
 endif
+
+naturalli_mkkb_SOURCES = CreateKnowledgeBase.cc Postgres.cc Utils.cc Graph.cc SynSearch.cc \
+                 		Graph.h Utils.h Types.h  SynSearch.h Postgres.h \
+                 		btree.h btree_container.h btree_map.h btree_set.h
+
+naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${OPENMP_CFLAGS}
+naturalli_mkkb_LDADD=${POSTGRESQL_LDFLAGS} -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 naturalli_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/scripts/*.scala) $(wildcard org/goobs/naturalli/demo/*.java) $(wildcard org/goobs/natualli/conf/*.conf) org/goobs/naturalli/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
