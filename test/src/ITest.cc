@@ -154,7 +154,7 @@ TEST(GraphITest, AllEdgesValid) {
   vector<word> keys = graph->keys();
   for (int w = 0; w < keys.size(); ++w) {
     uint32_t numEdges = 0;
-    const edge* edges = graph->incomingEdgesFast(getTaggedWord(w, 0, 0), &numEdges);
+    const edge* edges = graph->incomingEdgesFast(w, &numEdges);
     for (uint32_t i = 0; i < numEdges; ++i) {
       ASSERT_LT(edges[i].sink, keys.size());
       ASSERT_LT(edges[i].source, keys.size());
