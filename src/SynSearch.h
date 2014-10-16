@@ -610,7 +610,7 @@ struct alignas(24) syn_path_data {
               currentSense:SENSE_ENTROPY,      // 5
               deleteMask:MAX_QUERY_LENGTH,     // 40
               backpointer:25;
-  word        governor:VOCABULARY_ENTROPY;
+  word        governor:VOCABULARY_ENTROPY;     // 25
   uint8_t     index:6;
   bool        truth:1;
 

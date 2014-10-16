@@ -109,6 +109,17 @@ inline uint32_t fast_atoi( const char * str ) {
   return val;
 }
 
+//
+// Print the current time
+//
+inline void printTime(const char* format) {
+  char s[128];
+  time_t t = time(NULL);
+  struct tm* p = localtime(&t);
+  strftime(s, 1000, format, p);
+  fprintf(stderr, "%s", s);
+}
+
 #define HASH_MAIN_32(data, length) fnv_32a_buf(data, length, FNV1_32_INIT);
 #define HASH_AUX_32(data, length) fnv_32a_buf(data, length, 1154);
 #define HASH_MAIN_64(data, length) fnv_64a_buf(data, length, FNV1_64_INIT);

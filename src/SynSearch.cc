@@ -932,7 +932,7 @@ void ForwardPartialSearch(
     const SearchNode node = fringe.back();
     fringe.pop_back();
     if (seen.find(node.factHash()) == seen.end()) { 
-      fprintf(stderr, "  %s\n", toString(*(mutationGraph->impl), *input, node).c_str());
+//      fprintf(stderr, "  %s\n", toString(*(mutationGraph->impl), *input, node).c_str());
       callback(node); 
     }
     seen.insert(node.factHash());

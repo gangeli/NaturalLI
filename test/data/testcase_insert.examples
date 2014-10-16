@@ -4,12 +4,12 @@
 # ADVCL
 # TODO(gabor) finish me
 
-# ADVMOD
-no man is beautiful
-TRUE: no man is very beautiful
+## ADVMOD
+#no man is beautiful
+#TRUE: no man is very beautiful
 
 # AMOD
 all cats have tails
-TRUE: all blue cats have tails
+TRUE: all furry cats have tails
 
 # TODO(gabor) finish me

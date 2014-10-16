@@ -11,17 +11,6 @@ using namespace std;
 // SEARCH ALGORITHM
 // ----------------------------------------------
 
-//
-// Print the current time
-//
-void printTime(const char* format) {
-  char s[128];
-  time_t t = time(NULL);
-  struct tm* p = localtime(&t);
-  strftime(s, 1000, format, p);
-  fprintf(stderr, "%s", s);
-}
-
 
 #pragma GCC push_options  // matches pop_options below
 #pragma GCC optimize ("unroll-loops")
@@ -206,8 +195,8 @@ syn_search_response SynSearch(
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
   // (the lookup function)
-  std::function<bool(uint64_t)> lookupFn = [&kb,&auxKB](uint64_t value) -> bool {
-    return kb.find(value) != kb.end() && auxKB.find(value) != kb.end();
+  std::function<bool(uint64_t)> lookupFn = [&kb,&auxKB](const uint64_t& value) -> bool {
+    return kb.find(value) != kb.end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
   auto registerVisited = [&matches,&lookupFn,&history] (const ScoredSearchNode& scoredNode) -> void {

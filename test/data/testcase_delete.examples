@@ -1,0 +1,15 @@
+# ACOMP
+# TODO(gabor) no examples?
+
+# ADVCL
+# TODO(gabor) finish me
+
+# ADVMOD
+the woman is very beautiful
+TRUE: the woman is beautiful
+
+# AMOD
+Some furry cats have tails
+TRUE: Some cats have tails
+
+# TODO(gabor) finish me

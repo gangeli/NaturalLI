@@ -10,6 +10,7 @@
 
 #include "config.h"
 #include "SynSearch.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -199,19 +200,24 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
   // Create KB
   btree::btree_set<uint64_t> kb;
   btree::btree_set<uint64_t> auxKB;
+  uint32_t factsInserted = 0;
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
     const Tree* fact = proc.annotate(iter->c_str());
     if (fact != NULL) {
       auxKB.insert(fact->hash());
-      ForwardPartialSearch(graph, fact, [&auxKB](SearchNode node) -> void {
+      factsInserted += 1;
+      ForwardPartialSearch(graph, fact, [&auxKB,&factsInserted](SearchNode node) -> void {
         auxKB.insert(node.factHash());
+        factsInserted += 1;
       });
       delete fact;
     } else {
       fprintf(stderr, "premise is too long; ignoring: '%s'\n", iter->c_str());
     }
   }
- 
+  printTime("[%c] ");
+  fprintf(stderr, "|INITIALIZE| %lu premises added, yielding %u total facts\n",
+          knownFacts.size(), factsInserted);
 
   // Create Query
   const Tree* input = proc.annotate(query.c_str());
