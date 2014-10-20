@@ -1,0 +1,293 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% MOTIVATION
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% 
+% COMMON SENSE REASONING TEASER
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\scalebox{0.95}{Natural Logic Inference for \uline{\textbf{Common Sense Reasoning}}}}
+\begin{tabular}{cc}
+  \true{Kittens play with yarn} & \false{Kittens play with computers} \\
+  \vspace{0.25cm} \\
+  \includegraphics[width=5cm]{../../img/yarn-cat.jpg} & \pause \includegraphics[width=5cm]{../../img/computer-cat-cropped.jpg}
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%% 
+%% COMMON SENSE REASONING DEFN
+%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{\scalebox{0.95}{Natural Logic Inference for \uline{\textbf{Common Sense Reasoning}}}}
+%\begin{center}
+%\begin{tabular}{ll}
+%  \hh{Input}  & A query fact (e.g., \w{kittens play with yarn}). \\
+%  & \\
+%  \hh{Output} & \textbf{\true{True}} or \textbf{\false{False}}, with some confidence.
+%\end{tabular}
+%\end{center}
+%\pause
+%
+%\vspace{0.5cm}
+%\hh{Subtleties we ignore:}
+%\begin{itemize}
+%  \item \textbf{Truth is elusive.}
+%    \begin{itemize}
+%      \item \true{birds fly} but \false{penguins don't fly}.
+%      \pause
+%      \item \unknown{Obama is a good president}.
+%      \pause
+%      \item A fact is true if we would accept it without evidence to the contrary.
+%    \end{itemize}
+%  \pause
+%  \item \textbf{The internet lies.}
+%    \begin{itemize}
+%      \item \false{Obama was born in Kenya}.
+%    \end{itemize}
+%  \pause
+%  \item \textbf{This query is false.}
+%\end{itemize}
+%\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% COMMON SENSE REASONING NLP
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\uline{\textbf{Common Sense Reasoning}} for NLP}
+\begin{center}
+  \w{The city refused the demonstrators a permit because they feared violence.} \\
+  \pause
+  \begin{tabular}{l}
+    \true{a city fears violence} \\
+    \false{demonstrators fear violence}
+  \end{tabular}
+\end{center}
+\pause
+
+\begin{center}
+  \w{I ate the cake with a cherry} \hspace{0.25cm} vs. \hspace{0.25cm} \w{I ate the cake with a fork} \\
+  \begin{tabular}{l}
+    \true{cakes come with cherries} \\
+    \false{cakes are eaten using cherries}
+  \end{tabular}
+\end{center}
+\pause
+
+\begin{center}
+  \w{Put a sarcastic comment in your talk. That's a great idea.} \\
+  \begin{tabular}{l}
+    \false{Sarcasm in your talk is a great idea}
+  \end{tabular}
+\end{center}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% COMMON SENSE REASONING VISION
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\uline{\textbf{Common Sense Reasoning}} for Vision}
+\begin{tabular}{cc}
+  \false{Dogs drive cars} & \true{People drive cars} \\
+  \includegraphics[height=3cm]{../../img/dog-driving.jpg} & \includegraphics[height=3cm]{../../img/person-driving.jpg}  \\
+  \vspace{0.0cm} \\
+  \pause \false{Baseball is played underwater} & \true{Baseball is played on grass} \\
+  \includegraphics[height=3cm]{../../img/baseball-underwater.jpg} & \includegraphics[height=3cm]{../../img/baseball-grass.jpg} \\
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% COMMON SENSE CURRENTLY
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{\uline{Prior Work on \textbf{Common Sense Reasoning}}}
+\hh{Old School AI:} Nuanced reasoning; tiny coverage.
+\begin{itemize}
+  \item Default reasoning (Reiter 1980; McCarthy 1980).
+  \item Theorem proving (e.g., Datalog).
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Textual Entailment:} Rich inference; small data.
+\begin{itemize}
+  \item RTE Challenges.
+  \item Episodic Logic (Schubert, 2002).
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Information Extraction:} Shallow inference, large data.
+\begin{itemize}
+  \item OpenIE (Yates et al., 2007), NELL (Carlson et al., 2010).
+  \item \textit{Extraction} of facts from a large corpus; fuzzy lookup.
+  \pause
+  \item \textbf{Inference doesn't 10x the knowledge base size.}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%% 
+%% OpenIE
+%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{Open Information Extraction}
+%\hh{Mismatch in Evaluation} \\
+%\vspace{0.25cm}
+%\begin{tabular}{ll}
+%  \h{IE Metric} & ``How many facts did I extract'' \\
+%  \h{Common Use Case} & ``Is this query in my knowledge base?''
+%\end{tabular}
+%\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% TEASER
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Start with a large knowledge base}
+\begin{center}
+  \hspace{0.8cm}
+  \includegraphics[height=2.2cm]{../../img/database.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Start with a large knowledge base}
+\begin{center}
+  \teaserManyPremises
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Infer new facts...}
+\begin{center}
+  \teaserBlindInferenceNaturalOrderBlind
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Infer new facts...}
+\begin{center}
+  \teaserBlindInferenceNaturalOrder
+\end{center}
+\pause
+\begin{textblock*}{6cm}(5.5cm,7.6cm)
+  \textcolor<1-1>{white}{$\leftarrow$ Don't want to store all of these!}
+\end{textblock*}
+\end{frame}
+
+\begin{frame}[noframenumbering]{Infer new facts...on demand from a query...}
+\begin{center}
+  \teaserBlindInference
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{...Using text as the meaning representation...}
+\begin{center}
+  \teaserInference
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{...Without aligning to any particular premise.}
+\begin{center}
+  \teaserFullDerivation
+\end{center}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%% 
+% RESULTS PREVIEW
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{A Better Knowledge Base Lookup}
+  \hh{Lookup in 270 million entry KB...}\\
+  \vspace{0.25cm}
+  \begin{tabular}{ll}
+    \h{...by lemmas} & 12\% recall \\
+    \h{...with NaturalLI} & 49\% recall (91\% precision)
+  \end{tabular}
+  \vspace{0.25cm}
+  \pause
+
+  \hh{Formal logical entailment:} Not just fuzzy lookup.
+  \vspace{0.25cm}
+  \pause
+  
+  \hh{Maintain good properties of fuzzy lookup}.
+  \begin{itemize}
+    \item Fast.
+    \item Minimal pre-processing of query.
+    \item Minimal pre-processing of knowledge base.
+  \end{itemize}
+  \vspace{0.25cm}
+  \pause
+
+  \begin{center}
+    \begin{tabular}{rl}
+      \multicolumn{1}{m{3cm}}{\includegraphics[width=3cm]{../../img/superhero.pdf}} &
+      \huge{Natural Logic}
+    \end{tabular}
+  \end{center}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%% 
+%% INFERENCE MOTIVATION
+%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
+%\begin{center}
+%  \teaserManyPremises
+%\end{center}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
+%\begin{center}
+%  \teaserBlindInferenceNaturalOrder
+%\end{center}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\scalebox{0.95}{Natural Logic \uline{\textbf{Inference}} for Common Sense Reasoning}}
+%\hh{Lots of common sense knowledge bases:}
+%\begin{itemize}
+%  \item OpenIE (TextRunner, ReVerb, Ollie, OpenIE4).
+%  \item NELL, ConceptNet (OpenMind Common Sense), OpenCyc, etc.
+%\end{itemize}
+%\vspace{0.5cm}
+%\pause
+%
+%\hh{A key challenge is coverage.}
+%\begin{itemize}
+%  \item We can greatly improve coverage with \textit{inference}.
+%\end{itemize}
+%\vspace{0.5cm}
+%\pause
+%
+%\hh{Contrast: RTE challenges.}
+%\begin{itemize}
+%  \item \red{Few premises}; \darkgreen{many inference steps}.
+%\end{itemize}
+%\pause
+%
+%\hh{Contrast: Relation inference.}
+%\begin{itemize}
+%  \item \darkgreen{Many premises}; \red{few inference steps}.
+%\end{itemize}
+%\end{frame}
+%
+%%%%%%%%%%%%%%%%%%%% 
+%% NATLOG MOTIVATION
+%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{Properties of an inference algorithm}
+%\hh{Want to make many inference steps}
+%\begin{itemize}
+%  \item[$\Rightarrow$] Computationally fast during inference.
+%\end{itemize}
+%\pause
+%\vspace{0.5cm}
+%
+%\hh{Want to leverage large knowledge base}
+%\begin{itemize}
+%  \item[$\Rightarrow$] Computationally fast during pre-processing.
+%\end{itemize}
+%\pause
+%\vspace{0.5cm}
+%
+%\hh{Still want to capture common inferences}
+%\pause
+%\vspace{0.5cm}
+%
+%\begin{center}
+%  \begin{tabular}{rl}
+%    \multicolumn{1}{m{3cm}}{\includegraphics[width=3cm]{../../img/superhero.pdf}} &
+%    \huge{Natural Logic}
+%  \end{tabular}
+%\end{center}
+%\end{frame}

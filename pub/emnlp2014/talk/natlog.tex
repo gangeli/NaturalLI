@@ -1,0 +1,204 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NATURAL LOGIC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% 
+% NATLOG AS SYLLOGISMS
+%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{\scalebox{0.95}{\uline{\textbf{Natural Logic}} Inference for Common Sense Reasoning}}
+%\begin{center}
+%  \teaserBlindInference
+%\end{center}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\scalebox{0.95}{\uline{\textbf{Natural Logic}} Inference for Common Sense Reasoning}}
+%\begin{center}
+%  \teaserInference
+%\end{center}
+%\end{frame}
+
+\begin{frame}{Natural Logic as Syllogisms}
+\begin{center}
+  \hh{s/Natural Logic/Syllogistic Reasoning/g} \\
+  \vspace{0.25cm}
+  \begin{tabular}{lp{4cm}}
+    &Some cat ate a mouse \\
+    & \darkgray{\textit{(all mice are rodents)}} \\
+    $\therefore$& \true{Some cat ate a \textbf{rodent}} \\
+  \end{tabular}
+\end{center}
+\vspace{0.25cm}
+\pause
+
+\hh{Cognitively easy inferences are easy:} \\
+\begin{itemize}
+  \item 
+    \begin{tabular}{lp{4cm}}
+      &Most cats eat mice \\
+      $\therefore$& \true{Most cats eat \textbf{rodents}} \\
+    \end{tabular}
+  \pause
+\item ``\textit{All students who know a foreign language learned it at university.}''
+  \pause
+  \item[] $\therefore$ \true{``They learned it at school.''}
+\end{itemize}
+\vspace{0.25cm}
+\pause
+
+\hh{Facts are text; inference is lexical mutation}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% POLARITY
+%%%%%%%%%%%%%%%%%%%
+\def\catFelineVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=light] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=dark] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{cat} $\subseteq$ \w{feline}};
+  \end{tikzpicture}
+}
+
+\def\felineAnimalVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=dark] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=light] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{feline} $\subseteq$ \w{animal}};
+  \end{tikzpicture}
+}
+
+\def\header{
+  \hh{Hypernymy is a \textit{bounded distributive lattice}.} \\
+  \begin{center}
+    \catFelineVenn \felineAnimalVenn
+  \end{center}
+}
+\def\blurb{
+  \hh{\textit{Polarity} is the direction a lexical item can move along the lattice.} \\
+}
+\def\title{Natural Logic and Polarity}
+
+\begin{frame}{\title}
+  \header
+  \pause
+  \blurb
+  \begin{center}
+    \monoHeader
+      \node[black]{animal};
+      \node[black]{feline};
+      \node[punktchain,color=blue]{cat};
+      \node[black]{house cat};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% NATLOG ANIMATION
+%%%%%%%%%%%%%%%%%%%
+\input example.tex
+
+%%%%%%%%%%%%%%%%%%% 
+% BEYOND SYLLOGISMS
+%%%%%%%%%%%%%%%%%%%
+\input extensions.tex
+
+%%%%%%%%%%%%%%%%%%% 
+% ADVANTAGES OF NATLOG
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Properties of Natural Logic}
+\begin{itemize}
+  \item[\green{\checkmark}] Computationally fast during inference.
+  \begin{itemize}
+    \item ``Semantic'' parse of query is just syntactic parse.
+    \item Inference is lexical mutations / insertions / deletions.
+  \end{itemize}
+  \vspace{0.5cm}
+  \pause
+
+  \item[\green{\checkmark}] Computationally fast during pre-processing.
+  \begin{itemize}
+    \item Plain text!$^*$
+    \pause
+    \item[] ($^*$Generated from Ollie extractions.)
+  \end{itemize}
+  \vspace{0.5cm}
+  \pause
+
+  \item[\green{\checkmark}] Still captures common inferences.
+  \begin{itemize}
+    \item We make these types of inferences regularly and instantly.
+    \pause
+    \item We expect \textit{readers} to make these inferences instantly.
+  \end{itemize}
+\end{itemize}
+\end{frame}

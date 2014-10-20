@@ -1,0 +1,135 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% LEARNING
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% 
+% SOFT LOGIC
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{``Soft'' Natural Logic}
+\hh{Want to make likely (but not certain) inferences}.
+\begin{itemize}
+  \item Same motivation as Markov Logic, Probabilistic Soft Logic, etc.
+  \pause
+  \item Each \textit{edge template} has a cost $\theta \geq 0$.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Detail:} Variation among \textit{edge instances} of a template.
+\begin{itemize}
+  \item WordNet: \w{cat} $\rightarrow$ \w{feline} \textbf{vs.} \w{cup} $\rightarrow$ \w{container}.
+  \item Nearest neighbors distance.
+  \pause
+  \item Each \textit{edge instance} has a distance $f$.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\begin{tabular}{ll}
+\hh{Cost of an edge is} & $\theta_i \cdot f_i$. \\
+\pause
+\hh{Cost of a path is} & $\theta \cdot \mathbf{f}$. \pause \\
+\multicolumn{2}{l}{\hh{Can learn parameters $\theta$}.}
+\end{tabular}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%% 
+%% Cost -> Probability
+%%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{Costs to Probabilities}
+%\hh{Old trick:} Pass it through a sigmoid: \\
+%\vspace{0.25cm}
+%\begin{tabular}{rcl}
+%\textrm{cost} &=& $\theta \cdot \mathbf{f}$ \\
+%\pause
+%\textrm{weight} &=& $-\theta \cdot \mathbf{f}$ \\
+%\pause
+%\textrm{confidence} &=& $\frac{1}{1 + e^{- (-\theta \cdot \mathbf{f})}}$ \\
+%\end{tabular}
+%\vspace{0.5cm}
+%\pause
+%
+%\hh{$\theta \geq 0$ means $\textrm{confidence} \in [0, \frac{1}{2}]$.}
+%\vspace{0.5cm}
+%\pause
+%  
+%\hh{Let $v$ be $1$ if search thinks the fact is true, $-1$ otherwise:} \\
+%\vspace{0.25cm}
+%\begin{center}
+%  $p(\textrm{true}) = \frac{v}{2} + \frac{1}{1 + e^{v \theta \cdot \mathbf{f}}}$.
+%\end{center}
+%\end{frame}
+%
+%%%%%%%%%%%%%%%%%%%% 
+%% LEARNING WEIGHTS
+%%%%%%%%%%%%%%%%%%%%
+%\newcommand\sD{\ensuremath{D}}
+%\newcommand\bef{\ensuremath{\mathbf{f}}}
+%\def\header{
+%\hh{Input data $\sD = \{ (x, y) \}$.}
+%\begin{itemize}
+%  \item $x_i$ is a query fact.
+%  \item $y_i$ is the truth of that fact in $\{0, 1\}$.
+%\end{itemize}
+%\vspace{0.5cm}
+%\pause
+%
+%\hh{Log Likelihood looks a lot like logistic regression...}
+%}
+%\newcommand\footer[3]{
+%\textcolor{#1}{...but, with our probability from before.} \\
+%\vspace{0.25cm}
+%\textcolor{#2}{...and with a log-barrier function.} \\
+%\vspace{0.25cm}
+%\hh{\textcolor[rgb]{#3}{Nonconvex objective; optimize anyways.}}
+%}
+%\def\title{Learning Costs}
+%
+%\begin{frame}{\title}
+%\header
+%\begin{align*}
+%\l_\theta(\sD) = \sum_{0 \leq i < |\sD|} \Big[
+%    y_i \log \left(\frac{1}{1 + e^{-\theta \cdot \bef(x_i)}} \right)
+%    + (1 - y_i) \log \left(\frac{1}{1 + e^{\theta \cdot \bef(x_i)}} \right)
+%  \Big] \\
+%  \textcolor{white}{\left(\frac{1}{1 + e^{\theta \cdot \bef(x_i)}} \right)}
+%\end{align*}
+%\footer{white}{white}{1,1,1}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\title}
+%\header
+%\begin{align*}
+%\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
+%    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot \bef(x_i)}} \right) \\
+%    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot \bef(x_i)}} \right)
+%  \Big]
+%  \textcolor{white}{- \epsilon \log(\theta)}
+%\end{align*}
+%\footer{black}{white}{1,1,1}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\title}
+%\header
+%\begin{align*}
+%\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
+%    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot \bef(x_i)}} \right) \\
+%    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot \bef(x_i)}} \right)
+%  \Big]
+%  - \epsilon \log(\theta)
+%\end{align*}
+%\footer{black}{black}{1,1,1}
+%\end{frame}
+%
+%\begin{frame}[noframenumbering]{\title}
+%\header
+%\begin{align*}
+%\l_\theta(\sD&) = \sum_{0 \leq i < |\sD|} \Big[
+%    y_i \log \left(\frac{v_i}{2} + \frac{1}{1 + e^{v_i \theta \cdot \bef(x_i)}} \right) \\
+%    &+ (1 - y_i) \log \left(\frac{-v_i}{2} + \frac{1}{1 + e^{-v_i \theta \cdot \bef(x_i)}} \right)
+%  \Big]
+%  - \epsilon \log(\theta)
+%\end{align*}
+%\footer{black}{black}{0.5,0,0}
+%\end{frame}

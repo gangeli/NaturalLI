@@ -1,0 +1,130 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% RESULTS
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%% 
+% FraCaS INTRO
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Experiments}
+\hh{FraCaS Textual Entailment Suite:}
+\begin{itemize}
+  \item Used in MacCartney and Manning (2007; 2008).
+  \item RTE-style problems: is the hypothesis entailed from the premise? \\
+  \pause
+    \vspace{0.1cm}
+    P: At least three commissioners spend a lot of time at home. \\
+    H: \true{At least three commissioners spend time at home.} \\
+    \vspace{0.1cm}
+    \pause
+    P: At most ten commissioners spend a lot of time at home. \\
+    H: \false{At most ten commissioners spend time at home.}
+    \vspace{0.1cm}
+  \pause
+  \item 9 focused sections; 3 in scope for this work.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{\textbf{Not} a blind test set!}
+\begin{itemize}
+  \item ``Can we recover Natural Logic semantics without alignments?''
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% FraCaS RESULTS
+%%%%%%%%%%%%%%%%%%%
+\def\a#1{#1}
+\def\b#1{\textbf{#1}}
+\begin{frame}{FraCaS Results}
+
+\hh{Systems}
+\begin{itemize}
+\item[] \textbf{M07}: MacCartney and Manning (2007)
+\item[] \textbf{M08}: MacCartney and Manning (2008)
+  \begin{itemize}
+    \item \textit{Classify} entailment after aligning premise and hypothesis.
+  \end{itemize}
+  \pause
+\item[] \darkblue{\textbf{N}: NaturalLI (this work)}
+  \begin{itemize}
+    \item \textit{Search} blindly from hypothesis for the premise.
+  \end{itemize}
+\end{itemize}
+\pause
+
+\begin{center}
+  \begin{tabular}{llccc}
+    \hline
+    $\mathsection$ & Category & \multicolumn{3}{c}{Accuracy} \\
+                   &          & \darkblue{N}  & M07 & M08 \\
+    \hline
+                          % Pme           P07   Rme          R08   Ame         A07  A08
+    \a{1} & \a{Quantifiers}  & \a{\darkblue{95}} & \a{84} & \a{97} \\
+    \a{5} & \a{Adjectives}   & \a{\darkblue{73}} & \a{60} & \a{80} \\
+    \a{6} & \a{Comparatives} & \a{\darkblue{87}} & \a{69} & \a{81} \pause \\
+    \hline
+    \multicolumn{2}{l}{\b{Applicable (1,5,6)}}
+                         & \b{\darkblue{89}} & \b{76} & \b{90} \\
+    \hline
+  \end{tabular}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% ConceptNet INTRO
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Experiments}
+\hh{ConceptNet:}
+\begin{itemize}
+  \item A semi-curated collection of common-sense facts. \\
+    \vspace{0.1cm}
+    \pause
+    \true{not all birds can fly} \\
+    \true{noses are used to smell} \\
+    \true{nobody wants to die} \\
+    \true{music is used for pleasure}
+    \vspace{0.1cm}
+  \pause
+  \item Negatives: ReVerb extractions marked false by Turkers.
+  \pause
+  \item Small (1378 train / 1080 test), but fairly broad coverage.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Our Knowledge Base:}
+\begin{itemize}
+  \item 270 million lemmatized Ollie extractions.
+\end{itemize}
+\end{frame}
+  
+%%%%%%%%%%%%%%%%%%% 
+% ConceptNet RESULTS
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{ConceptNet Results}
+\hh{Systems}
+\begin{itemize}
+  \item[] \textbf{Direct Lookup}: Lookup by lemmas.
+  \item[] \textbf{NaturalLI}: Our system.
+  \pause
+  \item[] \textbf{NaturalLI Only}: Use only inference (prohibit exact matches).
+\end{itemize}
+\pause
+
+\begin{center}
+  \begin{tabular}{lcc}
+    System             & P     & R    \\
+    \hline
+    Direct Lookup      & 100.0 & \textbf<5-5>{12.1} \\
+    \pause
+    NaturalLI Only     & 88.8  & 40.1 \\
+    NaturalLI + Lookup & 90.6  & \textbf<5-5>{49.1} \\
+  \end{tabular}
+\end{center}
+\pause
+
+\begin{itemize}
+  \item 4x improvement in recall.
+\end{itemize}
+\end{frame}
