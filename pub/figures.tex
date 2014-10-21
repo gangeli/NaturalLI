@@ -687,3 +687,31 @@
 
 \end{tikzpicture}
 }
+
+
+%
+% -----
+% Lattice
+% -----
+%
+\newcommand\lattice{
+\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.1cm,
+                    semithick]
+  \node[] (top)                            {$\top$};
+  \node[] (animal) [below of=top]          {\w{animal}};
+  \node[] (feline) [below left of=animal]  {\w{feline}};
+  \node[] (cat)    [below of=feline]       {\w{cat}};
+  \node[] (dog)    [below right of=animal] {\w{dog}};
+  \node[] (bot)    [below right of=cat]    {$\bot$};
+
+  \path (animal) edge (top)
+        (feline) edge (animal)
+        (cat)    edge (feline)
+        (dog)    edge (animal)
+        (bot)    edge (cat)
+                 edge (dog);
+
+\end{tikzpicture}
+}
+
+
