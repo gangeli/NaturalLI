@@ -155,6 +155,39 @@
 %\end{center}
 %\end{frame}
 
+
+%%%%%%%%%%%%%%%%%%% 
+% SOFT LOGIC
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{``Soft'' Natural Logic}
+\hh{Want to make likely (but not certain) inferences}.
+\begin{itemize}
+  \item Same motivation as Markov Logic, Probabilistic Soft Logic, etc.
+  \pause
+  \item Each \textit{edge template} has a cost $\theta \geq 0$.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Detail:} Variation among \textit{edge instances} of a template.
+\begin{itemize}
+  \item WordNet: \w{cat} $\rightarrow$ \w{feline} \textbf{vs.} \w{cup} $\rightarrow$ \w{container}.
+  \item Nearest neighbors distance.
+  \pause
+  \item Each \textit{edge instance} has a distance $f$.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\begin{tabular}{ll}
+\hh{Cost of an edge is} & $\theta_i \cdot f_i$. \\
+\pause
+\hh{Cost of a path is} & $\theta \cdot \mathbf{f}$. \pause \\
+\multicolumn{2}{l}{\hh{Can learn parameters $\theta$}.}
+\end{tabular}
+
+\end{frame}
+
 %%%%%%%%%%%%%%%%%%% 
 % CONTRIBUTION: COLLAPSED INFERENCE STATES
 %%%%%%%%%%%%%%%%%%%
