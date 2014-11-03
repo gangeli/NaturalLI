@@ -539,27 +539,6 @@ TEST_F(TreeTest, HashDeleteSubtree) {
 }
 
 //
-// Hash Delete (regression)
-//
-inline uint64_t hashEdge(dependency_edge edge) {
-  // Collapse relations which are 'equivalent'
-  dep_label  originalRel = edge.relation;
-  if (edge.relation == DEP_NEG) { 
-    edge.relation = DEP_DET;
-  }
-  // Hash edge
-#if TWO_PASS_HASH!=0
-  return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
-#else
-  uint64_t edgeHash;
-  memcpy(&edgeHash, &edge, sizeof(uint64_t));
-  return mix(edgeHash);
-#endif
-  // Revert relation
-  edge.relation = originalRel;
-}
-
-//
 // This deletion is not registering? [Nov 2 2014]
 //
 TEST_F(TreeTest, HashDeleteRegressionOne) {
