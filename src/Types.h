@@ -138,6 +138,7 @@ typedef uint8_t dep_label;
 #define ANIMAL    getTaggedWord(5532, 0, 0)
 #define POTTO     getTaggedWord(99965, 0, 0)
 #define CAT       getTaggedWord(20852, 0, 0)
+#define FURRY     getTaggedWord(50015, 0, 0)
 #define HAVE      getTaggedWord(60042, 0, 0)
 #define TAIL      getTaggedWord(125248, 0, 0)
 #define SOME      getTaggedWord(118441, 0, 0)
@@ -150,6 +151,7 @@ typedef uint8_t dep_label;
 #define ANIMAL_STR "5532"
 #define POTTO_STR  "99965"
 #define CAT_STR    "20852"
+#define FURRY_STR  "50015"
 #define HAVE_STR   "60042"
 #define TAIL_STR   "125248"
 

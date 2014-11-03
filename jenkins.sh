@@ -67,5 +67,8 @@ gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
 gcovr -r . --xml -o coverage.xml
 cd ..
 
+echo "-- Test Cases --"
+test/run_testcases.sh
+
 echo "SUCCESS!"
 exit 0

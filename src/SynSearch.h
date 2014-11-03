@@ -544,11 +544,11 @@ class Tree {
    */
   const uint8_t length;
 
- protected:
+// protected:  // TODO
   /** Information about the monotonicities of the quantifiers in the sentence. */
   quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];
 
- private:
+// private:  // TODO
   /** The actual data for this tree. */
   dep_tree_word data[MAX_QUERY_LENGTH];
 
@@ -561,15 +561,15 @@ class Tree {
   /** The number of quantifiers in the tree. */
   uint8_t numQuantifiers;
 
+  /** Populate the quantifiers in scope at a particular index */
+  void populateQuantifiersInScope(const uint8_t index);
+
   /** Get the incoming edge at the given index as a struct */
   inline dependency_edge edgeInto(const uint8_t& index,
                                   const ::word& wordAtIndex,
                                   const ::word& governor) const {
     return dependency_edge(governor, wordAtIndex, data[index].relation);
   }
-
-  /** Populate the quantifiers in scope at a particular index */
-  void populateQuantifiersInScope(const uint8_t index);
   
   /** See edgeInto(index, word, word), but using the tree's known governor */
   inline dependency_edge edgeInto(const uint8_t& index, 

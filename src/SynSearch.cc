@@ -546,9 +546,9 @@ natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
     case DEP_ADVCL: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_ADVMOD: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_AMOD: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_APPOS: return FUNCTION_EQUIVALENT;
-    case DEP_AUX: return FUNCTION_FORWARD_ENTAILMENT;      // he left -> he should leave
-    case DEP_AUXPASS: return FUNCTION_FORWARD_ENTAILMENT;  // as above
+    case DEP_APPOS: return FUNCTION_REVERSE_ENTAILMENT;
+    case DEP_AUX: return FUNCTION_INDEPENDENCE;            // He left -/-> he should leave
+    case DEP_AUXPASS: return FUNCTION_INDEPENDENCE;        // Some cat adopts -/-> some cat got adopted
     case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;       // match DEP_CONJ
     case DEP_CCOMP: return FUNCTION_INDEPENDENCE;          // interesting project here... "he said x" -> "x"?
     case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
@@ -953,8 +953,8 @@ void ForwardPartialSearch(
       const float cost = guidingCosts->deletionCost(
             *input, node, input->relation(dependentIndex),
             input->word(dependentIndex), node.truthState(), &newTruthValue);
+      // Deletion (optional)
       if (newTruthValue && !isinf(cost)) {  // TODO(gabor) handle negation deletions?
-        // Deletion
         // (compute)
         uint32_t deletionMask = input->createDeleteMask(dependentIndex);
         uint64_t newHash = input->updateHashFromDeletions(
@@ -963,10 +963,10 @@ void ForwardPartialSearch(
         // (create child)
         const SearchNode deletedChild(node, newHash, newTruthValue, deletionMask, 0);
         fringe.push_back(deletedChild);
-        // Move
-        const SearchNode indexMovedChild(node, *input, dependentIndex, 0);
-        fringe.push_back(indexMovedChild);
       }
+      // Move (always)
+      const SearchNode indexMovedChild(node, *input, dependentIndex, 0);
+      fringe.push_back(indexMovedChild);
     }
   }
 

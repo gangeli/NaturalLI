@@ -44,9 +44,8 @@ int32_t main( int32_t argc, char *argv[] ) {
     Tree* sentence = readTreeFromStdin();
     if (sentence != NULL) {
       if (sentence->length > 0) {
-        printf("Original hash is %lu\n", sentence->hash());
         ForwardPartialSearch(graph, sentence, [](SearchNode node) -> void {
-          printf("  Node hash is %lu\n", node.factHash());
+          printf("%lu\n", node.factHash());
         });
       }
       delete sentence;

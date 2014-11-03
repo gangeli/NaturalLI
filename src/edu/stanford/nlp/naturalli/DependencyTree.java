@@ -44,8 +44,14 @@ public class DependencyTree<E> {
       Set<IndexedWord> parents = dependencies.getParents(vertex);
       assert parents.size() < 2;
       if (parents.size() == 1) {
-        governors[oldToNewIndex[vertex.index() - 1]] = oldToNewIndex[parents.iterator().next().index() - 1];
-        governingRelations[oldToNewIndex[vertex.index() - 1]] = dependencies.getIncomingEdgesSorted(vertex).get(0).getRelation().getShortName();
+        IndexedWord governor = parents.iterator().next();
+        String incomingEdgeType = dependencies.getIncomingEdgesSorted(vertex).get(0).getRelation().getShortName();
+        if (!"cc".equals(incomingEdgeType.toLowerCase())) {
+          // blacklist CC as an edge type (completely uninformative)
+          // TODO(gabor) really, the corrolary to this should be to take the conj_and and conj_or variants of this arc
+          governors[oldToNewIndex[vertex.index() - 1]] = oldToNewIndex[governor.index() - 1];
+          governingRelations[oldToNewIndex[vertex.index() - 1]] = incomingEdgeType;
+        }
       }
     }
     for (IndexedWord root : dependencies.getRoots()) {

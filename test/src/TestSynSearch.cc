@@ -4,20 +4,28 @@
 #include "gtest/gtest.h"
 #include "btree_set.h"
 #include "SynSearch.h"
+#include "Types.h"
 #include "Utils.h"
 
 #define SILENT true
 
 #define ALL_CATS_HAVE_TAILS \
                        string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\tmultiplicative\t3-5\n") + \
-                       string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t3\tdobj\t0\t-\t-\t-\t-\n")
+                       string(CAT_STR) + string("\t3\tnsubj\t1\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t3\tdobj\t2\t-\t-\t-\t-\n")
+
+#define ALL_FURRY_CATS_HAVE_TAILS \
+                       string(ALL_STR)   + string("\t3\tdet\t0\tanti-additive\t2-4\tmultiplicative\t4-6\n") + \
+                       string(FURRY_STR) + string("\t3\tamod\t1\t-\t-\t-\t-\n") + \
+                       string(CAT_STR)   + string("\t4\tnsubj\t1\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR)  + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR)  + string("\t4\tdobj\t2\t-\t-\t-\t-\n")
 
 #define CATS_HAVE_TAILS \
-                       string(CAT_STR) + string("\t2\tnsubj\t0\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t2\tdobj\t0\t-\t-\t-\t-\n")
+                       string(CAT_STR) + string("\t2\tnsubj\t1\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t2\t-\t-\t-\t-\n")
 
 using namespace std;
 using namespace btree;
@@ -159,10 +167,10 @@ TEST_F(TreeTest, CoNLLLongConstructor) {
   Tree tree(ALL_CATS_HAVE_TAILS);
 
   // Sanity check
-  EXPECT_EQ(ALL, tree.token(0));
-  EXPECT_EQ(CAT, tree.token(1));
-  EXPECT_EQ(HAVE, tree.token(2));
-  EXPECT_EQ(TAIL, tree.token(3));
+  EXPECT_EQ(ALL.word, tree.token(0).word);
+  EXPECT_EQ(CAT.word, tree.token(1).word);
+  EXPECT_EQ(HAVE.word, tree.token(2).word);
+  EXPECT_EQ(TAIL.word, tree.token(3).word);
 }
 
 uint8_t countQuantifiers(const Tree& tree, const uint8_t& index) {
@@ -528,6 +536,40 @@ TEST_F(TreeTest, HashDeleteSubtree) {
   const uint64_t actualDeleteHash
     = bigTree->updateHashFromDeletions( originalHash, 1, 43, 44, deleteMask );
   EXPECT_EQ(expectedDeleteHash, actualDeleteHash);
+}
+
+//
+// Hash Delete (regression)
+//
+inline uint64_t hashEdge(dependency_edge edge) {
+  // Collapse relations which are 'equivalent'
+  dep_label  originalRel = edge.relation;
+  if (edge.relation == DEP_NEG) { 
+    edge.relation = DEP_DET;
+  }
+  // Hash edge
+#if TWO_PASS_HASH!=0
+  return fnv_64a_buf(&edge, sizeof(dependency_edge), FNV1_64_INIT);
+#else
+  uint64_t edgeHash;
+  memcpy(&edgeHash, &edge, sizeof(uint64_t));
+  return mix(edgeHash);
+#endif
+  // Revert relation
+  edge.relation = originalRel;
+}
+
+//
+// This deletion is not registering? [Nov 2 2014]
+//
+TEST_F(TreeTest, HashDeleteRegressionOne) {
+  Tree premise(ALL_CATS_HAVE_TAILS);
+  Tree hypothesis(ALL_FURRY_CATS_HAVE_TAILS);
+  const uint32_t deleteMask = hypothesis.createDeleteMask(1);
+  const uint64_t furryDeletedHash
+    = hypothesis.updateHashFromDeletions( 
+        hypothesis.hash(), 1, FURRY.word, CAT.word, deleteMask );
+  EXPECT_EQ(premise.hash(), furryDeletedHash);
 }
 
 //

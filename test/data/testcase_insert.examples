@@ -1,15 +1,67 @@
 # ACOMP
-# TODO(gabor) no examples?
+# no examples?
 
 # ADVCL
-# TODO(gabor) finish me
+No dog chased a cat
+TRUE: No dog chased a cat in order to catch it
 
-## ADVMOD
-#no man is beautiful
-#TRUE: no man is very beautiful
+# ADVMOD
+no man is beautiful
+TRUE: no man is very beautiful
+
+# AGENT
+# no examples?
 
 # AMOD
+# 'furry' is prone to cycles in nearest neighbors
 all cats have tails
 TRUE: all furry cats have tails
+
+all cats have tails
+TRUE: all green cats have tails
+
+all cats have tails
+TRUE: all red cats have tails
+
+all cats have tails
+TRUE: all friendly cats have tails
+
+all cats have tails
+TRUE: all beautiful cats have tails
+
+# wrong because of a parse error
+#all cats have tails
+#TRUE: all cute cats have tails
+
+# APPOS
+No dogs chase the cat
+TRUE: No dogs chase the cat, Felix
+
+# AUX
+All cats play
+UNK: All cats should play
+
+# AUXPASS
+some cat adopts
+UNK: some cat got adopted
+
+# CC / CONJ
+no cats have fleas
+TRUE: no cats have fleas and rabbies
+
+no green cats have fleas
+TRUE: no green and red cats have fleas
+
+# the amod attaches to green not black :(. TODO(gabor) this is maybe fixable?
+#no green cats have fleas
+#TRUE: no black and green cats have fleas
+
+# CCOMP
+no cat said that all dogs lie
+UNK: no cat
+
+# COP
+no cats play
+UNK: no cats are play
 
 # TODO(gabor) finish me

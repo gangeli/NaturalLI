@@ -1,15 +1,52 @@
 # ACOMP
-# TODO(gabor) no examples?
+# no examples?
 
 # ADVCL
-# TODO(gabor) finish me
+Some dog chased a cat in order to catch it
+TRUE: Some dog chased a cat
 
 # ADVMOD
 the woman is very beautiful
 TRUE: the woman is beautiful
 
+# AGENT
+# no examples?
+
 # AMOD
+Some green cats have tails
+TRUE: Some cats have tails
+
 Some furry cats have tails
 TRUE: Some cats have tails
+
+# APPOS
+Some dogs chase the cat, Felix
+TRUE: Some dogs chase the cat
+
+# AUX
+All cats should play
+UNK: All cats play
+
+# AUXPASS
+some cat got adopted
+UNK: some cat adopted
+
+# CC / CONJ
+some cats and dogs have tails
+TRUE: some cats have tails
+
+some cats have tails and ears
+TRUE: some cats have tails
+
+# CCOMP
+some cat said that all dogs lie
+UNK: some cat
+
+some cat said that all dogs lie
+UNK: all dogs lie
+
+# COP
+some cats are cute
+UNK: some cats cute
 
 # TODO(gabor) finish me

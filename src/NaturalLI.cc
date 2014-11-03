@@ -204,8 +204,6 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
     const Tree* fact = proc.annotate(iter->c_str());
     if (fact != NULL) {
-      auxKB.insert(fact->hash());
-      factsInserted += 1;
       ForwardPartialSearch(graph, fact, [&auxKB,&factsInserted](SearchNode node) -> void {
         auxKB.insert(node.factHash());
         factsInserted += 1;
@@ -216,7 +214,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
     }
   }
   printTime("[%c] ");
-  fprintf(stderr, "|INITIALIZE| %lu premises added, yielding %u total facts\n",
+  fprintf(stderr, "|INITIALIZE| %lu premise(s) added, yielding %u total facts\n",
           knownFacts.size(), factsInserted);
 
   // Create Query
@@ -300,6 +298,7 @@ uint32_t repl(const BidirectionalGraph* graph, Preprocessor& proc) {
       lines.pop_back();
       bool haveExpectedTruth = false;
       bool expectedTruth;
+      bool expectUnknown = false;
       if (query.substr(0,5) == "TRUE:") {
         haveExpectedTruth = true;
         expectedTruth = true;
@@ -310,6 +309,11 @@ uint32_t repl(const BidirectionalGraph* graph, Preprocessor& proc) {
         expectedTruth = false;
         query = query.substr(6);
         while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
+      } else if (query.substr(0,4) == "UNK:") {
+        haveExpectedTruth = true;
+        expectUnknown = true;
+        query = query.substr(4);
+        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
       }
       // Run query
       double truth;
@@ -318,11 +322,20 @@ uint32_t repl(const BidirectionalGraph* graph, Preprocessor& proc) {
       fprintf(stderr, "\n");
       fflush(stderr);
       if (haveExpectedTruth) {
-        if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) { 
-          printf("PASS: ");
-        } else { 
-          printf("FAIL: ");
-          failedExamples += 1;
+        if (expectUnknown) {
+          if (truth == 0.5) {
+            printf("PASS: ");
+          } else {
+            printf("FAIL: ");
+            failedExamples += 1;
+          }
+        } else {
+          if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) { 
+            printf("PASS: ");
+          } else { 
+            printf("FAIL: ");
+            failedExamples += 1;
+          }
         }
       }
       printf("%s\n", response.c_str());  // Should be the only output to stdout
