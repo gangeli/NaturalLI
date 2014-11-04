@@ -177,7 +177,7 @@ AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=angeli}", [The username to use fo
 AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=}", [The password to use for the database connection])
 
 AC_DEFINE_UNQUOTED(PG_TABLE_WORD,      "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=edge}", [The table in which the graph edges are stored])
+AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=synedge}", [The table in which the graph edges are stored])
 AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
 AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
 

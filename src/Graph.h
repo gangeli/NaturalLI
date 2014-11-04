@@ -28,6 +28,8 @@ class Graph {
   virtual const std::vector<word> keys() const = 0;
   /** Returns whether this edge is a valid deletion */
   virtual const bool containsDeletion(const edge& deletion) const = 0;
+  /** Returns the vocabulary size */
+  virtual const uint64_t vocabSize() const = 0;
 
   /** A helper to get the outgoing edges in a more reasonable form */
   virtual const std::vector<edge> incomingEdges(const tagged_word& sink) {
@@ -79,6 +81,10 @@ class BidirectionalGraph : Graph {
   /** {@inheritDoc} */
   virtual const bool containsDeletion(const edge& deletion) const {
     return impl->containsDeletion(deletion);
+  }
+  /** {@inheritDoc} */
+  virtual const uint64_t vocabSize() const {
+    return size;
   }
 
  public:

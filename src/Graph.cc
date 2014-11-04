@@ -114,6 +114,11 @@ class InMemoryGraph : public Graph {
       return true;
     }
   }
+  
+  /** {@inheritDoc} */
+  virtual const uint64_t vocabSize() const {
+    return size;
+  }
 };
   
 
@@ -122,7 +127,7 @@ class InMemoryGraph : public Graph {
 //
 BidirectionalGraph::BidirectionalGraph(const Graph* impl) 
     : impl(impl),
-      size(impl->keys().size()) {
+      size(impl->vocabSize()) {
   outgoingEdgeData.resize(size);
   uint32_t length;
   for (uint32_t sink = 0; sink < size; ++sink) {
