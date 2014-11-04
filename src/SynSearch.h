@@ -16,6 +16,9 @@
 #ifndef SEARCH_CYCLE_MEMORY
   #define SEARCH_CYCLE_MEMORY 0
 #endif
+#ifndef SEARCH_FULL_MEMORY
+  #define SEARCH_FULL_MEMORY 0
+#endif
 
 // Conditional includes
 #if TWO_PASS_HASH!=0

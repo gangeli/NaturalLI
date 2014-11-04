@@ -5,10 +5,9 @@ EXTRA_DIST = edu org
 clean-local:
 	rm -f *.gcno *.gcda
 
-_OBJS_SPEC = Map.o Search.o FactDB.o Trie.o Graph.o Postgres.o Utils.o \
-             SynSearch.o SynSearchSingleThreaded.o \
-             Bloom.o Messages.pb.o
-OBJ_NAMES = $(patsubst %,naturalli_server-%,${_OBJS_SPEC})
+_OBJS_SPEC = Graph.o Postgres.o Utils.o \
+             SynSearch.o SynSearchSingleThreaded.o Messages.pb.o
+OBJ_NAMES = $(patsubst %,naturalli-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 
 _TEST_OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
@@ -33,9 +32,8 @@ AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf \
                -Lgtest/lib -lgtest gtest/gtest_main.o
 
 
-test_server_SOURCES = TestPostgres.cc TestBloom.cc TestRamCloudBackend.cc \
-                      TestFactDB.cc TestSearch.cc  TestGraph.cc TestTrie.cc \
-                      TestMap.cc TestMessages.pb.cc  TestUtils.cc TestTypes.cc \
+test_server_SOURCES = TestPostgres.cc TestGraph.cc \
+                      TestMessages.pb.cc  TestUtils.cc TestTypes.cc \
                       TestSynSearch.cc
 test_server_LDADD =  ${OBJS}
 
@@ -55,13 +53,13 @@ endif
 endif
 endif
 
-test_client.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/naturalli/*.java) 
-	$(MAKE) -C ../../src naturalli_client.jar
+test_preprocess.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/naturalli/*.java) 
+	$(MAKE) -C ../../src naturalli_preprocess.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_client.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
+	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
 	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
-	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_client.jar `find . -name "*.scala"` `find . -name "*.java"`
-	${JDK_HOME}/bin/jar cf test_client.jar `find . -name "*.class"`
-	${JDK_HOME}/bin/jar uf test_client.jar `find . -name "*.dat"`
-	${JDK_HOME}/bin/jar uf test_client.jar `find . -name "*.scala"`
+	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar `find . -name "*.scala"` `find . -name "*.java"`
+	${JDK_HOME}/bin/jar cf test_preprocess.jar `find . -name "*.class"`
+	${JDK_HOME}/bin/jar uf test_preprocess.jar `find . -name "*.dat"`
+	${JDK_HOME}/bin/jar uf test_preprocess.jar `find . -name "*.scala"`
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'

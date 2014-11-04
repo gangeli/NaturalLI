@@ -49,7 +49,7 @@ class Preprocessor {
       char wordnetEnv[128];
       snprintf(wordnetEnv, 127, "-Dwordnet.database.dir=%s", WORDNET_DICT);
       char classpath[1024];
-      snprintf(classpath, 1024, "%s/naturalli_client.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s", 
+      snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s", 
           thisDir.c_str(), thisDir.c_str(), thisDir.c_str(),
           CORENLP, CORENLP_MODELS);
       // Start program

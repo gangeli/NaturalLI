@@ -13,11 +13,8 @@
 #include <config.h>
 #include "Types.h"
 #include "Graph.h"
-#include "Search.h"
 #include "SynSearch.h"
 
-class SearchType;  // C++ doesn't like combiling without these here?
-class Path;
 
 /**
  * Print the string gloss for the given fact.
@@ -28,11 +25,6 @@ std::string toString(const Graph& graph, const tagged_word* fact, const uint8_t 
  * Print the string gloss for the given fact.
  */
 std::string toString(const Graph& graph, const Tree& tree);
-
-/**
- * Print a human readable dump of a search path.
- */
-std::string toString(const Graph& graph, SearchType& searchType, const Path* path);
 
 /**
  * Print a human readable dump of a search path.

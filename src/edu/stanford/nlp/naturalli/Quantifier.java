@@ -12,14 +12,56 @@ import java.util.Set;
  * @author Gabor Angeli
  */
 public enum Quantifier {
+  // "All" quantifiers
   ALL("all", "anti-additive", "multiplicative"),
-  SOME("some", "additive", "additive"),
-  NO("no", "anti-additive", "anti-additive"),
+  EVERY("every", "anti-additive", "multiplicative"),
+  ANY("any", "anti-additive", "multiplicative"),
+  BOTH("both", "anti-additive", "multiplicative"),
+  EACH("each", "anti-additive", "multiplicative"),
+  THE_LOT_OF("the lot of", "anti-additive", "multiplicative"),
+  ALL_OF("all of", "anti-additive", "multiplicative"),
+  FOR_ALL("for all", "anti-additive", "multiplicative"),
+  FOR_EVERY("for every", "anti-additive", "multiplicative"),
+  FOR_EACH("for each", "anti-additive", "multiplicative"),
 
+  // "No" quantifiers
+  NO("no", "anti-additive", "anti-additive"),
   UNARY_NO("no", "anti-additive"),
   UNARY_NOT("not", "anti-additive"),
   UNARY_NT("n't", "anti-additive"),
-  // TODO(gabor)
+
+  // "Some" quantifiers
+  SOME("some", "additive", "additive"),
+  SEVERAL("several", "additive", "additive"),
+  EITHER("either", "additive", "additive"),
+  A("a", "additive", "additive"),
+  THE("the", "additive", "additive"),
+  LESS_THAN("less than", "additive", "additive"),
+  SOME_OF("some of", "additive", "additive"),
+  ONE_OF("one of", "additive", "additive"),
+  AT_LEAST("at least", "additive", "additive"),
+  A_FEW("a few", "additive", "additive"),
+  THERE_BE("there be", "additive", "additive"),
+  THERE_BE_A_FEW("there be a few", "additive", "additive"),
+  THERE_EXIST("there exist", "additive", "additive"),
+
+  // "Not All" quantifiers
+  NOT_ALL("not all", "additive", "anti-multiplicative"),
+  NOT_EVERY("not every", "additive", "anti-multiplicative"),
+
+  // "Most" quantifiers
+  // TODO(gabor) check these
+  MOST("most", "nonmonotone", "multiplicative"),
+  ENOUGH("enough", "nonmonotone", "multiplicative"),
+  MORE_THAN("more than", "nonmonotone", "multiplicative"),
+  A_LOT_OF("a lot of", "nonmonotone", "multiplicative"),
+  LOTS_OF("lots of", "nonmonotone", "multiplicative"),
+  PLENTY_OF("plenty of", "nonmonotone", "multiplicative"),
+  HEAPS_OF("heap of", "nonmonotone", "multiplicative"),
+  A_LOAD_OF("a load of", "nonmonotone", "multiplicative"),
+  LOADS_OF("load of", "nonmonotone", "multiplicative"),
+  TONS_OF("ton of", "nonmonotone", "multiplicative"),
+  FEW("few", "nonmonotone", "multiplicative"),
   ;
 
   public static final Set<String> GLOSSES = Collections.unmodifiableSet(new HashSet<String>() {{
@@ -90,4 +132,11 @@ public enum Quantifier {
     }
     throw new IllegalStateException("Unhandled case: " + mono + " and " + type);
   }
+
+  @SuppressWarnings("UnusedDeclaration")
+  public static final Set<String> quantifierGlosses = Collections.unmodifiableSet(new HashSet<String>() {{
+    for (Quantifier quantifier : values()) {
+      add(quantifier.surfaceForm);
+    }
+  }});
 }

@@ -13,8 +13,8 @@ clean-local:
 	rm -f java.hprof.txt
 	rm -f *.gcno
 	rm -f *.gcda
-	rm -f src/naturalli_client.jar
-	rm -f test/src/test_client.jar
+	rm -f src/naturalli_preprocess.jar
+	rm -f test/src/test_preprocess.jar
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 	bash -c 'for file in `find . -name "TEST-*.xml"`; do rm -f $$file; done'
 
@@ -38,21 +38,21 @@ export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.6.jar:${LIB}/test/junit-4.11
 src/org/goobs/naturalli/Messages.java: src/Messages.proto
 	$(MAKE) -C src org/goobs/naturalli/Messages.java
 
-src/naturalli_client.jar: $(wildcard src/org/goobs/naturalli/*.scala) $(wildcard src/org/goobs/naturalli/*.java) $(wildcard src/org/goobs/naturalli/scripts/*.scala) $(wildcard src/org/goobs/naturalli/conf/*.conf) src/org/goobs/naturalli/Messages.java $(wildcard src/edu/stanford/nlp/naturalli/*.java)
-	$(MAKE) -C src naturalli_client.jar
+src/naturalli_preprocess.jar: $(wildcard src/org/goobs/naturalli/*.scala) $(wildcard src/org/goobs/naturalli/*.java) $(wildcard src/org/goobs/naturalli/scripts/*.scala) $(wildcard src/org/goobs/naturalli/conf/*.conf) src/org/goobs/naturalli/Messages.java $(wildcard src/edu/stanford/nlp/naturalli/*.java)
+	$(MAKE) -C src naturalli_preprocess.jar
 
-src/naturalli.war: src/naturalli_client.jar $(wildcard src/org/goobs/naturalli/demo/*.java) src/org/goobs/naturalli/demo/WEB-INF/naturalli.xml
+src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/org/goobs/naturalli/demo/*.java) src/org/goobs/naturalli/demo/WEB-INF/naturalli.xml
 	$(MAKE) -C src naturalli.war
 
-test/src/test_client.jar: $(wildcard test/src/org/goobs/naturalli/*.scala) $(wildcard test/src/org/goobs/naturalli/*.java) $(wildcard test/src/org/goobs/naturalli/*.dat) $(wildcard test/src/edu/stanford/nlp/natlog/*.java) $(wildcard test/src/org/goobs/naturalli/*.java) 
-	$(MAKE) -C src naturalli_client.jar
-	$(MAKE) -C test/src test_client.jar
+test/src/test_preprocess.jar: $(wildcard test/src/org/goobs/naturalli/*.scala) $(wildcard test/src/org/goobs/naturalli/*.java) $(wildcard test/src/org/goobs/naturalli/*.dat) $(wildcard test/src/edu/stanford/nlp/natlog/*.java) $(wildcard test/src/org/goobs/naturalli/*.java) 
+	$(MAKE) -C src naturalli_preprocess.jar
+	$(MAKE) -C test/src test_preprocess.jar
 
 # (some helpers)
-client: src/naturalli_client.jar
-	${SCALA_HOME}/bin/scala -cp ${CP}:src/naturalli_client.jar -J-mx4g org.goobs.naturalli.Client
+preprocess: src/naturalli_preprocess.jar
+	${SCALA_HOME}/bin/scala -cp ${CP}:src/naturalli_preprocess.jar -J-mx4g edu.stanford.nlp.naturalli.Preprocess
 
-java_test: src/naturalli_client.jar test/src/test_client.jar
+java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar
 	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
@@ -60,15 +60,15 @@ if HAVE_ANT
 	CLASSPATH="" CORENLP_JAR="${CORENLP}" CORENLP_MODELS_JAR="${CORENLP_MODELS}" CORENLP_CASELESS_MODELS_JAR="${CORENLP_CASELESS_MODELS}" ant test
 else
 	@echo "  (could not find ant -- running directly)"
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.naturalli.QuantifierTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.natlog.GaborMonoTest org.goobs.naturalli.QuantifierTest
 	@echo "[test] scalatest *.scala"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test -R test/src/test_client.jar -o -w org.goobs.naturalli
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx4g org.scalatest.tools.Runner -u test -R test/src/test_preprocess.jar -o -w org.goobs.naturalli
 endif
 
-java_itest: src/naturalli_client.jar test/src/test_client.jar
+java_itest: src/naturalli_preprocess.jar test/src/test_preprocess.jar
 	export CLASSPATH=""
 	@echo "[itest] junit *.java"
 	@echo "[itest] RegressionTest"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.RegressionTest
+	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.RegressionTest
 #	@echo "[itest] Learning RegressionTest"
-#	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_client.jar:src/naturalli_client.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.LearnRegressionTest
+#	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g org.goobs.naturalli.LearnRegressionTest

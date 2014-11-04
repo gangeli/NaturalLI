@@ -53,16 +53,6 @@ string toString(const Graph& graph, const tagged_word* fact, const uint8_t factL
   return gloss;
 }
 
-string toString(const Graph& graph, SearchType& searchType, const Path* path) {
-  if (path == NULL) {
-    return "<start>";
-  } else {
-    return toString(graph, path->fact, path->factLength) +
-           "; from\n  " +
-           toString(graph, searchType, path->parent);
-  }
-}
-
 std::string toString(const Graph& graph, const Tree& tree) {
   tagged_word buffer[tree.length];
   for (uint8_t i = 0; i < tree.length; ++i) {
@@ -207,7 +197,6 @@ inference_function edge2function(const edge_type& type) {
     case DEL_EXISTENTIAL:
     case DEL_UNIVERSAL:
     case DEL_QUANTIFIER_OTHER:
-    case NULL_EDGE_TYPE:
       function = FUNCTION_EQUIVALENT;
       break;
     default:

@@ -50,9 +50,12 @@ echo "(two pass hash)"
 configure TWO_PASS_HASH=1
 make check
 echo "(search cycle memory)"
-configure SEARCH_CYCLE_MEMORY=1; make check
-configure SEARCH_CYCLE_MEMORY=2; make check
-configure SEARCH_CYCLE_MEMORY=5; make check
+configure SEARCH_FULL_MEMORY=0 SEARCH_CYCLE_MEMORY=1; make check
+configure SEARCH_FULL_MEMORY=0 SEARCH_CYCLE_MEMORY=2; make check
+configure SEARCH_FULL_MEMORY=0 SEARCH_CYCLE_MEMORY=5; make check
+echo "(search full memory)"
+configure SEARCH_FULL_MEMORY=0; make check
+configure SEARCH_FULL_MEMORY=1; make check
 echo "(back to default)"
 configure  # reconfigure to default
 make all

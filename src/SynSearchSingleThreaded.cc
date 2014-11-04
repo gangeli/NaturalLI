@@ -12,6 +12,12 @@ using namespace std;
 // ----------------------------------------------
 
 
+inline uint64_t memoryItem(const uint64_t& fact, const uint8_t& currentIndex,
+                           const bool& truth) {
+  uint64_t currentIndexShifted = currentIndex << 1;
+  return (fact << 9) | currentIndexShifted | (truth ? 1l : 0l);
+} 
+
 #pragma GCC push_options  // matches pop_options below
 #pragma GCC optimize ("unroll-loops")
 inline uint64_t searchLoop(
@@ -25,15 +31,28 @@ inline uint64_t searchLoop(
   uint64_t ticks = 0;
   uint8_t  dependentIndices[8];
   natlog_relation  dependentRelations[8];
+  ScoredSearchNode scoredNode;
+#if SEARCH_FULL_MEMORY!=0
+  btree::btree_set<uint64_t> fullMemory;
+#else
+#if SEARCH_CYCLE_MEMORY!=0
   uint8_t memorySize = 0;
   SearchNode memory[SEARCH_CYCLE_MEMORY];
-  ScoredSearchNode scoredNode;
+#endif
+#endif
 
   // Main Loop
   while (ticks < opts.maxTicks && dequeue(&scoredNode)) {
     
     // Register the dequeue'd element
     const SearchNode& node = scoredNode.node;
+#if SEARCH_FULL_MEMORY!=0
+  const uint64_t fullMemoryItem = memoryItem(node.factHash(), node.tokenIndex(), node.truthState());
+  if (fullMemory.find(fullMemoryItem) != fullMemory.end()) {
+    continue;  // Prohibit duplicate visits
+  }
+  fullMemory.insert(fullMemoryItem);
+#else
 #if SEARCH_CYCLE_MEMORY!=0
     memory[0] = history[node.getBackpointer()];
     memorySize = 1;
@@ -44,6 +63,7 @@ inline uint64_t searchLoop(
       }
     }
     const SearchNode& parent = history[node.getBackpointer()];
+#endif
 #endif
     // Register visited
     registerVisited(scoredNode);
@@ -98,6 +118,8 @@ inline uint64_t searchLoop(
         // TODO(gabor) update quantifier with mutated version!
       }
       // (push child)
+#if SEARCH_FULL_MEMORY!=0
+#else
 #if SEARCH_CYCLE_MEMORY!=0
       bool isNewChild = true;
       for (uint8_t i = 0; i < memorySize; ++i) {
@@ -105,10 +127,14 @@ inline uint64_t searchLoop(
       }
       if (isNewChild) {
 #endif
+#endif
       enqueue(ScoredSearchNode(mutatedChild, cost));
 //      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
+#if SEARCH_FULL_MEMORY!=0
+#else
 #if SEARCH_CYCLE_MEMORY!=0
       }
+#endif
 #endif
     }
   

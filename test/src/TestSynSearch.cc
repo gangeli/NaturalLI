@@ -815,20 +815,32 @@ TEST_F(SynSearchTest, ThreadsFinish) {
 
 TEST_F(SynSearchTest, TickCountNoMutation) {
   syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, true, opts);
+#if SEARCH_FULL_MEMORY!=0
+  EXPECT_EQ(8, response.totalTicks);
+#else
   EXPECT_EQ(9, response.totalTicks);
+#endif
 }
 
 TEST_F(SynSearchTest, TickCountWithMutations) {
   syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
+#if SEARCH_FULL_MEMORY!=0
+  EXPECT_EQ(14, response.totalTicks);
+#else
   EXPECT_EQ(15, response.totalTicks);
+#endif
 }
 
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
   syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, costs, true, opts);
+#if SEARCH_FULL_MEMORY!=0
+  EXPECT_EQ(14, response.totalTicks);
+#else
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
 #else
   EXPECT_EQ(15, response.totalTicks);
+#endif
 #endif
 }
 
