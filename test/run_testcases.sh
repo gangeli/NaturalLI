@@ -5,7 +5,9 @@ IN=`mktemp`
 OUT=`mktemp`
 
 make -C "$MYDIR/../" all
-make -C "$MYDIR/.." src/naturalli_preprocess.jar
+if [ $? != 0 ]; then exit 1; fi
+make -C "$MYDIR/../" src/naturalli_preprocess.jar
+if [ $? != 0 ]; then exit 1; fi
 
 STATUS=0
 for file in `find $MYDIR/data/ -name "*.examples"`; do

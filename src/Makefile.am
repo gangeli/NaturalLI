@@ -5,7 +5,7 @@ EXTRA_DIST = Messages.proto edu
 Messages.pb.h Messages.pb.cc: Messages.proto
 	${PROTOC} -I=. --cpp_out=. Messages.proto
 
-org/goobs/naturalli/Messages.java: Messages.proto
+edu/stanford/nlp/naturalli/Messages.java: Messages.proto
 	${PROTOC} -I=. --java_out=. Messages.proto
 
 clean-local:

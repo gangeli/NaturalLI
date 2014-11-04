@@ -35,8 +35,8 @@ endif
 export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.6.jar:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
 # (some targets)
-src/org/goobs/naturalli/Messages.java: src/Messages.proto
-	$(MAKE) -C src org/goobs/naturalli/Messages.java
+src/edu/stanford/nlp/naturalli/Messages.java: src/Messages.proto
+	$(MAKE) -C src edu/stanford/nlp/naturalli/Messages.java
 
 src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) src/edu/stanford/nlp/naturalli/Messages.java
 	$(MAKE) -C src naturalli_preprocess.jar
