@@ -1,6 +1,6 @@
 MAIN_SRC=../../src
 SUBDIRS = gtest ../../src/fnv ../../src/knheap
-EXTRA_DIST = edu org
+EXTRA_DIST = edu
 
 clean-local:
 	rm -f *.gcno *.gcda
@@ -53,7 +53,7 @@ endif
 endif
 endif
 
-test_preprocess.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/*.dat) $(wildcard edu/stanford/nlp/natlog/*.java) $(wildcard org/goobs/naturalli/*.java) 
+test_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) 
 	$(MAKE) -C ../../src naturalli_preprocess.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`

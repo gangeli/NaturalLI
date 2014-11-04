@@ -44,13 +44,13 @@ naturalli_mkkb_SOURCES = CreateKnowledgeBase.cc Postgres.cc Utils.cc Graph.cc Sy
 naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${OPENMP_CFLAGS}
 naturalli_mkkb_LDADD=${POSTGRESQL_LDFLAGS} -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
-naturalli_preprocess.jar: $(wildcard org/goobs/naturalli/*.scala) $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildcard org/goobs/naturalli/*.java) $(wildcard org/goobs/naturalli/scripts/*.scala) $(wildcard org/goobs/naturalli/demo/*.java) $(wildcard org/goobs/natualli/conf/*.conf) org/goobs/naturalli/Messages.java
+naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) edu/stanford/nlp/naturalli/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP}:${SCALA_HOME}/lib/scala-library.jar:${SCALA_HOME}/lib/config-1.2.0.jar `find . -name "*.java" -not -path "./org/goobs/naturalli/demo/*.java"  -not -path "./org/goobs/naturalli/scripts/*.java"`
+	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP} `find . -name "*.java"`
 	@echo "Making Jar..."
 	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
-naturalli.war: naturalli_preprocess.jar $(wildcard org/goobs/naturalli/demo/*.java) org/goobs/naturalli/demo/WEB-INF/naturalli.xml
+naturalli.war: naturalli_preprocess.jar
 	@echo "Creating WAR..."
 	cd ../ && ant war

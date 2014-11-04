@@ -4,6 +4,9 @@ MYDIR=`dirname $0`
 IN=`mktemp`
 OUT=`mktemp`
 
+make -C "$MYDIR/../" all
+make -C "$MYDIR/.." src/naturalli_preprocess.jar
+
 STATUS=0
 for file in `find $MYDIR/data/ -name "*.examples"`; do
   cat "$file" >> $IN
