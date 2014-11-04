@@ -23,6 +23,10 @@ function configure() {
 
 echo "-- CLEAN --"
 git clean -f
+# TODO(gabor) this should probably be removed
+cp /home/gabor/workspace/NaturalLI/etc/words.tab.gz etc/
+cp /home/gabor/workspace/NaturalLI/etc/word_senses.tab.gz etc/
+
 ./autogen.sh
 
 echo "-- MAKE --"
