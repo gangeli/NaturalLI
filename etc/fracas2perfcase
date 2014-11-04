@@ -1,0 +1,68 @@
+#!/bin/bash
+exec scala "$0" "$@"
+!#
+
+//(scala)
+import scala.collection.JavaConversions._
+
+val XML_IN=args(0)
+
+val TRUE="TRUE"
+val FALSE="FALSE"
+val UNKNOWN="UNK"
+val INVALID="UNDEF"
+
+case class Problem(
+    premises:List[String], hypothesis:String, truth:String,
+    nonstandard:Boolean, id:Int, note:Option[String]) {
+
+  def section:Int = { 
+    if (0 <= id && id <= 80) return 1
+    if (81 <= id && id <= 113) return 2
+    if (114 <= id && id <= 141) return 3
+    if (142 <= id && id <= 196) return 4
+    if (197 <= id && id <= 219) return 5
+    if (220 <= id && id <= 250) return 6
+    if (251 <= id && id <= 325) return 7
+    if (326 <= id && id <= 333) return 8
+    if (334 <= id && id <= 347) return 9
+    else throw new IllegalArgumentException("Invalid id: " + id)
+  }
+
+  override def toString:String = {
+    premises.mkString("\n") + "\n" + truth + ": " + hypothesis + "\n"
+  }
+}
+
+
+// Parse XML
+val xml = scala.xml.XML.loadFile(XML_IN)
+val problems = (xml \ "problem").map { problem =>
+  val premises = (problem \ "p").toList.map( _.text.trim )
+  val hypothesis = (problem \ "h").head.text.trim
+  val note = (problem \ "h").headOption.map( _.text.trim )
+  val id = (problem \ "@id").text.toInt
+  val truth = (problem \ "@fracas_answer").text.trim match {
+    case "yes"     => TRUE
+    case "no"      => FALSE
+    case "unknown" => UNKNOWN
+    case "undef"   => INVALID
+    case _         =>
+      throw new IllegalArgumentException("Unknown answer: " + (problem \ "a") + " (parsed from " + (problem \ "@fracas_answer") + ")")
+      INVALID
+  }
+  Problem(premises, hypothesis, truth, truth == INVALID, id, note)
+}
+
+for ( (section, sectionProblems) <- problems.filter( !_.nonstandard ).sortBy( _.id ).groupBy( _.section ).toList.sortBy( _._1 )) {
+  if (section == 1 || section == 5 || section == 6) {
+    println("\n#\n# BEGIN SECTION " + section + "\n#\n")
+    for ( problem <- sectionProblems.filter( _.premises.length == 1) ) {
+      println("# id=" + problem.id)
+      for (note <- problem.note) {
+        println("# note: " + note)
+      }
+      println(problem)
+    }
+  }
+}

@@ -1,0 +1,1902 @@
+
+#
+# BEGIN SECTION 1
+#
+
+# id=1
+# note: There was an Italian who became the world's greatest tenor.
+An Italian became the world's greatest tenor.
+TRUE: There was an Italian who became the world's greatest tenor.
+
+# id=2
+# note: There are Italian men who want to be a great tenor.
+Every Italian man wants to be a great tenor.
+Some Italian men are great tenors.
+TRUE: There are Italian men who want to be a great tenor.
+
+# id=3
+# note: There are Italian men who want to be a great tenor.
+All Italian men want to be a great tenor.
+Some Italian men are great tenors.
+TRUE: There are Italian men who want to be a great tenor.
+
+# id=4
+# note: There are Italian tenors who want to be great.
+Each Italian tenor wants to be great.
+Some Italian tenors are great.
+TRUE: There are Italian tenors who want to be great.
+
+# id=5
+# note: There are really ambitious tenors who are Italian.
+The really ambitious tenors are Italian.
+TRUE: There are really ambitious tenors who are Italian.
+
+# id=6
+# note: There are really great tenors who are modest.
+No really great tenors are modest.
+FALSE: There are really great tenors who are modest.
+
+# id=7
+# note: There are great tenors who are Swedish.
+Some great tenors are Swedish.
+TRUE: There are great tenors who are Swedish.
+
+# id=8
+# note: There are great tenors who are German.
+Many great tenors are German.
+TRUE: There are great tenors who are German.
+
+# id=9
+# note: There are great tenors who are British.
+Several great tenors are British.
+TRUE: There are great tenors who are British.
+
+# id=10
+# note: There are great tenors who are Italian.
+Most great tenors are Italian.
+TRUE: There are great tenors who are Italian.
+
+# id=11
+# note: There are great tenors who sing popular music.
+A few great tenors sing popular music.
+Some great tenors like popular music.
+TRUE: There are great tenors who sing popular music.
+
+# id=13
+# note: Both leading tenors are indispensable.
+Both leading tenors are excellent.
+Leading tenors who are excellent are indispensable.
+TRUE: Both leading tenors are indispensable.
+
+# id=14
+# note: Pavarotti is a leading tenor who comes cheap.
+Neither leading tenor comes cheap.
+One of the leading tenors is Pavarotti.
+FALSE: Pavarotti is a leading tenor who comes cheap.
+
+# id=15
+# note: There are tenors who will take part in the concert.
+At least three tenors will take part in the concert.
+TRUE: There are tenors who will take part in the concert.
+
+# id=17
+# note: An Irishman won a Nobel prize.
+An Irishman won the Nobel prize for literature.
+TRUE: An Irishman won a Nobel prize.
+
+# id=18
+# note: Every European can travel freely within Europe.
+Every European has the right to live in Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+TRUE: Every European can travel freely within Europe.
+
+# id=19
+# note: All Europeans can travel freely within Europe.
+All Europeans have the right to live in Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+TRUE: All Europeans can travel freely within Europe.
+
+# id=20
+# note: Each European can travel freely within Europe.
+Each European has the right to live in Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+TRUE: Each European can travel freely within Europe.
+
+# id=21
+# note: The residents of member states can travel freely within Europe.
+The residents of member states have the right to live in Europe.
+All residents of member states are individuals.
+Every individual who has the right to live in Europe can travel freely within Europe.
+TRUE: The residents of member states can travel freely within Europe.
+
+# id=22
+# note: No delegate finished the report.
+No delegate finished the report on time.
+UNK: No delegate finished the report.
+
+# id=23
+# note: Some delegates finished the survey.
+Some delegates finished the survey on time.
+TRUE: Some delegates finished the survey.
+
+# id=24
+# note: Many delegates obtained results from the survey.
+Many delegates obtained interesting results from the survey.
+TRUE: Many delegates obtained results from the survey.
+
+# id=25
+# note: Several delegates got the results published.
+Several delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published.
+
+# id=26
+# note: Most Europeans can travel freely within Europe.
+Most Europeans are resident in Europe.
+All Europeans are people.
+All people who are resident in Europe can travel freely within Europe.
+TRUE: Most Europeans can travel freely within Europe.
+
+# id=27
+# note: At least a few committee members are from Scandinavia.
+A few committee members are from Sweden.
+All committee members are people.
+All people who are from Sweden are from Scandinavia.
+TRUE: At least a few committee members are from Scandinavia.
+
+# id=28
+# note: There are few committee members from southern Europe.
+Few committee members are from Portugal.
+All committee members are people.
+All people who are from Portugal are from southern Europe.
+UNK: There are few committee members from southern Europe.
+
+# id=29
+# note: Both commissioners used to be businessmen.
+Both commissioners used to be leading businessmen.
+TRUE: Both commissioners used to be businessmen.
+
+# id=30
+# note: Neither commissioner spends time at home.
+Neither commissioner spends a lot of time at home.
+UNK: Neither commissioner spends time at home.
+
+# id=31
+# note: At least three commissioners spend time at home.
+At least three commissioners spend a lot of time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=32
+# note: At most ten commissioners spend time at home.
+At most ten commissioners spend a lot of time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=33
+# note: An Irishman won the Nobel prize for literature.
+An Irishman won a Nobel prize.
+UNK: An Irishman won the Nobel prize for literature.
+
+# id=34
+# note: Every European has the right to live in Europe.
+Every European can travel freely within Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+UNK: Every European has the right to live in Europe.
+
+# id=35
+# note: All Europeans have the right to live in Europe.
+All Europeans can travel freely within Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+UNK: All Europeans have the right to live in Europe.
+
+# id=36
+# note: Each European has the right to live in Europe.
+Each European can travel freely within Europe.
+Every European is a person.
+Every person who has the right to live in Europe can travel freely within Europe.
+UNK: Each European has the right to live in Europe.
+
+# id=37
+# note: The residents of member states have the right to live anywhere in Europe.
+The residents of member states can travel freely within Europe.
+All residents of member states are individuals.
+Every individual who has the right to live anywhere in Europe can travel freely within Europe.
+UNK: The residents of member states have the right to live anywhere in Europe.
+
+# id=38
+# note: Some delegate finished the report on time.
+No delegate finished the report.
+FALSE: Some delegate finished the report on time.
+
+# id=39
+# note: Some delegates finished the survey on time.
+Some delegates finished the survey.
+UNK: Some delegates finished the survey on time.
+
+# id=40
+# note: Many delegates obtained interesting results from the survey.
+Many delegates obtained results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=41
+# note: Several delegates got the results published in major national newspapers.
+Several delegates got the results published.
+UNK: Several delegates got the results published in major national newspapers.
+
+# id=42
+# note: Most Europeans are resident in Europe.
+Most Europeans can travel freely within Europe.
+All Europeans are people.
+All people who are resident in Europe can travel freely within Europe.
+UNK: Most Europeans are resident in Europe.
+
+# id=43
+# note: At least a few committee members are from Sweden.
+A few committee members are from Scandinavia.
+All committee members are people.
+All people who are from Sweden are from Scandinavia.
+UNK: At least a few committee members are from Sweden.
+
+# id=44
+# note: There are few committee members from Portugal.
+Few committee members are from southern Europe.
+All committee members are people.
+All people who are from Portugal are from southern Europe.
+TRUE: There are few committee members from Portugal.
+
+# id=45
+# note: Both commissioners used to be leading businessmen.
+Both commissioners used to be businessmen.
+UNK: Both commissioners used to be leading businessmen.
+
+# id=46
+# note: One of the commissioners spends a lot of time at home.
+Neither commissioner spends time at home.
+FALSE: One of the commissioners spends a lot of time at home.
+
+# id=47
+# note: At least three commissioners spend a lot of time at home.
+At least three commissioners spend time at home.
+UNK: At least three commissioners spend a lot of time at home.
+
+# id=48
+# note: At most ten commissioners spend a lot of time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten commissioners spend a lot of time at home.
+
+# id=49
+# note: A Scandinavian won a Nobel prize.
+A Swede won a Nobel prize.
+Every Swede is a Scandinavian.
+TRUE: A Scandinavian won a Nobel prize.
+
+# id=50
+# note: Every resident of the North American continent can travel freely within Europe.
+Every Canadian resident can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+UNK: Every resident of the North American continent can travel freely within Europe.
+
+# id=51
+# note: All residents of the North American continent can travel freely within Europe.
+All Canadian residents can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+UNK: All residents of the North American continent can travel freely within Europe.
+
+# id=52
+# note: Each resident of the North American continent can travel freely within Europe.
+Each Canadian resident can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+UNK: Each resident of the North American continent can travel freely within Europe.
+
+# id=53
+# note: The residents of western countries have the right to live in Europe.
+The residents of major western countries can travel freely within Europe.
+All residents of major western countries are residents of western countries.
+UNK: The residents of western countries have the right to live in Europe.
+
+# id=54
+# note: Some delegate finished the report on time.
+No Scandinavian delegate finished the report on time.
+UNK: Some delegate finished the report on time.
+
+# id=55
+# note: Some delegates finished the survey on time.
+Some Irish delegates finished the survey on time.
+TRUE: Some delegates finished the survey on time.
+
+# id=56
+# note: Many delegates obtained interesting results from the survey.
+Many British delegates obtained interesting results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=57
+# note: Several delegates got the results published in major national newspapers.
+Several Portuguese delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published in major national newspapers.
+
+# id=58
+# note: Most Europeans can travel freely within Europe.
+Most Europeans who are resident in Europe can travel freely within Europe.
+UNK: Most Europeans can travel freely within Europe.
+
+# id=59
+# note: At least a few committee members are from Scandinavia.
+A few female committee members are from Scandinavia.
+TRUE: At least a few committee members are from Scandinavia.
+
+# id=60
+# note: Few committee members are from southern Europe.
+Few female committee members are from southern Europe.
+UNK: Few committee members are from southern Europe.
+
+# id=63
+# note: At least three commissioners spend time at home.
+At least three female commissioners spend time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=64
+# note: At most ten commissioners spend time at home.
+At most ten female commissioners spend time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=65
+# note: A Swede won a Nobel prize.
+A Scandinavian won a Nobel prize.
+Every Swede is a Scandinavian.
+UNK: A Swede won a Nobel prize.
+
+# id=66
+# note: Every Canadian resident can travel freely within Europe.
+Every resident of the North American continent can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+TRUE: Every Canadian resident can travel freely within Europe.
+
+# id=67
+# note: All Canadian residents can travel freely within Europe.
+All residents of the North American continent can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+TRUE: All Canadian residents can travel freely within Europe.
+
+# id=68
+# note: Each Canadian resident can travel freely within Europe.
+Each resident of the North American continent can travel freely within Europe.
+Every Canadian resident is a resident of the North American continent.
+TRUE: Each Canadian resident can travel freely within Europe.
+
+# id=69
+# note: The residents of major western countries have the right to live in Europe.
+The residents of western countries can travel freely within Europe.
+All residents of major western countries are residents of western countries.
+TRUE: The residents of major western countries have the right to live in Europe.
+
+# id=70
+# note: Some Scandinavian delegate finished the report on time.
+No delegate finished the report on time.
+FALSE: Some Scandinavian delegate finished the report on time.
+
+# id=71
+# note: Some Irish delegates finished the survey on time.
+Some delegates finished the survey on time.
+UNK: Some Irish delegates finished the survey on time.
+
+# id=72
+# note: Many British delegates obtained interesting results from the survey.
+Many delegates obtained interesting results from the survey.
+UNK: Many British delegates obtained interesting results from the survey.
+
+# id=73
+# note: Several Portuguese delegates got the results published in major national newspapers.
+Several delegates got the results published in major national newspapers.
+UNK: Several Portuguese delegates got the results published in major national newspapers.
+
+# id=74
+# note: Most Europeans who are resident outside Europe can travel freely within Europe.
+Most Europeans can travel freely within Europe.
+UNK: Most Europeans who are resident outside Europe can travel freely within Europe.
+
+# id=75
+# note: At least a few female committee members are from Scandinavia.
+A few committee members are from Scandinavia.
+UNK: At least a few female committee members are from Scandinavia.
+
+# id=76
+# note: Few female committee members are from southern Europe.
+Few committee members are from southern Europe.
+TRUE: Few female committee members are from southern Europe.
+
+# id=79
+# note: At least three male commissioners spend time at home.
+At least three commissioners spend time at home.
+UNK: At least three male commissioners spend time at home.
+
+# id=80
+# note: At most ten female commissioners spend time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten female commissioners spend time at home.
+
+
+#
+# BEGIN SECTION 2
+#
+
+# id=81
+# note: Jones signed the contract.
+Smith, Jones and Anderson signed the contract.
+TRUE: Jones signed the contract.
+
+# id=82
+# note: Jones signed the contract.
+Smith, Jones and several lawyers signed the contract.
+TRUE: Jones signed the contract.
+
+# id=83
+# note: Jones signed the contract.
+Either Smith, Jones or Anderson signed the contract.
+UNK: Jones signed the contract.
+
+# id=84
+# note: If Smith and Anderson did not sign the contract, Jones signed the contract.
+Either Smith, Jones or Anderson signed the contract.
+TRUE: If Smith and Anderson did not sign the contract, Jones signed the contract.
+
+# id=85
+# note: Six lawyers signed the contract.
+Exactly two lawyers and three accountants signed the contract.
+FALSE: Six lawyers signed the contract.
+
+# id=86
+# note: Six accountants signed the contract.
+Exactly two lawyers and three accountants signed the contract.
+FALSE: Six accountants signed the contract.
+
+# id=87
+# note: Every representative was at the meeting.
+Every representative and client was at the meeting.
+TRUE: Every representative was at the meeting.
+
+# id=88
+# note: Every representative was at the meeting.
+Every representative and client was at the meeting.
+UNK: Every representative was at the meeting.
+
+# id=89
+# note: Every representative and every client was at the meeting.
+Every representative or client was at the meeting.
+TRUE: Every representative and every client was at the meeting.
+
+# id=90
+# note: The chairman read out every item on the agenda.
+The chairman read out the items on the agenda.
+TRUE: The chairman read out every item on the agenda.
+
+# id=91
+# note: Everyone at the meeting voted for a new chairman.
+The people who were at the meeting voted for a new chairman.
+UNK: Everyone at the meeting voted for a new chairman.
+
+# id=92
+# note: Everyone at the meeting voted for a new chairman.
+All the people who were at the meeting voted for a new chairman.
+TRUE: Everyone at the meeting voted for a new chairman.
+
+# id=93
+# note: Everyone at the meeting voted for a new chairman.
+The people who were at the meeting all voted for a new chairman.
+TRUE: Everyone at the meeting voted for a new chairman.
+
+# id=94
+# note: Every inhabitant of Cambridge voted for a Labour MP.
+The inhabitants of Cambridge voted for a Labour MP.
+UNK: Every inhabitant of Cambridge voted for a Labour MP.
+
+# id=95
+# note: Every Ancient Greek was a noted philosopher.
+The Ancient Greeks were noted philosophers.
+UNK: Every Ancient Greek was a noted philosopher.
+
+# id=96
+# note: Every Ancient Greek was a noted philosopher.
+The Ancient Greeks were all noted philosophers.
+TRUE: Every Ancient Greek was a noted philosopher.
+
+# id=97
+# note: The system failure was blamed on one or more software faults.
+Software faults were blamed for the system failure.
+TRUE: The system failure was blamed on one or more software faults.
+
+# id=98
+# note: Bug # 32-985 was blamed for the system failure.
+Software faults were blamed for the system failure.
+Bug # 32-985 is a known software fault.
+UNK: Bug # 32-985 was blamed for the system failure.
+
+# id=99
+# note: Smith was impressed by the system's performance.
+Clients at the demonstration were all impressed by the system's performance.
+Smith was a client at the demonstration.
+TRUE: Smith was impressed by the system's performance.
+
+# id=100
+# note: Most clients at the demonstration were impressed by the system's performance.
+Clients at the demonstration were impressed by the system's performance.
+TRUE: Most clients at the demonstration were impressed by the system's performance.
+
+# id=101
+# note: Smith is likely to make a poor stock market trader.
+University graduates make poor stock-market traders.
+Smith is a university graduate.
+TRUE: Smith is likely to make a poor stock market trader.
+
+# id=102
+# note: Smith will make a poor stock market trader.
+University graduates make poor stock-market traders.
+Smith is a university graduate.
+UNK: Smith will make a poor stock market trader.
+
+# id=103
+# note: Jones has a company car.
+All APCOM managers have company cars.
+Jones is an APCOM manager.
+TRUE: Jones has a company car.
+
+# id=104
+# note: Jones has more than one company car.
+All APCOM managers have company cars.
+Jones is an APCOM manager.
+UNK: Jones has more than one company car.
+
+# id=105
+# note: No accountants attended the meeting.
+Just one accountant attended the meeting.
+FALSE: No accountants attended the meeting.
+
+# id=106
+# note: No accountant attended the meeting.
+Just one accountant attended the meeting.
+FALSE: No accountant attended the meeting.
+
+# id=107
+# note: Some accountants attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountants attended the meeting.
+
+# id=108
+# note: Some accountant attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountant attended the meeting.
+
+# id=109
+# note: Some accountants attended the meeting.
+Just one accountant attended the meeting.
+FALSE: Some accountants attended the meeting.
+
+# id=110
+# note: Some accountant attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountant attended the meeting.
+
+# id=111
+# note: Smith and Jones signed two contracts.
+Smith signed one contract.
+Jones signed another contract.
+TRUE: Smith and Jones signed two contracts.
+
+# id=112
+# note: Smith and Jones signed two contracts.
+Smith signed two contracts.
+Jones signed two contracts.
+TRUE: Smith and Jones signed two contracts.
+
+# id=113
+# note: Smith and Jones signed two contracts.
+Smith signed two contracts.
+Jones also signed them.
+TRUE: Smith and Jones signed two contracts.
+
+
+#
+# BEGIN SECTION 3
+#
+
+# id=114
+# note: Mary's workstation was used.
+Mary used her workstation.
+TRUE: Mary's workstation was used.
+
+# id=115
+# note: Mary has a workstation.
+Mary used her workstation.
+TRUE: Mary has a workstation.
+
+# id=116
+# note: Mary is female.
+Mary used her workstation.
+TRUE: Mary is female.
+
+# id=117
+# note: Mary used her workstation.
+Every student used her workstation.
+Mary is a student.
+TRUE: Mary used her workstation.
+
+# id=118
+# note: Mary has a workstation.
+Every student used her workstation.
+Mary is a student.
+TRUE: Mary has a workstation.
+
+# id=119
+# note: Mary used a workstation.
+No student used her workstation.
+Mary is a student.
+FALSE: Mary used a workstation.
+
+# id=120
+# note: Smith chaired a meeting.
+Smith attended a meeting.
+She chaired it.
+TRUE: Smith chaired a meeting.
+
+# id=121
+# note: Smith delivered a report, an invoice and a project proposal to ITEL.
+Smith delivered a report to ITEL.
+She also delivered them an invoice.
+And she delivered them a project proposal.
+TRUE: Smith delivered a report, an invoice and a project proposal to ITEL.
+
+# id=122
+# note: Every committee has a chairman appointed by members of the committee.
+Every committee has a chairman.
+He is appointed its members.
+TRUE: Every committee has a chairman appointed by members of the committee.
+
+# id=123
+# note: There are some reports from ITEL on Smith's desk.
+ITEL has sent most of the reports Smith needs.
+They are on her desk.
+TRUE: There are some reports from ITEL on Smith's desk.
+
+# id=124
+# note: Two machines have been removed.
+Two out of ten machines are missing.
+They have been removed.
+TRUE: Two machines have been removed.
+
+# id=125
+# note: Eight machines have been removed.
+Two out of ten machines are missing.
+They have been removed.
+UNK: Eight machines have been removed.
+
+# id=126
+# note: Ten machines were here yesterday.
+Two out of ten machines are missing.
+They were all here yesterday.
+TRUE: Ten machines were here yesterday.
+
+# id=127
+# note: Smith and Jones put two machines in the lobby.
+Smith took a machine on Tuesday, and Jones took a machine on Wednesday.
+They put them in the lobby.
+TRUE: Smith and Jones put two machines in the lobby.
+
+# id=128
+# note: John's colleagues hated the meeting.
+John and his colleagues went to a meeting.
+They hated it.
+TRUE: John's colleagues hated the meeting.
+
+# id=129
+# note: John hated the meeting.
+John and his colleagues went to a meeting.
+They hated it.
+TRUE: John hated the meeting.
+
+# id=130
+# note: John hated the meeting.
+John and his colleagues went to a meeting.
+They hated it.
+UNK: John hated the meeting.
+
+# id=131
+# note: Every department rents a line from BT.
+Each department has a dedicated line.
+They rent them from BT.
+TRUE: Every department rents a line from BT.
+
+# id=132
+# note: The sales department rents a line from BT.
+Each department has a dedicated line.
+The sales department rents it from BT.
+TRUE: The sales department rents a line from BT.
+
+# id=133
+# note: ITEL maintains all the computers that GFI owns.
+GFI owns several computers.
+ITEL maintains them.
+TRUE: ITEL maintains all the computers that GFI owns.
+
+# id=134
+# note: MFI has a service contract for all its computers.
+Every customer who owns a computer has a service contract for it.
+MFI is a customer that owns exactly one computer.
+TRUE: MFI has a service contract for all its computers.
+
+# id=135
+# note: MFI has a service contract for all its computers.
+Every customer who owns a computer has a service contract for it.
+MFI is a customer that owns several computers.
+TRUE: MFI has a service contract for all its computers.
+
+# id=136
+# note: Smith took five laptop computers to the meeting.
+Every executive who had a laptop computer brought it to take notes at the meeting.
+Smith is a executive who owns five different laptop computers.
+UNK: Smith took five laptop computers to the meeting.
+
+# id=137
+# note: Most companies that own a computer have a service contract for it.
+There are 100 companies.
+ICM is one of the companies and owns 150 computers.
+It does not have service contracts for any of its computers.
+Each of the other 99 companies owns one computer.
+They have service contracts for them.
+TRUE: Most companies that own a computer have a service contract for it.
+
+# id=138
+# note: Smith signed the cover page of R-95-103.
+Every report has a cover page.
+R-95-103 is a report.
+Smith signed the cover page.
+TRUE: Smith signed the cover page of R-95-103.
+
+# id=139
+# note: A company director has awarded and been awarded a payrise.
+A company director awarded himself a large payrise.
+TRUE: A company director has awarded and been awarded a payrise.
+
+# id=140
+# note: John said Bill had been hurt.
+John said Bill had hurt himself.
+TRUE: John said Bill had been hurt.
+
+# id=141
+# note: Someone said John had been hurt.
+John said Bill had hurt himself.
+UNK: Someone said John had been hurt.
+
+
+#
+# BEGIN SECTION 4
+#
+
+# id=142
+# note: Bill spoke to Mary.
+John spoke to Mary.
+So did Bill.
+TRUE: Bill spoke to Mary.
+
+# id=143
+# note: Bill spoke to Mary at four o'clock.
+John spoke to Mary.
+So did Bill.
+John spoke to Mary at four o'clock.
+UNK: Bill spoke to Mary at four o'clock.
+
+# id=144
+# note: Bill spoke to Mary at four o'clock.
+John spoke to Mary at four o'clock.
+So did Bill.
+TRUE: Bill spoke to Mary at four o'clock.
+
+# id=145
+# note: Bill spoke to Mary at five o'clock.
+John spoke to Mary at four o'clock.
+And Bill did at five o'clock.
+TRUE: Bill spoke to Mary at five o'clock.
+
+# id=146
+# note: Bill will speak to Mary.
+John has spoken to Mary.
+Bill is going to.
+TRUE: Bill will speak to Mary.
+
+# id=147
+# note: Bill spoke to Mary on Monday.
+John spoke to Mary on Monday.
+Bill didn't.
+FALSE: Bill spoke to Mary on Monday.
+
+# id=148
+# note: Bill has spoken to Mary.
+Has John spoken to Mary?
+Bill has.
+TRUE: Bill has spoken to Mary.
+
+# id=149
+# note: The students have spoken to Mary.
+John has spoken to Mary.
+The students have too.
+TRUE: The students have spoken to Mary.
+
+# id=150
+# note: Bill went to Paris by train.
+John went to Paris by car, and Bill by train.
+TRUE: Bill went to Paris by train.
+
+# id=151
+# note: Bill went to Berlin by train.
+John went to Paris by car, and Bill by train to Berlin.
+TRUE: Bill went to Berlin by train.
+
+# id=152
+# note: Bill went to Berlin by car.
+John went to Paris by car, and Bill to Berlin.
+TRUE: Bill went to Berlin by car.
+
+# id=153
+# note: The students are going to Paris by train.
+John is going to Paris by car, and the students by train.
+TRUE: The students are going to Paris by train.
+
+# id=154
+# note: Bill went to Paris by train.
+John went to Paris by car.
+Bill by train.
+TRUE: Bill went to Paris by train.
+
+# id=155
+# note: Bill owns a car.
+John owns a car.
+Bill owns one too.
+TRUE: Bill owns a car.
+
+# id=156
+# note: There is a car that John and Bill own.
+John owns a car.
+Bill owns one too.
+UNK: There is a car that John and Bill own.
+
+# id=157
+# note: Bill owns a blue car.
+John owns a red car.
+Bill owns a blue one.
+TRUE: Bill owns a blue car.
+
+# id=158
+# note: Bill owns a red car.
+John owns a red car.
+Bill owns a blue one.
+UNK: Bill owns a red car.
+
+# id=159
+# note: Bill owns a fast car.
+John owns a red car.
+Bill owns a fast one.
+TRUE: Bill owns a fast car.
+
+# id=160
+# note: Bill owns a fast red car.
+John owns a red car.
+Bill owns a fast one.
+TRUE: Bill owns a fast red car.
+
+# id=161
+# note: Bill owns a fast red car.
+John owns a red car.
+Bill owns a fast one.
+UNK: Bill owns a fast red car.
+
+# id=162
+# note: Bill owns a slow red car.
+John owns a fast red car.
+Bill owns a slow one.
+TRUE: Bill owns a slow red car.
+
+# id=163
+# note: Bill knows why John had his paper accepted.
+John had his paper accepted.
+Bill doesn't know why.
+FALSE: Bill knows why John had his paper accepted.
+
+# id=164
+# note: John spoke to Sue.
+John spoke to Mary.
+And to Sue.
+TRUE: John spoke to Sue.
+
+# id=165
+# note: John spoke to Mary on Friday.
+John spoke to Mary.
+On Friday.
+TRUE: John spoke to Mary on Friday.
+
+# id=166
+# note: John spoke to Mary on Friday.
+John spoke to Mary on Thursday.
+And on Friday.
+TRUE: John spoke to Mary on Friday.
+
+# id=167
+# note: Two women work in the Sales Department.
+Twenty men work in the Sales Department.
+But only one woman.
+FALSE: Two women work in the Sales Department.
+
+# id=168
+# note: Forty five women work part time.
+Five men work part time.
+And forty five women.
+TRUE: Forty five women work part time.
+
+# id=169
+# note: John found Mary before Bill found Mary.
+John found Mary before Bill.
+TRUE: John found Mary before Bill found Mary.
+
+# id=170
+# note: John found Mary before John found Bill.
+John found Mary before Bill.
+TRUE: John found Mary before John found Bill.
+
+# id=171
+# note: John wants to know how many women work part time.
+John wants to know how many men work part time.
+And women.
+TRUE: John wants to know how many women work part time.
+
+# id=172
+# note: John wants to know which men work part time.
+John wants to know how many men work part time, and which.
+TRUE: John wants to know which men work part time.
+
+# id=173
+# note: Bill spoke to Mary.
+Bill spoke to everyone that John did.
+John spoke to Mary.
+TRUE: Bill spoke to Mary.
+
+# id=174
+# note: John spoke to Mary.
+Bill spoke to everyone that John did.
+Bill spoke to Mary.
+UNK: John spoke to Mary.
+
+# id=175
+# note: Bill said Mary wrote a report.
+John said Mary wrote a report, and Bill did too.
+TRUE: Bill said Mary wrote a report.
+
+# id=176
+# note: John said Bill wrote a report.
+John said Mary wrote a report, and Bill did too.
+TRUE: John said Bill wrote a report.
+
+# id=177
+# note: Bill said Mary wrote a report.
+John said that Mary wrote a report, and that Bill did too.
+UNK: Bill said Mary wrote a report.
+
+# id=178
+# note: Bill said Peter wrote a report.
+John wrote a report, and Bill said Peter did too.
+TRUE: Bill said Peter wrote a report.
+
+# id=179
+# note: Bill wrote a report.
+If John wrote a report, then Bill did too.
+John wrote a report.
+TRUE: Bill wrote a report.
+
+# id=180
+# note: John bought a car.
+John wanted to buy a car, and he did.
+TRUE: John bought a car.
+
+# id=181
+# note: Bill bought a car.
+John needed to buy a car, and Bill did.
+UNK: Bill bought a car.
+
+# id=182
+# note: Jones represents Jones' company.
+Smith represents his company and so does Jones.
+TRUE: Jones represents Jones' company.
+
+# id=183
+# note: Jones represents Smith's company.
+Smith represents his company and so does Jones.
+TRUE: Jones represents Smith's company.
+
+# id=184
+# note: Smith represents Jones' company.
+Smith represents his company and so does Jones.
+UNK: Smith represents Jones' company.
+
+# id=185
+# note: Jones claimed he had costed his own proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed he had costed his own proposal.
+
+# id=186
+# note: Jones claimed he had costed Smith's proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed he had costed Smith's proposal.
+
+# id=187
+# note: Jones claimed Smith had costed Smith's proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed Smith had costed Smith's proposal.
+
+# id=188
+# note: Jones claimed Smith had costed Jones' proposal.
+Smith claimed he had costed his proposal and so did Jones.
+UNK: Jones claimed Smith had costed Jones' proposal.
+
+# id=189
+# note: Mary represents her own company.
+John is a man and Mary is a woman.
+John represents his company and so does Mary.
+TRUE: Mary represents her own company.
+
+# id=190
+# note: Mary represents John's company.
+John is a man and Mary is a woman.
+John represents his company and so does Mary.
+TRUE: Mary represents John's company.
+
+# id=191
+# note: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan should go together.
+
+# id=192
+# note: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+UNK: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan's wife should go together.
+
+# id=193
+# note: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan's wife should go together.
+
+# id=194
+# note: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+UNK: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan should go together.
+
+# id=195
+# note: If it was suggested that Bill, Frank and Frank's boss should go together, it was suggested that Carl, Alan and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill, Frank and Frank's boss should go together, it was suggested that Carl, Alan and Alan's wife should go together.
+
+# id=196
+# note: There was one auditor who signed all the reports.
+A lawyer signed every report, and so did an auditor.
+That is, there was one lawyer who signed all the reports.
+TRUE: There was one auditor who signed all the reports.
+
+
+#
+# BEGIN SECTION 5
+#
+
+# id=197
+# note: John has a diamond.
+John has a genuine diamond.
+TRUE: John has a diamond.
+
+# id=198
+# note: John is a university student.
+John is a former university student.
+FALSE: John is a university student.
+
+# id=199
+# note: John is successful.
+John is a successful former university student.
+TRUE: John is successful.
+
+# id=200
+# note: John is successful.
+John is a former successful university student.
+UNK: John is successful.
+
+# id=201
+# note: John is a university student.
+John is a former successful university student.
+UNK: John is a university student.
+
+# id=202
+# note: Every four-legged mammal is a four-legged animal.
+Every mammal is an animal.
+TRUE: Every four-legged mammal is a four-legged animal.
+
+# id=203
+# note: Dumbo is four-legged.
+Dumbo is a four-legged animal.
+TRUE: Dumbo is four-legged.
+
+# id=204
+# note: Mickey is a large animal.
+Mickey is a small animal.
+FALSE: Mickey is a large animal.
+
+# id=205
+# note: Dumbo is a small animal.
+Dumbo is a large animal.
+FALSE: Dumbo is a small animal.
+
+# id=206
+# note: Fido is a large animal.
+Fido is not a small animal.
+UNK: Fido is a large animal.
+
+# id=207
+# note: Fido is a small animal.
+Fido is not a large animal.
+UNK: Fido is a small animal.
+
+# id=208
+# note: Mickey is smaller than Dumbo.
+Mickey is a small animal.
+Dumbo is a large animal.
+TRUE: Mickey is smaller than Dumbo.
+
+# id=209
+# note: Mickey is larger than Dumbo.
+Mickey is a small animal.
+Dumbo is a large animal.
+FALSE: Mickey is larger than Dumbo.
+
+# id=210
+# note: Mickey is a large animal.
+All mice are small animals.
+Mickey is a large mouse.
+FALSE: Mickey is a large animal.
+
+# id=211
+# note: Dumbo is a small animal.
+All elephants are large animals.
+Dumbo is a small elephant.
+FALSE: Dumbo is a small animal.
+
+# id=212
+# note: Dumbo is larger than Mickey.
+All mice are small animals.
+All elephants are large animals.
+Mickey is a large mouse.
+Dumbo is a small elephant.
+TRUE: Dumbo is larger than Mickey.
+
+# id=214
+# note: All fat legal authorities are fat law lecturers.
+All legal authorities are law lecturers.
+All law lecturers are legal authorities.
+TRUE: All fat legal authorities are fat law lecturers.
+
+# id=215
+# note: All competent legal authorities are competent law lecturers.
+All legal authorities are law lecturers.
+All law lecturers are legal authorities.
+UNK: All competent legal authorities are competent law lecturers.
+
+# id=216
+# note: John is fatter than Bill.
+John is a fatter politician than Bill.
+TRUE: John is fatter than Bill.
+
+# id=217
+# note: John is cleverer than Bill.
+John is a cleverer politician than Bill.
+UNK: John is cleverer than Bill.
+
+# id=218
+# note: Kim is clever.
+Kim is a clever person.
+TRUE: Kim is clever.
+
+# id=219
+# note: Kim is clever.
+Kim is a clever politician.
+UNK: Kim is clever.
+
+
+#
+# BEGIN SECTION 6
+#
+
+# id=220
+# note: The PC-6082 is fast.
+The PC-6082 is faster than the ITEL-XZ.
+The ITEL-XZ is fast.
+TRUE: The PC-6082 is fast.
+
+# id=221
+# note: The PC-6082 is fast.
+The PC-6082 is faster than the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=222
+# note: The ITEL-XZ is fast.
+The PC-6082 is faster than the ITEL-XZ.
+The PC-6082 is fast.
+UNK: The ITEL-XZ is fast.
+
+# id=223
+# note: The ITEL-XZ is fast.
+The PC-6082 is faster than the ITEL-XZ.
+The PC-6082 is slow.
+FALSE: The ITEL-XZ is fast.
+
+# id=224
+# note: The PC-6082 is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+The ITEL-XZ is fast.
+TRUE: The PC-6082 is fast.
+
+# id=225
+# note: The PC-6082 is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=226
+# note: The ITEL-XZ is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+The PC-6082 is fast.
+UNK: The ITEL-XZ is fast.
+
+# id=227
+# note: The ITEL-XZ is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+The PC-6082 is slow.
+FALSE: The ITEL-XZ is fast.
+
+# id=228
+# note: The PC-6082 is faster than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is faster than the ITEL-XZ.
+
+# id=229
+# note: The PC-6082 is slower than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+FALSE: The PC-6082 is slower than the ITEL-XZ.
+
+# id=230
+# note: ITEL won some orders.
+ITEL won more orders than APCOM did.
+TRUE: ITEL won some orders.
+
+# id=231
+# note: APCOM won some orders.
+ITEL won more orders than APCOM did.
+UNK: APCOM won some orders.
+
+# id=232
+# note: ITEL won at least eleven orders.
+ITEL won more orders than APCOM did.
+APCOM won ten orders.
+TRUE: ITEL won at least eleven orders.
+
+# id=233
+# note: ITEL won some orders.
+ITEL won more orders than APCOM.
+TRUE: ITEL won some orders.
+
+# id=234
+# note: APCOM won some orders.
+ITEL won more orders than APCOM.
+UNK: APCOM won some orders.
+
+# id=235
+# note: ITEL won at least eleven orders.
+ITEL won more orders than APCOM.
+APCOM won ten orders.
+TRUE: ITEL won at least eleven orders.
+
+# id=236
+# note: ITEL won the APCOM contract.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won the APCOM contract.
+
+# id=237
+# note: ITEL won more than one order.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won more than one order.
+
+# id=238
+# note: ITEL won twenty orders.
+ITEL won twice as many orders than APCOM.
+APCOM won ten orders.
+TRUE: ITEL won twenty orders.
+
+# id=239
+# note: ITEL won some orders.
+ITEL won more orders than APCOM lost.
+TRUE: ITEL won some orders.
+
+# id=240
+# note: APCOM lost some orders.
+ITEL won more orders than APCOM lost.
+UNK: APCOM lost some orders.
+
+# id=241
+# note: ITEL won at least eleven orders.
+ITEL won more orders than APCOM lost.
+APCOM lost ten orders.
+TRUE: ITEL won at least eleven orders.
+
+# id=242
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than 500 MIPS.
+The ITEL-ZX is slower than 500 MIPS.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=243
+# note: ITEL sold 5500 computers.
+ITEL sold 3000 more computers than APCOM.
+APCOM sold exactly 2500 computers.
+TRUE: ITEL sold 5500 computers.
+
+# id=244
+# note: APCOM has a more important customer than ITEL is.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL is.
+
+# id=245
+# note: APCOM has a more important customer than ITEL has.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL has.
+
+# id=246
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than every ITEL computer.
+The ITEL-ZX is an ITEL computer.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=247
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than some ITEL computer.
+The ITEL-ZX is an ITEL computer.
+UNK: The PC-6082 is faster than the ITEL-ZX.
+
+# id=248
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than any ITEL computer.
+The ITEL-ZX is an ITEL computer.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=249
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX and the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=250
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX or the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+
+#
+# BEGIN SECTION 7
+#
+
+# id=251
+# note: ITEL currently has a factory in Birmingham.
+ITEL has a factory in Birmingham.
+TRUE: ITEL currently has a factory in Birmingham.
+
+# id=252
+# note: Itel was in Birmingham in 1993.
+Since 1992 ITEL has been in Birmingham.
+It is now 1996.
+TRUE: Itel was in Birmingham in 1993.
+
+# id=253
+# note: ITEL developed a new editor in 1993.
+ITEL has developed a new editor since 1992.
+It is now 1996.
+UNK: ITEL developed a new editor in 1993.
+
+# id=254
+# note: ITEL expanded in 1993.
+ITEL has expanded since 1992.
+It is now 1996.
+UNK: ITEL expanded in 1993.
+
+# id=255
+# note: ITEL made a loss in 1993.
+Since 1992 ITEL has made a loss.
+It is now 1996.
+TRUE: ITEL made a loss in 1993.
+
+# id=256
+# note: ITEL made a loss in 1993.
+ITEL has made a loss since 1992.
+It is now 1996.
+UNK: ITEL made a loss in 1993.
+
+# id=257
+# note: ITEL made a loss in 1993.
+ITEL has made a loss since 1992.
+It is now 1996.
+TRUE: ITEL made a loss in 1993.
+
+# id=258
+# note: ITEL existed in 1992.
+In March 1993 APCOM founded ITEL.
+FALSE: ITEL existed in 1992.
+
+# id=259
+# note: The conference was over on July 8th, 1994.
+The conference started on July 4th, 1994.
+It lasted 2 days.
+TRUE: The conference was over on July 8th, 1994.
+
+# id=260
+# note: APCOM signed the contract Friday, 13th.
+Yesterday APCOM signed the contract.
+Today is Saturday, July 14th.
+TRUE: APCOM signed the contract Friday, 13th.
+
+# id=261
+# note: Smith left before Anderson left.
+Smith left before Jones left.
+Jones left before Anderson left.
+TRUE: Smith left before Anderson left.
+
+# id=262
+# note: Smith left after Anderson left.
+Smith left after Jones left.
+Jones left after Anderson left.
+TRUE: Smith left after Anderson left.
+
+# id=263
+# note: Smith was present after Anderson was present.
+Smith was present after Jones left.
+Jones left after Anderson was present.
+UNK: Smith was present after Anderson was present.
+
+# id=264
+# note: Jones left after Smith left.
+Smith left.
+Jones left.
+Smith left before Jones left.
+TRUE: Jones left after Smith left.
+
+# id=265
+# note: Jones left before Smith left.
+Smith left.
+Jones left.
+Smith left after Jones left.
+TRUE: Jones left before Smith left.
+
+# id=266
+# note: Smith left after Jones left.
+Smith left.
+Jones left.
+Jones left before Smith left.
+TRUE: Smith left after Jones left.
+
+# id=267
+# note: Smith revised the contract after Jones did.
+Jones revised the contract.
+Smith revised the contract.
+Jones revised the contract before Smith did.
+TRUE: Smith revised the contract after Jones did.
+
+# id=268
+# note: Smith revised the contract before Jones did.
+Jones revised the contract.
+Smith revised the contract.
+Jones revised the contract after Smith did.
+TRUE: Smith revised the contract before Jones did.
+
+# id=269
+# note: Jones swam after Smith swam.
+Smith swam.
+Jones swam.
+Smith swam before Jones swam.
+UNK: Jones swam after Smith swam.
+
+# id=270
+# note: Jones swam to the shore after Smith swam to the shore.
+Smith swam to the shore.
+Jones swam to the shore.
+Smith swam to the shore before Jones swam to the shore.
+TRUE: Jones swam to the shore after Smith swam to the shore.
+
+# id=271
+# note: Jones was present before Smith was present.
+Smith was present.
+Jones was present.
+Smith was present after Jones was present.
+UNK: Jones was present before Smith was present.
+
+# id=272
+# note: Jones was present after Smith was present.
+Smith was present.
+Jones was present.
+Smith was present before Jones was present.
+UNK: Jones was present after Smith was present.
+
+# id=273
+# note: Jones was writing a report after Smith was writing a report.
+Smith was writing a report.
+Jones was writing a report.
+Smith was writing a report before Jones was writing a report.
+UNK: Jones was writing a report after Smith was writing a report.
+
+# id=274
+# note: Jones was writing a report before Smith was writing a report.
+Smith was writing a report.
+Jones was writing a report.
+Smith was writing a report after Jones was writing a report.
+UNK: Jones was writing a report before Smith was writing a report.
+
+# id=275
+# note: Smith lost his temper.
+Smith left the meeting before he lost his temper.
+UNK: Smith lost his temper.
+
+# id=277
+# note: Smith lived in Birmingham in 1992.
+Smith lived in Birmingham in 1991.
+UNK: Smith lived in Birmingham in 1992.
+
+# id=278
+# note: Smith wrote his first novel in 1992.
+Smith wrote his first novel in 1991.
+FALSE: Smith wrote his first novel in 1992.
+
+# id=279
+# note: Smith wrote it in 1992.
+Smith wrote a novel in 1991.
+FALSE: Smith wrote it in 1992.
+
+# id=280
+# note: Smith wrote a novel in 1992.
+Smith wrote a novel in 1991.
+UNK: Smith wrote a novel in 1992.
+
+# id=281
+# note: Smith was running it in 1992.
+Smith was running a business in 1991.
+UNK: Smith was running it in 1992.
+
+# id=282
+# note: Smith discovered it in 1992.
+Smith discovered a new species in 1991.
+FALSE: Smith discovered it in 1992.
+
+# id=283
+# note: Smith discovered a new species in 1992.
+Smith discovered a new species in 1991.
+UNK: Smith discovered a new species in 1992.
+
+# id=284
+# note: Smith had finished writing the report by 11 am.
+Smith wrote a report in two hours.
+Smith started writing the report at 8 am.
+TRUE: Smith had finished writing the report by 11 am.
+
+# id=285
+# note: Smith spent two hours writing the report.
+Smith wrote a report in two hours.
+UNK: Smith spent two hours writing the report.
+
+# id=286
+# note: Smith spent more than two hours writing the report.
+Smith wrote a report in two hours.
+FALSE: Smith spent more than two hours writing the report.
+
+# id=287
+# note: Smith wrote a report in one hour.
+Smith wrote a report in two hours.
+UNK: Smith wrote a report in one hour.
+
+# id=288
+# note: Smith wrote a report.
+Smith wrote a report in two hours.
+TRUE: Smith wrote a report.
+
+# id=289
+# note: Smith spent two hours discovering the new species.
+Smith discovered a new species in two hours.
+FALSE: Smith spent two hours discovering the new species.
+
+# id=290
+# note: Smith discovered a new species.
+Smith discovered a new species in two hours.
+TRUE: Smith discovered a new species.
+
+# id=291
+# note: Smith spent two hours discovering new species.
+Smith discovered many new species in two hours.
+TRUE: Smith spent two hours discovering new species.
+
+# id=292
+# note: Smith spent two years running his own business.
+Smith was running his own business in two years.
+UNK: Smith spent two years running his own business.
+
+# id=293
+# note: Smith spent more than two years running his own business.
+Smith was running his own business in two years.
+UNK: Smith spent more than two years running his own business.
+
+# id=294
+# note: Smith ran his own business.
+Smith was running his own business in two years.
+TRUE: Smith ran his own business.
+
+# id=295
+# note: Smith owned a chain of business for two years.
+In two years Smith owned a chain of businesses.
+UNK: Smith owned a chain of business for two years.
+
+# id=296
+# note: Smith owned a chain of business for more than two years.
+In two years Smith owned a chain of businesses.
+UNK: Smith owned a chain of business for more than two years.
+
+# id=297
+# note: Smith owned a chain of business.
+In two years Smith owned a chain of businesses.
+TRUE: Smith owned a chain of business.
+
+# id=298
+# note: Smith lived in Birmingham for a year.
+Smith lived in Birmingham for two years.
+TRUE: Smith lived in Birmingham for a year.
+
+# id=299
+# note: Smith lived in Birmingham for exactly a year.
+Smith lived in Birmingham for two years.
+FALSE: Smith lived in Birmingham for exactly a year.
+
+# id=300
+# note: Smith lived in Birmingham.
+Smith lived in Birmingham for two years.
+TRUE: Smith lived in Birmingham.
+
+# id=301
+# note: Smith ran his own business for a year.
+Smith ran his own business for two years.
+TRUE: Smith ran his own business for a year.
+
+# id=302
+# note: Smith ran his own business.
+Smith ran his own business for two years.
+TRUE: Smith ran his own business.
+
+# id=303
+# note: Smith wrote a report for an hour.
+Smith wrote a report for two hours.
+TRUE: Smith wrote a report for an hour.
+
+# id=304
+# note: Smith wrote a report.
+Smith wrote a report for two hours.
+UNK: Smith wrote a report.
+
+# id=306
+# note: Smith discovered new species.
+Smith discovered new species for two years.
+TRUE: Smith discovered new species.
+
+# id=307
+# note: ITEL sent a progress report in July 1994.
+In 1994 ITEL sent a progress report every month.
+TRUE: ITEL sent a progress report in July 1994.
+
+# id=311
+# note: Smith left the house before she took a taxi to the station.
+Smith had left the house at a quarter past five.
+Then she took a taxi to the station.
+TRUE: Smith left the house before she took a taxi to the station.
+
+# id=312
+# note: ITEL delivered reports late in 1993.
+ITEL always delivers reports late.
+In 1993 ITEL delivered reports.
+TRUE: ITEL delivered reports late in 1993.
+
+# id=313
+# note: ITEL delivered reports late in 1993.
+ITEL never delivers reports late.
+In 1993 ITEL delivered reports.
+FALSE: ITEL delivered reports late in 1993.
+
+# id=314
+# note: Smith was in Paris on the 7th of May, 1995.
+Smith arrived in Paris on the 5th of May, 1995.
+Today is the 15th of May, 1995.
+She is still in Paris.
+TRUE: Smith was in Paris on the 7th of May, 1995.
+
+# id=315
+# note: Smith had been travelling the day before she arrived in Katmandu.
+When Smith arrived in Katmandu she had been travelling for three days.
+TRUE: Smith had been travelling the day before she arrived in Katmandu.
+
+# id=316
+# note: Jones was unemployed at some time before he graduated.
+Jones graduated in March and has been employed ever since.
+Jones has been unemployed in the past.
+TRUE: Jones was unemployed at some time before he graduated.
+
+# id=317
+# note: It took the representatives more than a week to read the report.
+Every representative has read this report.
+No two representatives have read it at the same time.
+No representative took less than half a day to read the report.
+There are sixteen representatives.
+TRUE: It took the representatives more than a week to read the report.
+
+# id=318
+# note: Mary's story lasted as long as Jones's updating the program.
+While Jones was updating the program, Mary came in and told him about the board meeting.
+She finished before he did.
+FALSE: Mary's story lasted as long as Jones's updating the program.
+
+# id=319
+# note: APCOM has been paying mortgage interest for a total of 15 years or more.
+Before APCOM bought its present office building, it had been paying mortgage interest on the previous one for 8 years.
+Since APCOM bought its present office building it has been paying mortgage interest on it for more than 10 years.
+TRUE: APCOM has been paying mortgage interest for a total of 15 years or more.
+
+# id=320
+# note: It is the case that Jones is not and will never be allowed to write his memoirs.
+When Jones got his job at the CIA, he knew that he would never be allowed to write his memoirs.
+TRUE: It is the case that Jones is not and will never be allowed to write his memoirs.
+
+# id=321
+# note: Two years from now Smith will have been to Florence at least four times.
+Smith has been to Florence twice in the past.
+Smith will go to Florence twice in the coming year.
+TRUE: Two years from now Smith will have been to Florence at least four times.
+
+# id=322
+# note: It will be the case that in a few weeks Smith will discover that she has been duped; and she will be furious.
+Last week I already knew that when, in a month's time, Smith would discover that she had been duped she would be furious.
+TRUE: It will be the case that in a few weeks Smith will discover that she has been duped; and she will be furious.
+
+# id=323
+# note: Everyone who starts gambling seriously stops the moment he is broke.
+No one gambling seriously stops until he is broke.
+No one can gamble when he is broke.
+TRUE: Everyone who starts gambling seriously stops the moment he is broke.
+
+# id=324
+# note: Everyone who starts gambling seriously continues until he is broke.
+No one who starts gambling seriously stops until he is broke.
+TRUE: Everyone who starts gambling seriously continues until he is broke.
+
+# id=325
+# note: Some people discover that they have been asleep.
+Nobody who is asleep ever knows that he is asleep.
+But some people know that they have been asleep after they have been asleep.
+TRUE: Some people discover that they have been asleep.
+
+
+#
+# BEGIN SECTION 8
+#
+
+# id=326
+# note: ITEL finished MTALK in 1993.
+ITEL built MTALK in 1993.
+TRUE: ITEL finished MTALK in 1993.
+
+# id=327
+# note: ITEL finished MTALK in 1993.
+ITEL was building MTALK in 1993.
+UNK: ITEL finished MTALK in 1993.
+
+# id=328
+# note: ITEL won a contract in 1993.
+ITEL won the contract from APCOM in 1993.
+TRUE: ITEL won a contract in 1993.
+
+# id=329
+# note: ITEL won a contract in 1993.
+ITEL was winning the contract from APCOM in 1993.
+UNK: ITEL won a contract in 1993.
+
+# id=330
+# note: ITEL owned APCOM in 1990.
+ITEL owned APCOM from 1988 to 1992.
+TRUE: ITEL owned APCOM in 1990.
+
+# id=331
+# note: Smith left the meeting.
+Smith and Jones left the meeting.
+TRUE: Smith left the meeting.
+
+# id=332
+# note: Jones left the meeting.
+Smith and Jones left the meeting.
+TRUE: Jones left the meeting.
+
+# id=333
+# note: There was a group of people that met.
+Smith, Anderson and Jones met.
+TRUE: There was a group of people that met.
+
+
+#
+# BEGIN SECTION 9
+#
+
+# id=334
+# note: ITEL won the contract in 1992.
+Smith knew that ITEL had won the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=335
+# note: ITEL won the contract in 1992.
+Smith believed that ITEL had won the contract in 1992.
+UNK: ITEL won the contract in 1992.
+
+# id=336
+# note: ITEL won the contract in 1992.
+ITEL managed to win the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=337
+# note: ITEL won the contract in 1992.
+ITEL tried to win the contract in 1992.
+UNK: ITEL won the contract in 1992.
+
+# id=338
+# note: ITEL won the contract in 1992.
+It is true that ITEL won the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=339
+# note: ITEL won the contract in 1992.
+It is false that ITEL won the contract in 1992.
+FALSE: ITEL won the contract in 1992.
+
+# id=340
+# note: Smith saw Jones' heart beat.
+Smith saw Jones sign the contract.
+If Jones signed the contract, his heart was beating.
+UNK: Smith saw Jones' heart beat.
+
+# id=341
+# note: Smith saw Jones' heart beat.
+Smith saw Jones sign the contract.
+When Jones signed the contract, his heart was beating.
+UNK: Smith saw Jones' heart beat.
+
+# id=342
+# note: Jones signed the contract.
+Smith saw Jones sign the contract.
+TRUE: Jones signed the contract.
+
+# id=343
+# note: Smith saw the chairman of ITEL sign the contract.
+Smith saw Jones sign the contract.
+Jones is the chairman of ITEL.
+TRUE: Smith saw the chairman of ITEL sign the contract.
+
+# id=344
+# note: There is someone whom Helen saw answer the phone.
+Helen saw the chairman of the department answer the phone.
+The chairman of the department is a person.
+TRUE: There is someone whom Helen saw answer the phone.
+
+# id=345
+# note: Smith saw Jones sign the contract.
+Smith saw Jones sign the contract and his secretary make a copy.
+TRUE: Smith saw Jones sign the contract.
+
+# id=346
+# note: Smith either saw Jones sign the contract or saw Jones cross out the crucial clause.
+Smith saw Jones sign the contract or cross out the crucial clause.
+TRUE: Smith either saw Jones sign the contract or saw Jones cross out the crucial clause.
+

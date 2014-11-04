@@ -28,9 +28,9 @@ public class PreprocessITest {
   public void allCatsHaveTails() {
     String expected =
         "all	2	det	0	anti-additive	2-3	multiplicative	3-5\n" +
-            "cat	3	nsubj	1	-	-	-	-\n" +
-            "have	0	root	2	-	-	-	-\n"+
-            "tail	3	dobj	2	-	-	-	-\n";
+        "cat	3	nsubj	1	-	-	-	-\n" +
+        "have	0	root	2	-	-	-	-\n"+
+        "tail	3	dobj	2	-	-	-	-\n";
     assertEquals(expected, Preprocess.annotate(pipeline, StaticResources.INDEXER, "all cats have tails"));
     assertEquals(expected, Preprocess.annotate(pipeline, StaticResources.INDEXER, "all cats have tails."));
     assertEquals(expected, Preprocess.annotate(pipeline, StaticResources.INDEXER, "all cats, have tails."));

@@ -1,0 +1,960 @@
+
+#
+# BEGIN SECTION 1
+#
+
+# id=1
+# note: There was an Italian who became the world's greatest tenor.
+An Italian became the world's greatest tenor.
+TRUE: There was an Italian who became the world's greatest tenor.
+
+# id=5
+# note: There are really ambitious tenors who are Italian.
+The really ambitious tenors are Italian.
+TRUE: There are really ambitious tenors who are Italian.
+
+# id=6
+# note: There are really great tenors who are modest.
+No really great tenors are modest.
+FALSE: There are really great tenors who are modest.
+
+# id=7
+# note: There are great tenors who are Swedish.
+Some great tenors are Swedish.
+TRUE: There are great tenors who are Swedish.
+
+# id=8
+# note: There are great tenors who are German.
+Many great tenors are German.
+TRUE: There are great tenors who are German.
+
+# id=9
+# note: There are great tenors who are British.
+Several great tenors are British.
+TRUE: There are great tenors who are British.
+
+# id=10
+# note: There are great tenors who are Italian.
+Most great tenors are Italian.
+TRUE: There are great tenors who are Italian.
+
+# id=15
+# note: There are tenors who will take part in the concert.
+At least three tenors will take part in the concert.
+TRUE: There are tenors who will take part in the concert.
+
+# id=17
+# note: An Irishman won a Nobel prize.
+An Irishman won the Nobel prize for literature.
+TRUE: An Irishman won a Nobel prize.
+
+# id=22
+# note: No delegate finished the report.
+No delegate finished the report on time.
+UNK: No delegate finished the report.
+
+# id=23
+# note: Some delegates finished the survey.
+Some delegates finished the survey on time.
+TRUE: Some delegates finished the survey.
+
+# id=24
+# note: Many delegates obtained results from the survey.
+Many delegates obtained interesting results from the survey.
+TRUE: Many delegates obtained results from the survey.
+
+# id=25
+# note: Several delegates got the results published.
+Several delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published.
+
+# id=29
+# note: Both commissioners used to be businessmen.
+Both commissioners used to be leading businessmen.
+TRUE: Both commissioners used to be businessmen.
+
+# id=30
+# note: Neither commissioner spends time at home.
+Neither commissioner spends a lot of time at home.
+UNK: Neither commissioner spends time at home.
+
+# id=31
+# note: At least three commissioners spend time at home.
+At least three commissioners spend a lot of time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=32
+# note: At most ten commissioners spend time at home.
+At most ten commissioners spend a lot of time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=33
+# note: An Irishman won the Nobel prize for literature.
+An Irishman won a Nobel prize.
+UNK: An Irishman won the Nobel prize for literature.
+
+# id=38
+# note: Some delegate finished the report on time.
+No delegate finished the report.
+FALSE: Some delegate finished the report on time.
+
+# id=39
+# note: Some delegates finished the survey on time.
+Some delegates finished the survey.
+UNK: Some delegates finished the survey on time.
+
+# id=40
+# note: Many delegates obtained interesting results from the survey.
+Many delegates obtained results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=41
+# note: Several delegates got the results published in major national newspapers.
+Several delegates got the results published.
+UNK: Several delegates got the results published in major national newspapers.
+
+# id=45
+# note: Both commissioners used to be leading businessmen.
+Both commissioners used to be businessmen.
+UNK: Both commissioners used to be leading businessmen.
+
+# id=46
+# note: One of the commissioners spends a lot of time at home.
+Neither commissioner spends time at home.
+FALSE: One of the commissioners spends a lot of time at home.
+
+# id=47
+# note: At least three commissioners spend a lot of time at home.
+At least three commissioners spend time at home.
+UNK: At least three commissioners spend a lot of time at home.
+
+# id=48
+# note: At most ten commissioners spend a lot of time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten commissioners spend a lot of time at home.
+
+# id=54
+# note: Some delegate finished the report on time.
+No Scandinavian delegate finished the report on time.
+UNK: Some delegate finished the report on time.
+
+# id=55
+# note: Some delegates finished the survey on time.
+Some Irish delegates finished the survey on time.
+TRUE: Some delegates finished the survey on time.
+
+# id=56
+# note: Many delegates obtained interesting results from the survey.
+Many British delegates obtained interesting results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=57
+# note: Several delegates got the results published in major national newspapers.
+Several Portuguese delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published in major national newspapers.
+
+# id=58
+# note: Most Europeans can travel freely within Europe.
+Most Europeans who are resident in Europe can travel freely within Europe.
+UNK: Most Europeans can travel freely within Europe.
+
+# id=59
+# note: At least a few committee members are from Scandinavia.
+A few female committee members are from Scandinavia.
+TRUE: At least a few committee members are from Scandinavia.
+
+# id=60
+# note: Few committee members are from southern Europe.
+Few female committee members are from southern Europe.
+UNK: Few committee members are from southern Europe.
+
+# id=63
+# note: At least three commissioners spend time at home.
+At least three female commissioners spend time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=64
+# note: At most ten commissioners spend time at home.
+At most ten female commissioners spend time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=70
+# note: Some Scandinavian delegate finished the report on time.
+No delegate finished the report on time.
+FALSE: Some Scandinavian delegate finished the report on time.
+
+# id=71
+# note: Some Irish delegates finished the survey on time.
+Some delegates finished the survey on time.
+UNK: Some Irish delegates finished the survey on time.
+
+# id=72
+# note: Many British delegates obtained interesting results from the survey.
+Many delegates obtained interesting results from the survey.
+UNK: Many British delegates obtained interesting results from the survey.
+
+# id=73
+# note: Several Portuguese delegates got the results published in major national newspapers.
+Several delegates got the results published in major national newspapers.
+UNK: Several Portuguese delegates got the results published in major national newspapers.
+
+# id=74
+# note: Most Europeans who are resident outside Europe can travel freely within Europe.
+Most Europeans can travel freely within Europe.
+UNK: Most Europeans who are resident outside Europe can travel freely within Europe.
+
+# id=75
+# note: At least a few female committee members are from Scandinavia.
+A few committee members are from Scandinavia.
+UNK: At least a few female committee members are from Scandinavia.
+
+# id=76
+# note: Few female committee members are from southern Europe.
+Few committee members are from southern Europe.
+TRUE: Few female committee members are from southern Europe.
+
+# id=79
+# note: At least three male commissioners spend time at home.
+At least three commissioners spend time at home.
+UNK: At least three male commissioners spend time at home.
+
+# id=80
+# note: At most ten female commissioners spend time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten female commissioners spend time at home.
+
+
+#
+# BEGIN SECTION 2
+#
+
+# id=81
+# note: Jones signed the contract.
+Smith, Jones and Anderson signed the contract.
+TRUE: Jones signed the contract.
+
+# id=82
+# note: Jones signed the contract.
+Smith, Jones and several lawyers signed the contract.
+TRUE: Jones signed the contract.
+
+# id=83
+# note: Jones signed the contract.
+Either Smith, Jones or Anderson signed the contract.
+UNK: Jones signed the contract.
+
+# id=84
+# note: If Smith and Anderson did not sign the contract, Jones signed the contract.
+Either Smith, Jones or Anderson signed the contract.
+TRUE: If Smith and Anderson did not sign the contract, Jones signed the contract.
+
+# id=85
+# note: Six lawyers signed the contract.
+Exactly two lawyers and three accountants signed the contract.
+FALSE: Six lawyers signed the contract.
+
+# id=86
+# note: Six accountants signed the contract.
+Exactly two lawyers and three accountants signed the contract.
+FALSE: Six accountants signed the contract.
+
+# id=87
+# note: Every representative was at the meeting.
+Every representative and client was at the meeting.
+TRUE: Every representative was at the meeting.
+
+# id=88
+# note: Every representative was at the meeting.
+Every representative and client was at the meeting.
+UNK: Every representative was at the meeting.
+
+# id=89
+# note: Every representative and every client was at the meeting.
+Every representative or client was at the meeting.
+TRUE: Every representative and every client was at the meeting.
+
+# id=90
+# note: The chairman read out every item on the agenda.
+The chairman read out the items on the agenda.
+TRUE: The chairman read out every item on the agenda.
+
+# id=91
+# note: Everyone at the meeting voted for a new chairman.
+The people who were at the meeting voted for a new chairman.
+UNK: Everyone at the meeting voted for a new chairman.
+
+# id=92
+# note: Everyone at the meeting voted for a new chairman.
+All the people who were at the meeting voted for a new chairman.
+TRUE: Everyone at the meeting voted for a new chairman.
+
+# id=93
+# note: Everyone at the meeting voted for a new chairman.
+The people who were at the meeting all voted for a new chairman.
+TRUE: Everyone at the meeting voted for a new chairman.
+
+# id=94
+# note: Every inhabitant of Cambridge voted for a Labour MP.
+The inhabitants of Cambridge voted for a Labour MP.
+UNK: Every inhabitant of Cambridge voted for a Labour MP.
+
+# id=95
+# note: Every Ancient Greek was a noted philosopher.
+The Ancient Greeks were noted philosophers.
+UNK: Every Ancient Greek was a noted philosopher.
+
+# id=96
+# note: Every Ancient Greek was a noted philosopher.
+The Ancient Greeks were all noted philosophers.
+TRUE: Every Ancient Greek was a noted philosopher.
+
+# id=97
+# note: The system failure was blamed on one or more software faults.
+Software faults were blamed for the system failure.
+TRUE: The system failure was blamed on one or more software faults.
+
+# id=100
+# note: Most clients at the demonstration were impressed by the system's performance.
+Clients at the demonstration were impressed by the system's performance.
+TRUE: Most clients at the demonstration were impressed by the system's performance.
+
+# id=105
+# note: No accountants attended the meeting.
+Just one accountant attended the meeting.
+FALSE: No accountants attended the meeting.
+
+# id=106
+# note: No accountant attended the meeting.
+Just one accountant attended the meeting.
+FALSE: No accountant attended the meeting.
+
+# id=107
+# note: Some accountants attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountants attended the meeting.
+
+# id=108
+# note: Some accountant attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountant attended the meeting.
+
+# id=109
+# note: Some accountants attended the meeting.
+Just one accountant attended the meeting.
+FALSE: Some accountants attended the meeting.
+
+# id=110
+# note: Some accountant attended the meeting.
+Just one accountant attended the meeting.
+TRUE: Some accountant attended the meeting.
+
+
+#
+# BEGIN SECTION 3
+#
+
+# id=114
+# note: Mary's workstation was used.
+Mary used her workstation.
+TRUE: Mary's workstation was used.
+
+# id=115
+# note: Mary has a workstation.
+Mary used her workstation.
+TRUE: Mary has a workstation.
+
+# id=116
+# note: Mary is female.
+Mary used her workstation.
+TRUE: Mary is female.
+
+# id=139
+# note: A company director has awarded and been awarded a payrise.
+A company director awarded himself a large payrise.
+TRUE: A company director has awarded and been awarded a payrise.
+
+# id=140
+# note: John said Bill had been hurt.
+John said Bill had hurt himself.
+TRUE: John said Bill had been hurt.
+
+# id=141
+# note: Someone said John had been hurt.
+John said Bill had hurt himself.
+UNK: Someone said John had been hurt.
+
+
+#
+# BEGIN SECTION 4
+#
+
+# id=150
+# note: Bill went to Paris by train.
+John went to Paris by car, and Bill by train.
+TRUE: Bill went to Paris by train.
+
+# id=151
+# note: Bill went to Berlin by train.
+John went to Paris by car, and Bill by train to Berlin.
+TRUE: Bill went to Berlin by train.
+
+# id=152
+# note: Bill went to Berlin by car.
+John went to Paris by car, and Bill to Berlin.
+TRUE: Bill went to Berlin by car.
+
+# id=153
+# note: The students are going to Paris by train.
+John is going to Paris by car, and the students by train.
+TRUE: The students are going to Paris by train.
+
+# id=169
+# note: John found Mary before Bill found Mary.
+John found Mary before Bill.
+TRUE: John found Mary before Bill found Mary.
+
+# id=170
+# note: John found Mary before John found Bill.
+John found Mary before Bill.
+TRUE: John found Mary before John found Bill.
+
+# id=172
+# note: John wants to know which men work part time.
+John wants to know how many men work part time, and which.
+TRUE: John wants to know which men work part time.
+
+# id=175
+# note: Bill said Mary wrote a report.
+John said Mary wrote a report, and Bill did too.
+TRUE: Bill said Mary wrote a report.
+
+# id=176
+# note: John said Bill wrote a report.
+John said Mary wrote a report, and Bill did too.
+TRUE: John said Bill wrote a report.
+
+# id=177
+# note: Bill said Mary wrote a report.
+John said that Mary wrote a report, and that Bill did too.
+UNK: Bill said Mary wrote a report.
+
+# id=178
+# note: Bill said Peter wrote a report.
+John wrote a report, and Bill said Peter did too.
+TRUE: Bill said Peter wrote a report.
+
+# id=180
+# note: John bought a car.
+John wanted to buy a car, and he did.
+TRUE: John bought a car.
+
+# id=181
+# note: Bill bought a car.
+John needed to buy a car, and Bill did.
+UNK: Bill bought a car.
+
+# id=182
+# note: Jones represents Jones' company.
+Smith represents his company and so does Jones.
+TRUE: Jones represents Jones' company.
+
+# id=183
+# note: Jones represents Smith's company.
+Smith represents his company and so does Jones.
+TRUE: Jones represents Smith's company.
+
+# id=184
+# note: Smith represents Jones' company.
+Smith represents his company and so does Jones.
+UNK: Smith represents Jones' company.
+
+# id=185
+# note: Jones claimed he had costed his own proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed he had costed his own proposal.
+
+# id=186
+# note: Jones claimed he had costed Smith's proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed he had costed Smith's proposal.
+
+# id=187
+# note: Jones claimed Smith had costed Smith's proposal.
+Smith claimed he had costed his proposal and so did Jones.
+TRUE: Jones claimed Smith had costed Smith's proposal.
+
+# id=188
+# note: Jones claimed Smith had costed Jones' proposal.
+Smith claimed he had costed his proposal and so did Jones.
+UNK: Jones claimed Smith had costed Jones' proposal.
+
+# id=191
+# note: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan should go together.
+
+# id=192
+# note: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+UNK: If it was suggested that Bill and Frank should go together, it was suggested that Carl and Alan's wife should go together.
+
+# id=193
+# note: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan's wife should go together.
+
+# id=194
+# note: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+UNK: If it was suggested that Bill and Frank's boss should go together, it was suggested that Carl and Alan should go together.
+
+# id=195
+# note: If it was suggested that Bill, Frank and Frank's boss should go together, it was suggested that Carl, Alan and Alan's wife should go together.
+Bill suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife.
+TRUE: If it was suggested that Bill, Frank and Frank's boss should go together, it was suggested that Carl, Alan and Alan's wife should go together.
+
+
+#
+# BEGIN SECTION 5
+#
+
+# id=197
+# note: John has a diamond.
+John has a genuine diamond.
+TRUE: John has a diamond.
+
+# id=198
+# note: John is a university student.
+John is a former university student.
+FALSE: John is a university student.
+
+# id=199
+# note: John is successful.
+John is a successful former university student.
+TRUE: John is successful.
+
+# id=200
+# note: John is successful.
+John is a former successful university student.
+UNK: John is successful.
+
+# id=201
+# note: John is a university student.
+John is a former successful university student.
+UNK: John is a university student.
+
+# id=202
+# note: Every four-legged mammal is a four-legged animal.
+Every mammal is an animal.
+TRUE: Every four-legged mammal is a four-legged animal.
+
+# id=203
+# note: Dumbo is four-legged.
+Dumbo is a four-legged animal.
+TRUE: Dumbo is four-legged.
+
+# id=204
+# note: Mickey is a large animal.
+Mickey is a small animal.
+FALSE: Mickey is a large animal.
+
+# id=205
+# note: Dumbo is a small animal.
+Dumbo is a large animal.
+FALSE: Dumbo is a small animal.
+
+# id=206
+# note: Fido is a large animal.
+Fido is not a small animal.
+UNK: Fido is a large animal.
+
+# id=207
+# note: Fido is a small animal.
+Fido is not a large animal.
+UNK: Fido is a small animal.
+
+# id=216
+# note: John is fatter than Bill.
+John is a fatter politician than Bill.
+TRUE: John is fatter than Bill.
+
+# id=217
+# note: John is cleverer than Bill.
+John is a cleverer politician than Bill.
+UNK: John is cleverer than Bill.
+
+# id=218
+# note: Kim is clever.
+Kim is a clever person.
+TRUE: Kim is clever.
+
+# id=219
+# note: Kim is clever.
+Kim is a clever politician.
+UNK: Kim is clever.
+
+
+#
+# BEGIN SECTION 6
+#
+
+# id=221
+# note: The PC-6082 is fast.
+The PC-6082 is faster than the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=225
+# note: The PC-6082 is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=228
+# note: The PC-6082 is faster than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is faster than the ITEL-XZ.
+
+# id=229
+# note: The PC-6082 is slower than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+FALSE: The PC-6082 is slower than the ITEL-XZ.
+
+# id=230
+# note: ITEL won some orders.
+ITEL won more orders than APCOM did.
+TRUE: ITEL won some orders.
+
+# id=231
+# note: APCOM won some orders.
+ITEL won more orders than APCOM did.
+UNK: APCOM won some orders.
+
+# id=233
+# note: ITEL won some orders.
+ITEL won more orders than APCOM.
+TRUE: ITEL won some orders.
+
+# id=234
+# note: APCOM won some orders.
+ITEL won more orders than APCOM.
+UNK: APCOM won some orders.
+
+# id=236
+# note: ITEL won the APCOM contract.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won the APCOM contract.
+
+# id=237
+# note: ITEL won more than one order.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won more than one order.
+
+# id=239
+# note: ITEL won some orders.
+ITEL won more orders than APCOM lost.
+TRUE: ITEL won some orders.
+
+# id=240
+# note: APCOM lost some orders.
+ITEL won more orders than APCOM lost.
+UNK: APCOM lost some orders.
+
+# id=244
+# note: APCOM has a more important customer than ITEL is.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL is.
+
+# id=245
+# note: APCOM has a more important customer than ITEL has.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL has.
+
+# id=249
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX and the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=250
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX or the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+
+#
+# BEGIN SECTION 7
+#
+
+# id=251
+# note: ITEL currently has a factory in Birmingham.
+ITEL has a factory in Birmingham.
+TRUE: ITEL currently has a factory in Birmingham.
+
+# id=258
+# note: ITEL existed in 1992.
+In March 1993 APCOM founded ITEL.
+FALSE: ITEL existed in 1992.
+
+# id=275
+# note: Smith lost his temper.
+Smith left the meeting before he lost his temper.
+UNK: Smith lost his temper.
+
+# id=277
+# note: Smith lived in Birmingham in 1992.
+Smith lived in Birmingham in 1991.
+UNK: Smith lived in Birmingham in 1992.
+
+# id=278
+# note: Smith wrote his first novel in 1992.
+Smith wrote his first novel in 1991.
+FALSE: Smith wrote his first novel in 1992.
+
+# id=279
+# note: Smith wrote it in 1992.
+Smith wrote a novel in 1991.
+FALSE: Smith wrote it in 1992.
+
+# id=280
+# note: Smith wrote a novel in 1992.
+Smith wrote a novel in 1991.
+UNK: Smith wrote a novel in 1992.
+
+# id=281
+# note: Smith was running it in 1992.
+Smith was running a business in 1991.
+UNK: Smith was running it in 1992.
+
+# id=282
+# note: Smith discovered it in 1992.
+Smith discovered a new species in 1991.
+FALSE: Smith discovered it in 1992.
+
+# id=283
+# note: Smith discovered a new species in 1992.
+Smith discovered a new species in 1991.
+UNK: Smith discovered a new species in 1992.
+
+# id=285
+# note: Smith spent two hours writing the report.
+Smith wrote a report in two hours.
+UNK: Smith spent two hours writing the report.
+
+# id=286
+# note: Smith spent more than two hours writing the report.
+Smith wrote a report in two hours.
+FALSE: Smith spent more than two hours writing the report.
+
+# id=287
+# note: Smith wrote a report in one hour.
+Smith wrote a report in two hours.
+UNK: Smith wrote a report in one hour.
+
+# id=288
+# note: Smith wrote a report.
+Smith wrote a report in two hours.
+TRUE: Smith wrote a report.
+
+# id=289
+# note: Smith spent two hours discovering the new species.
+Smith discovered a new species in two hours.
+FALSE: Smith spent two hours discovering the new species.
+
+# id=290
+# note: Smith discovered a new species.
+Smith discovered a new species in two hours.
+TRUE: Smith discovered a new species.
+
+# id=291
+# note: Smith spent two hours discovering new species.
+Smith discovered many new species in two hours.
+TRUE: Smith spent two hours discovering new species.
+
+# id=292
+# note: Smith spent two years running his own business.
+Smith was running his own business in two years.
+UNK: Smith spent two years running his own business.
+
+# id=293
+# note: Smith spent more than two years running his own business.
+Smith was running his own business in two years.
+UNK: Smith spent more than two years running his own business.
+
+# id=294
+# note: Smith ran his own business.
+Smith was running his own business in two years.
+TRUE: Smith ran his own business.
+
+# id=295
+# note: Smith owned a chain of business for two years.
+In two years Smith owned a chain of businesses.
+UNK: Smith owned a chain of business for two years.
+
+# id=296
+# note: Smith owned a chain of business for more than two years.
+In two years Smith owned a chain of businesses.
+UNK: Smith owned a chain of business for more than two years.
+
+# id=297
+# note: Smith owned a chain of business.
+In two years Smith owned a chain of businesses.
+TRUE: Smith owned a chain of business.
+
+# id=298
+# note: Smith lived in Birmingham for a year.
+Smith lived in Birmingham for two years.
+TRUE: Smith lived in Birmingham for a year.
+
+# id=299
+# note: Smith lived in Birmingham for exactly a year.
+Smith lived in Birmingham for two years.
+FALSE: Smith lived in Birmingham for exactly a year.
+
+# id=300
+# note: Smith lived in Birmingham.
+Smith lived in Birmingham for two years.
+TRUE: Smith lived in Birmingham.
+
+# id=301
+# note: Smith ran his own business for a year.
+Smith ran his own business for two years.
+TRUE: Smith ran his own business for a year.
+
+# id=302
+# note: Smith ran his own business.
+Smith ran his own business for two years.
+TRUE: Smith ran his own business.
+
+# id=303
+# note: Smith wrote a report for an hour.
+Smith wrote a report for two hours.
+TRUE: Smith wrote a report for an hour.
+
+# id=304
+# note: Smith wrote a report.
+Smith wrote a report for two hours.
+UNK: Smith wrote a report.
+
+# id=306
+# note: Smith discovered new species.
+Smith discovered new species for two years.
+TRUE: Smith discovered new species.
+
+# id=307
+# note: ITEL sent a progress report in July 1994.
+In 1994 ITEL sent a progress report every month.
+TRUE: ITEL sent a progress report in July 1994.
+
+# id=315
+# note: Smith had been travelling the day before she arrived in Katmandu.
+When Smith arrived in Katmandu she had been travelling for three days.
+TRUE: Smith had been travelling the day before she arrived in Katmandu.
+
+# id=320
+# note: It is the case that Jones is not and will never be allowed to write his memoirs.
+When Jones got his job at the CIA, he knew that he would never be allowed to write his memoirs.
+TRUE: It is the case that Jones is not and will never be allowed to write his memoirs.
+
+# id=322
+# note: It will be the case that in a few weeks Smith will discover that she has been duped; and she will be furious.
+Last week I already knew that when, in a month's time, Smith would discover that she had been duped she would be furious.
+TRUE: It will be the case that in a few weeks Smith will discover that she has been duped; and she will be furious.
+
+# id=324
+# note: Everyone who starts gambling seriously continues until he is broke.
+No one who starts gambling seriously stops until he is broke.
+TRUE: Everyone who starts gambling seriously continues until he is broke.
+
+
+#
+# BEGIN SECTION 8
+#
+
+# id=326
+# note: ITEL finished MTALK in 1993.
+ITEL built MTALK in 1993.
+TRUE: ITEL finished MTALK in 1993.
+
+# id=327
+# note: ITEL finished MTALK in 1993.
+ITEL was building MTALK in 1993.
+UNK: ITEL finished MTALK in 1993.
+
+# id=328
+# note: ITEL won a contract in 1993.
+ITEL won the contract from APCOM in 1993.
+TRUE: ITEL won a contract in 1993.
+
+# id=329
+# note: ITEL won a contract in 1993.
+ITEL was winning the contract from APCOM in 1993.
+UNK: ITEL won a contract in 1993.
+
+# id=330
+# note: ITEL owned APCOM in 1990.
+ITEL owned APCOM from 1988 to 1992.
+TRUE: ITEL owned APCOM in 1990.
+
+# id=331
+# note: Smith left the meeting.
+Smith and Jones left the meeting.
+TRUE: Smith left the meeting.
+
+# id=332
+# note: Jones left the meeting.
+Smith and Jones left the meeting.
+TRUE: Jones left the meeting.
+
+# id=333
+# note: There was a group of people that met.
+Smith, Anderson and Jones met.
+TRUE: There was a group of people that met.
+
+
+#
+# BEGIN SECTION 9
+#
+
+# id=334
+# note: ITEL won the contract in 1992.
+Smith knew that ITEL had won the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=335
+# note: ITEL won the contract in 1992.
+Smith believed that ITEL had won the contract in 1992.
+UNK: ITEL won the contract in 1992.
+
+# id=336
+# note: ITEL won the contract in 1992.
+ITEL managed to win the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=337
+# note: ITEL won the contract in 1992.
+ITEL tried to win the contract in 1992.
+UNK: ITEL won the contract in 1992.
+
+# id=338
+# note: ITEL won the contract in 1992.
+It is true that ITEL won the contract in 1992.
+TRUE: ITEL won the contract in 1992.
+
+# id=339
+# note: ITEL won the contract in 1992.
+It is false that ITEL won the contract in 1992.
+FALSE: ITEL won the contract in 1992.
+
+# id=342
+# note: Jones signed the contract.
+Smith saw Jones sign the contract.
+TRUE: Jones signed the contract.
+
+# id=345
+# note: Smith saw Jones sign the contract.
+Smith saw Jones sign the contract and his secretary make a copy.
+TRUE: Smith saw Jones sign the contract.
+
+# id=346
+# note: Smith either saw Jones sign the contract or saw Jones cross out the crucial clause.
+Smith saw Jones sign the contract or cross out the crucial clause.
+TRUE: Smith either saw Jones sign the contract or saw Jones cross out the crucial clause.
+

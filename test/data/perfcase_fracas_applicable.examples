@@ -1,0 +1,390 @@
+
+#
+# BEGIN SECTION 1
+#
+
+# id=1
+# note: There was an Italian who became the world's greatest tenor.
+An Italian became the world's greatest tenor.
+TRUE: There was an Italian who became the world's greatest tenor.
+
+# id=5
+# note: There are really ambitious tenors who are Italian.
+The really ambitious tenors are Italian.
+TRUE: There are really ambitious tenors who are Italian.
+
+# id=6
+# note: There are really great tenors who are modest.
+No really great tenors are modest.
+FALSE: There are really great tenors who are modest.
+
+# id=7
+# note: There are great tenors who are Swedish.
+Some great tenors are Swedish.
+TRUE: There are great tenors who are Swedish.
+
+# id=8
+# note: There are great tenors who are German.
+Many great tenors are German.
+TRUE: There are great tenors who are German.
+
+# id=9
+# note: There are great tenors who are British.
+Several great tenors are British.
+TRUE: There are great tenors who are British.
+
+# id=10
+# note: There are great tenors who are Italian.
+Most great tenors are Italian.
+TRUE: There are great tenors who are Italian.
+
+# id=15
+# note: There are tenors who will take part in the concert.
+At least three tenors will take part in the concert.
+TRUE: There are tenors who will take part in the concert.
+
+# id=17
+# note: An Irishman won a Nobel prize.
+An Irishman won the Nobel prize for literature.
+TRUE: An Irishman won a Nobel prize.
+
+# id=22
+# note: No delegate finished the report.
+No delegate finished the report on time.
+UNK: No delegate finished the report.
+
+# id=23
+# note: Some delegates finished the survey.
+Some delegates finished the survey on time.
+TRUE: Some delegates finished the survey.
+
+# id=24
+# note: Many delegates obtained results from the survey.
+Many delegates obtained interesting results from the survey.
+TRUE: Many delegates obtained results from the survey.
+
+# id=25
+# note: Several delegates got the results published.
+Several delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published.
+
+# id=29
+# note: Both commissioners used to be businessmen.
+Both commissioners used to be leading businessmen.
+TRUE: Both commissioners used to be businessmen.
+
+# id=30
+# note: Neither commissioner spends time at home.
+Neither commissioner spends a lot of time at home.
+UNK: Neither commissioner spends time at home.
+
+# id=31
+# note: At least three commissioners spend time at home.
+At least three commissioners spend a lot of time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=32
+# note: At most ten commissioners spend time at home.
+At most ten commissioners spend a lot of time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=33
+# note: An Irishman won the Nobel prize for literature.
+An Irishman won a Nobel prize.
+UNK: An Irishman won the Nobel prize for literature.
+
+# id=38
+# note: Some delegate finished the report on time.
+No delegate finished the report.
+FALSE: Some delegate finished the report on time.
+
+# id=39
+# note: Some delegates finished the survey on time.
+Some delegates finished the survey.
+UNK: Some delegates finished the survey on time.
+
+# id=40
+# note: Many delegates obtained interesting results from the survey.
+Many delegates obtained results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=41
+# note: Several delegates got the results published in major national newspapers.
+Several delegates got the results published.
+UNK: Several delegates got the results published in major national newspapers.
+
+# id=45
+# note: Both commissioners used to be leading businessmen.
+Both commissioners used to be businessmen.
+UNK: Both commissioners used to be leading businessmen.
+
+# id=46
+# note: One of the commissioners spends a lot of time at home.
+Neither commissioner spends time at home.
+FALSE: One of the commissioners spends a lot of time at home.
+
+# id=47
+# note: At least three commissioners spend a lot of time at home.
+At least three commissioners spend time at home.
+UNK: At least three commissioners spend a lot of time at home.
+
+# id=48
+# note: At most ten commissioners spend a lot of time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten commissioners spend a lot of time at home.
+
+# id=54
+# note: Some delegate finished the report on time.
+No Scandinavian delegate finished the report on time.
+UNK: Some delegate finished the report on time.
+
+# id=55
+# note: Some delegates finished the survey on time.
+Some Irish delegates finished the survey on time.
+TRUE: Some delegates finished the survey on time.
+
+# id=56
+# note: Many delegates obtained interesting results from the survey.
+Many British delegates obtained interesting results from the survey.
+UNK: Many delegates obtained interesting results from the survey.
+
+# id=57
+# note: Several delegates got the results published in major national newspapers.
+Several Portuguese delegates got the results published in major national newspapers.
+TRUE: Several delegates got the results published in major national newspapers.
+
+# id=58
+# note: Most Europeans can travel freely within Europe.
+Most Europeans who are resident in Europe can travel freely within Europe.
+UNK: Most Europeans can travel freely within Europe.
+
+# id=59
+# note: At least a few committee members are from Scandinavia.
+A few female committee members are from Scandinavia.
+TRUE: At least a few committee members are from Scandinavia.
+
+# id=60
+# note: Few committee members are from southern Europe.
+Few female committee members are from southern Europe.
+UNK: Few committee members are from southern Europe.
+
+# id=63
+# note: At least three commissioners spend time at home.
+At least three female commissioners spend time at home.
+TRUE: At least three commissioners spend time at home.
+
+# id=64
+# note: At most ten commissioners spend time at home.
+At most ten female commissioners spend time at home.
+UNK: At most ten commissioners spend time at home.
+
+# id=70
+# note: Some Scandinavian delegate finished the report on time.
+No delegate finished the report on time.
+FALSE: Some Scandinavian delegate finished the report on time.
+
+# id=71
+# note: Some Irish delegates finished the survey on time.
+Some delegates finished the survey on time.
+UNK: Some Irish delegates finished the survey on time.
+
+# id=72
+# note: Many British delegates obtained interesting results from the survey.
+Many delegates obtained interesting results from the survey.
+UNK: Many British delegates obtained interesting results from the survey.
+
+# id=73
+# note: Several Portuguese delegates got the results published in major national newspapers.
+Several delegates got the results published in major national newspapers.
+UNK: Several Portuguese delegates got the results published in major national newspapers.
+
+# id=74
+# note: Most Europeans who are resident outside Europe can travel freely within Europe.
+Most Europeans can travel freely within Europe.
+UNK: Most Europeans who are resident outside Europe can travel freely within Europe.
+
+# id=75
+# note: At least a few female committee members are from Scandinavia.
+A few committee members are from Scandinavia.
+UNK: At least a few female committee members are from Scandinavia.
+
+# id=76
+# note: Few female committee members are from southern Europe.
+Few committee members are from southern Europe.
+TRUE: Few female committee members are from southern Europe.
+
+# id=79
+# note: At least three male commissioners spend time at home.
+At least three commissioners spend time at home.
+UNK: At least three male commissioners spend time at home.
+
+# id=80
+# note: At most ten female commissioners spend time at home.
+At most ten commissioners spend time at home.
+TRUE: At most ten female commissioners spend time at home.
+
+
+#
+# BEGIN SECTION 5
+#
+
+# id=197
+# note: John has a diamond.
+John has a genuine diamond.
+TRUE: John has a diamond.
+
+# id=198
+# note: John is a university student.
+John is a former university student.
+FALSE: John is a university student.
+
+# id=199
+# note: John is successful.
+John is a successful former university student.
+TRUE: John is successful.
+
+# id=200
+# note: John is successful.
+John is a former successful university student.
+UNK: John is successful.
+
+# id=201
+# note: John is a university student.
+John is a former successful university student.
+UNK: John is a university student.
+
+# id=202
+# note: Every four-legged mammal is a four-legged animal.
+Every mammal is an animal.
+TRUE: Every four-legged mammal is a four-legged animal.
+
+# id=203
+# note: Dumbo is four-legged.
+Dumbo is a four-legged animal.
+TRUE: Dumbo is four-legged.
+
+# id=204
+# note: Mickey is a large animal.
+Mickey is a small animal.
+FALSE: Mickey is a large animal.
+
+# id=205
+# note: Dumbo is a small animal.
+Dumbo is a large animal.
+FALSE: Dumbo is a small animal.
+
+# id=206
+# note: Fido is a large animal.
+Fido is not a small animal.
+UNK: Fido is a large animal.
+
+# id=207
+# note: Fido is a small animal.
+Fido is not a large animal.
+UNK: Fido is a small animal.
+
+# id=216
+# note: John is fatter than Bill.
+John is a fatter politician than Bill.
+TRUE: John is fatter than Bill.
+
+# id=217
+# note: John is cleverer than Bill.
+John is a cleverer politician than Bill.
+UNK: John is cleverer than Bill.
+
+# id=218
+# note: Kim is clever.
+Kim is a clever person.
+TRUE: Kim is clever.
+
+# id=219
+# note: Kim is clever.
+Kim is a clever politician.
+UNK: Kim is clever.
+
+
+#
+# BEGIN SECTION 6
+#
+
+# id=221
+# note: The PC-6082 is fast.
+The PC-6082 is faster than the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=225
+# note: The PC-6082 is fast.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is fast.
+
+# id=228
+# note: The PC-6082 is faster than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+UNK: The PC-6082 is faster than the ITEL-XZ.
+
+# id=229
+# note: The PC-6082 is slower than the ITEL-XZ.
+The PC-6082 is as fast as the ITEL-XZ.
+FALSE: The PC-6082 is slower than the ITEL-XZ.
+
+# id=230
+# note: ITEL won some orders.
+ITEL won more orders than APCOM did.
+TRUE: ITEL won some orders.
+
+# id=231
+# note: APCOM won some orders.
+ITEL won more orders than APCOM did.
+UNK: APCOM won some orders.
+
+# id=233
+# note: ITEL won some orders.
+ITEL won more orders than APCOM.
+TRUE: ITEL won some orders.
+
+# id=234
+# note: APCOM won some orders.
+ITEL won more orders than APCOM.
+UNK: APCOM won some orders.
+
+# id=236
+# note: ITEL won the APCOM contract.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won the APCOM contract.
+
+# id=237
+# note: ITEL won more than one order.
+ITEL won more orders than the APCOM contract.
+TRUE: ITEL won more than one order.
+
+# id=239
+# note: ITEL won some orders.
+ITEL won more orders than APCOM lost.
+TRUE: ITEL won some orders.
+
+# id=240
+# note: APCOM lost some orders.
+ITEL won more orders than APCOM lost.
+UNK: APCOM lost some orders.
+
+# id=244
+# note: APCOM has a more important customer than ITEL is.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL is.
+
+# id=245
+# note: APCOM has a more important customer than ITEL has.
+APCOM has a more important customer than ITEL.
+TRUE: APCOM has a more important customer than ITEL has.
+
+# id=249
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX and the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
+# id=250
+# note: The PC-6082 is faster than the ITEL-ZX.
+The PC-6082 is faster than the ITEL-ZX or the ITEL-ZY.
+TRUE: The PC-6082 is faster than the ITEL-ZX.
+
