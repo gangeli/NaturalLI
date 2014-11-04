@@ -17,7 +17,7 @@ function configure() {
     --with-corenlp=$HOME/stanford-corenlp.jar \
     --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
     --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-    --enable-debug FACT_MAP_SIZE=27 $@
+    --enable-debug $@
   make clean
 }
 
@@ -28,6 +28,7 @@ git clean -f
 echo "-- MAKE --"
 configure
 make all check TESTS_ENVIRONMENT=true 
+make src/naturalli_preprocess.jar
 
 echo "-- C++ TESTS --"
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml

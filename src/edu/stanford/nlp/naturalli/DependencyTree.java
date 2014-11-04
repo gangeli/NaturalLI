@@ -41,7 +41,7 @@ public class DependencyTree<E> {
     for (IndexedWord vertex : dependencies.vertexSet()) {
       nodes[oldToNewIndex[vertex.index() - 1]] = (E) sentence.get(vertex.index() - 1).lemma();
       posTags.get()[oldToNewIndex[vertex.index() - 1]] = sentence.get(vertex.index() - 1).tag();
-      Set<IndexedWord> parents = dependencies.getParents(vertex);
+      Collection<IndexedWord> parents = dependencies.getParents(vertex);
       assert parents.size() < 2;
       if (parents.size() == 1) {
         IndexedWord governor = parents.iterator().next();
