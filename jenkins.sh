@@ -11,6 +11,7 @@ export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
 function configure() {
+  make clean
   ./configure \
     --with-scala=$SCALA_HOME \
     --with-java=/usr/lib/jvm/java-8-oracle \
@@ -35,12 +36,12 @@ test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 echo "-- MAKE DIST --"
 configure
 make dist
-tar xfz `find . -name "naturalli-*.tar.gz"`
-cd `find . -type d -name "naturalli-*"`
+tar xfz `find . -name "naturalli-2.*.tar.gz"`
+cd `find . -type d -name "naturalli-2.*"`
 configure
 make all check
 cd ..
-rm -r `find . -type d -name "naturalli-*"`
+rm -r `find . -type d -name "naturalli-2.*"`
 
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
