@@ -11,7 +11,6 @@ export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
 function configure() {
-  make clean
   ./configure \
     --with-scala=$SCALA_HOME \
     --with-java=/usr/lib/jvm/java-8-oracle \
