@@ -99,15 +99,29 @@ public class DependencyTree<E> {
     }
   }
 
+  /**
+   * Find the root of the given segment.
+   * This is a bit more complicated that one might think, because the segments don't have to align to dependency
+   * constituents. For example, "used to" is not a dependency constituent, but is a single segment.
+   *
+   * @param parents The dependency structure of the original dependency tree. Everything is zero indexed; the root is -1
+   * @param segments The segmentation of the dependency tree into chunks. That is, for each token in the original tree,
+   *                 this is a mapping to an integer such that every token with that integer is in the same segment.
+   * @param i The index of the token we are finding the root for. All indices with the same segment mapping should have the
+   *          same root!
+   * @return The root of this segment, zero indexed. This root cannot be -1; it must be a node in the tree.
+   */
   private int findRootOfSegment(int[] parents, int[] segments, int i) {
-    int currentToken = segments[i];
-    int lastI = i;
+    int segment = segments[i];
+    int highestNodeInsideSegment = i;
     i = parents[i];
-    while (i >= 0 && segments[i] == currentToken) {
-      lastI = i;
+    while (i >= 0) {
+      if (segments[i] == segment) {
+        highestNodeInsideSegment = i;
+      }
       i = parents[i];
     }
-    return lastI;
+    return highestNodeInsideSegment;
   }
 
   @SuppressWarnings("unchecked")

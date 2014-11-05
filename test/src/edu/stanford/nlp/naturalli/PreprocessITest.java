@@ -81,4 +81,27 @@ public class PreprocessITest {
     );
   }
 
+  @Test
+  public void collapseWords() {
+    String expected =
+        "all	2	det	0	anti-additive	2-3	multiplicative	3-5\n" +
+        "black cat	3	nsubj	1	-	-	-	-\n" +
+        "have	0	root	2	-	-	-	-\n"+
+        "tail	3	dobj	2	-	-	-	-\n";
+    assertEquals(expected, Preprocess.annotate(pipeline, StaticResources.INDEXER, "all black cats have tails"));
+  }
+
+  @Test
+  public void collapseWordsNoClearRoot() {
+    assertEquals(
+        "both	2	det	0	anti-additive	2-3	multiplicative	3-7\n" +
+        "commissioner	3	nsubj	1	-	-	-	-\n" +
+        "use to	0	root	0	-	-	-	-\n" +
+        "be	6	cop	9	-	-	-	-\n" +
+        "lead	6	amod	20	-	-	-	-\n" +
+        "businessman	3	xcomp	2	-	-	-	-\n",
+        Preprocess.annotate(pipeline, StaticResources.INDEXER, "Both commissioners used to be leading businessmen")
+    );
+  }
+
 }

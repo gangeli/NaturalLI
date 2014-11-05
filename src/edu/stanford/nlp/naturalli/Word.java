@@ -98,6 +98,7 @@ public class Word {
     add("dobj");
     add("pobj");
     add("prep");
+    add("xcomp");
   }};
 
   private static Set<String> NEG_RELATIONS = new HashSet<String>() {{
