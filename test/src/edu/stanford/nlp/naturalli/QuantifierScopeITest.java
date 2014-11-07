@@ -30,21 +30,21 @@ public class QuantifierScopeITest {
   }
 
   @SuppressWarnings("unchecked")
-  private Optional<QuantifierScope>[] annotate(String text) {
+  private Optional<QuantifierSpec>[] annotate(String text) {
     Annotation ann = new Annotation(text);
     pipeline.annotate(ann);
     List<CoreLabel> tokens = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class);
-    Optional<QuantifierScope>[] scopes = new Optional[tokens.size()];
+    Optional<QuantifierSpec>[] scopes = new Optional[tokens.size()];
     Arrays.fill(scopes, Optional.empty());
     for (int i = 0; i < tokens.size(); ++i) {
-      if (tokens.get(i).containsKey(QuantifierScopeAnnotator.QuantifierScopeAnnotation.class)) {
-        scopes[i] = Optional.of(tokens.get(i).get(QuantifierScopeAnnotator.QuantifierScopeAnnotation.class));
+      if (tokens.get(i).containsKey(QuantifierScopeAnnotator.QuantifierAnnotation.class)) {
+        scopes[i] = Optional.of(tokens.get(i).get(QuantifierScopeAnnotator.QuantifierAnnotation.class));
       }
     }
     return scopes;
   }
 
-  private void checkScope(int subjBegin, int subjEnd, int objBegin, int objEnd, Optional<QuantifierScope> guess) {
+  private void checkScope(int subjBegin, int subjEnd, int objBegin, int objEnd, Optional<QuantifierSpec> guess) {
     assertTrue("No quantifier found", guess.isPresent());
     assertEquals("Bad subject begin " + guess.get(), subjBegin, guess.get().subjectBegin);
     assertEquals("Bad subject end " + guess.get(), subjEnd, guess.get().subjectEnd);
@@ -52,7 +52,7 @@ public class QuantifierScopeITest {
     assertEquals("Bad object end " + guess.get(), objEnd, guess.get().objectEnd);
   }
 
-  private void checkScope(int subjBegin, int subjEnd, Optional<QuantifierScope> guess) {
+  private void checkScope(int subjBegin, int subjEnd, Optional<QuantifierSpec> guess) {
     assertTrue("No quantifier found", guess.isPresent());
     assertEquals("Bad subject begin " + guess.get(), subjBegin, guess.get().subjectBegin);
     assertEquals("Bad subject end " + guess.get(), subjEnd, guess.get().subjectEnd);
@@ -60,7 +60,7 @@ public class QuantifierScopeITest {
     assertEquals("Two place quantifier matched", subjEnd, guess.get().objectEnd);
   }
 
-  @SuppressWarnings("UnusedDeclaration")
+  @SuppressWarnings({"UnusedDeclaration", "UnusedAssignment"})
   private void checkScope(String spec) {
     String[] terms = spec.split("\\s+");
     int quantStart = -1;
@@ -73,29 +73,35 @@ public class QuantifierScopeITest {
     int tokenIndex = 0;
     List<String> cleanSentence = new ArrayList<>();
     for (String term : terms) {
-      if (term.equals("{")) {
-        quantStart = tokenIndex;
-      } else if (term.equals("}")) {
-        quantEnd = tokenIndex;
-      } else if (term.equals("[")) {
-        if (!seenSubj) {
-          subjBegin = tokenIndex;
-        } else {
-          objBegin = tokenIndex;
-        }
-      } else if (term.equals("]")) {
-        if (!seenSubj) {
-          subjEnd = tokenIndex;
-          seenSubj = true;
-        } else {
-          objEnd = tokenIndex;
-        }
-      } else {
-        cleanSentence.add(term);
-        tokenIndex += 1;
+      switch (term) {
+        case "{":
+          quantStart = tokenIndex;
+          break;
+        case "}":
+          quantEnd = tokenIndex;
+          break;
+        case "[":
+          if (!seenSubj) {
+            subjBegin = tokenIndex;
+          } else {
+            objBegin = tokenIndex;
+          }
+          break;
+        case "]":
+          if (!seenSubj) {
+            subjEnd = tokenIndex;
+            seenSubj = true;
+          } else {
+            objEnd = tokenIndex;
+          }
+          break;
+        default:
+          cleanSentence.add(term);
+          tokenIndex += 1;
+          break;
       }
     }
-    Optional<QuantifierScope>[] scopes = annotate(StringUtils.join(cleanSentence, " "));
+    Optional<QuantifierSpec>[] scopes = annotate(StringUtils.join(cleanSentence, " "));
     System.err.println("Checking [@ " + (quantEnd - 1) + "]:  " + spec);
     if (objBegin >= 0 && objEnd >= 0) {
       checkScope(subjBegin, subjEnd, objBegin, scopes.length, scopes[quantEnd - 1]);
@@ -158,6 +164,17 @@ public class QuantifierScopeITest {
   }
 
   @Test
+  public void few_x_verb_y() {
+    checkScope(1, 2, 2, 4, annotate("all cats chase dogs")[0]);
+  }
+
+  @Test
+  public void a_few_x_verb_y() {
+    checkScope(2, 3, 3, 5, annotate("a few cats chase dogs")[1]);
+    assertFalse(annotate("a few cats chase dogs")[0].isPresent());
+  }
+
+  @Test
   public void fracasSentencesWithAll() {
     checkScope("{ All } [ APCOM managers ] [ have company cars ]");
     checkScope("{ All } [ Canadian residents ] [ can travel freely within Europe ]");
@@ -182,12 +199,21 @@ public class QuantifierScopeITest {
   }
 
   @Test
-  public void fracasSentencesWithA() {
+  public void fracasSentencesWithSome() {
     checkScope("{ A } [ Scandinavian ] [ won a Nobel prize ]");
     checkScope("{ A } [ Swede ] [ won a Nobel prize ]");
     checkScope("{ A } [ company director ] [ awarded himself a large payrise ]");
     checkScope("{ A } [ company director ] [ has awarded and been awarded a payrise ]");
     checkScope("{ A } [ lawyer ] [ signed every report ]");
+
+    checkScope("{ An } [ Irishman ] [ won a Nobel prize ]");
+    checkScope("{ An } [ Irishman ] [ won the Nobel prize for literature ]");
+    checkScope("{ An } [ Italian ] [ became the world's greatest tenor ]");
+
+    checkScope("{ A few } [ committee members ] [ are from Scandinavia ]");
+    checkScope("{ A few } [ committee members ] [ are from Sweden ]");
+    checkScope("{ A few } [ female committee members ] [ are from Scandinavia ]");
+    checkScope("{ A few } [ great tenors ] [ sing popular music ]");
   }
 
   @Test

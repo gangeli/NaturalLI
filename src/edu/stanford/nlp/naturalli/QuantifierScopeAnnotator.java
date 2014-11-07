@@ -14,6 +14,7 @@ import edu.stanford.nlp.semgraph.semgrex.SemgrexPattern;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
+import edu.stanford.nlp.util.Triple;
 
 import java.util.*;
 
@@ -28,17 +29,17 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   /**
    * An annotation which attaches to a CoreLabel to denote that quantifier's scope in the sentence
    */
-  public static final class QuantifierScopeAnnotation implements CoreAnnotation<QuantifierScope> {
+  public static final class QuantifierAnnotation implements CoreAnnotation<QuantifierSpec> {
     @Override
-    public Class<QuantifierScope> getType() {
-      return QuantifierScope.class;
+    public Class<QuantifierSpec> getType() {
+      return QuantifierSpec.class;
     }
   }
 
   /**
    * A regex for arcs that act as determiners
    */
-  private static final String DET = "/(pre)?det/";
+  private static final String DET = "/(pre)?det|a(dv)?mod/";
   /**
    * A regex for arcs that we pretend are subject arcs
    */
@@ -58,18 +59,12 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   private static final String QUANTIFIER;
 
   static {
-    // Simple case: single-word quantifiers
-    List<String> singleWordQuantifiers = new ArrayList<>();
+    Set<String> singleWordQuantifiers = new HashSet<>();
     for (Quantifier q : Quantifier.values()) {
-      if (!q.surfaceForm.contains(" ")) {
-        singleWordQuantifiers.add("(" + q.surfaceForm.toLowerCase() + ")");
-      }
+      String[] tokens = q.surfaceForm.split("\\s+");
+      singleWordQuantifiers.add("(" + tokens[tokens.length - 1].toLowerCase() + ")");
     }
-    String simpleQuantifiers = "{lemma:/" + StringUtils.join(singleWordQuantifiers, "|") + "/}";
-    // Complex case: dependency path quantifiers
-    // TODO(gabor)
-    // Create Semgrex pattern
-    QUANTIFIER = simpleQuantifiers;
+    QUANTIFIER = "{lemma:/" + StringUtils.join(singleWordQuantifiers, "|") + "/}";
   }
 
   /**
@@ -113,7 +108,8 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   }
 
   private static final Set<String> MODIFIER_ARCS = Collections.unmodifiableSet(new HashSet<String>() {{
-    add("aux"); add("prep");
+    add("aux");
+    add("prep");
   }});
 
   /**
@@ -137,10 +133,17 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     return getGeneralizedSubtreeSpan(tree, root, null);
   }
 
+  /**
+   * Effectively, merge two spans
+   */
   private static Pair<Integer, Integer> includeInSpan(Pair<Integer, Integer> span, Pair<Integer, Integer> toInclude) {
     return Pair.makePair(Math.min(span.first, toInclude.first), Math.max(span.second, toInclude.second));
   }
 
+  /**
+   * Exclude the second span from the first, if the second is on the edge of the first. If the second is in the middle, it's
+   * unclear what this function should do, so it just returns the original span.
+   */
   private static Pair<Integer, Integer> excludeFromSpan(Pair<Integer, Integer> span, Pair<Integer, Integer> toExclude) {
     if (toExclude.second <= span.first || toExclude.first >= span.second) {
       // Case: toExclude is outside of the span anyways
@@ -159,19 +162,40 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     }
   }
 
-  private QuantifierScope computeScope(SemanticGraph tree, IndexedWord pivot, IndexedWord quantifier,
-                                       IndexedWord subject, IndexedWord object, boolean cutQuantifier) {
+  /**
+   * Compute the span for a given matched pattern.
+   */
+  private QuantifierSpec computeScope(SemanticGraph tree, IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
+                                      IndexedWord subject, IndexedWord object) {
     Pair<Integer, Integer> subjectSubtree = getSubtreeSpan(tree, subject);
-    Pair<Integer, Integer> subjSpan;
-    if (cutQuantifier) {
-      subjSpan = excludeFromSpan(subjectSubtree, getSubtreeSpan(tree, quantifier));
-    } else {
-      subjSpan = subjectSubtree;
-    }
+    Pair<Integer, Integer> subjSpan = excludeFromSpan(subjectSubtree, quantifierSpan);
     Pair<Integer, Integer> objSpan = excludeFromSpan(
         includeInSpan(getSubtreeSpan(tree, object), getModifierSubtreeSpan(tree, pivot)),
         subjectSubtree);
-    return new QuantifierScope(subjSpan.first - 1, subjSpan.second - 1, objSpan.first - 1, objSpan.second - 1);
+    return new QuantifierSpec(quantifierSpan.first - 1, quantifierSpan.second - 1,
+        subjSpan.first - 1, subjSpan.second - 1,
+        objSpan.first - 1, objSpan.second - 1);
+  }
+
+  /**
+   * Try to find which quantifier we matched, given that we matched the head of a quantifier at the given IndexedWord, and that
+   * this whole deal is taking place in the given sentence.
+   *
+   * @param sentence The sentence we are matching.
+   * @param quantifier The word at which we matched a quantifier.
+   * @return An optional triple consisting of the particular quantifier we matched, as well as the span of that quantifier in the sentence.
+   */
+  private Optional<Triple<Quantifier,Integer,Integer>> validateQuantiferByHead(CoreMap sentence, IndexedWord quantifier) {
+    int end = quantifier.index();
+    for (int start = Math.max(0, end - 10); start < end; ++start) {
+      String gloss = StringUtils.join(sentence.get(CoreAnnotations.TokensAnnotation.class), " ", CoreLabel::lemma, start, end).toLowerCase();
+      for (Quantifier q : Quantifier.values()) {
+        if (q.surfaceForm.equals(gloss)) {
+          return Optional.of(Triple.makeTriple(q, start + 1, end + 1));
+        }
+      }
+    }
+    return Optional.empty();
   }
 
   @Override
@@ -180,23 +204,59 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     for (SemgrexPattern pattern : PATTERNS) {
       SemgrexMatcher matcher = pattern.matcher(tree);
       while (matcher.find()) {
+
+        // Get terms
         IndexedWord properSubject = matcher.getNode("Subject");
         IndexedWord quantifier, subject;
-        boolean cutQuantifier = true;
+        boolean namedEntityQuantifier = false;
         if (properSubject != null) {
           quantifier = subject = properSubject;
-          cutQuantifier = false;
+          namedEntityQuantifier = true;
         } else {
           quantifier = matcher.getNode("quantifier");
           subject = matcher.getNode("subject");
         }
-        QuantifierScope scope = computeScope(tree, matcher.getNode("pivot"), quantifier, subject, matcher.getNode("object"), cutQuantifier);
-        CoreLabel token = sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1);
-        QuantifierScope oldScope = token.get(QuantifierScopeAnnotation.class);
-        if (oldScope == null) {
-          token.set(QuantifierScopeAnnotation.class, scope);
+
+        // Validate quantifier
+        Optional<Triple<Quantifier,Integer,Integer>> quantifierInfo;
+        if (namedEntityQuantifier) {
+          // named entities have the "all" semantics by default.
+          quantifierInfo = Optional.of(Triple.makeTriple(Quantifier.ALL, quantifier.index(), quantifier.index()));  // note: empty quantifier span given
         } else {
-          token.set(QuantifierScopeAnnotation.class, QuantifierScope.merge(oldScope, scope));
+          // find the quantifier, and return some info about it.
+          quantifierInfo = validateQuantiferByHead(sentence, quantifier);
+        }
+
+        // Set tokens
+        if (quantifierInfo.isPresent()) {
+          // Compute span
+          QuantifierSpec scope = computeScope(tree,
+              matcher.getNode("pivot"), Pair.makePair(quantifierInfo.get().second, quantifierInfo.get().third), subject, matcher.getNode("object"));
+          // Set annotation
+          CoreLabel token = sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1);
+          QuantifierSpec oldScope = token.get(QuantifierAnnotation.class);
+          if (oldScope == null || oldScope.quantifierLength() < scope.quantifierLength()) {
+            token.set(QuantifierAnnotation.class, scope);
+          } else {
+            token.set(QuantifierAnnotation.class, QuantifierSpec.merge(oldScope, scope));
+          }
+        }
+      }
+    }
+
+    // Ensure we didn't select overlapping quantifiers. For example, "a" and "a few" can often overlap.
+    // In these cases, take the longer quantifier match.
+    List<QuantifierSpec> quantifiers = new ArrayList<>();
+    for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
+      if (token.has(QuantifierAnnotation.class)) {
+        quantifiers.add(token.get(QuantifierAnnotation.class));
+      }
+    }
+    quantifiers.sort( (x, y) -> y.quantifierLength() - x.quantifierLength());
+    for (QuantifierSpec quantifier : quantifiers) {
+      for (int i = quantifier.quantifierBegin; i < quantifier.quantifierEnd; ++i) {
+        if (i != quantifier.quantifierHead) {
+          sentence.get(CoreAnnotations.TokensAnnotation.class).get(i).remove(QuantifierAnnotation.class);
         }
       }
     }

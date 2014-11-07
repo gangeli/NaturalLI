@@ -5,20 +5,19 @@ package edu.stanford.nlp.naturalli;
  *
  * @author Gabor Angeli
  */
-public class QuantifierScope {
+public class QuantifierSpec {
+  public final int quantifierBegin;
+  public final int quantifierEnd;
+  public final int quantifierHead;
   public final int subjectBegin;
   public final int subjectEnd;
   public final int objectBegin;
   public final int objectEnd;
 
-  public QuantifierScope(int subjectBegin, int subjectEnd) {
-    this.subjectBegin = subjectBegin;
-    this.subjectEnd = subjectEnd;
-    this.objectBegin = subjectEnd;
-    this.objectEnd = subjectEnd;
-  }
-
-  public QuantifierScope(int subjectBegin, int subjectEnd, int objectBegin, int objectEnd) {
+  public QuantifierSpec(int quantifierBegin, int quantifierEnd, int subjectBegin, int subjectEnd, int objectBegin, int objectEnd) {
+    this.quantifierBegin = quantifierBegin;
+    this.quantifierEnd = quantifierEnd;
+    this.quantifierHead = quantifierEnd - 1;
     this.subjectBegin = subjectBegin;
     this.subjectEnd = subjectEnd;
     this.objectBegin = objectBegin;
@@ -29,12 +28,16 @@ public class QuantifierScope {
     return objectEnd > objectBegin;
   }
 
+  public int quantifierLength() {
+    return quantifierEnd - quantifierBegin;
+  }
+
   /** {@inheritDoc} */
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof QuantifierScope)) return false;
-    QuantifierScope that = (QuantifierScope) o;
+    if (!(o instanceof QuantifierSpec)) return false;
+    QuantifierSpec that = (QuantifierSpec) o;
     return objectBegin == that.objectBegin && objectEnd == that.objectEnd && subjectBegin == that.subjectBegin && subjectEnd == that.subjectEnd;
 
   }
@@ -60,8 +63,12 @@ public class QuantifierScope {
         '}';
   }
 
-  public static QuantifierScope merge(QuantifierScope x, QuantifierScope y) {
-    return new QuantifierScope(
+  public static QuantifierSpec merge(QuantifierSpec x, QuantifierSpec y) {
+    assert (x.quantifierBegin == y.quantifierBegin);
+    assert (x.quantifierEnd == y.quantifierEnd);
+    return new QuantifierSpec(
+        Math.min(x.quantifierBegin, y.quantifierBegin),
+        Math.min(x.quantifierEnd, y.quantifierEnd),
         Math.min(x.subjectBegin, y.subjectBegin),
         Math.max(x.subjectEnd, y.subjectEnd),
         Math.min(x.objectBegin, y.objectBegin),
