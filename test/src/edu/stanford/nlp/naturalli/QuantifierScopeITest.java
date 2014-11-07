@@ -195,8 +195,8 @@ public class QuantifierScopeITest {
 
   @Test
   public void at_least_num_X_verb_Y() {
-    checkScope(3, 4, 4, 6, annotate("at least Three cats eat mice.")[0]);
-    checkScope(3, 4, 4, 6, annotate("at least 3 cats have tails.")[0]);
+    checkScope(3, 4, 4, 6, annotate("at least Three cats eat mice.")[2]);
+    checkScope(3, 4, 4, 6, annotate("at least 3 cats have tails.")[2]);
   }
 
   @Test
