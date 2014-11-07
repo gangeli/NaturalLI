@@ -97,7 +97,11 @@ public class QuantifierScopeITest {
     }
     Optional<QuantifierScope>[] scopes = annotate(StringUtils.join(cleanSentence, " "));
     System.err.println("Checking [@ " + (quantEnd - 1) + "]:  " + spec);
-    checkScope(subjBegin, subjEnd, objBegin, scopes.length, scopes[quantEnd - 1]);
+    if (objBegin >= 0 && objEnd >= 0) {
+      checkScope(subjBegin, subjEnd, objBegin, scopes.length, scopes[quantEnd - 1]);
+    } else {
+      checkScope(subjBegin, subjEnd, scopes[quantEnd - 1]);
+    }
   }
 
   @Test
@@ -140,7 +144,7 @@ public class QuantifierScopeITest {
   }
 
   @Test
-  public void fracasAll() {
+  public void fracasSentencesWithAll() {
     checkScope("{ All } [ APCOM managers ] [ have company cars ]");
     checkScope("{ All } [ Canadian residents ] [ can travel freely within Europe ]");
     checkScope("{ All } [ Europeans ] [ are people ]");
@@ -161,5 +165,14 @@ public class QuantifierScopeITest {
     checkScope("{ All } [ residents of member states ] [ are individuals ]");
     checkScope("{ All } [ residents of the North American continent ] [ can travel freely within Europe ]");
     checkScope("{ All } [ the people who were at the meeting ] [ voted for a new chairman ]");
+  }
+
+  @Test
+  public void fracasSentencesWithA() {
+    checkScope("{ A } [ Scandinavian ] [ won a Nobel prize ]");
+    checkScope("{ A } [ Swede ] [ won a Nobel prize ]");
+    checkScope("{ A } [ company director ] [ awarded himself a large payrise ]");
+    checkScope("{ A } [ company director ] [ has awarded and been awarded a payrise ]");
+    checkScope("{ A } [ lawyer ] [ signed every report ]");
   }
 }

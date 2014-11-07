@@ -81,5 +81,11 @@ cd ..
 echo "-- TEST CASES --"
 test/run_testcases.sh
 
+echo "-- TEST AND REPORT --"
+configure
+make all check TESTS_ENVIRONMENT=true 
+test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+make java_test
+
 echo "SUCCESS!"
 exit 0

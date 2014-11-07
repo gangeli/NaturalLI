@@ -22,7 +22,9 @@ import java.util.*;
 @SuppressWarnings("unchecked")
 public class QuantifierScopeAnnotator extends SentenceAnnotator {
 
-  /** An annotation which attaches to a CoreLabel to denote that quantifier's scope in the sentence */
+  /**
+   * An annotation which attaches to a CoreLabel to denote that quantifier's scope in the sentence
+   */
   public static final class QuantifierScopeAnnotation implements CoreAnnotation<QuantifierScope> {
     @Override
     public Class<QuantifierScope> getType() {
@@ -30,10 +32,29 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     }
   }
 
-  private static final String DET      = "/(pre)?det/";
+  /**
+   * A regex for arcs that act as determiners
+   */
+  private static final String DET = "/(pre)?det/";
+  /**
+   * A regex for arcs that we pretend are subject arcs
+   */
   private static final String GEN_SUBJ = "/[ni]subj/";
-  private static final String GEN_OBJ  = "/[di]obj|xcomp/";
-  private static final String GEN_COP  = "/cop|aux/";
+  /**
+   * A regex for arcs that we pretend are object arcs
+   */
+  private static final String GEN_OBJ = "/[di]obj|xcomp/";
+  /**
+   * A regex for arcs that we pretend are copula
+   */
+  private static final String GEN_COP = "/cop|aux/";
+
+  private static final String QUANTIFIER;
+
+  static {
+    String quantifiers = "{lemma:/all|a/}";
+    QUANTIFIER = quantifiers;
+  }
 
   /**
    * The patterns to use for marking quantifier scopes.
@@ -41,13 +62,13 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   private static final List<SemgrexPattern> PATTERNS = Collections.unmodifiableList(new ArrayList<SemgrexPattern>() {{
     // { All cats eat mice,
     //   All cats want milk }
-    add(SemgrexPattern.compile("{}=mainVerb >"+GEN_SUBJ+" ({}=subject >"+DET+" {lemma:all}=quantifier) >"+GEN_OBJ+" {}=object"));
+    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_OBJ+" {}=object"));
     // { All cats are in boxes,
     //   All cats voted for Obama }
-    add(SemgrexPattern.compile("{pos:/V.*/}=mainVerb >"+GEN_SUBJ+" ({}=subject >"+DET+" {lemma:all}=quantifier) >/prep/ {}=object"));
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >/prep/ {}=object"));
     // { All cats are cute,
     //   All cats can purr }
-    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" {lemma:all}=quantifier) >"+GEN_COP+" {}=mainVerb"));
+    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_COP+" {}=pivot"));
   }});
 
   private static Pair<Integer, Integer> getSubtreeSpan(SemanticGraph tree, IndexedWord root) {
@@ -92,10 +113,10 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     }
   }
 
-  private QuantifierScope computeScope(SemanticGraph tree, IndexedWord mainVerb, IndexedWord quantifier, IndexedWord subject, IndexedWord object) {
+  private QuantifierScope computeScope(SemanticGraph tree, IndexedWord pivot, IndexedWord quantifier, IndexedWord subject, IndexedWord object) {
     Pair<Integer, Integer> subjectSubtree = getSubtreeSpan(tree, subject);
     Pair<Integer, Integer> subjSpan = excludeFromSpan(subjectSubtree, getSubtreeSpan(tree, quantifier));
-    Pair<Integer, Integer> objSpan = excludeFromSpan(includeInSpan(getSubtreeSpan(tree, object), mainVerb.index()), subjectSubtree);
+    Pair<Integer, Integer> objSpan = excludeFromSpan(includeInSpan(getSubtreeSpan(tree, object), pivot.index()), subjectSubtree);
     return new QuantifierScope(subjSpan.first - 1, subjSpan.second - 1, objSpan.first - 1, objSpan.second - 1);
   }
 
@@ -106,7 +127,7 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
       SemgrexMatcher matcher = pattern.matcher(tree);
       while (matcher.find()) {
         IndexedWord quantifier = matcher.getNode("quantifier");
-        QuantifierScope scope = computeScope(tree, matcher.getNode("mainVerb"), quantifier, matcher.getNode("subject"), matcher.getNode("object"));
+        QuantifierScope scope = computeScope(tree, matcher.getNode("pivot"), quantifier, matcher.getNode("subject"), matcher.getNode("object"));
         sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1).set(QuantifierScopeAnnotation.class, scope);
       }
     }
