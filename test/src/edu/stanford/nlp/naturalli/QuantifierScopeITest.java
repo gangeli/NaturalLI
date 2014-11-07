@@ -175,6 +175,19 @@ public class QuantifierScopeITest {
   }
 
   @Test
+  public void binary_no() {
+    checkScope(1, 2, 2, 4, annotate("no cats chase dogs")[0]);
+  }
+
+  @Test
+  public void unary_not() {
+    Optional<QuantifierSpec>[] quantifiers = annotate("some cats don't like dogs");
+    checkScope(1, 2, 2, 6, quantifiers[0]); // some
+    checkScope(4, 6, quantifiers[3]); // no
+    assertFalse(quantifiers[3].get().isBinary());  // is unary no
+  }
+
+  @Test
   public void fracasSentencesWithAll() {
     checkScope("{ All } [ APCOM managers ] [ have company cars ]");
     checkScope("{ All } [ Canadian residents ] [ can travel freely within Europe ]");

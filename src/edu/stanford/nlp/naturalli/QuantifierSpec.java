@@ -6,6 +6,7 @@ package edu.stanford.nlp.naturalli;
  * @author Gabor Angeli
  */
 public class QuantifierSpec {
+  public final Quantifier instance;
   public final int quantifierBegin;
   public final int quantifierEnd;
   public final int quantifierHead;
@@ -14,7 +15,12 @@ public class QuantifierSpec {
   public final int objectBegin;
   public final int objectEnd;
 
-  public QuantifierSpec(int quantifierBegin, int quantifierEnd, int subjectBegin, int subjectEnd, int objectBegin, int objectEnd) {
+  protected QuantifierSpec(
+      Quantifier instance,
+      int quantifierBegin, int quantifierEnd,
+      int subjectBegin, int subjectEnd,
+      int objectBegin, int objectEnd) {
+    this.instance = instance;
     this.quantifierBegin = quantifierBegin;
     this.quantifierEnd = quantifierEnd;
     this.quantifierHead = quantifierEnd - 1;
@@ -22,6 +28,18 @@ public class QuantifierSpec {
     this.subjectEnd = subjectEnd;
     this.objectBegin = objectBegin;
     this.objectEnd = objectEnd;
+  }
+
+  /**
+   * If true, this is an explcit quantifier, such as "all" or "some."
+   * The other option is for this to be an implicit quantification, for instance with proper names:
+   *
+   * <code>
+   * "Felix is a cat" -> \forall x, Felix(x) \rightarrow cat(x).
+   * </code>
+   */
+  public boolean isExplicit() {
+    return instance != Quantifier.IMPLICIT_NAMED_ENTITY;
   }
 
   public boolean isBinary() {
@@ -66,7 +84,9 @@ public class QuantifierSpec {
   public static QuantifierSpec merge(QuantifierSpec x, QuantifierSpec y) {
     assert (x.quantifierBegin == y.quantifierBegin);
     assert (x.quantifierEnd == y.quantifierEnd);
+    assert (x.instance == y.instance);
     return new QuantifierSpec(
+        x.instance,
         Math.min(x.quantifierBegin, y.quantifierBegin),
         Math.min(x.quantifierEnd, y.quantifierEnd),
         Math.min(x.subjectBegin, y.subjectBegin),

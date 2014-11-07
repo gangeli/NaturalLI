@@ -39,7 +39,7 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   /**
    * A regex for arcs that act as determiners
    */
-  private static final String DET = "/(pre)?det|a(dv)?mod/";
+  private static final String DET = "/(pre)?det|a(dv)?mod|neg/";
   /**
    * A regex for arcs that we pretend are subject arcs
    */
@@ -82,6 +82,8 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_COP+" {}=pivot"));
     // { Felix likes cat food }
     add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" {pos:NNP}=Subject >"+GEN_OBJ+" {}=object"));
+    // { Some cats do n't like dogs }
+    add(SemgrexPattern.compile("{}=pivot >neg "+QUANTIFIER+"=quantifier >"+GEN_OBJ+" {}=object"));
   }});
 
   /** A helper method for
@@ -164,15 +166,35 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
 
   /**
    * Compute the span for a given matched pattern.
+   * At a high level:
+   *
+   * <ul>
+   *   <li>If both a subject and an object exist, we take the subject minus the quantifier, and the object plus the pivot. </li>
+   *   <li>If only an object exists, we make the subject the object, and create a dummy object to signify a one-place quantifier. </li>
+   * </ul>
+   *
+   * But:
+   *
+   * <ul>
+   *   <li>If we have a two-place quantifier, the object is allowed to absorb various specific arcs from the pivot.</li>
+   *   <li>If we have a one-place quantifier, the object is allowed to absorb only prepositions from the pivot.</li>
+   * </ul>
    */
-  private QuantifierSpec computeScope(SemanticGraph tree, IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
+  private QuantifierSpec computeScope(SemanticGraph tree, Quantifier quantifier,
+                                      IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
                                       IndexedWord subject, IndexedWord object) {
-    Pair<Integer, Integer> subjectSubtree = getSubtreeSpan(tree, subject);
-    Pair<Integer, Integer> subjSpan = excludeFromSpan(subjectSubtree, quantifierSpan);
-    Pair<Integer, Integer> objSpan = excludeFromSpan(
-        includeInSpan(getSubtreeSpan(tree, object), getModifierSubtreeSpan(tree, pivot)),
-        subjectSubtree);
-    return new QuantifierSpec(quantifierSpan.first - 1, quantifierSpan.second - 1,
+    Pair<Integer, Integer> subjSpan;
+    Pair<Integer, Integer> objSpan;
+    if (subject != null) {
+      Pair<Integer, Integer> subjectSubtree = getSubtreeSpan(tree, subject);
+      subjSpan = excludeFromSpan(subjectSubtree, quantifierSpan);
+      objSpan = excludeFromSpan(includeInSpan(getSubtreeSpan(tree, object), getModifierSubtreeSpan(tree, pivot)), subjectSubtree);
+    } else {
+      subjSpan = includeInSpan(getSubtreeSpan(tree, object), getGeneralizedSubtreeSpan(tree, pivot, Collections.singleton("prep")));
+      objSpan = Pair.makePair(subjSpan.second, subjSpan.second);
+    }
+    return new QuantifierSpec(quantifier,
+        quantifierSpan.first - 1, quantifierSpan.second - 1,
         subjSpan.first - 1, subjSpan.second - 1,
         objSpan.first - 1, objSpan.second - 1);
   }
@@ -230,12 +252,13 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
         // Set tokens
         if (quantifierInfo.isPresent()) {
           // Compute span
-          QuantifierSpec scope = computeScope(tree,
+          QuantifierSpec scope = computeScope(tree, quantifierInfo.get().first,
               matcher.getNode("pivot"), Pair.makePair(quantifierInfo.get().second, quantifierInfo.get().third), subject, matcher.getNode("object"));
           // Set annotation
           CoreLabel token = sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1);
           QuantifierSpec oldScope = token.get(QuantifierAnnotation.class);
-          if (oldScope == null || oldScope.quantifierLength() < scope.quantifierLength()) {
+          if (oldScope == null || oldScope.quantifierLength() < scope.quantifierLength() ||
+              oldScope.instance != scope.instance) {
             token.set(QuantifierAnnotation.class, scope);
           } else {
             token.set(QuantifierAnnotation.class, QuantifierSpec.merge(oldScope, scope));

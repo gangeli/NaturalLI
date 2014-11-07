@@ -23,6 +23,7 @@ public enum Quantifier {
   FOR_ALL("for all", "anti-additive", "multiplicative"),
   FOR_EVERY("for every", "anti-additive", "multiplicative"),
   FOR_EACH("for each", "anti-additive", "multiplicative"),
+  IMPLICIT_NAMED_ENTITY("__implicit_named_entity__", "anti-additive", "multiplicative"),
 
   // "No" quantifiers
   NO("no", "anti-additive", "anti-additive"),
