@@ -137,10 +137,24 @@ public class QuantifierScopeITest {
     checkScope(1, 2, 2, 4, annotate("All cats can purr")[0]);
   }
 
-
   @Test
   public void all_X_relclause_verb_Y() {
     checkScope(1, 5, 5, 7, annotate("All cats who like dogs eat fish.")[0]);
+  }
+
+  @Test
+  public void PER_predicate() {
+    checkScope(0, 1, 1, 4, annotate("Felix likes cat food.")[0]);
+  }
+
+  @Test
+  public void PER_has_predicate() {
+    checkScope(0, 1, 1, 5, annotate("Felix has liked cat food.")[0]);
+  }
+
+  @Test
+  public void PER_predicate_prep() {
+    checkScope(0, 1, 1, 7, annotate("Jack paid the bank for 10 years")[0]);
   }
 
   @Test
@@ -175,4 +189,20 @@ public class QuantifierScopeITest {
     checkScope("{ A } [ company director ] [ has awarded and been awarded a payrise ]");
     checkScope("{ A } [ lawyer ] [ signed every report ]");
   }
+
+  @Test
+  public void fracasSentencesWithProperNouns() {
+    checkScope("[ { APCOM } ] [ has a more important customer than ITEL ]");
+    checkScope("[ { APCOM } ] [ has a more important customer than ITEL has ]");
+    checkScope("[ { APCOM } ] [ has a more important customer than ITEL is ]");
+    checkScope("[ { APCOM } ] [ has been paying mortgage interest for a total of 15 years or more ]");
+    checkScope("[ { APCOM } ] [ lost some orders ]");
+    checkScope("[ { APCOM } ] [ lost ten orders ]");
+    checkScope("[ { APCOM } ] [ signed the contract Friday, 13th ]");
+    checkScope("[ { APCOM } ] [ sold exactly 2500 computers ]");
+    checkScope("[ { APCOM } ] [ won some orders ]");
+    checkScope("[ { APCOM } ] [ won ten orders ]");
+  }
+
+
 }

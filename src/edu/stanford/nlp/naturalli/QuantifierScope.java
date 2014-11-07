@@ -59,4 +59,12 @@ public class QuantifierScope {
         ", objectEnd=" + objectEnd +
         '}';
   }
+
+  public static QuantifierScope merge(QuantifierScope x, QuantifierScope y) {
+    return new QuantifierScope(
+        Math.min(x.subjectBegin, y.subjectBegin),
+        Math.max(x.subjectEnd, y.subjectEnd),
+        Math.min(x.objectBegin, y.objectBegin),
+        Math.max(x.objectEnd, y.objectEnd));
+  }
 }

@@ -2,15 +2,18 @@ package edu.stanford.nlp.naturalli;
 
 import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.SentenceAnnotator;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
+import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.semgraph.semgrex.SemgrexMatcher;
 import edu.stanford.nlp.semgraph.semgrex.SemgrexPattern;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.StringUtils;
 
 import java.util.*;
 
@@ -49,11 +52,24 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
    */
   private static final String GEN_COP = "/cop|aux/";
 
+  /**
+   * A Semgrex fragment for matching a quantifier
+   */
   private static final String QUANTIFIER;
 
   static {
-    String quantifiers = "{lemma:/all|a/}";
-    QUANTIFIER = quantifiers;
+    // Simple case: single-word quantifiers
+    List<String> singleWordQuantifiers = new ArrayList<>();
+    for (Quantifier q : Quantifier.values()) {
+      if (!q.surfaceForm.contains(" ")) {
+        singleWordQuantifiers.add("(" + q.surfaceForm.toLowerCase() + ")");
+      }
+    }
+    String simpleQuantifiers = "{lemma:/" + StringUtils.join(singleWordQuantifiers, "|") + "/}";
+    // Complex case: dependency path quantifiers
+    // TODO(gabor)
+    // Create Semgrex pattern
+    QUANTIFIER = simpleQuantifiers;
   }
 
   /**
@@ -69,13 +85,24 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     // { All cats are cute,
     //   All cats can purr }
     add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_COP+" {}=pivot"));
+    // { Felix likes cat food }
+    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" {pos:NNP}=Subject >"+GEN_OBJ+" {}=object"));
   }});
 
-  private static Pair<Integer, Integer> getSubtreeSpan(SemanticGraph tree, IndexedWord root) {
+  /** A helper method for
+   * {@link edu.stanford.nlp.naturalli.QuantifierScopeAnnotator#getModifierSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)} and
+   * {@link edu.stanford.nlp.naturalli.QuantifierScopeAnnotator#getSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)}.
+   */
+  private static Pair<Integer, Integer> getGeneralizedSubtreeSpan(SemanticGraph tree, IndexedWord root, Set<String> validArcs) {
     int min = root.index();
     int max = root.index();
     Queue<IndexedWord> fringe = new LinkedList<>();
-    fringe.addAll(tree.getChildren(root));
+    for (SemanticGraphEdge edge : tree.getOutEdgesSorted(root)) {
+      String edgeLabel = edge.getRelation().getShortName();
+      if (validArcs == null || validArcs.contains(edgeLabel)) {
+        fringe.add(edge.getDependent());
+      }
+    }
     while (!fringe.isEmpty()) {
       IndexedWord node = fringe.poll();
       min = Math.min(node.index(), min);
@@ -85,14 +112,33 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     return Pair.makePair(min, max + 1);
   }
 
-  private static Pair<Integer, Integer> includeInSpan(Pair<Integer, Integer> span, int index) {
-    if (span.first > index) {
-      return Pair.makePair(index, span.second);
-    } else if (span.second <= index) {
-      return Pair.makePair(span.first, index + 1);
-    } else {
-      return span;
-    }
+  private static final Set<String> MODIFIER_ARCS = Collections.unmodifiableSet(new HashSet<String>() {{
+    add("aux"); add("prep");
+  }});
+
+  /**
+   * Returns the yield span for the word rooted at the given node, but only traversing a fixed set of relations.
+   * @param tree The dependency graph to get the span from.
+   * @param root The root word of the span.
+   * @return A one indexed span rooted at the given word.
+   */
+  private static Pair<Integer, Integer> getModifierSubtreeSpan(SemanticGraph tree, IndexedWord root) {
+    return getGeneralizedSubtreeSpan(tree, root, MODIFIER_ARCS);
+  }
+
+  /**
+   * Returns the yield span for the word rooted at the given node. So, for example, all cats like dogs rooted at the word
+   * "cats" would yield a span (1, 3) -- "all cats".
+   * @param tree The dependency graph to get the span from.
+   * @param root The root word of the span.
+   * @return A one indexed span rooted at the given word.
+   */
+  private static Pair<Integer, Integer> getSubtreeSpan(SemanticGraph tree, IndexedWord root) {
+    return getGeneralizedSubtreeSpan(tree, root, null);
+  }
+
+  private static Pair<Integer, Integer> includeInSpan(Pair<Integer, Integer> span, Pair<Integer, Integer> toInclude) {
+    return Pair.makePair(Math.min(span.first, toInclude.first), Math.max(span.second, toInclude.second));
   }
 
   private static Pair<Integer, Integer> excludeFromSpan(Pair<Integer, Integer> span, Pair<Integer, Integer> toExclude) {
@@ -113,10 +159,18 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     }
   }
 
-  private QuantifierScope computeScope(SemanticGraph tree, IndexedWord pivot, IndexedWord quantifier, IndexedWord subject, IndexedWord object) {
+  private QuantifierScope computeScope(SemanticGraph tree, IndexedWord pivot, IndexedWord quantifier,
+                                       IndexedWord subject, IndexedWord object, boolean cutQuantifier) {
     Pair<Integer, Integer> subjectSubtree = getSubtreeSpan(tree, subject);
-    Pair<Integer, Integer> subjSpan = excludeFromSpan(subjectSubtree, getSubtreeSpan(tree, quantifier));
-    Pair<Integer, Integer> objSpan = excludeFromSpan(includeInSpan(getSubtreeSpan(tree, object), pivot.index()), subjectSubtree);
+    Pair<Integer, Integer> subjSpan;
+    if (cutQuantifier) {
+      subjSpan = excludeFromSpan(subjectSubtree, getSubtreeSpan(tree, quantifier));
+    } else {
+      subjSpan = subjectSubtree;
+    }
+    Pair<Integer, Integer> objSpan = excludeFromSpan(
+        includeInSpan(getSubtreeSpan(tree, object), getModifierSubtreeSpan(tree, pivot)),
+        subjectSubtree);
     return new QuantifierScope(subjSpan.first - 1, subjSpan.second - 1, objSpan.first - 1, objSpan.second - 1);
   }
 
@@ -126,9 +180,24 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     for (SemgrexPattern pattern : PATTERNS) {
       SemgrexMatcher matcher = pattern.matcher(tree);
       while (matcher.find()) {
-        IndexedWord quantifier = matcher.getNode("quantifier");
-        QuantifierScope scope = computeScope(tree, matcher.getNode("pivot"), quantifier, matcher.getNode("subject"), matcher.getNode("object"));
-        sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1).set(QuantifierScopeAnnotation.class, scope);
+        IndexedWord properSubject = matcher.getNode("Subject");
+        IndexedWord quantifier, subject;
+        boolean cutQuantifier = true;
+        if (properSubject != null) {
+          quantifier = subject = properSubject;
+          cutQuantifier = false;
+        } else {
+          quantifier = matcher.getNode("quantifier");
+          subject = matcher.getNode("subject");
+        }
+        QuantifierScope scope = computeScope(tree, matcher.getNode("pivot"), quantifier, subject, matcher.getNode("object"), cutQuantifier);
+        CoreLabel token = sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1);
+        QuantifierScope oldScope = token.get(QuantifierScopeAnnotation.class);
+        if (oldScope == null) {
+          token.set(QuantifierScopeAnnotation.class, scope);
+        } else {
+          token.set(QuantifierScopeAnnotation.class, QuantifierScope.merge(oldScope, scope));
+        }
       }
     }
   }
