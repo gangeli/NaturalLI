@@ -56,7 +56,7 @@ class Preprocessor {
       dup2(pipeIn[0], STDIN_FILENO);
       dup2(pipeOut[1], STDOUT_FILENO);
       execl(javaExecutable, javaExecutable, "-mx1g", wordnetEnv, "-cp", classpath,
-          javaClass.c_str(), (char*) NULL);
+          javaClass.c_str(), "true", (char*) NULL);
       // Should never reach here
       exit(1);
   
@@ -220,6 +220,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
   // Create Query
   const Tree* input = proc.annotate(query.c_str());
   if (input == NULL) {
+    *truth = 0.0;
     return "{\"success\": false, \"reason\": \"hypothesis (query) is too long\"}";
   }
 

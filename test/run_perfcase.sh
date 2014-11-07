@@ -20,6 +20,15 @@ echo "Examples run:"
 cat $OUT | wc | awk '{ print $1 }'
 echo "Examples failed:"
 cat $OUT | egrep "^FAIL" | wc | awk '{ print $1 }'
+echo "Failures:"
+export GREP_COLOR="1;31"
+if [ $STATUS != 0 ]; then
+  echo ""
+  cat $OUT | egrep "^FAIL"
+else
+  echo "(none)"
+fi
+echo ""
 
 rm $OUT
 exit $STATUS

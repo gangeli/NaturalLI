@@ -33,6 +33,11 @@ public class Preprocess {
   }
 
   public static void main(String[] args) throws IOException {
+    // Set production flag
+    if (args.length > 0) {
+      PRODUCTION = Boolean.parseBoolean(args[0]);
+    }
+
     // Create pipeline
     StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
       setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");

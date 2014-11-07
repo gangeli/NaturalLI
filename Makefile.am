@@ -60,11 +60,7 @@ if HAVE_ANT
 	CLASSPATH="" CORENLP_JAR="${CORENLP}" CORENLP_MODELS_JAR="${CORENLP_MODELS}" CORENLP_CASELESS_MODELS_JAR="${CORENLP_CASELESS_MODELS}" ant test
 else
 	@echo "  (could not find ant -- running directly)"
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:${SCALA_HOME}/lib/scala-library.jar:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.PreprocessITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierScopeITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.WSDTest
 endif
-
-java_itest: src/naturalli_preprocess.jar test/src/test_preprocess.jar
-	export CLASSPATH=""
-	@echo "[itest] junit *.java"
-	@echo "[itest] RegressionTest"
-	@${SCALA_HOME}/bin/scala -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -J-mx2g edu.stanford.nlp.naturalli.RegressionTest

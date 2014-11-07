@@ -37,6 +37,9 @@ make src/naturalli_preprocess.jar
 echo "-- C++ TESTS --"
 test/src/test_server --gtest_output=xml:test/test_server.junit.xml
 
+echo "-- JAVA TESTS --"
+make java_test
+
 echo "-- MAKE DIST --"
 configure
 make dist
@@ -75,7 +78,7 @@ gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
 gcovr -r . --xml -o coverage.xml
 cd ..
 
-echo "-- Test Cases --"
+echo "-- TEST CASES --"
 test/run_testcases.sh
 
 echo "SUCCESS!"

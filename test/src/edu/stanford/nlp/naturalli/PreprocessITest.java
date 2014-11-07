@@ -81,6 +81,19 @@ public class PreprocessITest {
     );
   }
 
+  @Ignore
+  @Test
+  public void thereAreCatsWhoAreFriendly() {
+    assertEquals(
+        "there be	0	root	0	additive	2-3	additive	3-6\n" +
+        "cat	1	nsubj	2	-	-	-	-\n" +
+        "who	5	nsubj	9	-	-	-	-\n" +
+        "be	5	cop	1	-	-	-	-\n" +
+        "friendly	1	rcmod	1	-	-	-	-\n",
+        Preprocess.annotate(pipeline, StaticResources.INDEXER, "There are cats who are friendly")
+    );
+  }
+
   @Test
   public void collapseWords() {
     String expected =

@@ -10,7 +10,7 @@ make -C "$MYDIR/../" src/naturalli_preprocess.jar
 if [ $? != 0 ]; then exit 1; fi
 
 STATUS=0
-for file in `find $MYDIR/data/ -name "*.examples"`; do
+for file in `find $MYDIR/data/ -name "testcase_*.examples"`; do
   cat "$file" >> $IN
 done
   

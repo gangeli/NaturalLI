@@ -13,11 +13,8 @@
       <fileset dir="${basedir}/lib/test">
         <include name="*.jar"/>
       </fileset>
-      <pathelement path="${basedir}/src/naturalli_client.jar"/>
-      <pathelement path="test/src/test_client.jar" />
-      <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
-      <!-- For scala-2.11; this is included in scala-library.jar for 2.10 -->
-      <pathelement path="${env.SCALA_HOME}/lib/scala-xml_2.11-1.0.1.jar"/>
+      <pathelement path="${basedir}/src/naturalli_preprocess.jar"/>
+      <pathelement path="test/src/test_preprocess.jar" />
       <!-- JavaNLP -->
       <fileset dir="${env.JAVANLP_HOME}/projects/core/lib">
         <include name="*.jar"/>
@@ -26,26 +23,18 @@
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
       <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
     </path>
-
-    <path id="classpath-scalatest-bootstrap">
-      <pathelement path="${basedir}/lib/test/scalatest_2.11-2.1.6.jar"/>
-      <pathelement path="${env.SCALA_HOME}/lib/scala-library.jar"/>
-      <pathelement path="${env.SCALA_HOME}/lib/scala-xml_2.11-1.0.1.jar"/>
-    </path>
   </target>
   
   <target name="test" depends="classpath"
           description="Run core unit tests">
-    <taskdef name="scalatest" classname="org.scalatest.tools.ScalaTestAntTask">
-      <classpath refid="classpath"/>
-    </taskdef>
-      
     <echo message="CoreNLP: ${env.CORENLP_JAR}"/>
     <echo message="CoreNLP models: ${env.CORENLP_MODELS_JAR}"/>
     <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
     
     <junit fork="true" maxmemory="1g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
+      <sysproperty key="wordnet.database.dir"
+                    value="etc/WordNet-3.1/dict"/>
       <formatter type="xml"/>
       <batchtest fork="yes" todir="${basedir}/test/">
         <fileset dir="${tests.path}">
@@ -53,21 +42,12 @@
         </fileset>
       </batchtest>
     </junit>
-
-    <scalatest fork="true" maxmemory="4g">
-      <jvmarg value="-Dwordnet.database.dir=etc/WordNet-3.1/dict"/>
-      <runpath>
-        <pathelement path="test/src/test_client.jar" />
-      </runpath>
-      <reporter type="stdout"/>
-      <reporter type="junitxml" directory="${basedir}/test/"/>
-    </scalatest>
   </target>
 
   <target name="war" depends="classpath"
           description="Build a deployable WAR for the demo">
     <war destfile="${source.path}/naturalli.war"
-         webxml="${source.path}/org/goobs/naturalli/demo/WEB-INF/naturalli.xml">
+         webxml="${source.path}/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml">
       <lib dir="${source.path}/">
         <include name="naturalli_client.jar"/>
       </lib>
@@ -75,7 +55,6 @@
         <include name="*.jar"/>
       </lib>
       <lib dir="${lib.path}/">
-        <include name="corenlp-scala.jar"/>
         <include name="jaws.jar"/>
         <include name="postgresql.jar"/>
         <include name="trove.jar"/>
@@ -86,9 +65,6 @@
       </lib>
       <lib dir="/u/nlp/data/StanfordCoreNLPModels/corenlp-caseless">
         <include name="stanford-corenlp-caseless-2014-02-25-models.jar"/>
-      </lib>
-      <lib dir="${env.SCALA_HOME}/lib/">
-        <include name="scala-library.jar"/>
       </lib>
     </war>
   </target>

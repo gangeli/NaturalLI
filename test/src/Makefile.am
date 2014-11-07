@@ -56,10 +56,8 @@ endif
 test_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) 
 	$(MAKE) -C ../../src naturalli_preprocess.jar
 	@echo "[test] Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar:${SCALA_HOME}/lib/scala-library.jar `find . -name "*.java"`
-	@echo "[test] Compiling (${SCALA_HOME}/bin/scalac)..."
-	@${SCALA_HOME}/bin/scalac -feature -deprecation -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar `find . -name "*.scala"` `find . -name "*.java"`
+	@${JDK_HOME}/bin/javac -d . -cp ${TEST_CP}:../../src/naturalli_preprocess.jar `find . -name "*.java"`
 	${JDK_HOME}/bin/jar cf test_preprocess.jar `find . -name "*.class"`
-	${JDK_HOME}/bin/jar uf test_preprocess.jar `find . -name "*.dat"`
-	${JDK_HOME}/bin/jar uf test_preprocess.jar `find . -name "*.scala"`
+	${JDK_HOME}/bin/jar uf test_preprocess.jar `find ../data/ -name "*"`
+	${JDK_HOME}/bin/jar uf test_preprocess.jar `find . -name "*.java"`
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
