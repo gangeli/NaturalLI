@@ -5,6 +5,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.NumberAnnotator;
 import edu.stanford.nlp.pipeline.SentenceAnnotator;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
@@ -17,6 +18,7 @@ import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Triple;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * An annotator marking quantifiers with their scope.
@@ -39,7 +41,7 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   /**
    * A regex for arcs that act as determiners
    */
-  private static final String DET = "/(pre)?det|a(dv)?mod|neg/";
+  private static final String DET = "/(pre)?det|a(dv)?mod|neg|num/";
   /**
    * A regex for arcs that we pretend are subject arcs
    */
@@ -62,9 +64,11 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     Set<String> singleWordQuantifiers = new HashSet<>();
     for (Quantifier q : Quantifier.values()) {
       String[] tokens = q.surfaceForm.split("\\s+");
-      singleWordQuantifiers.add("(" + tokens[tokens.length - 1].toLowerCase() + ")");
+      if (!tokens[tokens.length - 1].startsWith("_")) {
+        singleWordQuantifiers.add("(" + tokens[tokens.length - 1].toLowerCase() + ")");
+      }
     }
-    QUANTIFIER = "{lemma:/" + StringUtils.join(singleWordQuantifiers, "|") + "/}";
+    QUANTIFIER = "[ {lemma:/" + StringUtils.join(singleWordQuantifiers, "|") + "/}=quantifier | {pos:CD}=quantifier ]";
   }
 
   /**
@@ -73,17 +77,17 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   private static final List<SemgrexPattern> PATTERNS = Collections.unmodifiableList(new ArrayList<SemgrexPattern>() {{
     // { All cats eat mice,
     //   All cats want milk }
-    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_OBJ+" {}=object"));
+    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >"+GEN_OBJ+" {}=object"));
     // { All cats are in boxes,
     //   All cats voted for Obama }
-    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >/prep/ {}=object"));
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >/prep/ {}=object"));
     // { All cats are cute,
     //   All cats can purr }
-    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+"=quantifier) >"+GEN_COP+" {}=pivot"));
+    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >"+GEN_COP+" {}=pivot"));
     // { Felix likes cat food }
     add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" {pos:NNP}=Subject >"+GEN_OBJ+" {}=object"));
     // { Some cats do n't like dogs }
-    add(SemgrexPattern.compile("{}=pivot >neg "+QUANTIFIER+"=quantifier >"+GEN_OBJ+" {}=object"));
+    add(SemgrexPattern.compile("{}=pivot >neg "+QUANTIFIER+" >"+GEN_OBJ+" {}=object"));
   }});
 
   /** A helper method for
@@ -210,7 +214,8 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   private Optional<Triple<Quantifier,Integer,Integer>> validateQuantiferByHead(CoreMap sentence, IndexedWord quantifier) {
     int end = quantifier.index();
     for (int start = Math.max(0, end - 10); start < end; ++start) {
-      String gloss = StringUtils.join(sentence.get(CoreAnnotations.TokensAnnotation.class), " ", CoreLabel::lemma, start, end).toLowerCase();
+      Function<CoreLabel,String> glossFn = (label) -> "CD".equals(label.tag()) ? "__NUM__" : label.lemma();
+      String gloss = StringUtils.join(sentence.get(CoreAnnotations.TokensAnnotation.class), " ", glossFn, start, end).toLowerCase();
       for (Quantifier q : Quantifier.values()) {
         if (q.surfaceForm.equals(gloss)) {
           return Optional.of(Triple.makeTriple(q, start + 1, end + 1));

@@ -33,14 +33,15 @@ public enum Quantifier {
 
   // "Some" quantifiers
   SOME("some", "additive", "additive"),
+  NUM("__num__", "additive", "additive"),
   SEVERAL("several", "additive", "additive"),
   EITHER("either", "additive", "additive"),
   A("a", "additive", "additive"),
   THE("the", "additive", "additive"),
-  LESS_THAN("less than", "additive", "additive"),
+  LESS_THAN("less than __num__", "additive", "additive"),
   SOME_OF("some of", "additive", "additive"),
   ONE_OF("one of", "additive", "additive"),
-  AT_LEAST("at least", "additive", "additive"),
+  AT_LEAST("at least __num__", "additive", "additive"),
   A_FEW("a few", "additive", "additive"),
   THERE_BE("there be", "additive", "additive"),
   THERE_BE_A_FEW("there be a few", "additive", "additive"),
@@ -54,7 +55,7 @@ public enum Quantifier {
   // TODO(gabor) check these
   MOST("most", "nonmonotone", "multiplicative"),
   ENOUGH("enough", "nonmonotone", "multiplicative"),
-  MORE_THAN("more than", "nonmonotone", "multiplicative"),
+  MORE_THAN("more than __num_", "nonmonotone", "multiplicative"),
   A_LOT_OF("a lot of", "nonmonotone", "multiplicative"),
   LOTS_OF("lots of", "nonmonotone", "multiplicative"),
   PLENTY_OF("plenty of", "nonmonotone", "multiplicative"),

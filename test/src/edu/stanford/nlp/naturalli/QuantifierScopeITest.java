@@ -188,6 +188,18 @@ public class QuantifierScopeITest {
   }
 
   @Test
+  public void num_X_verb_Y() {
+    checkScope(1, 2, 2, 4, annotate("Three cats eat mice.")[0]);
+    checkScope(1, 2, 2, 4, annotate("3 cats have tails.")[0]);
+  }
+
+  @Test
+  public void at_least_num_X_verb_Y() {
+    checkScope(3, 4, 4, 6, annotate("at least Three cats eat mice.")[0]);
+    checkScope(3, 4, 4, 6, annotate("at least 3 cats have tails.")[0]);
+  }
+
+  @Test
   public void fracasSentencesWithAll() {
     checkScope("{ All } [ APCOM managers ] [ have company cars ]");
     checkScope("{ All } [ Canadian residents ] [ can travel freely within Europe ]");
