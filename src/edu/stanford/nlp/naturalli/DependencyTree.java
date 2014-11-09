@@ -16,26 +16,32 @@ import java.util.function.Function;
  */
 public class DependencyTree<E> {
   public final E[] nodes;
-  public final Optional<String[]> posTags;
   public final int[] governors;
   public final String[] governingRelations;
+
+  public final Optional<String[]> posTags;
+  public final Optional<Optional<OperatorSpec>[]> operators;
 
   @SuppressWarnings("unchecked")
   public DependencyTree(SemanticGraph dependencies, List<CoreLabel> sentence) {
     // Map indices
-    int[] oldToNewIndex = new int[sentence.size()];
+    int[] oldToNewIndex = new int[sentence.size() + 1];
+    Arrays.fill(oldToNewIndex, -1);
     List<IndexedWord> sortedVertices = dependencies.vertexListSorted();
     for (int i = 0; i < sortedVertices.size(); ++i) {
       oldToNewIndex[sortedVertices.get(i).index() - 1] = i;
     }
+
     // Create structures
     nodes = (E[]) new String[dependencies.size()];
+    oldToNewIndex[oldToNewIndex.length - 1] = nodes.length;
     posTags = Optional.of(new String[nodes.length]);
     Arrays.fill(nodes, "__UNK__");
     governors = new int[dependencies.size()];
     Arrays.fill(governors, -1);
     governingRelations = new String[dependencies.size()];
     Arrays.fill(governingRelations, "dep");
+
     // Copy into dependency tree
     // This is why I hate SemanticGraph as a representation...
     for (IndexedWord vertex : dependencies.vertexSet()) {
@@ -53,13 +59,40 @@ public class DependencyTree<E> {
     for (IndexedWord root : dependencies.getRoots()) {
       governingRelations[oldToNewIndex[root.index() - 1]] = "root";
     }
+
+    // Fill in missing indices
+    int lastIndex = 0;
+    for (int i = 0; i < oldToNewIndex.length; ++i) {
+      if (oldToNewIndex[i] < 0) {
+        oldToNewIndex[i] = lastIndex + 1;
+      } else {
+        lastIndex = oldToNewIndex[i];
+      }
+    }
+
+    // Save quantifier information
+    operators = Optional.of(new Optional[nodes.length]);
+    Arrays.fill(operators.get(), Optional.empty());
+    for (int i = 0; i < sentence.size(); ++i) {
+      OperatorSpec specOrNull = sentence.get(i).get(NaturalLogicAnnotations.OperatorAnnotation.class);
+      if (specOrNull != null) {
+        operators.get()[oldToNewIndex[i]] = Optional.of(new OperatorSpec(specOrNull.instance,
+            oldToNewIndex[specOrNull.quantifierBegin],
+            oldToNewIndex[specOrNull.quantifierEnd],
+            oldToNewIndex[specOrNull.subjectBegin],
+            oldToNewIndex[specOrNull.subjectEnd],
+            oldToNewIndex[specOrNull.objectBegin],
+            oldToNewIndex[specOrNull.objectEnd]));
+      }
+    }
   }
 
   public DependencyTree(E[] nodes, int[] governors, String[] governingRelations) {
     this.nodes = nodes;
-    this.posTags = Optional.empty();
     this.governors = governors;
     this.governingRelations = governingRelations;
+    this.posTags = Optional.empty();
+    this.operators = Optional.empty();
   }
 
   public List<String> asList() {
@@ -125,7 +158,8 @@ public class DependencyTree<E> {
   }
 
   @SuppressWarnings("unchecked")
-  private void indexSpan(List<Word> newWords, int[] indexMap, int spanStart, int spanEnd, Function<String, Integer> indexer) {
+  private void indexSpan(List<Word> newWords, int[] indexMap, int spanStart, int spanEnd,
+                         Optional<OperatorSpec> operator, Function<String, Integer> indexer) {
     boolean needFill = true;
     for (int i = spanStart; i < spanEnd; ++i) {
       if (indexMap[i] != -1) {
@@ -133,7 +167,7 @@ public class DependencyTree<E> {
       }
     }
     if (needFill) {
-      Optional<Word> wordForSpan = Word.compute((DependencyTree<String>) this, spanStart, spanEnd, indexer);
+      Optional<Word> wordForSpan = Word.compute((DependencyTree<String>) this, spanStart, spanEnd, operator, indexer);
       if (wordForSpan.isPresent()) {
         for (int i = spanStart; i < spanEnd; ++i) {
           indexMap[i] = newWords.size();
@@ -143,22 +177,17 @@ public class DependencyTree<E> {
     }
   }
 
-
-  public Pair<Integer, Integer> getSubtreeSpan(int index) {
-    int min = 999;
-    int max = -999;
-    for (int i = 0; i < nodes.length; ++i) {
-      int k = i;
-      while (k != -1) {
-        if (k == index) {
-          if (i < min) { min = i; }
-          if (i > max) { max = i; }
-          break;
-        }
-        k = this.governors[k];
-      }
+  @SuppressWarnings("UnusedParameters")
+  private Optional<OperatorSpec> operatorForSpan(int start, int end) {
+    if (operators.isPresent()) {
+      return operators.get()[end - 1];
+    } else {
+      return Optional.empty();
     }
-    return Pair.makePair(min, max + 1);
+  }
+
+  private Optional<OperatorSpec> operatorForSpan(Pair<Integer, Integer> span) {
+    return operatorForSpan(span.first, span.second);
   }
 
 
@@ -169,11 +198,11 @@ public class DependencyTree<E> {
     Arrays.fill(indexMap, -1);
     List<Word> newWords = new ArrayList<>();
     // First index by constituents
-    foreachSpan( span -> { if (span.second - span.first > 1) { indexSpan(newWords, indexMap, span.first, span.second, indexer); } });
+    foreachSpan( span -> { if (span.second - span.first > 1) { indexSpan(newWords, indexMap, span.first, span.second, operatorForSpan(span), indexer); } });
     // Then index by spans
     for (int length = nodes.length; length > 0; --length) {
       for (int candidateStart = 0; candidateStart + length <= nodes.length; ++candidateStart) {
-        indexSpan(newWords, indexMap, candidateStart, candidateStart + length, indexer);
+        indexSpan(newWords, indexMap, candidateStart, candidateStart + length, operatorForSpan(candidateStart, candidateStart + length), indexer);
       }
     }
 

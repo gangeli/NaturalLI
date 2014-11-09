@@ -32,6 +32,19 @@ public class Preprocess {
     return tree.toString(!PRODUCTION);
   }
 
+  public static StanfordCoreNLP constructPipeline() {
+    Properties props = new Properties() {{
+      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
+      setProperty("ssplit.isOneSentence", "true");
+      setProperty("tokenize.class", "PTBTokenizer");
+      setProperty("tokenize.language", "en");
+      setProperty("naturalli.doPolarity", "false");
+    }};
+    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
+    pipeline.addAnnotator(new NaturalLogicAnnotator("naturalli", props));
+    return pipeline;
+  }
+
   public static void main(String[] args) throws IOException {
     // Set production flag
     if (args.length > 0) {
@@ -39,15 +52,7 @@ public class Preprocess {
     }
 
     // Create pipeline
-    StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
-      setProperty("ssplit.isOneSentence", "true");
-      setProperty("tokenize.class", "PTBTokenizer");
-      setProperty("tokenize.language", "en");
-    }});
-    pipeline.addAnnotator(new NaturalLogicAnnotator("naturalli", new Properties() {{
-      setProperty("naturalli.doPolarity", "false");
-    }}));
+    StanfordCoreNLP pipeline = constructPipeline();
 
 
     // Read input

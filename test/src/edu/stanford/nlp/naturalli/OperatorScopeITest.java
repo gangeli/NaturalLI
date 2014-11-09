@@ -4,10 +4,7 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.semgraph.SemanticGraph;
-import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.util.StringUtils;
-import edu.stanford.nlp.util.logging.Redwood;
 import org.junit.*;
 
 import java.util.*;
@@ -37,7 +34,6 @@ public class OperatorScopeITest {
   private Optional<OperatorSpec>[] annotate(String text) {
     Annotation ann = new Annotation(text);
     pipeline.annotate(ann);
-    Redwood.Util.prettyLog(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class).toString(SemanticGraph.OutputFormat.READABLE));
     List<CoreLabel> tokens = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class);
     Optional<OperatorSpec>[] scopes = new Optional[tokens.size()];
     Arrays.fill(scopes, Optional.empty());
@@ -224,6 +220,12 @@ public class OperatorScopeITest {
   public void at_least_num_X_verb_Y() {
     checkScope(3, 4, 4, 6, annotate("at least Three cats eat mice.")[2]);
     checkScope(3, 4, 4, 6, annotate("at least 3 cats have tails.")[2]);
+  }
+
+  @Test
+  public void regressionStrangeComma() {
+    Optional<OperatorSpec>[] operators = annotate("all cats, have tails.");
+    checkScope(1, 2, 3, 5, operators[0]);  // though, unclear if this should even be true?
   }
 
   @Test

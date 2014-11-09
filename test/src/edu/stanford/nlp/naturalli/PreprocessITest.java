@@ -3,8 +3,6 @@ package edu.stanford.nlp.naturalli;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import org.junit.*;
 
-import java.util.Properties;
-
 import static org.junit.Assert.*;
 
 /**
@@ -13,12 +11,7 @@ import static org.junit.Assert.*;
  * @author Gabor Angeli
  */
 public class PreprocessITest {
-  private static final StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
-    setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
-    setProperty("ssplit.isOneSentence", "true");
-    setProperty("tokenize.class", "PTBTokenizer");
-    setProperty("tokenize.language", "en");
-  }});
+  private static final StanfordCoreNLP pipeline = Preprocess.constructPipeline();
 
   static {
     Preprocess.PRODUCTION = false;

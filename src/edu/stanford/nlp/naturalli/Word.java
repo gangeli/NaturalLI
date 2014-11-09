@@ -7,9 +7,7 @@ import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Pair;
 
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -90,21 +88,6 @@ public class Word {
     }
   }
 
-  private static Set<String> SUBJ_RELATIONS = new HashSet<String>() {{
-    add("nsubj");
-  }};
-
-  private static Set<String> OBJ_RELATIONS = new HashSet<String>() {{
-    add("dobj");
-    add("pobj");
-    add("prep");
-    add("xcomp");
-  }};
-
-  private static Set<String> NEG_RELATIONS = new HashSet<String>() {{
-    add("neg");
-  }};
-
   public Word updateSpans(int[] oldToNewIndex) {
     return new Word(
         this.gloss, this.index, this.sense,
@@ -114,108 +97,32 @@ public class Word {
         this.objMonotonicity, this.objType);
   }
 
-  private static enum ARITY { UNARY, BINARY, NEG, UNK }
-
-  private static int[] computeSpans(DependencyTree<String> tree, int index) {
-    int[] rtn = new int[]{-1, -1, -1, -1};
-
-    // Find the root of the phrase
-    int quantifierSide = -1;
-    int negRoot = -1;
-    int root = index;
-    ARITY arity = ARITY.UNK;
-    while (!"root".equals(tree.governingRelations[root])) {
-      if (SUBJ_RELATIONS.contains(tree.governingRelations[root])) {
-        arity = ARITY.BINARY;
-        quantifierSide = root;
-        root = tree.governors[root];
-        break;
-      } else if (OBJ_RELATIONS.contains(tree.governingRelations[root])) {
-        arity = ARITY.UNARY;
-        quantifierSide = root;
-        root = tree.governors[root];
-        break;
-      } else if (NEG_RELATIONS.contains(tree.governingRelations[root])) {
-        arity = ARITY.NEG;
-        quantifierSide = root;
-        if (negRoot < 0) { negRoot = root; }
-        root = tree.governors[root];
-        // don't break -- it may still be binary
-      } else {
-        root = tree.governors[root];
-      }
-    }
-    if (arity == ARITY.NEG) {
-      root = negRoot;
-    }
-
-    // Get the subject span
-    Pair<Integer, Integer> subj = tree.getSubtreeSpan(quantifierSide);
-    assert index < subj.second && index >= subj.first;
-    rtn[0] = index + 1;
-    rtn[1] = Math.max(subj.second, root);
-
-    // Get the object span
-    if (arity == ARITY.BINARY) {
-      for (int i = 0; i < tree.nodes.length; ++i) {
-        // Regular object
-        if (tree.governors[i] == root && OBJ_RELATIONS.contains(tree.governingRelations[i])) {
-          Pair<Integer, Integer> obj = tree.getSubtreeSpan(i);
-          rtn[2] = Math.min(root, obj.first);
-          rtn[3] = obj.second;
-          break;
-        }
-        // Copula
-        if (tree.governors[i] == root && "cop".equals(tree.governingRelations[i])) {
-          Pair<Integer, Integer> obj = tree.getSubtreeSpan(i);
-          rtn[1] = Math.max(subj.second, i);
-          rtn[2] = Math.max(i, obj.first);
-          rtn[3] = Math.max(tree.governors[i] + 1, obj.second);
-          break;
-        }
-      }
-    }
-
-    // Return
-    return rtn;
-  }
-
-  public static Optional<Word> compute(DependencyTree<String> tree, int spanStart, int spanEnd, Function<String, Integer> indexer) {
+  public static Optional<Word> compute(DependencyTree<String> tree, int spanStart, int spanEnd,
+                                       Optional<OperatorSpec> operator,
+                                       Function<String, Integer> indexer) {
     String gloss = String.join(" ", Arrays.asList(tree.nodes).subList(spanStart, spanEnd));
     int indexedWord = indexer.apply(gloss);
     if (indexedWord >= 0) {
-      if (Operator.GLOSSES.contains(gloss.toLowerCase())) {
-        int[] spans = computeSpans(tree, spanStart);
-        if (spans[0] >= 0) {
-          if (spans[2] >= 0) {
-            for (Operator q : Operator.values()) {
-              if (!q.isUnary() && q.surfaceForm.equals(gloss)) {
-                return Optional.of(new Word(
-                    gloss, indexedWord,
-                    computeSense(indexedWord, gloss, tree, spanStart, spanEnd),
-                    new int[]{spans[0], spans[1]}, q.subjMono, q.subjType,
-                    new int[]{spans[2], spans[3]}, q.objMono, q.objType));
-              }
-            }
-          }
-          for (Operator q : Operator.values()) {
-            if (q.isUnary() && q.surfaceForm.equals(gloss)) {
-              return Optional.of(new Word(
-                  gloss, indexedWord,
-                  computeSense(indexedWord, gloss, tree, spanStart, spanEnd),
-                  new int[]{spans[0], spans[1]}, q.subjMono, q.subjType,
-                  NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE));
-            }
-          }
+      int sense = computeSense(indexedWord, gloss, tree, spanStart, spanEnd);
+      if (operator.isPresent()) {
+        int[] subjectSpan = new int[]{ operator.get().subjectBegin, operator.get().subjectEnd };
+        Operator instance = operator.get().instance;
+        if (operator.get().isBinary()) {
+          int[] objectSpan = new int[]{ operator.get().objectBegin, operator.get().objectEnd };
+          return Optional.of(new Word(gloss, indexedWord, sense, subjectSpan, instance.subjMono, instance.subjType,
+              objectSpan, instance.objMono, instance.objType));
+        } else {
+          return Optional.of(new Word(gloss, indexedWord, sense, subjectSpan, instance.subjMono, instance.subjType,
+              NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE));
         }
+      } else {
+        return Optional.of(new Word(gloss, indexedWord, sense,
+            NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE,
+            NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE));
       }
-      return Optional.of(new Word(
-          gloss, indexedWord,
-          computeSense(indexedWord, gloss, tree, spanStart, spanEnd),
-          NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE,
-          NO_SPAN, Monotonicity.INVALID, MonotonicityType.NONE));
+    } else {
+      return Optional.empty();
     }
-    return Optional.empty();
   }
 
   public static final int[] NO_SPAN = new int[]{ -1, -1 };

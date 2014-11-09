@@ -192,8 +192,8 @@ public class NaturalLogicAnnotator extends SentenceAnnotator {
    * </ul>
    */
   private OperatorSpec computeScope(SemanticGraph tree, Operator operator,
-                                      IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
-                                      IndexedWord subject, IndexedWord object) {
+                                    IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
+                                    IndexedWord subject, IndexedWord object) {
     Pair<Integer, Integer> subjSpan;
     Pair<Integer, Integer> objSpan;
     if (subject != null) {
