@@ -4,7 +4,10 @@ import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.util.StringUtils;
+import edu.stanford.nlp.util.logging.Redwood;
 import org.junit.*;
 
 import java.util.*;
@@ -34,6 +37,7 @@ public class OperatorScopeITest {
   private Optional<OperatorSpec>[] annotate(String text) {
     Annotation ann = new Annotation(text);
     pipeline.annotate(ann);
+    Redwood.Util.prettyLog(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class).toString(SemanticGraph.OutputFormat.READABLE));
     List<CoreLabel> tokens = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class);
     Optional<OperatorSpec>[] scopes = new Optional[tokens.size()];
     Arrays.fill(scopes, Optional.empty());

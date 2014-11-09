@@ -102,7 +102,8 @@ public class NaturalLogicAnnotator extends SentenceAnnotator {
     Queue<IndexedWord> fringe = new LinkedList<>();
     for (SemanticGraphEdge edge : tree.getOutEdgesSorted(root)) {
       String edgeLabel = edge.getRelation().getShortName();
-      if (validArcs == null || validArcs.contains(edgeLabel)) {
+      if ((validArcs == null || validArcs.contains(edgeLabel)) &&
+          !"punct".equals(edgeLabel)) {
         fringe.add(edge.getDependent());
       }
     }
@@ -110,7 +111,11 @@ public class NaturalLogicAnnotator extends SentenceAnnotator {
       IndexedWord node = fringe.poll();
       min = Math.min(node.index(), min);
       max = Math.max(node.index(), max);
-      fringe.addAll(tree.getChildren(node));
+      for (SemanticGraphEdge edge : tree.getOutEdgesSorted(node)) {
+        if (!"punct".equals(edge.getRelation().getShortName())) {  // ignore punctuation
+          fringe.add(edge.getDependent());
+        }
+      }
     }
     return Pair.makePair(min, max + 1);
   }
@@ -340,11 +345,32 @@ public class NaturalLogicAnnotator extends SentenceAnnotator {
     }
   }
 
+  /**
+   * If false, don't annotate tokens for polarity but only find the operators and their scopes.
+   */
+  public final boolean doPolarity;
+
+  /**
+   * Create a new annotator.
+   * @param annotatorName The prefix for the properties for this annotator.
+   * @param props The properties to configure this annotator with.
+   */
+  public NaturalLogicAnnotator(String annotatorName, Properties props) {
+    this.doPolarity = Boolean.valueOf(props.getProperty(annotatorName + ".doPolarity", "true"));
+  }
+
+  /** The default constructor */
+  public NaturalLogicAnnotator() {
+    this("__irrelevant__", new Properties());
+  }
+
   /** {@inheritDoc} */
   @Override
   protected void doOneSentence(Annotation annotation, CoreMap sentence) {
     annotateOperators(sentence);
-    annotatePolarity(sentence);
+    if (doPolarity) {
+      annotatePolarity(sentence);
+    }
   }
 
   /** {@inheritDoc} */

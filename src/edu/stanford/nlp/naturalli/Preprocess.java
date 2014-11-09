@@ -45,6 +45,9 @@ public class Preprocess {
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
     }});
+    pipeline.addAnnotator(new NaturalLogicAnnotator("naturalli", new Properties() {{
+      setProperty("naturalli.doPolarity", "false");
+    }}));
 
 
     // Read input

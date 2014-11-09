@@ -63,5 +63,4 @@ public class PolarityITest {
     assertTrue(p[5].isDownwards());
   }
 
-
 }
