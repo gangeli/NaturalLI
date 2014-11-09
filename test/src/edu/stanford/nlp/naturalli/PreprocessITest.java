@@ -107,7 +107,7 @@ public class PreprocessITest {
   @Test
   public void collapseWordsNoClearRoot() {
     assertEquals(
-        "both	2	det	0	anti-additive	2-3	multiplicative	3-7\n" +
+        "both	2	det	0	nonmonotone	2-3	multiplicative	3-7\n" +
         "commissioner	3	nsubj	1	-	-	-	-\n" +
         "use to	0	root	0	-	-	-	-\n" +
         "be	6	cop	9	-	-	-	-\n" +
