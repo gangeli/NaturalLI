@@ -15,6 +15,8 @@ import static org.junit.Assert.*;
  * A test for the {@link NaturalLogicAnnotator} setting the right
  * {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotations.OperatorAnnotation}s.
  *
+ * TODO(gabor) stop ignoring ignored tests
+ *
  * @author Gabor Angeli
  */
 public class OperatorScopeITest {
@@ -250,7 +252,10 @@ public class OperatorScopeITest {
     checkScope("{ All } [ residents of member states ] [ are individuals ]");
     checkScope("{ All } [ residents of the North American continent ] [ can travel freely within Europe ]");
     checkScope("{ All } [ the people who were at the meeting ] [ voted for a new chairman ]");
+  }
 
+  @Test
+  public void fracasSentencesWithEach() {
     checkScope("{ Each } [ Canadian resident ] [ can travel freely within Europe ]");
     checkScope("{ Each } [ European ] [ can travel freely within Europe ]");
     checkScope("{ Each } [ European ] [ has the right to live in Europe ]");
@@ -261,7 +266,53 @@ public class OperatorScopeITest {
   }
 
   @Test
-  public void fracasSentencesWithSome() {
+  public void fracasSentencesWithEvery() {
+    checkScope("{ Every } [ Ancient Greek ] [ was a noted philosopher ]");
+    checkScope("{ Every } [ Canadian resident ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ Canadian resident ] [ is a resident of the North American continent ]");
+    checkScope("{ Every } [ European ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ European ] [ has the right to live in Europe ]");
+    checkScope("{ Every } [ European ] [ is a person ]");
+    checkScope("{ Every } [ Italian man ] [ wants to be a great tenor ]");
+    checkScope("{ Every } [ Swede ] [ is a Scandinavian ]");
+    checkScope("{ Every } [ committee ] [ has a chairman ]");
+    checkScope("{ Every } [ committee ] [ has a chairman appointed by members of the committee ]");
+    checkScope("{ Every } [ customer who owns a computer ] [ has a service contract for it ]");
+    checkScope("{ Every } [ department ] [ rents a line from BT ]");
+    checkScope("{ Every } [ executive who had a laptop computer ] [ brought it to take notes at the meeting ]");
+    checkScope("{ Every } [ four-legged mammal ] [ is a four-legged animal ]");
+    checkScope("{ Every } [ individual who has the right to live anywhere in Europe ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ individual who has the right to live in Europe ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ inhabitant of Cambridge ] [ voted for a Labour MP ]");
+    checkScope("{ Every } [ mammal ] [ is an animal ]");
+    checkScope("{ Every } [ person who has the right to live in Europe ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ report ] [ has a cover page ]");
+    checkScope("{ Every } [ representative and client ] [ was at the meeting ]");
+    checkScope("{ Every } [ representative and every client ] [ was at the meeting ]");
+    checkScope("{ Every } [ representative ] [ has read this report ]");
+    checkScope("{ Every } [ representative or client ] [ was at the meeting ]");
+    checkScope("{ Every } [ representative ] [ was at the meeting ]");
+    checkScope("{ Every } [ resident of the North American continent ] [ can travel freely within Europe ]");
+    checkScope("{ Every } [ student ] [ used her workstation ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithEveryone() {
+    checkScope("{ Everyone } [ at the meeting ] [ voted for a new chairman ]");
+    checkScope("{ Everyone } [ who starts gambling seriously ] [ continues until he is broke ]");
+    checkScope("{ Everyone } [ who starts gambling seriously ] [ stops the moment he is broke ]");
+  }
+
+  @Test
+  public void fracasSentencesWithFew() {
+    checkScope("{ Few } [ committee members ] [ are from Portugal ]");
+    checkScope("{ Few } [ committee members ] [ are from southern Europe ]");
+    checkScope("{ Few } [ female committee members ] [ are from southern Europe ]");
+  }
+
+  @Test
+  public void fracasSentencesWithA() {
     checkScope("{ A } [ Scandinavian ] [ won a Nobel prize ]");
     checkScope("{ A } [ Swede ] [ won a Nobel prize ]");
     checkScope("{ A } [ company director ] [ awarded himself a large payrise ]");
@@ -271,17 +322,131 @@ public class OperatorScopeITest {
     checkScope("{ An } [ Irishman ] [ won a Nobel prize ]");
     checkScope("{ An } [ Irishman ] [ won the Nobel prize for literature ]");
     checkScope("{ An } [ Italian ] [ became the world's greatest tenor ]");
+  }
 
+  @Test
+  public void fracasSentencesWithAFew() {
     checkScope("{ A few } [ committee members ] [ are from Scandinavia ]");
     checkScope("{ A few } [ committee members ] [ are from Sweden ]");
     checkScope("{ A few } [ female committee members ] [ are from Scandinavia ]");
     checkScope("{ A few } [ great tenors ] [ sing popular music ]");
+  }
 
+  @Test
+  public void fracasSentencesWithAtLeastAFew() {
     checkScope("{ At least a few } [ committee members ] [ are from Scandinavia ]");
     checkScope("{ At least a few } [ committee members ] [ are from Sweden ]");
     checkScope("{ At least a few } [ female committee members ] [ are from Scandinavia ]");
   }
 
+  @Ignore
+  @Test
+  public void fracasSentencesWithEither() {
+    checkScope("{ Either } [ Smith, Jones or Anderson ] [ signed the contract ]");
+  }
+
+  @Test
+  public void fracasSentencesWithOneOfThe() {
+    checkScope("{ One of the } [ commissioners ] [ spends a lot of time at home ]");
+    checkScope("{ One of the } [ leading tenors ] [ is Pavarotti ]");
+  }
+
+  @Test
+  public void fracasSentencesWithSeveral() {
+    checkScope("{ Several } [ Portuguese delegates ] [ got the results published in major national newspapers ]");
+    checkScope("{ Several } [ delegates ] [ got the results published ]");
+    checkScope("{ Several } [ delegates ] [ got the results published in major national newspapers ]");
+    checkScope("{ Several } [ great tenors ] [ are British ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithSome() {
+    checkScope("{ Some } [ Irish delegates ] [ finished the survey on time ]");
+    checkScope("{ Some } [ Italian men ] [ are great tenors ]");
+    checkScope("{ Some } [ Italian tenors ] [ are great ]");
+    checkScope("{ Some } [ Scandinavian delegate ] [ finished the report on time ]");
+    checkScope("{ Some } [ accountant ] [ attended the meeting ]");
+    checkScope("{ Some } [ accountants ] [ attended the meeting ]");
+    checkScope("{ Some } [ delegate ] [ finished the report on time ]");
+    checkScope("{ Some } [ delegates ] [ finished the survey ]");
+    checkScope("{ Some } [ delegates ] [ finished the survey on time ]");
+    checkScope("{ Some } [ great tenors ] [ are Swedish ]");
+    checkScope("{ Some } [ great tenors ] [ like popular music ]");
+    checkScope("{ Some } [ people ] [ discover that they have been asleep ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithThe() {
+    checkScope("{ The } [ Ancient Greeks ] [ were all noted philosophers ]");
+    checkScope("{ The } [ Ancient Greeks ] [ were noted philosophers ]");
+    checkScope("{ The } [ ITEL-XZ  ] [is fast ]");
+    checkScope("{ The } [ ITEL-ZX ] [ is an ITEL computer ]");
+    checkScope("{ The } [ ITEL-ZX ] [ is slower than 500 MIPS ]");
+    checkScope("{ The } [ PC-6082 ] [ is as fast as the ITEL-XZ ]");
+    checkScope("{ The } [ PC-6082 ] [ is fast ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than 500 MIPS ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than any ITEL computer ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than every ITEL computer ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than some ITEL computer ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than the ITEL-XZ ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than the ITEL-ZX ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than the ITEL-ZX and the ITEL-ZY ]");
+    checkScope("{ The } [ PC-6082 ] [ is faster than the ITEL-ZX or the ITEL-ZY ]");
+    checkScope("{ The } [ PC-6082 ] [ is slow ]");
+    checkScope("{ The } [ PC-6082 ] [ is slower than the ITEL-XZ ]");
+    checkScope("{ The } [ chairman of the department ] [ is a person ]");
+    checkScope("{ The } [ chairman ] [ read out every item on the agenda ]");
+    checkScope("{ The } [ chairman ] [ read out the items on the agenda ]");
+    checkScope("{ The } [ conference ] [ started on July 4th, 1994 ]");
+    checkScope("{ The } [ conference ] [ was over on July 8th, 1994 ]");
+    checkScope("{ The } [ inhabitants of Cambridge ] [ voted for a Labour MP ]");
+    checkScope("{ The } [ people who were at the meeting ] [ all voted for a new chairman ]");
+    checkScope("{ The } [ people who were at the meeting ] [ voted for a new chairman ]");
+    checkScope("{ The } [ really ambitious tenors ] [ are Italian ]");
+    checkScope("{ The } [ residents of major western countries ] [ can travel freely within Europe ]");
+    checkScope("{ The } [ residents of major western countries ] [ have the right to live in Europe ]");
+    checkScope("{ The } [ residents of member states ] [ can travel freely within Europe ]");
+    checkScope("{ The } [ residents of member states ] [ have the right to live anywhere in Europe ]");
+    checkScope("{ The } [ residents of member states ] [ have the right to live in Europe ]");
+    checkScope("{ The } [ residents of western countries ] [ can travel freely within Europe ]");
+    checkScope("{ The } [ residents of western countries ] [ have the right to live in Europe ]");
+    checkScope("{ The } [ sales department ] [ rents a line from BT ]");
+    checkScope("{ The } [ sales department ] [ rents it from BT ]");
+    checkScope("{ The } [ students ] [ are going to Paris by train ]");
+    checkScope("{ The } [ students ] [ have spoken to Mary ]");
+    checkScope("{ The } [ system failure ] [ was blamed on one or more software faults ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithThereAre() {
+    checkScope("{ There are } [ 100 companies ]");
+    checkScope("{ There are } [ Italian men ] [ who want to be a great tenor ]");
+    checkScope("{ There are } [ Italian tenors ] [ who want to be great ]");
+    checkScope("{ There are } [ few committee members ] [ from Portugal ]");
+    checkScope("{ There are } [ few committee members ] [ from southern Europe ]");
+    checkScope("{ There are } [ great tenors ] [ who are British ]");
+    checkScope("{ There are } [ great tenors ] [ who are German ]");
+    checkScope("{ There are } [ great tenors ] [ who are Italian ]");
+    checkScope("{ There are } [ great tenors ] [ who are Swedish ]");
+    checkScope("{ There are } [ great tenors ] [ who sing popular music ]");
+    checkScope("{ There are } [ really ambitious tenors ] [ who are Italian ]");
+    checkScope("{ There are } [ really great tenors ] [ who are modest ]");
+    checkScope("{ There are } [ sixteen representatives ]");
+    checkScope("{ There are } [ some reports from ITEL on Smith's desk ]");
+    checkScope("{ There are } [ tenors ] [ who will take part in the concert ]");
+
+    checkScope("{ There is } [ a car ] [ that John and Bill own ]");
+    checkScope("{ There is } [ someone ] [ whom Helen saw answer the phone ]");
+
+    checkScope("{ There was } [ a group of people ] [ that met ]");
+    checkScope("{ There was } [ an Italian ] [ who became the world's greatest tenor ]");
+    checkScope("{ There was } [ one auditor ] [ who signed all the reports ]");
+  }
+
+  @Ignore
   @Test
   public void fracasSentencesWithProperNouns() {
     checkScope("[ { APCOM } ] [ has a more important customer than ITEL ]");
@@ -328,10 +493,166 @@ public class OperatorScopeITest {
     checkScope("[ { Dumbo } ] [ is a small elephant ]");
     checkScope("[ { Dumbo } ] [ is four-legged ]");
     checkScope("[ { Dumbo } ] [ is larger than Mickey ]");
+
+    checkScope("[ { GFI } ] [ owns several computers ]");
+
+    checkScope("[ { Helen } ] [ saw the chairman of the department answer the phone ]");
+
+    checkScope("[ { ICM } ] [ is one of the companies and owns 150 computers ]");
+
+    checkScope("[ { ITEL } ] [ always delivers reports late ]");
+    checkScope("[ { ITEL } ] [ built MTALK in 1993 ]");
+    checkScope("[ { ITEL } ] [ currently has a factory in Birmingham ]");
+    checkScope("[ { ITEL } ] [ delivered reports late in 1993 ]");
+    checkScope("[ { ITEL } ] [ developed a new editor in 1993 ]");
+    checkScope("[ { ITEL } ] [ existed in 1992 ]");
+    checkScope("[ { ITEL } ] [ expanded in 1993 ]");
+    checkScope("[ { ITEL } ] [ finished MTALK in 1993 ]");
+    checkScope("[ { ITEL } ] [ has a factory in Birmingham ]");
+    checkScope("[ { ITEL } ] [ has developed a new editor since 1992 ]");
+    checkScope("[ { ITEL } ] [ has expanded since 1992 ]");
+    checkScope("[ { ITEL } ] [ has made a loss since 1992 ]");
+    checkScope("[ { ITEL } ] [ has sent most of the reports Smith needs ]");
+    checkScope("[ { ITEL } ] [ made a loss in 1993 ]");
+    checkScope("[ { ITEL } ] [ maintains all the computers that GFI owns ]");
+    checkScope("[ { ITEL } ] [ maintains them ]");
+    checkScope("[ { ITEL } ] [ managed to win the contract in 1992 ]");
+    checkScope("[ { ITEL } ] [ never delivers reports late ]");
+    checkScope("[ { ITEL } ] [ owned APCOM from 1988 to 1992 ]");
+    checkScope("[ { ITEL } ] [ owned APCOM in 1990 ]");
+    checkScope("[ { ITEL } ] [ sent a progress report in July 1994 ]");
+    checkScope("[ { ITEL } ] [ sold 3000 more computers than APCOM ]");
+    checkScope("[ { ITEL } ] [ sold 5500 computers ]");
+    checkScope("[ { ITEL } ] [ tried to win the contract in 1992 ]");
+    checkScope("[ { ITEL } ] [ was building MTALK in 1993 ]");
+    checkScope("[ { ITEL } ] [ was winning the contract from APCOM in 1993 ]");
+    checkScope("[ { ITEL } ] [ won a contract in 1993 ]");
+    checkScope("[ { ITEL } ] [ won at least eleven orders ]");
+    checkScope("[ { ITEL } ] [ won more orders than APCOM ]");
+    checkScope("[ { ITEL } ] [ won more orders than APCOM did ]");
+    checkScope("[ { ITEL } ] [ won more orders than APCOM lost ]");
+    checkScope("[ { ITEL } ] [ won more orders than the APCOM contract ]");
+    checkScope("[ { ITEL } ] [ won more than one order ]");
+    checkScope("[ { ITEL } ] [ won some orders ]");
+    checkScope("[ { ITEL } ] [ won the APCOM contract ]");
+    checkScope("[ { ITEL } ] [ won the contract from APCOM in 1993 ]");
+    checkScope("[ { ITEL } ] [ won the contract in 1992 ]");
+    checkScope("[ { ITEL } ] [ won twenty orders ]");
+    checkScope("[ { ITEL } ] [ won twice as many orders than APCOM ]");
+    checkScope("[ { Itel } ] [ was in Birmingham in 1993 ]");
+
+    checkScope("[ { John } ] [ bought a car ]");
+    checkScope("[ { John } ] [ found Mary before Bill ]");
+    checkScope("[ { John } ] [ found Mary before Bill found Mary ]");
+    checkScope("[ { John } ] [ found Mary before John found Bill ]");
+    checkScope("[ { John } ] [ had his paper accepted ]");
+    checkScope("[ { John } ] [ has a diamond ]");
+    checkScope("[ { John } ] [ has a genuine diamond ]");
+    checkScope("[ { John } ] [ has spoken to Mary ]");
+    checkScope("[ { John } ] [ hated the meeting ]");
+    checkScope("[ { John } ] [ is a cleverer politician than Bill ]");
+    checkScope("[ { John } ] [ is a fatter politician than Bill ]");
+    checkScope("[ { John } ] [ is a former successful university student ]");
+    checkScope("[ { John } ] [ is a former university student ]");
+    checkScope("[ { John } ] [ is a man and Mary is a woman ]");
+    checkScope("[ { John } ] [ is a successful former university student ]");
+    checkScope("[ { John } ] [ is a university student ]");
+    checkScope("[ { John } ] [ is cleverer than Bill ]");
+    checkScope("[ { John } ] [ is fatter than Bill ]");
+    checkScope("[ { John } ] [ is going to Paris by car, and the students by train ]");
+    checkScope("[ { John } ] [ is successful ]");
+    checkScope("[ { John } ] [ needed to buy a car, and Bill did ]");
+    checkScope("[ { John } ] [ owns a car ]");
+    checkScope("[ { John } ] [ owns a fast red car ]");
+    checkScope("[ { John } ] [ owns a red car ]");
+    checkScope("[ { John } ] [ represents his company and so does Mary ]");
+    checkScope("[ { John } ] [ said Bill had been hurt ]");
+    checkScope("[ { John } ] [ said Bill had hurt himself ]");
+    checkScope("[ { John } ] [ said Bill wrote a report ]");
+    checkScope("[ { John } ] [ said Mary wrote a report, and Bill did too ]");
+    checkScope("[ { John } ] [ said that Mary wrote a report, and that Bill did too ]");
+    checkScope("[ { John } ] [ spoke to Mary ]");
+    checkScope("[ { John } ] [ spoke to Mary at four o'clock ]");
+    checkScope("[ { John } ] [ spoke to Mary on Friday ]");
+    checkScope("[ { John } ] [ spoke to Mary on Monday ]");
+    checkScope("[ { John } ] [ spoke to Mary on Thursday ]");
+    checkScope("[ { John } ] [ spoke to Sue ]");
+    checkScope("[ { John } ] [ wanted to buy a car, and he did ]");
+    checkScope("[ { John } ] [ wants to know how many men work part time ]");
+    checkScope("[ { John } ] [ wants to know how many men work part time, and which ]");
+    checkScope("[ { John } ] [ wants to know how many women work part time ]");
+    checkScope("[ { John } ] [ wants to know which men work part time ]");
+    checkScope("[ { John } ] [ went to Paris by car ]");
+    checkScope("[ { John } ] [ went to Paris by car, and Bill by train ]");
+    checkScope("[ { John } ] [ went to Paris by car, and Bill by train to Berlin ]");
+    checkScope("[ { John } ] [ went to Paris by car, and Bill to Berlin ]");
+    checkScope("[ { John } ] [ wrote a report ]");
+    checkScope("[ { John } ] [ wrote a report, and Bill said Peter did too ]");
+
+    checkScope("[ { Jones } ] [ claimed Smith had costed Jones' proposal ]");
+    checkScope("[ { Jones } ] [ claimed Smith had costed Smith's proposal ]");
+    checkScope("[ { Jones } ] [ claimed he had costed Smith's proposal ]");
+    checkScope("[ { Jones } ] [ claimed he had costed his own proposal ]");
+    checkScope("[ { Jones } ] [ graduated in March and has been employed ever since ]");
+    checkScope("[ { Jones } ] [ has a company car ]");
+    checkScope("[ { Jones } ] [ has been unemployed in the past ]");
+    checkScope("[ { Jones } ] [ has more than one company car ]");
+    checkScope("[ { Jones } ] [ is an APCOM manager ]");
+    checkScope("[ { Jones } ] [ is the chairman of ITEL ]");
+    checkScope("[ { Jones } ] [ left ]");
+    checkScope("[ { Jones } ] [ left after Anderson left ]");
+    checkScope("[ { Jones } ] [ left after Anderson was present ]");
+    checkScope("[ { Jones } ] [ left after Smith left ]");
+    checkScope("[ { Jones } ] [ left before Anderson left ]");
+    checkScope("[ { Jones } ] [ left before Smith left ]");
+    checkScope("[ { Jones } ] [ left the meeting ]");
+    checkScope("[ { Jones } ] [ represents Jones' company ]");
+    checkScope("[ { Jones } ] [ represents Smith's company ]");
+    checkScope("[ { Jones } ] [ revised the contract ]");
+    checkScope("[ { Jones } ] [ revised the contract after Smith did ]");
+    checkScope("[ { Jones } ] [ revised the contract before Smith did ]");
+    checkScope("[ { Jones } ] [ signed another contract ]");
+    checkScope("[ { Jones } ] [ signed the contract ]");
+    checkScope("[ { Jones } ] [ signed two contracts ]");
+    checkScope("[ { Jones } ] [ swam ]");
+    checkScope("[ { Jones } ] [ swam after Smith swam ]");
+    checkScope("[ { Jones } ] [ swam to the shore ]");
+    checkScope("[ { Jones } ] [ swam to the shore after Smith swam to the shore ]");
+    checkScope("[ { Jones } ] [ was present ]");
+    checkScope("[ { Jones } ] [ was present after Smith was present ]");
+    checkScope("[ { Jones } ] [ was present before Smith was present ]");
+    checkScope("[ { Jones } ] [ was unemployed at some time before he graduated ]");
+    checkScope("[ { Jones } ] [ was writing a report ]");
+    checkScope("[ { Jones } ] [ was writing a report after Smith was writing a report ]");
+    checkScope("[ { Jones } ] [ was writing a report before Smith was writing a report ]");
+
+    checkScope("[ { Kim } ] [ is a clever person ]");
+    checkScope("[ { Kim } ] [ is a clever politician ]");
+    checkScope("[ { Kim } ] [ is clever ]");
+
+    checkScope("[ { MFI } ] [ has a service contract for all its computers ]");
+    checkScope("[ { MFI } ] [ is a customer that owns exactly one computer ]");
+    checkScope("[ { MFI } ] [ is a customer that owns several computers ]");
+
+    checkScope("[ { Mary } ] [ has a workstation ]");
+    checkScope("[ { Mary } ] [ is a student ]");
+    checkScope("[ { Mary } ] [ is female ]");
+    checkScope("[ { Mary } ] [ represents John's company ]");
+    checkScope("[ { Mary } ] [ represents her own company ]");
+    checkScope("[ { Mary } ] [ used a workstation ]");
+    checkScope("[ { Mary } ] [ used her workstation ]");
+
+    checkScope("[ { Mickey } ] [ is a large animal ]");
+    checkScope("[ { Mickey } ] [ is a large mouse ]");
+    checkScope("[ { Mickey } ] [ is a small animal ]");
+    checkScope("[ { Mickey } ] [ is larger than Dumbo ]");
+    checkScope("[ { Mickey } ] [ is smaller than Dumbo ]");
+
+    checkScope("[ { Pavarotti } ] [ is a leading tenor who comes cheap ]");
   }
 
   @Test
-  public void fracasSentencesWithNumberQuantifiers() {
+  public void fracasSentencesWithAtMostAtLeast() {
     checkScope("{ At least three } [ commissioners ] [ spend a lot of time at home ]");
     checkScope("{ At least three } [ commissioners ] [ spend time at home ]");
     checkScope("{ At least three } [ female commissioners ] [ spend time at home ]");
@@ -340,14 +661,85 @@ public class OperatorScopeITest {
     checkScope("{ At most ten } [ commissioners ] [ spend a lot of time at home ]");
     checkScope("{ At most ten } [ commissioners ] [ spend time at home ]");
     checkScope("{ At most ten } [ female commissioners ] [ spend time at home ]");
+
+    checkScope("{ Just one } [ accountant ] [ attended the meeting ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithPureNumbers() {
+    checkScope("{ Eight } [ machines ] [ have been removed ]");
+
+    checkScope("{ Five } [ men ] [ work part time ]");
+    checkScope("{ Forty five } [ women ] [ work part time ]");
+
+    checkScope("{ Six } [ accountants ] [ signed the contract ]");
+    checkScope("{ Six } [ lawyers ] [ signed the contract ]");
+
+    checkScope("{ Ten } [ machines ] [ were here yesterday ]");
+
+    checkScope("{ Twenty } [ men ] [ work in the Sales Department ]");
+    checkScope("{ Two } [ machines ] [ have been removed ]");
+    checkScope("{ Two } [ women ] [ work in the Sales Department ]");
   }
 
   @Test
-  public void fracasSentencesWithMost() {
+  public void fracasSentencesWithBoth() {
     checkScope("{ Both } [ commissioners ] [ used to be businessmen ]");
     checkScope("{ Both } [ commissioners ] [ used to be leading businessmen ]");
     checkScope("{ Both } [ leading tenors ] [ are excellent ]");
     checkScope("{ Both } [ leading tenors ] [ are indispensable ]");
+  }
+
+  @Test
+  public void fracasSentencesWithMany() {
+    checkScope("{ Many } [ British delegates ] [ obtained interesting results from the survey ]");
+    checkScope("{ Many } [ delegates ] [ obtained interesting results from the survey ]");
+    checkScope("{ Many } [ delegates ] [ obtained results from the survey ]");
+    checkScope("{ Many } [ great tenors ] [ are German ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithMost() {
+    checkScope("{ Most } [ Europeans ] [ can travel freely within Europe ]");
+    checkScope("{ Most } [ Europeans who are resident in Europe ] [ can travel freely within Europe ]");
+    checkScope("{ Most } [ Europeans who are resident outside Europe ] [ can travel freely within Europe ]");
+    checkScope("{ Most } [ clients ] [ at the demonstration were impressed by the system's performance ]");
+    checkScope("{ Most } [ companies that own a computer ] [ have a service contract for it ]");
+    checkScope("{ Most } [ great tenors ] [ are Italian ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithNeither() {
+    checkScope("{ Neither } [ commissioner ] [ spends a lot of time at home ]");
+    checkScope("{ Neither } [ commissioner ] [ spends time at home ]");
+    checkScope("{ Neither } [ leading tenor ] [ comes cheap ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithBinaryNo() {
+    checkScope("{ No } [ Scandinavian delegate ] [ finished the report on time ]");
+    checkScope("{ No } [ accountant ] [ attended the meeting ]");
+    checkScope("{ No } [ accountants ] [ attended the meeting ]");
+    checkScope("{ No } [ delegate ] [ finished the report ]");
+    checkScope("{ No } [ really great tenors ] [ are modest ]");
+    checkScope("{ No } [ representative ] [ took less than half a day to read the report ]");
+    checkScope("{ No } [ student ] [ used her workstation ]");
+    checkScope("{ No } [ two representatives ] [ have read it at the same time ]");
+    checkScope("{ No } [ delegate ] [ finished the report on time ]");
+  }
+
+  @Ignore
+  @Test
+  public void fracasSentencesWithBinaryNoOne() {
+    checkScope("{ No one } [ can gamble when he is broke ]");
+    checkScope("{ No one } [ gambling seriously ] [ stops until he is broke ]");
+    checkScope("{ No one } [ who starts gambling seriously ] [ stops until he is broke ]");
+
+    checkScope("{ Nobody } [ who is asleep ] [ ever knows that he is asleep ]");
   }
 
 

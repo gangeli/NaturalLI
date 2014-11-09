@@ -22,17 +22,19 @@ public enum Operator {
   FOR_ALL("for all", "anti-additive", "multiplicative"),
   FOR_EVERY("for every", "anti-additive", "multiplicative"),
   FOR_EACH("for each", "anti-additive", "multiplicative"),
+  NUM("__num__", "anti-additive", "multiplicative"),  // TODO check me
+  FEW("few", "anti-additive", "multiplicative"),        // TODO check me
   IMPLICIT_NAMED_ENTITY("__implicit_named_entity__", "anti-additive", "multiplicative"),
 
   // "No" quantifiers
   NO("no", "anti-additive", "anti-additive"),
   UNARY_NO("no", "anti-additive"),
   UNARY_NOT("not", "anti-additive"),
+  UNARY_NO_ONE("no one", "anti-additive"),
   UNARY_NT("n't", "anti-additive"),
 
   // "Some" quantifiers
   SOME("some", "additive", "additive"),
-  NUM("__num__", "additive", "additive"),
   SEVERAL("several", "additive", "additive"),
   EITHER("either", "additive", "additive"),
   A("a", "additive", "additive"),
@@ -46,6 +48,7 @@ public enum Operator {
   THERE_BE("there be", "additive", "additive"),
   THERE_BE_A_FEW("there be a few", "additive", "additive"),
   THERE_EXIST("there exist", "additive", "additive"),
+  NUM_OF_THE("__num__ of the", "additive", "additive"),
 
   // "Not All" quantifiers
   NOT_ALL("not all", "additive", "anti-multiplicative"),
@@ -54,6 +57,7 @@ public enum Operator {
   // "Most" quantifiers
   // TODO(gabor) check these
   MOST("most", "nonmonotone", "multiplicative"),
+  MANY("many", "nonmonotone", "multiplicative"),
   ENOUGH("enough", "nonmonotone", "multiplicative"),
   MORE_THAN("more than __num_", "nonmonotone", "multiplicative"),
   A_LOT_OF("a lot of", "nonmonotone", "multiplicative"),
@@ -63,8 +67,9 @@ public enum Operator {
   A_LOAD_OF("a load of", "nonmonotone", "multiplicative"),
   LOADS_OF("load of", "nonmonotone", "multiplicative"),
   TONS_OF("ton of", "nonmonotone", "multiplicative"),
-  FEW("few", "nonmonotone", "multiplicative"),
   BOTH("both", "nonmonotone", "multiplicative"),
+  JUST_NUM("just __num__", "nonmonotone", "multiplicative"),
+  ONLY_NUM("only __num__", "nonmonotone", "multiplicative"),
 
   // Strange cases
   AT_MOST_NUM("at most __num__", "anti-additive", "anti-additive"),
