@@ -11,12 +11,11 @@ import java.util.Set;
  *
  * @author Gabor Angeli
  */
-public enum Quantifier {
+public enum Operator {
   // "All" quantifiers
   ALL("all", "anti-additive", "multiplicative"),
   EVERY("every", "anti-additive", "multiplicative"),
   ANY("any", "anti-additive", "multiplicative"),
-  BOTH("both", "anti-additive", "multiplicative"),
   EACH("each", "anti-additive", "multiplicative"),
   THE_LOT_OF("the lot of", "anti-additive", "multiplicative"),
   ALL_OF("all of", "anti-additive", "multiplicative"),
@@ -43,6 +42,7 @@ public enum Quantifier {
   ONE_OF("one of", "additive", "additive"),
   AT_LEAST("at least __num__", "additive", "additive"),
   A_FEW("a few", "additive", "additive"),
+  AT_LEAST_A_FEW("at least a few", "additive", "additive"),
   THERE_BE("there be", "additive", "additive"),
   THERE_BE_A_FEW("there be a few", "additive", "additive"),
   THERE_EXIST("there exist", "additive", "additive"),
@@ -64,10 +64,14 @@ public enum Quantifier {
   LOADS_OF("load of", "nonmonotone", "multiplicative"),
   TONS_OF("ton of", "nonmonotone", "multiplicative"),
   FEW("few", "nonmonotone", "multiplicative"),
+  BOTH("both", "nonmonotone", "multiplicative"),
+
+  // Strange cases
+  AT_MOST_NUM("at most __num__", "anti-additive", "anti-additive"),
   ;
 
   public static final Set<String> GLOSSES = Collections.unmodifiableSet(new HashSet<String>() {{
-    for (Quantifier q : Quantifier.values()) {
+    for (Operator q : Operator.values()) {
       add(q.surfaceForm);
     }
   }});
@@ -78,7 +82,7 @@ public enum Quantifier {
   public final Monotonicity objMono;
   public final MonotonicityType objType;
 
-  Quantifier(String surfaceForm, String subjMono, String objMono) {
+  Operator(String surfaceForm, String subjMono, String objMono) {
     this.surfaceForm = surfaceForm;
     Pair<Monotonicity, MonotonicityType> subj = monoFromString(subjMono);
     this.subjMono = subj.first;
@@ -88,7 +92,7 @@ public enum Quantifier {
     this.objType = obj.second;
   }
 
-  Quantifier(String surfaceForm, String subjMono) {
+  Operator(String surfaceForm, String subjMono) {
     this.surfaceForm = surfaceForm;
     Pair<Monotonicity, MonotonicityType> subj = monoFromString(subjMono);
     this.subjMono = subj.first;
@@ -137,8 +141,8 @@ public enum Quantifier {
 
   @SuppressWarnings("UnusedDeclaration")
   public static final Set<String> quantifierGlosses = Collections.unmodifiableSet(new HashSet<String>() {{
-    for (Quantifier quantifier : values()) {
-      add(quantifier.surfaceForm);
+    for (Operator operator : values()) {
+      add(operator.surfaceForm);
     }
   }});
 }

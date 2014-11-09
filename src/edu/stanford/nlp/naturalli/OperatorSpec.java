@@ -5,8 +5,8 @@ package edu.stanford.nlp.naturalli;
  *
  * @author Gabor Angeli
  */
-public class QuantifierSpec {
-  public final Quantifier instance;
+public class OperatorSpec {
+  public final Operator instance;
   public final int quantifierBegin;
   public final int quantifierEnd;
   public final int quantifierHead;
@@ -15,8 +15,8 @@ public class QuantifierSpec {
   public final int objectBegin;
   public final int objectEnd;
 
-  protected QuantifierSpec(
-      Quantifier instance,
+  protected OperatorSpec(
+      Operator instance,
       int quantifierBegin, int quantifierEnd,
       int subjectBegin, int subjectEnd,
       int objectBegin, int objectEnd) {
@@ -39,7 +39,7 @@ public class QuantifierSpec {
    * </code>
    */
   public boolean isExplicit() {
-    return instance != Quantifier.IMPLICIT_NAMED_ENTITY;
+    return instance != Operator.IMPLICIT_NAMED_ENTITY;
   }
 
   public boolean isBinary() {
@@ -54,8 +54,8 @@ public class QuantifierSpec {
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (!(o instanceof QuantifierSpec)) return false;
-    QuantifierSpec that = (QuantifierSpec) o;
+    if (!(o instanceof OperatorSpec)) return false;
+    OperatorSpec that = (OperatorSpec) o;
     return objectBegin == that.objectBegin && objectEnd == that.objectEnd && subjectBegin == that.subjectBegin && subjectEnd == that.subjectEnd;
 
   }
@@ -81,11 +81,11 @@ public class QuantifierSpec {
         '}';
   }
 
-  public static QuantifierSpec merge(QuantifierSpec x, QuantifierSpec y) {
+  public static OperatorSpec merge(OperatorSpec x, OperatorSpec y) {
     assert (x.quantifierBegin == y.quantifierBegin);
     assert (x.quantifierEnd == y.quantifierEnd);
     assert (x.instance == y.instance);
-    return new QuantifierSpec(
+    return new OperatorSpec(
         x.instance,
         Math.min(x.quantifierBegin, y.quantifierBegin),
         Math.min(x.quantifierEnd, y.quantifierEnd),

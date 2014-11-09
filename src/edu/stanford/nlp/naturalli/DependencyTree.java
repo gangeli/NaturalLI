@@ -237,7 +237,7 @@ public class DependencyTree<E> {
         if (node.subjMonotonicity == Monotonicity.INVALID) {
           b.append("\t").append("-");
         } else {
-          b.append("\t").append(Quantifier.monotonicitySignature(node.subjMonotonicity, node.subjType));
+          b.append("\t").append(Operator.monotonicitySignature(node.subjMonotonicity, node.subjType));
         }
         // (subject span)
         if (node.subjSpan == Word.NO_SPAN) {
@@ -249,7 +249,7 @@ public class DependencyTree<E> {
         if (node.objMonotonicity == Monotonicity.INVALID) {
           b.append("\t").append("-");
         } else {
-          b.append("\t").append(Quantifier.monotonicitySignature(node.objMonotonicity, node.objType));
+          b.append("\t").append(Operator.monotonicitySignature(node.objMonotonicity, node.objType));
         }
         // (object span)
         if (node.objSpan == Word.NO_SPAN) {

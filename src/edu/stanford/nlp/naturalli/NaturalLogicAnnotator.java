@@ -1,11 +1,9 @@
 package edu.stanford.nlp.naturalli;
 
-import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.NumberAnnotator;
 import edu.stanford.nlp.pipeline.SentenceAnnotator;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
@@ -16,53 +14,48 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Triple;
+import edu.stanford.nlp.naturalli.NaturalLogicAnnotations.*;
 
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * An annotator marking quantifiers with their scope.
+ * An annotator marking operators with their scope.
+ * Look at {@link NaturalLogicAnnotator#PATTERNS} for the full list of patterns, otherwise
+ * {@link NaturalLogicAnnotator#doOneSentence(Annotation, CoreMap)} is the main interface for this class.
+ *
+ * TODO(gabor) annotate generics as "most"
  *
  * @author Gabor Angeli
  */
 @SuppressWarnings("unchecked")
-public class QuantifierScopeAnnotator extends SentenceAnnotator {
+public class NaturalLogicAnnotator extends SentenceAnnotator {
 
   /**
-   * An annotation which attaches to a CoreLabel to denote that quantifier's scope in the sentence
-   */
-  public static final class QuantifierAnnotation implements CoreAnnotation<QuantifierSpec> {
-    @Override
-    public Class<QuantifierSpec> getType() {
-      return QuantifierSpec.class;
-    }
-  }
-
-  /**
-   * A regex for arcs that act as determiners
+   * A regex for arcs that act as determiners.
    */
   private static final String DET = "/(pre)?det|a(dv)?mod|neg|num/";
   /**
-   * A regex for arcs that we pretend are subject arcs
+   * A regex for arcs that we pretend are subject arcs.
    */
   private static final String GEN_SUBJ = "/[ni]subj/";
   /**
-   * A regex for arcs that we pretend are object arcs
+   * A regex for arcs that we pretend are object arcs.
    */
   private static final String GEN_OBJ = "/[di]obj|xcomp/";
   /**
-   * A regex for arcs that we pretend are copula
+   * A regex for arcs that we pretend are copula.
    */
   private static final String GEN_COP = "/cop|aux/";
 
   /**
-   * A Semgrex fragment for matching a quantifier
+   * A Semgrex fragment for matching a quantifier.
    */
   private static final String QUANTIFIER;
 
   static {
     Set<String> singleWordQuantifiers = new HashSet<>();
-    for (Quantifier q : Quantifier.values()) {
+    for (Operator q : Operator.values()) {
       String[] tokens = q.surfaceForm.split("\\s+");
       if (!tokens[tokens.length - 1].startsWith("_")) {
         singleWordQuantifiers.add("(" + tokens[tokens.length - 1].toLowerCase() + ")");
@@ -77,22 +70,31 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
   private static final List<SemgrexPattern> PATTERNS = Collections.unmodifiableList(new ArrayList<SemgrexPattern>() {{
     // { All cats eat mice,
     //   All cats want milk }
-    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >"+GEN_OBJ+" {}=object"));
+    add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" ({}=subject >>"+DET+" "+QUANTIFIER+") >"+GEN_OBJ+" {}=object"));
     // { All cats are in boxes,
-    //   All cats voted for Obama }
-    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >/prep/ {}=object"));
+    //   All cats voted for Obama,
+    //   All cats have voted for Obama }
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ({}=subject >>"+DET+" "+QUANTIFIER+") >/prep/ {}=object"));
     // { All cats are cute,
     //   All cats can purr }
-    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >"+DET+" "+QUANTIFIER+") >"+GEN_COP+" {}=pivot"));
+    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" ({}=subject >>"+DET+" "+QUANTIFIER+") >"+GEN_COP+" {}=pivot"));
     // { Felix likes cat food }
     add(SemgrexPattern.compile("{}=pivot >"+GEN_SUBJ+" {pos:NNP}=Subject >"+GEN_OBJ+" {}=object"));
+    // { Felix has spoken to Fido }
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" {pos:NNP}=Subject >/prep|ccomp|[di]obj/ {}=object"));
+    // { Felix is a cat,
+    //   Felix is cute }
+    add(SemgrexPattern.compile("{}=object >"+GEN_SUBJ+" {pos:NNP}=Subject >"+GEN_COP+" {}=pivot"));
     // { Some cats do n't like dogs }
     add(SemgrexPattern.compile("{}=pivot >neg "+QUANTIFIER+" >"+GEN_OBJ+" {}=object"));
+    // { All of the cats hate dogs. }
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >"+GEN_SUBJ+" ( "+QUANTIFIER+" >prep {}=subject ) >"+GEN_OBJ+" {}=object"));
+    add(SemgrexPattern.compile("{pos:/V.*/}=pivot >dep ( "+QUANTIFIER+" >prep {}=subject ) >"+GEN_SUBJ+" {}=object"));  // as above, but handle a common parse error
   }});
 
   /** A helper method for
-   * {@link edu.stanford.nlp.naturalli.QuantifierScopeAnnotator#getModifierSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)} and
-   * {@link edu.stanford.nlp.naturalli.QuantifierScopeAnnotator#getSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)}.
+   * {@link NaturalLogicAnnotator#getModifierSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)} and
+   * {@link NaturalLogicAnnotator#getSubtreeSpan(edu.stanford.nlp.semgraph.SemanticGraph, edu.stanford.nlp.ling.IndexedWord)}.
    */
   private static Pair<Integer, Integer> getGeneralizedSubtreeSpan(SemanticGraph tree, IndexedWord root, Set<String> validArcs) {
     int min = root.index();
@@ -184,7 +186,7 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
    *   <li>If we have a one-place quantifier, the object is allowed to absorb only prepositions from the pivot.</li>
    * </ul>
    */
-  private QuantifierSpec computeScope(SemanticGraph tree, Quantifier quantifier,
+  private OperatorSpec computeScope(SemanticGraph tree, Operator operator,
                                       IndexedWord pivot, Pair<Integer, Integer> quantifierSpan,
                                       IndexedWord subject, IndexedWord object) {
     Pair<Integer, Integer> subjSpan;
@@ -197,7 +199,7 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
       subjSpan = includeInSpan(getSubtreeSpan(tree, object), getGeneralizedSubtreeSpan(tree, pivot, Collections.singleton("prep")));
       objSpan = Pair.makePair(subjSpan.second, subjSpan.second);
     }
-    return new QuantifierSpec(quantifier,
+    return new OperatorSpec(operator,
         quantifierSpan.first - 1, quantifierSpan.second - 1,
         subjSpan.first - 1, subjSpan.second - 1,
         objSpan.first - 1, objSpan.second - 1);
@@ -211,12 +213,12 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
    * @param quantifier The word at which we matched a quantifier.
    * @return An optional triple consisting of the particular quantifier we matched, as well as the span of that quantifier in the sentence.
    */
-  private Optional<Triple<Quantifier,Integer,Integer>> validateQuantiferByHead(CoreMap sentence, IndexedWord quantifier) {
+  private Optional<Triple<Operator,Integer,Integer>> validateQuantiferByHead(CoreMap sentence, IndexedWord quantifier) {
     int end = quantifier.index();
     for (int start = Math.max(0, end - 10); start < end; ++start) {
       Function<CoreLabel,String> glossFn = (label) -> "CD".equals(label.tag()) ? "__NUM__" : label.lemma();
       String gloss = StringUtils.join(sentence.get(CoreAnnotations.TokensAnnotation.class), " ", glossFn, start, end).toLowerCase();
-      for (Quantifier q : Quantifier.values()) {
+      for (Operator q : Operator.values()) {
         if (q.surfaceForm.equals(gloss)) {
           return Optional.of(Triple.makeTriple(q, start + 1, end + 1));
         }
@@ -225,8 +227,14 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
     return Optional.empty();
   }
 
-  @Override
-  protected void doOneSentence(Annotation annotation, CoreMap sentence) {
+
+  /**
+   * Find the operators in this sentence, annotating the head word (only!) of each operator with the
+   * {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotations.OperatorAnnotation}.
+   *
+   * @param sentence As in {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotator#doOneSentence(edu.stanford.nlp.pipeline.Annotation, edu.stanford.nlp.util.CoreMap)}
+   */
+  private void annotateOperators(CoreMap sentence) {
     SemanticGraph tree = sentence.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class);
     for (SemgrexPattern pattern : PATTERNS) {
       SemgrexMatcher matcher = pattern.matcher(tree);
@@ -245,10 +253,10 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
         }
 
         // Validate quantifier
-        Optional<Triple<Quantifier,Integer,Integer>> quantifierInfo;
+        Optional<Triple<Operator,Integer,Integer>> quantifierInfo;
         if (namedEntityQuantifier) {
           // named entities have the "all" semantics by default.
-          quantifierInfo = Optional.of(Triple.makeTriple(Quantifier.ALL, quantifier.index(), quantifier.index()));  // note: empty quantifier span given
+          quantifierInfo = Optional.of(Triple.makeTriple(Operator.ALL, quantifier.index(), quantifier.index()));  // note: empty quantifier span given
         } else {
           // find the quantifier, and return some info about it.
           quantifierInfo = validateQuantiferByHead(sentence, quantifier);
@@ -257,16 +265,16 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
         // Set tokens
         if (quantifierInfo.isPresent()) {
           // Compute span
-          QuantifierSpec scope = computeScope(tree, quantifierInfo.get().first,
+          OperatorSpec scope = computeScope(tree, quantifierInfo.get().first,
               matcher.getNode("pivot"), Pair.makePair(quantifierInfo.get().second, quantifierInfo.get().third), subject, matcher.getNode("object"));
           // Set annotation
           CoreLabel token = sentence.get(CoreAnnotations.TokensAnnotation.class).get(quantifier.index() - 1);
-          QuantifierSpec oldScope = token.get(QuantifierAnnotation.class);
+          OperatorSpec oldScope = token.get(OperatorAnnotation.class);
           if (oldScope == null || oldScope.quantifierLength() < scope.quantifierLength() ||
               oldScope.instance != scope.instance) {
-            token.set(QuantifierAnnotation.class, scope);
+            token.set(OperatorAnnotation.class, scope);
           } else {
-            token.set(QuantifierAnnotation.class, QuantifierSpec.merge(oldScope, scope));
+            token.set(OperatorAnnotation.class, OperatorSpec.merge(oldScope, scope));
           }
         }
       }
@@ -274,42 +282,96 @@ public class QuantifierScopeAnnotator extends SentenceAnnotator {
 
     // Ensure we didn't select overlapping quantifiers. For example, "a" and "a few" can often overlap.
     // In these cases, take the longer quantifier match.
-    List<QuantifierSpec> quantifiers = new ArrayList<>();
+    List<OperatorSpec> quantifiers = new ArrayList<>();
     for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-      if (token.has(QuantifierAnnotation.class)) {
-        quantifiers.add(token.get(QuantifierAnnotation.class));
+      if (token.has(OperatorAnnotation.class)) {
+        quantifiers.add(token.get(OperatorAnnotation.class));
       }
     }
     quantifiers.sort( (x, y) -> y.quantifierLength() - x.quantifierLength());
-    for (QuantifierSpec quantifier : quantifiers) {
+    for (OperatorSpec quantifier : quantifiers) {
       for (int i = quantifier.quantifierBegin; i < quantifier.quantifierEnd; ++i) {
         if (i != quantifier.quantifierHead) {
-          sentence.get(CoreAnnotations.TokensAnnotation.class).get(i).remove(QuantifierAnnotation.class);
+          sentence.get(CoreAnnotations.TokensAnnotation.class).get(i).remove(OperatorAnnotation.class);
         }
       }
     }
   }
 
+  /**
+   * Annotate every token for its polarity, based on the operators found. This function will set the
+   * {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotations.PolarityAnnotation} for every token.
+   *
+   * @param sentence As in {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotator#doOneSentence(edu.stanford.nlp.pipeline.Annotation, edu.stanford.nlp.util.CoreMap)}
+   */
+  private void annotatePolarity(CoreMap sentence) {
+    // Collect all the operators in this sentence
+    List<OperatorSpec> operators = new ArrayList<>();
+    List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+    for (CoreLabel token : tokens) {
+      OperatorSpec specOrNull = token.get(OperatorAnnotation.class);
+      if (specOrNull != null) {
+        operators.add(specOrNull);
+      }
+    }
+
+    // Set polarity for each token
+    for (int i = 0; i < tokens.size(); ++i) {
+      CoreLabel token = tokens.get(i);
+      // Get operators in scope
+      List<Triple<Integer, Monotonicity, MonotonicityType>> inScope = new ArrayList<>(4);
+      for (OperatorSpec operator : operators) {
+        if (i >= operator.subjectBegin && i < operator.subjectEnd) {
+          inScope.add(Triple.makeTriple(operator.subjectEnd - operator.subjectBegin, operator.instance.subjMono, operator.instance.subjType));
+        } else if (i >= operator.objectBegin && i < operator.objectEnd) {
+          inScope.add(Triple.makeTriple(operator.objectEnd - operator.objectBegin, operator.instance.objMono, operator.instance.objType));
+        }
+      }
+      // Sort the operators by their scope (approximated by the size of their argument span
+      inScope.sort( (x, y) -> y.first - x.first);
+      // Create polarity
+      List<Pair<Monotonicity, MonotonicityType>> info = new ArrayList<>(inScope.size());
+      for (Triple<Integer, Monotonicity, MonotonicityType> term : inScope) {
+        info.add(Pair.makePair(term.second, term.third));
+      }
+      Polarity polarity = new Polarity(info);
+      // Set polarity
+      token.set(PolarityAnnotation.class, polarity);
+    }
+  }
+
+  /** {@inheritDoc} */
+  @Override
+  protected void doOneSentence(Annotation annotation, CoreMap sentence) {
+    annotateOperators(sentence);
+    annotatePolarity(sentence);
+  }
+
+  /** {@inheritDoc} */
   @Override
   protected int nThreads() {
     return 1;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected long maxTime() {
     return Long.MAX_VALUE;
   }
 
+  /** {@inheritDoc} */
   @Override
   protected void doOneFailedSentence(Annotation annotation, CoreMap sentence) {
     System.err.println("Failed to annotate: " + sentence.get(CoreAnnotations.TextAnnotation.class));
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<Requirement> requirementsSatisfied() {
     return Collections.EMPTY_SET;
   }
 
+  /** {@inheritDoc} */
   @Override
   public Set<Requirement> requires() {
     return TOKENIZE_SSPLIT_PARSE;

@@ -12,11 +12,12 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 /**
- * A test for the {@link edu.stanford.nlp.naturalli.QuantifierScopeAnnotator}.
+ * A test for the {@link NaturalLogicAnnotator} setting the right
+ * {@link edu.stanford.nlp.naturalli.NaturalLogicAnnotations.OperatorAnnotation}s.
  *
  * @author Gabor Angeli
  */
-public class QuantifierScopeITest {
+public class OperatorScopeITest {
 
   private static final StanfordCoreNLP pipeline = new StanfordCoreNLP(new Properties(){{
     setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
@@ -26,25 +27,25 @@ public class QuantifierScopeITest {
   }});
 
   static {
-    pipeline.addAnnotator(new QuantifierScopeAnnotator());
+    pipeline.addAnnotator(new NaturalLogicAnnotator());
   }
 
   @SuppressWarnings("unchecked")
-  private Optional<QuantifierSpec>[] annotate(String text) {
+  private Optional<OperatorSpec>[] annotate(String text) {
     Annotation ann = new Annotation(text);
     pipeline.annotate(ann);
     List<CoreLabel> tokens = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(CoreAnnotations.TokensAnnotation.class);
-    Optional<QuantifierSpec>[] scopes = new Optional[tokens.size()];
+    Optional<OperatorSpec>[] scopes = new Optional[tokens.size()];
     Arrays.fill(scopes, Optional.empty());
     for (int i = 0; i < tokens.size(); ++i) {
-      if (tokens.get(i).containsKey(QuantifierScopeAnnotator.QuantifierAnnotation.class)) {
-        scopes[i] = Optional.of(tokens.get(i).get(QuantifierScopeAnnotator.QuantifierAnnotation.class));
+      if (tokens.get(i).containsKey(NaturalLogicAnnotations.OperatorAnnotation.class)) {
+        scopes[i] = Optional.of(tokens.get(i).get(NaturalLogicAnnotations.OperatorAnnotation.class));
       }
     }
     return scopes;
   }
 
-  private void checkScope(int subjBegin, int subjEnd, int objBegin, int objEnd, Optional<QuantifierSpec> guess) {
+  private void checkScope(int subjBegin, int subjEnd, int objBegin, int objEnd, Optional<OperatorSpec> guess) {
     assertTrue("No quantifier found", guess.isPresent());
     assertEquals("Bad subject begin " + guess.get(), subjBegin, guess.get().subjectBegin);
     assertEquals("Bad subject end " + guess.get(), subjEnd, guess.get().subjectEnd);
@@ -52,7 +53,7 @@ public class QuantifierScopeITest {
     assertEquals("Bad object end " + guess.get(), objEnd, guess.get().objectEnd);
   }
 
-  private void checkScope(int subjBegin, int subjEnd, Optional<QuantifierSpec> guess) {
+  private void checkScope(int subjBegin, int subjEnd, Optional<OperatorSpec> guess) {
     assertTrue("No quantifier found", guess.isPresent());
     assertEquals("Bad subject begin " + guess.get(), subjBegin, guess.get().subjectBegin);
     assertEquals("Bad subject end " + guess.get(), subjEnd, guess.get().subjectEnd);
@@ -101,7 +102,7 @@ public class QuantifierScopeITest {
           break;
       }
     }
-    Optional<QuantifierSpec>[] scopes = annotate(StringUtils.join(cleanSentence, " "));
+    Optional<OperatorSpec>[] scopes = annotate(StringUtils.join(cleanSentence, " "));
     System.err.println("Checking [@ " + (quantEnd - 1) + "]:  " + spec);
     if (objBegin >= 0 && objEnd >= 0) {
       checkScope(subjBegin, subjEnd, objBegin, scopes.length, scopes[quantEnd - 1]);
@@ -131,6 +132,7 @@ public class QuantifierScopeITest {
     checkScope(1, 2, 2, 5, annotate("All cats are in boxes.")[0]);
     checkScope(1, 2, 2, 5, annotate("All cats voted for Roosevelt.")[0]);
     checkScope(1, 5, 5, 8, annotate("All cats who like dogs voted for Teddy.")[0]);
+    checkScope(1, 2, 2, 6, annotate("All cats have spoken to Fido.")[0]);
   }
 
   @Test
@@ -149,6 +151,12 @@ public class QuantifierScopeITest {
   }
 
   @Test
+  public void all_of_X_verb_Y() {
+    checkScope(1, 4, 4, 6, annotate("All of the cats hate dogs.")[0]);
+    checkScope(1, 6, 6, 9, annotate("Each of the other 99 companies owns one computer.")[0]);
+  }
+
+  @Test
   public void PER_predicate() {
     checkScope(0, 1, 1, 4, annotate("Felix likes cat food.")[0]);
   }
@@ -161,6 +169,21 @@ public class QuantifierScopeITest {
   @Test
   public void PER_predicate_prep() {
     checkScope(0, 1, 1, 7, annotate("Jack paid the bank for 10 years")[0]);
+  }
+
+  @Test
+  public void PER_has_predicate_prep() {
+    checkScope(0, 1, 1, 5, annotate("Felix has spoken to Fido.")[0]);
+  }
+
+  @Test
+  public void PER_is_nn() {
+    checkScope(0, 1, 1, 4, annotate("Felix is a cat.")[0]);
+  }
+
+  @Test
+  public void PER_is_jj() {
+    checkScope(0, 1, 1, 3, annotate("Felix is cute.")[0]);
   }
 
   @Test
@@ -181,7 +204,7 @@ public class QuantifierScopeITest {
 
   @Test
   public void unary_not() {
-    Optional<QuantifierSpec>[] quantifiers = annotate("some cats don't like dogs");
+    Optional<OperatorSpec>[] quantifiers = annotate("some cats don't like dogs");
     checkScope(1, 2, 2, 6, quantifiers[0]); // some
     checkScope(4, 6, quantifiers[3]); // no
     assertFalse(quantifiers[3].get().isBinary());  // is unary no
@@ -221,6 +244,14 @@ public class QuantifierScopeITest {
     checkScope("{ All } [ residents of member states ] [ are individuals ]");
     checkScope("{ All } [ residents of the North American continent ] [ can travel freely within Europe ]");
     checkScope("{ All } [ the people who were at the meeting ] [ voted for a new chairman ]");
+
+    checkScope("{ Each } [ Canadian resident ] [ can travel freely within Europe ]");
+    checkScope("{ Each } [ European ] [ can travel freely within Europe ]");
+    checkScope("{ Each } [ European ] [ has the right to live in Europe ]");
+    checkScope("{ Each } [ Italian tenor ] [ wants to be great ]");
+    checkScope("{ Each } [ department ] [ has a dedicated line ]");
+    checkScope("{ Each } [ of the other 99 companies ] [ owns one computer ]");
+    checkScope("{ Each } [ resident of the North American continent ] [ can travel freely within Europe ]");
   }
 
   @Test
@@ -239,6 +270,10 @@ public class QuantifierScopeITest {
     checkScope("{ A few } [ committee members ] [ are from Sweden ]");
     checkScope("{ A few } [ female committee members ] [ are from Scandinavia ]");
     checkScope("{ A few } [ great tenors ] [ sing popular music ]");
+
+    checkScope("{ At least a few } [ committee members ] [ are from Scandinavia ]");
+    checkScope("{ At least a few } [ committee members ] [ are from Sweden ]");
+    checkScope("{ At least a few } [ female committee members ] [ are from Scandinavia ]");
   }
 
   @Test
@@ -253,6 +288,60 @@ public class QuantifierScopeITest {
     checkScope("[ { APCOM } ] [ sold exactly 2500 computers ]");
     checkScope("[ { APCOM } ] [ won some orders ]");
     checkScope("[ { APCOM } ] [ won ten orders ]");
+
+    checkScope("[ { Bill } ] [ bought a car ]");
+    checkScope("[ { Bill } ] [ has spoken to Mary ]");
+    checkScope("[ { Bill } ] [ is going to ]");
+    checkScope("[ { Bill } ] [ knows why John had his paper accepted ]");
+    checkScope("[ { Bill } ] [ owns a blue car ]");
+    checkScope("[ { Bill } ] [ owns a blue one ]");
+    checkScope("[ { Bill } ] [ owns a car ]");
+    checkScope("[ { Bill } ] [ owns a fast car ]");
+    checkScope("[ { Bill } ] [ owns a fast one ]");
+    checkScope("[ { Bill } ] [ owns a fast red car ]");
+    checkScope("[ { Bill } ] [ owns a red car ]");
+    checkScope("[ { Bill } ] [ owns a slow one ]");
+    checkScope("[ { Bill } ] [ owns a slow red car ]");
+    checkScope("[ { Bill } ] [ said Mary wrote a report ]");
+    checkScope("[ { Bill } ] [ said Peter wrote a report ]");
+    checkScope("[ { Bill } ] [ spoke to Mary ]");
+    checkScope("[ { Bill } ] [ spoke to Mary at five o'clock ]");
+    checkScope("[ { Bill } ] [ spoke to Mary at four o'clock ]");
+    checkScope("[ { Bill } ] [ spoke to Mary on Monday ]");
+    checkScope("[ { Bill } ] [ spoke to everyone that John did ]");
+    checkScope("[ { Bill } ] [ suggested to Frank's boss that they should go to the meeting together, and Carl to Alan's wife ]");
+    checkScope("[ { Bill } ] [ went to Berlin by car ]");
+    checkScope("[ { Bill } ] [ went to Berlin by train ]");
+    checkScope("[ { Bill } ] [ went to Paris by train ]");
+    checkScope("[ { Bill } ] [ will speak to Mary ]");
+    checkScope("[ { Bill } ] [ wrote a report ]");
+
+    checkScope("[ { Dumbo } ] [ is a four-legged animal ]");
+    checkScope("[ { Dumbo } ] [ is a large animal ]");
+    checkScope("[ { Dumbo } ] [ is a small animal ]");
+    checkScope("[ { Dumbo } ] [ is a small elephant ]");
+    checkScope("[ { Dumbo } ] [ is four-legged ]");
+    checkScope("[ { Dumbo } ] [ is larger than Mickey ]");
+  }
+
+  @Test
+  public void fracasSentencesWithNumberQuantifiers() {
+    checkScope("{ At least three } [ commissioners ] [ spend a lot of time at home ]");
+    checkScope("{ At least three } [ commissioners ] [ spend time at home ]");
+    checkScope("{ At least three } [ female commissioners ] [ spend time at home ]");
+    checkScope("{ At least three } [ male commissioners ] [ spend time at home ]");
+    checkScope("{ At least three } [ tenors ] [ will take part in the concert ]");
+    checkScope("{ At most ten } [ commissioners ] [ spend a lot of time at home ]");
+    checkScope("{ At most ten } [ commissioners ] [ spend time at home ]");
+    checkScope("{ At most ten } [ female commissioners ] [ spend time at home ]");
+  }
+
+  @Test
+  public void fracasSentencesWithMost() {
+    checkScope("{ Both } [ commissioners ] [ used to be businessmen ]");
+    checkScope("{ Both } [ commissioners ] [ used to be leading businessmen ]");
+    checkScope("{ Both } [ leading tenors ] [ are excellent ]");
+    checkScope("{ Both } [ leading tenors ] [ are indispensable ]");
   }
 
 

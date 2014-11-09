@@ -49,7 +49,7 @@ public class Word {
   @SuppressWarnings("UnnecessaryUnboxing")
   private static int computeSense(int indexedWord, String gloss, DependencyTree<String> tree, int spanStart, int spanEnd) {
     // Check if its a quantifire
-    if (Quantifier.GLOSSES.contains(gloss.toLowerCase())) {
+    if (Operator.GLOSSES.contains(gloss.toLowerCase())) {
       return 0;
     }
 
@@ -184,11 +184,11 @@ public class Word {
     String gloss = String.join(" ", Arrays.asList(tree.nodes).subList(spanStart, spanEnd));
     int indexedWord = indexer.apply(gloss);
     if (indexedWord >= 0) {
-      if (Quantifier.GLOSSES.contains(gloss.toLowerCase())) {
+      if (Operator.GLOSSES.contains(gloss.toLowerCase())) {
         int[] spans = computeSpans(tree, spanStart);
         if (spans[0] >= 0) {
           if (spans[2] >= 0) {
-            for (Quantifier q : Quantifier.values()) {
+            for (Operator q : Operator.values()) {
               if (!q.isUnary() && q.surfaceForm.equals(gloss)) {
                 return Optional.of(new Word(
                     gloss, indexedWord,
@@ -198,7 +198,7 @@ public class Word {
               }
             }
           }
-          for (Quantifier q : Quantifier.values()) {
+          for (Operator q : Operator.values()) {
             if (q.isUnary() && q.surfaceForm.equals(gloss)) {
               return Optional.of(new Word(
                   gloss, indexedWord,
