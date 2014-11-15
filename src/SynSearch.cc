@@ -582,7 +582,7 @@ natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
     case DEP_PRT: return FUNCTION_INDEPENDENCE;
     case DEP_PUNCT: return FUNCTION_EQUIVALENT;
     case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;
-    case DEP_RCMOD: return FUNCTION_INDEPENDENCE;          // no documentation?
+    case DEP_RCMOD: return FUNCTION_FORWARD_ENTAILMENT;    // "there are great tennors --rcmod--> who are modest"
     case DEP_ROOT: return FUNCTION_INDEPENDENCE;           // err.. never delete
     case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;
     case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;

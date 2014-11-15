@@ -1,0 +1,91 @@
+make: Entering directory `/home/gabor/workspace/naturalli'
+make  all-recursive
+make[1]: Entering directory `/home/gabor/workspace/naturalli'
+Making all in src
+make[2]: Entering directory `/home/gabor/workspace/naturalli/src'
+make  all-recursive
+make[3]: Entering directory `/home/gabor/workspace/naturalli/src'
+Making all in fnv
+make[4]: Entering directory `/home/gabor/workspace/naturalli/src/fnv'
+make  all-am
+make[5]: Entering directory `/home/gabor/workspace/naturalli/src/fnv'
+make[5]: Nothing to be done for `all-am'.
+make[5]: Leaving directory `/home/gabor/workspace/naturalli/src/fnv'
+make[4]: Leaving directory `/home/gabor/workspace/naturalli/src/fnv'
+Making all in knheap
+make[4]: Entering directory `/home/gabor/workspace/naturalli/src/knheap'
+make[4]: Nothing to be done for `all'.
+make[4]: Leaving directory `/home/gabor/workspace/naturalli/src/knheap'
+make[4]: Entering directory `/home/gabor/workspace/naturalli/src'
+make[4]: Nothing to be done for `all-am'.
+make[4]: Leaving directory `/home/gabor/workspace/naturalli/src'
+make[3]: Leaving directory `/home/gabor/workspace/naturalli/src'
+make[2]: Leaving directory `/home/gabor/workspace/naturalli/src'
+Making all in test/src
+make[2]: Entering directory `/home/gabor/workspace/naturalli/test/src'
+Making all in gtest
+make[3]: Entering directory `/home/gabor/workspace/naturalli/test/src/gtest'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/gabor/workspace/naturalli/test/src/gtest'
+Making all in ../../src/fnv
+make[3]: Entering directory `/home/gabor/workspace/naturalli/src/fnv'
+make  all-am
+make[4]: Entering directory `/home/gabor/workspace/naturalli/src/fnv'
+make[4]: Nothing to be done for `all-am'.
+make[4]: Leaving directory `/home/gabor/workspace/naturalli/src/fnv'
+make[3]: Leaving directory `/home/gabor/workspace/naturalli/src/fnv'
+Making all in ../../src/knheap
+make[3]: Entering directory `/home/gabor/workspace/naturalli/src/knheap'
+make[3]: Nothing to be done for `all'.
+make[3]: Leaving directory `/home/gabor/workspace/naturalli/src/knheap'
+make[3]: Entering directory `/home/gabor/workspace/naturalli/test/src'
+make[3]: Nothing to be done for `all-am'.
+make[3]: Leaving directory `/home/gabor/workspace/naturalli/test/src'
+make[2]: Leaving directory `/home/gabor/workspace/naturalli/test/src'
+make[2]: Entering directory `/home/gabor/workspace/naturalli'
+make[2]: Leaving directory `/home/gabor/workspace/naturalli'
+make[1]: Leaving directory `/home/gabor/workspace/naturalli'
+make: Leaving directory `/home/gabor/workspace/naturalli'
+make: Entering directory `/home/gabor/workspace/naturalli'
+make: `src/naturalli_preprocess.jar' is up to date.
+make: Leaving directory `/home/gabor/workspace/naturalli'
+
+^^^ INFERENCE
+
+vvv RESULTS
+
+Examples run:
+75
+Examples failed:
+28
+Failures:
+
+FAIL: {"numResults": 0, "totalTicks": 2000000, "truth": 0.500000, "query": "There was an Italian who became the world's greatest tenor.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 116327, "truth": 0.500000, "query": "There are really ambitious tenors who are Italian.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 523951, "truth": 0.500000, "query": "There are really great tenors who are modest.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 55676, "truth": 0.500000, "query": "There are great tenors who are Swedish.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 55676, "truth": 0.500000, "query": "There are great tenors who are German.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 55676, "truth": 0.500000, "query": "There are great tenors who are British.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 55676, "truth": 0.500000, "query": "There are great tenors who are Italian.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 2000000, "truth": 0.500000, "query": "There are tenors who will take part in the concert.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 3142, "truth": 0.500000, "query": "At least three commissioners spend time at home.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 9844, "truth": 0.500000, "query": "One of the commissioners spends a lot of time at home.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 7788, "truth": 0.500000, "query": "At most ten commissioners spend a lot of time at home.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 103806, "truth": 0.500000, "query": "At least a few committee members are from Scandinavia.", "success": true}
+FAIL: {"numResults": 2, "totalTicks": 12440, "truth": 1.000000, "query": "John is a university student.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 19586, "truth": 0.500000, "query": "John is successful.", "success": true}
+FAIL: {"numResults": 2, "totalTicks": 12440, "truth": 1.000000, "query": "John is a university student.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 2000000, "truth": 0.500000, "query": "Every four-legged mammal is a four-legged animal.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 381, "truth": 0.500000, "query": "Dumbo is four-legged.", "success": true}
+FAIL: {"numResults": 1, "totalTicks": 1016191, "truth": 0.002500, "query": "Fido is a large animal.", "success": true}
+FAIL: {"numResults": 1, "totalTicks": 1016194, "truth": 0.002500, "query": "Fido is a small animal.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 463, "truth": 0.500000, "query": "John is fatter than Bill.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 13671, "truth": 0.500000, "query": "Kim is clever.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 536, "truth": 0.500000, "query": "The PC-6082 is slower than the ITEL-XZ.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 3455, "truth": 0.500000, "query": "ITEL won some orders.", "success": true}
+FAIL: {"numResults": 1, "totalTicks": 3455, "truth": 0.997500, "query": "APCOM won some orders.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 41936, "truth": 0.500000, "query": "ITEL won the APCOM contract.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 2440, "truth": 0.500000, "query": "ITEL won more than one order.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 1632237, "truth": 0.500000, "query": "APCOM has a more important customer than ITEL is.", "success": true}
+FAIL: {"numResults": 0, "totalTicks": 2000000, "truth": 0.500000, "query": "APCOM has a more important customer than ITEL has.", "success": true}
+
