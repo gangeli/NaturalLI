@@ -542,51 +542,51 @@ natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
 natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,
                                                   const ::word& dependent) {
   switch (dep) {
-    case DEP_ACOMP: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_ADVCL: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_ADVMOD: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_AMOD: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_APPOS: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_AUX: return FUNCTION_INDEPENDENCE;            // He left -/-> he should leave
-    case DEP_AUXPASS: return FUNCTION_INDEPENDENCE;        // Some cat adopts -/-> some cat got adopted
-    case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;       // match DEP_CONJ
-    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;          // interesting project here... "he said x" -> "x"?
-    case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;     // match DEP_CC
-    case DEP_COP: return FUNCTION_INDEPENDENCE;
-    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;          // don't drop subjects.
-    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;      // as above
-    case DEP_DEP: return FUNCTION_INDEPENDENCE;
-    case DEP_DET: return FUNCTION_EQUIVALENT;              // TODO(gabor) better treatment of generics?
-    case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;
-    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;           // don't drop objects.
-    case DEP_EXPL: return FUNCTION_EQUIVALENT;             // though we shouldn't see this...
-    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;         // also shouldn't see this
-    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;     // she gave me a raise -> she gave a raise
-    case DEP_MARK: return FUNCTION_INDEPENDENCE;
-    case DEP_MWE: return FUNCTION_INDEPENDENCE;            // shouldn't see this
-    case DEP_NEG: return FUNCTION_NEGATION;
-    case DEP_NN: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;       // not sure about this one
-    case DEP_NSUBJ: return FUNCTION_INDEPENDENCE;
-    case DEP_NSUBJPASS: return FUNCTION_INDEPENDENCE;
-    case DEP_NUM: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_NUMBER: return FUNCTION_INDEPENDENCE;
-    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;      // or, reverse?
-    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;          // though, not so in collapsed dependencies
-    case DEP_POBJ: return FUNCTION_INDEPENDENCE;           // must delete whole preposition
-    case DEP_POSS: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;       // see DEP_POSS
-    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;        // FORBIDDEN to see this
-    case DEP_PREDET: return FUNCTION_INDEPENDENCE;         // FORBIDDEN to see this
-    case DEP_PREP: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_PRT: return FUNCTION_INDEPENDENCE;
-    case DEP_PUNCT: return FUNCTION_EQUIVALENT;
-    case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;
-    case DEP_RCMOD: return FUNCTION_FORWARD_ENTAILMENT;    // "there are great tennors --rcmod--> who are modest"
-    case DEP_ROOT: return FUNCTION_INDEPENDENCE;           // err.. never delete
-    case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;
-    case DEP_XCOMP: return FUNCTION_INDEPENDENCE;
+    case DEP_ACOMP: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_ADVCL: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_ADVMOD: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_AMOD: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_APPOS: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_AUX: return FUNCTION_INDEPENDENCE;  //  he left -/-> he should leave
+    case DEP_AUXPASS: return FUNCTION_INDEPENDENCE;  //  some cat adopts -/-> some cat got adopted
+    case DEP_CC: return FUNCTION_REVERSE_ENTAILMENT;  //  match dep_conj
+    case DEP_CCOMP: return FUNCTION_INDEPENDENCE;  //  interesting project here... "he said x" -> "x"?
+    case DEP_CONJ: return FUNCTION_REVERSE_ENTAILMENT;  //  match dep_cc
+    case DEP_COP: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_CSUBJ: return FUNCTION_INDEPENDENCE;  //  don't drop subjects.
+    case DEP_CSUBJPASS: return FUNCTION_INDEPENDENCE;  //  as above
+    case DEP_DEP: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_DET: return FUNCTION_EQUIVALENT;  //  todo(gabor) better treatment of generics?
+    case DEP_DISCOURSE: return FUNCTION_EQUIVALENT;  //  
+    case DEP_DOBJ: return FUNCTION_INDEPENDENCE;  //  don't drop objects.
+    case DEP_EXPL: return FUNCTION_EQUIVALENT;  //  though we shouldn't see this...
+    case DEP_GOESWITH: return FUNCTION_EQUIVALENT;  //  also shouldn't see this
+    case DEP_IOBJ: return FUNCTION_REVERSE_ENTAILMENT;  //  she gave me a raise -> she gave a raise
+    case DEP_MARK: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_MWE: return FUNCTION_INDEPENDENCE;  //  shouldn't see this
+    case DEP_NEG: return FUNCTION_NEGATION;  //  
+    case DEP_NN: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_NPADVMOD: return FUNCTION_INDEPENDENCE;  //  not sure about this one
+    case DEP_NSUBJ: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_NSUBJPASS: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_NUM: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_NUMBER: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_PARATAXIS: return FUNCTION_INDEPENDENCE;  //  or, reverse?
+    case DEP_PCOMP: return FUNCTION_INDEPENDENCE;  //  though, not so in collapsed dependencies
+    case DEP_POBJ: return FUNCTION_INDEPENDENCE;  //  must delete whole preposition
+    case DEP_POSS: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_POSSEIVE: return FUNCTION_INDEPENDENCE;  //  see dep_poss
+    case DEP_PRECONJ: return FUNCTION_INDEPENDENCE;  //  forbidden to see this
+    case DEP_PREDET: return FUNCTION_INDEPENDENCE;  //  forbidden to see this
+    case DEP_PREP: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_PRT: return FUNCTION_INDEPENDENCE;  //  
+    case DEP_PUNCT: return FUNCTION_EQUIVALENT;  //  
+    case DEP_QUANTMOD: return FUNCTION_FORWARD_ENTAILMENT;  //  
+    case DEP_RCMOD: return FUNCTION_FORWARD_ENTAILMENT;  //  "there are great tennors --rcmod--> who are modest"
+    case DEP_ROOT: return FUNCTION_INDEPENDENCE;  //  err.. never delete
+    case DEP_TMOD: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_VMOD: return FUNCTION_REVERSE_ENTAILMENT;  //  
+    case DEP_XCOMP: return FUNCTION_INDEPENDENCE;  //  
     default:
       fprintf(stderr, "No such dependency label: %u\n", dep);
       std::exit(1);
