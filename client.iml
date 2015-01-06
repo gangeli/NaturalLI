@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
   <component name="FacetManager">
-    <facet type="scala" name="Scala">
-      <configuration>
-        <option name="compileOrder" value="JavaThenScala" />
-        <option name="compilerLibraryLevel" value="Project" />
-        <option name="compilerLibraryName" value="scala-compiler" />
-        <option name="languageLevel" value="Scala 2.11" />
-      </configuration>
-    </facet>
     <facet type="protobuf" name="Protobuf Facet">
       <configuration>
         <option name="COMPILER_OUTPUT_SOURCE_DIRECTORY" value="$MODULE_DIR$/src" />
@@ -38,7 +30,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="scala-library" level="project" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="scripts" level="project" />
     <orderEntry type="library" name="javanlp-core" level="project" />
@@ -64,6 +55,7 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="demo" level="project" />
+    <orderEntry type="library" name="scala-sdk" level="project" />
   </component>
 </module>
 

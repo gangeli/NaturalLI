@@ -45,7 +45,7 @@ class Preprocessor {
       // Set up paths
       char javaExecutable[128];
       snprintf(javaExecutable, 127, "%s/bin/java", JDK_HOME);
-      std::string javaClass = "edu.stanford.nlp.naturalli.Preprocess";
+      std::string javaClass = "edu.stanford.nlp.naturalli.ProcessQuery";
       char wordnetEnv[128];
       snprintf(wordnetEnv, 127, "-Dwordnet.database.dir=%s", WORDNET_DICT);
       char classpath[1024];

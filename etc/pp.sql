@@ -8,10 +8,12 @@ DROP TABLE IF EXISTS subj;
 DROP TABLE IF EXISTS subj_obj_pp_check;
 DROP TABLE IF EXISTS subj_pp_pp_check;
 DROP TABLE IF EXISTS subj_pp_obj_check;
+DROP TABLE IF EXISTS subj_pp_anyobj_check;
 DROP TABLE IF EXISTS subj_pp_check;
 DROP TABLE IF EXISTS obj_pp_check;
 DROP TABLE IF EXISTS pp_pp_check;
 DROP TABLE IF EXISTS pp_obj_check;
+DROP TABLE IF EXISTS pp_anyobj_check;
 DROP TABLE IF EXISTS pp_check;
 
 --
@@ -122,8 +124,12 @@ CREATE TABLE subj_obj_pp_check AS
     yp.obj  = np.obj
 DISTRIBUTED BY (verb);
 
+UPDATE subj_obj_pp_check SET percent=1.0 WHERE percent > 1.0;
+
 CREATE TABLE obj_pp_check AS
-  SELECT verb, obj, pp, AVG(percent) AS percent, SUM(positive_count) AS positive_count
+  SELECT verb, obj, pp, 
+         SUM(positive_count * percent) / SUM(positive_count) AS percent,
+         SUM(positive_count)   AS positive_count
   FROM subj_obj_pp_check
   GROUP BY(verb, obj, pp)
 DISTRIBUTED BY (verb);
@@ -148,8 +154,12 @@ CREATE TABLE subj_pp_pp_check AS
     yp.pp_other  = np.pp
 DISTRIBUTED BY (verb);
 
+UPDATE subj_pp_pp_check SET percent=1.0 WHERE percent > 1.0;
+
 CREATE TABLE pp_pp_check AS
-  SELECT verb, pp_other, pp, AVG(percent) AS percent, SUM(positive_count) AS positive_count
+  SELECT verb, pp_other, pp, 
+         SUM(positive_count * percent) / SUM(positive_count) AS percent,
+         SUM(positive_count)   AS positive_count
   FROM subj_pp_pp_check
   GROUP BY(verb, pp_other, pp)
 DISTRIBUTED BY (verb);
@@ -174,10 +184,29 @@ CREATE TABLE subj_pp_obj_check AS
     yp.pp        = np.pp
 DISTRIBUTED BY (verb);
 
-CREATE TABLE pp_obj_check AS
-  SELECT verb, obj, pp, AVG(percent) AS percent, SUM(positive_count) AS positive_count
-  FROM subj_obj_pp_check
-  GROUP BY(verb, obj, pp)
+UPDATE subj_pp_obj_check SET percent=1.0 WHERE percent > 1.0;
+
+--
+-- Probability of dropping any obj given (subj, pp)
+--
+CREATE TABLE subj_pp_anyobj_check AS
+  SELECT
+    verb         AS verb,
+    subj         AS subj,
+    pp           AS pp,
+    SUM(positive_count * percent) / SUM(positive_count) AS percent,
+    SUM(positive_count)   AS positive_count
+  FROM
+    subj_pp_obj_check
+  GROUP BY (verb, subj, pp)
+DISTRIBUTED BY (verb);
+
+CREATE TABLE pp_anyobj_check AS
+  SELECT verb, pp, 
+         SUM(positive_count * percent) / SUM(positive_count) AS percent,
+         SUM(positive_count)   AS positive_count
+  FROM subj_pp_anyobj_check
+  GROUP BY(verb, pp)
 DISTRIBUTED BY (verb);
 
 --
@@ -198,8 +227,12 @@ CREATE TABLE subj_pp_check AS
     yp.subj      = np.subj
 DISTRIBUTED BY (verb);
 
+UPDATE subj_pp_check SET percent=1.0 WHERE percent > 1.0;
+
 CREATE TABLE pp_check AS
-  SELECT verb, pp, AVG(percent) AS percent, SUM(positive_count) AS positive_count
+  SELECT verb, pp,
+         SUM(positive_count * percent) / SUM(positive_count) AS percent,
+         SUM(positive_count)   AS positive_count
   FROM subj_pp_check
   GROUP BY(verb, pp)
 DISTRIBUTED BY (verb);

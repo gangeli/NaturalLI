@@ -34,7 +34,7 @@ public class Preprocess {
 
   public static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse");
+      setProperty("annotators", "tokenize,ssplit,pos,lemma,depparse");
       setProperty("ssplit.isOneSentence", "true");
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
