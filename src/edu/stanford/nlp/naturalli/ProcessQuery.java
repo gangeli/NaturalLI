@@ -174,13 +174,25 @@ public class ProcessQuery {
     tree.vertexListSorted().forEach(sentence::add);
     List<String> words = sentence.stream().map(IndexedWord::lemma).collect(Collectors.toList());
 
+    // Compute the tree to sentence index
+    int[] treeToSentenceIndex = new int[sentence.get(sentence.size() - 1).index() + 1];
+    for (int i = 0; i < sentence.size(); ++i ) {
+      if (i > 0) {
+        for (int k = sentence.get(i - 1).index(); k < sentence.get(i).index() - 1; ++k) {
+          treeToSentenceIndex[k] = i;
+        }
+      }
+      treeToSentenceIndex[sentence.get(i).index() - 1] = i;
+    }
+    treeToSentenceIndex[sentence.get(sentence.size() - 1).index()] = sentence.size();
+
     // Compute the parents in a more readable form
     int[] parentIndex = new int[sentence.size()];
     for (int i = 0; i < sentence.size(); ++i) {
       if (tree.getRoots().contains(sentence.get(i))) {
         parentIndex[i] = -1;
       } else {
-        parentIndex[i] = tree.incomingEdgeIterator(sentence.get(i)).next().getGovernor().index() - 1;
+        parentIndex[i] = treeToSentenceIndex[tree.incomingEdgeIterator(sentence.get(i)).next().getGovernor().index() - 1];
       }
     }
 
@@ -208,8 +220,7 @@ public class ProcessQuery {
         }
         // Add the token
         if (add) {
-          conllTokenByStartIndex.add(new Token(gloss, wordAsInt, sense, operator,
-              sentence.get(start).index() - 1, sentence.get(end - 1).index()));
+          conllTokenByStartIndex.add(new Token(gloss, wordAsInt, sense, operator, start, end));
         }
       }
     });
@@ -239,7 +250,7 @@ public class ProcessQuery {
       if (parentIndex[root] >= 0) {
         SemanticGraphEdge incomingSemGraphEdge = tree.incomingEdgeIterator(sentence.get(root)).next();
         incomingEdge = incomingSemGraphEdge.getRelation().toString();
-        governorIndex = originalToTokenizedIndex(conllTokenByStartIndex, incomingSemGraphEdge.getGovernor().index() - 1);
+        governorIndex = originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[incomingSemGraphEdge.getGovernor().index() - 1]);
       }
       return Pair.makePair(governorIndex, incomingEdge);
     }).collect(Collectors.toList());
@@ -262,17 +273,17 @@ public class ProcessQuery {
         Operator operator = operatorInfo.instance;
         b.append("\t").append(Operator.monotonicitySignature(operator.subjMono, operator.subjType));
         b.append("\t")
-            .append(originalToTokenizedIndex(conllTokenByStartIndex, operatorInfo.subjectBegin) + 1)
+            .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.subjectBegin]) + 1)
             .append("-")
-            .append(originalToTokenizedIndex(conllTokenByStartIndex, operatorInfo.subjectEnd) + 1);
+            .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.subjectEnd]) + 1);
         if (operator.isUnary()) {
           b.append("\t-\t-");
         } else {
           b.append("\t").append(Operator.monotonicitySignature(operator.objMono, operator.objType));
           b.append("\t")
-              .append(originalToTokenizedIndex(conllTokenByStartIndex, operatorInfo.objectBegin) + 1)
+              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectBegin]) + 1)
               .append("-")
-              .append(originalToTokenizedIndex(conllTokenByStartIndex, operatorInfo.objectEnd) + 1);
+              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectEnd]) + 1);
         }
       } else {
         // (if not present)
@@ -285,7 +296,7 @@ public class ProcessQuery {
 
   }
 
-  public static StanfordCoreNLP constructPipeline() {
+  protected static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
       setProperty("annotators", "tokenize,ssplit,pos,lemma,depparse,natlog");
       setProperty("ssplit.isOneSentence", "true");
@@ -296,7 +307,7 @@ public class ProcessQuery {
     return new StanfordCoreNLP(props);
   }
 
-  public static String annotate(StanfordCoreNLP pipeline, String line) {
+  protected static String annotate(StanfordCoreNLP pipeline, String line) {
     Annotation ann = new Annotation(line);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
