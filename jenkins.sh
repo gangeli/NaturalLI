@@ -5,8 +5,6 @@ set -e
 set -o xtrace
 
 export MAXMEM_GB=6
-export JAVANLP_HOME=${JAVANLP_HOME-/home/gabor/workspace/nlp}
-echo "JavaNLP at: $JAVANLP_HOME"
 export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
