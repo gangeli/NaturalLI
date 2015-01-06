@@ -24,13 +24,6 @@ public class StaticResources {
     }
   }});
 
-  public static Map<Integer, String> PHRASE_GLOSSER = Collections.unmodifiableMap(new HashMap<Integer, String>() {{
-    for (String line : IOUtils.readLines("etc/words.tab.gz")) {
-      String[] fields = line.split("\t");
-      put(Integer.parseInt(fields[0]), fields[1]);
-    }
-  }});
-
   public static Function<String, Integer> INDEXER = (String gloss) -> {
     Integer index = PHRASE_INDEXER.get(gloss);
     if (index != null) { return index; }
