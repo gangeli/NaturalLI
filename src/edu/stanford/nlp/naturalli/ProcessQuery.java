@@ -280,22 +280,28 @@ public class ProcessQuery {
         // (if present)
         OperatorSpec operatorInfo = token.operatorInfo.get();
         Operator operator = operatorInfo.instance;
-        b.append("\t").append(Operator.monotonicitySignature(operator.subjMono, operator.subjType));
-        b.append("\t")
-            .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.subjectBegin]) + 1)
-            .append("-")
-            .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.subjectEnd]) + 1);
-        if (operator.isUnary()) {
-          b.append("\t-\t-");
+        if (operatorInfo.subjectBegin >= treeToSentenceIndex.length || treeToSentenceIndex[operatorInfo.subjectBegin] >= sentence.size()) {
+          b.append("\t-\t-\t-\t-");  // The operator is actually just wiped out
         } else {
-          if (treeToSentenceIndex[operatorInfo.objectBegin] >= sentence.size()) {
-            b.append("\t-\t-");  // Case: we chopped off the second half of a quantifier scope  (all cats like dogs -> all cats)
+          assert operatorInfo.subjectBegin < treeToSentenceIndex.length;
+          b.append("\t").append(Operator.monotonicitySignature(operator.subjMono, operator.subjType));
+          b.append("\t")
+              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.subjectBegin]) + 1)
+              .append("-")
+              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[Math.min(operatorInfo.subjectEnd, treeToSentenceIndex.length - 1)]) + 1);
+          if (operator.isUnary()) {
+            b.append("\t-\t-");
           } else {
-            b.append("\t").append(Operator.monotonicitySignature(operator.objMono, operator.objType));
-            b.append("\t")
-                .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectBegin]) + 1)
-                .append("-")
-                .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectEnd]) + 1);
+            if (operatorInfo.objectBegin >= treeToSentenceIndex.length || treeToSentenceIndex[operatorInfo.objectBegin] >= sentence.size()) {
+              b.append("\t-\t-");  // Case: we chopped off the second half of a quantifier scope  (all cats like dogs -> all cats)
+            } else {
+              assert operatorInfo.objectBegin < treeToSentenceIndex.length;
+              b.append("\t").append(Operator.monotonicitySignature(operator.objMono, operator.objType));
+              b.append("\t")
+                  .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectBegin]) + 1)
+                  .append("-")
+                  .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[Math.min(operatorInfo.objectEnd, treeToSentenceIndex.length - 1)]) + 1);
+            }
           }
         }
       } else {

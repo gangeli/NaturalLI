@@ -24,6 +24,13 @@ public class ProcessPremiseITest {
     }
   }
 
+  @Test
+  public void regressionTest2() throws IOException {
+    for (SentenceFragment fragment : ProcessPremise.forwardEntailments("At least three tenors will take part in the concert.", pipeline)) {
+      ProcessQuery.conllDump(fragment.parseTree);
+    }
+  }
+
   /**
    * Run through FraCaS, and make sure none of the sentences crash the premise generator
    */
