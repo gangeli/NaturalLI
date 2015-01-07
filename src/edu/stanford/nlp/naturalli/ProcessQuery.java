@@ -288,11 +288,15 @@ public class ProcessQuery {
         if (operator.isUnary()) {
           b.append("\t-\t-");
         } else {
-          b.append("\t").append(Operator.monotonicitySignature(operator.objMono, operator.objType));
-          b.append("\t")
-              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectBegin]) + 1)
-              .append("-")
-              .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectEnd]) + 1);
+          if (treeToSentenceIndex[operatorInfo.objectBegin] >= sentence.size()) {
+            b.append("\t-\t-");  // Case: we chopped off the second half of a quantifier scope  (all cats like dogs -> all cats)
+          } else {
+            b.append("\t").append(Operator.monotonicitySignature(operator.objMono, operator.objType));
+            b.append("\t")
+                .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectBegin]) + 1)
+                .append("-")
+                .append(originalToTokenizedIndex(conllTokenByStartIndex, treeToSentenceIndex[operatorInfo.objectEnd]) + 1);
+          }
         }
       } else {
         // (if not present)
@@ -318,6 +322,12 @@ public class ProcessQuery {
       setProperty("naturalli.doPolarity", "false");
     }};
     return new StanfordCoreNLP(props);
+  }
+
+  protected static String annotateHumanReadable(String line, StanfordCoreNLP pipeline) {
+    Pointer<String> debug = new Pointer<>();
+    annotate(line, pipeline, debug);
+    return debug.dereference().get();
   }
 
   protected static String annotate(String line, StanfordCoreNLP pipeline) {

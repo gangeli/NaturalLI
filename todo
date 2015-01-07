@@ -1,5 +1,6 @@
 
 Half-baked components:
+  - incorporate new graph from Neha
   - fix dependency parses (e.g., negation, punctuation).
   - update quantifier polarity during search.
   - add meronymy; relation entailment.
