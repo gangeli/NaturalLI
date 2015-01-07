@@ -3,133 +3,13 @@
 #include <cstring>
 #include <cmath>
 #include <signal.h>
-#include <iostream>
-#include <iomanip>
-#include <mutex>
-#include <unistd.h>
 
 #include "config.h"
 #include "SynSearch.h"
 #include "Utils.h"
+#include "JavaBridge.h"
 
 using namespace std;
-
-/**
- * The interface for the Java pre-processor, responsible for
- * annotating the raw text of a sentence into a dependency parse, already
- * indexed and marked with quantifiers and quantifier properties.
- */
-class Preprocessor {
- public:
-  /**
-   * Create a bidirectional pipe to the Java program, and start the program
-   */
-  Preprocessor() {
-    // Set up subprocess
-    pid_t pid;
-    int pipeIn[2];
-    int pipeOut[2];
-    pipe(pipeIn);
-    pipe(pipeOut);
-    pid = fork();
-    if (pid == 0) {
-  
-      // --Child is running here--
-      // Get directory of running executable
-      char thisPathBuffer[256];
-      memset(thisPathBuffer, 0, sizeof(thisPathBuffer));
-      readlink("/proc/self/exe", thisPathBuffer, 255);
-      string thisPath = string(thisPathBuffer);
-      int lastSlash = thisPath.find_last_of("/");
-      string thisDir = thisPath.substr(0, lastSlash);
-      // Set up paths
-      char javaExecutable[128];
-      snprintf(javaExecutable, 127, "%s/bin/java", JDK_HOME);
-      std::string javaClass = "edu.stanford.nlp.naturalli.ProcessQuery";
-      char wordnetEnv[128];
-      snprintf(wordnetEnv, 127, "-Dwordnet.database.dir=%s", WORDNET_DICT);
-      char classpath[1024];
-      snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s", 
-          thisDir.c_str(), thisDir.c_str(), thisDir.c_str(),
-          CORENLP, CORENLP_MODELS);
-      // Start program
-      dup2(pipeIn[0], STDIN_FILENO);
-      dup2(pipeOut[1], STDOUT_FILENO);
-      execl(javaExecutable, javaExecutable, "-mx1g", wordnetEnv, "-cp", classpath,
-          javaClass.c_str(), "true", (char*) NULL);
-      // Should never reach here
-      exit(1);
-  
-    } else {
-      // --Parent is running here--
-      this->childIn = pipeIn[1];
-      this->childOut = pipeOut[0];
-      this->pid = pid;
-    }
-  }
-
-  /**
-   * Kill the subprocess program and close the pipes.
-   */
-  ~Preprocessor() {
-    close(childIn);
-    close(childOut);
-    kill(this->pid, SIGTERM);
-  }
-
-  /**
-   * Annotate a given sentence into a Tree object which can be used 
-   * for search.
-   * Returns NULL if the tree is longer than allowed.
-   */
-  Tree* annotate(const char* sentence) {
-    // Write sentence
-    int sentenceLength = strlen(sentence);
-    this->lock.lock();
-    if (sentence[sentenceLength - 1] != '\n') {
-      char buffer[sentenceLength + 2];
-      memcpy(buffer, sentence, sentenceLength * sizeof(char));
-      buffer[sentenceLength] = '\n';
-      buffer[sentenceLength + 1] = '\0';
-      write(this->childIn, buffer, strlen(buffer));
-    } else {
-      write(this->childIn, sentence, strlen(sentence));
-    }
-
-    // Read tree
-    int numNewlines = 0;
-    string conll = "";
-    char c;
-    uint32_t numLines = 0;
-    while (numNewlines < 2) {
-      if (read(this->childOut, &c, 1) > 0) {
-        conll.append(&c, 1);
-        if (c == '\n') {
-          numLines += 1;
-          numNewlines += 1;
-        } else {
-          numNewlines = 0;
-        }
-      }
-    }
-    this->lock.unlock();
-    if (numLines > MAX_FACT_LENGTH) {
-      return NULL;
-    } else {
-      return new Tree(conll);
-    }
-  }
-
- private:
-  /** The file descriptor of stdin of the child process */
-  int childIn;
-  /** The file descriptor of stdout of the child process */
-  int childOut;
-  /** The process id of the child process */
-  pid_t pid;
-  /** A lock, to make sure we're not making concurrent calls to the annotator */
-  mutex lock;
-};
 
 const char* escapeQuote(const string& input) {
   size_t index = 0;
@@ -194,7 +74,7 @@ inline double probability(const double& confidence, const bool& truth) {
  *
  * @return A JSON formatted response with the result of the search.
  */
-string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const string& query,
+string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const string& query,
                     const BidirectionalGraph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
   // Create KB
@@ -202,15 +82,12 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
   btree::btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
-    const Tree* fact = proc.annotate(iter->c_str());
-    if (fact != NULL) {
-      ForwardPartialSearch(graph, fact, [&auxKB,&factsInserted](SearchNode node) -> void {
-        auxKB.insert(node.factHash());
-        factsInserted += 1;
-      });
-      delete fact;
-    } else {
-      fprintf(stderr, "premise is too long; ignoring: '%s'\n", iter->c_str());
+    vector<Tree*> treesForFact = proc.annotatePremise(iter->c_str());
+    for (auto treeIter = treesForFact.begin(); treeIter != treesForFact.end(); ++treeIter) {
+      Tree* premise = *treeIter;
+      auxKB.insert(SearchNode(*premise).factHash());
+      factsInserted += 1;
+      delete premise;
     }
   }
   printTime("[%c] ");
@@ -218,7 +95,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
           knownFacts.size(), factsInserted);
 
   // Create Query
-  const Tree* input = proc.annotate(query.c_str());
+  const Tree* input = proc.annotateQuery(query.c_str());
   if (input == NULL) {
     *truth = 0.0;
     return "{\"success\": false, \"reason\": \"hypothesis (query) is too long\"}";
@@ -271,7 +148,7 @@ string executeQuery(Preprocessor& proc, const vector<string>& knownFacts, const 
  *
  * @return The number of failed examples, if any were annotated. 0 by default.
  */
-uint32_t repl(const BidirectionalGraph* graph, Preprocessor& proc) {
+uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
@@ -374,11 +251,11 @@ int32_t main( int32_t argc, char *argv[] ) {
   sigemptyset(&sigIntHandler.sa_mask);
   sigIntHandler.sa_flags = 0;
   // (catch signals)
-  sigaction(SIGINT,  &sigIntHandler, NULL);
+//  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the java process to die
   sigaction(SIGPIPE, &sigIntHandler, NULL);
 
   // Start REPL
-  Preprocessor proc;
+  JavaBridge proc;
   BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
   uint32_t retVal =  repl(graph, proc);
   delete graph;

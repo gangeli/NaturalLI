@@ -12,6 +12,7 @@ import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.Pointer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -169,6 +170,11 @@ public class ProcessQuery {
   }
 
   public static String conllDump(SemanticGraph tree) {
+    return conllDump(tree, new Pointer<>());
+
+  }
+
+  public static String conllDump(SemanticGraph tree, Pointer<String> readableDump) {
     // Variables
     List<IndexedWord> sentence = new ArrayList<>();
     tree.vertexListSorted().forEach(sentence::add);
@@ -256,12 +262,15 @@ public class ProcessQuery {
     }).collect(Collectors.toList());
 
     // Dump String
-    StringBuilder b = new StringBuilder();
+    StringBuilder production = new StringBuilder();
+    StringBuilder debug = new StringBuilder();
     for (int i = 0; i < conllTokenByStartIndex.size(); ++i) {
       Token token = conllTokenByStartIndex.get(i);
       Pair<Integer, String> incomingEdge = governors.get(i);
       // Encode tree
-      b.append(token.gloss.replace("\t", "\\t"));
+      production.append(token.word);
+      debug.append(token.gloss.replace("\\t", " "));
+      StringBuilder b = new StringBuilder();
       b.append("\t").append(incomingEdge.first + 1)
           .append("\t").append(incomingEdge.second.replace("\t", "\\t"));
       // Word sense
@@ -291,14 +300,18 @@ public class ProcessQuery {
       }
       // Trailing newline
       b.append("\n");
+      production.append(b.toString());
+      debug.append(b.toString());
     }
-    return b.toString();
+    readableDump.set(debug.toString());
+    return production.toString();
 
   }
 
   protected static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
       setProperty("annotators", "tokenize,ssplit,pos,lemma,depparse,natlog");
+      setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("ssplit.isOneSentence", "true");
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
@@ -307,13 +320,16 @@ public class ProcessQuery {
     return new StanfordCoreNLP(props);
   }
 
-  protected static String annotate(StanfordCoreNLP pipeline, String line) {
+  protected static String annotate(String line, StanfordCoreNLP pipeline) {
+    return annotate(line, pipeline, new Pointer<>());
+  }
+
+  protected static String annotate(String line, StanfordCoreNLP pipeline, Pointer<String> debugDump) {
     Annotation ann = new Annotation(line);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
     Util.cleanTree(dependencies);  // note: in place!
-    //noinspection PointlessBooleanExpression
-    return conllDump(dependencies);
+    return conllDump(dependencies, debugDump);
   }
 
   public static void main(String[] args) throws IOException {
@@ -327,7 +343,7 @@ public class ProcessQuery {
     while ((line = reader.readLine()) != null) {
       if (!line.trim().equals("")) {
         System.err.println("Annotating '" + line + "'");
-        String annotated = annotate(pipeline, line);
+        String annotated = annotate(line, pipeline);
         System.out.println(annotated);
         System.out.flush();
       }

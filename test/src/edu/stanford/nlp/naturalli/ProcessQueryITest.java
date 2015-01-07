@@ -20,9 +20,9 @@ public class ProcessQueryITest {
         "cat	3	nsubj	1	-	-	-	-\n" +
         "have	0	root	2	-	-	-	-\n"+
         "tail	3	dobj	2	-	-	-	-\n";
-    assertEquals(expected, ProcessQuery.annotate(pipeline, "all cats have tails"));
-    assertEquals(expected, ProcessQuery.annotate(pipeline, "all cats have tails."));
-    assertEquals(expected, ProcessQuery.annotate(pipeline, "all cats, have tails."));
+    assertEquals(expected, ProcessQuery.annotate("all cats have tails", pipeline));
+    assertEquals(expected, ProcessQuery.annotate("all cats have tails.", pipeline));
+    assertEquals(expected, ProcessQuery.annotate("all cats, have tails.", pipeline));
   }
 
   @Test
@@ -32,7 +32,7 @@ public class ProcessQueryITest {
         "cat	4	nsubj	1	-	-	-	-\n" +
         "be	4	cop	9	-	-	-	-\n"+
         "blue	0	root	3	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "all cats are blue"));
+        ProcessQuery.annotate("all cats are blue", pipeline));
   }
 
   @Test
@@ -42,7 +42,7 @@ public class ProcessQueryITest {
         "cat	3	nsubj	1	-	-	-	-\n" +
         "play	0	root	21	-	-	-	-\n" +
         "yarn	3	prep_with	2	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "some cats play with yarn")
+        ProcessQuery.annotate("some cats play with yarn", pipeline)
     );
   }
 
@@ -53,7 +53,7 @@ public class ProcessQueryITest {
         "cat	3	nsubj	1	-	-	-	-\n" +
         "like	0	root	4	-	-	-	-\n" +
         "dog	3	dobj	1	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "no cat likes dogs")
+        ProcessQuery.annotate("no cat likes dogs", pipeline)
     );
   }
 
@@ -65,7 +65,7 @@ public class ProcessQueryITest {
             "be	5	cop	9	-	-	-	-\n" +
             "very	5	advmod	1	-	-	-	-\n" +
             "beautiful	0	root	1	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "no man is very beautiful")
+        ProcessQuery.annotate("no man is very beautiful", pipeline)
     );
   }
 
@@ -78,7 +78,7 @@ public class ProcessQueryITest {
             "who	5	nsubj	9	-	-	-	-\n" +
             "be	5	cop	1	-	-	-	-\n" +
             "friendly	1	rcmod	1	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "There are cats who are friendly")
+        ProcessQuery.annotate("There are cats who are friendly", pipeline)
     );
   }
 
@@ -89,7 +89,7 @@ public class ProcessQueryITest {
         "black cat	3	nsubj	1	-	-	-	-\n" +
         "have	0	root	2	-	-	-	-\n"+
         "tail	3	dobj	2	-	-	-	-\n";
-    assertEquals(expected, ProcessQuery.annotate(pipeline, "all black cats have tails"));
+    assertEquals(expected, ProcessQuery.annotate("all black cats have tails", pipeline));
   }
 
   @Ignore // TODO(gabor) I think this test is actually wrong?
@@ -102,7 +102,7 @@ public class ProcessQueryITest {
             "be	6	cop	9	-	-	-	-\n" +
             "lead	6	amod	20	-	-	-	-\n" +
             "businessman	3	xcomp	2	-	-	-	-\n",
-        ProcessQuery.annotate(pipeline, "Both commissioners used to be leading businessmen")
+        ProcessQuery.annotate("Both commissioners used to be leading businessmen", pipeline)
     );
   }
 

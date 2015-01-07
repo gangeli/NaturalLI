@@ -1,12 +1,12 @@
 
 Half-baked components:
   - fix dependency parses (e.g., negation, punctuation).
-  - prepositions in forward entailment.
   - update quantifier polarity during search.
   - add meronymy; relation entailment.
   - think through all the quantifier monotonicities.
   - update C++ code with collapsed dependencies
   - FraCaS had some dependency tweaks that I was supposed to implement
+  * prepositions in forward entailment.
 
 
 Additional types of mutations:

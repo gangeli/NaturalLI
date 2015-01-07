@@ -120,8 +120,18 @@ CORENLP_CASELESS_MODELS=/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-casel
 AC_ARG_WITH([corenlp-caseless-models],
   [AS_HELP_STRING([--with-corenlp-caseless-models=/path/to/jar/file],[The path to the CoreNLP caseless models jar file])],
   [CORENLP_CASELESS_MODELS="$with_corenlp_caseless_models"],
-  [AC_MSG_NOTICE([a custom location for the CoreNLP caseless models can be specified using --with-corenlp-models])]
+  [AC_MSG_NOTICE([a custom location for the CoreNLP caseless models can be specified using --with-corenlp-caseless-models])]
 )
+
+# (NaturalLI models)
+AC_SUBST(NATURALLI_MODELS)
+NATURALLI_MODELS=etc/naturalli_models.jar
+AC_ARG_WITH([naturalli-models],
+  [AS_HELP_STRING([--with-naturalli-models=/path/to/jar/file],[The path to the NaturalLI extensions to the CoreNLP models.])],
+  [NATURALLI_MODELS="$with_naturalli_models"],
+  [AC_MSG_NOTICE([a custom location for the naturalli-specific models can be specified using --with-naturalli-models])]
+)
+AC_DEFINE_UNQUOTED(NATURALLI_MODELS, "${NATURALLI_MODELS}", [The location of the NaturalLI auxilliary models jar])
 
 # (check headers)
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
