@@ -34,6 +34,49 @@ else
 endif
 export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.6.jar:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar:${LIB}/stanford-corenlp-models-current.jar:${LIB}/stanford-corenlp-caseless-models-current.jar
 
+# (some tasks)
+etc/.pp_affinity: etc/pp.sql
+	psql -h ${GP_HOST} -p ${GP_PORT} -U ${GP_USER} ${GP_DB} -f etc/pp.sql
+	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+	  -c "COPY (SELECT * FROM pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+	  | gzip > etc/pp.tab.gz
+	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+	  -c "COPY (SELECT * FROM subj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+	  | gzip > etc/subj_pp.tab.gz
+	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+	  -c "COPY (SELECT * FROM subj_obj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+	  | gzip > etc/subj_obj_pp.tab.gz
+	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+	  -c "COPY (SELECT * FROM subj_pp_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+	  | gzip > etc/subj_pp_pp.tab.gz
+	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+	  -c "COPY (SELECT * FROM subj_pp_obj_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+	  | gzip > etc/subj_pp_obj.tab.gz
+	touch etc/.pp_affinity
+
+# (script targets)
+etc/pp.tab.gz: etc/.pp_affinity
+etc/subj_pp.tab.gz: etc/.pp_affinity
+etc/subj_obj_pp.tab.gz: etc/.pp_affinity
+etc/subj_pp_pp.tab.gz: etc/.pp_affinity
+etc/subj_pp_obj.tab.gz: etc/.pp_affinity
+
+etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
+	$(eval TMP := $(shell mktemp -d))
+	mkdir -p ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/subj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/subj_obj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp etc/clauseSearcherModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
+	jar cvf naturalli_models.jar -C ${TMP} .
+	touch etc/naturalli_models.jar  # make sure this is the last thing we touch
+
+etc/graph.tab.gz: $(wildcard etc/graphData/*.txt) 
+	cd etc && ./mkGraph.sh
+	touch etc/graph.tab.gz
+
 # (some targets)
 src/edu/stanford/nlp/naturalli/Messages.java: src/Messages.proto
 	$(MAKE) -C src edu/stanford/nlp/naturalli/Messages.java
@@ -47,6 +90,7 @@ src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/
 test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*)
 	$(MAKE) -C src naturalli_preprocess.jar
 	$(MAKE) -C test/src test_preprocess.jar
+
 
 # (some helpers)
 preprocess: src/naturalli_preprocess.jar

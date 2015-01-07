@@ -133,6 +133,16 @@ AC_ARG_WITH([naturalli-models],
 )
 AC_DEFINE_UNQUOTED(NATURALLI_MODELS, "${NATURALLI_MODELS}", [The location of the NaturalLI auxilliary models jar])
 
+# (greenplum)
+AC_SUBST(GP_HOST)
+GP_HOST=julie0
+AC_SUBST(GP_PORT)
+GP_PORT=4242
+AC_SUBST(GP_USER)
+GP_USER=angeli
+AC_SUBST(GP_DB)
+GP_DB=angeli
+
 # (check headers)
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   cstdlib cstring ctime exception map netinet/in.h \

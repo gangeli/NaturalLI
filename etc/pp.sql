@@ -12,7 +12,6 @@ DROP TABLE IF EXISTS subj_pp_anyobj_check;
 DROP TABLE IF EXISTS subj_pp_check;
 DROP TABLE IF EXISTS obj_pp_check;
 DROP TABLE IF EXISTS pp_pp_check;
-DROP TABLE IF EXISTS pp_obj_check;
 DROP TABLE IF EXISTS pp_anyobj_check;
 DROP TABLE IF EXISTS pp_check;
 
