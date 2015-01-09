@@ -65,19 +65,22 @@ typedef uint8_t quantifier_type;
 inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
   switch (edge) {
     // WordNet
-    case HYPERNYM:                    return FUNCTION_FORWARD_ENTAILMENT;
-    case HYPONYM:                     return FUNCTION_REVERSE_ENTAILMENT;
-    case ANTONYM:                     return FUNCTION_ALTERNATION;
-    case SYNONYM:                     return FUNCTION_EQUIVALENT;
+    case HYPERNYM:             return FUNCTION_FORWARD_ENTAILMENT;
+    case HYPONYM:              return FUNCTION_REVERSE_ENTAILMENT;
+    case ANTONYM:              return FUNCTION_ALTERNATION;
+    case SYNONYM:              return FUNCTION_EQUIVALENT;
     // Nearest Neighbors
     // TODO(gabor) replace with "equivalent," but make sure it can't hop
     // too much (e.g., on quantifiers or when senses morph)
-    case ANGLE_NN:                    return FUNCTION_INDEPENDENCE;
+    case ANGLE_NN:             return FUNCTION_INDEPENDENCE;
     // Quantifier Morphs
-    case QUANTIFIER_UP:               return FUNCTION_FORWARD_ENTAILMENT;
-    case QUANTIFIER_DOWN:             return FUNCTION_REVERSE_ENTAILMENT;
-    case QUANTIFIER_NEGATE:           return FUNCTION_NEGATION;
-    case QUANTIFIER_REWORD:           return FUNCTION_EQUIVALENT;
+    case QUANTIFIER_UP:        return FUNCTION_FORWARD_ENTAILMENT;
+    case QUANTIFIER_DOWN:      return FUNCTION_REVERSE_ENTAILMENT;
+    case QUANTIFIER_NEGATE:    return FUNCTION_NEGATION;
+    case QUANTIFIER_REWORD:    return FUNCTION_EQUIVALENT;
+    // Sense shifts
+    case SENSE_ADD:            return FUNCTION_EQUIVALENT;
+    case SENSE_REMOVE:         return FUNCTION_EQUIVALENT;
     default:
       fprintf(stderr, "No such edge: %u\n", edge);
       std::exit(1);
