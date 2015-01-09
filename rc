@@ -1,0 +1,37 @@
+#!/bin/bash
+#
+
+# Print out the natural logic relations in a way that can be copied
+# into c++ / java
+function depInsert2rel() {
+  echo ">>> C++"
+  cat etc/depInsert2rel.tab |\
+    awk -F'	' '{ print toupper($1) "\t" toupper($2) "\t" $3 }' |\
+    sed -r -e 's/^([^\t]+)\t([^\t]+)\t(.*)$/    case DEP_\1: return FUNCTION_\2;  \/\/  \3/g'
+  echo "<<< C++"
+  echo ">>> Java (insertions)"
+  cat etc/depInsert2rel.tab |\
+    awk -F'	' '{ print $1 "\t" toupper($2) "\t" $3 }' |\
+    sed -r -e 's/^([^\t]+)\t([^\t]+)\t(.*)$/    put("\1", NaturalLogicRelation.\2);  \/\/ \3/g'
+  echo "<<< Java (insertions)"
+}
+
+# Print out the edge relation indices in a way that can be copied
+# into c++ / java
+function edgeTypes() {
+  echo ">>> C++"
+  cat etc/edgeTypes.tab |\
+    awk -F'	' '{ print "#define " toupper($2) "     " toupper($1) }'
+  echo "<<< C++"
+}
+
+# Print out the dummy vocab entries to be put into the mock graph
+# definitions in Types.h
+function dummyVocab() {
+  echo ">>> C++"
+  for word in "all" "lemur" "animal" "potto" "cat" "furry" "have" "tail" "some" "dog" "chase" "no"; do
+    echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`  getTaggedWord(`zcat etc/vocab.tab.gz| grep "	$word$" | awk '{ print $1 }'`, 0, 0)"
+    echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`_STR  \"`zcat etc/vocab.tab.gz| grep "	$word$" | awk '{ print $1 }'`\""
+  done
+  echo "<<< C++"
+}
