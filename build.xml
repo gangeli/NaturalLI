@@ -19,19 +19,21 @@
       <fileset dir="${env.JAVANLP_HOME}/projects/core/lib">
         <include name="*.jar"/>
       </fileset>
+      <!-- CoreNLP components (via environment) -->
       <pathelement path="${env.CORENLP_JAR}"/>
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
       <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
+      <!-- NaturalLI components (via environment) -->
       <pathelement path="${env.NATURALLI_MODELS}"/>
     </path>
   </target>
   
   <target name="test" depends="classpath"
           description="Run core unit tests">
-    <echo message="CoreNLP: ${env.CORENLP_JAR}"/>
-    <echo message="CoreNLP models: ${env.CORENLP_MODELS_JAR}"/>
+    <echo message="CoreNLP:                 ${env.CORENLP_JAR}"/>
+    <echo message="CoreNLP models:          ${env.CORENLP_MODELS_JAR}"/>
     <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
-    <echo message="NaturalLI models: ${env.NATURALLI_MODELS}"/>
+    <echo message="NaturalLI models:        ${env.NATURALLI_MODELS}"/>
     
     <junit fork="true" maxmemory="1g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
