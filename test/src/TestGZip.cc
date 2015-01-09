@@ -9,7 +9,16 @@ using namespace std;
 class GZipTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    iter = new GZIterator("../data/unittest_gzip.tab.gz");
+    FILE* f;
+    if ( (f = fopen("../data/unittest_gzip.tab.gz", "r")) != NULL) {
+      fclose(f);
+      iter = new GZIterator("../data/unittest_gzip.tab.gz");
+    } else if ( (f = fopen("data/unittest_gzip.tab.gz", "r")) != NULL) {
+      fclose(f);
+      iter = new GZIterator("data/unittest_gzip.tab.gz");
+    } else {
+      iter = new GZIterator("test/data/unittest_gzip.tab.gz");
+    }
     ASSERT_FALSE(iter == NULL);
   }
 
