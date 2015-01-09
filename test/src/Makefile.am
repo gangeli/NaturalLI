@@ -5,7 +5,7 @@ EXTRA_DIST = edu
 clean-local:
 	rm -f *.gcno *.gcda
 
-_OBJS_SPEC = Graph.o Postgres.o Utils.o \
+_OBJS_SPEC = Graph.o Utils.o \
              SynSearch.o SynSearchSingleThreaded.o Messages.pb.o
 OBJ_NAMES = $(patsubst %,naturalli-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
@@ -32,7 +32,7 @@ AM_LDFLAGS  =  ${POSTGRESQL_LDFLAGS} -lprotobuf \
                -Lgtest/lib -lgtest gtest/gtest_main.o
 
 
-test_server_SOURCES = TestPostgres.cc TestGraph.cc \
+test_server_SOURCES = TestGraph.cc \
                       TestMessages.pb.cc  TestUtils.cc TestTypes.cc \
                       TestSynSearch.cc
 test_server_LDADD =  ${OBJS}

@@ -4,12 +4,10 @@ AM_INIT_AUTOMAKE([-Wall no-define foreign])
 AC_LANG_DEFINES_PROVIDED
 
 AC_CONFIG_MACRO_DIR([m4])
-m4_include([m4/ax_lib_postgresql.m4])
+m4_include([m4/ax_check_zlib.m4])
 m4_include([m4/ax_compile_stdcxx_0x.m4])
 m4_include([m4/ax_cxx_header_unordered_map.m4])
 m4_include([m4/ax_openmp.m4])
-m4_include([m4/ax_boost_base.m4])
-m4_include([m4/ax_boost_thread.m4])
 
 AC_CONFIG_HEADERS(config.h)
 
@@ -49,8 +47,8 @@ fi
 AC_CHECK_PROG([ant_found],["ant"],[yes],[no])
 AM_CONDITIONAL(HAVE_ANT, test x"$ant_found" = x"yes")
 
-# (postgresql)
-AX_LIB_POSTGRESQL([8.4.9])
+# (zlib)
+AX_CHECK_ZLIB()
 
 # (tcmalloc -- if available)
 AC_CHECK_LIB([tcmalloc], [malloc], [have_tcmalloc=yes], [have_tcmalloc=no])
@@ -148,6 +146,7 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
                   cstdlib cstring ctime exception map netinet/in.h \
                   queue set sstream stdio.h stdlib.h string \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
+                  sys/prctl.h \
                   vector ])
 
 # (unordered map)
@@ -190,16 +189,8 @@ if test x"$debug" = x"false"; then
 fi
 
 # User defined variables (or environment variables)
-AC_DEFINE_UNQUOTED(PG_HOST,         "${PGHOST:=jonsson.stanford.edu}", [The hostname of the database to connect to])
-AC_DEFINE_UNQUOTED(PG_PORT,         ${PGPORT:=5432}, [The port on which postgres is running])
-AC_DEFINE_UNQUOTED(PG_DATABASE,     "${DBNAME:=naturalli}", [The database to connect to])
-AC_DEFINE_UNQUOTED(PG_USER,         "${PGUSER:=angeli}", [The username to use for the database connection])
-AC_DEFINE_UNQUOTED(PG_PASSWORD,     "${PGPASSWORD:=}", [The password to use for the database connection])
-
-AC_DEFINE_UNQUOTED(PG_TABLE_WORD,      "${PG_TABLE_WORD:=word}", [The table in which the word indexer is stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_EDGE,      "${PG_TABLE_EDGE:=synedge}", [The table in which the graph edges are stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_FACT,      "${PG_TABLE_FACT:=fact}", [The table in which the facts are stored])
-AC_DEFINE_UNQUOTED(PG_TABLE_PRIVATIVE, "${PG_TABLE_PRIVATIVE:=privative}", [The table storing all deletable word+sense items])
+AC_DEFINE_UNQUOTED(VOCAB_FILE,      "${VOCAB_FILE:=etc/vocab.tab.gz}", [The location of the vocabulary file])
+AC_DEFINE_UNQUOTED(GRAPH_FILE,      "${GRAPH_FILE:=etc/graph.tab.gz}", [The location of the edge graph file])
 
 AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",  [The location of the WordNet dictionary])
 

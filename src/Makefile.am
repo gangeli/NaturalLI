@@ -16,16 +16,16 @@ clean-local:
 BUILT_SOURCES = Messages.proto
 
 
-naturalli_SOURCES = Messages.pb.cc \
-										NaturalLI.cc Postgres.cc Utils.cc Graph.cc SynSearch.cc \
-                 		SynSearchSingleThreaded.cc JavaBridge.cc\
+naturalli_SOURCES = Messages.pb.cc GZip.cc \
+										NaturalLI.cc Utils.cc Graph.cc SynSearch.cc \
+                 		SynSearchSingleThreaded.cc JavaBridge.cc \
 										Messages.pb.h \
-                 		Graph.h Utils.h Types.h  SynSearch.h Postgres.h \
-										JavaBridge.h \
+                 		Graph.h Utils.h Types.h  SynSearch.h \
+										JavaBridge.h GZip.h \
                  		btree.h btree_container.h btree_map.h btree_set.h
 
-naturalli_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${OPENMP_CFLAGS}
-naturalli_LDADD=${POSTGRESQL_LDFLAGS} ${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+naturalli_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
+naturalli_LDADD=${PROTO_LDFLAGS} -lprotobuf -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 if HAVE_TCMALLOC
   naturalli_LDADD += -ltcmalloc
@@ -38,12 +38,12 @@ endif
 endif
 endif
 
-naturalli_mkkb_SOURCES = CreateKnowledgeBase.cc Postgres.cc Utils.cc Graph.cc SynSearch.cc \
-                 		Graph.h Utils.h Types.h  SynSearch.h Postgres.h \
+naturalli_mkkb_SOURCES = CreateKnowledgeBase.cc Utils.cc Graph.cc SynSearch.cc \
+                 		Graph.h Utils.h Types.h  SynSearch.h \
                  		btree.h btree_container.h btree_map.h btree_set.h
 
-naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${POSTGRESQL_CFLAGS} ${OPENMP_CFLAGS}
-naturalli_mkkb_LDADD=${POSTGRESQL_LDFLAGS} -Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
+naturalli_mkkb_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) edu/stanford/nlp/naturalli/Messages.java
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."

@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "SynSearch.h"
+#include "Graph.h"
 
 using namespace std;
 

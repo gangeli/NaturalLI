@@ -54,12 +54,18 @@ etc/.pp_affinity: etc/pp.sql
 	  | gzip > etc/subj_pp_obj.tab.gz
 	touch etc/.pp_affinity
 
+etc/.mk_graph: etc/$(wildcard etc/graphData/*.txt) 
+	cd etc && ./mkGraph.sh
+	touch etc/.mk_graph
+
 # (script targets)
 etc/pp.tab.gz: etc/.pp_affinity
 etc/subj_pp.tab.gz: etc/.pp_affinity
 etc/subj_obj_pp.tab.gz: etc/.pp_affinity
 etc/subj_pp_pp.tab.gz: etc/.pp_affinity
 etc/subj_pp_obj.tab.gz: etc/.pp_affinity
+etc/graph.tab.gz: etc/.mk_graph
+etc/vocab.tab.gz: etc/.mk_graph
 
 etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
 	$(eval TMP := $(shell mktemp -d))
@@ -73,9 +79,11 @@ etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_
 	jar cvf naturalli_models.jar -C ${TMP} .
 	touch etc/naturalli_models.jar  # make sure this is the last thing we touch
 
-etc/graph.tab.gz: $(wildcard etc/graphData/*.txt) 
-	cd etc && ./mkGraph.sh
-	touch etc/graph.tab.gz
+clean_models:
+	rm -f etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz \
+		    etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz \
+				etc/graph.tab.gz etc/vocab.tab.gz \
+				etc/naturalli_models.jar
 
 # (some targets)
 src/edu/stanford/nlp/naturalli/Messages.java: src/Messages.proto

@@ -2,7 +2,7 @@
 #
 set -e
   
-VOCAB=`mktemp`
+VOCAB=vocab.tab
 
 echo "Creating vocabulary (in $VOCAB)..."
 cat graphData/* |\
@@ -45,4 +45,4 @@ echo "Indexing edges..."
 indexAll | gzip > graph.tab.gz
 echo "DONE"
 
-rm $VOCAB
+gzip $VOCAB
