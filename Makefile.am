@@ -4,9 +4,8 @@ EXTRA_DIST = README.md doxygen.conf \
              models/ConceptNet/emnlp2014_final.tab \
              qry.jar run \
              build.xml \
-             lib/corenlp-scala.jar lib/jaws.jar \
-             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar \
-             lib/test/scalatest_2.11-2.1.6.jar
+             lib/jaws.jar \
+             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar
 
 clean-local:
 	rm -f java.hprof.txt
