@@ -6,6 +6,6 @@
 define ANTONYM                   0
 
 echo ">>> C++"
-cat edgeTypes.tab |\
+cat etc/edgeTypes.tab |\
   awk -F'	' '{ print "#define " toupper($2) "     " toupper($1) }'
 echo "<<< C++"

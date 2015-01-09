@@ -158,7 +158,7 @@ uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
                           false,       // stopWhenResultFound
                           false);      // silent
 
-  fprintf(stderr, "--NaturalLI ready for input--\n\n");
+  fprintf(stderr, "NaturalLI is ready for input\n");
   while (!cin.fail()) {
     // Process lines
     vector<string> lines;

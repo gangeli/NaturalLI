@@ -13,6 +13,7 @@ class UtilsTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     graph = ReadMockGraph();
+    ASSERT_FALSE(graph == NULL);
   }
 
   virtual void TearDown() {
@@ -24,9 +25,9 @@ class UtilsTest : public ::testing::Test {
 };
 
 TEST_F(UtilsTest, ToStringTree) {
-  Tree tree(string("20852\t2\tnsubj\n") +
-            string("60042\t0\troot\n") +
-            string("125248\t2\tdobj"));
+  Tree tree(CAT_STR + string("\t2\tnsubj\n") +
+            HAVE_STR + string("\t0\troot\n") +
+            TAIL_STR + string("\t2\tdobj"));
   EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0"), toString(*graph, tree));
 }
 

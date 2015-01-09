@@ -65,19 +65,10 @@ typedef uint8_t quantifier_type;
 inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
   switch (edge) {
     // WordNet
-    case WORDNET_UP:                  return FUNCTION_FORWARD_ENTAILMENT;
-    case WORDNET_DOWN:                return FUNCTION_REVERSE_ENTAILMENT;
-    case WORDNET_NOUN_ANTONYM:        return FUNCTION_ALTERNATION;
-    case WORDNET_NOUN_SYNONYM:        return FUNCTION_EQUIVALENT;
-    case WORDNET_VERB_ANTONYM:        return FUNCTION_ALTERNATION;
-    case WORDNET_ADJECTIVE_ANTONYM:   return FUNCTION_NEGATION;
-    case WORDNET_ADVERB_ANTONYM:      return FUNCTION_ALTERNATION;
-    case WORDNET_ADJECTIVE_PERTAINYM: return FUNCTION_EQUIVALENT;
-    case WORDNET_ADVERB_PERTAINYM:    return FUNCTION_EQUIVALENT;
-    case WORDNET_ADJECTIVE_RELATED:   return FUNCTION_EQUIVALENT;
-    // Freebase
-    case FREEBASE_UP:                 return FUNCTION_FORWARD_ENTAILMENT;
-    case FREEBASE_DOWN:               return FUNCTION_REVERSE_ENTAILMENT;
+    case HYPERNYM:                    return FUNCTION_FORWARD_ENTAILMENT;
+    case HYPONYM:                     return FUNCTION_REVERSE_ENTAILMENT;
+    case ANTONYM:                     return FUNCTION_ALTERNATION;
+    case SYNONYM:                     return FUNCTION_EQUIVALENT;
     // Nearest Neighbors
     // TODO(gabor) replace with "equivalent," but make sure it can't hop
     // too much (e.g., on quantifiers or when senses morph)

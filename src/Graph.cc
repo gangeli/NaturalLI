@@ -13,7 +13,7 @@ using namespace std;
 class MockGZIterator : public GZIterator {
  public:
   MockGZIterator(const uint32_t size, const GZRow* rows) :
-    GZIterator(NULL, 0),
+    GZIterator(),
     size(size), rows(rows), index(0) { }
 
   virtual bool hasNext()  {
@@ -188,7 +188,12 @@ Graph* readGraph(const uint32_t numWords,
   // (iterate over rows in DB)
   while (edgeIter->hasNext()) {
     GZRow row = edgeIter->next();
+    if (row.size() != 6) {
+      fprintf(stderr, "Invalid row in edge iterator (size=%u)!", row.size());
+      exit(1);
+    }
     edge e;
+//    printf("%s %s %s %s %s %s\n", row[0], row[1], row[2], row[3], row[4], row[5]);
     e.source       = fast_atoi(row[0]);
     e.source_sense = fast_atoi(row[1]);
     e.sink         = fast_atoi(row[2]);
@@ -231,15 +236,14 @@ Graph* readGraph(const uint32_t numWords,
 // Read Real Graph
 //
 Graph* ReadGraph() {
-  return NULL;
   fprintf(stderr, "Reading graph...\n");
   // Words
   fprintf(stderr, "  creating word iterator...\n");
   GZIterator wordCountIter = GZIterator(VOCAB_FILE);
   uint32_t numWords = 0;
   while (wordCountIter.hasNext()) {
-    wordCountIter.next();
-    numWords += 1;
+    uint32_t wordIndex = fast_atoi(wordCountIter.next()[0]);
+    numWords = (wordIndex >= numWords ? (wordIndex + 1) : numWords);
   }
   GZIterator wordIter = GZIterator(VOCAB_FILE);
   
@@ -249,8 +253,7 @@ Graph* ReadGraph() {
 
   // Invalid deletions
   fprintf(stderr, "  creating valid deletion iterator...\n");
-  // TODO(gabor)
-  GZIterator invalidDeletionIter = GZIterator("/dev/null");
+  GZIterator invalidDeletionIter = GZIterator(PRIVATIVE_FILE);
 
   return readGraph(numWords, &wordIter, &edgeIter, &invalidDeletionIter, false);
 }
@@ -259,7 +262,6 @@ Graph* ReadGraph() {
 // Read Dummy Graph
 //
 Graph* ReadMockGraph(const bool& allowCycles) {
-  return NULL;
   const char* lemur[]  {LEMUR_STR,  "lemur" };  GZRow lemurRow(lemur, 2);
   const char* animal[] {ANIMAL_STR, "animal" }; GZRow animalRow(animal, 2);
   const char* potto[]  {POTTO_STR,  "potto" }; GZRow pottoRow(potto, 2);
@@ -269,12 +271,17 @@ Graph* ReadMockGraph(const bool& allowCycles) {
   GZRow words[]   { lemurRow, animalRow, pottoRow, catRow, haveRow, tailRow };
   MockGZIterator wordIter(6, words);
   
-  const char* lemur2potto[]{LEMUR_STR,   "0", POTTO_STR,  "0", "1", "0.01"  }; GZRow lemur2pottoRow(lemur2potto, 6);
-  const char* potto2lemur[]{POTTO_STR,   "0", LEMUR_STR,  "0", "0", "0.01"  }; GZRow potto2lemurRow(potto2lemur, 6);
-  const char* lemur2animal[]{LEMUR_STR,  "0", ANIMAL_STR, "0", "0", "0.42"  }; GZRow lemur2animalRow(lemur2animal, 6);
-  const char* animal2lemur[]{ANIMAL_STR, "0", LEMUR_STR,  "0", "1", "0.42"  }; GZRow animal2lemurRow(animal2lemur, 6);
-  const char* animal2cat[]{  ANIMAL_STR, "0", CAT_STR,    "0", "1", "42.00" }; GZRow animal2catRow(animal2cat, 6);
-  const char* cat2animal[]{  CAT_STR,    "0", ANIMAL_STR, "0", "0", "42.00" }; GZRow cat2animalRow(cat2animal, 6);
+  char hypo[8];
+  sprintf(hypo, "%d", HYPONYM);
+  char hyper[8];
+  sprintf(hyper, "%d", HYPERNYM);
+
+  const char* lemur2potto[]{LEMUR_STR,   "0", POTTO_STR,  "0", hypo, "0.01"  }; GZRow lemur2pottoRow(lemur2potto, 6);
+  const char* potto2lemur[]{POTTO_STR,   "0", LEMUR_STR,  "0", hyper, "0.01"  }; GZRow potto2lemurRow(potto2lemur, 6);
+  const char* lemur2animal[]{LEMUR_STR,  "0", ANIMAL_STR, "0", hyper, "0.42"  }; GZRow lemur2animalRow(lemur2animal, 6);
+  const char* animal2lemur[]{ANIMAL_STR, "0", LEMUR_STR,  "0", hypo, "0.42"  }; GZRow animal2lemurRow(animal2lemur, 6);
+  const char* animal2cat[]{  ANIMAL_STR, "0", CAT_STR,    "0", hypo, "42.00" }; GZRow animal2catRow(animal2cat, 6);
+  const char* cat2animal[]{  CAT_STR,    "0", ANIMAL_STR, "0", hyper, "42.00" }; GZRow cat2animalRow(cat2animal, 6);
   GZRow edges[] = {cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow, cat2animalRow };
   edges[0] = potto2lemurRow;
   edges[1] = animal2lemurRow;

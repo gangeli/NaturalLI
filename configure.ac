@@ -54,25 +54,6 @@ AX_CHECK_ZLIB()
 AC_CHECK_LIB([tcmalloc], [malloc], [have_tcmalloc=yes], [have_tcmalloc=no])
 AM_CONDITIONAL([HAVE_TCMALLOC],  [test "$have_tcmalloc" = "yes"])
 
-# (protobuf)
-PKG_CHECK_MODULES([PROTOBUF], [libprotobuf], [have_protobuf=yes], [have_protobuf=no])
-AM_CONDITIONAL([HAVE_PROTOBUF],  [test "$have_protobuf" = "yes"])
-if test -z "$have_protobuf"; then
-  AC_MSG_ERROR([fatal: could not find the protobuf library])
-fi
-AC_ARG_WITH([protoc],
-    [AS_HELP_STRING([--with-protoc=PATH],
-        [location of the protocol buffer home; protoc should be located at bin/protoc ])],
-    [PROTO_CFLAGS="-I$withval/include"
-     PROTO_LDFLAGS="-L$withval/lib"
-     PROTOC="$withval/bin/protoc"],
-    [PROTO_CFLAGS=
-     PROTO_LDFLAGS=
-     PROTOC='protoc'])
-AC_SUBST([PROTO_CFLAGS])
-AC_SUBST([PROTO_LDFLAGS])
-AC_SUBST([PROTOC])
-
 # (gtest)
 GTEST_VERSION="1.7.0"
 if test "x$have_pthread" = "xyes"; then

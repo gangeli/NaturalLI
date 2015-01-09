@@ -5,6 +5,9 @@ set -e
 VOCAB=vocab.tab
 PRIV=privative.tab
 
+#
+# Create vocabulary
+#
 echo "Creating vocabulary (in $VOCAB)..."
 cat graphData/* |\
   sed -e 's/_/ /g' |\
@@ -13,6 +16,9 @@ cat graphData/* |\
   sort | uniq |\
   awk '{printf("%d\t%s\n", NR + 63, $0)}' > $VOCAB
 
+#
+# Create privatives
+#
 echo "Creating privatives (in $PRIV)..."
 PRIVATIVE_WORDS=`echo "^(" \
      "believed|" \
@@ -90,15 +96,28 @@ cat graphData/*.txt |\
           print
       }
   ' $VOCAB - | sed -e 's/ /\t/g' > $PRIV
- 
+
+#
 # Creating edge types
+#
 echo "Creating edge types (in edgeTypes.tab)..."
+TMP=`mktemp`
 for file in `find graphData -name "*.txt"`; do
   echo $file |\
     sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
     sed -r -e 's/.*\/edge_(.*).txt/\1/g'
-done | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > edgeTypes.tab
+done > $TMP
+echo "quantifier_up" >> $TMP
+echo "quantifier_down" >> $TMP
+echo "quantifier_negate" >> $TMP
+echo "quantifier_reword" >> $TMP
+echo "angle_nn" >> $TMP
+cat $TMP | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > edgeTypes.tab
+rm $TMP
 
+#
+# Create graph
+#
 function index() {
   FILE=`mktemp`
   cat $1 | sed -e 's/_/ /g' > $FILE
@@ -133,8 +152,9 @@ function indexAll() {
         }
         FNR < NR {
           $1 = assoc[ $1 ];
-          print $2 " " $3 " " $1 " " $4 " " $5 " " $6
-        } ' edgeTypes.tab -
+          print $2 " " $3 " " $4 " " $5 " " $1 " " $6
+        } ' edgeTypes.tab - |\
+      sed -e 's/ /	/g'
   done
 }
 
@@ -142,5 +162,7 @@ echo "Indexing edges..."
 indexAll | gzip > graph.tab.gz
 echo "DONE"
 
+rm -f $VOCAB.gz
 gzip $VOCAB
+rm -f $PRIV.gz
 gzip $PRIV

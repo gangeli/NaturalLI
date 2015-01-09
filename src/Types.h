@@ -18,20 +18,21 @@
 #define MONOTONE_DEFAULT MONOTONE_UP
 
 // Graph Edges
-// READ BEFORE YOU CHANGE:
-//  - These must match the edge types in Utils.scala
-//  - These should also be reflected in the toString in Utils.cc
-//  - Remember to update EDGE_ADDS_BEGIN, MONOTONE_INDEPENDENT_BEGIN and NUM_EDGE_TYPES
-//  - Pay attention to inline notes!
-#define ANTONYM         0
-#define HOLONYM         1
-#define HYPERNYM        2
-#define HYPONYM         3
-#define MERONYM         4
-#define SENSE_ADD       5
-#define SENSE_REMOVE    6
-#define SYNONYM         7
-#define VERB_ENTAIL     8
+// DO NOT EDIT: generated with `source rc && edgeTypes`
+#define ANGLE_NN     0
+#define ANTONYM     1
+#define HOLONYM     2
+#define HYPERNYM     3
+#define HYPONYM     4
+#define MERONYM     5
+#define QUANTIFIER_DOWN     6
+#define QUANTIFIER_NEGATE     7
+#define QUANTIFIER_REWORD     8
+#define QUANTIFIER_UP     9
+#define SENSE_ADD     10
+#define SENSE_REMOVE     11
+#define SYNONYM     12
+#define VERB_ENTAIL     13
 
 
 // Inference States
@@ -97,28 +98,31 @@ typedef uint8_t dep_label;
 #define DEP_XCOMP 44
 
 // Static Data
-#define NULL_WORD getTaggedWord(0, 0, 0)
-#define ALL       getTaggedWord(3593, 0, 0)
-#define LEMUR     getTaggedWord(73918, 0, 0)
-#define ANIMAL    getTaggedWord(5532, 0, 0)
-#define POTTO     getTaggedWord(99965, 0, 0)
-#define CAT       getTaggedWord(20852, 0, 0)
-#define FURRY     getTaggedWord(50015, 0, 0)
-#define HAVE      getTaggedWord(60042, 0, 0)
-#define TAIL      getTaggedWord(125248, 0, 0)
-#define SOME      getTaggedWord(118441, 0, 0)
-#define DOG       getTaggedWord(36557, 0, 0)
-#define CHASE     getTaggedWord(22520, 0, 0)
-// (static data as strings)
-#define ALL_STR    "3593"
-#define NO_STR     "87288"
-#define LEMUR_STR  "73918"
-#define ANIMAL_STR "5532"
-#define POTTO_STR  "99965"
-#define CAT_STR    "20852"
-#define FURRY_STR  "50015"
-#define HAVE_STR   "60042"
-#define TAIL_STR   "125248"
+// DO NOT EDIT: generated with `source rc && dummyVocab`
+#define ALL  getTaggedWord(3004, 0, 0)
+#define ALL_STR  "3004"
+#define LEMUR  getTaggedWord(65392, 0, 0)
+#define LEMUR_STR  "65392"
+#define ANIMAL  getTaggedWord(4663, 0, 0)
+#define ANIMAL_STR  "4663"
+#define POTTO  getTaggedWord(88397, 0, 0)
+#define POTTO_STR  "88397"
+#define CAT  getTaggedWord(18116, 0, 0)
+#define CAT_STR  "18116"
+#define FURRY  getTaggedWord(0, 0, 0)
+#define FURRY_STR  "0"
+#define HAVE  getTaggedWord(53880, 0, 0)
+#define HAVE_STR  "53880"
+#define TAIL  getTaggedWord(111051, 0, 0)
+#define TAIL_STR  "111051"
+#define SOME  getTaggedWord(104804, 0, 0)
+#define SOME_STR  "104804"
+#define DOG  getTaggedWord(32628, 0, 0)
+#define DOG_STR  "32628"
+#define CHASE  getTaggedWord(19615, 0, 0)
+#define CHASE_STR  "19615"
+#define NO  getTaggedWord(77169, 0, 0)
+#define NO_STR  "77169"
 
 //
 // Typedefs

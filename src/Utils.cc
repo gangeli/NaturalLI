@@ -79,38 +79,13 @@ std::string toString(const Graph& graph, const Tree& tree, const SearchNode& pat
 
 string toString(const edge_type& edge) {
   switch (edge) {
-    case WORDNET_UP                   : return "WORDNET_UP";
-    case WORDNET_DOWN                 : return "WORDNET_DOWN";
-    case WORDNET_NOUN_ANTONYM         : return "WORDNET_NOUN_ANTONYM";
-    case WORDNET_NOUN_SYNONYM         : return "WORDNET_NOUN_SYNONYM";
-    case WORDNET_VERB_ANTONYM         : return "WORDNET_VERB_ANTONYM";
-    case WORDNET_ADJECTIVE_ANTONYM    : return "WORDNET_ADJECTIVE_ANTONYM";
-    case WORDNET_ADVERB_ANTONYM       : return "WORDNET_ADVERB_ANTONYM";
-    case WORDNET_ADJECTIVE_PERTAINYM  : return "WORDNET_ADJECTIVE_PERTAINYM";
-    case WORDNET_ADVERB_PERTAINYM     : return "WORDNET_ADVERB_PERTAINYM";
-    case WORDNET_ADJECTIVE_RELATED    : return "WORDNET_ADJECTIVE_RELATED";
+    case HYPERNYM                     : return "HYPERNYM";
+    case HYPONYM                      : return "HYPONYM";
+    case ANTONYM                      : return "WORDNET_NOUN_ANTONYM";
+    case SYNONYM                      : return "WORDNET_NOUN_SYNONYM";
     case ANGLE_NN                     : return "ANGLE_NN";
-    case FREEBASE_UP                  : return "FREEBASE_UP";
-    case FREEBASE_DOWN                : return "FREEBASE_DOWN";
-    case MORPH_FUDGE_NUMBER           : return "MORPH_FUDGE_NUMBER";
     case SENSE_REMOVE                 : return "SENSE_REMOVE";
     case SENSE_ADD                    : return "SENSE_ADD";
-    case ADD_NOUN                     : return "ADD_NOUN";
-    case ADD_VERB                     : return "ADD_VERB";
-    case ADD_ADJ                      : return "ADD_ADJ";
-    case ADD_NEGATION                 : return "ADD_NEGATION";
-    case ADD_EXISTENTIAL              : return "ADD_EXISTENTIAL";
-    case ADD_QUANTIFIER_OTHER         : return "ADD_QUANTIFIER_OTHER";
-    case ADD_UNIVERSAL                : return "ADD_UNIVERSAL";
-    case ADD_OTHER                    : return "ADD_?";
-    case DEL_NOUN                     : return "DEL_NOUN";
-    case DEL_VERB                     : return "DEL_VERB";
-    case DEL_ADJ                      : return "DEL_ADJ";
-    case DEL_NEGATION                 : return "DEL_NEGATION";
-    case DEL_EXISTENTIAL              : return "DEL_EXISTENTIAL";
-    case DEL_QUANTIFIER_OTHER         : return "DEL_QUANTIFIER_OTHER";
-    case DEL_UNIVERSAL                : return "DEL_UNIVERSAL";
-    case DEL_OTHER                    : return "DEL_?";
     case QUANTIFIER_UP                : return "QUANTIFIER_UP";
     case QUANTIFIER_DOWN              : return "QUANTIFIER_DOWN";
     case QUANTIFIER_NEGATE            : return "QUANTIFIER_NEGATE";
@@ -141,70 +116,6 @@ string toString(const time_t& elapsedTime) {
   }
   // Return
   return string(buffer);
-}
-
-inference_function edge2function(const edge_type& type) {
-  inference_function function;
-  switch (type) {
-    case WORDNET_UP: 
-    case FREEBASE_UP: 
-    case QUANTIFIER_UP:
-    case DEL_NOUN:
-    case DEL_VERB:
-    case DEL_ADJ:
-    case DEL_OTHER:
-      function = FUNCTION_FORWARD_ENTAILMENT;
-      break;
-    case WORDNET_DOWN: 
-    case FREEBASE_DOWN: 
-    case QUANTIFIER_DOWN:
-    case ADD_NOUN:
-    case ADD_VERB:
-    case ADD_ADJ:
-    case ADD_OTHER:
-      function = FUNCTION_REVERSE_ENTAILMENT;
-      break;
-    case WORDNET_NOUN_ANTONYM: 
-    case WORDNET_VERB_ANTONYM: 
-    case WORDNET_ADJECTIVE_ANTONYM: 
-    case WORDNET_ADVERB_ANTONYM: 
-      function = FUNCTION_ALTERNATION;
-      break;
-    case WORDNET_NOUN_SYNONYM: 
-    case WORDNET_ADJECTIVE_RELATED: 
-    case QUANTIFIER_REWORD:
-    case ANGLE_NN: 
-    case MORPH_FUDGE_NUMBER: 
-    case SENSE_REMOVE: 
-    case SENSE_ADD: 
-      function = FUNCTION_EQUIVALENT;
-      break;
-    case WORDNET_ADJECTIVE_PERTAINYM:
-    case WORDNET_ADVERB_PERTAINYM:
-      function = FUNCTION_EQUIVALENT;
-      break;
-    case ADD_NEGATION:
-    case DEL_NEGATION:
-      function = FUNCTION_NEGATION;
-      break;
-    case QUANTIFIER_NEGATE:
-      function = FUNCTION_NEGATION;
-      break;
-    // The weird cases...
-    case ADD_EXISTENTIAL:
-    case ADD_UNIVERSAL:
-    case ADD_QUANTIFIER_OTHER:
-    case DEL_EXISTENTIAL:
-    case DEL_UNIVERSAL:
-    case DEL_QUANTIFIER_OTHER:
-      function = FUNCTION_EQUIVALENT;
-      break;
-    default:
-      printf("Unknown edge type: %u\n", type);
-      std::exit(1);
-      break;
-  }
-  return function;
 }
 
 /**

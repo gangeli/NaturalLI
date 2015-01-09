@@ -26,10 +26,13 @@ class GZRow {
       this->elems.push_back(std::string(elems[i]));
     }
   }
+  GZRow(const GZRow& other) : elems(other.elems){ }
   
   virtual const char* operator[] (const uint64_t& index) {
     return elems[index].c_str();
   }
+
+  uint32_t size() { return elems.size(); }
 
  private:
   std::vector<std::string> elems;
@@ -42,11 +45,19 @@ class GZRow {
  */
 class GZIterator {
  public:
-  GZIterator(const char* filename, const uint64_t& bufferSize = (0x1l << 20));
+  GZIterator(const char* filename, const uint64_t& bufferSize = (0x1l << 10));
+
   virtual ~GZIterator();
 
   virtual bool hasNext();
   virtual GZRow next();
+
+ protected:
+  /**
+   * A dummy constructor which doesn't initialize the iterator at all,
+   * but allows for other classes to subclass it
+   */
+  GZIterator() : bufferSize(0), source(NULL) { }
  
  private:
   FILE* source;

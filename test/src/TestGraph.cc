@@ -10,7 +10,7 @@ class MockGraphTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     mockGraph = ReadMockGraph();
-    EXPECT_FALSE(mockGraph == NULL);
+    ASSERT_FALSE(mockGraph == NULL);
   }
 
   virtual void TearDown() {
@@ -24,7 +24,7 @@ class MockGraphTest : public ::testing::Test {
 // the mock graph.
 TEST_F(MockGraphTest, HasVocabulary) {
   EXPECT_EQ("lemur",  string(mockGraph->gloss(LEMUR)));
-  EXPECT_EQ("potto", string(mockGraph->gloss(POTTO)));
+  EXPECT_EQ("potto",  string(mockGraph->gloss(POTTO)));
   EXPECT_EQ("animal", string(mockGraph->gloss(ANIMAL)));
   EXPECT_EQ("cat",    string(mockGraph->gloss(CAT)));
   EXPECT_EQ("have",   string(mockGraph->gloss(HAVE)));
@@ -41,14 +41,14 @@ TEST_F(MockGraphTest, HasCorrectEdgeCounts) {
 // Check to make sure the mock graph has the correct edges
 TEST_F(MockGraphTest, HasCorrectEdges) {
   EXPECT_EQ(POTTO.word, mockGraph->incomingEdges(LEMUR)[0].source);
-  EXPECT_EQ(WORDNET_UP, mockGraph->incomingEdges(LEMUR)[0].type);
+  EXPECT_EQ(HYPERNYM, mockGraph->incomingEdges(LEMUR)[0].type);
   EXPECT_FLOAT_EQ(0.01, mockGraph->incomingEdges(LEMUR)[0].cost);
   EXPECT_EQ(ANIMAL.word, mockGraph->incomingEdges(LEMUR)[1].source);
-  EXPECT_EQ(WORDNET_DOWN, mockGraph->incomingEdges(LEMUR)[1].type);
+  EXPECT_EQ(HYPONYM, mockGraph->incomingEdges(LEMUR)[1].type);
   EXPECT_FLOAT_EQ(0.42, mockGraph->incomingEdges(LEMUR)[1].cost);
 
   EXPECT_EQ(CAT.word, mockGraph->incomingEdges(ANIMAL)[0].source);
-  EXPECT_EQ(WORDNET_UP, mockGraph->incomingEdges(ANIMAL)[0].type);
+  EXPECT_EQ(HYPERNYM, mockGraph->incomingEdges(ANIMAL)[0].type);
   EXPECT_FLOAT_EQ(42.0, mockGraph->incomingEdges(ANIMAL)[0].cost);
 
   EXPECT_EQ(0, mockGraph->incomingEdges(CAT).size());

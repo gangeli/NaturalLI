@@ -11,6 +11,11 @@ using namespace std;
 //
 GZIterator::GZIterator(const char* filename, const uint64_t& bufferSize)
     : source(fopen(filename, "r")), bufferSize(bufferSize) {
+  // Error check
+  if (source == NULL) {
+    fprintf(stderr, "Could not find file: %s\n", filename);
+    exit(1);
+  }
   // Initialize the buffers
   this->in = (uint8_t*) malloc(bufferSize * sizeof(uint8_t));
   this->out = (uint8_t*) malloc(bufferSize * sizeof(uint8_t));
@@ -37,9 +42,11 @@ GZIterator::GZIterator(const char* filename, const uint64_t& bufferSize)
 // GZIterator::~GZIterator
 //
 GZIterator::~GZIterator() {
-  fclose(source);
-  free(this->in);
-  free(this->out);
+  if (source != NULL) {
+    fclose(source);
+    free(this->in);
+    free(this->out);
+  }
 }
 
 //
@@ -102,7 +109,8 @@ bool GZIterator::hasNext() {
   if (this->lastLine != NULL) {
     return true;
   }
-  if (this->status == Z_STREAM_END) {
+  if (this->status == Z_STREAM_END &&
+      this->outConsumed >= this->outHave) {
     return false;
   }
 

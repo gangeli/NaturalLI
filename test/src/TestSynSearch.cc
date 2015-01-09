@@ -712,12 +712,12 @@ TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 0), WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), HYPERNYM, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
   
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 0), WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), HYPONYM, true, &outTruth);
   EXPECT_EQ(true, outTruth);
   EXPECT_TRUE(isinf(cost));
 }
@@ -726,7 +726,7 @@ TEST_F(SynSearchCostsTest, GenericsAreAdditiveMultiplicative) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -735,12 +735,12 @@ TEST_F(SynSearchCostsTest, MutationsCostQuantificiation) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), WORDNET_DOWN, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), HYPONYM, true, &outTruth);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
 
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), WORDNET_UP, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), HYPERNYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(true, outTruth);
 }
@@ -749,7 +749,7 @@ TEST_F(SynSearchCostsTest, AllAdditiveSubj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), WORDNET_VERB_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
 }
 
@@ -757,7 +757,7 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 3), WORDNET_ADJECTIVE_ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 3), ANTONYM, true, &outTruth);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -771,16 +771,17 @@ class SynSearchTest : public ::testing::Test {
   SynSearchTest() : opts(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT) { }
  protected:
   virtual void SetUp() {
-    lemursHaveTails = new Tree(string("73918\t2\tnsubj\n") +
-                             string("60042\t0\troot\n") +
-                             string("125248\t2\tdobj"));
-    catsHaveTails = new Tree(string("20852\t2\tnsubj\n") +
-                             string("60042\t0\troot\n") +
-                             string("125248\t2\tdobj"));
-    animalsHaveTails = new Tree(string("5532\t2\tnsubj\n") +
-                             string("60042\t0\troot\n") +
-                             string("125248\t2\tdobj"));
+    lemursHaveTails = new Tree(LEMUR_STR + string("\t2\tnsubj\n") +
+                             HAVE_STR + string("\t0\troot\n") +
+                             TAIL_STR + string("\t2\tdobj"));
+    catsHaveTails = new Tree(CAT_STR +  string("\t2\tnsubj\n") +
+                             HAVE_STR + string("\t0\troot\n") +
+                             TAIL_STR + string("\t2\tdobj"));
+    animalsHaveTails = new Tree(ANIMAL_STR + string("\t2\tnsubj\n") +
+                             HAVE_STR + string("\t0\troot\n") +
+                             TAIL_STR + string("\t2\tdobj"));
     graph = ReadMockGraph();
+    ASSERT_FALSE(graph == NULL);
     cyclicGraph = ReadMockGraph(true);
     opts = syn_search_options(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
     factdb.insert(catsHaveTails->hash());
