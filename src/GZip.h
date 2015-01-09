@@ -57,12 +57,12 @@ class GZIterator {
    * A dummy constructor which doesn't initialize the iterator at all,
    * but allows for other classes to subclass it
    */
-  GZIterator() : bufferSize(0), source(NULL) { }
+  GZIterator() : bufferSize(0), source(NULL), lastLine(NULL) { }
  
  private:
   FILE* source;
   const uint64_t bufferSize;
-  char* lastLine = NULL;
+  char* lastLine;
   
   // (internal variables for reading the stream)
   uint64_t have;

@@ -10,7 +10,7 @@ using namespace std;
 // GZIterator::GZIterator
 //
 GZIterator::GZIterator(const char* filename, const uint64_t& bufferSize)
-    : source(fopen(filename, "r")), bufferSize(bufferSize) {
+    : source(fopen(filename, "r")), bufferSize(bufferSize), lastLine(NULL) {
   // Error check
   if (source == NULL) {
     fprintf(stderr, "Could not find file: %s\n", filename);
