@@ -15,6 +15,7 @@ function configure() {
     --with-corenlp=$HOME/stanford-corenlp.jar \
     --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
     --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
+    --with-naturalli-models=$HOME/naturalli-models.jar \
     --enable-debug $@
   make clean
 }
