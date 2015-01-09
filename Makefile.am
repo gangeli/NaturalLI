@@ -1,11 +1,13 @@
 SUBDIRS = src test/src
 ACLOCAL_AMFLAGS=-I m4
-EXTRA_DIST = README.md doxygen.conf \
+EXTRA_DIST = README.md \
+						 doxygen.conf \
              models/ConceptNet/emnlp2014_final.tab \
              qry.jar run \
              build.xml \
              lib/jaws.jar \
-             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar \
+             lib/test/hamcrest-core-1.3.jar \
+						 lib/test/junit-4.11.jar \
 						 test/data/unittest_gzip.tab.gz
 
 clean-local:
