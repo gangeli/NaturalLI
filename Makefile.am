@@ -5,7 +5,8 @@ EXTRA_DIST = README.md doxygen.conf \
              qry.jar run \
              build.xml \
              lib/jaws.jar \
-             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar
+             lib/test/hamcrest-core-1.3.jar lib/test/junit-4.11.jar \
+						 test/data/unittest_gzip.tab.gz
 
 clean-local:
 	rm -f java.hprof.txt
