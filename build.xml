@@ -22,6 +22,7 @@
       <pathelement path="${env.CORENLP_JAR}"/>
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
       <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
+      <pathelement path="${env.NATURALLI_MODELS}"/>
     </path>
   </target>
   
@@ -30,6 +31,7 @@
     <echo message="CoreNLP: ${env.CORENLP_JAR}"/>
     <echo message="CoreNLP models: ${env.CORENLP_MODELS_JAR}"/>
     <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
+    <echo message="NaturalLI models: ${env.NATURALLI_MODELS}"/>
     
     <junit fork="true" maxmemory="1g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
