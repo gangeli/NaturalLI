@@ -54,7 +54,7 @@ etc/.pp_affinity: etc/pp.sql
 	  | gzip > etc/subj_pp_obj.tab.gz
 	touch etc/.pp_affinity
 
-etc/.mk_graph: etc/$(wildcard etc/graphData/*.txt) 
+etc/.mk_graph: $(wildcard etc/graphData/*.txt)  etc/mkGraph.sh
 	cd etc && ./mkGraph.sh
 	touch etc/.mk_graph
 
@@ -66,6 +66,8 @@ etc/subj_pp_pp.tab.gz: etc/.pp_affinity
 etc/subj_pp_obj.tab.gz: etc/.pp_affinity
 etc/graph.tab.gz: etc/.mk_graph
 etc/vocab.tab.gz: etc/.mk_graph
+etc/privative.tab.gz: etc/.mk_graph
+etc/edgeTypes.tab: etc/.mk_graph
 
 etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
 	$(eval TMP := $(shell mktemp -d))

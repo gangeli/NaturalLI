@@ -246,28 +246,20 @@ void signalHandler(int32_t s){
  * The Entry point for querying the truth of facts.
  */
 int32_t main( int32_t argc, char *argv[] ) {
-//  // Handle signals
-//  // (set up handler)
-//  struct sigaction sigIntHandler;
-//  sigIntHandler.sa_handler = signalHandler;
-//  sigemptyset(&sigIntHandler.sa_mask);
-//  sigIntHandler.sa_flags = 0;
-//  // (catch signals)
-////  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the java process to die
-//  sigaction(SIGPIPE, &sigIntHandler, NULL);
-//
-//  // Start REPL
-//  JavaBridge proc;
-//  BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
-//  uint32_t retVal =  repl(graph, proc);
-//  delete graph;
-//  return retVal;
+  // Handle signals
+  // (set up handler)
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = signalHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  // (catch signals)
+//  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the java process to die
+  sigaction(SIGPIPE, &sigIntHandler, NULL);
 
-  printf("START\n");
-  GZIterator iter ("etc/vocab.tab.gz", 256);
-  while (iter.hasNext()) {
-    GZRow row = iter.next();
-    printf("%s -> %s\n", row[1], row[0]);
-  }
-  printf("DONE\n");
+  // Start REPL
+  JavaBridge proc;
+  BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
+  uint32_t retVal =  repl(graph, proc);
+  delete graph;
+  return retVal;
 }

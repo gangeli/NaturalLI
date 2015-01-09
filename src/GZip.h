@@ -21,13 +21,18 @@
 class GZRow {
  public:
   GZRow(const std::vector<std::string>& elems) : elems(elems){ }
+  GZRow(const char** elems, const uint32_t& size) { 
+    for (uint32_t i = 0; i < size; ++i) {
+      this->elems.push_back(std::string(elems[i]));
+    }
+  }
   
   virtual const char* operator[] (const uint64_t& index) {
     return elems[index].c_str();
   }
 
  private:
-  const std::vector<std::string> elems;
+  std::vector<std::string> elems;
 };
 
 /**

@@ -23,50 +23,15 @@
 //  - These should also be reflected in the toString in Utils.cc
 //  - Remember to update EDGE_ADDS_BEGIN, MONOTONE_INDEPENDENT_BEGIN and NUM_EDGE_TYPES
 //  - Pay attention to inline notes!
-#define WORDNET_UP                   0
-#define WORDNET_DOWN                 1
-#define WORDNET_NOUN_ANTONYM         2
-#define WORDNET_NOUN_SYNONYM         3
-#define WORDNET_VERB_ANTONYM         4
-#define WORDNET_ADJECTIVE_ANTONYM    5
-#define WORDNET_ADVERB_ANTONYM       6
-#define WORDNET_ADJECTIVE_PERTAINYM  7
-#define WORDNET_ADVERB_PERTAINYM     8
-#define WORDNET_ADJECTIVE_RELATED    9
-#define ANGLE_NN                     10
-#define FREEBASE_UP                  11
-#define FREEBASE_DOWN                12
-
-#define ADD_NOUN                     13
-#define ADD_VERB                     14
-#define ADD_ADJ                      15
-#define ADD_NEGATION                 16
-#define ADD_EXISTENTIAL              17
-#define ADD_QUANTIFIER_OTHER         18
-#define ADD_UNIVERSAL                19
-#define ADD_OTHER                    20
-
-#define EDGE_DELS_BEGIN              21  // should be the same as the first DEL_X item
-#define DEL_NOUN                     21
-#define DEL_VERB                     22
-#define DEL_ADJ                      23
-#define DEL_NEGATION                 24
-#define DEL_EXISTENTIAL              25
-#define DEL_QUANTIFIER_OTHER         26
-#define DEL_UNIVERSAL                27
-#define DEL_OTHER                    28  // NOTE: never have more than 8 insertion types. @see Trie.h
-
-#define QUANTIFIER_UP                29
-#define QUANTIFIER_DOWN              30
-#define MONOTONE_INDEPENDENT_BEGIN   31  // should be the same as the first index after which monotonicity doesn't matter
-#define QUANTIFIER_NEGATE            31
-#define QUANTIFIER_REWORD            32
-
-#define MORPH_FUDGE_NUMBER           33
-#define SENSE_REMOVE                 34
-#define SENSE_ADD                    35
-
-#define NUM_EDGE_TYPES               36
+#define ANTONYM         0
+#define HOLONYM         1
+#define HYPERNYM        2
+#define HYPONYM         3
+#define MERONYM         4
+#define SENSE_ADD       5
+#define SENSE_REMOVE    6
+#define SYNONYM         7
+#define VERB_ENTAIL     8
 
 
 // Inference States

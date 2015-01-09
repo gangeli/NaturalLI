@@ -3,6 +3,7 @@
 set -e
   
 VOCAB=vocab.tab
+PRIV=privative.tab
 
 echo "Creating vocabulary (in $VOCAB)..."
 cat graphData/* |\
@@ -10,14 +11,100 @@ cat graphData/* |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
   tr '	' '\n' |\
   sort | uniq |\
-  awk '{printf("%s\t%d\n", $0, NR + 63)}' > $VOCAB
+  awk '{printf("%d\t%s\n", NR + 63, $0)}' > $VOCAB
+
+echo "Creating privatives (in $PRIV)..."
+PRIVATIVE_WORDS=`echo "^(" \
+     "believed|" \
+     "debatable|" \
+     "disputed|" \
+     "dubious|" \
+     "hypothetical|" \
+     "impossible|" \
+     "improbable|" \
+     "plausible|" \
+     "putative|" \
+     "questionable|" \
+     "so called|" \
+     "supposed|" \
+     "suspicious|" \
+     "theoretical|" \
+     "uncertain|" \
+     "unlikely|" \
+     "would - be|" \
+     "apparent|" \
+     "arguable|" \
+     "assumed|" \
+     "likely|" \
+     "ostensible|" \
+     "possible|" \
+     "potential|" \
+     "predicted|" \
+     "presumed|" \
+     "probable|" \
+     "seeming|" \
+     "anti|" \
+     "fake|" \
+     "fictional|" \
+     "fictitious|" \
+     "imaginary|" \
+     "mythical|" \
+     "phony|" \
+     "false|" \
+     "artificial|" \
+     "erroneous|" \
+     "mistaken|" \
+     "mock|" \
+     "pseudo|" \
+     "simulated|" \
+     "spurious|" \
+     "deputy|" \
+     "faulty|" \
+     "virtual|" \
+     "doubtful|" \
+     "erstwhile|" \
+     "ex|" \
+     "expected|" \
+     "former|" \
+     "future|" \
+     "onetime|" \
+     "past|" \
+     "proposed" \
+     ")	[0-9]+" | sed -e 's/| /|/g'`
+
+cat graphData/*.txt |\
+  sed -e 's/_/ /g' |\
+  awk -F'	' '{ print $1 "\t" $2 }' |\
+  egrep "$PRIVATIVE_WORDS" |\
+  sort | uniq |\
+  sed -e 's/_/ /g' |\
+  awk -F'	' '
+      FNR == NR {
+          assoc[ $2 ] = $1;
+          next;
+      }
+      FNR < NR {
+          if ( $1 in assoc ) {
+              $1 = assoc[ $1 ]
+          }
+          print
+      }
+  ' $VOCAB - | sed -e 's/ /\t/g' > $PRIV
+ 
+# Creating edge types
+echo "Creating edge types (in edgeTypes.tab)..."
+for file in `find graphData -name "*.txt"`; do
+  echo $file |\
+    sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
+    sed -r -e 's/.*\/edge_(.*).txt/\1/g'
+done | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > edgeTypes.tab
 
 function index() {
   FILE=`mktemp`
   cat $1 | sed -e 's/_/ /g' > $FILE
   awk -F'	' '
       FNR == NR {
-          assoc[ $1 ] = $2;
+          assoc[ $2 ] = $1;
           next;
       }
       FNR < NR {
@@ -28,7 +115,8 @@ function index() {
           }
           print
       }
-  ' $VOCAB $FILE | sed -e 's/ /\t/g'
+  ' $VOCAB $FILE |\
+    sed -e 's/ /\t/g'
   rm $FILE
 }
 
@@ -37,7 +125,16 @@ function indexAll() {
     type=`echo $file |\
       sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
       sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
-    index $file | sed -e "s/^/$type	/g"
+    index $file | sed -e "s/^/$type	/g" |\
+      awk '
+        FNR == NR {
+            assoc[ $2 ] = $1;
+            next;
+        }
+        FNR < NR {
+          $1 = assoc[ $1 ];
+          print $2 " " $3 " " $1 " " $4 " " $5 " " $6
+        } ' edgeTypes.tab -
   done
 }
 
@@ -46,3 +143,4 @@ indexAll | gzip > graph.tab.gz
 echo "DONE"
 
 gzip $VOCAB
+gzip $PRIV

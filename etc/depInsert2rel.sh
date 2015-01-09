@@ -1,5 +1,7 @@
 #!/bin/bash
 #
+# Print out the natural logic relations in a way that can be copied
+# into c++ / java
 
 echo ">>> C++"
 cat etc/depInsert2rel.tab |\

@@ -191,6 +191,7 @@ fi
 # User defined variables (or environment variables)
 AC_DEFINE_UNQUOTED(VOCAB_FILE,      "${VOCAB_FILE:=etc/vocab.tab.gz}", [The location of the vocabulary file])
 AC_DEFINE_UNQUOTED(GRAPH_FILE,      "${GRAPH_FILE:=etc/graph.tab.gz}", [The location of the edge graph file])
+AC_DEFINE_UNQUOTED(PRIVATIVE_FILE,  "${PRIVATIVE_FILE:=etc/privative.tab.gz}", [The location of the privative adjectives])
 
 AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",  [The location of the WordNet dictionary])
 
