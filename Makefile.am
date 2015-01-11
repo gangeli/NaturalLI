@@ -11,7 +11,8 @@ EXTRA_DIST = README.md \
 						 test/data/unittest_gzip.tab.gz \
 						 rc \
 						 etc/edgeTypes.tab \
-						 etc/depInsert2rel.tab
+						 etc/depInsert2rel.tab \
+						 etc/mkGraph.sh \
 
 clean-local:
 	rm -f java.hprof.txt
