@@ -84,8 +84,7 @@ etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_
 	cp etc/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp etc/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp etc/clauseSearcherModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
-	jar cvf naturalli_models.jar -C ${TMP} .
-	touch etc/naturalli_models.jar  # make sure this is the last thing we touch
+	jar cvf etc/naturalli_models.jar -C ${TMP} .
 
 clean_models:
 	rm -f etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz \
