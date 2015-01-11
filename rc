@@ -33,5 +33,8 @@ function dummyVocab() {
     echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`  getTaggedWord(`zcat etc/vocab.tab.gz | grep "	$word$" | awk '{ print $1 }'`, 0, 0)"
     echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`_STR  \"`zcat etc/vocab.tab.gz| grep "	$word$" | awk '{ print $1 }'`\""
   done
+  echo "#define HIGHEST_MOCK_WORD_INDEX `for word in "all" "lemur" "animal" "potto" "cat" "furry" "have" "tail" "some" "dog" "chase" "no"; do
+    zcat etc/vocab.tab.gz | grep "	$word$" | awk '{ print $1 }'
+  done | sort -n -r | head -n 1`"
   echo "<<< C++"
 }

@@ -123,6 +123,8 @@ typedef uint8_t dep_label;
 #define CHASE_STR  "112699"
 #define NO  getTaggedWord(321168, 0, 0)
 #define NO_STR  "321168"
+#define HIGHEST_MOCK_WORD_INDEX 435327
+
 //
 // Typedefs
 //

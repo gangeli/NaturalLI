@@ -298,6 +298,6 @@ Graph* ReadMockGraph(const bool& allowCycles) {
   GZRow dels[]{ invalidDeletionsRow };
   MockGZIterator invalidDeletionIter(1, dels);
   
-  return readGraph(200000, &wordIter, &edgeIter, 
+  return readGraph(HIGHEST_MOCK_WORD_INDEX + 1, &wordIter, &edgeIter, 
   & invalidDeletionIter, true);
 }
