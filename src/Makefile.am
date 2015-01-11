@@ -6,6 +6,9 @@ clean-local:
 	rm -f *.gcno *.gcda
 	rm -f naturalli.war
 
+../etc/vocab.tab.gz:
+	${MAKE} -C .. etc/vocab.tab.gz
+
 Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "// DO NOT MODIFY THIS FILE!" > Models.h
 	echo "// It was automatically generated from the Makefule" >> Models.h
