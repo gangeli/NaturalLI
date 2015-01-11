@@ -6,7 +6,7 @@ clean-local:
 	rm -f *.gcno *.gcda
 	rm -f naturalli.war
 
-Models.h: ../rc ../etc/depInsert2rel.tab
+Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "// DO NOT MODIFY THIS FILE!" > Models.h
 	echo "// It was automatically generated from the Makefule" >> Models.h
 	echo "" >> Models.h
@@ -36,7 +36,7 @@ Models.h: ../rc ../etc/depInsert2rel.tab
 	echo 'std::string dependencyGloss(const uint8_t& indexed);' >> Models.h
 	echo "#endif" >> Models.h
 
-Models.cc: ../rc ../etc/depInsert2rel.tab
+Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo '#include "Models.h"' > Models.cc
 	echo '' >> Models.cc
 	echo '#include <algorithm>' >> Models.cc

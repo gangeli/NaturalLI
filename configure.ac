@@ -190,6 +190,12 @@ AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=0},  [If true, pass eac
 AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=3},  [The depth to go back checking for cycles in the search])
 AC_DEFINE_UNQUOTED(SEARCH_FULL_MEMORY,  ${SEARCH_FULL_MEMORY:=0},  [If true, keep a full history of search nodes seen. If true, SEARCH_CYCLE_MEMORY becomes irrelevant.])
 
-AC_CONFIG_FILES([Makefile src/Makefile src/fnv/Makefile src/knheap/Makefile \
-                 test/src/Makefile test/src/gtest/Makefile ])
+AC_CONFIG_FILES([
+                 Makefile \
+                 src/Makefile \
+                 src/fnv/Makefile \
+                 src/knheap/Makefile \
+                 test/src/Makefile \
+                 test/src/gtest/Makefile \
+                 ])
 AC_OUTPUT
