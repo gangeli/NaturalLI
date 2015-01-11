@@ -99,31 +99,30 @@ typedef uint8_t dep_label;
 
 // Static Data
 // DO NOT EDIT: generated with `source rc && dummyVocab`
-#define ALL  getTaggedWord(3004, 0, 0)
-#define ALL_STR  "3004"
-#define LEMUR  getTaggedWord(65392, 0, 0)
-#define LEMUR_STR  "65392"
-#define ANIMAL  getTaggedWord(4663, 0, 0)
-#define ANIMAL_STR  "4663"
-#define POTTO  getTaggedWord(88397, 0, 0)
-#define POTTO_STR  "88397"
-#define CAT  getTaggedWord(18116, 0, 0)
-#define CAT_STR  "18116"
-#define FURRY  getTaggedWord(0, 0, 0)
-#define FURRY_STR  "0"
-#define HAVE  getTaggedWord(53880, 0, 0)
-#define HAVE_STR  "53880"
-#define TAIL  getTaggedWord(111051, 0, 0)
-#define TAIL_STR  "111051"
-#define SOME  getTaggedWord(104804, 0, 0)
-#define SOME_STR  "104804"
-#define DOG  getTaggedWord(32628, 0, 0)
-#define DOG_STR  "32628"
-#define CHASE  getTaggedWord(19615, 0, 0)
-#define CHASE_STR  "19615"
-#define NO  getTaggedWord(77169, 0, 0)
-#define NO_STR  "77169"
-
+#define ALL  getTaggedWord(53707, 0, 0)
+#define ALL_STR  "53707"
+#define LEMUR  getTaggedWord(270236, 0, 0)
+#define LEMUR_STR  "270236"
+#define ANIMAL  getTaggedWord(59241, 0, 0)
+#define ANIMAL_STR  "59241"
+#define POTTO  getTaggedWord(357388, 0, 0)
+#define POTTO_STR  "357388"
+#define CAT  getTaggedWord(107646, 0, 0)
+#define CAT_STR  "107646"
+#define FURRY  getTaggedWord(188996, 0, 0)
+#define FURRY_STR  "188996"
+#define HAVE  getTaggedWord(215875, 0, 0)
+#define HAVE_STR  "215875"
+#define TAIL  getTaggedWord(435327, 0, 0)
+#define TAIL_STR  "435327"
+#define SOME  getTaggedWord(416477, 0, 0)
+#define SOME_STR  "416477"
+#define DOG  getTaggedWord(151106, 0, 0)
+#define DOG_STR  "151106"
+#define CHASE  getTaggedWord(112699, 0, 0)
+#define CHASE_STR  "112699"
+#define NO  getTaggedWord(321168, 0, 0)
+#define NO_STR  "321168"
 //
 // Typedefs
 //

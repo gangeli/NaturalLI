@@ -1,6 +1,7 @@
 package edu.stanford.nlp.naturalli;
 
 import edu.smu.tspell.wordnet.Synset;
+
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -105,12 +106,7 @@ public class ProcessQuery {
 
     // match the Synset to an index
     if (synset.isPresent()) {
-      Integer senseOrNull = StaticResources.SENSE_INDEXER.get(Pair.makePair(wordAsInt, synset.get().getDefinition()));
-      if (senseOrNull == null) {
-        return 0;
-      } else {
-        return senseOrNull;
-      }
+      return Optional.ofNullable(StaticResources.SENSE_INDEXER.get(wordAsInt)).map(x -> x.get(synset.get().getDefinition())).orElse(0);
     } else {
       return 0;
     }
@@ -269,7 +265,7 @@ public class ProcessQuery {
       Pair<Integer, String> incomingEdge = governors.get(i);
       // Encode tree
       production.append(token.word);
-      debug.append(token.gloss.replace("\\t", " "));
+      debug.append(token.gloss.replace("\\t", " "));//.append("\t").append(token.word);
       StringBuilder b = new StringBuilder();
       b.append("\t").append(incomingEdge.first + 1)
           .append("\t").append(incomingEdge.second.replace("\t", "\\t"));

@@ -3,18 +3,45 @@
 set -e
   
 VOCAB=vocab.tab
+SENSE=sense.tab
 PRIV=privative.tab
 
 #
 # Create vocabulary
 #
 echo "Creating vocabulary (in $VOCAB)..."
-cat graphData/* |\
-  sed -e 's/_/ /g' |\
-  awk -F'	' '{ print $1 "\t" $3 }' |\
-  tr '	' '\n' |\
-  sort | uniq |\
+TMP=`mktemp`
+cat graphData/lemma_sense_synset_defn.txt |\
+  awk -F'	' '{ print $1 }' |\
+  sed -e 's/_/ /g' > $TMP
+
+zcat graphData/glove.6B.50d.txt.gz |\
+  awk '{ print $1 }' >> $TMP
+
+cat $TMP | sort | uniq |\
   awk '{printf("%d\t%s\n", NR + 63, $0)}' > $VOCAB
+rm $TMP
+
+#
+# Create sense mapping
+#
+echo "Creating sense mapping (in $SENSE)..."
+
+cat graphData/lemma_sense_synset_defn.txt |\
+  awk -F'	' '{ print $1 "\t" $2 "\t" $4 }' |\
+  sed -e 's/_/ /g' |\
+  awk -F'	' '
+      FNR == NR {
+          assoc[ $2 ] = $1;
+          next;
+      }
+      FNR < NR {
+          if ( $1 in assoc ) {
+              $1 = assoc[ $1 ]
+          }
+          print $1 "\t" $2 "\t" $3
+      }
+  ' $VOCAB - > $SENSE
 
 #
 # Create privatives
@@ -78,7 +105,7 @@ PRIVATIVE_WORDS=`echo "^(" \
      "proposed" \
      ")	[0-9]+" | sed -e 's/| /|/g'`
 
-cat graphData/*.txt |\
+cat graphData/edge_*.txt |\
   sed -e 's/_/ /g' |\
   awk -F'	' '{ print $1 "\t" $2 }' |\
   egrep "$PRIVATIVE_WORDS" |\
@@ -102,7 +129,7 @@ cat graphData/*.txt |\
 #
 echo "Creating edge types (in edgeTypes.tab)..."
 TMP=`mktemp`
-for file in `find graphData -name "*.txt"`; do
+for file in `find graphData -name "edge_*.txt"`; do
   echo $file |\
     sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
     sed -r -e 's/.*\/edge_(.*).txt/\1/g'
@@ -140,7 +167,7 @@ function index() {
 }
 
 function indexAll() {
-  for file in `find graphData -name "*.txt"`; do
+  for file in `find graphData -name "edge_*.txt"`; do
     type=`echo $file |\
       sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
       sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
@@ -164,5 +191,7 @@ echo "DONE"
 
 rm -f $VOCAB.gz
 gzip $VOCAB
+rm -f $SENSE.gz
+gzip $SENSE
 rm -f $PRIV.gz
 gzip $PRIV

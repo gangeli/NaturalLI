@@ -36,6 +36,8 @@ naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 naturalli_mkkb_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
+	@echo "Ensuring models..."
+	${MAKE} -C .. .have_models
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP} `find . -name "*.java"`
 	@echo "Making Jar..."
@@ -43,5 +45,7 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 naturalli.war: naturalli_preprocess.jar
+	@echo "Ensuring models..."
+	${MAKE} -C .. .have_models
 	@echo "Creating WAR..."
 	cd ../ && ant war

@@ -24,6 +24,7 @@ JavaBridge::JavaBridge() {
 
     // --Child is running here--
     ::prctl(PR_SET_PDEATHSIG, SIGKILL);
+
     // Get directory of running executable
     char thisPathBuffer[256];
     memset(thisPathBuffer, 0, sizeof(thisPathBuffer));
@@ -31,21 +32,34 @@ JavaBridge::JavaBridge() {
     string thisPath = string(thisPathBuffer);
     int lastSlash = thisPath.find_last_of("/");
     string thisDir = thisPath.substr(0, lastSlash);
+
     // Set up paths
+    // (find java)
     char javaExecutable[128];
     snprintf(javaExecutable, 127, "%s/bin/java", JDK_HOME);
+    // (the main class)
     std::string javaClass = "edu.stanford.nlp.naturalli.CBridge";
-    char wordnetEnv[128];
-    snprintf(wordnetEnv, 127, "-Dwordnet.database.dir=%s", WORDNET_DICT);
+    // (environment variables)
+    char wordnetEnv[256];
+    snprintf(wordnetEnv, 255, "-Dwordnet.database.dir=%s", WORDNET_DICT);
+    char vocabFile[256];
+    snprintf(vocabFile, 255, "-DVOCAB_FILE=%s", VOCAB_FILE);
+    char senseFile[256];
+    snprintf(vocabFile, 255, "-DSENSE_FILE=%s", SENSE_FILE);
+    // (classpath)
     char classpath[1024];
     snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s:%s", 
         thisDir.c_str(), thisDir.c_str(), thisDir.c_str(),
         CORENLP, CORENLP_MODELS, NATURALLI_MODELS);
+
     // Start program
     dup2(pipeIn[0], STDIN_FILENO);
     dup2(pipeOut[1], STDOUT_FILENO);
-    execl(javaExecutable, javaExecutable, "-mx1g", wordnetEnv, "-cp", classpath,
+    execl(javaExecutable, javaExecutable, "-mx1g", 
+        wordnetEnv, vocabFile, senseFile,
+        "-cp", classpath,
         javaClass.c_str(), "true", (char*) NULL);
+
     // Should never reach here
     exit(1);
 

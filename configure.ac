@@ -172,12 +172,13 @@ fi
 # User defined variables (or environment variables)
 AC_DEFINE_UNQUOTED(VOCAB_FILE,      "${VOCAB_FILE:=etc/vocab.tab.gz}", [The location of the vocabulary file])
 AC_DEFINE_UNQUOTED(GRAPH_FILE,      "${GRAPH_FILE:=etc/graph.tab.gz}", [The location of the edge graph file])
+AC_DEFINE_UNQUOTED(SENSE_FILE,      "${SENSE_FILE:=etc/sense.tab.gz}", [The location of the edge graph file])
 AC_DEFINE_UNQUOTED(PRIVATIVE_FILE,  "${PRIVATIVE_FILE:=etc/privative.tab.gz}", [The location of the privative adjectives])
 
 AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",  [The location of the WordNet dictionary])
 
-AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH, ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
-AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH, 40, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
+AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH,      ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
+AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH,     40, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
 AC_DEFINE_UNQUOTED(MAX_QUANTIFIER_COUNT, ${MAX_QUANTIFIER_COUNT:=8},  [The maximum number of quantifiers allowed in a sentence.])
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,      ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
