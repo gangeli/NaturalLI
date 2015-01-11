@@ -34,7 +34,6 @@
 #define SYNONYM     12
 #define VERB_ENTAIL     13
 
-
 // Inference States
 #define INFER_FALSE   0
 #define INFER_TRUE    1

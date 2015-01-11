@@ -45,7 +45,7 @@ JavaBridge::JavaBridge() {
     char vocabFile[256];
     snprintf(vocabFile, 255, "-DVOCAB_FILE=%s", VOCAB_FILE);
     char senseFile[256];
-    snprintf(vocabFile, 255, "-DSENSE_FILE=%s", SENSE_FILE);
+    snprintf(senseFile, 255, "-DSENSE_FILE=%s", SENSE_FILE);
     // (classpath)
     char classpath[1024];
     snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s:%s", 

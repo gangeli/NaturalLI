@@ -121,6 +121,7 @@ AC_SUBST(GP_USER)
 GP_USER=angeli
 AC_SUBST(GP_DB)
 GP_DB=angeli
+AM_CONDITIONAL(HAVE_GPSQL, psql -h julie0 -p 4242 -U angeli -l | grep angeli)
 
 # (check headers)
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \

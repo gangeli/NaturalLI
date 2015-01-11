@@ -69,6 +69,9 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case HYPONYM:              return FUNCTION_REVERSE_ENTAILMENT;
     case ANTONYM:              return FUNCTION_ALTERNATION;
     case SYNONYM:              return FUNCTION_EQUIVALENT;
+    // Freebase
+    case HOLONYM:              return FUNCTION_FORWARD_ENTAILMENT;
+    case MERONYM:              return FUNCTION_REVERSE_ENTAILMENT;
     // Nearest Neighbors
     // TODO(gabor) replace with "equivalent," but make sure it can't hop
     // too much (e.g., on quantifiers or when senses morph)
@@ -81,6 +84,8 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     // Sense shifts
     case SENSE_ADD:            return FUNCTION_EQUIVALENT;
     case SENSE_REMOVE:         return FUNCTION_EQUIVALENT;
+    // Verb entailment
+    case VERB_ENTAIL:          return FUNCTION_FORWARD_ENTAILMENT;
     default:
       fprintf(stderr, "No such edge: %u\n", edge);
       std::exit(1);
