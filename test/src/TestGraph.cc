@@ -3,6 +3,7 @@
 #include <config.h>
 #include "gtest/gtest.h"
 #include "Graph.h"
+#include "Models.h"
 
 using namespace std;
 

@@ -5,7 +5,7 @@ EXTRA_DIST = edu
 clean-local:
 	rm -f *.gcno *.gcda
 
-_OBJS_SPEC = Graph.o Utils.o GZip.o \
+_OBJS_SPEC = Graph.o Utils.o GZip.o Models.o \
              SynSearch.o SynSearchSingleThreaded.o
 OBJ_NAMES = $(patsubst %,naturalli-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
@@ -33,7 +33,7 @@ AM_LDFLAGS  =  -L${MAIN_SRC}/fnv -lfnv32 -lfnv64 \
 
 test_server_SOURCES = TestGraph.cc TestGZip.cc \
                       TestUtils.cc TestTypes.cc \
-                      TestSynSearch.cc
+                      TestSynSearch.cc TestModels.cc
 test_server_LDADD =  ${OBJS}
 
 itest_server_SOURCES= ITest.cc

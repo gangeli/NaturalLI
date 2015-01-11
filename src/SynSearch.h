@@ -8,6 +8,7 @@
 #include "Graph.h"
 #include "knheap/knheap.h"
 #include "btree_set.h"
+#include "Models.h"
 
 // Ensure definitions
 #ifndef TWO_PASS_HASH
@@ -31,15 +32,6 @@ class SearchNode;
 // ----------------------------------------------
 // NATURAL LOGIC
 // ----------------------------------------------
-
-typedef uint8_t natlog_relation;
-
-typedef uint8_t quantifier_type;
-#define QUANTIFIER_TYPE_NONE 0x0
-#define QUANTIFIER_TYPE_ADDITIVE 0x1
-#define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
-#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
-
 
 /**
  * Translate from edge type to the Natural Logic lexical function
@@ -275,10 +267,10 @@ struct dep_tree_word {
 #else
 struct alignas(6) dep_tree_word {
 #endif
-  ::word        word:25;
-  uint8_t       sense:5,
+  ::word        word:VOCABULARY_ENTROPY;  // 24
+  uint8_t       sense:SENSE_ENTROPY,      // 5
                 governor:6,
-                relation:6;
+                relation:DEPENDENCY_ENTROPY;
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
@@ -293,9 +285,9 @@ struct dependency_edge {
 #else
 struct dependency_edge alignas(8) {
 #endif
-  uint32_t   governor:25,
-             dependent:25;
-  dep_label  relation:6;
+  uint32_t   governor:VOCABULARY_ENTROPY,
+             dependent:VOCABULARY_ENTROPY;
+  dep_label  relation:DEPENDENCY_ENTROPY;
   uint8_t    placeholder:8;  // <-- should be zero
 
   dependency_edge(const uint32_t& governor,
@@ -595,11 +587,11 @@ struct syn_path_data {
 struct alignas(24) syn_path_data {
 #endif
   uint64_t    factHash:64,
-              currentWord:VOCABULARY_ENTROPY,  // 25
+              currentWord:VOCABULARY_ENTROPY,  // 24
               currentSense:SENSE_ENTROPY,      // 5
               deleteMask:MAX_QUERY_LENGTH,     // 40
               backpointer:25;
-  word        governor:VOCABULARY_ENTROPY;     // 25
+  word        governor:VOCABULARY_ENTROPY;     // 24
   uint8_t     index:6;
   bool        truth:1;
 

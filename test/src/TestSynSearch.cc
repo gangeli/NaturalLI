@@ -411,10 +411,11 @@ TEST_F(TreeTest, HashRepeatable) {
 // Hash Value Test
 //
 TEST_F(TreeTest, HashValueCheck) {
+  // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(2818012195690390063, tree->hash());
+  EXPECT_EQ(16684156264478018091lu, tree->hash());
 #else
-  EXPECT_EQ(9589546471634114165, tree->hash());
+  EXPECT_EQ(6516248485063243418lu, tree->hash());
 #endif
 }
 

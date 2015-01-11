@@ -17,23 +17,6 @@
 #define MONOTONE_INVALID 3
 #define MONOTONE_DEFAULT MONOTONE_UP
 
-// Graph Edges
-// DO NOT EDIT: generated with `source rc && edgeTypes`
-#define ANGLE_NN     0
-#define ANTONYM     1
-#define HOLONYM     2
-#define HYPERNYM     3
-#define HYPONYM     4
-#define MERONYM     5
-#define QUANTIFIER_DOWN     6
-#define QUANTIFIER_NEGATE     7
-#define QUANTIFIER_REWORD     8
-#define QUANTIFIER_UP     9
-#define SENSE_ADD     10
-#define SENSE_REMOVE     11
-#define SYNONYM     12
-#define VERB_ENTAIL     13
-
 // Inference States
 #define INFER_FALSE   0
 #define INFER_TRUE    1
@@ -47,82 +30,6 @@
 #define FUNCTION_ALTERNATION        4
 #define FUNCTION_COVER              5
 #define FUNCTION_INDEPENDENCE       6
-
-// Dependency edges
-typedef uint8_t dep_label;
-#define DEP_ACOMP 0
-#define DEP_ADVCL 1
-#define DEP_ADVMOD 2
-#define DEP_AMOD 3
-#define DEP_APPOS 4
-#define DEP_AUX 5
-#define DEP_AUXPASS 6
-#define DEP_CC 7
-#define DEP_CCOMP 8
-#define DEP_CONJ 9
-#define DEP_COP 10
-#define DEP_CSUBJ 11
-#define DEP_CSUBJPASS 12
-#define DEP_DEP 13
-#define DEP_DET 14
-#define DEP_DISCOURSE 15
-#define DEP_DOBJ 16
-#define DEP_EXPL 17
-#define DEP_GOESWITH 18
-#define DEP_IOBJ 19
-#define DEP_MARK 20
-#define DEP_MWE 21
-#define DEP_NEG 22
-#define DEP_NN 23
-#define DEP_NPADVMOD 24
-#define DEP_NSUBJ 25
-#define DEP_NSUBJPASS 26
-#define DEP_NUM 27
-#define DEP_NUMBER 28
-#define DEP_PARATAXIS 29
-#define DEP_PCOMP 30
-#define DEP_POBJ 31
-#define DEP_POSS 32
-#define DEP_POSSEIVE 33
-#define DEP_PRECONJ 34
-#define DEP_PREDET 35
-#define DEP_PREP 36
-#define DEP_PRT 37
-#define DEP_PUNCT 38
-#define DEP_QUANTMOD 39
-#define DEP_RCMOD 40
-#define DEP_ROOT 41
-#define DEP_TMOD 42
-#define DEP_VMOD 43
-#define DEP_XCOMP 44
-
-// Static Data
-// DO NOT EDIT: generated with `source rc && dummyVocab`
-#define ALL  getTaggedWord(53707, 0, 0)
-#define ALL_STR  "53707"
-#define LEMUR  getTaggedWord(270236, 0, 0)
-#define LEMUR_STR  "270236"
-#define ANIMAL  getTaggedWord(59241, 0, 0)
-#define ANIMAL_STR  "59241"
-#define POTTO  getTaggedWord(357388, 0, 0)
-#define POTTO_STR  "357388"
-#define CAT  getTaggedWord(107646, 0, 0)
-#define CAT_STR  "107646"
-#define FURRY  getTaggedWord(188996, 0, 0)
-#define FURRY_STR  "188996"
-#define HAVE  getTaggedWord(215875, 0, 0)
-#define HAVE_STR  "215875"
-#define TAIL  getTaggedWord(435327, 0, 0)
-#define TAIL_STR  "435327"
-#define SOME  getTaggedWord(416477, 0, 0)
-#define SOME_STR  "416477"
-#define DOG  getTaggedWord(151106, 0, 0)
-#define DOG_STR  "151106"
-#define CHASE  getTaggedWord(112699, 0, 0)
-#define CHASE_STR  "112699"
-#define NO  getTaggedWord(321168, 0, 0)
-#define NO_STR  "321168"
-#define HIGHEST_MOCK_WORD_INDEX 435327
 
 //
 // Typedefs
@@ -162,6 +69,17 @@ inline bool operator<(const tagged_word& lhs, const tagged_word& rhs) {
 inline bool operator!=(const tagged_word& lhs, const tagged_word& rhs) {
   return !(lhs == rhs);
 }
+	
+/** A typedef for a Natlog relation (e.g., forward entailment) */
+typedef uint8_t natlog_relation;
+
+
+/** A typedef for a quantifier type (e.g., multiplicative) */
+typedef uint8_t quantifier_type;
+#define QUANTIFIER_TYPE_NONE 0x0
+#define QUANTIFIER_TYPE_ADDITIVE 0x1
+#define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
+#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
 
 /** A simple helper for a word, untagged with type information */
 typedef uint32_t word;

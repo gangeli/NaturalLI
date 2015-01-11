@@ -7,6 +7,42 @@
 using namespace std;
 
 //
+// zfatal()
+//
+void zfatal(int ret) {
+  fputs("GZip.cc: ", stderr);
+  switch (ret) {
+    case Z_ERRNO:
+      if (ferror(stdin))
+        fputs("error reading stdin\n", stderr);
+      if (ferror(stdout))
+        fputs("error writing stdout\n", stderr);
+      std::exit(1);
+      break;
+    case Z_STREAM_ERROR:
+      fputs("invalid compression level\n", stderr);
+      std::exit(1);
+      break;
+    case Z_DATA_ERROR:
+      fputs("invalid or incomplete deflate data\n", stderr);
+      std::exit(1);
+      break;
+    case Z_MEM_ERROR:
+      fputs("out of memory\n", stderr);
+      std::exit(1);
+      break;
+    case Z_VERSION_ERROR:
+      fputs("zlib version mismatch!\n", stderr);
+      std::exit(1);
+  }
+}
+  
+//
+// GZIterator::GZIterator
+//
+GZIterator::GZIterator() : bufferSize(0), source(NULL), lastLine(NULL) { }
+
+//
 // GZIterator::GZIterator
 //
 GZIterator::GZIterator(const char* filename, const uint64_t& bufferSize)
@@ -145,6 +181,32 @@ bool GZIterator::hasNext() {
   // Return success
   return true;
 }
+  
+//
+// GZRow::GZRow
+//
+GZRow::GZRow(const std::vector<std::string>& elems) : elems(elems) { }
+
+//
+// GZRow::GZRow
+//
+GZRow::GZRow(const char** elems, const uint32_t& size) { 
+  for (uint32_t i = 0; i < size; ++i) {
+    this->elems.push_back(std::string(elems[i]));
+  }
+}
+
+//
+// GZRow::GZRow
+//
+GZRow::GZRow(const GZRow& other) : elems(other.elems) { } 
+  
+//
+// GZRow::operator[]
+//
+const char* GZRow::operator[] (const uint64_t& index) {
+  return elems[index].c_str();
+}
 
 //
 // GZIterator::next
@@ -166,36 +228,4 @@ GZRow GZIterator::next() {
   free(this->lastLine);
   this->lastLine = NULL;
   return GZRow(elems);
-}
-
-
-//
-// zfatal()
-//
-void zfatal(int ret) {
-  fputs("GZip.cc: ", stderr);
-  switch (ret) {
-    case Z_ERRNO:
-      if (ferror(stdin))
-        fputs("error reading stdin\n", stderr);
-      if (ferror(stdout))
-        fputs("error writing stdout\n", stderr);
-      std::exit(1);
-      break;
-    case Z_STREAM_ERROR:
-      fputs("invalid compression level\n", stderr);
-      std::exit(1);
-      break;
-    case Z_DATA_ERROR:
-      fputs("invalid or incomplete deflate data\n", stderr);
-      std::exit(1);
-      break;
-    case Z_MEM_ERROR:
-      fputs("out of memory\n", stderr);
-      std::exit(1);
-      break;
-    case Z_VERSION_ERROR:
-      fputs("zlib version mismatch!\n", stderr);
-      std::exit(1);
-  }
 }

@@ -2,33 +2,75 @@
 #
 
 # Print out the natural logic relations in a way that can be copied
-# into c++ / java
-function depInsert2rel() {
-  echo ">>> C++"
-  cat etc/depInsert2rel.tab |\
+# into C++
+function depInsert2relC() {
+  echo "natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,"
+  echo '                                                  const ::word& dependent) {'
+  echo "  switch (dep) {"
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq |\
     awk -F'	' '{ print toupper($1) "\t" toupper($2) "\t" $3 }' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)\t(.*)$/    case DEP_\1: return FUNCTION_\2;  \/\/  \3/g'
-  echo "<<< C++"
+  echo '    default:'
+  echo '      fprintf(stderr, "No such dependency label: %u\n", dep);'
+  echo '      std::exit(1);'
+  echo '      return 255;'
+  echo '  }'
+  echo '}'
+}
+
+# Print out the natural logic relations in a way that can be copied
+# into Java++
+function depInsert2relJava() {
   echo ">>> Java (insertions)"
-  cat etc/depInsert2rel.tab |\
+  cat etc/depInsert2rel.tab | sort | uniq |\
     awk -F'	' '{ print $1 "\t" toupper($2) "\t" $3 }' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)\t(.*)$/    put("\1", NaturalLogicRelation.\2);  \/\/ \3/g'
   echo "<<< Java (insertions)"
 }
 
+# Print out the 
+function dep2header() {
+  echo "typedef uint8_t dep_label;"
+  echo ""
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq |\
+    awk -F'	' '{ print toupper($1) }' |\
+    awk '{printf("#define DEP_%s  %d\n", $0, NR - 1)}'
+  echo "#define NUM_DEPENDENCY_LABELS `cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq | wc -l`" 
+}
+
+function dep2string() {
+  echo "uint8_t indexDependency(const string& dependencyAsString) {"
+  echo "  string lower = dependencyAsString;"
+  echo "  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);"
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
+    awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
+    sed -r -e 's/^([^\t]+)\t([^\t]+)$/  if (lower == "\1") { return DEP_\2; }/g' |\
+    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g'
+  echo "  return 0;"
+  echo "}"
+  echo ""
+
+  echo "string dependencyGloss(const uint8_t& indexed) {"
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
+    awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
+    sed -r -e 's/^([^\t]+)\t([^\t]+)$/  if (indexed == DEP_\2) { return "\1"; }/g' |\
+    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g'
+  echo '  return "???";'
+  echo "}"
+}
+
 # Print out the edge relation indices in a way that can be copied
 # into c++ / java
 function edgeTypes() {
-  echo ">>> C++"
+  echo '// Graph Edges'
   cat etc/edgeTypes.tab |\
     awk -F'	' '{ print "#define " toupper($2) "     " toupper($1) }'
-  echo "<<< C++"
+  echo "#define NUM_MUTATION_TYPES `cat etc/edgeTypes.tab | wc -l`"
 }
 
 # Print out the dummy vocab entries to be put into the mock graph
 # definitions in Types.h
 function dummyVocab() {
-  echo ">>> C++"
   for word in "all" "lemur" "animal" "potto" "cat" "furry" "have" "tail" "some" "dog" "chase" "no"; do
     echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`  getTaggedWord(`zcat etc/vocab.tab.gz | grep "	$word$" | awk '{ print $1 }'`, 0, 0)"
     echo "#define `echo $word | tr '[:lower:]' '[:upper:]'`_STR  \"`zcat etc/vocab.tab.gz| grep "	$word$" | awk '{ print $1 }'`\""
@@ -36,7 +78,6 @@ function dummyVocab() {
   echo "#define HIGHEST_MOCK_WORD_INDEX `for word in "all" "lemur" "animal" "potto" "cat" "furry" "have" "tail" "some" "dog" "chase" "no"; do
     zcat etc/vocab.tab.gz | grep "	$word$" | awk '{ print $1 }'
   done | sort -n -r | head -n 1`"
-  echo "<<< C++"
 }
 
 # A utility to get the index of a word

@@ -9,8 +9,6 @@
 #include "Utils.h"
 #include "JavaBridge.h"
 
-#include "GZip.h"  // TODO(gabor) remove me!
-
 using namespace std;
 
 const char* escapeQuote(const string& input) {

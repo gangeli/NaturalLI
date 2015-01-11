@@ -41,20 +41,6 @@ TEST_F(UtilsTest, ToStringTime) {
   EXPECT_EQ(string("10d 2h 20m 3s"), toString((10l*24l*60l*60l + 2l*60l*60l + 20l*60l + 3l) * CLOCKS_PER_SEC));
 }
 
-TEST_F(UtilsTest, DependencyGloss) {
-  for (int i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
-    EXPECT_NE("???", dependencyGloss(i));
-  }
-  EXPECT_EQ("???", dependencyGloss(NUM_DEPENDENCY_LABELS));
-}
-
-TEST_F(UtilsTest, DependencyIndex) {
-  for (int i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
-    EXPECT_EQ(i, indexDependency(dependencyGloss(i)));
-  }
-  EXPECT_EQ(0, indexDependency(dependencyGloss(NUM_DEPENDENCY_LABELS)));
-}
-
 TEST_F(UtilsTest, FastATOI) {
   EXPECT_EQ(0, fast_atoi("0"));
   EXPECT_EQ(1, fast_atoi("1"));

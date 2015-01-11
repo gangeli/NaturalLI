@@ -165,12 +165,19 @@ public class ProcessQuery {
     return newIndex;
   }
 
+  private static void sanitizeTreeForNaturalli(SemanticGraph tree) {
+    // TODO(gabor) replace arcs with the "op" arc if they go into operators
+    // TODO(gabor) get rid of "prepc" arcs
+    // TODO(gabor) get rid of unknown "prep" arcs
+    // TODO(gabor) map all unknown arc types to the same unknown type
+  }
+
   public static String conllDump(SemanticGraph tree) {
     return conllDump(tree, new Pointer<>());
-
   }
 
   public static String conllDump(SemanticGraph tree, Pointer<String> readableDump) {
+    sanitizeTreeForNaturalli(tree);
     // Variables
     List<IndexedWord> sentence = new ArrayList<>();
     tree.vertexListSorted().forEach(sentence::add);

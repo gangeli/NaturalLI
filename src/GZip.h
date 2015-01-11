@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <zlib.h>
 #if defined(MSDOS) || defined(OS2) || defined(WIN32) || defined(__CYGWIN__)
 #  include <fcntl.h>
@@ -13,26 +14,19 @@
 #endif
 
 #include <config.h>
-#include "Types.h"
 
 /**
  * Represents a single row of a database query result.
  */
 class GZRow {
  public:
-  GZRow(const std::vector<std::string>& elems) : elems(elems){ }
-  GZRow(const char** elems, const uint32_t& size) { 
-    for (uint32_t i = 0; i < size; ++i) {
-      this->elems.push_back(std::string(elems[i]));
-    }
-  }
-  GZRow(const GZRow& other) : elems(other.elems){ }
+  GZRow(const std::vector<std::string>& elems);
+  GZRow(const char** elems, const uint32_t& size);
+  GZRow(const GZRow& other);
   
-  virtual const char* operator[] (const uint64_t& index) {
-    return elems[index].c_str();
-  }
+  virtual const char* operator[] (const uint64_t& index);
 
-  uint32_t size() { return elems.size(); }
+  inline uint32_t size() { return elems.size(); }
 
  private:
   std::vector<std::string> elems;
@@ -57,7 +51,7 @@ class GZIterator {
    * A dummy constructor which doesn't initialize the iterator at all,
    * but allows for other classes to subclass it
    */
-  GZIterator() : bufferSize(0), source(NULL), lastLine(NULL) { }
+  GZIterator();
  
  private:
   FILE* source;
@@ -78,8 +72,5 @@ class GZIterator {
   uint32_t outConsumed;
   uint32_t outHave;
 };
-
-/* report a zlib or i/o error */
-void zfatal(int ret);
 
 #endif

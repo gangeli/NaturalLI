@@ -42,17 +42,6 @@ std::string toString(const edge_type& edge);
 std::string toString(const time_t& elapsedTime);
 
 /**
- * Index a dependency arc to an integer.
- */
-uint8_t indexDependency(const std::string& dependencyAsString);
-
-
-/**
- * Get the String gloss for an indexed dependency arc.
- */
-std::string dependencyGloss(const uint8_t& indexed);
-
-/**
  *  The fact (lemur, have, tail)
  */
 const std::vector<tagged_word> lemursHaveTails();

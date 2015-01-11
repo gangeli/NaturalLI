@@ -149,10 +149,10 @@ AM_CONDITIONAL(HAVE_SCRIPTS, ls lib/scripts &> /dev/null)
 AC_DEFINE_UNQUOTED(CACHE_LINE_SIZE, `getconf LEVEL1_DCACHE_LINESIZE 2> /dev/null || echo "64"`, [The cache line size of the current machine])
 AC_DEFINE_UNQUOTED(L3_CACHE_SIZE, `getconf LEVEL3_CACHE_SIZE 2> /dev/null || echo "20971520"`, [The cache line size of the current machine])
 # (some sizes)
-AC_DEFINE_UNQUOTED(NUM_DEPENDENCY_LABELS, 45, [The number of Stanford Dependency labels])
-AC_DEFINE_UNQUOTED(NUM_MUTATION_TYPES, 13, [The number of mutation edges])
-AC_DEFINE_UNQUOTED(VOCABULARY_ENTROPY, 25, [The number of mutation edges])
-AC_DEFINE_UNQUOTED(SENSE_ENTROPY, 5, [The number of mutation edges])
+# (( the following two should add up to < 30)
+AC_DEFINE_UNQUOTED(VOCABULARY_ENTROPY, 24, [The number of bits to allocate for a word. Must be <= 32])
+AC_DEFINE_UNQUOTED(SENSE_ENTROPY, 5, [The number of bits to allocate for a word sense. Must be <= 8])
+AC_DEFINE_UNQUOTED(DEPENDENCY_ENTROPY, 8, [The number of bits to allocate for a dependency label. Must be <= 8])
 
 # Optionally enable debugging
 AC_ARG_ENABLE(debug,

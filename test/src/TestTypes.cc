@@ -16,7 +16,7 @@ TEST(TypesTest, TaggedWord) {
         ASSERT_EQ(sense, w.sense);
         ASSERT_EQ(word, w.word);
       }
-      for (int word = (0x1 << 25) - 1; word >= (0x1 << 25) - 1000; --word) {
+      for (int word = (0x1 << VOCABULARY_ENTROPY) - 1; word >= (0x1 << VOCABULARY_ENTROPY) - 1000; --word) {
         tagged_word w = getTaggedWord(word, sense, monotonicity);
         ASSERT_EQ(monotonicity, w.monotonicity);
         ASSERT_EQ(sense, w.sense);
