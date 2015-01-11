@@ -8,7 +8,10 @@ EXTRA_DIST = README.md \
              lib/jaws.jar \
              lib/test/hamcrest-core-1.3.jar \
 						 lib/test/junit-4.11.jar \
-						 test/data/unittest_gzip.tab.gz
+						 test/data/unittest_gzip.tab.gz \
+						 rc \
+						 etc/edgeTypes.tab \
+						 etc/depInsert2rel.tab
 
 clean-local:
 	rm -f java.hprof.txt
