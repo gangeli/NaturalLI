@@ -47,6 +47,8 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "" >> Models.cc
 	cd .. && source rc && depInsert2relC >> src/Models.cc
 
+BUILT_SOURCES = Models.h Models.cc
+
 naturalli_SOURCES = GZip.cc Models.cc \
 										NaturalLI.cc Utils.cc Graph.cc SynSearch.cc \
                  		SynSearchSingleThreaded.cc JavaBridge.cc \
