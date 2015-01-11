@@ -12,7 +12,7 @@ EXTRA_DIST = README.md \
 						 rc \
 						 etc/edgeTypes.tab \
 						 etc/depInsert2rel.tab \
-						 etc/mkGraph.sh \
+						 etc/mkGraph.sh
 
 clean-local:
 	rm -f java.hprof.txt
