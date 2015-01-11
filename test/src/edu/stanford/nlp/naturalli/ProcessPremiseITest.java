@@ -42,7 +42,6 @@ public class ProcessPremiseITest {
       line = line.trim();
       if (!line.startsWith("#") && !"".equals(line)) {
         line = line.replace("TRUE: ", "").replace("FALSE: ", "").replace("UNK: ", "").trim();
-        System.err.println(line);
         for (SentenceFragment fragment : ProcessPremise.forwardEntailments(line, pipeline)) {
           ProcessQuery.conllDump(fragment.parseTree);
         }

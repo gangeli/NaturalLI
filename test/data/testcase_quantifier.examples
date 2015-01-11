@@ -1,14 +1,14 @@
-## Quantifier up
-#All cats have tails
-#TRUE: Some cats have tails
-#
-## Quantifier down
-#No cat likes some dog
-#TRUE: No cat likes all dogs
-#
-## Quantifier reword
-#Every cat has a tail
-#TRUE: All cats have a tail
+# Quantifier up
+All cats have tails
+TRUE: Some cats have tails
+
+# Quantifier down
+No cat likes some dog
+TRUE: No cat likes all dogs
+
+# Quantifier reword
+Every cat has a tail
+TRUE: All cats have a tail
 
 # Quantifier negate
 Some cat has a tail

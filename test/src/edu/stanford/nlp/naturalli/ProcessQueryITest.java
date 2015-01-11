@@ -53,7 +53,7 @@ public class ProcessQueryITest {
   @Test
   public void noCatsLikeDogs() {
     assertEquals(
-        "no	2	det	0	anti-additive	2-3	anti-additive	3-5\n" +  // TODO(gabor) should be neg; this is a parse error
+        "no	2	neg	0	anti-additive	2-3	anti-additive	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
         "like	0	root	5	-	-	-	-\n" +
         "dog	3	dobj	2	-	-	-	-\n",
@@ -64,7 +64,7 @@ public class ProcessQueryITest {
   @Test
   public void noManIsVeryBeautiful() {
     assertEquals(
-        "no	2	det	0	anti-additive	2-3	anti-additive	3-6\n" +  // TODO(gabor) this should be neg; this is a parse error
+        "no	2	neg	0	anti-additive	2-3	anti-additive	3-6\n" +
             "man	5	nsubj	2	-	-	-	-\n" +
             "be	5	cop	3	-	-	-	-\n" +
             "very	5	advmod	4	-	-	-	-\n" +
@@ -86,7 +86,7 @@ public class ProcessQueryITest {
   @Test
   public void regression1() {
     String expected =
-        "no	2	det	0	anti-additive	2-3	anti-additive	3-10\n" +
+        "no	2	neg	0	anti-additive	2-3	anti-additive	3-10\n" +
         "dog	3	nsubj	2	-	-	-	-\n" +
         "chase	0	root	5	-	-	-	-\n"+
         "a	5	det	0	-	-	-	-\n"+
@@ -96,6 +96,19 @@ public class ProcessQueryITest {
         "to	9	aux	0	-	-	-	-\n"+
         "catch it	3	advcl	2	-	-	-	-\n";  // TODO(gabor) Yes, this is strange...
     assertEquals(expected, ProcessQuery.annotateHumanReadable("No dog chased a cat in order to catch it", pipeline));
+  }
+
+
+  @Test
+  public void apposEdge() {
+    String expected =
+        "no	2	neg	0	anti-additive	2-3	anti-additive	3-7\n" +
+        "dog	3	nsubj	2	-	-	-	-\n" +
+        "chase	0	root	5	-	-	-	-\n"+
+        "the	5	det	0	-	-	-	-\n"+
+        "cat	3	dobj	2	-	-	-	-\n"+
+        "Felix	5	appos	0	-	-	-	-\n";
+    assertEquals(expected, ProcessQuery.annotateHumanReadable("No dogs chase the cat, Felix", pipeline));
   }
 
   /**
@@ -109,7 +122,6 @@ public class ProcessQueryITest {
       line = line.trim();
       if (!line.startsWith("#") && !"".equals(line)) {
         line = line.replace("TRUE: ", "").replace("FALSE: ", "").replace("UNK: ", "").trim();
-        System.err.println(line);
         ProcessQuery.annotateHumanReadable(line, pipeline);
       }
     }
