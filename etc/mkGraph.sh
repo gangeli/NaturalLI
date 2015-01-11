@@ -6,6 +6,8 @@ VOCAB=vocab.tab
 SENSE=sense.tab
 PRIV=privative.tab
 
+GENERIC_TMP=`mktemp`
+
 #
 # Create vocabulary
 #
@@ -147,7 +149,7 @@ rm $TMP
 #
 function index() {
   FILE=`mktemp`
-  cat $1 | sed -e 's/_/ /g' > $FILE
+  cat $1 | sort | uniq | sed -e 's/_/ /g' > $FILE
   awk -F'	' '
       FNR == NR {
           assoc[ $2 ] = $1;
@@ -171,7 +173,13 @@ function indexAll() {
     type=`echo $file |\
       sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
       sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
-    index $file | sed -e "s/^/$type	/g" |\
+    modFile="$file"
+    if [ "$type" == "antonym" ]; then
+      modFile="$GENERIC_TMP"
+      cat $file > $modFile
+      cat $file | awk -F'	' '{ print $3 "\t" $4 "\t" $1 "\t" $2 "\t" $5 }' >> $modFile
+    fi
+    index $modFile | sed -e "s/^/$type	/g" |\
       awk '
         FNR == NR {
             assoc[ $2 ] = $1;
@@ -195,3 +203,5 @@ rm -f $SENSE.gz
 gzip $SENSE
 rm -f $PRIV.gz
 gzip $PRIV
+
+rm -f $GENERIC_TMP

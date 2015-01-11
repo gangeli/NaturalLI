@@ -38,3 +38,33 @@ function dummyVocab() {
   done | sort -n -r | head -n 1`"
   echo "<<< C++"
 }
+
+# A utility to get the index of a word
+function index() {
+  zcat etc/vocab.tab.gz | grep "	$1$" | awk '{ print $1 }'
+}
+
+# A utility to return the gloss of an index
+function gloss() {
+  zcat etc/vocab.tab.gz | grep "^$1	" | awk '{ print $2 }'
+}
+
+# A utility to find all edges between two words
+function edge() {
+  source=`index $1`
+  sink=`index $2`
+  zcat etc/graph.tab.gz | egrep "^$source	[^	]+	$sink	" | awk '{ print $5 }' |\
+    awk -F'	' '
+        FNR == NR {
+            assoc[ $1 ] = $2;
+            next;
+        }
+        FNR < NR {
+            if ( $1 in assoc ) {
+                $1 = assoc[ $1 ]
+            }
+            print
+        }
+    ' etc/edgeTypes.tab - |\
+      sed -r -e "s/(.*)/$1 ($source)     \1     $2 ($sink)/g"
+}
