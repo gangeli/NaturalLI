@@ -68,6 +68,9 @@ else
 	wget -O etc/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
 endif
 
+etc/clauseSearcherModel.ser.gz:
+	wget -O etc/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
+
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	cd etc && ./mkGraph.sh
 	touch etc/.mk_graph
