@@ -23,7 +23,9 @@ cat $DIR/graphData/lemma_sense_synset_defn.txt |\
 zcat $DIR/graphData/glove.6B.50d.txt.gz |\
   awk '{ print $1 }' >> $TMP
 
-cat $DIR/operators.tab | awk -F'	' '{ print $3 }' >> $TMP
+cat $DIR/operators.tab |\
+  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+  awk -F'	' '{ print $3 }' >> $TMP
 
 echo '__num__' >> $TMP
 
