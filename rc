@@ -28,7 +28,7 @@ function depInsert2relJava() {
   echo "<<< Java (insertions)"
 }
 
-# Print out the 
+# Print out the headers for the different dependency edge types
 function dep2header() {
   echo "typedef uint8_t dep_label;"
   echo ""
@@ -38,6 +38,8 @@ function dep2header() {
   echo "#define NUM_DEPENDENCY_LABELS `cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq | wc -l`" 
 }
 
+# Print out the toString() and fromString() methods for translating
+# between dependency strings and dependency types.
 function dep2string() {
   echo "uint8_t indexDependency(const string& dependencyAsString) {"
   echo "  string lower = dependencyAsString;"
@@ -80,6 +82,22 @@ function dummyVocab() {
   done | sort -n -r | head -n 1`"
 }
 
+function validateGraph() {
+  echo "Validating graph..."
+  echo "(this fails unless you see 'All graph tests passed!')"
+  echo "Checking non-numeric vertices..." &&\
+  (zcat etc/graph.tab.gz |\
+    awk '{ print $1 " " $3 }' |\
+    egrep -v '[0-9]+ [0-9]+' | wc -l | grep '^0$') > /dev/null &&\
+  echo "Graph has no non-numeric vertices" &&\
+  echo "Checking invalid costs..." &&\
+  (zcat etc/graph.tab.gz |\
+    awk -F'	' '{ print $6 }' |\
+    egrep -v '^[0-9\.]+$' | wc -l | grep '^0$') > /dev/null &&\
+  echo "Graph has invalid costs" &&\
+  echo "All graph tests passed!"
+}
+
 # A utility to get the index of a word
 function index() {
   zcat etc/vocab.tab.gz | grep "	$1$" | awk '{ print $1 }'
@@ -94,18 +112,19 @@ function gloss() {
 function edge() {
   source=`index $1`
   sink=`index $2`
-  zcat etc/graph.tab.gz | egrep "^$source	[^	]+	$sink	" | awk '{ print $5 }' |\
+  zcat etc/graph.tab.gz | egrep "^$source	[^	]+	$sink	" |\
+    awk '{ print $2 "\t" $4 "\t" $5 "\t" $6 }' |\
     awk -F'	' '
         FNR == NR {
             assoc[ $1 ] = $2;
             next;
         }
         FNR < NR {
-            if ( $1 in assoc ) {
-                $1 = assoc[ $1 ]
+            if ( $3 in assoc ) {
+                $3 = assoc[ $3 ]
             }
             print
         }
     ' etc/edgeTypes.tab - |\
-      sed -r -e "s/(.*)/$1 ($source)     \1     $2 ($sink)/g"
+      sed -r -e "s/(.*) (.*) (.*) (.*)/$1 ($source:\1)  \3  $2 ($sink:\2)   @cost=\4/g"
 }

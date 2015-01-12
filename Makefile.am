@@ -77,6 +77,7 @@ etc/clauseSearcherModel.ser.gz:
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	cd etc && ./mkGraph.sh
+	source rc && validateGraph
 	touch etc/.mk_graph
 
 # (script targets)

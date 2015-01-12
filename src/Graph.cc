@@ -40,35 +40,22 @@ class InMemoryGraph : public Graph {
   char** index2gloss;
   edge** edgesBySink;
   uint32_t* edgesSizes;
-  uint64_t size;
+  uint32_t size;
   btree::btree_set<tagged_word> invalidDeletions;
-  vector<bool> invalidDeletionWords;
+  btree::btree_set<word> invalidDeletionWords;
   
  public:
   InMemoryGraph(char** index2gloss,
                 edge** edgesBySink,
                 uint32_t* edgesSizes,
-                uint64_t size,
+                uint32_t size,
                 btree::btree_set<tagged_word> invalidDeletions)
         : index2gloss(index2gloss), edgesBySink(edgesBySink), 
           edgesSizes(edgesSizes), size(size),
           invalidDeletions(invalidDeletions) {
-    // Create fast bitvector for words which may be invalid to delete
-    // (get vocabulary size)
-    uint32_t vocabSize = 0;
     for (auto iter = invalidDeletions.begin();
               iter != invalidDeletions.end(); ++iter) {
-      vocabSize = iter->word > vocabSize ? iter->word : vocabSize;
-    }
-    invalidDeletionWords = vector<bool>(vocabSize);
-    // (clear vector -- just in case)
-    for (uint32_t i = 0; i < vocabSize; ++i) {
-      invalidDeletionWords[i] = false;
-    }
-    // (set fields)
-    for (auto iter = invalidDeletions.begin();
-              iter != invalidDeletions.end(); ++iter) {
-      invalidDeletionWords[iter->word] = true;
+      invalidDeletionWords.insert(iter->word);
     }
   }
 
@@ -85,6 +72,7 @@ class InMemoryGraph : public Graph {
   }
 
   virtual const edge* incomingEdgesFast(const word& sink, uint32_t* size) const {
+    assert (sink < this->size);
     *size = edgesSizes[sink];
     return edgesBySink[sink];
   }
@@ -107,7 +95,7 @@ class InMemoryGraph : public Graph {
   }
   
   virtual const bool containsDeletion(const edge& deletion) const {
-    if (invalidDeletionWords[deletion.source]) {
+    if (invalidDeletionWords.find( deletion.source ) == invalidDeletionWords.end()) {
       tagged_word w = getTaggedWord(deletion.source,  deletion.source_sense, MONOTONE_DEFAULT);
       return invalidDeletions.find( w ) == invalidDeletions.end();
     } else {
@@ -178,7 +166,7 @@ Graph* readGraph(const uint32_t numWords,
   // (initialize variables)
   struct edge** edges = (struct edge**) malloc((numWords+1) * sizeof(struct edge*));
   uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
-  memset(edgesSizes, 0, numWords * sizeof(uint32_t));
+  memset(edgesSizes, 0, (numWords+1) * sizeof(uint32_t));
   uint32_t* edgeCapacities = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
   for (uint32_t i = 0; i < numWords; ++i) {
     edges[i] = (struct edge*) malloc(4 * sizeof(struct edge));
@@ -193,13 +181,36 @@ Graph* readGraph(const uint32_t numWords,
       exit(1);
     }
     edge e;
-//    printf("%s %s %s %s %s %s\n", row[0], row[1], row[2], row[3], row[4], row[5]);
     e.source       = fast_atoi(row[0]);
+    if (e.source >= numWords) {
+      fprintf(stderr, "Invalid source word=%u (numWords=%u)\n", e.source, numWords);
+      exit(1);
+    }
     e.source_sense = fast_atoi(row[1]);
+    if (e.source_sense >= (0x1 << SENSE_ENTROPY)) {
+      fprintf(stderr, "Invalid source sense=%u (SENSE_ENTROPY=%u)\n", e.source_sense, SENSE_ENTROPY);
+      exit(1);
+    }
     e.sink         = fast_atoi(row[2]);
+    if (e.sink >= numWords) {
+      fprintf(stderr, "Invalid sink word=%u (numWords=%u)\n", e.sink, numWords);
+      exit(1);
+    }
     e.sink_sense   = fast_atoi(row[3]);
+    if (e.sink_sense >= (0x1 << SENSE_ENTROPY)) {
+      fprintf(stderr, "Invalid sink sense=%u (SENSE_ENTROPY=%u)\n", e.sink_sense, SENSE_ENTROPY);
+      exit(1);
+    }
     e.type         = fast_atoi(row[4]);
+    if (e.type >= NUM_MUTATION_TYPES) {
+      fprintf(stderr, "Invalid mutation type=%u (NUM_MUTATION_TYPES=%u)\n", e.type, NUM_MUTATION_TYPES);
+      exit(1);
+    }
     e.cost         = atof(row[5]);
+    if (isinf(e.cost)) { fprintf(stderr, "Infinite cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }
+    if (e.cost != e.cost) { fprintf(stderr, "NaN cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }
+    if (e.cost != e.cost) { fprintf(stderr, "NaN cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }
+    if (e.cost < 0.0) { fprintf(stderr, "Negative cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }
     const word& sink = e.sink;
     if (edgesSizes[sink] >= edgeCapacities[sink] - 1) {
       struct edge* newEdges = (struct edge*) malloc(edgeCapacities[sink] * 2 * sizeof(struct edge));

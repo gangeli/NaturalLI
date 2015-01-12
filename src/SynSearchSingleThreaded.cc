@@ -84,36 +84,50 @@ inline uint64_t searchLoop(
     // PUSH 1: Mutations
     uint32_t numEdges;
     const tagged_word nodeToken = node.token();
-    const edge* edges = graph->incomingEdgesFast(node.word(), &numEdges);
+    assert(nodeToken.word < graph->vocabSize());
+    const edge* edges = graph->incomingEdgesFast(nodeToken.word, &numEdges);
     const uint8_t tokenIndex = node.tokenIndex();
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
+      const edge& edge = edges[edgeI];
+      assert(edge.source < graph->vocabSize());
+      assert(nodeToken.word < graph->vocabSize());
+      assert(edge.sink == nodeToken.word);
       // (ignore when sense doesn't match)
-      if (edges[edgeI].sink_sense != nodeToken.sense) { continue; }
+      if (edge.sink_sense != nodeToken.sense) { continue; }
       // (ignore multiple quantifier mutations)
       bool mutatingQuantifer;
-      if (edges[edgeI].type == QUANTIFIER_REWORD || edges[edgeI].type == QUANTIFIER_NEGATE ||
-          edges[edgeI].type == QUANTIFIER_UP || edges[edgeI].type == QUANTIFIER_DOWN) {
+      if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||
+          edge.type == QUANTIFIER_UP || edge.type == QUANTIFIER_DOWN) {
         if (tree.word(tokenIndex) != node.token().word) { continue; }
         mutatingQuantifer = true;
       }
       // (get cost)
       bool newTruthValue;
-      const float cost = costs->mutationCost(
-          tree, node, edges[edgeI].type,
-          node.truthState(), &newTruthValue) * edges[edgeI].cost;
-      if (isinf(cost)) { continue; }
+      assert (!isinf(edge.cost));
+      assert (edge.cost == edge.cost);
+      assert (edge.cost >= 0.0);
+      const float mutationCost = costs->mutationCost(
+          tree, node, edge.type,
+          node.truthState(), &newTruthValue);
+      if (isinf(mutationCost)) { continue; }
+      const float cost = mutationCost * edge.cost;
+
       // (compute new fields)
       const uint64_t newHash = tree.updateHashFromMutation(
           node.factHash(), node.tokenIndex(), nodeToken.word,
-          node.governor(), edges[edgeI].source
+          node.governor(), edge.source
         );
       const tagged_word newToken = getTaggedWord(
-          edges[edgeI].source,
-          edges[edgeI].source_sense,
+          edge.source,
+          edge.source_sense,
           nodeToken.monotonicity);
+      assert(newToken.word < graph->vocabSize());
+      assert(newToken.sense < (1 << SENSE_ENTROPY));
+      assert(newToken.monotonicity < 4);
       // (create child)
       const SearchNode mutatedChild(node, newHash, newToken,
                                     newTruthValue, myIndex);
+      assert(mutatedChild.word() < graph->vocabSize());
       if (mutatingQuantifer) {
         // TODO(gabor) update quantifier with mutated version!
       }
@@ -128,8 +142,11 @@ inline uint64_t searchLoop(
       if (isNewChild) {
 #endif
 #endif
-      enqueue(ScoredSearchNode(mutatedChild, cost));
 //      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
+      assert(!isinf(cost));
+      assert(cost == cost);  // NaN check
+      assert(cost >= 0.0);
+      enqueue(ScoredSearchNode(mutatedChild, cost));
 #if SEARCH_FULL_MEMORY!=0
 #else
 #if SEARCH_CYCLE_MEMORY!=0
@@ -161,7 +178,11 @@ inline uint64_t searchLoop(
         // (create child)
         const SearchNode deletedChild(node, newHash,
                                       newTruthValue, deletionMask, myIndex);
+        assert(deletedChild.word() < graph->vocabSize());
         // (push child)
+        assert(!isinf(cost));
+        assert(cost == cost);  // NaN check
+        assert(cost >= 0.0);
         enqueue(ScoredSearchNode(deletedChild, cost));
 //        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
       }
@@ -170,7 +191,11 @@ inline uint64_t searchLoop(
       // (create child)
       const SearchNode indexMovedChild(node, tree, dependentIndex,
                                     myIndex);
+      assert(indexMovedChild.word() < graph->vocabSize());
       // (push child)
+      assert(!isinf(scoredNode.cost));
+      assert(cost == cost);  // NaN check
+      assert(cost >= 0.0);
       enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
 //      fprintf(stderr, "  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
     }
@@ -267,7 +292,9 @@ syn_search_response SynSearch(
   // Run Search
   response.totalTicks = searchLoop(
     // Insert to fringe
-    [&fringe](const ScoredSearchNode elem) -> void { fringe.insert(elem.cost, elem.node); },
+    [&fringe](const ScoredSearchNode elem) -> void { 
+      fringe.insert(elem.cost, elem.node);
+    },
     // Pop from fringe
     [&fringe](ScoredSearchNode* output) -> bool { 
       if (fringe.isEmpty()) { return false; }

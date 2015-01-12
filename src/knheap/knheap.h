@@ -2,6 +2,7 @@
 #ifndef KNHEAP
 #define KNHEAP
 #include "util.h"
+#include <assert.h>
 
 #define KNBufferSize1 32 // equalize procedure call overheads etc. 
 #define KNN 512 // bandwidth
@@ -71,7 +72,7 @@ template <class Key, class Value, int capacity>
 inline void BinaryHeap<Key, Value, capacity>::
 deleteMin()
 {
-  Assert2(size > 0);
+  assert(size > 0);
 
   // first move up elements on a min-path
   int hole = 1; 
@@ -154,8 +155,8 @@ template <class Key, class Value, int capacity>
 inline void BinaryHeap<Key, Value, capacity>::
 insert(Key k, Value v)
 {
-  Assert2(size < capacity);
-  Debug4(std::cout << "insert(" << k << ", " << v << ")" << endl);
+  assert(size < capacity);
+//  std::cout << "insert(" << k << ", " << ")" << std::endl;
 
   size++;
   int hole = size; 
@@ -329,7 +330,7 @@ inline void  KNHeap<Key, Value>::deleteMin(Key *key, Value *value) {
   if (key2 >= key1) {
     *key   = key1;
     *value = minBuffer1->value;
-    Assert2(minBuffer1 < buffer1 + KNBufferSize1); // no delete from empty
+    assert(minBuffer1 < buffer1 + KNBufferSize1); // no delete from empty
     minBuffer1++;
     if (minBuffer1 == buffer1 + KNBufferSize1) {
       refillBuffer1();
@@ -366,7 +367,7 @@ init(Key sup)
 {
   dummy.key      = sup;
   rebuildLooserTree();
-  Assert2(current[entry[0].index] == &dummy);
+  assert(current[entry[0].index] == &dummy);
 }
 
 
@@ -467,8 +468,8 @@ doubleK()
 {
   // make all new entries empty
   // and push them on the free stack
-  Assert2(lastFree == -1); // stack was empty (probably not needed)
-  Assert2(k < KNKMAX);
+  assert(lastFree == -1); // stack was empty (probably not needed)
+  assert(k < KNKMAX);
   for (int i = 2*k - 1;  i >= k;  i--) {
     current[i] = &dummy;
     lastFree++;
@@ -488,7 +489,7 @@ template <class Key, class Value>
 void KNLooserTree<Key, Value>::
 compactTree()
 {
-  Assert2(logK > 0);
+  assert(logK > 0);
   Key sup = dummy.key;
 
   // compact all nonempty segments to the left
@@ -529,8 +530,8 @@ void KNLooserTree<Key, Value>::
 insertSegment(Element *to, int sz)
 {
   if (sz > 0) {
-    Assert2(to[0   ].key != getSupremum());
-    Assert2(to[sz-1].key != getSupremum());
+    assert(to[0   ].key != getSupremum());
+    assert(to[sz-1].key != getSupremum());
     // get a free slot
     if (lastFree < 0) { // tree is too small
       doubleK();
@@ -596,7 +597,7 @@ multiMergeUnrolled3(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -660,7 +661,7 @@ multiMergeUnrolled4(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -724,7 +725,7 @@ multiMergeUnrolled5(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -788,7 +789,7 @@ multiMergeUnrolled6(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -852,7 +853,7 @@ multiMergeUnrolled7(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -916,7 +917,7 @@ multiMergeUnrolled8(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -980,7 +981,7 @@ multiMergeUnrolled9(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -1044,7 +1045,7 @@ multiMergeUnrolled10(Element *to, int l)
     Element *winnerPos;
     Key sup = dummy.key; // supremum
     
-    Assert2(logK >= LogK);
+    assert(logK >= LogK);
     while (to < done) {
       winnerPos = regCurrent[winnerIndex];
       
@@ -1104,23 +1105,23 @@ multiMerge(Element *to, int l)
 {
   switch(logK) {
   case 0: 
-    Assert2(k == 1);
-    Assert2(entry[0].index == 0);
-    Assert2(lastFree == -1 || l == 0);
+    assert(k == 1);
+    assert(entry[0].index == 0);
+    assert(lastFree == -1 || l == 0);
     memcpy(to, current[0], l * sizeof(Element));
     current[0] += l;
     entry[0].key = current[0]->key;
     if (segmentIsEmpty(0)) deallocateSegment(0); 
     break;
   case 1:
-    Assert2(k == 2);
+    assert(k == 2);
     merge(current + 0, current + 1, to, l);
     rebuildLooserTree();
     if (segmentIsEmpty(0)) deallocateSegment(0); 
     if (segmentIsEmpty(1)) deallocateSegment(1); 
     break;
   case 2:
-    Assert2(k == 4);
+    assert(k == 4);
     merge4(current + 0, current + 1, current + 2, current + 3, to, l);
     rebuildLooserTree();
     if (segmentIsEmpty(0)) deallocateSegment(0); 
@@ -1262,7 +1263,7 @@ void KNHeap<Key, Value>::refillBuffer1()
   } else {
     minBuffer1 = buffer1 + KNBufferSize1 - totalSize;
     sz = totalSize;
-    Assert2(size == sz); // trees and buffer2 get empty
+    assert(size == sz); // trees and buffer2 get empty
     size = 0;
   }
 
@@ -1314,7 +1315,7 @@ int KNHeap<Key, Value>::makeSpaceAvailable(int level)
 {
   int finalLevel;
 
-  Assert2(level <= activeLevels);
+  assert(level <= activeLevels);
   if (level == activeLevels) { activeLevels++; }
   if (tree[level].spaceIsAvailable()) { 
     finalLevel = level;
@@ -1376,7 +1377,7 @@ void KNHeap<Key, Value>::emptyInsertHeap()
   
   // and insert it
   int freeLevel = makeSpaceAvailable(0);
-  Assert2(freeLevel == 0 || tree[0].getSize() == 0);
+  assert(freeLevel == 0 || tree[0].getSize() == 0);
   tree[0].insertSegment(newSegment, KNN);
 
   // get rid of invalid level 2 buffers

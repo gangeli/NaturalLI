@@ -27,7 +27,7 @@ cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $3 }' >> $TMP
 
-echo '__num__' >> $TMP
+echo '--num--' >> $TMP
 
 cat $TMP | sort | uniq |\
   awk '{printf("%d\t%s\n", NR + 63, $0)}' > $VOCAB
@@ -214,12 +214,16 @@ function index() {
           next;
       }
       FNR < NR {
-          for ( i = 1; i <= NF; i+=2 ) {
-              if ( $i in assoc ) {
-                  $i = assoc[ $i ]
-              }
-          }
-          print
+        if ( $1 in assoc ) {
+          $1 = assoc[ $1 ]
+        }
+        if ( $3 in assoc ) {
+          $3 = assoc[ $3 ]
+        }
+        if ( $5 < 0.0 ) {
+          $5 = 0.0
+        }
+        print
       }
   ' $VOCAB $FILE |\
     sed -e 's/ /\t/g'

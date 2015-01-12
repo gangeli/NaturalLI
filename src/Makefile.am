@@ -11,7 +11,9 @@ clean-local:
 
 Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "// DO NOT MODIFY THIS FILE!" > Models.h
-	echo "// It was automatically generated from the Makefule" >> Models.h
+	echo "// It was automatically generated from the Makefile." >> Models.h
+	echo "// You can change it either in src/Makefile.am, or in the" >> Models.h
+	echo "// scripts in rc." >> Models.h
 	echo "" >> Models.h
 	echo "#ifndef MODELS_H" >> Models.h
 	echo "#define MODELS_H" >> Models.h
@@ -40,7 +42,11 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "#endif" >> Models.h
 
 Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
-	echo '#include "Models.h"' > Models.cc
+	echo "// DO NOT MODIFY THIS FILE!" > Models.cc
+	echo "// It was automatically generated from the Makefile." >> Models.cc
+	echo "// You can change it either in src/Makefile.am, or in the" >> Models.cc
+	echo "// scripts in rc." >> Models.cc
+	echo '#include "Models.h"' >> Models.cc
 	echo '' >> Models.cc
 	echo '#include <algorithm>' >> Models.cc
 	echo '' >> Models.cc

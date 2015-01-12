@@ -771,13 +771,22 @@ float SynSearchCosts::mutationCost(const Tree& tree,
                                    const bool& endTruthValue,
                                    bool* beginTruthValue) const {
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
+  // Get the lexical cost of the relation
   const float lexicalRelationCost = mutationLexicalCost[edgeType];
+  assert (lexicalRelationCost == lexicalRelationCost);
+  assert (lexicalRelationCost >= 0.0);
   const natlog_relation projectedFunction
     = tree.projectLexicalRelation(currentNode, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
+  // Get the transition cost of the function
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
-  return lexicalRelationCost + transitionCost;
+  assert (transitionCost == transitionCost);
+  assert (transitionCost >= 0.0);
+  const float totalCost = lexicalRelationCost + transitionCost;
+  assert (totalCost == totalCost);
+  assert (totalCost >= 0.0);
+  return totalCost;
 }
 
 //
