@@ -95,7 +95,7 @@ class InMemoryGraph : public Graph {
   }
   
   virtual const bool containsDeletion(const edge& deletion) const {
-    if (invalidDeletionWords.find( deletion.source ) == invalidDeletionWords.end()) {
+    if (invalidDeletionWords.find( deletion.source ) != invalidDeletionWords.end()) {
       tagged_word w = getTaggedWord(deletion.source,  deletion.source_sense, MONOTONE_DEFAULT);
       return invalidDeletions.find( w ) == invalidDeletions.end();
     } else {
