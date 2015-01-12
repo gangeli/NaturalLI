@@ -250,7 +250,7 @@ function indexAll() {
 }
 
 echo "Indexing edges..."
-indexAll | gzip > $DIR/graph.tab.gz
+indexAll | sort | uniq | gzip > $DIR/graph.tab.gz
 echo "DONE"
 
 rm -f $VOCAB.gz
