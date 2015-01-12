@@ -10,8 +10,8 @@ EXTRA_DIST = README.md \
 						 lib/test/junit-4.11.jar \
 						 test/data/unittest_gzip.tab.gz \
 						 rc \
-						 etc/edgeTypes.tab \
 						 etc/depInsert2rel.tab \
+						 etc/operators.tab \
 						 etc/mkGraph.sh
 
 clean-local:
