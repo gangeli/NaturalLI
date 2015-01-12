@@ -1,24 +1,31 @@
 #!/bin/bash
 #
-set -e
-  
-VOCAB=vocab.tab
-SENSE=sense.tab
-PRIV=privative.tab
 
+set -e
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 GENERIC_TMP=`mktemp`
+
+  
+VOCAB=$DIR/vocab.tab
+SENSE=$DIR/sense.tab
+PRIV=$DIR/privative.tab
+
 
 #
 # Create vocabulary
 #
 echo "Creating vocabulary (in $VOCAB)..."
 TMP=`mktemp`
-cat graphData/lemma_sense_synset_defn.txt |\
+cat $DIR/graphData/lemma_sense_synset_defn.txt |\
   awk -F'	' '{ print $1 }' |\
   sed -e 's/_/ /g' > $TMP
 
-zcat graphData/glove.6B.50d.txt.gz |\
+zcat $DIR/graphData/glove.6B.50d.txt.gz |\
   awk '{ print $1 }' >> $TMP
+
+cat $DIR/operators.tab | awk -F'	' '{ print $3 }' >> $TMP
+
+echo '__num__' >> $TMP
 
 cat $TMP | sort | uniq |\
   awk '{printf("%d\t%s\n", NR + 63, $0)}' > $VOCAB
@@ -29,7 +36,7 @@ rm $TMP
 #
 echo "Creating sense mapping (in $SENSE)..."
 
-cat graphData/lemma_sense_synset_defn.txt |\
+cat $DIR/graphData/lemma_sense_synset_defn.txt |\
   awk -F'	' '{ print $1 "\t" $2 "\t" $4 }' |\
   sed -e 's/_/ /g' |\
   awk -F'	' '
@@ -107,7 +114,7 @@ PRIVATIVE_WORDS=`echo "^(" \
      "proposed" \
      ")	[0-9]+" | sed -e 's/| /|/g'`
 
-cat graphData/edge_*.txt |\
+cat $DIR/graphData/edge_*.txt |\
   sed -e 's/_/ /g' |\
   awk -F'	' '{ print $1 "\t" $2 }' |\
   egrep "$PRIVATIVE_WORDS" |\
@@ -129,9 +136,9 @@ cat graphData/edge_*.txt |\
 #
 # Creating edge types
 #
-echo "Creating edge types (in edgeTypes.tab)..."
+echo "Creating edge types (in $DIR/edgeTypes.tab)..."
 TMP=`mktemp`
-for file in `find graphData -name "edge_*.txt"`; do
+for file in `find $DIR/graphData -name "edge_*.txt"`; do
   echo $file |\
     sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
     sed -r -e 's/.*\/edge_(.*).txt/\1/g'
@@ -141,8 +148,57 @@ echo "quantifier_down" >> $TMP
 echo "quantifier_negate" >> $TMP
 echo "quantifier_reword" >> $TMP
 echo "angle_nn" >> $TMP
-cat $TMP | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > edgeTypes.tab
+cat $TMP | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > $DIR/edgeTypes.tab
 rm $TMP
+
+#
+# Handle quantifiers
+#
+
+# (synonyms)
+cat <<EOF > $GENERIC_TMP
+import fileinput
+synonyms = {}
+for line in fileinput.input():
+  fields = line.strip().split("\t");
+  if not fields[0] in  synonyms:
+    synonyms[fields[0]] = []
+  synonyms[fields[0]].append(fields[1]);
+for key in synonyms:
+  values = synonyms[key]
+  for source in values:
+    for sink in values:
+      if source != sink:
+        print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+EOF
+cat $DIR/operators.tab |\
+  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+  awk -F'	' '{ print $1 "\t" $3 }' |\
+  python $GENERIC_TMP > $DIR/graphData/edge_synonym_q.txt
+
+# (antonyms)
+cat <<EOF > $GENERIC_TMP
+import fileinput
+synonyms = {}
+for line in fileinput.input():
+  fields = line.strip().split("\t");
+  if not fields[0] in  synonyms:
+    synonyms[fields[0]] = []
+  synonyms[fields[0]].append(fields[1]);
+antonyms = [ ["all", "no"], ["no", "all"],
+             ["some", "no"], ["no", "some"],
+             ["most", "no"], ["no", "most"],
+             ["all", "not_all"], ["not_all", "all"] ]
+for [classA, classB] in antonyms:
+  for source in synonyms[classA]:
+    for sink in synonyms[classB]:
+      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+EOF
+cat $DIR/operators.tab |\
+  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+  awk -F'	' '{ print $1 "\t" $3 }' |\
+  python $GENERIC_TMP > $DIR/graphData/edge_antonym_q.txt
+
 
 #
 # Create graph
@@ -169,9 +225,9 @@ function index() {
 }
 
 function indexAll() {
-  for file in `find graphData -name "edge_*.txt"`; do
+  for file in `find $DIR/graphData -name "edge_*.txt"`; do
     type=`echo $file |\
-      sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
+      sed -r -e 's/.*\/edge_(.*)_[qanrvs].txt/\1/g' |\
       sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
     modFile="$file"
     if [ "$type" == "antonym" ]; then
@@ -188,13 +244,13 @@ function indexAll() {
         FNR < NR {
           $1 = assoc[ $1 ];
           print $2 " " $3 " " $4 " " $5 " " $1 " " $6
-        } ' edgeTypes.tab - |\
+        } ' $DIR/edgeTypes.tab - |\
       sed -e 's/ /	/g'
   done
 }
 
 echo "Indexing edges..."
-indexAll | gzip > graph.tab.gz
+indexAll | gzip > $DIR/graph.tab.gz
 echo "DONE"
 
 rm -f $VOCAB.gz

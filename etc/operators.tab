@@ -1,0 +1,68 @@
+# "All" quantifiers
+all	ALL	all	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	EVERY	every	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	ANY	any	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	EACH	each	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	THE_LOT_OF	the lot of	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	ALL_OF	all of	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	FOR_ALL	for all	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	FOR_EVERY	for every	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	FOR_EACH	for each	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	EVERYONE	everyone	FORWARD_ENTAILMENT	anti-additive	multiplicative
+all	NUM	__num__	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	NUM_NUM	__num__ __num__	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	NUM_NUM_NUM	__num__ __num__ __num__	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	NUM_NUM_NUM_NUM	__num__ __num__ __num__ __num__	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	FEW	few	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	IMPLICIT_NAMED_ENTITY	__implicit_named_entity__	FORWARD_ENTAILMENT	anti-additive	multiplicative
+
+# "No" quantifiers
+no	NO	no	INDEPENDENCE	anti-additive	anti-additive
+no	NEITHER	neither	INDEPENDENCE	anti-additive	anti-additive
+no	NO_ONE	no one	INDEPENDENCE	anti-additive	anti-additive
+no	NOBODY	nobody	INDEPENDENCE	anti-additive	anti-additive
+no	UNARY_NO	no	INDEPENDENCE	anti-additive
+no	UNARY_NOT	not	INDEPENDENCE	anti-additive
+no	UNARY_NO_ONE	no one	INDEPENDENCE	anti-additive
+no	UNARY_NT	n't	INDEPENDENCE	anti-additive
+
+# Some" quantifiers
+some	SOME	some	FORWARD_ENTAILMENT	additive	additive
+some	SEVERAL	several	FORWARD_ENTAILMENT	additive	additive
+some	EITHER	either	FORWARD_ENTAILMENT	additive	additive
+some	A	a	FORWARD_ENTAILMENT	additive	additive
+some	THE	the	FORWARD_ENTAILMENT	additive	additive
+some	LESS_THAN	less than __num__	FORWARD_ENTAILMENT	additive	additive
+some	SOME_OF	some of	FORWARD_ENTAILMENT	additive	additive
+some	ONE_OF	one of	FORWARD_ENTAILMENT	additive	additive
+some	AT_LEAST	at least __num__	FORWARD_ENTAILMENT	additive	additive
+some	A_FEW	a few	FORWARD_ENTAILMENT	additive	additive
+some	AT_LEAST_A_FEW	at least a few	FORWARD_ENTAILMENT	additive	additive
+some	THERE_BE	there be	FORWARD_ENTAILMENT	additive	additive
+some	THERE_BE_A_FEW	there be a few	FORWARD_ENTAILMENT	additive	additive
+some	THERE_EXIST	there exist	FORWARD_ENTAILMENT	additive	additive
+some	NUM_OF_THE	__num__ of the	FORWARD_ENTAILMENT	additive	additive
+
+# Not All" quantifiers
+not_all	NOT_ALL	not all	INDEPENDENCE	additive	anti-multiplicative
+not_all	NOT_EVERY	not every	INDEPENDENCE	additive	anti-multiplicative
+
+# "Most" quantifiers
+# TODO(gabor) check these
+most	MOST	most	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	MANY	many	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	ENOUGH	enough	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	MORE_THAN	more than __num_	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	A_LOT_OF	a lot of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	LOTS_OF	lots of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	PLENTY_OF	plenty of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	HEAPS_OF	heap of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	A_LOAD_OF	a load of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	LOADS_OF	load of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	TONS_OF	ton of	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	BOTH	both	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	JUST_NUM	just __num__	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+most	ONLY_NUM	only __num__	FORWARD_ENTAILMENT	nonmonotone	multiplicative
+
+# Strange cases
+other	AT_MOST_NUM	at most __num__	FORWARD_ENTAILMENT	anti-additive	anti-additive
