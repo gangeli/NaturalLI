@@ -15,11 +15,27 @@
 #include "Graph.h"
 #include "SynSearch.h"
 
+/**
+ * Escapes a string, so that it is valid to pass into JSON.
+ */
+std::string escapeQuote(const std::string& input);
 
 /**
  * Print the string gloss for the given fact.
  */
 std::string toString(const Graph& graph, const tagged_word* fact, const uint8_t factSize);
+
+/**
+ * Print the string gloss for the given fact.
+ */
+inline std::string toString(const Graph& graph, 
+                            const std::vector<tagged_word>& fact) {
+  tagged_word arr[fact.size()];
+  for (uint32_t i = 0; i < fact.size(); ++i) {
+    arr[i] = fact[i];
+  }
+  return toString(graph, arr, fact.size());
+}
 
 /**
  * Print the string gloss for the given fact.
@@ -40,6 +56,47 @@ std::string toString(const edge_type& edge);
  * Print out elapsed time in days+hours+minutes+seconds.
  */
 std::string toString(const time_t& elapsedTime);
+
+/**
+ * Print out the path taken, as a list of user-specified toString
+ * entries.
+ *
+ * @param tree The tree at the END of the path. That is, the query tree.
+ * @param path The path from the known fact to the query, in order.
+ * @param toString The function to call to convert a path element to a string.
+ *
+ * @return A vector of string elements corresponding to the path.
+ *
+ * @see toJSONList
+ */
+std::vector<std::string> toStringList(
+    const Tree& tree,
+    const std::vector<SearchNode>& path,
+    std::function<std::string(const SearchNode, const std::vector<tagged_word>)> toString);
+
+/**
+ * Print out the path taken, as a list of JSON entries.
+ */
+std::vector<std::string> toJSONList(const Graph& graph,
+                                    const Tree& tree,
+                                    const std::vector<SearchNode>& path);
+
+/**
+ * Print out the path taken, as a JSON list of states.
+ *
+ * @see toJSONList
+ */
+std::string toJSON(const Graph& graph,
+                   const Tree& tree,
+                   const std::vector<SearchNode>& path);
+
+/**
+ * Print the gloss of the knowledge base entry corresponding to
+ * this path.
+ */
+std::string kbGloss(const Graph& graph,
+                    const Tree& tree,
+                    const std::vector<SearchNode>& path);
 
 /**
  *  The fact (lemur, have, tail)

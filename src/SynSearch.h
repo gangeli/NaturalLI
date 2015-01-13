@@ -511,11 +511,36 @@ class Tree {
    *                    This is to get the most recent quantifier markings,
    *                    and to get the token index.
    * @param lexicalRelation The root lexical relation at the given index.
+   * @param index The index to project through. In most cases, this should be
+   *              currentNode.tokenIndex()
    *
    * @return The lexical relation projected up to the root of the tree.
    */
   natlog_relation projectLexicalRelation( const SearchNode& currentNode,
+                                          const natlog_relation& lexicalRelation,
+                                          const uint8_t& index) const;
+
+  /**
+   * @see projectLexicalRelation(SearchNode, natlog_relation), but
+   *      applied to the index of the current search state node.
+   */
+  natlog_relation projectLexicalRelation( const SearchNode& currentNode, 
                                           const natlog_relation& lexicalRelation) const;
+
+  /** Returns the polarity of the token at the given index. */
+  inline monotonicity polarityAt(const SearchNode& currentNode,
+                                 const uint8_t& index) const {
+    switch( projectLexicalRelation(currentNode, FUNCTION_FORWARD_ENTAILMENT, index)) {
+      case FUNCTION_FORWARD_ENTAILMENT:
+        return MONOTONE_UP;
+      case FUNCTION_REVERSE_ENTAILMENT:
+        return MONOTONE_DOWN;
+      case FUNCTION_INDEPENDENCE:
+        return MONOTONE_FLAT;
+      default:
+        return MONOTONE_INVALID;
+    }
+  }
   
   /** Returns the number of quantifiers in the sentence. */
   inline uint8_t getNumQuantifiers() const { return numQuantifiers; }
@@ -682,8 +707,11 @@ class SearchNode {
   /** Returns the hash of the current fact. */
   inline uint64_t factHash() const { return data.factHash; }
   
+  // TODO(gabor) refactor this so it's clear it has no monotonicity info
   /** Returns the current word being mutated. */
-  inline tagged_word token() const { return getTaggedWord(data.currentWord, data.currentSense, 0); }
+  inline tagged_word token() const { 
+    return getTaggedWord(data.currentWord, data.currentSense, 0); 
+  }
   
   /** Returns the current word being mutated. */
   inline ::word word() const { return data.currentWord; }
@@ -704,6 +732,10 @@ class SearchNode {
   
   /** Returns the truth state of this node. */
   inline bool truthState() const { return data.truth; }
+  
+  /** Project the lexical relation through this node's quantifiers */
+  natlog_relation projectLexicalRelation( const SearchNode& currentNode,
+                                          const natlog_relation& lexicalRelation) const;
 
  protected:
   /** The data stored in this path */
@@ -714,6 +746,9 @@ class SearchNode {
   syn_path_data data;
 };
 
+/**
+ * A search node with an associated score.
+ */
 struct ScoredSearchNode {
   SearchNode node;
   /** The score for this Search Node */
@@ -728,6 +763,47 @@ struct ScoredSearchNode {
     this->cost = rhs.cost;
   }
 };
+
+/**
+ * Compute a deletion from a given SearchNode
+ */
+inline SearchNode deletion(const SearchNode& node,
+                           const uint32_t& myIndexInHistory,
+                           const bool& newTruthValue,
+                           const Tree& tree,
+                           const uint8_t& dependentIndex) {
+  uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
+  uint64_t newHash = tree.updateHashFromDeletions(
+      node.factHash(), dependentIndex, tree.token(dependentIndex).word,
+      node.word(), deletionMask);
+  return SearchNode(node, newHash, newTruthValue, deletionMask, myIndexInHistory);
+}
+
+/**
+ * Compute a mutation from a given SearchNode
+ */
+inline SearchNode mutation(const SearchNode& node,
+                           const edge& edge,
+                           const uint32_t& myIndexInHistory,
+                           const bool& newTruthValue,
+                           const Tree& tree,
+                           const Graph* graph) {
+  const tagged_word nodeToken = node.token();
+  const uint64_t newHash = tree.updateHashFromMutation(
+      node.factHash(), node.tokenIndex(), nodeToken.word,
+      node.governor(), edge.source
+    );
+  const tagged_word newToken = getTaggedWord(
+      edge.source,
+      edge.source_sense,
+      nodeToken.monotonicity);
+  assert(graph == NULL || newToken.word < graph->vocabSize());
+  assert(newToken.sense < (1 << SENSE_ENTROPY));
+  assert(newToken.monotonicity < 4);
+  // (create child)
+  return SearchNode(node, newHash, newToken,
+                    newTruthValue, myIndexInHistory);
+}
 
 // ----------------------------------------------
 // Threadsafe Int

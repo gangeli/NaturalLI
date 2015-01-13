@@ -11,21 +11,6 @@
 
 using namespace std;
 
-const char* escapeQuote(const string& input) {
-  size_t index = 0;
-  string str = string(input.c_str());
-  while (true) {
-    /* Locate the substring to replace. */
-    index = str.find("\"", index);
-    if (index == string::npos) break;
-    /* Make the replacement. */
-    str.replace(index, 1, "\\\"");
-    /* Advance index forward so the next iteration doesn't pick it up as well. */
-    index += 2;
-  }
-  return str.c_str();
-}
-
 /**
  * Compute the confidence of a search response.
  * Note that this is truth independent at this point.
@@ -85,13 +70,16 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
     vector<Tree*> treesForFact = proc.annotatePremise(iter->c_str());
     for (auto treeIter = treesForFact.begin(); treeIter != treesForFact.end(); ++treeIter) {
       Tree* premise = *treeIter;
-      auxKB.insert(SearchNode(*premise).factHash());
+      const uint64_t hash = SearchNode(*premise).factHash();
+      printTime("[%c] ");
+      fprintf(stderr, "|KB| adding premise with hash: %lu\n", hash);
+      auxKB.insert(hash);
       factsInserted += 1;
       delete premise;
     }
   }
   printTime("[%c] ");
-  fprintf(stderr, "|INITIALIZE| %lu premise(s) added, yielding %u total facts\n",
+  fprintf(stderr, "|KB| %lu premise(s) added, yielding %u total facts\n",
           knownFacts.size(), factsInserted);
 
   // Create Query
@@ -127,12 +115,12 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
   if (*truth > 1.0) { *truth = 1.0; }
 
   // Generate JSON
-  char rtn[4096];
-  snprintf(rtn, 1023, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\", \"success\": true}", 
+  char rtn[32768];
+  snprintf(rtn, 32767, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\", \"success\": true}", 
            resultIfTrue.size() + resultIfFalse.size(), 
            resultIfTrue.totalTicks + resultIfFalse.totalTicks, 
            *truth, 
-           escapeQuote(query));
+           escapeQuote(query).c_str());
   return rtn;
 }
 

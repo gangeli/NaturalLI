@@ -1,10 +1,26 @@
 #include "Utils.h"
 
 #include <string>
+#include <sstream>
 
 #include "Types.h"
 
 using namespace std;
+
+string escapeQuote(const string& input) {
+  size_t index = 0;
+  string str = string(input.c_str());
+  while (true) {
+    /* Locate the substring to replace. */
+    index = str.find("\"", index);
+    if (index == string::npos) break;
+    /* Make the replacement. */
+    str.replace(index, 1, "\\\"");
+    /* Advance index forward so the next iteration doesn't pick it up as well. */
+    index += 2;
+  }
+  return str;
+}
 
 const vector<tagged_word> lemursHaveTails() {
   vector<tagged_word> fact;
@@ -117,6 +133,84 @@ string toString(const time_t& elapsedTime) {
   return string(buffer);
 }
 
+//
+// toStringList
+//
+vector<string> toStringList(
+      const Tree& tree,
+      const vector<SearchNode>& path,
+      std::function<std::string(const SearchNode, const std::vector<tagged_word>)> toString) {
+  // Variables
+  vector<string> out;
+  tagged_word gloss[tree.length];
+  for (uint8_t i = 0; i < tree.length; ++i) {
+    gloss[i] = tree.token(i);
+  }
+
+  // Write
+  auto iter = path.rbegin();
+  while (iter != path.rend()) {
+    stringstream line;
+    // (update state)
+    gloss[iter->tokenIndex()] = iter->token();
+    vector<tagged_word> nodeGloss;
+    for (uint8_t i = 0; i < tree.length; ++i) {
+      if (!iter->isDeleted(i)) {
+        gloss[i].monotonicity = tree.polarityAt(*iter, i);
+        nodeGloss.push_back(gloss[i]);
+      }
+    }
+    // (print)
+    out.push_back(toString(*iter, nodeGloss));
+    // (end of loop overhead)
+    ++iter;
+  }
+
+  // Return
+  reverse(out.begin(), out.end());
+  return out;
+}
+
+
+//
+// toJSON(vector<SearchNode>)
+//
+string toJSON(const Graph& graph, const Tree& tree,
+              const vector<SearchNode>& path) {
+  stringstream out;
+  vector<string> lines = toJSONList(graph, tree, path);
+  auto iter = lines.begin();
+  
+  out << "[ ";
+  while (iter != lines.end()) {
+    out << (*iter);
+    ++iter;
+    if (iter != lines.end()) { out << ", "; }
+  }
+  out << " ]";
+  return out.str();
+}
+
+//
+// kbGloss
+//
+string kbGloss(const Graph& graph,
+               const Tree& tree,
+               const std::vector<SearchNode>& path) {
+  vector<string> pathAsString = toStringList(tree, path, 
+    [&graph](const SearchNode node, const vector<tagged_word> words) -> string {
+      stringstream line;
+      auto iter = words.begin();
+      while (iter != words.end()) {
+        line << graph.gloss(*iter);
+        ++iter;
+        if (iter != words.end()) { line << " "; }
+      }
+      return line.str();
+    });
+  return pathAsString[0];
+}
+
 /**
  * Print a demangled stack backtrace of the caller function to FILE* out.
  *
@@ -203,4 +297,23 @@ void print_stacktrace(FILE *out, unsigned int max_frames)
 
     free(funcname);
     free(symbollist);
+}
+
+
+// note[gabor]: This is on the bottom of the file because it butchers syntax highlighting
+//
+// toJSONList
+//
+vector<string> toJSONList(
+      const Graph& graph, const Tree& tree,
+      const vector<SearchNode>& path) {
+  return toStringList(tree, path,
+    [&graph](const SearchNode node, const vector<tagged_word> words) -> string { 
+      stringstream line;
+      line << "{";
+      line << "\"hash\": " << node.factHash() << ", ";
+      line << "\"gloss\": \"" << toString(graph, words) << "\", ";
+      line << "}";
+      return line.str();
+    });
 }

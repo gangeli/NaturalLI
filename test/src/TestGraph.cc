@@ -65,7 +65,7 @@ TEST_F(MockGraphTest, CheckInvalidDeletions) {
   e.sink_sense = 0;
   e.type = 0;
   e.source = HAVE.word;
-  // SHould be true
+  // Should be true
   e.source_sense = 0;
   EXPECT_TRUE(mockGraph->containsDeletion(e));
   // Should be false

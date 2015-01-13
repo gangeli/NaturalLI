@@ -112,21 +112,9 @@ inline uint64_t searchLoop(
       if (isinf(mutationCost)) { continue; }
       const float cost = mutationCost * edge.cost;
 
-      // (compute new fields)
-      const uint64_t newHash = tree.updateHashFromMutation(
-          node.factHash(), node.tokenIndex(), nodeToken.word,
-          node.governor(), edge.source
-        );
-      const tagged_word newToken = getTaggedWord(
-          edge.source,
-          edge.source_sense,
-          nodeToken.monotonicity);
-      assert(newToken.word < graph->vocabSize());
-      assert(newToken.sense < (1 << SENSE_ENTROPY));
-      assert(newToken.monotonicity < 4);
       // (create child)
-      const SearchNode mutatedChild(node, newHash, newToken,
-                                    newTruthValue, myIndex);
+      const SearchNode mutatedChild
+        = mutation(node, edge, myIndex, newTruthValue, tree, graph);
       assert(mutatedChild.word() < graph->vocabSize());
       if (mutatingQuantifer) {
         // TODO(gabor) update quantifier with mutated version!
@@ -170,14 +158,9 @@ inline uint64_t searchLoop(
             tree, node, tree.relation(dependentIndex),
             tree.word(dependentIndex), node.truthState(), &newTruthValue);
       if (!isinf(cost)) {
-        // (compute deletion)
-        uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
-        uint64_t newHash = tree.updateHashFromDeletions(
-            node.factHash(), dependentIndex, tree.token(dependentIndex).word,
-            nodeToken.word, deletionMask);
         // (create child)
-        const SearchNode deletedChild(node, newHash,
-                                      newTruthValue, deletionMask, myIndex);
+        const SearchNode deletedChild 
+          = deletion(node, myIndex, newTruthValue, tree, dependentIndex);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
         assert(!isinf(cost));
@@ -190,7 +173,7 @@ inline uint64_t searchLoop(
       // PUSH 3: Index Move
       // (create child)
       const SearchNode indexMovedChild(node, tree, dependentIndex,
-                                    myIndex);
+                                       myIndex);
       assert(indexMovedChild.word() < graph->vocabSize());
       // (push child)
       assert(!isinf(scoredNode.cost));
@@ -250,7 +233,7 @@ syn_search_response SynSearch(
     return kb.find(value) != kb.end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
-  auto registerVisited = [&matches,&lookupFn,&history] (const ScoredSearchNode& scoredNode) -> void {
+  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input] (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
       bool unique = true;

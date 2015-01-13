@@ -510,8 +510,8 @@ uint64_t Tree::updateHashFromDeletions(
 // Tree::projectLexicalRelation()
 //
 natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
-                                              const natlog_relation& lexicalRelation) const {
-  const uint8_t index = currentNode.tokenIndex();
+                                              const natlog_relation& lexicalRelation,
+                                              const uint8_t& index) const {
   const dep_tree_word& token = data[index];
   natlog_relation outputRelation = lexicalRelation;
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
@@ -533,6 +533,15 @@ natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
     }
   }
   return outputRelation;
+}
+  
+
+//
+// Tree::projectLexicalRelation()
+//
+natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
+                                              const natlog_relation& lexicalRelation) const {
+  return projectLexicalRelation(currentNode, lexicalRelation, currentNode.tokenIndex());
 }
 
 

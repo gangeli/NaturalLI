@@ -275,12 +275,14 @@ Graph* ReadGraph() {
 Graph* ReadMockGraph(const bool& allowCycles) {
   const char* lemur[]  {LEMUR_STR,  "lemur" };  GZRow lemurRow(lemur, 2);
   const char* animal[] {ANIMAL_STR, "animal" }; GZRow animalRow(animal, 2);
-  const char* potto[]  {POTTO_STR,  "potto" }; GZRow pottoRow(potto, 2);
+  const char* potto[]  {POTTO_STR,  "potto" };  GZRow pottoRow(potto, 2);
   const char* cat[]    {CAT_STR,    "cat" };    GZRow catRow(cat, 2);
   const char* have[]   {HAVE_STR,   "have" };   GZRow haveRow(have, 2);
   const char* tail[]   {TAIL_STR,   "tail" };   GZRow tailRow(tail, 2);
-  GZRow words[]   { lemurRow, animalRow, pottoRow, catRow, haveRow, tailRow };
-  MockGZIterator wordIter(6, words);
+  const char* all[]    {ALL_STR,    "all" };    GZRow allRow(all, 2);
+  const char* furry[]  {FURRY_STR,  "furry" };  GZRow furryRow(furry, 2);
+  GZRow words[]   { lemurRow, animalRow, pottoRow, catRow, haveRow, tailRow, allRow, furryRow };
+  MockGZIterator wordIter(8, words);
   
   char hypo[8];
   sprintf(hypo, "%d", HYPONYM);
