@@ -233,10 +233,9 @@ syn_search_response SynSearch(
     return kb.find(value) != kb.end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
-  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input] (const ScoredSearchNode& scoredNode) -> void {
+  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts] (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
-      fprintf(stderr, ">>>MATCH ON %lu\n", node.factHash());
       bool unique = true;
       for (auto iter = matches.begin(); iter != matches.end(); ++iter) {
         vector<SearchNode> path = iter->nodeSequence;
@@ -258,10 +257,12 @@ syn_search_response SynSearch(
           }
         }
         // (add to the results list)
-        printTime("[%c] "); 
-        fprintf(stderr, "  found premise: %s {hash: %lu}\n", 
-            kbGloss(*mutationGraph, *input, path).c_str(),
-            path.front().factHash());
+        if (!opts.silent) {
+          printTime("[%c] "); 
+          fprintf(stderr, "  found premise: %s {hash: %lu}\n", 
+              kbGloss(*mutationGraph, *input, path).c_str(),
+              path.front().factHash());
+        }
         matches.push_back(syn_search_path(path, scoredNode.cost));
       }
     }

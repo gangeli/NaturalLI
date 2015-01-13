@@ -855,8 +855,8 @@ TEST_F(SynSearchTest, LemursToCatsSoft) {
   syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(4, response.paths[0].size());
-  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
-  EXPECT_EQ(catsHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(catsHaveTails->hash(), response.paths[0].front().factHash());
 }
 
 TEST_F(SynSearchTest, LemursToCatsStrict) {
@@ -869,8 +869,8 @@ TEST_F(SynSearchTest, LemursToAnimalsSoft) {
   factdb.insert(lemursHaveTails->hash());
   syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
-  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
-  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
 }
 
 TEST_F(SynSearchTest, LemursToAnimalsStrict) {
@@ -878,8 +878,8 @@ TEST_F(SynSearchTest, LemursToAnimalsStrict) {
   factdb.insert(lemursHaveTails->hash());
   syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, true, opts);
   ASSERT_EQ(1, response.paths.size());
-  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].front().factHash());
-  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
 }
 
 TEST_F(SynSearchTest, EmptyDBTest) {
