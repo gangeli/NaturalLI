@@ -856,6 +856,9 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
     costs->insertionLexicalCost[i] = smallConstantCost;
     costs->deletionLexicalCost[i] = smallConstantCost;
   }
+  // Tweak 'fishy' mutation types
+  costs->mutationLexicalCost[VERB_ENTAIL] = badCost;
+  costs->mutationLexicalCost[ANGLE_NN]    = badCost;
   // Set NatLog
   costs->transitionCostFromTrue[FUNCTION_EQUIVALENT] = okCost;
   costs->transitionCostFromTrue[FUNCTION_FORWARD_ENTAILMENT] = okCost;

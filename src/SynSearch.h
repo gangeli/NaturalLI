@@ -52,9 +52,7 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case HOLONYM:              return FUNCTION_FORWARD_ENTAILMENT;
     case MERONYM:              return FUNCTION_REVERSE_ENTAILMENT;
     // Nearest Neighbors
-    // TODO(gabor) replace with "equivalent," but make sure it can't hop
-    // too much (e.g., on quantifiers or when senses morph)
-    case ANGLE_NN:             return FUNCTION_INDEPENDENCE;
+    case ANGLE_NN:             return FUNCTION_EQUIVALENT;
     // Quantifier Morphs
     case QUANTIFIER_UP:        return FUNCTION_FORWARD_ENTAILMENT;
     case QUANTIFIER_DOWN:      return FUNCTION_REVERSE_ENTAILMENT;

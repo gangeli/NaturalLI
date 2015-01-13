@@ -108,7 +108,7 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
   double confidenceOfTrue = confidence(resultIfTrue, &bestPathIfTrue);
   double confidenceOfFalse = confidence(resultIfFalse, &bestPathIfFalse);
   // (truth)
-  const vector<SearchNode>* bestPath;
+  const vector<SearchNode>* bestPath = NULL;
   if (confidenceOfTrue > confidenceOfFalse) {
     *truth = probability(confidenceOfTrue, true);
     bestPath = bestPathIfTrue;
@@ -118,7 +118,6 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
   } else {
     *truth = 0.5;
   }
-  printf("%p %p %p\n", bestPathIfTrue, bestPathIfFalse, bestPath);
 //  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf: %f  truth:  %f\n",
 //         resultIfTrue.size(), resultIfFalse.size(),
 //         confidenceOfTrue, confidenceOfFalse, *truth);

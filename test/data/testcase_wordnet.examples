@@ -6,11 +6,11 @@ Some cats have tails
 TRUE: Some felines have tails
 
 # One hop through WordNet | one quantifier | object
-No cats like felines
-TRUE: No cats like cats
+No cats chase canines
+TRUE: No cats chase dogs
 
-Some cats like cats
-TRUE: Some cats like felines
+Some cats chase dogs
+TRUE: Some cats chase canines
 
 # Multiple hops through WordNet | one quantifier | subject
 All animals have tails
@@ -20,10 +20,10 @@ Some mammals have tails
 TRUE: Some animals have tails
 
 # Multiple hops through WordNet | one quantifier | object
-No cat likes animals
-TRUE: No cat likes dogs
+No cat chases animals
+TRUE: No cat chases dogs
 
-Some cat likes cats
-TRUE: Some cat likes animals
+Some cat chases cats
+TRUE: Some cat chases animals
 
 
