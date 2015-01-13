@@ -82,6 +82,73 @@ function dummyVocab() {
   done | sort -n -r | head -n 1`"
 }
 
+function _stringToMonotonicity() {
+  mono=$2
+  if [ "$mono" = "" ]; then
+    mono="mono"
+  fi
+  typ=$3
+  if [ "$typ" = "" ]; then
+    typ="type"
+  fi
+  if [ "$1" = "monotone" ]; then
+    echo "*$mono = MONOTONE_UP; *$typ = QUANTIFIER_TYPE_NONE; "
+  elif [ "$1" = "additive" ]; then
+    echo "*$mono = MONOTONE_UP; *$typ = QUANTIFIER_TYPE_ADDITIVE; "
+  elif [ "$1" = "multiplicative" ]; then
+    echo "*$mono = MONOTONE_UP; *$typ = QUANTIFIER_TYPE_MULTIPLICATIVE; "
+  elif [ "$1" = "additive-multiplicative" ]; then
+    echo "*$mono = MONOTONE_UP; *$typ = QUANTIFIER_TYPE_BOTH; "
+  elif [ "$1" = "antitone" ]; then
+    echo "*$mono = MONOTONE_DOWN; *$typ = QUANTIFIER_TYPE_NONE; "
+  elif [ "$1" = "anti-additive" ]; then
+    echo "*$mono = MONOTONE_DOWN; *$typ = QUANTIFIER_TYPE_ADDITIVE; "
+  elif [ "$1" = "anti-multiplicative" ]; then
+    echo "*$mono = MONOTONE_DOWN; *$typ = QUANTIFIER_TYPE_MULTIPLICATIVE; "
+  elif [ "$1" = "anti-additive-multiplicative" ]; then
+    echo "*$mono = MONOTONE_DOWN; *$typ = QUANTIFIER_TYPE_BOTH; "
+  elif [ "$1" = "nonmonotone" ]; then
+    echo "*$mono = MONOTONE_FLAT; *$typ = QUANTIFIER_TYPE_NONE; "
+  elif [ "$typ" = "type" ]; then  # a dirty dirty hack
+    echo "*$mono = MONOTONE_FLAT; *$typ = QUANTIFIER_TYPE_NONE; "
+  else
+    echo "UNKNOWN MONOTONICITY: $1"
+  fi
+}
+
+# Create the mapping from quantifier index to quantifier characterization
+function characterizeQuantifiers() {
+#quantifier_type subjType, objType;
+#monotonicity subjMono, objMono;
+#characterizeQuantifier(edge.source, &subjType, &objType, &subjMono, &objMono);
+  echo "void characterizeQuantifier(word w, quantifier_type* subjType, quantifier_type* objType, monotonicity* subjMono, monotonicity* objMono) {"
+  echo "  switch(w) {"
+  cat etc/operators.tab |\
+    grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+    grep -v 'UNARY_' |\
+    awk -F'	' '{ print $3 ":" $5 ":" $6 }' |\
+    while read line ; do 
+      word=`echo $line | awk -F":" '{ print $1 }'`
+      subj=`echo $line | awk -F":" '{ print $2 }'`
+      obj=`echo $line | awk -F":" '{ print $3 }'`
+      echo "    // $word"
+      echo -n "    case "
+      echo -n `index "$word"`
+      echo -n ": "
+      echo -n `_stringToMonotonicity "$subj" subjMono subjType`
+      echo -n " "
+      echo -n `_stringToMonotonicity "$obj" objMono objType`
+      echo -n " "
+      echo "return;"
+    done
+  echo "    default:"
+  echo '      fprintf(stderr, "Could not find operator: %u\\n", w);'
+  echo '      exit(1);'
+  echo '  }'
+  echo "}"
+}
+
+# A function to sanity check the produced graph
 function validateGraph() {
   echo "Validating graph..."
   echo "(this fails unless you see 'All graph tests passed!')"

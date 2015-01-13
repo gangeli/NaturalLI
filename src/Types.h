@@ -11,18 +11,31 @@
 //
 
 // Monotonicities
+/** A simple helper for a monotonicity */
+typedef uint8_t monotonicity;
 #define MONOTONE_UP      0
 #define MONOTONE_DOWN    1
 #define MONOTONE_FLAT    2
 #define MONOTONE_INVALID 3
 #define MONOTONE_DEFAULT MONOTONE_UP
 
+/** A typedef for a quantifier type (e.g., multiplicative) */
+typedef uint8_t quantifier_type;
+#define QUANTIFIER_TYPE_NONE 0x0
+#define QUANTIFIER_TYPE_ADDITIVE 0x1
+#define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
+#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
+
 // Inference States
+/** The current inference state */
+typedef uint8_t inference_state;
 #define INFER_FALSE   0
 #define INFER_TRUE    1
 #define INFER_UNKNOWN 2
 
 // Inference functions
+/** A typedef for a Natlog relation (e.g., forward entailment) */
+typedef uint8_t natlog_relation;
 #define FUNCTION_EQUIVALENT         0
 #define FUNCTION_FORWARD_ENTAILMENT 1
 #define FUNCTION_REVERSE_ENTAILMENT 2
@@ -69,29 +82,13 @@ inline bool operator<(const tagged_word& lhs, const tagged_word& rhs) {
 inline bool operator!=(const tagged_word& lhs, const tagged_word& rhs) {
   return !(lhs == rhs);
 }
-	
-/** A typedef for a Natlog relation (e.g., forward entailment) */
-typedef uint8_t natlog_relation;
-
-
-/** A typedef for a quantifier type (e.g., multiplicative) */
-typedef uint8_t quantifier_type;
-#define QUANTIFIER_TYPE_NONE 0x0
-#define QUANTIFIER_TYPE_ADDITIVE 0x1
-#define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
-#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
 
 /** A simple helper for a word, untagged with type information */
 typedef uint32_t word;
 
-/** A simple helper for a monotonicity */
-typedef uint8_t monotonicity;
-
 /** An edge type -- for example, WORDNET_UP */
 typedef uint8_t edge_type;
 
-/** The current inference state */
-typedef uint8_t inference_state;
 
 /** An inference function (e.g., forward entailment) */
 typedef uint8_t inference_function;

@@ -235,6 +235,13 @@ struct alignas(1) quantifier_monotonicity {
           subj_type:2,
           obj_mono:2,
           obj_type:2;
+
+  inline bool operator==(const quantifier_monotonicity& a) const{
+    return subj_mono == a.subj_mono &&
+      subj_type == a.subj_type &&
+      obj_mono == a.obj_mono &&
+      obj_type == a.obj_type;
+  }
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
@@ -359,12 +366,17 @@ class Tree {
     }
   }
 
+  /** Gives the quantifier index of the given quantifier */
+  inline int8_t quantifierIndex(const uint8_t& tokenIndex) const {
+    for (uint8_t i = 0; i < numQuantifiers; ++i) {
+      if (quantifierSpans[i].subj_begin - 1 == tokenIndex) { return i; }
+    }
+    return -1;
+  }
+  
   /** If true, the word at the given index is a quantifier. */
   inline bool isQuantifier(const uint8_t& index) const {
-    for (uint8_t i = 0; i < numQuantifiers; ++i) {
-      if (quantifierSpans[i].subj_begin - 1 == index) { return true; }
-    }
-    return false;
+    return quantifierIndex(index) >= 0;
   }
   
   /**
@@ -548,11 +560,11 @@ class Tree {
    */
   const uint8_t length;
 
-// protected:  // TODO
+ protected:
   /** Information about the monotonicities of the quantifiers in the sentence. */
   quantifier_monotonicity quantifierMonotonicities[MAX_QUANTIFIER_COUNT];
 
-// private:  // TODO
+ private:
   /** The actual data for this tree. */
   dep_tree_word data[MAX_QUERY_LENGTH];
 
@@ -734,6 +746,29 @@ class SearchNode {
   /** Project the lexical relation through this node's quantifiers */
   natlog_relation projectLexicalRelation( const SearchNode& currentNode,
                                           const natlog_relation& lexicalRelation) const;
+  
+  /**
+   * Mutate this quantifier to have different monotonicities
+   */
+  inline void mutateQuantifier(
+      const uint8_t& quantifierIndex,
+      const quantifier_type& subjType,
+      const quantifier_type& objType,
+      const monotonicity& subjMono,
+      const monotonicity& objMono) {
+    quantifierMonotonicities[quantifierIndex].subj_mono = subjMono;
+    quantifierMonotonicities[quantifierIndex].obj_mono = objMono;
+    quantifierMonotonicities[quantifierIndex].subj_type = subjType;
+    quantifierMonotonicities[quantifierIndex].obj_type = objType;
+  }
+
+  /**
+   * Get the quantifier information for the given quantifier index.
+   */
+  inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) {
+    return quantifierMonotonicities[quantifierIndex];
+  }
+
 
  protected:
   /** The data stored in this path */

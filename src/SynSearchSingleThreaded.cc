@@ -95,11 +95,16 @@ inline uint64_t searchLoop(
       // (ignore when sense doesn't match)
       if (edge.sink_sense != nodeToken.sense) { continue; }
       // (ignore multiple quantifier mutations)
-      bool mutatingQuantifer;
+      int8_t quantifierIndex = -1;
       if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||
           edge.type == QUANTIFIER_UP || edge.type == QUANTIFIER_DOWN) {
-        if (tree.word(tokenIndex) != node.token().word) { continue; }
-        mutatingQuantifer = true;
+        if (tree.word(tokenIndex) != nodeToken.word) { 
+          continue;  // don't mutate quantifiers twice
+        }
+        quantifierIndex = tree.quantifierIndex(tokenIndex);
+        if (quantifierIndex < 0) { 
+          continue;  // can only quantifier mutate quantifiers
+        }
       }
       // (get cost)
       bool newTruthValue;
@@ -113,11 +118,18 @@ inline uint64_t searchLoop(
       const float cost = mutationCost * edge.cost;
 
       // (create child)
-      const SearchNode mutatedChild
+      SearchNode mutatedChild  // not const; we may mutate it below
         = mutation(node, edge, myIndex, newTruthValue, tree, graph);
       assert(mutatedChild.word() < graph->vocabSize());
-      if (mutatingQuantifer) {
-        // TODO(gabor) update quantifier with mutated version!
+      // (handle quantifier mutation)
+      if (quantifierIndex >= 0) {
+        // ((compute new monotonicity information)
+        quantifier_type subjType, objType;
+        monotonicity subjMono, objMono;
+        characterizeQuantifier(edge.source, &subjType, &objType, &subjMono, &objMono);
+        // ((mutate the quantifier))
+        mutatedChild.mutateQuantifier(quantifierIndex,
+            subjType, objType, subjMono, objMono);
       }
       // (push child)
 #if SEARCH_FULL_MEMORY!=0
@@ -143,11 +155,12 @@ inline uint64_t searchLoop(
 #endif
     }
   
-    // INTERM: Get Children
+    // Get Children
     uint8_t numDependents;
     tree.dependents(node.tokenIndex(), 8, dependentIndices,
                     dependentRelations, &numDependents);
-    
+   
+    // Iterate over children
     for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
       const uint8_t& dependentIndex = dependentIndices[dependentI];
 

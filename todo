@@ -1,9 +1,10 @@
 
 Half-baked components:
-  - update quantifier polarity during search.
   - think through all the quantifier monotonicities.
   - FraCaS had some dependency tweaks that I was supposed to implement
-  - Add triggers for meronymy
+  - add triggers for meronymy
+  # update quantifier polarity during search.
+    - order of mutations should be <all operators> then <BFS>
 
   * update C++ code with collapsed dependencies
   * incorporate new graph from Neha
@@ -13,5 +14,5 @@ Half-baked components:
 
 
 Additional types of mutations:
-  * Passivisation (the cat ate the mouse -> the mouse was eaten by the cat)
-  * CC dominance (the zebra is black and white -> the zebra is white and black)
+  - Passivisation (the cat ate the mouse -> the mouse was eaten by the cat)
+  - CC dominance (the zebra is black and white -> the zebra is white and black)

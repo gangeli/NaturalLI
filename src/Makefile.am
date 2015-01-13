@@ -39,6 +39,10 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo ' * Get the String gloss for an indexed dependency arc.' >> Models.h
 	echo ' */' >> Models.h
 	echo 'std::string dependencyGloss(const uint8_t& indexed);' >> Models.h
+	echo '/**' >> Models.h
+	echo ' * Characterize a quantifier (as an indexed word) into its monotonicities ' >> Models.h
+	echo ' */' >> Models.h
+	echo "void characterizeQuantifier(word w, quantifier_type* subjType, quantifier_type* objType, monotonicity* subjMono, monotonicity* objMono);" >> Models.h
 	echo "#endif" >> Models.h
 
 Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
@@ -55,6 +59,8 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	cd .. && source rc && dep2string >> src/Models.cc
 	echo "" >> Models.cc
 	cd .. && source rc && depInsert2relC >> src/Models.cc
+	echo "" >> Models.cc
+	bash -c 'cd .. && source rc && characterizeQuantifiers >> src/Models.cc'
 
 BUILT_SOURCES = Models.h Models.cc
 

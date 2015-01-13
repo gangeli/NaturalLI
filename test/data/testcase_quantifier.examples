@@ -14,5 +14,6 @@ TRUE: All cats have a tail
 Some cat has a tail
 FALSE: No cats have a tail
 
-
-
+# Quantifier polarity change
+All cats has a tail
+TRUE: Some feline has a tail

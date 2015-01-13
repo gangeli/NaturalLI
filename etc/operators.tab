@@ -9,21 +9,23 @@ all	FOR_ALL	for all	FORWARD_ENTAILMENT	anti-additive	multiplicative
 all	FOR_EVERY	for every	FORWARD_ENTAILMENT	anti-additive	multiplicative
 all	FOR_EACH	for each	FORWARD_ENTAILMENT	anti-additive	multiplicative
 all	EVERYONE	everyone	FORWARD_ENTAILMENT	anti-additive	multiplicative
-all	NUM	--num--	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
-all	NUM_NUM	--num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
-all	NUM_NUM_NUM	--num-- --num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
-all	NUM_NUM_NUM_NUM	--num-- --num-- --num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
-all	FEW	few	FORWARD_ENTAILMENT	anti-additive	multiplicative  // TODO check me
+all	NUM	--num--	FORWARD_ENTAILMENT	anti-additive	multiplicative	// TODO check me
+all	NUM_NUM	--num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative	// TODO check me
+all	NUM_NUM_NUM	--num-- --num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative	// TODO check me
+all	NUM_NUM_NUM_NUM	--num-- --num-- --num-- --num--	FORWARD_ENTAILMENT	anti-additive	multiplicative	// TODO check me
+all	FEW	few	FORWARD_ENTAILMENT	anti-additive	multiplicative	// TODO check me
 all	IMPLICIT_NAMED_ENTITY	__implicit_named_entity__	FORWARD_ENTAILMENT	anti-additive	multiplicative
 
-# "No" quantifiers
+# "No" quantifiers. Make sure to have a binary for every unary
 no	NO	no	INDEPENDENCE	anti-additive	anti-additive
+no	UNARY_NO	no	INDEPENDENCE	anti-additive
 no	NEITHER	neither	INDEPENDENCE	anti-additive	anti-additive
 no	NO_ONE	no one	INDEPENDENCE	anti-additive	anti-additive
-no	NOBODY	nobody	INDEPENDENCE	anti-additive	anti-additive
-no	UNARY_NO	no	INDEPENDENCE	anti-additive
-no	UNARY_NOT	not	INDEPENDENCE	anti-additive
 no	UNARY_NO_ONE	no one	INDEPENDENCE	anti-additive
+no	NOBODY	nobody	INDEPENDENCE	anti-additive	anti-additive
+no	NOT	not	INDEPENDENCE	anti-additive	anti-additive
+no	UNARY_NOT	not	INDEPENDENCE	anti-additive
+no	NT	n't	INDEPENDENCE	anti-additive	anti-additive
 no	UNARY_NT	n't	INDEPENDENCE	anti-additive
 
 # Some" quantifiers
