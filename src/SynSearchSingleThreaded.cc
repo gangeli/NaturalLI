@@ -236,11 +236,12 @@ syn_search_response SynSearch(
   auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input] (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
+      fprintf(stderr, ">>>MATCH ON %lu\n", node.factHash());
       bool unique = true;
       for (auto iter = matches.begin(); iter != matches.end(); ++iter) {
         vector<SearchNode> path = iter->nodeSequence;
-        SearchNode endOfPath = path.back();
-        if (endOfPath.factHash() == node.factHash()) {
+        SearchNode otherEntry = path.front();
+        if (otherEntry.factHash() == node.factHash()) {
           unique = false;
         }
       }
@@ -256,11 +257,11 @@ syn_search_response SynSearch(
             head = history[head.getBackpointer()];
           }
         }
-        // (reverse the path)
-        std::reverse(path.begin(), path.end());
         // (add to the results list)
         printTime("[%c] "); 
-        fprintf(stderr, "found premise: %s\n", kbGloss(*mutationGraph, *input, path).c_str());
+        fprintf(stderr, "  found premise: %s {hash: %lu}\n", 
+            kbGloss(*mutationGraph, *input, path).c_str(),
+            path.front().factHash());
         matches.push_back(syn_search_path(path, scoredNode.cost));
       }
     }

@@ -20,7 +20,7 @@ using namespace std;
  * @return A confidence value between 0 and 1/2;
  */
 double confidence(const syn_search_response& response, 
-                  const vector<SearchNode>* argmax) {
+                  const vector<SearchNode>** argmax) {
   if (response.size() == 0) { return 0.0; }
   double max = -std::numeric_limits<float>::infinity();
   for (uint64_t i = 0; i < response.paths.size(); ++i) {
@@ -28,7 +28,7 @@ double confidence(const syn_search_response& response,
     double confidence = 1.0 / (1.0 + exp(cost));
     if (confidence > max) {
       max = confidence;
-      argmax = &(response.paths[i].nodeSequence);
+      *argmax = &(response.paths[i].nodeSequence);
     }
   }
   return max;
@@ -103,12 +103,12 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
 
   // Grok result
   // (confidence)
-  vector<SearchNode>* bestPathIfTrue;
-  vector<SearchNode>* bestPathIfFalse;
-  double confidenceOfTrue = confidence(resultIfTrue, bestPathIfTrue);
-  double confidenceOfFalse = confidence(resultIfFalse, bestPathIfFalse);
+  const vector<SearchNode>* bestPathIfTrue = NULL;
+  const vector<SearchNode>* bestPathIfFalse = NULL;
+  double confidenceOfTrue = confidence(resultIfTrue, &bestPathIfTrue);
+  double confidenceOfFalse = confidence(resultIfFalse, &bestPathIfFalse);
   // (truth)
-  vector<SearchNode>* bestPath;
+  const vector<SearchNode>* bestPath;
   if (confidenceOfTrue > confidenceOfFalse) {
     *truth = probability(confidenceOfTrue, true);
     bestPath = bestPathIfTrue;
@@ -118,6 +118,7 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
   } else {
     *truth = 0.5;
   }
+  printf("%p %p %p\n", bestPathIfTrue, bestPathIfFalse, bestPath);
 //  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf: %f  truth:  %f\n",
 //         resultIfTrue.size(), resultIfFalse.size(),
 //         confidenceOfTrue, confidenceOfFalse, *truth);
@@ -131,7 +132,7 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
       <<  "\"totalTicks\": " << (resultIfTrue.totalTicks + resultIfFalse.totalTicks) << ", "
       <<  "\"truth\": " << (*truth) << ", "
       <<  "\"query\": \"" << escapeQuote(query) << "\", "
-      <<  "\"bestPremise\": \"" << kbGloss(*graph, *input, *bestPath) << "\", "
+      <<  "\"bestPremise\": " << (bestPath == NULL ? "null" : ("\"" + escapeQuote(kbGloss(*graph, *input, *bestPath)) + "\"")) << ", "
       <<  "\"success\": true"
       << "}";
   return rtn.str();

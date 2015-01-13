@@ -142,6 +142,9 @@ vector<string> toStringList(
       std::function<std::string(const SearchNode, const std::vector<tagged_word>)> toString) {
   // Variables
   vector<string> out;
+  if (path.size() == 0) {
+    return out;
+  }
   tagged_word gloss[tree.length];
   for (uint8_t i = 0; i < tree.length; ++i) {
     gloss[i] = tree.token(i);
@@ -208,7 +211,11 @@ string kbGloss(const Graph& graph,
       }
       return line.str();
     });
-  return pathAsString[0];
+  if (pathAsString.size() == 0) {
+    return "<empty path>";
+  } else {
+    return pathAsString[0];
+  }
 }
 
 /**
