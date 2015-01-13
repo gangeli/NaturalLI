@@ -20,7 +20,7 @@ public class ProcessQueryITest {
   @Test
   public void allCatsHaveTails() {
     String expected =
-        "all	2	det	0	anti-additive	2-3	multiplicative	3-5\n" +
+        "all	2	op	0	anti-additive	2-3	multiplicative	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
         "have	0	root	3	-	-	-	-\n"+
         "tail	3	dobj	2	-	-	-	-\n";
@@ -32,7 +32,7 @@ public class ProcessQueryITest {
   @Test
   public void allCatsAreBlue() {
     assertEquals(
-        "all	2	det	0	anti-additive	2-3	multiplicative	3-5\n" +
+        "all	2	op	0	anti-additive	2-3	multiplicative	3-5\n" +
         "cat	4	nsubj	2	-	-	-	-\n" +
         "be	4	cop	3	-	-	-	-\n"+
         "blue	0	root	2	-	-	-	-\n",
@@ -42,7 +42,7 @@ public class ProcessQueryITest {
   @Test
   public void someCatsPlayWithYarn() {
     assertEquals(
-        "some	2	det	0	additive	2-3	additive	3-5\n" +
+        "some	2	op	0	additive	2-3	additive	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
         "play	0	root	11	-	-	-	-\n" +
         "yarn	3	prep_with	3	-	-	-	-\n",
@@ -53,7 +53,7 @@ public class ProcessQueryITest {
   @Test
   public void noCatsLikeDogs() {
     assertEquals(
-        "no	2	neg	0	anti-additive	2-3	anti-additive	3-5\n" +
+        "no	2	op	0	anti-additive	2-3	anti-additive	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
         "like	0	root	5	-	-	-	-\n" +
         "dog	3	dobj	2	-	-	-	-\n",
@@ -64,7 +64,7 @@ public class ProcessQueryITest {
   @Test
   public void noManIsVeryBeautiful() {
     assertEquals(
-        "no	2	neg	0	anti-additive	2-3	anti-additive	3-6\n" +
+        "no	2	op	0	anti-additive	2-3	anti-additive	3-6\n" +
             "man	5	nsubj	2	-	-	-	-\n" +
             "be	5	cop	3	-	-	-	-\n" +
             "very	5	advmod	4	-	-	-	-\n" +
@@ -76,7 +76,7 @@ public class ProcessQueryITest {
   @Test
   public void collapseWords() {
     String expected =
-        "all	2	det	0	anti-additive	2-3	multiplicative	3-5\n" +
+        "all	2	op	0	anti-additive	2-3	multiplicative	3-5\n" +
         "black cat	3	nsubj	2	-	-	-	-\n" +
         "have	0	root	3	-	-	-	-\n"+
         "tail	3	dobj	2	-	-	-	-\n";
@@ -86,7 +86,7 @@ public class ProcessQueryITest {
   @Test
   public void regression1() {
     String expected =
-        "no	2	neg	0	anti-additive	2-3	anti-additive	3-10\n" +
+        "no	2	op	0	anti-additive	2-3	anti-additive	3-10\n" +
         "dog	3	nsubj	2	-	-	-	-\n" +
         "chase	0	root	5	-	-	-	-\n"+
         "a	5	det	0	-	-	-	-\n"+
@@ -102,7 +102,7 @@ public class ProcessQueryITest {
   @Test
   public void apposEdge() {
     String expected =
-        "no	2	neg	0	anti-additive	2-3	anti-additive	3-7\n" +
+        "no	2	op	0	anti-additive	2-3	anti-additive	3-7\n" +
         "dog	3	nsubj	2	-	-	-	-\n" +
         "chase	0	root	5	-	-	-	-\n"+
         "the	5	det	0	-	-	-	-\n"+
@@ -132,7 +132,7 @@ public class ProcessQueryITest {
   @Test
   public void collapseWordsNoClearRoot() {
     assertEquals(
-        "both	2	det	0	nonmonotone	2-3	multiplicative	3-7\n" +
+        "both	2	op	0	nonmonotone	2-3	multiplicative	3-7\n" +
             "commissioner	3	nsubj	1	-	-	-	-\n" +
             "use to	0	root	0	-	-	-	-\n" +
             "be	6	cop	9	-	-	-	-\n" +
