@@ -156,6 +156,7 @@ rm $TMP
 #
 # Handle quantifiers
 #
+echo "Creating quantifier edges..."
 
 # (synonyms)
 cat <<EOF > $GENERIC_TMP
@@ -176,7 +177,7 @@ EOF
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_synonym_q.txt
+  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_reword.txt
 
 # (antonyms)
 cat <<EOF > $GENERIC_TMP
@@ -199,7 +200,47 @@ EOF
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_antonym_q.txt
+  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_negate.txt
+
+# (quantifier down)
+cat <<EOF > $GENERIC_TMP
+import fileinput
+synonyms = {}
+for line in fileinput.input():
+  fields = line.strip().split("\t");
+  if not fields[0] in  synonyms:
+    synonyms[fields[0]] = []
+  synonyms[fields[0]].append(fields[1]);
+up = [ ["all", "some"], ["most", "some"] ]
+for [classA, classB] in up:
+  for source in synonyms[classA]:
+    for sink in synonyms[classB]:
+      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+EOF
+cat $DIR/operators.tab |\
+  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+  awk -F'	' '{ print $1 "\t" $3 }' |\
+  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_up.txt
+
+# (quantifier up)
+cat <<EOF > $GENERIC_TMP
+import fileinput
+synonyms = {}
+for line in fileinput.input():
+  fields = line.strip().split("\t");
+  if not fields[0] in  synonyms:
+    synonyms[fields[0]] = []
+  synonyms[fields[0]].append(fields[1]);
+down = [ ["some", "all"], ["some", "most"] ]
+for [classA, classB] in down:
+  for source in synonyms[classA]:
+    for sink in synonyms[classB]:
+      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+EOF
+cat $DIR/operators.tab |\
+  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+  awk -F'	' '{ print $1 "\t" $3 }' |\
+  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_down.txt
 
 
 #

@@ -12,6 +12,7 @@ import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
+import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Pointer;
 
@@ -165,11 +166,70 @@ public class ProcessQuery {
     return newIndex;
   }
 
+  /**
+   * Perform a number of sanity rewrites on the incoming tree. For instance:
+   *
+   * <ul>
+   *   <li>Replace arcs into opreators with the special 'op' arc.</li>
+   *   <li>Replace 'prepc_' with 'prep_'</li>
+   *   <li>Filter out unknown arcs.</li>
+   * </ul>
+   *
+   * @param tree The tree to sanitize IN PLACE.
+   */
   private static void sanitizeTreeForNaturalli(SemanticGraph tree) {
-    // TODO(gabor) replace arcs with the "op" arc if they go into operators
-    // TODO(gabor) get rid of "prepc" arcs
-    // TODO(gabor) get rid of unknown "prep" arcs
-    // TODO(gabor) map all unknown arc types to the same unknown type
+    List<SemanticGraphEdge> toRemove = new ArrayList<>();
+    List<SemanticGraphEdge> toAdd = new ArrayList<>();
+
+    // Register rewrites
+    for (SemanticGraphEdge edge : tree.edgeIterable()) {
+      String rel = edge.getRelation().toString().toLowerCase();
+      if (edge.getDependent().backingLabel().get(NaturalLogicAnnotations.OperatorAnnotation.class) != null) {
+        // Replace arcs into operators with 'op'
+        toRemove.add(edge);
+        synchronized (SemanticGraphEdge.class) {
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "op"), edge.getWeight(), edge.isExtra()));
+        }
+      } else if (rel.startsWith("prepc_")) {
+        // Rewrite 'prepc_' edges to 'prep_'
+        String newRel = rel.replaceAll("prepc_", "prep_");
+        toRemove.add(edge);
+        synchronized (SemanticGraphEdge.class) {
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, newRel), edge.getWeight(), edge.isExtra()));
+        }
+      }
+    }
+
+    // Perform rewrites
+    for (SemanticGraphEdge e : toRemove) {
+      tree.removeEdge(e);
+    }
+    for (SemanticGraphEdge e : toAdd) {
+      tree.addEdge(e.getGovernor(), e.getDependent(), e.getRelation(), e.getWeight(), e.isExtra());
+    }
+    toRemove.clear();
+    toAdd.clear();
+
+    // Filter unknown edges
+    for (SemanticGraphEdge edge : tree.edgeIterable()) {
+      String rel = edge.getRelation().toString().toLowerCase();
+      if (!NaturalLogicRelation.knownDependencyArc(rel)) {
+        toRemove.add(edge);
+        if (rel.startsWith("prep_")) {
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "prep_dep"), edge.getWeight(), edge.isExtra()));
+        } else {
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "dep"), edge.getWeight(), edge.isExtra()));
+        }
+      }
+    }
+
+    // Perform rewrites (pass 2)
+    for (SemanticGraphEdge e : toRemove) {
+      tree.removeEdge(e);
+    }
+    for (SemanticGraphEdge e : toAdd) {
+      tree.addEdge(e.getGovernor(), e.getDependent(), e.getRelation(), e.getWeight(), e.isExtra());
+    }
   }
 
   public static String conllDump(SemanticGraph tree) {

@@ -128,3 +128,30 @@ function edge() {
     ' etc/edgeTypes.tab - |\
       sed -r -e "s/(.*) (.*) (.*) (.*)/$1 ($source:\1)  \3  $2 ($sink:\2)   @cost=\4/g"
 }
+
+# A utility to return the definitions of a word.
+function sense() {
+  index=`index $1`
+  if [ "$2" = "" ]; then
+    zcat etc/sense.tab.gz | grep "^$index	" | sed -e "s/^$index/$1/g"
+  else
+    zcat etc/sense.tab.gz | grep "^$index	" |\
+      grep "	$2	" |\
+      awk -F'	' '{ print $1 "\t" $3 }' |\
+      sed -e "s/^$index/$1:/g"
+  fi
+}
+
+function define() {
+  sense "$@"
+}
+
+function help() {
+  echo "Utilities installed:"
+  echo "  * index <word_form> : Print the index of the given word gloss."
+  echo "  * gloss <word_index> : Print the gloss of a given word index."
+  echo "  * edge <source> <sink> : Print the edge between two word glosses."
+  echo "  * sense <word_form> [<sense_number>] : Print the definition of a word."
+  echo "                                         If no sense number, print all senses."
+  echo "  * define <word_form> [<sense_number>] : ^As above."
+}

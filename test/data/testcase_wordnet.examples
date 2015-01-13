@@ -9,8 +9,8 @@ TRUE: Some felines have tails
 No cats chase canines
 TRUE: No cats chase dogs
 
-Some cats chase dogs
-TRUE: Some cats chase canines
+Some cats chase cats
+TRUE: Some cats chase felines
 
 # Multiple hops through WordNet | one quantifier | subject
 All animals have tails
