@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <sstream>
 #include <signal.h>
 
 #include "config.h"
@@ -18,14 +19,19 @@ using namespace std;
  * @param response The search response.
  * @return A confidence value between 0 and 1/2;
  */
-double confidence(const syn_search_response& response) {
+double confidence(const syn_search_response& response, 
+                  const vector<SearchNode>* argmax) {
   if (response.size() == 0) { return 0.0; }
-  vector<double> confidences;
+  double max = -std::numeric_limits<float>::infinity();
   for (uint64_t i = 0; i < response.paths.size(); ++i) {
     float cost = response.paths[i].cost;
-    confidences.push_back(1.0 / (1.0 + exp(cost)));
+    double confidence = 1.0 / (1.0 + exp(cost));
+    if (confidence > max) {
+      max = confidence;
+      argmax = &(response.paths[i].nodeSequence);
+    }
   }
-  return *max_element(confidences.begin(), confidences.end());
+  return max;
 }
 
 /**
@@ -97,13 +103,18 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
 
   // Grok result
   // (confidence)
-  double confidenceOfTrue = confidence(resultIfTrue);
-  double confidenceOfFalse = confidence(resultIfFalse);
+  vector<SearchNode>* bestPathIfTrue;
+  vector<SearchNode>* bestPathIfFalse;
+  double confidenceOfTrue = confidence(resultIfTrue, bestPathIfTrue);
+  double confidenceOfFalse = confidence(resultIfFalse, bestPathIfFalse);
   // (truth)
+  vector<SearchNode>* bestPath;
   if (confidenceOfTrue > confidenceOfFalse) {
     *truth = probability(confidenceOfTrue, true);
+    bestPath = bestPathIfTrue;
   } else if (confidenceOfTrue < confidenceOfFalse) {
     *truth = probability(confidenceOfFalse, false);
+    bestPath = bestPathIfFalse;
   } else {
     *truth = 0.5;
   }
@@ -115,13 +126,15 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
   if (*truth > 1.0) { *truth = 1.0; }
 
   // Generate JSON
-  char rtn[32768];
-  snprintf(rtn, 32767, "{\"numResults\": %lu, \"totalTicks\": %lu, \"truth\": %f, \"query\": \"%s\", \"success\": true}", 
-           resultIfTrue.size() + resultIfFalse.size(), 
-           resultIfTrue.totalTicks + resultIfFalse.totalTicks, 
-           *truth, 
-           escapeQuote(query).c_str());
-  return rtn;
+  stringstream rtn;
+  rtn << "{\"numResults\": " << (resultIfTrue.size() + resultIfFalse.size()) << ", "
+      <<  "\"totalTicks\": " << (resultIfTrue.totalTicks + resultIfFalse.totalTicks) << ", "
+      <<  "\"truth\": " << (*truth) << ", "
+      <<  "\"query\": \"" << escapeQuote(query) << "\", "
+      <<  "\"bestPremise\": \"" << kbGloss(*graph, *input, *bestPath) << "\", "
+      <<  "\"success\": true"
+      << "}";
+  return rtn.str();
 }
 
 /**

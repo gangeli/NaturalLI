@@ -259,6 +259,8 @@ syn_search_response SynSearch(
         // (reverse the path)
         std::reverse(path.begin(), path.end());
         // (add to the results list)
+        printTime("[%c] "); 
+        fprintf(stderr, "found premise: %s\n", kbGloss(*mutationGraph, *input, path).c_str());
         matches.push_back(syn_search_path(path, scoredNode.cost));
       }
     }

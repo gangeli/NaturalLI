@@ -50,7 +50,7 @@ class Graph {
  * This class is far less optimized than its single directional 
  * counterpart
  */
-class BidirectionalGraph : Graph {
+class BidirectionalGraph : public Graph {
  public:
   BidirectionalGraph(const Graph* impl);
   ~BidirectionalGraph() { 
