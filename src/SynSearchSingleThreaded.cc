@@ -27,6 +27,7 @@ inline uint64_t searchLoop(
     SearchNode* history, uint64_t& historySize,
     const SynSearchCosts* costs, const syn_search_options& opts, 
     const Graph* graph, const Tree& tree) {
+
   // Variables
   uint64_t ticks = 0;
   uint8_t  dependentIndices[8];
@@ -40,6 +41,17 @@ inline uint64_t searchLoop(
   SearchNode memory[SEARCH_CYCLE_MEMORY];
 #endif
 #endif
+
+  // Compute quantifiers
+  const uint8_t numQuantifiers = tree.getNumQuantifiers();
+  uint8_t quantifierToVisit = 0;
+  uint8_t quantifierVisitOrder[numQuantifiers];
+  for (uint8_t i = 0; i < tree.length; ++i) {
+    if (tree.isQuantifier(i)) {
+      quantifierVisitOrder[quantifierToVisit] = i;
+      quantifierToVisit += 1;
+    }
+  }
 
   // Main Loop
   while (ticks < opts.maxTicks && dequeue(&scoredNode)) {
@@ -68,11 +80,24 @@ inline uint64_t searchLoop(
     // Register visited
     registerVisited(scoredNode);
 
+    // Collect info on whether this was a quantifier
+    const uint8_t tokenIndex = node.tokenIndex();
+    int8_t nextQuantifierTokenIndex = -1;
+    for (uint8_t i = 0; i < numQuantifiers; ++i) {
+      if (quantifierVisitOrder[i] == tokenIndex) {
+        if (i < numQuantifiers - 1) {
+          nextQuantifierTokenIndex = quantifierVisitOrder[i + 1];
+        } else {
+          nextQuantifierTokenIndex = tree.root();
+        }
+      }
+    }
+
     // Update history
     const uint32_t myIndex = historySize;
-//    fprintf(stderr, "%u>> %s (points to %u)\n", 
+//    fprintf(stderr, "%u>> %s (points to %u; nextQuant=%d)\n", 
 //      myIndex, toString(*graph, tree, node).c_str(),
-//      node.getBackpointer());
+//      node.getBackpointer(), nextQuantifierTokenIndex);
     history[myIndex] = node;
     historySize += 1;
     ticks += 1;
@@ -86,7 +111,6 @@ inline uint64_t searchLoop(
     const tagged_word nodeToken = node.token();
     assert(nodeToken.word < graph->vocabSize());
     const edge* edges = graph->incomingEdgesFast(nodeToken.word, &numEdges);
-    const uint8_t tokenIndex = node.tokenIndex();
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       const edge& edge = edges[edgeI];
       assert(edge.source < graph->vocabSize());
@@ -119,7 +143,7 @@ inline uint64_t searchLoop(
 
       // (create child)
       SearchNode mutatedChild  // not const; we may mutate it below
-        = mutation(node, edge, myIndex, newTruthValue, tree, graph);
+        = node.mutation(edge, myIndex, newTruthValue, tree, graph);
       assert(mutatedChild.word() < graph->vocabSize());
       // (handle quantifier mutation)
       if (quantifierIndex >= 0) {
@@ -173,7 +197,7 @@ inline uint64_t searchLoop(
       if (!isinf(cost)) {
         // (create child)
         const SearchNode deletedChild 
-          = deletion(node, myIndex, newTruthValue, tree, dependentIndex);
+          = node.deletion(myIndex, newTruthValue, tree, dependentIndex);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
         assert(!isinf(cost));
@@ -183,19 +207,44 @@ inline uint64_t searchLoop(
 //        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
       }
 
-      // PUSH 3: Index Move
+      // PUSH 3: Index Move (dependents)
+      if (nextQuantifierTokenIndex < 0) {
+        // (check if dependent is a quantiifer)
+        bool canAddDependent = true;
+        if (node.allQuantifiersSeen()) {
+          for (uint8_t i = 0; i < numQuantifiers; ++i) {
+            if (quantifierVisitOrder[i] == dependentIndex) {
+              canAddDependent = false;
+            }
+          }
+        }
+        if (canAddDependent) {
+          // (create child)
+          const SearchNode indexMovedChild(node, tree, dependentIndex,
+                                           myIndex);
+          assert(indexMovedChild.word() < graph->vocabSize());
+          // (push child)
+          enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+//          fprintf(stderr, "  push index move (dep) %s\n", toString(*graph, tree, indexMovedChild).c_str());
+        }
+      }  // end index move conditional
+    }  // end children loop
+  
+    // PUSH 4: Index Move (quantifier)
+    if (nextQuantifierTokenIndex >= 0) {
       // (create child)
-      const SearchNode indexMovedChild(node, tree, dependentIndex,
+      SearchNode indexMovedChild(node, tree, nextQuantifierTokenIndex,
                                        myIndex);
+      if (nextQuantifierTokenIndex == tree.root()) {
+        indexMovedChild.setAllQuantifiersSeen();
+      }
       assert(indexMovedChild.word() < graph->vocabSize());
       // (push child)
-      assert(!isinf(scoredNode.cost));
-      assert(cost == cost);  // NaN check
-      assert(cost >= 0.0);
       enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
-//      fprintf(stderr, "  push index move %s\n", toString(*graph, tree, indexMovedChild).c_str());
+//      fprintf(stderr, "  push index move (quant) %s\n", toString(*graph, tree, indexMovedChild).c_str());
     }
-  }
+
+  }  // end search loop
 
   if (!opts.silent) {
     printTime("[%c] ");
@@ -284,9 +333,25 @@ syn_search_response SynSearch(
   // -- Run Search --
   // Enqueue the first element
   // (to the fringe)
-  fringe.insert(0.0f, SearchNode(*input, assumedInitialTruth));
+  if (!opts.silent) { printTime("[%c] "); }
+  SearchNode start;
+  if (input->getNumQuantifiers() > 0) {
+    // (case: there are quantifiers in the sentence)
+    start = SearchNode(*input, assumedInitialTruth, input->quantifierTokenIndex(0));
+    if (!opts.silent) {
+      fprintf(stderr, "|BEGIN SEARCH| %u quantifiers; starting on index %u\n", 
+          input->getNumQuantifiers(), input->quantifierTokenIndex(0));
+    }
+  } else {
+    // (case: no quantifiers in sentence)
+    start = SearchNode(*input, assumedInitialTruth);
+    if (!opts.silent) {
+      fprintf(stderr, "|BEGIN SEARCH| no quantifiers; starting at root=%u\n", input->root());
+    }
+  }
   // (to the history)
-  history[0] = SearchNode(*input);
+  fringe.insert(0.0f, start);
+  history[0] = start;
   historySize += 1;
 
   // Run Search

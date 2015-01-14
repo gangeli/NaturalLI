@@ -242,6 +242,12 @@ struct alignas(1) quantifier_monotonicity {
       obj_mono == a.obj_mono &&
       obj_type == a.obj_type;
   }
+  inline void clear() {
+    subj_mono = MONOTONE_UP;
+    subj_type = QUANTIFIER_TYPE_BOTH;
+    obj_mono = MONOTONE_UP;
+    obj_type = QUANTIFIER_TYPE_BOTH;
+  }
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
@@ -366,12 +372,19 @@ class Tree {
     }
   }
 
-  /** Gives the quantifier index of the given quantifier */
+  /** Gives the quantifier index of the given quantifier. */
   inline int8_t quantifierIndex(const uint8_t& tokenIndex) const {
     for (uint8_t i = 0; i < numQuantifiers; ++i) {
       if (quantifierSpans[i].subj_begin - 1 == tokenIndex) { return i; }
     }
     return -1;
+  }
+  
+  /** Gives the token index of the given quantifier. */
+  inline int8_t quantifierTokenIndex(const uint8_t& quantifierIndex) const {
+    return quantifierSpans[quantifierIndex].subj_begin <= 0 
+      ? 0 
+      : quantifierSpans[quantifierIndex].subj_begin - 1;
   }
   
   /** If true, the word at the given index is a quantifier. */
@@ -624,11 +637,12 @@ struct alignas(24) syn_path_data {
   uint64_t    factHash:64,
               currentWord:VOCABULARY_ENTROPY,  // 24
               currentSense:SENSE_ENTROPY,      // 5
-              deleteMask:MAX_QUERY_LENGTH,     // 40
+              deleteMask:MAX_QUERY_LENGTH,     // 39
               backpointer:25;
   word        governor:VOCABULARY_ENTROPY;     // 24
   uint8_t     index:6;
-  bool        truth:1;
+  bool        truth:1,
+              allQuantifiersSeen:1;
 
   bool operator==(const syn_path_data& rhs) const {
     return factHash == rhs.factHash &&
@@ -677,6 +691,12 @@ class SearchNode {
   SearchNode(const Tree& init, const bool& assumedTruthValue);
   /** The initial node constructor, but starting from a specific index. */
   SearchNode(const Tree& init, const uint8_t& index);
+  /** 
+   * The initial node constructor, 
+   * but starting from a specific index, and with an assumed
+   * truth value
+   */
+  SearchNode(const Tree& init, const bool& assumedTruthValue, const uint8_t& index);
   /** The mutate constructor */
   SearchNode(const SearchNode& from, const uint64_t& newHash,
              const tagged_word& newToken,
@@ -750,16 +770,43 @@ class SearchNode {
   /**
    * Mutate this quantifier to have different monotonicities
    */
-  inline void mutateQuantifier(
+  void mutateQuantifier(
       const uint8_t& quantifierIndex,
       const quantifier_type& subjType,
       const quantifier_type& objType,
       const monotonicity& subjMono,
-      const monotonicity& objMono) {
-    quantifierMonotonicities[quantifierIndex].subj_mono = subjMono;
-    quantifierMonotonicities[quantifierIndex].obj_mono = objMono;
-    quantifierMonotonicities[quantifierIndex].subj_type = subjType;
-    quantifierMonotonicities[quantifierIndex].obj_type = objType;
+      const monotonicity& objMono);
+
+  /**
+   * Compute a deletion from a given SearchNode
+   */
+  SearchNode deletion(const uint32_t& myIndexInHistory,
+                      const bool& newTruthValue,
+                      const Tree& tree,
+                      const uint8_t& dependentIndex) const;
+  /**
+   * Compute a mutation from a given SearchNode
+   */
+  inline SearchNode mutation(const edge& edge,
+                             const uint32_t& myIndexInHistory,
+                             const bool& newTruthValue,
+                             const Tree& tree,
+                             const Graph* graph) const {
+    const tagged_word nodeToken = this->token();
+    const uint64_t newHash = tree.updateHashFromMutation(
+        this->factHash(), this->tokenIndex(), nodeToken.word,
+        this->governor(), edge.source
+      );
+    const tagged_word newToken = getTaggedWord(
+        edge.source,
+        edge.source_sense,
+        nodeToken.monotonicity);
+    assert(graph == NULL || newToken.word < graph->vocabSize());
+    assert(newToken.sense < (1 << SENSE_ENTROPY));
+    assert(newToken.monotonicity < 4);
+    // (create child)
+    return SearchNode(*this, newHash, newToken,
+                      newTruthValue, myIndexInHistory);
   }
 
   /**
@@ -767,6 +814,14 @@ class SearchNode {
    */
   inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) {
     return quantifierMonotonicities[quantifierIndex];
+  }
+
+  /** Returns whether we have traversed all the quantifiers in this path */
+  inline const bool allQuantifiersSeen() const { return data.allQuantifiersSeen; }
+
+  /** Sets a flag for having traversed all the quantifiers (thus we shouldn't re-traverse them) */
+  inline void setAllQuantifiersSeen() {
+    data.allQuantifiersSeen = true;
   }
 
 
@@ -797,46 +852,6 @@ struct ScoredSearchNode {
   }
 };
 
-/**
- * Compute a deletion from a given SearchNode
- */
-inline SearchNode deletion(const SearchNode& node,
-                           const uint32_t& myIndexInHistory,
-                           const bool& newTruthValue,
-                           const Tree& tree,
-                           const uint8_t& dependentIndex) {
-  uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
-  uint64_t newHash = tree.updateHashFromDeletions(
-      node.factHash(), dependentIndex, tree.token(dependentIndex).word,
-      node.word(), deletionMask);
-  return SearchNode(node, newHash, newTruthValue, deletionMask, myIndexInHistory);
-}
-
-/**
- * Compute a mutation from a given SearchNode
- */
-inline SearchNode mutation(const SearchNode& node,
-                           const edge& edge,
-                           const uint32_t& myIndexInHistory,
-                           const bool& newTruthValue,
-                           const Tree& tree,
-                           const Graph* graph) {
-  const tagged_word nodeToken = node.token();
-  const uint64_t newHash = tree.updateHashFromMutation(
-      node.factHash(), node.tokenIndex(), nodeToken.word,
-      node.governor(), edge.source
-    );
-  const tagged_word newToken = getTaggedWord(
-      edge.source,
-      edge.source_sense,
-      nodeToken.monotonicity);
-  assert(graph == NULL || newToken.word < graph->vocabSize());
-  assert(newToken.sense < (1 << SENSE_ENTROPY));
-  assert(newToken.monotonicity < 4);
-  // (create child)
-  return SearchNode(node, newHash, newToken,
-                    newTruthValue, myIndexInHistory);
-}
 
 // ----------------------------------------------
 // Threadsafe Int

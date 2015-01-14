@@ -13,7 +13,7 @@
 // Monotonicities
 /** A simple helper for a monotonicity */
 typedef uint8_t monotonicity;
-#define MONOTONE_UP      0
+#define MONOTONE_UP      0  // 0 should be consistent with equivalence
 #define MONOTONE_DOWN    1
 #define MONOTONE_FLAT    2
 #define MONOTONE_INVALID 3
@@ -21,10 +21,10 @@ typedef uint8_t monotonicity;
 
 /** A typedef for a quantifier type (e.g., multiplicative) */
 typedef uint8_t quantifier_type;
-#define QUANTIFIER_TYPE_NONE 0x0
+#define QUANTIFIER_TYPE_BOTH 0x0  // 0 should be consistent with equivalence
 #define QUANTIFIER_TYPE_ADDITIVE 0x1
 #define QUANTIFIER_TYPE_MULTIPLICATIVE 0x2
-#define QUANTIFIER_TYPE_BOTH (QUANTIFIER_TYPE_ADDITIVE | QUANTIFIER_TYPE_MULTIPLICATIVE)
+#define QUANTIFIER_TYPE_NONE 0x3
 
 // Inference States
 /** The current inference state */
