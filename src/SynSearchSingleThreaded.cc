@@ -118,6 +118,11 @@ inline uint64_t searchLoop(
       assert(edge.sink == nodeToken.word);
       // (ignore when sense doesn't match)
       if (edge.sink_sense != nodeToken.sense) { continue; }
+      // (ignore meronym edges if not a location)
+      if ( (edge.type == MERONYM || edge.type == HOLONYM) &&
+           !tree.isLocation(tokenIndex) ) {
+        continue;
+      }
       // (ignore multiple quantifier mutations)
       int8_t quantifierIndex = -1;
       if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||

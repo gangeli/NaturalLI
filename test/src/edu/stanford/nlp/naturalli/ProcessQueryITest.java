@@ -111,6 +111,16 @@ public class ProcessQueryITest {
     assertEquals(expected, ProcessQuery.annotateHumanReadable("No dogs chase the cat, Felix", pipeline));
   }
 
+  @Test
+  public void obamaBornInHawaii() {
+    String expected =
+        "Obama	3	nsubjpass	0	-	-	-	-\n"+
+        "be	3	auxpass	3	-	-	-	-\n"+
+        "bear	0	root	4	-	-	-	-\n" +
+        "Hawaii	3	prep_in	2	-	-	-	-	l\n";
+    assertEquals(expected, ProcessQuery.annotateHumanReadable("Obama was born in Hawaii", pipeline));
+  }
+
   /**
    * Run through FraCaS, and make sure none of the sentences crash the querier
    */

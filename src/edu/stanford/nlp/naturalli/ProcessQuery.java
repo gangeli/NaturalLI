@@ -9,6 +9,8 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.semgraph.semgrex.SemgrexMatcher;
+import edu.stanford.nlp.semgraph.semgrex.SemgrexPattern;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
@@ -167,6 +169,22 @@ public class ProcessQuery {
   }
 
   /**
+   * Get the set of words in the sentence which are taken to be locations.
+   * @param tree The tree to pattern match on.
+   */
+  private static Set<IndexedWord> meronymTargets(SemanticGraph tree) {
+    Set<IndexedWord> rtn = new HashSet<>();
+    for (SemgrexPattern pattern : StaticResources.MERONYM_TRIGGERS) {
+      SemgrexMatcher m = pattern.matcher(tree);
+      while (m.find()) {
+        rtn.add(m.getNode("place"));
+      }
+    }
+    return rtn;
+  }
+
+
+  /**
    * Perform a number of sanity rewrites on the incoming tree. For instance:
    *
    * <ul>
@@ -184,7 +202,13 @@ public class ProcessQuery {
     // Register rewrites
     for (SemanticGraphEdge edge : tree.edgeIterable()) {
       String rel = edge.getRelation().toString().toLowerCase();
-      if (edge.getDependent().backingLabel().get(NaturalLogicAnnotations.OperatorAnnotation.class) != null) {
+      OperatorSpec operator = edge.getDependent().backingLabel().get(NaturalLogicAnnotations.OperatorAnnotation.class);
+      if (operator != null && operator.instance == Operator.IMPLICIT_NAMED_ENTITY) {
+        // Remove named entity operators (these just bugger things up)
+        operator = null;
+        edge.getDependent().backingLabel().remove(NaturalLogicAnnotations.OperatorAnnotation.class);
+      }
+      if (operator != null) {
         // Replace arcs into operators with 'op'
         toRemove.add(edge);
         synchronized (SemanticGraphEdge.class) {
@@ -232,15 +256,32 @@ public class ProcessQuery {
     }
   }
 
+  /**
+   * Write the given tree into the format NaturalLI expects as input.
+   * @param tree The tree to dump, as a SemanticGraph.
+   * @return A string, which can be passed into NaturalLI
+   */
   public static String conllDump(SemanticGraph tree) {
     return conllDump(tree, new Pointer<>());
   }
 
+  /**
+   * Write the given tree into the format NaturalLI expects as input.
+   * @param tree The tree to dump, as a SemanticGraph.
+   * @param readableDump A pointer to the return string, but without the indexing to make it much easier to read.
+   * @return A string, which can be passed into NaturalLI
+   */
   public static String conllDump(SemanticGraph tree, Pointer<String> readableDump) {
+    // Find location triggers
+    Set<IndexedWord> meronymTargets = meronymTargets(tree);
+
+    // Sanitize the tree
     sanitizeTreeForNaturalli(tree);
+
     // Variables
     List<IndexedWord> sentence = new ArrayList<>();
-    tree.vertexListSorted().forEach(sentence::add);
+    List<Boolean> isMeronymTarget = new ArrayList<>();
+    tree.vertexListSorted().forEach((IndexedWord x) -> { sentence.add(x); isMeronymTarget.add(meronymTargets.contains(x)); });
     List<String> words = sentence.stream().map(IndexedWord::lemma).collect(Collectors.toList());
 
     // Compute the tree to sentence index
@@ -370,6 +411,14 @@ public class ProcessQuery {
       } else {
         // (if not present)
         b.append("\t-\t-\t-\t-");
+      }
+      // Check for location trigger
+      boolean isLocation = false;
+      for (int k = token.originalStartIndex; k < token.originalEndIndex; ++k) {
+        isLocation |= isMeronymTarget.get(k);
+      }
+      if (isLocation){
+        b.append("\tl");
       }
       // Trailing newline
       b.append("\n");
