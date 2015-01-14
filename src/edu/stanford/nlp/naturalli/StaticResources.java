@@ -24,10 +24,21 @@ public class StaticResources {
     System.err.println("done.");
   }});
 
+  private static Map<String, Integer> LOWERCASE_PHRASE_INDEXER = Collections.unmodifiableMap(new HashMap<String, Integer>() {{
+    System.err.print("Reading lowercase phrase indexer...");
+    for (String line : IOUtils.readLines(System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE"))) {
+      String[] fields = line.split("\t");
+      put(fields[1].toLowerCase(), Integer.parseInt(fields[0]));
+    }
+    System.err.println("done.");
+  }});
+
   public static Function<String, Integer> INDEXER = (String gloss) -> {
     Integer index = PHRASE_INDEXER.get(gloss);
     if (index != null) { return index; }
     index = PHRASE_INDEXER.get(gloss.toLowerCase());
+    if (index != null) { return index; }
+    index = LOWERCASE_PHRASE_INDEXER.get(gloss.toLowerCase());
     if (index != null) { return index; }
     return -1;
   };
