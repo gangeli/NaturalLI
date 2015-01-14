@@ -209,25 +209,14 @@ inline uint64_t searchLoop(
 
       // PUSH 3: Index Move (dependents)
       if (nextQuantifierTokenIndex < 0) {
-        // (check if dependent is a quantiifer)
-        bool canAddDependent = true;
-        if (node.allQuantifiersSeen()) {
-          for (uint8_t i = 0; i < numQuantifiers; ++i) {
-            if (quantifierVisitOrder[i] == dependentIndex) {
-              canAddDependent = false;
-            }
-          }
-        }
-        if (canAddDependent) {
-          // (create child)
-          const SearchNode indexMovedChild(node, tree, dependentIndex,
-                                           myIndex);
-          assert(indexMovedChild.word() < graph->vocabSize());
-          // (push child)
-          enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
-//          fprintf(stderr, "  push index move (dep) %s\n", toString(*graph, tree, indexMovedChild).c_str());
-        }
-      }  // end index move conditional
+        // (create child)
+        const SearchNode indexMovedChild(node, tree, dependentIndex,
+                                         myIndex);
+        assert(indexMovedChild.word() < graph->vocabSize());
+        // (push child)
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+//        fprintf(stderr, "  push index move (dep) %s\n", toString(*graph, tree, indexMovedChild).c_str());
+      }
     }  // end children loop
   
     // PUSH 4: Index Move (quantifier)
@@ -235,15 +224,21 @@ inline uint64_t searchLoop(
       // (create child)
       SearchNode indexMovedChild(node, tree, nextQuantifierTokenIndex,
                                        myIndex);
-      if (nextQuantifierTokenIndex == tree.root()) {
-        indexMovedChild.setAllQuantifiersSeen();
-      }
       assert(indexMovedChild.word() < graph->vocabSize());
-      // (push child)
-      enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+      bool shouldEnqueue = true;
+      if (nextQuantifierTokenIndex == tree.root()) {
+        if (!indexMovedChild.allQuantifiersSeen()) {
+          // (case: first time through quantiifers; continue to root)
+          indexMovedChild.setAllQuantifiersSeen();
+          enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+//        fprintf(stderr, "  push index move (quant) %s\n", toString(*graph, tree, indexMovedChild).c_str());
+        }
+      } else {
+        // (case: still mutating quantifiers)
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
 //      fprintf(stderr, "  push index move (quant) %s\n", toString(*graph, tree, indexMovedChild).c_str());
-    }
-
+      }
+    }  // end quantifier push conditional
   }  // end search loop
 
   if (!opts.silent) {

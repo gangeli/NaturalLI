@@ -10,6 +10,18 @@ using namespace std;
 // ----------------------------------------------
 // UTILITIES
 // ----------------------------------------------
+inline uint64_t mix( const uint64_t u ) {
+  uint64_t v = u * 3935559000370003845l + 2691343689449507681l;
+  v ^= v >> 21;
+  v ^= v << 37;
+  v ^= v >>  4;
+  v *= 4768777513237032717l;
+  v ^= v << 20;
+  v ^= v >> 41;
+  v ^= v <<  5;
+  return v;
+}
+  
 inline uint64_t hashEdge(dependency_edge edge) {
   // Collapse relations which are 'equivalent'
   dep_label  originalRel = edge.relation;
@@ -32,19 +44,19 @@ inline uint64_t hashEdge(dependency_edge edge) {
 }
 
 inline uint64_t hashQuantifiers(const quantifier_monotonicity* quants) {
-#if TWO_PASS_HASH!=0
   uint64_t hash = 0;
+#if TWO_PASS_HASH!=0
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
     hash ^= fnv_64a_buf((void*) &(quants[i]), sizeof(quantifier_monotonicity), FNV1_64_INIT);
   }
-  return hash;
 #else
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
     uint64_t quantHash = 0x0;
     memcpy(&quantHash, &(quants[i]), sizeof(quantifier_monotonicity));
-    return mix(quantHash);
+    hash ^= mix(quantHash);
   }
 #endif
+  return hash;
 }
 
 // ----------------------------------------------
@@ -517,19 +529,6 @@ bool Tree::operator==(const Tree& rhs) const {
 //
 // Tree::hash()
 //
-inline uint64_t mix( const uint64_t u ) {
-  uint64_t v = u * 3935559000370003845l + 2691343689449507681l;
-  v ^= v >> 21;
-  v ^= v << 37;
-  v ^= v >>  4;
-  v *= 4768777513237032717l;
-  v ^= v << 20;
-  v ^= v >> 41;
-  v ^= v <<  5;
-  return v;
-}
-
-  
 uint64_t Tree::hash() const {
   uint64_t value = 0x0;
   // Hash edges

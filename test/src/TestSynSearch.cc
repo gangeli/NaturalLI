@@ -45,7 +45,7 @@ class SearchNodeTest : public ::testing::Test {
 TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(4, sizeof(tagged_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
-  EXPECT_EQ(40, MAX_QUERY_LENGTH);
+  EXPECT_EQ(39, MAX_QUERY_LENGTH);
   EXPECT_EQ(24, sizeof(syn_path_data));
 #if MAX_QUANTIFIER_COUNT < 10
   EXPECT_EQ(32, sizeof(SearchNode));
@@ -99,19 +99,24 @@ class TreeTest : public ::testing::Test {
                        string("44\t0\troot\n") +
                        string("45\t5\tamod\n") +
                        string("46\t3\tdobj"));
+    opTree = new Tree(string("42\t2\top\n") +
+                      string("43\t0\troot\n") +
+                      string("44\t2\tdobj"));
   }
   
   virtual void TearDown() {
     delete tree;
     delete bigTree;
+    delete opTree;
   }
 
   const Tree* tree;
   const Tree* bigTree;
+  const Tree* opTree;
 };
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(594, sizeof(Tree));
+  EXPECT_EQ(580, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(3, sizeof(quantifier_span));
@@ -410,12 +415,24 @@ TEST_F(TreeTest, HashRepeatable) {
 //
 // Hash Value Test
 //
-TEST_F(TreeTest, HashValueCheck) {
+TEST_F(TreeTest, HashValueNoOperators) {
   // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
   EXPECT_EQ(16684156264478018091lu, tree->hash());
 #else
   EXPECT_EQ(6516248485063243418lu, tree->hash());
+#endif
+}
+
+//
+// Hash Value Test
+//
+TEST_F(TreeTest, HashValueOperators) {
+  // note[gabor]: If these change, it means you've invalidated your KB!
+#if TWO_PASS_HASH!=0
+  EXPECT_EQ(1167709596974893504lu, opTree->hash());
+#else
+  EXPECT_EQ(13926664513589630756lu, opTree->hash());
 #endif
 }
 

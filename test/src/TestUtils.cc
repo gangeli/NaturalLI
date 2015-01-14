@@ -52,7 +52,7 @@ TEST_F(UtilsTest, pathToStringTest) {
   e.sink   = CAT.word;    e.sink_sense   = CAT.sense;
   e.type = HYPERNYM; e.cost = 0.1f;
   const SearchNode allANIMALSHaveTails
-    = mutation(allCATSHaveTails, e, ++i, true, *tree, graph);
+    = allCATSHaveTails.mutation(e, ++i, true, *tree, graph);
   path.insert(path.begin(), allANIMALSHaveTails);
   EXPECT_EQ("all animal have furry tail", kbGloss(*graph, *tree, path));
   // (move to tails)
@@ -64,7 +64,7 @@ TEST_F(UtilsTest, pathToStringTest) {
   e.sink   = TAIL.word;    e.sink_sense   = TAIL.sense;
   e.type = ANGLE_NN; e.cost = 1.0f;
   const SearchNode allAnimalsHaveLEMUR
-    = mutation(allAnimalsHaveTAILS, e, ++i, true, *tree, graph);
+    = allAnimalsHaveTAILS.mutation(e, ++i, true, *tree, graph);
   path.insert(path.begin(), allAnimalsHaveLEMUR);
   EXPECT_EQ("all animal have furry lemur", kbGloss(*graph, *tree, path));
   // (move to furry)
@@ -72,7 +72,7 @@ TEST_F(UtilsTest, pathToStringTest) {
   path.insert(path.begin(), allAnimalsHaveFURRYLemur);
   EXPECT_EQ("all animal have furry lemur", kbGloss(*graph, *tree, path));
   // (delete furry)
-  const SearchNode sink = deletion(allAnimalsHaveFURRYLemur, ++i, true, *tree, 3);
+  const SearchNode sink = allAnimalsHaveFURRYLemur.deletion(++i, true, *tree, 3);
   path.insert(path.begin(), sink);
   EXPECT_EQ("all animal have lemur", kbGloss(*graph, *tree, path));
 }
