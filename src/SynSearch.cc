@@ -366,11 +366,23 @@ Tree::Tree(const string& conll)
             }
           }
           break;
+        case 8:  // Auxilliary information
+          for (auto iter = field.begin(); iter != field.end(); ++iter) {
+            switch (*iter) {
+              case 'l':
+              case 'L':
+                isLocationMask[lineI] = true;
+                break;
+              default:
+                fprintf(stderr, "ERROR: Invalid flag to CoNLL constructor: %c", *iter);
+            }
+          }
+          break;
       }
       fieldI += 1;
     }
-    if (fieldI != 3 && fieldI != 8) {
-      fprintf(stderr, "ERROR: Bad number of CoNLL fields in line (expected 3 or 7, was %u): %s\n", fieldI, line.c_str());
+    if (fieldI != 3 && fieldI != 8 && fieldI != 9) {
+      fprintf(stderr, "ERROR: Bad number of CoNLL fields in line (expected 3, 8 or 9. Was %u): %s\n", fieldI, line.c_str());
     }
     lineI += 1;
   }

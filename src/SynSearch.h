@@ -2,6 +2,7 @@
 #define SYN_SEARCH_H
 
 #include <limits>
+#include <bitset>
 
 #include "config.h"
 #include "Types.h"
@@ -319,7 +320,32 @@ class Tree {
  public:
   /**
    * Construct a Tree from a stripped-down CoNLL format.
-   * This is particularly useful for testing.
+   * The CoNLL format, in particular, is:
+   * 
+   * <table>
+   * <tr> <td> Column </td> <td> Description </td> </tr>
+   * <tr> <td>   1    </td> <td> The word at this token index, as an integer. </td> </tr>
+   * <tr> <td>   2    </td> <td> The governor of this word, 1 indexed. </td> </tr>
+   * <tr> <td>   3    </td> <td> The dependency label of the incoming arc, which must match an arc in Models.h </td> </tr>
+   * <tr> <td>   4    </td> <td> The word sense of this word, with 0 denoting the general (or unknown) sense. </td> </tr>
+   * <tr> <td>   5    </td> <td> The monotonicity spec of the subject (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
+   * <tr> <td>   6    </td> <td> The span of the subject, if this is a quantifier. Otherwise, '-'. </td> </tr>
+   * <tr> <td>   7    </td> <td> The monotonicity spec of the object (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
+   * <tr> <td>   8    </td> <td> The span of the object, if this is a quantifier. Otherwise, '-'. </td> </tr>
+   * <tr> <td>   9    </td> <td> Optional additional flags, as a string of (case-insensitive) characters. </td> </tr>
+   * </table>
+   *
+   * <p>
+   *   A valid tree should either have colums 1-4, 1-8, or 1-9.
+   *   Any other colum combinations are invalid.
+   * </p>
+   *
+   * <p>
+   *  The set of valid optional flags are:
+   * </p>
+   * <ul>
+   *   <li>'l': This is a location that can partake in meronymy edges.</li>
+   * <ul>
    */
   Tree(const std::string& conll);
 
@@ -567,6 +593,8 @@ class Tree {
   
   /** Returns the number of quantifiers in the sentence. */
   inline uint8_t getNumQuantifiers() const { return numQuantifiers; }
+  
+  inline bool isLocation(const uint8_t& tokenIndex) const { return isLocationMask[tokenIndex]; }
 
   /**
    * The number of words in this dependency graph
@@ -589,6 +617,11 @@ class Tree {
 
   /** The number of quantifiers in the tree. */
   uint8_t numQuantifiers;
+  
+  /** The number of quantifiers in the tree. */
+  std::bitset<MAX_QUERY_LENGTH> isLocationMask;
+
+  // End variables
 
   /** Populate the quantifiers in scope at a particular index */
   void populateQuantifiersInScope(const uint8_t index);

@@ -27,6 +27,11 @@
                        string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
                        string(TAIL_STR) + string("\t2\tdobj\t2\t-\t-\t-\t-\n")
 
+#define TAIL_AS_LOCATION \
+                       string(CAT_STR) + string("\t2\tnsubj\t1\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t2\t-\t-\t-\t-\tl\n")
+
 using namespace std;
 using namespace btree;
 
@@ -115,8 +120,16 @@ class TreeTest : public ::testing::Test {
   const Tree* opTree;
 };
 
+
+TEST_F(TreeTest, ValidateBitSetBeginsEmpty) {
+  bitset<MAX_QUERY_LENGTH> set;
+  for (uint8_t i = 0; i < MAX_QUERY_LENGTH; ++i) {
+    EXPECT_FALSE(set[i]);
+  }
+}
+
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(580, sizeof(Tree));
+  EXPECT_EQ(592, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(3, sizeof(quantifier_span));
@@ -596,6 +609,14 @@ TEST_F(TreeTest, HashCollapseDetNeg) {
   EXPECT_EQ(neg.hash(), det.hash());
   EXPECT_NE(neg.hash(), amod.hash());
   EXPECT_NE(det.hash(), amod.hash());
+}
+
+
+TEST_F(TreeTest, LocationSetFromCoNLL) {
+  Tree loc(TAIL_AS_LOCATION);
+  EXPECT_FALSE(loc.isLocation(0));
+  EXPECT_FALSE(loc.isLocation(1));
+  EXPECT_TRUE(loc.isLocation(2));
 }
 
 // ----------------------------------------------
