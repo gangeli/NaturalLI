@@ -1,4 +1,4 @@
-# Particular to me
+# Particular to this project
 # (generated models)
 etc/.*
 etc/clauseSearcherModel.ser.gz
@@ -38,6 +38,7 @@ test/build
 
 .idea/*
 *.junit.xml
+*Test.xml
 
 # Compiled Object files
 *.slo

@@ -9,10 +9,7 @@ import edu.stanford.nlp.util.CoreMap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -24,14 +21,24 @@ import java.util.stream.Collectors;
 public class ProcessPremise {
 
   protected static Collection<SentenceFragment> forwardEntailments(String input, StanfordCoreNLP pipeline) {
+    // Run CoreNLP
     Annotation ann = new Annotation(input);
     pipeline.annotate(ann);
+    // Collect the entailments
     List<SentenceFragment> entailments = new ArrayList<>();
     for (CoreMap sentence : ann.get(CoreAnnotations.SentencesAnnotation.class)) {
       Util.cleanTree(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class));
       entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
       entailments.addAll(sentence.get(NaturalLogicAnnotations.EntailedSentencesAnnotation.class).stream().collect(Collectors.toList()));
     }
+    // Clean the entailments
+    Iterator<SentenceFragment> iter = entailments.iterator();
+    while (iter.hasNext()) {
+      if (iter.next().words.isEmpty()) {
+        iter.remove();
+      }
+    }
+    // Return
     return entailments;
   }
 
