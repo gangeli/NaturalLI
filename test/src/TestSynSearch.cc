@@ -500,6 +500,21 @@ TEST_F(TreeTest, HashNotBagOfWords) {
 }
 
 //
+// Hash Sense Agnostic
+//
+TEST_F(TreeTest, HashSenseAgnostic) {
+  Tree t1(string("42\t2\tnsubj\t0\t-\t-\t-\t-\n") +
+          string("43\t0\troot\t0\t-\t-\t-\t-\n") +
+          string("44\t2\tdobj\t0\t-\t-\t-\t-"));
+  Tree t2(string("42\t2\tnsubj\t1\t-\t-\t-\t-\n") +
+          string("43\t0\troot\t8\t-\t-\t-\t-\n") +
+          string("44\t2\tdobj\t2\t-\t-\t-\t-"));
+  EXPECT_EQ(0, t1.token(0).sense);
+  EXPECT_EQ(1, t2.token(0).sense);
+  EXPECT_EQ(t1.hash(), t2.hash());
+}
+
+//
 // Hash Mutate (simple)
 //
 TEST_F(TreeTest, HashMutateSimple) {

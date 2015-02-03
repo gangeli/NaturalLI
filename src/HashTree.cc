@@ -23,7 +23,9 @@ Tree* readTreeFromStdin() {
     numLines += 1;
     conll.append(line, strlen(line));
     conll.append(&newline, 1);
-    if (line[0] == '\0') { break; }
+    if (numLines > 0 && line[0] == '\0') { 
+      break;
+    }
   }
   if (numLines >= MAX_FACT_LENGTH) {
     return NULL;
@@ -39,23 +41,22 @@ Tree* readTreeFromStdin() {
  * TODO(gabor) didn't kill conj in 'Born in Honolulu, Hawaii, Obama is a graduate of Columbia University and Harvard Law School, where he served as president of the Harvard Law Review'
  */
 int32_t main( int32_t argc, char *argv[] ) {
-  BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
-
   while (!cin.fail()) {
     Tree* sentence = readTreeFromStdin();
     if (sentence != NULL) {
       if (sentence->length > 0) {
-        ForwardPartialSearch(graph, sentence, [](SearchNode node) -> void {
-          printf("%lu\n", node.factHash());
-        });
+        printf("%lu\n", sentence->hash());
+      } else {
+        fprintf(stderr, "No sentence input!\n");
+        printf("-1\n");
       }
       delete sentence;
     } else {
-      fprintf(stderr, "Input is too long! skipping...\n");
+      fprintf(stderr, "Input is too long! skipping.\n");
+      printf("-1\n");
     }
-    
+    fflush(stderr);
   }
 
-  delete graph;
   return 0;
 }

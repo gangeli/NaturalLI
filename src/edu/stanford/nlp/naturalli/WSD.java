@@ -2,7 +2,7 @@ package edu.stanford.nlp.naturalli;
 
 import edu.smu.tspell.wordnet.Synset;
 import edu.smu.tspell.wordnet.SynsetType;
-import edu.smu.tspell.wordnet.WordNetDatabase;
+import edu.stanford.nlp.util.Pair;
 
 import java.util.*;
 
@@ -14,9 +14,9 @@ import java.util.*;
 public class WSD {
 
   /** Helper for lesk() */
-  private static boolean allEqual(List<String> a, int startA, List<String> b, int startB, int length) {
+  private static boolean allEqual(String[] a, int startA, String[] b, int startB, int length) {
     for (int i = 0; i < length; ++i) {
-      if (!a.get(startA + i).equals(b.get(startB + i))) { return false; }
+      if (!a[startA + i].equals(b[startB + i])) { return false; }
     }
     return true;
   }
@@ -34,28 +34,38 @@ public class WSD {
    * For example, the value given the sentences [a, b, c, d] and [a, c, d, e]
    * would be 1^2 2^2 = 5 (for 'a' and 'c d').
    */
-  public static int lesk(List<String> unfilteredA, List<String> unfilteredB) {
+  public static int lesk(String[] unfilteredA, String[] unfilteredB, int bIgnoreStart, int bIgnoreEnd) {
     // Filter stop words
-    List<String> a = new ArrayList<>(unfilteredA.size());
-    for (String w : unfilteredA) {
+    List<String> a = new ArrayList<>(unfilteredA.length);
+    for (int i = 0; i < (unfilteredA.length > 20 ? 20 : unfilteredA.length); ++i) {
+      String w = unfilteredA[i];
       if (!STOP_WORDS.contains(w)) { a.add(w); }
+
     }
-    List<String> b = new ArrayList<>(unfilteredA.size());
-    for (String w : unfilteredB) {
-      if (!STOP_WORDS.contains(w)) { b.add(w); }
+    List<String> b = new ArrayList<>(unfilteredA.length);
+    for (int i = 0; i < unfilteredB.length; ++i) {
+      if ( (i < bIgnoreStart || i >= bIgnoreEnd) && (i > bIgnoreStart - 10 || i < bIgnoreEnd + 10) ) {  // cap the context to 10 words
+        String w = unfilteredB[i];
+        if (!STOP_WORDS.contains(w)) {
+          b.add(w);
+        }
+      }
     }
 
     // Variables
-    List<String> tokensShort = a.size() <= b.size() ? a : b;
-    List<String> tokensLong = a.size() <= b.size() ?  b : a;
-    boolean[] shortMask = new boolean[tokensShort.size()];
-    boolean[] longMask = new boolean[tokensLong.size()];
+    List<String> tokensShortLst = a.size() <= b.size() ? a : b;
+    List<String> tokensLongLst = a.size() <= b.size() ?  b : a;
+    boolean[] shortMask = new boolean[tokensShortLst.size()];
+    boolean[] longMask = new boolean[tokensLongLst.size()];
+    String[] tokensShort = tokensShortLst.toArray(new String[tokensShortLst.size()]);
+    String[] tokensLong = tokensLongLst.toArray(new String[tokensLongLst.size()]);
 
     // Run greedy lesk
     int sum = 0;
-    for (int length = tokensShort.size(); length >= 1; --length) {
-      for (int shortStart = 0; shortStart <= tokensShort.size() - length; ++shortStart) {
-        for (int longStart = 0; longStart <= tokensLong.size() - length; ++longStart) {
+    int longestLength = tokensShort.length > 5 ? 5 : tokensShort.length;
+    for (int length = longestLength; length >= 1; --length) {
+      for (int shortStart = 0; shortStart <= tokensShort.length - length; ++shortStart) {
+        for (int longStart = 0; longStart <= tokensLong.length - length; ++longStart) {
           if (allFalse(shortMask, shortStart, shortStart + length) &&
              allFalse(longMask, longStart, longStart + length) &&
               allEqual(tokensShort, shortStart, tokensLong, longStart, length)) {
@@ -67,7 +77,6 @@ public class WSD {
             }
             sum += length * length;
           }
-
         }
       }
     }
@@ -78,26 +87,36 @@ public class WSD {
 
   @SuppressWarnings("unchecked")
   public static int lesk(String a, String b) {
-    return lesk(Arrays.asList(a.split("\\s+")), Arrays.asList(b.split("\\s+")));
+    return lesk(a.split("\\s+"), b.split("\\s+"), 0, 0);
   }
 
   @SuppressWarnings("unchecked")
-  public static int sense(List<String> rawContext, int glossStart, int glossEnd, List<Synset> synsets) {
-    // Remove the gloss from the context
-    List<String> context = new ArrayList<>(rawContext.size() - (glossEnd - glossStart));
-    for (int i = 0; i < glossStart; ++i) { context.add(rawContext.get(i)); }
-    for (int i = glossEnd; i < rawContext.size(); ++i) { context.add(rawContext.get(i)); }
-    String gloss = String.join(" ", rawContext.subList(glossStart, glossEnd));
-
+  public static int sense(String[] rawContext, int glossStart, int glossEnd, Synset[] synsets, String gloss) {
     // Find the best match
     double max = Double.NEGATIVE_INFINITY;
     int argmax = -1;
-    for (int i = 0; i < synsets.size(); ++i) {
-      double lesk = Math.max( 0, lesk(Arrays.asList(synsets.get(i).getDefinition().split("\\s+")), context) - 1);
+    int endLimit = synsets.length > 31 ? 32 : synsets.length;
+    for (int i = 0; i < endLimit; ++i) {
+      // Variables
+      Synset synset = synsets[i];
+      String[] definition;
+      int wordFormIndex;
+      if (synset instanceof MinimalSynset) {
+        MinimalSynset s = (MinimalSynset) synset;
+        definition = s.splitDefinition();
+        wordFormIndex = s.indexOf(gloss);
+      } else {
+        definition = synset.getDefinition().split("\\s+");
+        wordFormIndex = Arrays.asList(synset.getWordForms()).indexOf(gloss);
+      }
+      // Computation
+      // (reward for high lesk)
+      int leskVal = lesk(definition, rawContext, glossStart, glossEnd)  - 1;
+      double lesk = leskVal < 0 ? 0.0 : leskVal;
       // (penalty for going to less frequent senses)
       double sensePrior = -1.01 * i;
       // (penalty for not being the primary sense)
-      double glossPriority = 2.01 * Math.min(-Arrays.asList(synsets.get(i).getWordForms()).indexOf(gloss), 0.0);
+      double glossPriority = 2.01 * -(wordFormIndex > 0 ? 0.0 : wordFormIndex);
       // (compute argmax)
       double score = lesk + sensePrior + glossPriority;
       if (score > max) {
@@ -109,32 +128,29 @@ public class WSD {
   }
 
   @SuppressWarnings("unchecked")
-  public static Optional<Synset> sense(List<String> context, int glossStart, int glossEnd, String pos) {
-    Synset[] synsets;
-    String word = String.join(" ", context.subList(glossStart, glossEnd));
+  public static Optional<Synset> sense(String[] context, int glossStart, int glossEnd, String pos, String gloss) {
 
+    SynsetType t = null;
     if (pos.startsWith("N")) {
-      synsets = wordnet.getSynsets(word, SynsetType.NOUN);
+      t = SynsetType.NOUN;
     } else if (pos.startsWith("V")) {
-      synsets = wordnet.getSynsets(word, SynsetType.VERB);
+      t = SynsetType.VERB;
     } else if (pos.startsWith("J")) {
-      synsets = wordnet.getSynsets(word, SynsetType.ADJECTIVE);
+      t = SynsetType.ADJECTIVE;
     } else if (pos.startsWith("R")) {
-      synsets = wordnet.getSynsets(word, SynsetType.ADVERB);
-    } else {
-      synsets = wordnet.getSynsets(word);
+      t = SynsetType.ADVERB;
     }
-    if (synsets.length == 0) {
-      synsets = wordnet.getSynsets(word);
-    }
-    if (synsets.length == 0) {
+    // Get synsets
+    Synset[] synsets = StaticResources.SYNSETS.get(Pair.makePair(gloss, t == null ? -1 : t.getCode()));  // enforce POS
+    // Do the WSD
+    if (synsets == null || synsets.length == 0) {
       return Optional.empty();
+    } else if (synsets.length == 1) {
+      return Optional.of(synsets[0]);
     } else {
-      return Optional.of(synsets[sense(context, glossStart, glossEnd, Arrays.asList(synsets))]);
+      return Optional.of(synsets[sense(context, glossStart, glossEnd, synsets, gloss)]);
     }
   }
-
-  private static final WordNetDatabase wordnet = WordNetDatabase.getFileInstance();
 
   private static final Set<String> STOP_WORDS = Collections.unmodifiableSet(new HashSet<String>(){{
     add("a");

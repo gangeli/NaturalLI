@@ -13,7 +13,7 @@ conj	reverse_entailment	match dep_cc
 cop	independence	
 csubj	independence	don't drop subjects.
 csubjpass	independence	as above
-dep	independence	
+dep	forward_entailment	
 det	equivalent	todo(gabor) better treatment of generics?
 discourse	equivalent	
 dobj	reverse_entailment	but, "he studied NLP at Stanford" -> "he studied NLP"
@@ -40,13 +40,13 @@ prep	reverse_entailment
 prt	independence	
 punct	equivalent	
 quantmod	forward_entailment	
-rcmod	forward_entailment	"there are great tennors --rcmod--> who are modest"
+rcmod	reverse_entailment	"there are great tennors --rcmod--> who are modest"
 root	independence	err.. never delete
 tmod	reverse_entailment	
 vmod	reverse_entailment	
 partmod	reverse_entailment	deprecated into vmod
 infmod	reverse_entailment	deprecated into vmod
-xcomp	independence	
+xcomp	reverse_entailment	
 conj_and	reverse_entailment	
 conj_and\\/or	reverse_entailment	
 conj_both	reverse_entailment	

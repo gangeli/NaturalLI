@@ -330,20 +330,20 @@ Tree::Tree(const string& conll)
           data[lineI].sense = atoi(field.c_str());
           break;
         case 4:  // Subject monotonicity
-          if (field != "-") {
+          if (field[0] != '-') {
             isQuantifier = true;
             stringToMonotonicity(field, &subjMono, &subjType);
           }
           break;
         case 5:  // Subject span
-          if (field != "-") {
+          if (field[0] != '-') {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
             span.subj_begin = begin; span.subj_end = end;
           }
           break;
         case 6:  // Object monotonicity
-          if (field != "-") {
+          if (field[0] != '-') {
             stringToMonotonicity(field, &objMono, &objType);
           } else {
             objMono = MONOTONE_FLAT;
@@ -351,7 +351,7 @@ Tree::Tree(const string& conll)
           }
           break;
         case 7:  // Object span
-          if (field != "-") {
+          if (field[0] != '-') {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
             span.obj_begin = begin; span.obj_end = end;

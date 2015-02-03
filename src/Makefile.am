@@ -1,5 +1,5 @@
 SUBDIRS = fnv knheap
-bin_PROGRAMS=naturalli_mkkb naturalli
+bin_PROGRAMS=hash_tree naturalli
 EXTRA_DIST =  edu
 
 clean-local:
@@ -9,7 +9,7 @@ clean-local:
 ../etc/vocab.tab.gz:
 	${MAKE} -C .. etc/vocab.tab.gz
 
-Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
+Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo "// DO NOT MODIFY THIS FILE!" > Models.h
 	echo "// It was automatically generated from the Makefile." >> Models.h
 	echo "// You can change it either in src/Makefile.am, or in the" >> Models.h
@@ -45,7 +45,7 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo "void characterizeQuantifier(word w, quantifier_type* subjType, quantifier_type* objType, monotonicity* subjMono, monotonicity* objMono);" >> Models.h
 	echo "#endif" >> Models.h
 
-Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
+Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo "// DO NOT MODIFY THIS FILE!" > Models.cc
 	echo "// It was automatically generated from the Makefile." >> Models.cc
 	echo "// You can change it either in src/Makefile.am, or in the" >> Models.cc
@@ -53,8 +53,10 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz
 	echo '#include "Models.h"' >> Models.cc
 	echo '' >> Models.cc
 	echo '#include <algorithm>' >> Models.cc
+	echo '#include "btree_map.h"' >> Models.cc
 	echo '' >> Models.cc
 	echo 'using namespace std;' >> Models.cc
+	echo 'using namespace btree;' >> Models.cc
 	echo '' >> Models.cc
 	cd .. && source rc && dep2string >> src/Models.cc
 	echo "" >> Models.cc
@@ -86,13 +88,13 @@ endif
 endif
 endif
 
-naturalli_mkkb_SOURCES = CreateKnowledgeBase.cc Utils.cc Graph.cc SynSearch.cc \
-												 Models.cc GZip.cc \
+hash_tree_SOURCES = HashTree.cc Utils.cc Graph.cc SynSearch.cc \
+                    Models.cc GZip.cc \
                  		Graph.h Utils.h Types.h  SynSearch.h GZip.h Models.h \
                  		btree.h btree_container.h btree_map.h btree_set.h
 
-naturalli_mkkb_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
-naturalli_mkkb_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+hash_tree_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
+hash_tree_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 	@echo "Ensuring models..."

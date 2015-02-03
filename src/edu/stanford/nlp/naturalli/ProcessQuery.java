@@ -17,6 +17,7 @@ import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Pointer;
+import edu.stanford.nlp.util.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +44,8 @@ public class ProcessQuery {
   private static void foreachSpan(List<IndexedWord> sentence,
                                   int[] parentIndex, BiConsumer<Integer,Integer> callback) {
     // Iterate over spans
-    for (int length = sentence.size(); length > 0; --length) {
+    int maxLength = sentence.size() > 5 ? 5 : sentence.size();  // note[gabor]: This makes 147 of the 500k lexical items unreachable
+    for (int length = maxLength; length > 0; --length) {
       LOOP: for (int candidateStart = 0; candidateStart + length <= sentence.size(); ++candidateStart) {
         int candidateEnd = candidateStart + length;
         if (length > 1) {  // length 1 words are always constituents
@@ -76,7 +78,7 @@ public class ProcessQuery {
    *
    * @return The sense of the given word.
    */
-  private static int computeSense(int wordAsInt, String gloss, List<IndexedWord> sentence, List<String> words,
+  private static int computeSense(int wordAsInt, String gloss, List<IndexedWord> sentence, String[] words,
                                   int spanStart, int spanEnd) {
     // Check if its a quantifire
     if (Operator.GLOSSES.contains(gloss.toLowerCase())) {
@@ -102,9 +104,9 @@ public class ProcessQuery {
       } else {
         pos = "???";
       }
-      synset = WSD.sense(words, spanStart, spanEnd, pos);
+      synset = WSD.sense(words, spanStart, spanEnd, pos, gloss);
     } else {
-      synset = WSD.sense(words, spanStart, spanEnd, "???");
+      synset = WSD.sense(words, spanStart, spanEnd, "???", gloss);
     }
 
     // match the Synset to an index
@@ -127,6 +129,11 @@ public class ProcessQuery {
     public final int originalEndIndex;
 
     public Token(String gloss, int word, int sense, Optional<OperatorSpec> operatorInfo, int originalStartIndex, int originalEndIndex) {
+      for (int i = 0; i < gloss.length(); ++i) {
+        if (gloss.charAt(i) == '\t') {
+          gloss = gloss.replace('\t', ' ');
+        }
+      }
       this.gloss = gloss;
       this.word = word;
       this.sense = sense;
@@ -174,10 +181,18 @@ public class ProcessQuery {
    */
   private static Set<IndexedWord> meronymTargets(SemanticGraph tree) {
     Set<IndexedWord> rtn = new HashSet<>();
-    for (SemgrexPattern pattern : StaticResources.MERONYM_TRIGGERS) {
-      SemgrexMatcher m = pattern.matcher(tree);
-      while (m.find()) {
-        rtn.add(m.getNode("place"));
+    Set<String> vertices = new HashSet<>();
+    for (IndexedWord vertex : tree.vertexSet()) {
+      vertices.add(vertex.lemma().toLowerCase());
+    }
+    for (Map.Entry<String, Set<SemgrexPattern>> entry : StaticResources.MERONYM_TRIGGERS.entrySet()) {
+      if (vertices.contains(entry.getKey())) {
+        for (SemgrexPattern pattern : entry.getValue()) {
+          SemgrexMatcher m = pattern.matcher(tree);
+          while (m.find()) {
+            rtn.add(m.getNode("place"));
+          }
+        }
       }
     }
     return rtn;
@@ -216,7 +231,7 @@ public class ProcessQuery {
         }
       } else if (rel.startsWith("prepc_")) {
         // Rewrite 'prepc_' edges to 'prep_'
-        String newRel = rel.replaceAll("prepc_", "prep_");
+        String newRel = rel.replace("prepc_", "prep_");
         toRemove.add(edge);
         synchronized (SemanticGraphEdge.class) {
           toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, newRel), edge.getWeight(), edge.isExtra()));
@@ -262,18 +277,32 @@ public class ProcessQuery {
    * @return A string, which can be passed into NaturalLI
    */
   public static String conllDump(SemanticGraph tree) {
-    return conllDump(tree, new Pointer<>());
+    return conllDump(tree, new Pointer<>(), true, true);
+  }
+
+  /**
+   * Write the given tree into the format NaturalLI expects as input.
+   * @param tree The tree to dump, as a SemanticGraph.
+   * @param doSense If true, encode the word senses into the CoNLL tree (this is generally a bit expensive)
+   * @param doMeronym If true, find Meronym triggers as well.
+   * @return A string, which can be passed into NaturalLI
+   */
+  public static String conllDump(SemanticGraph tree, boolean doSense, boolean doMeronym) {
+    return conllDump(tree, new Pointer<>(), doSense, doMeronym);
   }
 
   /**
    * Write the given tree into the format NaturalLI expects as input.
    * @param tree The tree to dump, as a SemanticGraph.
    * @param readableDump A pointer to the return string, but without the indexing to make it much easier to read.
+   * @param doSense If true, encode the word senses into the CoNLL tree (this is generally a bit expensive)
+   * @param doMeronym If true, find Meronym triggers as well.
    * @return A string, which can be passed into NaturalLI
    */
-  public static String conllDump(SemanticGraph tree, Pointer<String> readableDump) {
+  public static String conllDump(SemanticGraph tree, Pointer<String> readableDump, boolean doSense, boolean doMeronym) {
     // Find location triggers
-    Set<IndexedWord> meronymTargets = meronymTargets(tree);
+    @SuppressWarnings("unchecked")
+    Set<IndexedWord> meronymTargets = doMeronym ? meronymTargets(tree) : (Set<IndexedWord>) Collections.EMPTY_SET;
 
     // Sanitize the tree
     sanitizeTreeForNaturalli(tree);
@@ -282,7 +311,7 @@ public class ProcessQuery {
     List<IndexedWord> sentence = new ArrayList<>();
     List<Boolean> isMeronymTarget = new ArrayList<>();
     tree.vertexListSorted().forEach((IndexedWord x) -> { sentence.add(x); isMeronymTarget.add(meronymTargets.contains(x)); });
-    List<String> words = sentence.stream().map(IndexedWord::lemma).collect(Collectors.toList());
+    String[] words = sentence.stream().map(IndexedWord::lemma).toArray(String[]::new);
 
     // Compute the tree to sentence index
     int[] treeToSentenceIndex = new int[sentence.get(sentence.size() - 1).index() + 1];
@@ -311,11 +340,9 @@ public class ProcessQuery {
     BitSet accountedFor = new BitSet();
     foreachSpan(sentence, parentIndex, (start, end) -> {
       // Index the word
-      String gloss = String.join(" ", words.subList(start, end));
+      String gloss = StringUtils.join(words, start, end, " ");
       int wordAsInt = StaticResources.INDEXER.apply(gloss);
       if (wordAsInt >= 0) {
-        // Find the word sense of the word
-        int sense = computeSense(wordAsInt, gloss, sentence, words, start, end);
         // Find any operators, and check if we've already covered this token
         Optional<OperatorSpec> operator = Optional.empty();
         boolean add = true;
@@ -330,6 +357,9 @@ public class ProcessQuery {
         }
         // Add the token
         if (add) {
+          // Find the word sense of the word
+          int sense = doSense ? computeSense(wordAsInt, gloss, sentence, words, start, end) : 0;
+          // Add
           conllTokenByStartIndex.add(new Token(gloss, wordAsInt, sense, operator, start, end));
         }
       }
@@ -373,10 +403,10 @@ public class ProcessQuery {
       Pair<Integer, String> incomingEdge = governors.get(i);
       // Encode tree
       production.append(token.word);
-      debug.append(token.gloss.replace("\\t", " "));//.append("\t").append(token.word);
+      debug.append(token.gloss);//.append("\t").append(token.word);
       StringBuilder b = new StringBuilder();
       b.append("\t").append(incomingEdge.first + 1)
-          .append("\t").append(incomingEdge.second.replace("\t", "\\t"));
+          .append("\t").append(incomingEdge.second);
       // Word sense
       b.append("\t").append(token.sense);
       // Operator info
@@ -444,20 +474,20 @@ public class ProcessQuery {
 
   protected static String annotateHumanReadable(String line, StanfordCoreNLP pipeline) {
     Pointer<String> debug = new Pointer<>();
-    annotate(line, pipeline, debug);
+    annotate(line, pipeline, debug, true);
     return debug.dereference().get();
   }
 
-  protected static String annotate(String line, StanfordCoreNLP pipeline) {
-    return annotate(line, pipeline, new Pointer<>());
+  protected static String annotate(String line, StanfordCoreNLP pipeline, boolean doSense) {
+    return annotate(line, pipeline, new Pointer<>(), doSense);
   }
 
-  protected static String annotate(String line, StanfordCoreNLP pipeline, Pointer<String> debugDump) {
+  protected static String annotate(String line, StanfordCoreNLP pipeline, Pointer<String> debugDump, boolean doSense) {
     Annotation ann = new Annotation(line);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
     Util.cleanTree(dependencies);  // note: in place!
-    return conllDump(dependencies, debugDump);
+    return conllDump(dependencies, debugDump, doSense, true);
   }
 
   public static void main(String[] args) throws IOException {
@@ -471,7 +501,7 @@ public class ProcessQuery {
     while ((line = reader.readLine()) != null) {
       if (!line.trim().equals("")) {
         System.err.println("Annotating '" + line + "'");
-        String annotated = annotate(line, pipeline);
+        String annotated = annotate(line, pipeline, true);
         System.out.println(annotated);
         System.out.flush();
       }

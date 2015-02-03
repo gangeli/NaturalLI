@@ -1,8 +1,102 @@
-src/org/goobs/naturalli/Messages.java
-src/Messages.pb.h
-src/Messages.pb.cc
+# Particular to me
+# (generated models)
+etc/.*
+etc/clauseSearcherModel.ser.gz
+etc/clauseSearcherData.tab.gz
+etc/edgeTypes.tab
+etc/graph.tab.gz
+etc/graphData.tar.gz
+etc/graphData/
+etc/pp.tab.gz
+etc/privative.tab.gz
+etc/sense.tab.gz
+etc/subj_obj_pp.tab.gz
+etc/subj_pp.tab.gz
+etc/subj_pp_obj.tab.gz
+etc/subj_pp_pp.tab.gz
+etc/vocab.tab.gz
+etc/wordnet.ser.gz
+# (generated sources)
+src/Models.cc
+src/Models.h
+src/fnv/longlong.h
+# (programs)
+src/hash_tree
+src/naturalli
+test/src/test_server
+test/src/itest_server
+# (misc)
+log
+src/knheap/testPerformance
+test/src/gtest/lib
 
+# Java
 classes/**
 build/**
+test/build
+*.jar
 
-.idea/workspace.xml
+.idea/*
+*.junit.xml
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Automake
+Makefile
+Makefile.in
+configure
+configure.in
+config.*
+install-sh
+libtool
+ltmain.sh
+aclocal.m4
+m4/libtool.m4
+m4/lt*
+missing
+.deps
+depcomp
+autom4te.cache
+stamp-h1
+
+# Tags
+TAGS
+
+# Vim
+.*.swp
+
+# Latex
+*.aux
+*.log
+*.nav
+*.snm
+*.toc
+*.pdf
+*.bak

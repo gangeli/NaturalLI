@@ -31,7 +31,7 @@ public class CBridge {
             System.err.println("Annotating premise: '" + line.substring(1) + "'");
             for (SentenceFragment fragment : ProcessPremise.forwardEntailments(line.substring(1), premisePipeline)) {
               Pointer<String> debug = new Pointer<>();
-              String annotated = ProcessQuery.conllDump(fragment.parseTree, debug);
+              String annotated = ProcessQuery.conllDump(fragment.parseTree, debug, false, false);
               System.out.println(annotated);
               debug.dereference().ifPresent(System.err::println);
             }
@@ -39,7 +39,7 @@ public class CBridge {
           case 'Q':
             System.err.println("Annotating query: '" + line.substring(1) + "'");
             Pointer<String> debug = new Pointer<>();
-            String annotated = ProcessQuery.annotate(line.substring(1), queryPipeline, debug);
+            String annotated = ProcessQuery.annotate(line.substring(1), queryPipeline, debug, true);
             debug.dereference().ifPresent(System.err::println);
             System.out.println(annotated);
             break;
