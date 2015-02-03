@@ -98,7 +98,7 @@ hash_tree_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 	@echo "Ensuring models..."
-	${MAKE} -C .. .have_models
+	${MAKE} -C .. etc/.have_models
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
 	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP} `find . -name "*.java"`
 	@echo "Making Jar..."
@@ -107,6 +107,6 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 
 naturalli.war: naturalli_preprocess.jar
 	@echo "Ensuring models..."
-	${MAKE} -C .. .have_models
+	${MAKE} -C .. etc/.have_models
 	@echo "Creating WAR..."
 	cd ../ && ant war

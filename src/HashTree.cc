@@ -13,6 +13,10 @@
 
 using namespace std;
 
+/**
+ * Reads a tree from standard input, where the standard input is
+ * already a CoNLL representation of the tree.
+ */
 Tree* readTreeFromStdin() {
   string conll = "";
   char line[256];
@@ -37,10 +41,9 @@ Tree* readTreeFromStdin() {
 /**
  * The Entry point for streaming dependency trees into candidate
  * facts.
- *
- * TODO(gabor) didn't kill conj in 'Born in Honolulu, Hawaii, Obama is a graduate of Columbia University and Harvard Law School, where he served as president of the Harvard Law Review'
  */
 int32_t main( int32_t argc, char *argv[] ) {
+  ios::sync_with_stdio(false);  // Speeds up reading from iostreams
   while (!cin.fail()) {
     Tree* sentence = readTreeFromStdin();
     if (sentence != NULL) {
