@@ -35,7 +35,7 @@ public class ProcessQueryITest {
         "all	2	op	0	anti-additive	2-3	multiplicative	3-5\n" +
         "cat	4	nsubj	2	-	-	-	-\n" +
         "be	4	cop	3	-	-	-	-\n"+
-        "blue	0	root	2	-	-	-	-\n",
+        "blue	0	root	0	-	-	-	-\n",
         ProcessQuery.annotateHumanReadable("all cats are blue", pipeline));
   }
 
@@ -45,7 +45,7 @@ public class ProcessQueryITest {
         "some	2	op	0	additive	2-3	additive	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
         "play	0	root	11	-	-	-	-\n" +
-        "yarn	3	prep_with	3	-	-	-	-\n",
+        "yarn	3	prep_with	2	-	-	-	-\n",
         ProcessQuery.annotateHumanReadable("some cats play with yarn", pipeline)
     );
   }
@@ -55,7 +55,7 @@ public class ProcessQueryITest {
     assertEquals(
         "no	2	op	0	anti-additive	2-3	anti-additive	3-5\n" +
         "cat	3	nsubj	2	-	-	-	-\n" +
-        "like	0	root	5	-	-	-	-\n" +
+        "like	0	root	4	-	-	-	-\n" +
         "dog	3	dobj	2	-	-	-	-\n",
         ProcessQuery.annotateHumanReadable("no cat likes dogs", pipeline)
     );
@@ -91,7 +91,7 @@ public class ProcessQueryITest {
         "chase	0	root	5	-	-	-	-\n"+
         "a	5	det	0	-	-	-	-\n"+
         "cat	3	dobj	2	-	-	-	-\n"+
-        "in	9	mark	3	-	-	-	-\n"+
+        "in	9	mark	0	-	-	-	-\n"+
         "order	9	dep	2	-	-	-	-\n"+
         "to	9	aux	0	-	-	-	-\n"+
         "catch it	3	advcl	2	-	-	-	-\n";  // TODO(gabor) Yes, this is strange...

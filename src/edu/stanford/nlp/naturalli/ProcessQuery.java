@@ -100,7 +100,13 @@ public class ProcessQuery {
       }
       String pos;
       if (posCounts.size() > 0) {
-        pos = Counters.argmax(posCounts);
+        pos = Counters.argmax(posCounts, (x, y) -> {
+          if (x.startsWith("N")) { return -1; }
+          if (y.startsWith("N")) { return 1; }
+          if (x.startsWith("R")) { return 1; }
+          if (y.startsWith("R")) { return -1; }
+          return x.compareTo(y);
+        });
       } else {
         pos = "???";
       }
