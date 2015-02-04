@@ -43,7 +43,6 @@ Tree* readTreeFromStdin() {
  * facts.
  */
 int32_t main( int32_t argc, char *argv[] ) {
-  ios::sync_with_stdio(false);  // Speeds up reading from iostreams
   while (!cin.fail()) {
     Tree* sentence = readTreeFromStdin();
     if (sentence != NULL) {
