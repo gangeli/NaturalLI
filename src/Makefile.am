@@ -24,16 +24,16 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo "#include <config.h>" >> Models.h
 	echo '#include "Types.h"' >> Models.h
 	echo "" >> Models.h
-	cd .. && source rc && dep2header >> src/Models.h
+	source ../rc && cd .. && dep2header >> src/Models.h
 	echo "" >> Models.h
 	echo '/**' >> Models.h
 	echo ' * Index a dependency arc to an integer.' >> Models.h
 	echo ' */' >> Models.h
 	echo 'uint8_t indexDependency(const std::string& dependencyAsString);' >> Models.h
 	echo '' >> Models.h
-	cd .. && source rc && edgeTypes >> src/Models.h
+	source ../rc && cd .. && edgeTypes >> src/Models.h
 	echo '' >> Models.h
-	cd .. && source rc && dummyVocab >> src/Models.h
+	source ../rc && cd .. && dummyVocab >> src/Models.h
 	echo '' >> Models.h
 	echo '/**' >> Models.h
 	echo ' * Get the String gloss for an indexed dependency arc.' >> Models.h
@@ -58,11 +58,11 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo 'using namespace std;' >> Models.cc
 	echo 'using namespace btree;' >> Models.cc
 	echo '' >> Models.cc
-	cd .. && source rc && dep2string >> src/Models.cc
+	source ../rc && cd .. && dep2string >> src/Models.cc
 	echo "" >> Models.cc
-	cd .. && source rc && depInsert2relC >> src/Models.cc
+	source ../rc && cd .. && depInsert2relC >> src/Models.cc
 	echo "" >> Models.cc
-	bash -c 'cd .. && source rc && characterizeQuantifiers >> src/Models.cc'
+	bash -c 'source ../rc && cd .. && characterizeQuantifiers >> src/Models.cc'
 
 BUILT_SOURCES = Models.h Models.cc
 
