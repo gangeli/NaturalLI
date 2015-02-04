@@ -35,7 +35,7 @@
     <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
     <echo message="NaturalLI models:        ${env.NATURALLI_MODELS}"/>
     
-    <junit fork="true" maxmemory="1g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
+    <junit fork="true" maxmemory="4g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
       <sysproperty key="wordnet.database.dir"
                     value="etc/WordNet-3.1/dict"/>

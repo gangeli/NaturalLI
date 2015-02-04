@@ -37,8 +37,12 @@ test/build
 *.jar
 
 .idea/*
+
+# Test output
 *.junit.xml
 *Test.xml
+*.gcno
+.attach_*
 
 # Compiled Object files
 *.slo
