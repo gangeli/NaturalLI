@@ -278,6 +278,46 @@ public class ProcessQuery {
   }
 
   /**
+   * A hacky method to clean up the dependency trees so that they conform a bit more to what we'd expect
+   * logical trees to look like (e.g., not rooted at quantifiers).
+   *
+   * @param dependencies The dependency tree to clean, in place.
+   */
+  private static void hackDependencies(SemanticGraph dependencies) {
+    // Remove [logically] meaningless determiners
+    dependencies.getLeafVertices().stream().filter(vertex -> vertex.word().equalsIgnoreCase("the") || vertex.word().equalsIgnoreCase("a") ||
+        vertex.word().equalsIgnoreCase("an")).forEach(dependencies::removeVertex);
+    for (IndexedWord vertex : dependencies.getLeafVertices()) {
+      // Rewrite edges into 'WP' as 'det'
+      if (vertex.tag().startsWith("WP")) {
+        for (SemanticGraphEdge edge : dependencies.incomingEdgeList(vertex)) {
+          dependencies.removeEdge(edge);
+          dependencies.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "det"), edge.getWeight(), edge.isExtra());
+        }
+      }
+    }
+    // Make sure the root isn't a quantifier
+    for (IndexedWord root : new ArrayList<>(dependencies.getRoots())) {
+      if (root.get(NaturalLogicAnnotations.OperatorAnnotation.class) != null) {
+        List<SemanticGraphEdge> outEdges = dependencies.getOutEdgesSorted(root);
+        if (!outEdges.isEmpty()) {
+          SemanticGraphEdge edgeToReverse = outEdges.get(0);
+          for (SemanticGraphEdge candidate : outEdges) {
+            if (candidate.getDependent().index() > root.index()) {
+              edgeToReverse = candidate;
+              break;
+            }
+          }
+          dependencies.removeEdge(edgeToReverse);
+          dependencies.getRoots().remove(root);
+          dependencies.addRoot(edgeToReverse.getDependent());
+          dependencies.addEdge(edgeToReverse.getDependent(), edgeToReverse.getGovernor(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "op"), edgeToReverse.getWeight(), false);
+        }
+      }
+    }
+  }
+
+  /**
    * Write the given tree into the format NaturalLI expects as input.
    * @param tree The tree to dump, as a SemanticGraph.
    * @return A string, which can be passed into NaturalLI
@@ -312,6 +352,7 @@ public class ProcessQuery {
 
     // Sanitize the tree
     sanitizeTreeForNaturalli(tree);
+    hackDependencies(tree);
 
     // Variables
     List<IndexedWord> sentence = new ArrayList<>();
@@ -463,7 +504,6 @@ public class ProcessQuery {
     }
     readableDump.set(debug.toString());
     return production.toString();
-
   }
 
   protected static StanfordCoreNLP constructPipeline() {
@@ -492,11 +532,7 @@ public class ProcessQuery {
     Annotation ann = new Annotation(line);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
-    // Clean the tree
     Util.cleanTree(dependencies);  // note: in place!
-    // Remove [logically] meaningless determiners
-    dependencies.getLeafVertices().stream().filter(vertex -> vertex.word().equalsIgnoreCase("the") || vertex.word().equalsIgnoreCase("a") ||
-        vertex.word().equalsIgnoreCase("an")).forEach(dependencies::removeVertex);
     // Dump the query
     return conllDump(dependencies, debugDump, doSense, true);
   }
@@ -505,6 +541,9 @@ public class ProcessQuery {
     // Create pipeline
     StanfordCoreNLP pipeline = constructPipeline();
 
+    System.out.println(annotate("There was an Italian who became the world's greatest tenor.", pipeline, true));
+
+    /*
     // Read input
     System.err.println(ProcessQuery.class.getSimpleName() + " is ready for input");
     BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -517,5 +556,6 @@ public class ProcessQuery {
         System.out.flush();
       }
     }
+    */
   }
 }

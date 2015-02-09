@@ -903,8 +903,14 @@ float SynSearchCosts::insertionCost(const Tree& tree,
                                     bool* beginTruthValue) const {
   const natlog_relation lexicalRelation
     = dependencyInsertToLexicalFunction(dependencyLabel, dependent);
-  const float lexicalRelationCost
-    = insertionLexicalCost[dependencyLabel];
+  float lexicalRelationCost = 1.0f;
+  if (dependencyLabel != DEP_OP) {
+    lexicalRelationCost = insertionLexicalCost[dependencyLabel];
+  } else {
+    fprintf(stderr, "INSERTING QUANTIFIER; polarity: %u\n",
+      tree.projectLexicalRelation(governor, lexicalRelation));
+    lexicalRelationCost = 1.0f;
+  }
   const natlog_relation projectedFunction
     = tree.projectLexicalRelation(governor, lexicalRelation);
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
@@ -924,8 +930,12 @@ float SynSearchCosts::deletionCost(const Tree& tree,
                                    bool* endTruthValue) const {
   const natlog_relation lexicalRelation
     = dependencyDeleteToLexicalFunction(dependencyLabel, dependent);
-  const float lexicalRelationCost
-    = insertionLexicalCost[dependencyLabel];
+  float lexicalRelationCost = 1.0f;
+  if (dependencyLabel != DEP_OP) {
+    lexicalRelationCost = insertionLexicalCost[dependencyLabel];
+  } else {
+    lexicalRelationCost = 1.0f;
+  }
   const natlog_relation projectedFunction
     = tree.projectLexicalRelation(governor, lexicalRelation);
   *endTruthValue = transition(endTruthValue, projectedFunction);

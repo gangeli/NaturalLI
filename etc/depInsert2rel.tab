@@ -321,5 +321,5 @@ prepc_in_lieu_of	reverse_entailment
 prepc_on_account_of	reverse_entailment
 prepc_with_regard_to	reverse_entailment
 prepc_with_regard_to	reverse_entailment
-op	independence
+op	equivalent
 prep_dep	reverse_entailment

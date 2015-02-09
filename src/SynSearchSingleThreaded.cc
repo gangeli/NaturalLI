@@ -152,6 +152,8 @@ inline uint64_t searchLoop(
         if (originalMonotonicity != nodeMonotonicity) {
           continue;  // don't mutate quantifiers twice (the more likely check)
         }
+      } else if (edge.type == SENSE_ADD && quantifierIndex >= 0) {
+        continue;
       }
       // (get cost)
       bool newTruthValue;
