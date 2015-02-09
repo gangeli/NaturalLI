@@ -303,6 +303,11 @@ public class StaticResources {
   }});
 
   /**
+   * Load the static resources (this really just amounts to loading the class via the classloader).
+   */
+  public static void load() { }
+
+  /**
    * Test out loading the static resources. This function doesn't actually do anything interesting
    */
   public static void main(String[] args) {

@@ -158,26 +158,26 @@ rm $TMP
 #
 echo "Creating quantifier edges..."
 
-# (synonyms)
-cat <<EOF > $GENERIC_TMP
-import fileinput
-synonyms = {}
-for line in fileinput.input():
-  fields = line.strip().split("\t");
-  if not fields[0] in  synonyms:
-    synonyms[fields[0]] = []
-  synonyms[fields[0]].append(fields[1]);
-for key in synonyms:
-  values = synonyms[key]
-  for source in values:
-    for sink in values:
-      if source != sink:
-        print ("%s\t0\t%s\t0\t1.0" % (source, sink))
-EOF
-cat $DIR/operators.tab |\
-  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
-  awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_reword.txt
+# (quantifier reword) -- we hash them to the same thing anyways
+#cat <<EOF > $GENERIC_TMP
+#import fileinput
+#synonyms = {}
+#for line in fileinput.input():
+#  fields = line.strip().split("\t");
+#  if not fields[0] in  synonyms:
+#    synonyms[fields[0]] = []
+#  synonyms[fields[0]].append(fields[1]);
+#for key in synonyms:
+#  values = synonyms[key]
+#  for source in values:
+#    for sink in values:
+#      if source != sink:
+#        print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+#EOF
+#cat $DIR/operators.tab |\
+#  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
+#  awk -F'	' '{ print $1 "\t" $3 }' |\
+#  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_reword.txt
 
 # (antonyms)
 cat <<EOF > $GENERIC_TMP
@@ -290,7 +290,7 @@ function indexAll() {
         }
         FNR < NR {
           $1 = assoc[ $1 ];
-          print $2 " " $3 " " $4 " " $5 " " $1 " " $6
+          printf $2 " " $3 " " $4 " " $5 " " $1 " " "%f\n", $6
         } ' $DIR/edgeTypes.tab - |\
       sed -e 's/ /	/g'
   done

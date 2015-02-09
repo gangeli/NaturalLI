@@ -14,6 +14,16 @@ TRUE: All cats have a tail
 Some cat has a tail
 FALSE: No cats have a tail
 
+No cat has a tail
+FALSE: Some cats have a tail
+
+No cat has a tail
+FALSE: All cats have a tail
+
+# Quantifier negate with WordNet movement
+No feline has a tail
+FALSE: All cats have a tail
+
 # Quantifier polarity change
 # (mutate quantifier before main search)
 All felines has a tail

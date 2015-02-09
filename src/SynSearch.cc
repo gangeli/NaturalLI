@@ -194,15 +194,15 @@ SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
 //
 void SearchNode::mutateQuantifier(
       const uint8_t& quantifierIndex,
-      const quantifier_type& subjType,
-      const quantifier_type& objType,
       const monotonicity& subjMono,
-      const monotonicity& objMono) {
+      const quantifier_type& subjType,
+      const monotonicity& objMono,
+      const quantifier_type& objType) {
   this->data.factHash ^= hashQuantifiers(this->quantifierMonotonicities);
-  quantifierMonotonicities[quantifierIndex].subj_mono = subjMono;
-  quantifierMonotonicities[quantifierIndex].obj_mono = objMono;
-  quantifierMonotonicities[quantifierIndex].subj_type = subjType;
-  quantifierMonotonicities[quantifierIndex].obj_type = objType;
+  this->quantifierMonotonicities[quantifierIndex].subj_mono = subjMono;
+  this->quantifierMonotonicities[quantifierIndex].obj_mono = objMono;
+  this->quantifierMonotonicities[quantifierIndex].subj_type = subjType;
+  this->quantifierMonotonicities[quantifierIndex].obj_type = objType;
   this->data.factHash ^= hashQuantifiers(this->quantifierMonotonicities);
 }
 

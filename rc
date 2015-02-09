@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -- also uncomment in edgeTypes
 #
 
 # Print out the natural logic relations in a way that can be copied

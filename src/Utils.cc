@@ -320,6 +320,7 @@ vector<string> toJSONList(
       line << "{";
       line << "\"hash\": " << node.factHash() << ", ";
       line << "\"gloss\": \"" << toString(graph, words) << "\", ";
+      line << "\"truth\": " << node.truthState();
       line << "}";
       return line.str();
     });

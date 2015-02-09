@@ -41,10 +41,14 @@ using namespace btree;
 class SearchNodeTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    graph = ReadMockGraph();
   }
   
   virtual void TearDown() {
+    delete graph;
   }
+
+  Graph* graph;
 };
 
 TEST_F(SearchNodeTest, HasExpectedSizes) {
@@ -86,6 +90,68 @@ TEST_F(SearchNodeTest, AssignmentOperator) {
   ));
   SearchNode path2 = path;
   EXPECT_EQ(path, path2);
+}
+
+//
+// Hash Mutate (quantifier)
+//
+TEST_F(SearchNodeTest, HashMutateQuantifier) {
+  // Variables
+  Tree targetTree(string("42\t2\top\t0\tmonotone\t2-4\t-\t-\n") +
+                  string("43\t0\troot\n") +
+                  string("44\t2\tdobj"));
+  Tree sameAsTargetTree(string("50\t2\top\t0\tmonotone\t2-4\t-\t-\n") +
+                        string("43\t0\troot\n") +
+                        string("44\t2\tdobj"));
+  Tree differentTree(string("42\t2\top\t0\tantitone\t2-4\t-\t-\n") +
+                     string("43\t0\troot\n") +
+                     string("44\t2\tdobj"));
+  EXPECT_EQ(targetTree.hash(), sameAsTargetTree.hash());
+  EXPECT_NE(targetTree.hash(), differentTree.hash());
+  SearchNode target(targetTree);
+  EXPECT_EQ(targetTree.hash(), target.factHash());
+
+  // Mutate Equivalent
+  edge equivalentRevEdge;
+  equivalentRevEdge.source = 42;
+  equivalentRevEdge.source_sense = 0;
+  equivalentRevEdge.sink = 50;
+  equivalentRevEdge.sink_sense = 0;
+  equivalentRevEdge.type = QUANTIFIER_NEGATE;
+  equivalentRevEdge.cost = 1.0f;
+  SearchNode sameAsTargetBegin(sameAsTargetTree, (uint8_t) 0);
+  SearchNode sameAsTargetEnd = sameAsTargetBegin.mutation(equivalentRevEdge, 1, true, sameAsTargetTree, graph);
+  EXPECT_EQ(sameAsTargetTree.hash(), sameAsTargetEnd.factHash());
+  EXPECT_EQ(target.factHash(), sameAsTargetEnd.factHash());
+
+  // Mutate different
+  edge differentRevEdge;
+  differentRevEdge.source = 42;
+  differentRevEdge.source_sense = 0;
+  differentRevEdge.sink = 42;
+  differentRevEdge.sink_sense = 0;
+  differentRevEdge.type = QUANTIFIER_NEGATE;
+  differentRevEdge.cost = 1.0f;
+  SearchNode differentBegin(differentTree, (uint8_t) 0);
+  // (mutate)
+  SearchNode differentEnd = differentBegin.mutation(differentRevEdge, 1, true, differentTree, graph);
+  EXPECT_NE(target.factHash(), differentEnd.factHash());
+  EXPECT_EQ(differentTree.hash(), differentEnd.factHash());
+  // (change quantifier)
+  ASSERT_EQ(1, differentTree.getNumQuantifiers());
+  differentEnd.mutateQuantifier(0, 
+      MONOTONE_UP, QUANTIFIER_TYPE_NONE,
+      MONOTONE_FLAT, QUANTIFIER_TYPE_NONE);
+  EXPECT_EQ(target.factHash(), differentEnd.factHash());
+  EXPECT_NE(differentTree.hash(), differentEnd.factHash());
+      
+ 
+//void SearchNode::mutateQuantifier(
+//      const uint8_t& quantifierIndex,
+//      const quantifier_type& subjType,
+//      const quantifier_type& objType,
+//      const monotonicity& subjMono,
+//      const monotonicity& objMono) {
 }
 
 
@@ -512,6 +578,85 @@ TEST_F(TreeTest, HashSenseAgnostic) {
   EXPECT_EQ(0, t1.token(0).sense);
   EXPECT_EQ(1, t2.token(0).sense);
   EXPECT_EQ(t1.hash(), t2.hash());
+}
+
+//
+// Hash Quantifier (Unary)
+//
+TEST_F(TreeTest, HashQuantifiersUnary) {
+  Tree unaryMonotone(string("42\t2\top\t0\tmonotone\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(unaryMonotone.hash(), unaryMonotone.hash());
+  Tree unaryAntitone(string("42\t2\top\t0\tantitone\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_NE(unaryAntitone.hash(), unaryMonotone.hash());
+  Tree unaryAdditive(string("42\t2\top\t0\tadditive\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_NE(unaryAdditive.hash(), unaryMonotone.hash());
+  EXPECT_NE(unaryAdditive.hash(), unaryAntitone.hash());
+  Tree unaryAntiAdditive(string("42\t2\top\t0\tanti-additive\t1-2\t-\t-\n") +
+                         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_NE(unaryAntiAdditive.hash(), unaryMonotone.hash());
+  EXPECT_NE(unaryAntiAdditive.hash(), unaryAntitone.hash());
+  EXPECT_NE(unaryAntiAdditive.hash(), unaryAdditive.hash());
+  Tree unaryMultiplicative(string("42\t2\top\t0\tmultiplicative\t1-2\t-\t-\n") +
+                           string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_NE(unaryMultiplicative.hash(), unaryMonotone.hash());
+  EXPECT_NE(unaryMultiplicative.hash(), unaryAntitone.hash());
+  EXPECT_NE(unaryMultiplicative.hash(), unaryAdditive.hash());
+  EXPECT_NE(unaryMultiplicative.hash(), unaryAntiAdditive.hash());
+  Tree unaryAntiMultiplicative(string("42\t2\top\t0\tanti-multiplicative\t1-2\t-\t-\n") +
+                           string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_NE(unaryAntiMultiplicative.hash(), unaryMonotone.hash());
+  EXPECT_NE(unaryAntiMultiplicative.hash(), unaryAntitone.hash());
+  EXPECT_NE(unaryAntiMultiplicative.hash(), unaryAdditive.hash());
+  EXPECT_NE(unaryAntiMultiplicative.hash(), unaryAntiAdditive.hash());
+  EXPECT_NE(unaryAntiMultiplicative.hash(), unaryMultiplicative.hash());
+}
+
+//
+// Hash Quantifier (Binary)
+//
+TEST_F(TreeTest, HashQuantifiersBinary) {
+  Tree mono_mono(string("42\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(mono_mono.hash(), mono_mono.hash());
+  Tree mono_anti(string("42\t2\top\t0\tmonotone\t1-2\tantitone\t1-2\n") +
+                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(mono_anti.hash(), mono_anti.hash());
+  EXPECT_NE(mono_anti.hash(), mono_mono.hash());
+  Tree anti_mono(string("42\t2\top\t0\tantitone\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(anti_mono.hash(), anti_mono.hash());
+  EXPECT_NE(anti_mono.hash(), mono_mono.hash());
+  EXPECT_NE(anti_mono.hash(), mono_anti.hash());
+  Tree mult_mono(string("42\t2\top\t0\tmultiplicative\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(mult_mono.hash(), mult_mono.hash());
+  EXPECT_NE(mult_mono.hash(), mono_mono.hash());
+  EXPECT_NE(mult_mono.hash(), mono_anti.hash());
+  EXPECT_NE(mult_mono.hash(), anti_mono.hash());
+  Tree add_mono(string("42\t2\top\t0\tadditive\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(add_mono.hash(), add_mono.hash());
+  EXPECT_NE(add_mono.hash(), mono_mono.hash());
+  EXPECT_NE(add_mono.hash(), mono_anti.hash());
+  EXPECT_NE(add_mono.hash(), anti_mono.hash());
+  EXPECT_NE(add_mono.hash(), mult_mono.hash());
+}
+
+//
+// Hash Quantifier (Gloss Independent)
+//
+TEST_F(TreeTest, HashQuantifiersGlossIndependent) {
+  Tree a(string("42\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree b(string("90\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(a.hash(), b.hash());
+  Tree c(string("42\t2\top\t9\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(a.hash(), c.hash());
 }
 
 //

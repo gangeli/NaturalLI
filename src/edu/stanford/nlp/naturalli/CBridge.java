@@ -18,6 +18,7 @@ public class CBridge {
     // Create pipeline
     StanfordCoreNLP premisePipeline = ProcessPremise.constructPipeline();
     StanfordCoreNLP queryPipeline   = ProcessQuery.constructPipeline();
+    StaticResources.load();
 
     // Read input
     System.err.println(CBridge.class.getSimpleName() + " is ready for input");

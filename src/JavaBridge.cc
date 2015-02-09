@@ -55,7 +55,7 @@ JavaBridge::JavaBridge() {
     // Start program
     dup2(pipeIn[0], STDIN_FILENO);
     dup2(pipeOut[1], STDOUT_FILENO);
-    execl(javaExecutable, javaExecutable, "-mx1g", 
+    execl(javaExecutable, javaExecutable, "-mx2g", 
         wordnetEnv, vocabFile, senseFile,
         "-cp", classpath,
         javaClass.c_str(), "true", (char*) NULL);

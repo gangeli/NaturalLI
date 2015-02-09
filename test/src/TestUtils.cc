@@ -10,10 +10,10 @@
 
 #define ALL_CATS_HAVE_FURRY_TAILS \
                        string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\tmultiplicative\t3-5\n") + \
-                       string(CAT_STR) + string("\t3\tnsubj\t1\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
-                       string(FURRY_STR) + string("\t5\tamod\t2\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t3\tdobj\t2\t-\t-\t-\t-\n")
+                       string(CAT_STR) + string("\t3\tnsubj\t0\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t0\t-\t-\t-\t-\n") + \
+                       string(FURRY_STR) + string("\t5\tamod\t0\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t3\tdobj\t0\t-\t-\t-\t-\n")
 
 using namespace std;
 

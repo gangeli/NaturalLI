@@ -54,6 +54,8 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case MERONYM:              return FUNCTION_REVERSE_ENTAILMENT;
     // Nearest Neighbors
     case ANGLE_NN:             return FUNCTION_EQUIVALENT;
+    // WordNet Similar
+    case SIMILAR:              return FUNCTION_EQUIVALENT;
     // Quantifier Morphs
     case QUANTIFIER_UP:        return FUNCTION_FORWARD_ENTAILMENT;
     case QUANTIFIER_DOWN:      return FUNCTION_REVERSE_ENTAILMENT;
@@ -242,6 +244,12 @@ struct alignas(1) quantifier_monotonicity {
       subj_type == a.subj_type &&
       obj_mono == a.obj_mono &&
       obj_type == a.obj_type;
+  }
+  inline bool operator!=(const quantifier_monotonicity& a) const{
+    return subj_mono != a.subj_mono ||
+      subj_type != a.subj_type ||
+      obj_mono != a.obj_mono ||
+      obj_type != a.obj_type;
   }
   inline void clear() {
     subj_mono = MONOTONE_UP;
@@ -595,6 +603,13 @@ class Tree {
   inline uint8_t getNumQuantifiers() const { return numQuantifiers; }
   
   inline bool isLocation(const uint8_t& tokenIndex) const { return isLocationMask[tokenIndex]; }
+  
+  /**
+   * Get the quantifier information for the given quantifier index.
+   */
+  inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) const {
+    return quantifierMonotonicities[quantifierIndex];
+  }
 
   /**
    * The number of words in this dependency graph
@@ -805,10 +820,11 @@ class SearchNode {
    */
   void mutateQuantifier(
       const uint8_t& quantifierIndex,
-      const quantifier_type& subjType,
-      const quantifier_type& objType,
       const monotonicity& subjMono,
-      const monotonicity& objMono);
+      const quantifier_type& subjType,
+      const monotonicity& objMono,
+      const quantifier_type& objType
+      );
 
   /**
    * Compute a deletion from a given SearchNode
@@ -825,7 +841,11 @@ class SearchNode {
                              const bool& newTruthValue,
                              const Tree& tree,
                              const Graph* graph) const {
+    // Get the word we're mutating
     const tagged_word nodeToken = this->token();
+    assert(nodeToken.word == edge.sink);
+    assert(nodeToken.sense == edge.sink_sense);
+    // Compute the new hash
     const uint64_t newHash = tree.updateHashFromMutation(
         this->factHash(), this->tokenIndex(), nodeToken.word,
         this->governor(), edge.source
@@ -834,6 +854,7 @@ class SearchNode {
         edge.source,
         edge.source_sense,
         nodeToken.monotonicity);
+    // Ensure the mutation is valid
     assert(graph == NULL || newToken.word < graph->vocabSize());
     assert(newToken.sense < (1 << SENSE_ENTROPY));
     assert(newToken.monotonicity < 4);
@@ -845,7 +866,7 @@ class SearchNode {
   /**
    * Get the quantifier information for the given quantifier index.
    */
-  inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) {
+  inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) const {
     return quantifierMonotonicities[quantifierIndex];
   }
 

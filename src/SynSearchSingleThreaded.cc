@@ -59,11 +59,11 @@ inline uint64_t searchLoop(
     // Register the dequeue'd element
     const SearchNode& node = scoredNode.node;
 #if SEARCH_FULL_MEMORY!=0
-  const uint64_t fullMemoryItem = memoryItem(node.factHash(), node.tokenIndex(), node.truthState());
-  if (fullMemory.find(fullMemoryItem) != fullMemory.end()) {
-    continue;  // Prohibit duplicate visits
-  }
-  fullMemory.insert(fullMemoryItem);
+    const uint64_t fullMemoryItem = memoryItem(node.factHash(), node.tokenIndex(), node.truthState());
+    if (fullMemory.find(fullMemoryItem) != fullMemory.end()) {
+      continue;  // Prohibit duplicate visits
+    }
+    fullMemory.insert(fullMemoryItem);
 #else
 #if SEARCH_CYCLE_MEMORY!=0
     memory[0] = history[node.getBackpointer()];
@@ -95,9 +95,22 @@ inline uint64_t searchLoop(
 
     // Update history
     const uint32_t myIndex = historySize;
-//    fprintf(stderr, "%u>> %s (points to %u; nextQuant=%d)\n", 
+    // >> debug (warning: very verbose!)
+//    vector<SearchNode> path;
+//    path.push_back(node);
+//    if (node.getBackpointer() != 0) {
+//      SearchNode head = node;
+//      while (head.getBackpointer() != 0) {
+//        path.push_back(head);
+//        head = history[head.getBackpointer()];
+//      }
+//    }
+//    fprintf(stderr, "%u>> %s = %s (points to %u; nextQuant=%d; truth=%u; index=%u)\n", 
 //      myIndex, toString(*graph, tree, node).c_str(),
-//      node.getBackpointer(), nextQuantifierTokenIndex);
+//      kbGloss(*graph, tree, path).c_str(),
+//      node.getBackpointer(), nextQuantifierTokenIndex,
+//      node.truthState(), node.tokenIndex());
+    // << end debug 
     history[myIndex] = node;
     historySize += 1;
     ticks += 1;
@@ -128,11 +141,16 @@ inline uint64_t searchLoop(
       if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||
           edge.type == QUANTIFIER_UP || edge.type == QUANTIFIER_DOWN) {
         if (tree.word(tokenIndex) != nodeToken.word) { 
-          continue;  // don't mutate quantifiers twice
+          continue;  // don't mutate quantifiers twice (never likely to fire)
         }
         quantifierIndex = tree.quantifierIndex(tokenIndex);
         if (quantifierIndex < 0) { 
           continue;  // can only quantifier mutate quantifiers
+        }
+        const quantifier_monotonicity& originalMonotonicity = tree.quantifier(quantifierIndex);
+        const quantifier_monotonicity& nodeMonotonicity = node.quantifier(quantifierIndex);
+        if (originalMonotonicity != nodeMonotonicity) {
+          continue;  // don't mutate quantifiers twice (the more likely check)
         }
       }
       // (get cost)
@@ -158,7 +176,7 @@ inline uint64_t searchLoop(
         characterizeQuantifier(edge.source, &subjType, &objType, &subjMono, &objMono);
         // ((mutate the quantifier))
         mutatedChild.mutateQuantifier(quantifierIndex,
-            subjType, objType, subjMono, objMono);
+            subjMono, subjType, objMono, objType);
       }
       // (push child)
 #if SEARCH_FULL_MEMORY!=0
@@ -171,7 +189,7 @@ inline uint64_t searchLoop(
       if (isNewChild) {
 #endif
 #endif
-//      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
+//      fprintf(stderr, "  push mutation from %u %s\n", mutatedChild.getBackpointer(), toString(*graph, tree, mutatedChild).c_str());
       assert(!isinf(cost));
       assert(cost == cost);  // NaN check
       assert(cost >= 0.0);
@@ -205,11 +223,11 @@ inline uint64_t searchLoop(
           = node.deletion(myIndex, newTruthValue, tree, dependentIndex);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
+//        fprintf(stderr, "  push deletion from %u %s\n", deletedChild.getBackpointer(), toString(*graph, tree, deletedChild).c_str());
         assert(!isinf(cost));
         assert(cost == cost);  // NaN check
         assert(cost >= 0.0);
         enqueue(ScoredSearchNode(deletedChild, cost));
-//        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
       }
 
       // PUSH 3: Index Move (dependents)
@@ -217,10 +235,10 @@ inline uint64_t searchLoop(
         // (create child)
         const SearchNode indexMovedChild(node, tree, dependentIndex,
                                          myIndex);
+//        fprintf(stderr, "  push index move (dep) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
         assert(indexMovedChild.word() < graph->vocabSize());
         // (push child)
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
-//        fprintf(stderr, "  push index move (dep) %s\n", toString(*graph, tree, indexMovedChild).c_str());
       }
     }  // end children loop
   
@@ -235,20 +253,20 @@ inline uint64_t searchLoop(
         if (!indexMovedChild.allQuantifiersSeen()) {
           // (case: first time through quantiifers; continue to root)
           indexMovedChild.setAllQuantifiersSeen();
+//          fprintf(stderr, "  push index move (quant) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
           enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
-//        fprintf(stderr, "  push index move (quant) %s\n", toString(*graph, tree, indexMovedChild).c_str());
         }
       } else {
         // (case: still mutating quantifiers)
+//        fprintf(stderr, "  push index move (quant) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
-//      fprintf(stderr, "  push index move (quant) %s\n", toString(*graph, tree, indexMovedChild).c_str());
       }
     }  // end quantifier push conditional
   }  // end search loop
 
   if (!opts.silent) {
     printTime("[%c] ");
-    fprintf(stderr, "  |Search End| ticks=%lu\n", ticks);
+    fprintf(stderr, "  finished search loop after %lu ticks\n", ticks);
   }
   return ticks;
 }
@@ -339,14 +357,14 @@ syn_search_response SynSearch(
     // (case: there are quantifiers in the sentence)
     start = SearchNode(*input, assumedInitialTruth, input->quantifierTokenIndex(0));
     if (!opts.silent) {
-      fprintf(stderr, "|BEGIN SEARCH| %u quantifiers; starting on index %u\n", 
+      fprintf(stderr, "  %u quantifier(s); starting on index %u\n", 
           input->getNumQuantifiers(), input->quantifierTokenIndex(0));
     }
   } else {
     // (case: no quantifiers in sentence)
     start = SearchNode(*input, assumedInitialTruth);
     if (!opts.silent) {
-      fprintf(stderr, "|BEGIN SEARCH| no quantifiers; starting at root=%u\n", input->root());
+      fprintf(stderr, "  no quantifiers; starting at root=%u\n", input->root());
     }
   }
   // (to the history)
@@ -375,5 +393,9 @@ syn_search_response SynSearch(
   free(history);
   
   // Return
+  if (!opts.silent) {
+    printTime("[%c] ");
+    fprintf(stderr, "  |Search End| Returning %lu responses\n",response.paths.size());
+  }
   return response;
 }

@@ -116,6 +116,12 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
     *truth = probability(confidenceOfFalse, false);
     bestPath = bestPathIfFalse;
   } else {
+    if (resultIfTrue.paths.size() > 0 && resultIfFalse.paths.size() > 0) {
+      printTime("[%c] ");
+      fprintf(stderr, "\033[1;33mWARNING:\033[0m Exactly the same max confidence returned for both 'true' and 'false'");
+      fprintf(stderr, "  if true: %s\n", toJSON(*graph, *input, *bestPathIfTrue).c_str());
+      fprintf(stderr, "  if false: %s\n", toJSON(*graph, *input, *bestPathIfFalse).c_str());
+    }
     *truth = 0.5;
   }
 //  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf: %f  truth:  %f\n",
@@ -132,7 +138,8 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
       <<  "\"truth\": " << (*truth) << ", "
       <<  "\"query\": \"" << escapeQuote(query) << "\", "
       <<  "\"bestPremise\": " << (bestPath == NULL ? "null" : ("\"" + escapeQuote(kbGloss(*graph, *input, *bestPath)) + "\"")) << ", "
-      <<  "\"success\": true"
+      <<  "\"success\": true" << ", "
+      <<  "\"path\": " << (bestPath != NULL ? toJSON(*graph, *input, *bestPath) : "[]")
       << "}";
   return rtn.str();
 }
@@ -196,7 +203,7 @@ uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
       }
       // Run query
       double truth;
-      string response =  executeQuery(proc, lines, query, graph, costs, opts, &truth);
+      string response = executeQuery(proc, lines, query, graph, costs, opts, &truth);
       // Print
       fprintf(stderr, "\n");
       fflush(stderr);

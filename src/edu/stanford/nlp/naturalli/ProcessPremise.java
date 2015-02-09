@@ -28,7 +28,7 @@ public class ProcessPremise {
     List<SentenceFragment> entailments = new ArrayList<>();
     for (CoreMap sentence : ann.get(CoreAnnotations.SentencesAnnotation.class)) {
       Util.cleanTree(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class));
-      entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
+//      entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
       entailments.addAll(sentence.get(NaturalLogicAnnotations.EntailedSentencesAnnotation.class).stream().collect(Collectors.toList()));
     }
     // Clean the entailments
