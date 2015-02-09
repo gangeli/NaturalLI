@@ -492,7 +492,12 @@ public class ProcessQuery {
     Annotation ann = new Annotation(line);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
+    // Clean the tree
     Util.cleanTree(dependencies);  // note: in place!
+    // Remove [logically] meaningless determiners
+    dependencies.getLeafVertices().stream().filter(vertex -> vertex.word().equalsIgnoreCase("the") || vertex.word().equalsIgnoreCase("a") ||
+        vertex.word().equalsIgnoreCase("an")).forEach(dependencies::removeVertex);
+    // Dump the query
     return conllDump(dependencies, debugDump, doSense, true);
   }
 

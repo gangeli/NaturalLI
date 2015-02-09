@@ -20,8 +20,8 @@ Some furry cats have tails
 TRUE: Some cats have tails
 
 # APPOS
-Some dogs chase the cat, Felix
-TRUE: Some dogs chase the cat
+Felix, the cat, plays with yarn
+TRUE: Felix plays with yarn
 
 # AUX
 All cats should play
