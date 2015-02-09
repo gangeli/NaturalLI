@@ -64,6 +64,7 @@ configure  # reconfigure to default
 make all
 
 echo "-- COVERAGE --"
+make check
 cd src/
 rm -f naturalli_server-Messages.pb.gcda
 rm -f naturalli_server-Messages.pb.gcno

@@ -44,7 +44,7 @@ public class ProcessPremise {
 
   protected static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,depparse,natlog,openie");
+      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,natlog,openie");
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
