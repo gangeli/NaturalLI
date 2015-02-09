@@ -74,9 +74,7 @@ gcovr -r . --xml -o coverage.xml
 cd ..
 
 echo "-- TEST CASES --"
-echo "TODO(gabor) RUN TEST CASES AGAIN"
-# TODO(gabor)
-#test/run_testcases.sh
+test/run_testcases.sh
 
 echo "-- TEST AND REPORT --"
 configure
