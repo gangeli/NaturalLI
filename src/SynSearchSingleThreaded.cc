@@ -91,8 +91,10 @@ inline uint64_t searchLoop(
     // Collect info on whether this was a quantifier
     const uint8_t tokenIndex = node.tokenIndex();
     int8_t nextQuantifierTokenIndex = -1;
+    int8_t quantifierIndex = -1;
     for (uint8_t i = 0; i < numQuantifiers; ++i) {
       if (quantifierVisitOrder[i] == tokenIndex) {
+        quantifierIndex = i;
         if (i < numQuantifiers - 1) {
           nextQuantifierTokenIndex = quantifierVisitOrder[i + 1];
         } else {
@@ -149,13 +151,12 @@ inline uint64_t searchLoop(
         continue;
       }
       // (ignore multiple quantifier mutations)
-      int8_t quantifierIndex = -1;
       if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||
           edge.type == QUANTIFIER_UP || edge.type == QUANTIFIER_DOWN) {
+        assert (quantifierIndex >= 0);
         if (tree.word(tokenIndex) != nodeToken.word) { 
           continue;  // don't mutate quantifiers twice (never likely to fire)
         }
-        quantifierIndex = tree.quantifierIndex(tokenIndex);
         if (quantifierIndex < 0) { 
           continue;  // can only quantifier mutate quantifiers
         }
@@ -413,6 +414,7 @@ syn_search_response SynSearch(
     // Pop from fringe
     [&fringe](ScoredSearchNode* output) -> bool { 
       if (fringe.isEmpty()) { return false; }
+      if (fringe.getSize() > 10000000) { return false; }
       fringe.deleteMin(&(output->cost), &(output->node));
       return true;
     },

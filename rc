@@ -193,22 +193,43 @@ function gloss() {
 # A utility to find all edges between two words
 function edge() {
   source=`index $1`
-  sink=`index $2`
-  zcat etc/graph.tab.gz | egrep "^$source	[^	]+	$sink	" |\
-    awk '{ print $2 "\t" $4 "\t" $5 "\t" $6 }' |\
-    awk -F'	' '
-        FNR == NR {
-            assoc[ $1 ] = $2;
-            next;
-        }
-        FNR < NR {
-            if ( $3 in assoc ) {
-                $3 = assoc[ $3 ]
-            }
-            print
-        }
-    ' etc/edgeTypes.tab - |\
-      sed -r -e "s/(.*) (.*) (.*) (.*)/$1 ($source:\1)  \3  $2 ($sink:\2)   @cost=\4/g"
+  if [ "$2" = "" ]; then
+    zcat etc/graph.tab.gz | egrep "^$source" |\
+      awk '{ print $2 "\t" $4 "\t" $5 "\t" $6 "\t" $3 }' |\
+      awk -F'	' '
+          FNR == NR {
+              assoc[ $1 ] = $2;
+              next;
+          }
+          FNR < NR {
+              if ( $3 in assoc ) {
+                  $3 = assoc[ $3 ]
+              }
+              print $1 " " $2 " " $3 " " $4 " " $5
+          }
+      ' etc/edgeTypes.tab - |\
+        gawk '{
+          print $1 " " $2 " " $3 " " $4 " " $5
+        }' |\
+          sed -r -e "s/(.*) (.*) (.*) (.*) (.*)/$1 ($source:\1)  \3  ??? (\5:\2)   @cost=\4/g"
+  else
+    sink=`index $2`
+    zcat etc/graph.tab.gz | egrep "^$source	[^	]+	$sink	" |\
+      awk '{ print $2 "\t" $4 "\t" $5 "\t" $6 }' |\
+      awk -F'	' '
+          FNR == NR {
+              assoc[ $1 ] = $2;
+              next;
+          }
+          FNR < NR {
+              if ( $3 in assoc ) {
+                  $3 = assoc[ $3 ]
+              }
+              print
+          }
+      ' etc/edgeTypes.tab - |\
+        sed -r -e "s/(.*) (.*) (.*) (.*)/$1 ($source:\1)  \3  $2 ($sink:\2)   @cost=\4/g"
+  fi
 }
 
 # A utility to return the definitions of a word.
