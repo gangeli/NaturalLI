@@ -277,11 +277,11 @@ function indexAll() {
       sed -r -e 's/.*\/edge_(.*)_[qanrvs].txt/\1/g' |\
       sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
     modFile="$file"
-    if [ "$type" == "antonym" ]; then
-      modFile="$GENERIC_TMP"
-      cat $file > $modFile
-      cat $file | awk -F'	' '{ print $3 "\t" $4 "\t" $1 "\t" $2 "\t" $5 }' >> $modFile
-    fi
+#    if [ "$type" == "antonym" ]; then
+#      modFile="$GENERIC_TMP"
+#      cat $file > $modFile
+#      cat $file | awk -F'	' '{ print $3 "\t" $4 "\t" $1 "\t" $2 "\t" $5 }' >> $modFile
+#    fi
     index $modFile | sed -e "s/^/$type	/g" |\
       awk '
         FNR == NR {
