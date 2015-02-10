@@ -18,6 +18,7 @@ inline uint64_t memoryItem(const uint64_t& fact, const uint8_t& currentIndex,
   return (fact << 9) | currentIndexShifted | (truth ? 1l : 0l);
 } 
 
+
 #pragma GCC push_options  // matches pop_options below
 #pragma GCC optimize ("unroll-loops")
 inline uint64_t searchLoop(
@@ -53,9 +54,16 @@ inline uint64_t searchLoop(
     }
   }
 
+  // Compute topological order
+  uint8_t topologicalOrder[tree.length + 1];
+  tree.topologicalSort(topologicalOrder);
+
   // Main Loop
   while (ticks < opts.maxTicks && dequeue(&scoredNode)) {
-    
+    // ---
+    // POP NODE
+    // ---
+
     // Register the dequeue'd element
     const SearchNode& node = scoredNode.node;
 #if SEARCH_FULL_MEMORY!=0
@@ -118,6 +126,10 @@ inline uint64_t searchLoop(
       printTime("[%c] "); 
       fprintf(stderr, "  |Search Progress| ticks=%luK\n", ticks / 1000);
     }
+    
+    // ---
+    // HANDLE NODE
+    // ---
 
     // PUSH 1: Mutations
     uint32_t numEdges;
@@ -152,7 +164,9 @@ inline uint64_t searchLoop(
         if (originalMonotonicity != nodeMonotonicity) {
           continue;  // don't mutate quantifiers twice (the more likely check)
         }
-      } else if (edge.type == SENSE_ADD && quantifierIndex >= 0) {
+      } else if ( quantifierIndex >= 0 &&
+                  (edge.type == SENSE_REMOVE || edge.type == SENSE_ADD) ) {
+        // Disallow quantifiers changing their sense.
         continue;
       }
       // (get cost)
@@ -191,7 +205,7 @@ inline uint64_t searchLoop(
       if (isNewChild) {
 #endif
 #endif
-//      fprintf(stderr, "  push mutation from %u %s\n", mutatedChild.getBackpointer(), toString(*graph, tree, mutatedChild).c_str());
+//      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
       assert(!isinf(cost));
       assert(cost == cost);  // NaN check
       assert(cost >= 0.0);
@@ -203,10 +217,14 @@ inline uint64_t searchLoop(
 #endif
 #endif
     }
+    
+    // ---
+    // HANDLE CHILDREN
+    // ---
   
     // Get Children
     uint8_t numDependents;
-    tree.dependents(node.tokenIndex(), 8, dependentIndices,
+    tree.dependents(tokenIndex, 8, dependentIndices,
                     dependentRelations, &numDependents);
    
     // Iterate over children
@@ -225,27 +243,39 @@ inline uint64_t searchLoop(
           = node.deletion(myIndex, newTruthValue, tree, dependentIndex);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
-//        fprintf(stderr, "  push deletion from %u %s\n", deletedChild.getBackpointer(), toString(*graph, tree, deletedChild).c_str());
+//        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
         assert(!isinf(cost));
         assert(cost == cost);  // NaN check
         assert(cost >= 0.0);
         enqueue(ScoredSearchNode(deletedChild, cost));
       }
+    }  // end children loop
+    
+    // ---
+    // HANDLE INDICES
+    // ---
 
-      // PUSH 3: Index Move (dependents)
-      if (nextQuantifierTokenIndex < 0) {
-        // (create child)
-        const SearchNode indexMovedChild(node, tree, dependentIndex,
-                                         myIndex);
-//        fprintf(stderr, "  push index move (dep) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
+    if (nextQuantifierTokenIndex < 0) {
+      // PUSH 3: Index Move (regular order)
+      // (find the next index in the topological order)
+      uint8_t i = 0;
+      while (topologicalOrder[i] != tokenIndex &&
+          topologicalOrder[i] != 255) {
+        i += 1;
+      }
+      assert (topologicalOrder[i] == tokenIndex || topologicalOrder[i] == 255);
+      const uint8_t& nextIndex = topologicalOrder[i] == 255 ? 255 : topologicalOrder[i + 1];
+      // (if there is such an index, push it)
+      if (nextIndex != 255) {
+        const SearchNode indexMovedChild(node, tree, nextIndex, myIndex);
+//        fprintf(stderr, "  push index move (reg) -> %u: %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
         assert(indexMovedChild.word() < graph->vocabSize());
         // (push child)
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
       }
-    }  // end children loop
   
-    // PUSH 4: Index Move (quantifier)
-    if (nextQuantifierTokenIndex >= 0) {
+    } else if (nextQuantifierTokenIndex >= 0) {
+      // PUSH 4: Index Move (quantifier)
       // (create child)
       SearchNode indexMovedChild(node, tree, nextQuantifierTokenIndex,
                                        myIndex);
@@ -253,14 +283,14 @@ inline uint64_t searchLoop(
       bool shouldEnqueue = true;
       if (nextQuantifierTokenIndex == tree.root()) {
         if (!indexMovedChild.allQuantifiersSeen()) {
-          // (case: first time through quantiifers; continue to root)
+          // (case: first time through quantifiers; continue to root)
           indexMovedChild.setAllQuantifiersSeen();
-//          fprintf(stderr, "  push index move (quant) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
+//          fprintf(stderr, "  push index move (quant) -> %u : %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
           enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
         }
       } else {
         // (case: still mutating quantifiers)
-//        fprintf(stderr, "  push index move (quant) from %u %s\n", indexMovedChild.getBackpointer(), toString(*graph, tree, indexMovedChild).c_str());
+//        fprintf(stderr, "  push index move (quant) -> %u : %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
       }
     }  // end quantifier push conditional
@@ -389,7 +419,25 @@ syn_search_response SynSearch(
     // Register visited
     registerVisited,
     // Other crap
-    history, historySize, costs, opts, mutationGraph, *input);
+    history, historySize, costs, opts, mutationGraph, *input
+    );
+
+  // Check the fringe for known facts
+  if (opts.checkFringe && response.paths.empty()) {
+    if (!opts.silent) {
+      printTime("[%c] ");
+      fprintf(stderr, "  |Checking Fringe| size=%u\n", fringe.getSize());
+    }
+    ScoredSearchNode scoredNode;
+    while(!fringe.isEmpty()) {
+      fringe.deleteMin(&(scoredNode.cost), &(scoredNode.node));
+      registerVisited(scoredNode);
+    }
+    if (!opts.silent) {
+      printTime("[%c] ");
+      fprintf(stderr, "    Done\n");
+    }
+  }
 
   // Clean up
   free(history);

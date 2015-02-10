@@ -284,37 +284,6 @@ public class ProcessQuery {
    * @param dependencies The dependency tree to clean, in place.
    */
   private static void hackDependencies(SemanticGraph dependencies) {
-    // Remove [logically] meaningless determiners
-    dependencies.getLeafVertices().stream().filter(vertex -> vertex.word().equalsIgnoreCase("the") || vertex.word().equalsIgnoreCase("a") ||
-        vertex.word().equalsIgnoreCase("an")).forEach(dependencies::removeVertex);
-    for (IndexedWord vertex : dependencies.getLeafVertices()) {
-      // Rewrite edges into 'WP' as 'det'
-      if (vertex.tag().startsWith("WP")) {
-        for (SemanticGraphEdge edge : dependencies.incomingEdgeList(vertex)) {
-          dependencies.removeEdge(edge);
-          dependencies.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "det"), edge.getWeight(), edge.isExtra());
-        }
-      }
-    }
-    // Make sure the root isn't a quantifier
-    for (IndexedWord root : new ArrayList<>(dependencies.getRoots())) {
-      if (root.get(NaturalLogicAnnotations.OperatorAnnotation.class) != null) {
-        List<SemanticGraphEdge> outEdges = dependencies.getOutEdgesSorted(root);
-        if (!outEdges.isEmpty()) {
-          SemanticGraphEdge edgeToReverse = outEdges.get(0);
-          for (SemanticGraphEdge candidate : outEdges) {
-            if (candidate.getDependent().index() > root.index()) {
-              edgeToReverse = candidate;
-              break;
-            }
-          }
-          dependencies.removeEdge(edgeToReverse);
-          dependencies.getRoots().remove(root);
-          dependencies.addRoot(edgeToReverse.getDependent());
-          dependencies.addEdge(edgeToReverse.getDependent(), edgeToReverse.getGovernor(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "op"), edgeToReverse.getWeight(), false);
-        }
-      }
-    }
   }
 
   /**
@@ -450,7 +419,7 @@ public class ProcessQuery {
       Pair<Integer, String> incomingEdge = governors.get(i);
       // Encode tree
       production.append(token.word);
-      debug.append(token.gloss);//.append("\t").append(token.word);
+      debug.append(i + 1).append("\t").append(token.gloss);//.append("\t").append(token.word);
       StringBuilder b = new StringBuilder();
       b.append("\t").append(incomingEdge.first + 1)
           .append("\t").append(incomingEdge.second);
@@ -519,29 +488,42 @@ public class ProcessQuery {
   }
 
   protected static String annotateHumanReadable(String line, StanfordCoreNLP pipeline) {
+    return annotateHumanReadable(new QRewrite(""), line, pipeline);
+  }
+
+  protected static String annotateHumanReadable(QRewrite qRewrite, String line, StanfordCoreNLP pipeline) {
     Pointer<String> debug = new Pointer<>();
-    annotate(line, pipeline, debug, true);
+    annotate(qRewrite, line, pipeline, debug, true);
     return debug.dereference().get();
   }
 
   protected static String annotate(String line, StanfordCoreNLP pipeline, boolean doSense) {
-    return annotate(line, pipeline, new Pointer<>(), doSense);
+    return annotate(new QRewrite(""), line, pipeline, doSense);
   }
 
-  protected static String annotate(String line, StanfordCoreNLP pipeline, Pointer<String> debugDump, boolean doSense) {
-    Annotation ann = new Annotation(line);
+  protected static String annotate(QRewrite qRewrite, String line, StanfordCoreNLP pipeline, boolean doSense) {
+    return annotate(qRewrite, line, pipeline, new Pointer<>(), doSense);
+  }
+
+  protected static String annotate(QRewrite qrewrite, String line, StanfordCoreNLP pipeline, Pointer<String> debugDump, boolean doSense) {
+    String rewritten = qrewrite.rewriteGloss(line);
+    if (!rewritten.equals(line)) {
+      System.err.println("Rewrote '" + line + "' to '" + rewritten + "'");
+    }
+    Annotation ann = new Annotation(rewritten);
     pipeline.annotate(ann);
     SemanticGraph dependencies = ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
     Util.cleanTree(dependencies);  // note: in place!
+    SemanticGraph rewrittenDependencies = qrewrite.rewriteDependencies(dependencies);
     // Dump the query
-    return conllDump(dependencies, debugDump, doSense, true);
+    return conllDump(rewrittenDependencies, debugDump, doSense, true);
   }
 
   public static void main(String[] args) throws IOException {
     // Create pipeline
     StanfordCoreNLP pipeline = constructPipeline();
 
-    System.out.println(annotate("There was an Italian who became the world's greatest tenor.", pipeline, true));
+    System.out.println(annotate(QRewrite.FOR_QUERY, "Two of the cats have tails.", pipeline, true));
 
     /*
     // Read input

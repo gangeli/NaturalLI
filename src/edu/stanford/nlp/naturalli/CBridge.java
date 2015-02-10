@@ -1,6 +1,7 @@
 package edu.stanford.nlp.naturalli;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.util.Pointer;
 
 import java.io.BufferedReader;
@@ -18,6 +19,7 @@ public class CBridge {
     // Create pipeline
     StanfordCoreNLP premisePipeline = ProcessPremise.constructPipeline();
     StanfordCoreNLP queryPipeline   = ProcessQuery.constructPipeline();
+    // Load static resources
     StaticResources.load();
 
     // Read input
@@ -29,10 +31,13 @@ public class CBridge {
       if (!"".equals(line)) {
         switch (line.charAt(0)) {
           case 'P':
-            System.err.println("Annotating premise: '" + line.substring(1) + "'");
-            for (SentenceFragment fragment : ProcessPremise.forwardEntailments(line.substring(1), premisePipeline)) {
+            String premise = line.substring(1);
+            System.err.println("Annotating premise: '" + premise + "'");
+            premise = QRewrite.FOR_PREMISE.rewriteGloss(premise);
+            for (SentenceFragment fragment : ProcessPremise.forwardEntailments(premise, premisePipeline)) {
+              SemanticGraph tree = fragment.parseTree;
               Pointer<String> debug = new Pointer<>();
-              String annotated = ProcessQuery.conllDump(fragment.parseTree, debug, false, false);
+              String annotated = ProcessQuery.conllDump(tree, debug, false, false);
               System.out.println(annotated);
               debug.dereference().ifPresent(System.err::println);
             }
@@ -40,7 +45,7 @@ public class CBridge {
           case 'Q':
             System.err.println("Annotating query: '" + line.substring(1) + "'");
             Pointer<String> debug = new Pointer<>();
-            String annotated = ProcessQuery.annotate(line.substring(1), queryPipeline, debug, true);
+            String annotated = ProcessQuery.annotate(QRewrite.FOR_QUERY, line.substring(1), queryPipeline, debug, true);
             debug.dereference().ifPresent(System.err::println);
             System.out.println(annotated);
             break;

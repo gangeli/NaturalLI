@@ -26,8 +26,8 @@ FALSE: All cats have a tail
 
 # Quantifier polarity change
 # (mutate quantifier before main search)
-All felines has a tail
-TRUE: Some cats has a tail
+All felines have a tail
+TRUE: Some cats have a tail
 
 # (mutate quantifier after main search)
 All cats has a tail

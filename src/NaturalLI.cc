@@ -161,6 +161,7 @@ uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
+                          true,        // checkFringe
                           false,       // stopWhenResultFound
                           false);      // silent
 

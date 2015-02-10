@@ -610,6 +610,35 @@ class Tree {
   inline const quantifier_monotonicity& quantifier(const uint8_t& quantifierIndex) const {
     return quantifierMonotonicities[quantifierIndex];
   }
+  
+  /**
+   * Sort the indices in a tree topologically, from the root to the leaf
+   * nodes. The hard guarantee of this method is that the parent
+   * of a node will be earlier in the resulting buffer than the node
+   *
+   * @param tree The tree to topologically sort.
+   * @param buffer The output buffer to put the resulting indices into.
+   *               The value 255 is reserved for the "end of stream" signal.
+   *               If a sentence has 256 words in it, then tough luck; index
+   *               255 will never be visited.
+   */
+  void topologicalSort(uint8_t* buffer, const bool& ignoreQuantifiers) const;
+
+  /**
+   * Sort the vertices of this tree, ignoring quantifiers in the sorted list.
+   * @see topologicalSort(uint8_t*, true)
+   */
+  inline void topologicalSortIgnoreQuantifiers(uint8_t* buffer) const {
+    topologicalSort(buffer, true);
+  }
+  
+  /**
+   * Sort the vertices of this tree, including quantifiers in the sorted list.
+   * @see topologicalSort(uint8_t*, false)
+   */
+  inline void topologicalSort(uint8_t* buffer) const {
+    topologicalSort(buffer, false);
+  }
 
   /**
    * The number of words in this dependency graph
@@ -941,9 +970,15 @@ inline uint64_threadsafe_t* malloc_uint64_threadsafe_t() {
  * we are intended to perform.
  */
 struct syn_search_options {
+  /** The search ticks to run for (the number of elements popped) */
   uint32_t maxTicks;
+  /** The cost above which to no longer add things to the fringe */
   float costThreshold;
+  /** If true, stop when the first result is found */
   bool stopWhenResultFound;
+  /** If true, check the fringe after the search is done */
+  bool checkFringe;
+  /** If true, do not print anything during the search (for tests, primarily) */
   bool silent;
 
   /**
@@ -953,6 +988,9 @@ struct syn_search_options {
    *                 to explore before timing out.
    * @param costThreshold The threshold above which nodes should not be
    *                      visited.
+   * @param checkFringe If true, check the fringe for known facts. This is
+   *                    particularly useful when using the system for
+   *                    entailment rather than truth checking.
    * @param stopWhenResultFound If true, do not continue searching past
    *                            the first result found.
    *
@@ -961,6 +999,7 @@ struct syn_search_options {
   syn_search_options( const uint32_t& maxTicks,
                       const float& costThreshold,
                       const bool& stopWhenResultFound,
+                      const bool& checkFringe,
                       const bool& silent) {
     this->maxTicks = maxTicks;
     this->costThreshold = costThreshold;
@@ -996,14 +1035,14 @@ struct syn_search_response {
   inline uint64_t size() const { return paths.size(); }
 };
 
-/**
- * Run a partial search from a known fact, primarily to resolve
- * deletions (which would be insertions in the reverse search).
- */
-void ForwardPartialSearch(
-    const BidirectionalGraph* mutationGraph,
-    const Tree* input,
-    std::function<void(const SearchNode&)> callback);
+///**
+// * Run a partial search from a known fact, primarily to resolve
+// * deletions (which would be insertions in the reverse search).
+// */
+//void ForwardPartialSearch(
+//    const BidirectionalGraph* mutationGraph,
+//    const Tree* input,
+//    std::function<void(const SearchNode&)> callback);
 
 /**
  * The entry method for starting a new search.

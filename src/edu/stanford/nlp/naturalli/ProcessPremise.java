@@ -2,7 +2,9 @@ package edu.stanford.nlp.naturalli;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.SentenceAnnotator;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 
@@ -27,7 +29,6 @@ public class ProcessPremise {
     // Collect the entailments
     List<SentenceFragment> entailments = new ArrayList<>();
     for (CoreMap sentence : ann.get(CoreAnnotations.SentencesAnnotation.class)) {
-      Util.cleanTree(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class));
 //      entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
       entailments.addAll(sentence.get(NaturalLogicAnnotations.EntailedSentencesAnnotation.class).stream().collect(Collectors.toList()));
     }
@@ -42,9 +43,32 @@ public class ProcessPremise {
     return entailments;
   }
 
+  @SuppressWarnings({"unchecked", "UnusedDeclaration"})
+  public static class QRewriteAnnotator extends SentenceAnnotator {
+    public QRewriteAnnotator(String name, Properties props) {}
+    @Override
+    protected void doOneSentence(Annotation annotation, CoreMap sentence) {
+      SemanticGraph tree = sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class);
+      Util.cleanTree(tree);
+      sentence.set(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class,
+          QRewrite.FOR_PREMISE.rewriteDependencies(tree));
+    }
+    @Override
+    protected int nThreads() { return 1; }
+    @Override
+    protected long maxTime() { return -1; }
+    @Override
+    protected void doOneFailedSentence(Annotation annotation, CoreMap sentence) { }
+    @Override
+    public Set<Requirement> requirementsSatisfied() { return Collections.EMPTY_SET; }
+    @Override
+    public Set<Requirement> requires() { return Collections.EMPTY_SET; }
+  }
+
   protected static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,natlog,openie");
+      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,natlog,qrewrite,openie");
+      setProperty("customAnnotatorClass.qrewrite","edu.stanford.nlp.naturalli.ProcessPremise$QRewriteAnnotator");
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
@@ -64,8 +88,11 @@ public class ProcessPremise {
     while ((line = reader.readLine()) != null) {
       if (!line.trim().equals("")) {
         System.err.println("Annotating '" + line + "'");
+        line = QRewrite.FOR_PREMISE.rewriteGloss(line);
         for (SentenceFragment fragment : forwardEntailments(line.trim(), pipeline)) {
-          System.out.println(ProcessQuery.conllDump(fragment.parseTree));
+          SemanticGraph tree = fragment.parseTree;
+          tree = QRewrite.FOR_PREMISE.rewriteDependencies(tree);
+          System.out.println(ProcessQuery.conllDump(tree));
           System.out.flush();
         }
       }

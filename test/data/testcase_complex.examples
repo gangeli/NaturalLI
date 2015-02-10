@@ -1,0 +1,16 @@
+# Negation on both the subject and object
+# (super easy versions)
+Neither cat has a tail
+TRUE: Neither green cat has a tail
+
+Neither cat has a tail
+TRUE: Neither cat has a blue tail
+
+# (easy version)
+Neither cat has a tail
+TRUE: Neither green cat has a blue tail
+
+# (hard version)
+Neither cat has a tail
+FALSE: Some green cat has a blue tail
+
