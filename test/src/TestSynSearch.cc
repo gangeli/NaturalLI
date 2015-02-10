@@ -1050,7 +1050,7 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
 #define SEARCH_TIMEOUT_TEST 1000
 class SynSearchTest : public ::testing::Test {
  public:
-  SynSearchTest() : opts(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT) { }
+  SynSearchTest() : opts(SEARCH_TIMEOUT_TEST, 999.0f, false, false, SILENT) { }
  protected:
   virtual void SetUp() {
     lemursHaveTails = new Tree(LEMUR_STR + string("\t2\tnsubj\n") +
@@ -1065,7 +1065,7 @@ class SynSearchTest : public ::testing::Test {
     graph = ReadMockGraph();
     ASSERT_FALSE(graph == NULL);
     cyclicGraph = ReadMockGraph(true);
-    opts = syn_search_options(SEARCH_TIMEOUT_TEST, 999.0f, false, SILENT);
+    opts = syn_search_options(SEARCH_TIMEOUT_TEST, 999.0f, false, false, SILENT);
     factdb.insert(catsHaveTails->hash());
     costs = softNaturalLogicCosts();
     strictCosts = strictNaturalLogicCosts();
