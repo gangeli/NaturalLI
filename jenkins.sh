@@ -10,14 +10,14 @@ echo "Scala at: $SCALA_HOME"
 
 function configure() {
   local SFM=${SEARCH_FULL_MEMORY:-"1"}
-  SEARCH_FULL_MEMORY=$SFM ./configure \
+  ./configure \
     --with-scala=$SCALA_HOME \
     --with-java=/usr/lib/jvm/java-8-oracle \
     --with-corenlp=$HOME/stanford-corenlp.jar \
     --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
     --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
     --with-naturalli-models=$HOME/naturalli-models.jar \
-    --enable-debug $@
+    --enable-debug SEARCH_FULL_MEMORY=$SFM $@
   make clean
 }
 
