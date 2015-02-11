@@ -77,7 +77,7 @@ etc/clauseSearcherModel.ser.gz:
 	wget -O etc/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
-	cd etc && ./mkGraph.sh
+	bash -c 'cd etc && ./mkGraph.sh'
 	source rc && validateGraph
 	touch etc/.mk_graph
 
