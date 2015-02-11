@@ -12,6 +12,7 @@
 #include "FactDB.h"
 
 using namespace std;
+using namespace btree;
 
 /**
  * Compute the confidence of a search response.
@@ -72,7 +73,7 @@ string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
                     const BidirectionalGraph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
   // Create KB
-  btree::btree_set<uint64_t> auxKB;
+  btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
     vector<Tree*> treesForFact = proc.annotatePremise(iter->c_str());
