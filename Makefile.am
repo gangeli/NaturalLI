@@ -70,6 +70,7 @@ else
 	wget -O etc/subj_pp_obj.tab.gz 'https://www.dropbox.com/s/xkw9moy0g91x5zv/subj_pp_obj.tab.gz?dl=1'
 	wget -O etc/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
 	wget -O etc/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
+	touch etc/.pp_affinity
 endif
 
 etc/clauseSearcherModel.ser.gz:

@@ -1004,6 +1004,7 @@ struct syn_search_options {
     this->maxTicks = maxTicks;
     this->costThreshold = costThreshold;
     this->stopWhenResultFound = stopWhenResultFound;
+    this->checkFringe = checkFringe;
     this->silent = silent;
   }
 };

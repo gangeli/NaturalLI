@@ -9,7 +9,8 @@ export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
 echo "Scala at: $SCALA_HOME"
 
 function configure() {
-  ./configure \
+  local SFM=${SEARCH_FULL_MEMORY:-"1"}
+  SEARCH_FULL_MEMORY=$SFM ./configure \
     --with-scala=$SCALA_HOME \
     --with-java=/usr/lib/jvm/java-8-oracle \
     --with-corenlp=$HOME/stanford-corenlp.jar \
