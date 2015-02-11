@@ -9,6 +9,7 @@
 #include "SynSearch.h"
 #include "Utils.h"
 #include "JavaBridge.h"
+#include "FactDB.h"
 
 using namespace std;
 

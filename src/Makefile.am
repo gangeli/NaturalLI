@@ -1,5 +1,5 @@
 SUBDIRS = fnv knheap
-bin_PROGRAMS=hash_tree naturalli
+bin_PROGRAMS=hash_tree write_kb naturalli
 EXTRA_DIST =  edu
 
 clean-local:
@@ -66,11 +66,11 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 
 BUILT_SOURCES = Models.h Models.cc
 
-naturalli_SOURCES = GZip.cc Models.cc \
+naturalli_SOURCES = GZip.cc Models.cc FactDB.cc \
 										NaturalLI.cc Utils.cc Graph.cc SynSearch.cc \
                  		SynSearchSingleThreaded.cc JavaBridge.cc \
                  		Graph.h Utils.h Types.h  SynSearch.h \
-										JavaBridge.h GZip.h Models.h \
+										JavaBridge.h GZip.h Models.h FactDB.h \
                  		btree.h btree_container.h btree_map.h btree_set.h
 
 
@@ -95,6 +95,11 @@ hash_tree_SOURCES = HashTree.cc Utils.cc Graph.cc SynSearch.cc \
 
 hash_tree_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 hash_tree_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+
+write_kb_SOURCES = FactDB.h FactDB.cc WriteKB.cc \
+                   btree.h btree_container.h btree_map.h btree_set.h
+write_kb_CXXFLAGS=-std=c++0x
+write_kb_LDADD=
 
 naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 	@echo "Ensuring models..."
