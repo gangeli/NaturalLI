@@ -77,7 +77,7 @@ public class HashCorpus {
   }
 
   public static void main(String[] args) throws IOException {
-    Execution.fillOptions(HashCorpus.class, args);
+    Execution.fillOptions(new Class[]{HashCorpus.class, StaticResources.class}, args);
 
     StanfordCoreNLP pipeline = ProcessPremise.constructPipeline("depparse");
 

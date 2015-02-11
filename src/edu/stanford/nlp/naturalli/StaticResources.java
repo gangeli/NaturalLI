@@ -5,6 +5,7 @@ import edu.smu.tspell.wordnet.SynsetType;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.semgraph.semgrex.SemgrexPattern;
+import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Interner;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -22,10 +23,19 @@ import java.util.function.Function;
  */
 public class StaticResources {
 
+  @Execution.Option(name="vocab_file", gloss="The location of the vocabulary file")
+  private static String vocabFile = System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE");
+
+  @Execution.Option(name="sense_file", gloss="The location of the sense mapping file")
+  private static String senseFile = System.getenv("VOCAB_FILE") == null ? "etc/sense.tab.gz" : System.getenv("SENSE_FILE");
+
+  @Execution.Option(name="wordnet_file", gloss="The location of the WordNet synset mapping file")
+  private static String wordnetFile = System.getenv("WORDNET_FILE") == null ? "etc/wordnet.tab.gz" : System.getenv("WORDNET_FILE");
+
   private static Map<String, Integer> PHRASE_INDEXER = new HashMap<String, Integer>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading phrase indexer...");
-    for (String line : IOUtils.readLines(System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE"))) {
+    for (String line : IOUtils.readLines(vocabFile)) {
       String[] fields = line.split("\t");
       put(fields[1], Integer.parseInt(fields[0]));
     }
@@ -35,7 +45,7 @@ public class StaticResources {
   private static Map<String, Integer> LOWERCASE_PHRASE_INDEXER = new HashMap<String, Integer>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading lowercase phrase indexer...");
-    for (String line : IOUtils.readLines(System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE"))) {
+    for (String line : IOUtils.readLines(vocabFile)) {
       String[] fields = line.split("\t");
       put(fields[1].toLowerCase(), Integer.parseInt(fields[0]));
     }
@@ -73,7 +83,7 @@ public class StaticResources {
   public static Map<Integer, Map<String, Integer>> SENSE_INDEXER = Collections.unmodifiableMap(new HashMap<Integer, Map<String, Integer>>(){{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading sense indexer...");
-    for (String line : IOUtils.readLines(System.getenv("SENSE_FILE") == null ? "etc/sense.tab.gz" : System.getenv("SENSE_FILE"))) {
+    for (String line : IOUtils.readLines(senseFile)) {
       String[] fields = line.split("\t");
       int word = Integer.parseInt(fields[0]);
       Map<String, Integer> definitions = this.get(word);
@@ -91,7 +101,7 @@ public class StaticResources {
   static {
     long startTime = System.currentTimeMillis();
     System.err.print("Reading synsets...");
-    String file = System.getenv("WORDNET_FILE") == null ? "etc/wordnet.ser.gz" : System.getenv("WORDNET_FILE");
+    String file = wordnetFile;
     try {
       SYNSETS = IOUtils.readObjectFromURLOrClasspathOrFileSystem(file);
     } catch (IOException e) {

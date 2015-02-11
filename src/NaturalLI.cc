@@ -56,7 +56,8 @@ inline double probability(const double& confidence, const bool& truth) {
  * Execute a query, returning a JSON formatted response.
  *
  * @param proc The preprocessor to use to annotate the query string(s).
- * @param knownFacts An optional knowledge base to use in place of the default knowledge base.
+ * @param kb The [optionally empty] large knowledge base to evaluate against.
+ * @param knownFacts An optional knowledge base to use to augment the facts in kb.
  * @param query The query to execute against the knowledge base.
  * @param graph The graph of valid edge instances which can be taken.
  * @param costs The search costs to use for this query
@@ -66,11 +67,11 @@ inline double probability(const double& confidence, const bool& truth) {
  *
  * @return A JSON formatted response with the result of the search.
  */
-string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const string& query,
+string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
+                    const vector<string>& knownFacts, const string& query,
                     const BidirectionalGraph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
   // Create KB
-  btree::btree_set<uint64_t> kb;
   btree::btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
@@ -154,10 +155,12 @@ string executeQuery(JavaBridge& proc, const vector<string>& knownFacts, const st
  *
  * @param graph The graph containing the edge instances we can traverse.
  * @param proc The preprocessor to use during the search.
+ * @param kb The main [i.e., large] knowledge base to use, possibly empty.
  *
  * @return The number of failed examples, if any were annotated. 0 by default.
  */
-uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
+uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc,
+              const btree_set<uint64_t> kb) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
@@ -205,7 +208,7 @@ uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc) {
       }
       // Run query
       double truth;
-      string response = executeQuery(proc, lines, query, graph, costs, opts, &truth);
+      string response = executeQuery(proc, kb, lines, query, graph, costs, opts, &truth);
       // Print
       fprintf(stderr, "\n");
       fflush(stderr);
@@ -264,10 +267,15 @@ int32_t main( int32_t argc, char *argv[] ) {
 //  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the java process to die
   sigaction(SIGPIPE, &sigIntHandler, NULL);
 
+  btree_set<uint64_t> kb;
+  if (KB_FILE[0] != '\0') {
+    kb = readKB(string(KB_FILE));
+  }
+
   // Start REPL
   JavaBridge proc;
   BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
-  uint32_t retVal =  repl(graph, proc);
+  uint32_t retVal =  repl(graph, proc, kb);
   delete graph;
   return retVal;
 }
