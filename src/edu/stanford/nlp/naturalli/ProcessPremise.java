@@ -66,8 +66,12 @@ public class ProcessPremise {
   }
 
   protected static StanfordCoreNLP constructPipeline() {
+    return constructPipeline("parse");
+  }
+
+  protected static StanfordCoreNLP constructPipeline(String parser) {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,natlog,qrewrite,openie");
+      setProperty("annotators", "tokenize,ssplit,pos,lemma,"+parser+",natlog,qrewrite,openie");
       setProperty("customAnnotatorClass.qrewrite","edu.stanford.nlp.naturalli.ProcessPremise$QRewriteAnnotator");
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("tokenize.class", "PTBTokenizer");
