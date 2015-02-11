@@ -270,6 +270,8 @@ inline uint64_t searchLoop(
       if (nextIndex != 255) {
         const SearchNode indexMovedChild(node, tree, nextIndex, myIndex);
 //        fprintf(stderr, "  push index move (reg) -> %u: %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
+        assert(nextIndex < tree.length);
+        assert(nextIndex >= 0);
         assert(indexMovedChild.word() < graph->vocabSize());
         // (push child)
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
@@ -280,6 +282,8 @@ inline uint64_t searchLoop(
       // (create child)
       SearchNode indexMovedChild(node, tree, nextQuantifierTokenIndex,
                                        myIndex);
+      assert(nextQuantifierTokenIndex < tree.length);
+      assert(nextQuantifierTokenIndex >= 0);
       assert(indexMovedChild.word() < graph->vocabSize());
       bool shouldEnqueue = true;
       if (nextQuantifierTokenIndex == tree.root()) {

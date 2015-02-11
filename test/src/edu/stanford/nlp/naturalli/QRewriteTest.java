@@ -90,6 +90,12 @@ public class QRewriteTest {
   }
 
   @Test
+  public void testAtLeastAFew() {
+    assertEquals("A few cats have tails", QRewrite.rewriteAtLeastAFew("At least a few cats have tails"));
+    assertEquals("A few cats have tails", QRewrite.rewriteAtLeastAFew("At least a few cats have tails"));
+  }
+
+  @Test
   public void testRootedQuantifier() {
     SemanticGraph input = mkTree(
         "1\tthere\t2\texpl\n" +
@@ -135,11 +141,28 @@ public class QRewriteTest {
         "5\ttails\t4\tdobj\n"
     );
     SemanticGraph expected = mkTree(
-        "1\tTwo\t3\tquantmod\tCD\n" +
+        "1\tTwo\t3\tamod\tCD\n" +
         "2\tthe\t3\tdet\n" +
         "3\tcats\t4\tnsubj\n" +
         "4\thave\t0\troot\n" +
         "5\ttails\t4\tdobj\n"
+    );
+    assertEquals(expected, QRewrite.rewriteMods(input));
+  }
+
+  @Test
+  public void testOne() {
+    SemanticGraph input = mkTree(
+        "1\tOne\t2\tnum\tCD\n" +
+        "2\tcat\t3\tnsubj\n" +
+        "3\thas\t0\troot\n" +
+        "4\ttails\t4\tdobj\n"
+    );
+    SemanticGraph expected = mkTree(
+        "1\tOne\t2\tdet\tCD\n" +
+        "2\tcat\t3\tnsubj\n" +
+        "3\thas\t0\troot\n" +
+        "4\ttails\t4\tdobj\n"
     );
     assertEquals(expected, QRewrite.rewriteMods(input));
   }
@@ -159,6 +182,48 @@ public class QRewriteTest {
         "5\ttail\t2\tdobj\n"
     );
     SemanticGraph actual = QRewrite.rewriteDropDeterminers(input);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testDropTerminalHas() {
+    SemanticGraph input = mkTree(
+        "1\tI\t2\tnsubj\n" +
+        "2\thave\t0\troot\n" +
+        "3\tmore\t2\tadvmod\n" +
+        "4\tthan\t6\tmark\tIN\n" +
+        "5\the\t6\tnsubj\n" +
+        "6\thas\t2\tadvcl\n"
+    );
+    SemanticGraph expected = mkTree(
+        "1\tI\t2\tnsubj\n" +
+        "2\thave\t0\troot\n" +
+        "3\tmore\t2\tadvmod\n" +
+        "5\the\t2\tprep_than\n" +
+        "6\thas\t4\tmark\n"
+    );
+    SemanticGraph actual = QRewrite.rewriteTerminalHas(input);
+    assertEquals(expected, actual);
+  }
+
+  @Test
+  public void testDropTerminalIs() {
+    SemanticGraph input = mkTree(
+        "1\tI\t2\tnsubj\n" +
+        "2\thave\t0\troot\n" +
+        "3\tmore\t2\tadvmod\n" +
+        "4\tthan\t6\tmark\tIN\n" +
+        "5\the\t6\tnsubj\n" +
+        "6\tis\t2\tdep\n"
+    );
+    SemanticGraph expected = mkTree(
+        "1\tI\t2\tnsubj\n" +
+        "2\thave\t0\troot\n" +
+        "3\tmore\t2\tadvmod\n" +
+        "5\the\t2\tprep_than\n" +
+        "6\tis\t4\tmark\n"
+    );
+    SemanticGraph actual = QRewrite.rewriteTerminalHas(input);
     assertEquals(expected, actual);
   }
 }

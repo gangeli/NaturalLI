@@ -25,8 +25,8 @@ import java.util.regex.Pattern;
  */
 public class QRewrite {
 
-  public static final QRewrite FOR_PREMISE = new QRewrite("therebe,mods,rootedq");
-  public static final QRewrite FOR_QUERY   = new QRewrite("therebe,mods,rootedq");
+  public static final QRewrite FOR_PREMISE = new QRewrite("therebe,atleastafew,mods,rootedq,has");
+  public static final QRewrite FOR_QUERY   = new QRewrite("therebe,atleastafew,mods,rootedq,has");
 
   private Set<String> filters = new HashSet<>();
 
@@ -42,6 +42,9 @@ public class QRewrite {
   public String rewriteGloss(String input) {
     if (filters.contains("therebe")) {
       input = rewriteThereBe(input);
+    }
+    if (filters.contains("atleastafew")) {
+      input = rewriteAtLeastAFew(input);
     }
     return input;
   }
@@ -63,6 +66,9 @@ public class QRewrite {
     }
     if (filters.contains("dropdet")) {
       tree = rewriteDropDeterminers(tree);
+    }
+    if (filters.contains("has")) {
+      tree = rewriteTerminalHas(tree);
     }
     return tree;
   }
@@ -87,6 +93,18 @@ public class QRewrite {
       }
     } else {
       return input;
+    }
+  }
+
+  private static Pattern atLeastAFew = Pattern.compile("^[Aa]t least a few");
+
+  public static String rewriteAtLeastAFew(String input) {
+    Matcher m = atLeastAFew.matcher(input);
+    String replaced = m.replaceAll("a few");
+    if (replaced.equals(input)) {
+      return input;
+    } else {
+      return Character.toUpperCase(replaced.charAt(0)) + replaced.substring(1);
     }
   }
 
@@ -132,6 +150,21 @@ public class QRewrite {
       tree.addEdge(obj, num, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "amod"), Double.NEGATIVE_INFINITY, false);
     }
 
+    // One is a determiner
+    Iterator<SemanticGraphEdge> iter = tree.edgeIterable().iterator();
+    List<SemanticGraphEdge> oneEdgesToReplace = new ArrayList<>();
+    while (iter.hasNext()) {
+      SemanticGraphEdge edge = iter.next();
+      if (edge.getRelation().toString().equals("num") &&
+          edge.getDependent().word().equalsIgnoreCase("one") || edge.getDependent().word().equals("1")) {
+        oneEdgesToReplace.add(edge);
+        iter.remove();
+      }
+    }
+    for (SemanticGraphEdge edge : oneEdgesToReplace) {
+      tree.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "det"), edge.getWeight(), edge.isExtra());
+    }
+
     return tree;
   }
 
@@ -171,6 +204,46 @@ public class QRewrite {
         }
       }
     }
+    return tree;
+  }
+
+  private static final SemgrexPattern terminalHasPattern = SemgrexPattern.compile("{}=root >/advcl|dep/=clause ( {word:/has|have|had|is|was/}=has >mark {pos:IN}=prep >nsubj {}=pobj )");
+
+  public static SemanticGraph rewriteTerminalHas(SemanticGraph tree) {
+    // Remove terminal has (e.g., "I have more than he has")
+    SemgrexMatcher matcher = terminalHasPattern.matcher(tree);
+    while (matcher.find()) {
+      // Get nodes
+      IndexedWord root = matcher.getNode("root");
+      IndexedWord has = matcher.getNode("has");
+      IndexedWord prep = matcher.getNode("prep");
+      IndexedWord pobj = matcher.getNode("pobj");
+      // Butcher tree
+      List<SemanticGraphEdge> edgesOutOfHas = new ArrayList<>();
+      if (!tree.removeEdge(new SemanticGraphEdge(root, has, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, matcher.getRelnString("clause")), Double.NEGATIVE_INFINITY, false))) {
+        throw new IllegalStateException("Could not remove edge!");
+      }
+      if (!tree.removeEdge(new SemanticGraphEdge(has, prep, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "mark"), Double.NEGATIVE_INFINITY, false))) {
+        throw new IllegalStateException("Could not remove edge!");
+      }
+      if (!tree.removeEdge(new SemanticGraphEdge(has, pobj, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "nsubj"), Double.NEGATIVE_INFINITY, false))) {
+        throw new IllegalStateException("Could not remove edge!");
+      }
+      tree.removeVertex(prep);
+      for (SemanticGraphEdge edge : tree.outgoingEdgeIterable(has)) {
+        edgesOutOfHas.add(edge);
+        if (!tree.removeEdge(edge)) {
+          throw new IllegalStateException("Could not remove edge!");
+        }
+      }
+      // Re-assemble tree
+      tree.addEdge(root, pobj, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "prep_" + prep.word().toLowerCase().replace(" ", "_")), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(pobj, has, GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "mark"), Double.NEGATIVE_INFINITY, false);
+      for (SemanticGraphEdge edge : edgesOutOfHas) {
+        tree.addEdge(root, edge.getDependent(), edge.getRelation(), Double.NEGATIVE_INFINITY, false);
+      }
+    }
+
     return tree;
   }
 

@@ -13,14 +13,14 @@ conj	reverse_entailment	match dep_cc
 cop	independence	
 csubj	independence	don't drop subjects.
 csubjpass	independence	as above
-dep	forward_entailment	
+dep	reverse_entailment	
 det	equivalent	todo(gabor) better treatment of generics?
 discourse	equivalent	
 dobj	reverse_entailment	but, "he studied NLP at Stanford" -> "he studied NLP"
 expl	equivalent	though we shouldn't see this...
 goeswith	equivalent	also shouldn't see this
 iobj	reverse_entailment	she gave me a raise -> she gave a raise
-mark	reverse_entailment	he says that you like to swim -> he says you like to swim
+mark	equivalent	he says that you like to swim <-> he says you like to swim
 mwe	independence	shouldn't see this
 neg	negation	
 nn	independence	
