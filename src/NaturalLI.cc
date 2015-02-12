@@ -439,8 +439,7 @@ bool startServer(const uint32_t& port,
   address.sin_port = htons(port);
   address.sin_addr.s_addr = htonl(INADDR_ANY);
   // (actually perform the bind)
-  uint32_t retval = ::bind(sock, (struct sockaddr*) &address, sizeof(address));
-  if (retval != 0) {
+  if (::bind(sock, (struct sockaddr*) &address, sizeof(address)) != 0) {
   	fprintf(stderr, "Could not bind socket\n");
     return 10;
   } else {
