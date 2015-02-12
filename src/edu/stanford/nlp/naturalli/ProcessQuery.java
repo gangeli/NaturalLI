@@ -315,6 +315,9 @@ public class ProcessQuery {
    * @return A string, which can be passed into NaturalLI
    */
   public static String conllDump(SemanticGraph tree, Pointer<String> readableDump, boolean doSense, boolean doMeronym) {
+    if (tree.size() == 0) {
+      return "\n";
+    }
     // Find location triggers
     @SuppressWarnings("unchecked")
     Set<IndexedWord> meronymTargets = doMeronym ? meronymTargets(tree) : (Set<IndexedWord>) Collections.EMPTY_SET;
