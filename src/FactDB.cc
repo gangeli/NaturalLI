@@ -38,6 +38,7 @@ const btree_set<uint64_t> readKB(string path) {
       (numRead = fread(buffer, sizeof(uint64_t), CHUNK_SIZE, file)) 
         == CHUNK_SIZE ) {
     appendToKB(buffer, numRead, &kb);
+    fprintf("%lu\n", kb.size());
     if (kb.size() > nextPrint) {
       nextPrint += 1000000;
       fprintf(stderr, ".");
