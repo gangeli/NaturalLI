@@ -230,7 +230,7 @@ public class QRewrite {
         throw new IllegalStateException("Could not remove edge!");
       }
       tree.removeVertex(prep);
-      for (SemanticGraphEdge edge : tree.outgoingEdgeIterable(has)) {
+      for (SemanticGraphEdge edge : tree.outgoingEdgeList(has)) {
         edgesOutOfHas.add(edge);
         if (!tree.removeEdge(edge)) {
           throw new IllegalStateException("Could not remove edge!");
