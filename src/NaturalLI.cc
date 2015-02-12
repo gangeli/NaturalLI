@@ -1,9 +1,19 @@
+#include <arpa/inet.h>
+#include <cmath>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cmath>
-#include <sstream>
+#include <exception>
+#include <mutex>
+#include <netinet/in.h>
 #include <signal.h>
+#include <sstream>
+#include <sys/errno.h>
+#include <sys/resource.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <thread>
+#include <unistd.h>
 
 #include "config.h"
 #include "SynSearch.h"
@@ -11,8 +21,37 @@
 #include "JavaBridge.h"
 #include "FactDB.h"
 
+#ifndef SERVER_PORT
+#define SERVER_PORT       1337
+#endif
+
+#define SERVER_TCP_BUFFER 25
+#define SERVER_READ_SIZE  1024
+#define MEM_ENV_VAR       "MAXMEM_GB"
+
+#ifndef ERESTART
+#define ERESTART EINTR
+#endif
+extern int errno;
+
 using namespace std;
 using namespace btree;
+
+/**
+ * Set a memory limit, if defined
+ */
+void setmemlimit() {
+  struct rlimit memlimit;
+  long bytes;
+  if(getenv(MEM_ENV_VAR)!=NULL) {
+    bytes = atol(getenv(MEM_ENV_VAR)) * (1024 * 1024 * 1024);
+    memlimit.rlim_cur = bytes;
+    memlimit.rlim_max = bytes;
+    setrlimit(RLIMIT_AS, &memlimit);
+  }
+}
+
+
 
 /**
  * Compute the confidence of a search response.
@@ -68,15 +107,15 @@ inline double probability(const double& confidence, const bool& truth) {
  *
  * @return A JSON formatted response with the result of the search.
  */
-string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
+string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>& kb,
                     const vector<string>& knownFacts, const string& query,
-                    const BidirectionalGraph* graph, const SynSearchCosts* costs,
+                    const Graph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
   // Create KB
   btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
-    vector<Tree*> treesForFact = proc.annotatePremise(iter->c_str());
+    vector<Tree*> treesForFact = proc->annotatePremise(iter->c_str());
     for (auto treeIter = treesForFact.begin(); treeIter != treesForFact.end(); ++treeIter) {
       Tree* premise = *treeIter;
       const uint64_t hash = SearchNode(*premise).factHash();
@@ -92,7 +131,7 @@ string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
           knownFacts.size(), factsInserted);
 
   // Create Query
-  const Tree* input = proc.annotateQuery(query.c_str());
+  const Tree* input = proc->annotateQuery(query.c_str());
   if (input == NULL) {
     *truth = 0.0;
     return "{\"success\": false, \"reason\": \"hypothesis (query) is too long\"}";
@@ -100,9 +139,9 @@ string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
 
   // Run Search
   const syn_search_response resultIfTrue
-    = SynSearch(graph->impl, kb, auxKB, input, costs, true, options);
+    = SynSearch(graph, kb, auxKB, input, costs, true, options);
   const syn_search_response resultIfFalse
-    = SynSearch(graph->impl, kb, auxKB, input, costs, false, options);
+    = SynSearch(graph, kb, auxKB, input, costs, false, options);
 
   // Grok result
   // (confidence)
@@ -160,8 +199,8 @@ string executeQuery(JavaBridge& proc, const btree_set<uint64_t> kb,
  *
  * @return The number of failed examples, if any were annotated. 0 by default.
  */
-uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc,
-              const btree_set<uint64_t> kb) {
+uint32_t repl(const Graph* graph, JavaBridge* proc,
+              const btree_set<uint64_t>& kb) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
@@ -248,9 +287,220 @@ uint32_t repl(const BidirectionalGraph* graph, JavaBridge& proc,
  * The function to call for caught signals. In practice, this is a NOOP.
  */
 void signalHandler(int32_t s){
-  printf("(caught signal %d; use 'kill' or EOF to end the program)\n",s);
-  printf("What do we say to the God of death?\n");
-  printf("  \"Not today...\"\n");
+  fprintf(stderr, "(caught signal %d; use 'kill' or EOF to end the program)\n",s);
+  fprintf(stderr, "What do we say to the God of death?\n");
+  fprintf(stderr, "  \"Not today...\"\n");
+}
+  
+
+/**
+ * Close a given socket connection, either due to the request being completed, or
+ * to clean up after a failure.
+ */
+void closeConnection(const uint32_t socket, sockaddr_in* client) {
+  // Close the connection
+  fprintf(stderr, "[%d] CONNECTION CLOSING: %s port %d\n", socket,
+		     inet_ntoa(client->sin_addr),
+         ntohs(client->sin_port));
+  if (shutdown(socket, SHUT_RDWR) != 0) {
+    fprintf(stderr, "Failed to shutdown connection\n");
+    fprintf(stderr, "  (");
+    switch (errno) {
+      case EBADF:    fprintf(stderr, "The socket argument is not a valid file descriptor"); break;
+      case EINVAL:   fprintf(stderr, "The socket is not accepting connections"); break;
+      case ENOTCONN: fprintf(stderr, "The socket is not connected"); break;
+      case ENOTSOCK: fprintf(stderr, "The socket argument does not refer to a socket"); break;
+      case ENOBUFS:  fprintf(stderr, "No buffer space is available"); break;
+      default:       fprintf(stderr, "???"); break;
+    }
+    fprintf(stderr, ")\n");
+  }
+  close(socket);
+  free(client);
+  fflush(stdout);
+}
+
+/**
+ * Read a line from the socket, with a maximum length.
+ * Effectively stolen from: http://man7.org/tlpi/code/online/dist/sockets/read_line.c.html
+ *
+ * @param fd The socket to read from.
+ * @param buffer The buffer to place the line into.
+ * @param n The maximum number of characters to read.
+ */
+ssize_t readLine(uint32_t fd, char* buf, size_t n) {
+  ssize_t numRead;
+  size_t totRead;
+  char ch;
+  if (n <= 0 || buf == NULL) {
+    errno = EINVAL;
+    return -1;
+  }
+  totRead = 0;
+  for (;;) {
+    numRead = read(fd, &ch, 1);
+    if (numRead == -1) {
+      if (errno == EINTR) {
+        continue;
+      } else {
+        return -1;
+      }
+    } else if (numRead == 0) {
+      if (totRead == 0) {
+        return 0;
+      } else {
+        break;
+      }
+    } else {
+      if (ch == '\n') {
+        break;
+      }
+      if (totRead < n - 1) {
+        totRead++;
+        *buf++ = ch;
+      }
+    }
+  }
+  *buf = '\0';
+  return totRead;
+}
+
+/**
+ * Handle an incoming connection.
+ * This involves reading a query, starting a new inference, and then
+ * closing the connection.
+ */
+void handleConnection(const uint32_t& socket, sockaddr_in* client,
+                      const JavaBridge* proc,
+                      const Graph* graph, const btree_set<uint64_t>& kb) {
+
+  // Parse input
+  fprintf(stderr, "[%d] Reading query...\n", socket);
+  char* buffer = (char*) malloc(32768 * sizeof(char));
+  readLine(socket, buffer, 32768);
+  vector<string> knownFacts;
+  while ( buffer[0] != '\0' && buffer[0] != '\n' && buffer[0] != '\r' && 
+          knownFacts.size() < 256 ) {
+    fprintf(stderr, "  [%d] read line: %s: %u", socket, buffer, buffer[0]);
+    knownFacts.push_back(string(buffer));
+    readLine(socket, buffer, 32768);
+  }
+
+  // Parse options
+  const SynSearchCosts* costs = strictNaturalLogicCosts();
+  syn_search_options opts(1000000,     // maxTicks
+                          10000.0f,    // costThreshold
+                          false,       // stopWhenResultFound
+                          true,        // checkFringe
+                          false);      // silent
+
+  // Parse query
+  if (knownFacts.size() == 0) {
+    free(buffer);
+    closeConnection(socket, client);
+    return;
+  } else {
+    string query = knownFacts.back();
+    knownFacts.pop_back();
+    double truth = 0.0;
+    string json = executeQuery(proc, kb, knownFacts, query, graph, costs, opts, &truth);
+    write(socket, json.c_str(), json.length());
+    fprintf(stderr, "[%d] Wrote output; I'm done.\n", socket);
+  }
+
+//  if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
+  free(buffer);
+  closeConnection(socket, client);
+}
+
+/**
+ * Set up listening on a server port.
+ */
+bool startServer(const uint32_t& port, 
+                 const JavaBridge* proc, const Graph* graph,
+                 const btree_set<uint64_t>& kb) {
+  // Get hostname, for debugging
+	char hostname[256];
+	gethostname(hostname, 256);
+
+  // Create a socket
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock < 0) {
+		fprintf(stderr, "could not create socket\n");
+    return 1;
+	}
+	int sockoptval = 1;
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &sockoptval, sizeof(int));
+  // Bind the socket
+  // (setup the bind)
+  struct sockaddr_in address;
+  memset( (char*) &address, 0, sizeof(address) );  // zero our address
+  address.sin_family = AF_INET;
+  address.sin_port = htons(port);
+  address.sin_addr.s_addr = htonl(INADDR_ANY);
+  // (actually perform the bind)
+  if (bind(sock, (struct sockaddr*) &address, sizeof(address)) != 0) {
+  	fprintf(stderr, "Could not bind socket\n");
+    return 10;
+  } else {
+    fprintf(stderr, "Opened server socket (hostname: %s)\n", hostname);
+  }
+
+  // set the socket for listening (queue backlog of 5)
+	if (listen(sock, SERVER_TCP_BUFFER) < 0) {
+		fprintf(stderr, "Could not open port for listening\n");
+    return 100;
+	} else {
+    fprintf(stderr, "Listening on port %d...\n", port);
+  }
+  fflush(stdout);
+
+  // loop, accepting connection requests
+	for (;;) {
+    // Accept an incoming connection
+    // (variables)
+    int requestSocket;
+	  struct sockaddr_in* clientAddress = (sockaddr_in*) malloc(sizeof(sockaddr_in));
+    socklen_t requestLength = sizeof(clientAddress);
+    // (connect)
+		while ((requestSocket = accept(sock, (struct sockaddr*) clientAddress, &requestLength)) < 0) {
+			// we may break out of accept if the system call was interrupted. In this
+      // case, loop back and try again
+      if ((errno != ECHILD) && (errno != ERESTART) && (errno != EINTR)) {
+        // If we got here, there was a serious problem with the connection
+        fprintf(stderr, "Failed to accept connection request\n");
+        fprintf(stderr, "  (");
+        switch (errno) {
+          case EAGAIN:        fprintf(stderr,"O_NONBLOCK is set for the socket file descriptor and no connections are present to be accepted"); break;
+          case EBADF:         fprintf(stderr,"The socket argument is not a valid file descriptor"); break;
+          case ECONNABORTED:  fprintf(stderr,"A connection has been aborted"); break;
+          case EFAULT:        fprintf(stderr,"The address or address_len parameter can not be accessed or written"); break;
+          case EINTR:         fprintf(stderr,"The accept() function was interrupted by a signal that was caught before a valid connection arrived"); break;
+          case EINVAL:        fprintf(stderr,"The socket is not accepting connections"); break;
+          case EMFILE:        fprintf(stderr,"{OPEN_MAX} file descriptors are currently open in the calling process"); break;
+          case ENFILE:        fprintf(stderr,"The maximum number of file descriptors in the system are already open"); break;
+          case ENOTSOCK:      fprintf(stderr,"The socket argument does not refer to a socket"); break;
+          case EOPNOTSUPP:    fprintf(stderr,"The socket type of the specified socket does not support accepting connections"); break;
+          case ENOBUFS:       fprintf(stderr,"No buffer space is available"); break;
+          case ENOMEM:        fprintf(stderr,"There was insufficient memory available to complete the operation"); break;
+          case ENOSR:         fprintf(stderr,"There was insufficient STREAMS resources available to complete the operation"); break;
+          case EPROTO:        fprintf(stderr,"A protocol error has occurred; for example, the STREAMS protocol stack has not been initialised"); break;
+          default:            fprintf(stderr,"???"); break;
+        }
+        fprintf(stderr, ")\n");
+        return false;
+      } 
+    }
+		// Connection established
+    fprintf(stderr, "[%d] CONNECTION ESTABLISHED: %s port %d\n", requestSocket,
+			     inet_ntoa(clientAddress->sin_addr),
+           ntohs(clientAddress->sin_port));
+
+    std::thread t(handleConnection, requestSocket, clientAddress, proc, graph, kb);
+    t.detach();
+	}
+
+  return true;
 }
 
 
@@ -259,6 +509,8 @@ void signalHandler(int32_t s){
  */
 int32_t main( int32_t argc, char *argv[] ) {
   // Handle signals
+  // (set memory limit)
+  setmemlimit();
   // (set up handler)
   struct sigaction sigIntHandler;
   sigIntHandler.sa_handler = signalHandler;
@@ -268,15 +520,28 @@ int32_t main( int32_t argc, char *argv[] ) {
 //  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the java process to die
   sigaction(SIGPIPE, &sigIntHandler, NULL);
 
+  // Read the knowledge base
   btree_set<uint64_t> kb;
   if (KB_FILE[0] != '\0') {
+    fprintf(stderr, "Reading the knowledge base...");
     kb = readKB(string(KB_FILE));
+    fprintf(stderr, "done.\n");
+  } else {
+    fprintf(stderr, "No knowledge base given (configure with KB_FILE=/path/to/kb)\n");
   }
 
+  // Create bridge
+  JavaBridge* proc = new JavaBridge();
+  // Load graph
+  Graph* graph = ReadGraph();
+    
+  // Start server
+  std::thread t(startServer, SERVER_PORT, proc, graph, kb);
+  t.detach();
+  
   // Start REPL
-  JavaBridge proc;
-  BidirectionalGraph* graph = new BidirectionalGraph(ReadGraph());
   uint32_t retVal =  repl(graph, proc, kb);
   delete graph;
+  delete proc;
   return retVal;
 }

@@ -30,19 +30,19 @@ class JavaBridge {
    * or no results if there was an error (e.g., the sentence is too
    * long.
    */
-  const std::vector<Tree*> annotate(const char* sentence, char mode);
+  const std::vector<Tree*> annotate(const char* sentence, char mode) const;
   
   /**
    * Annotate the sentence as a premise (i.e., have multiple outputs).
    */
-  const std::vector<Tree*> annotatePremise(const char* sentence) {
+  const std::vector<Tree*> annotatePremise(const char* sentence) const {
     return annotate(sentence, 'P');
   }
   
   /**
    * Annotate the sentence as a query (i.e., have one output)
    */
-  const Tree* annotateQuery(const char* sentence) {
+  const Tree* annotateQuery(const char* sentence) const {
     std::vector<Tree*> outputs = annotate(sentence, 'Q');
     if (outputs.empty()) {
       return NULL;

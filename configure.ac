@@ -183,6 +183,8 @@ AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH,      ${MAX_FACT_LENGTH:=255}, [The maximum l
 AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH,     39, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
 AC_DEFINE_UNQUOTED(MAX_QUANTIFIER_COUNT, ${MAX_QUANTIFIER_COUNT:=8},  [The maximum number of quantifiers allowed in a sentence.])
 
+AC_DEFINE_UNQUOTED(SERVER_PORT,  ${SERVER_PORT:=1337},  [The port to run the server off of])
+
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,      ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
 AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,      ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
 AC_DEFINE_UNQUOTED(GREEDY_LOAD,         ${GREEDY_LOAD:=0},  [If true, greedily load the fact database, even if no one is requesting it.])

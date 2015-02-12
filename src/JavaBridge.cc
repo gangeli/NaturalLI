@@ -83,10 +83,10 @@ JavaBridge::~JavaBridge() {
 //
 // JavaBridge::annotate
 //
-const vector<Tree*> JavaBridge::annotate(const char* sentence, char mode) {
+const vector<Tree*> JavaBridge::annotate(const char* sentence, char mode) const {
   // Write sentence
   int sentenceLength = strlen(sentence);
-  this->lock.lock();
+  const_cast<JavaBridge*>(this)->lock.lock();
   write(this->childIn, &mode, sizeof(char));  // write the directive
   if (sentence[sentenceLength - 1] != '\n') {
     char buffer[sentenceLength + 2];
@@ -124,6 +124,6 @@ const vector<Tree*> JavaBridge::annotate(const char* sentence, char mode) {
       numLines = 0;
     }
   }
-  this->lock.unlock();
+  const_cast<JavaBridge*>(this)->lock.unlock();
   return trees;
 }
