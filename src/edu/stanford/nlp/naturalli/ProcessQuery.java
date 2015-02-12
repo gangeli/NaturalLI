@@ -177,7 +177,9 @@ public class ProcessQuery {
          newIndex = k;
       }
     }
-    assert newIndex >= 0;
+    if (newIndex < 0) {
+      throw new IllegalStateException("Could not perform token mapping");
+    }
     return newIndex;
   }
 

@@ -77,6 +77,9 @@ public class HashCorpus {
     } catch (IOException | NullPointerException e) {
       System.err.println("Exception from hasher: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
       return new BigInteger("-1");
+    } catch (IllegalStateException e) {
+      System.err.println("IllegalStateException: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
+      return new BigInteger("-1");
     }
   }
 
