@@ -25,33 +25,33 @@ import java.util.function.Function;
 public class StaticResources {
 
   @Execution.Option(name="vocab_file", gloss="The location of the vocabulary file")
-  private static Lazy<String> vocabFile = Lazy.of(() -> System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE"));
+  private static String vocabFile = System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE");
 
   @Execution.Option(name="sense_file", gloss="The location of the sense mapping file")
-  private static Lazy<String> senseFile = Lazy.of( () -> System.getenv("VOCAB_FILE") == null ? "etc/sense.tab.gz" : System.getenv("SENSE_FILE") );
+  private static String senseFile = System.getenv("VOCAB_FILE") == null ? "etc/sense.tab.gz" : System.getenv("SENSE_FILE");
 
   @Execution.Option(name="wordnet_file", gloss="The location of the WordNet synset mapping file")
-  private static Lazy<String> wordnetFile = Lazy.of( () -> System.getenv("WORDNET_FILE") == null ? "etc/wordnet.tab.gz" : System.getenv("WORDNET_FILE") );
+  private static String wordnetFile = System.getenv("WORDNET_FILE") == null ? "etc/wordnet.tab.gz" : System.getenv("WORDNET_FILE");
 
-  private static Map<String, Integer> PHRASE_INDEXER = new HashMap<String, Integer>() {{
+  private static Lazy<Map<String, Integer>> PHRASE_INDEXER = Lazy.of( () ->new HashMap<String, Integer>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading phrase indexer...");
-    for (String line : IOUtils.readLines(vocabFile.get())) {
+    for (String line : IOUtils.readLines(vocabFile)) {
       String[] fields = line.split("\t");
       put(fields[1], Integer.parseInt(fields[0]));
     }
     System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
-  }};
+  }});
 
-  private static Map<String, Integer> LOWERCASE_PHRASE_INDEXER = new HashMap<String, Integer>() {{
+  private static Lazy<Map<String, Integer>> LOWERCASE_PHRASE_INDEXER = Lazy.of( () -> new HashMap<String, Integer>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading lowercase phrase indexer...");
-    for (String line : IOUtils.readLines(vocabFile.get())) {
+    for (String line : IOUtils.readLines(vocabFile)) {
       String[] fields = line.split("\t");
       put(fields[1].toLowerCase(), Integer.parseInt(fields[0]));
     }
     System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
-  }};
+  }});
 
   public static Function<String, Integer> INDEXER = (String gloss) -> {
     boolean isLower = true;
@@ -61,17 +61,17 @@ public class StaticResources {
       }
     }
     if (isLower) {
-      Integer index = PHRASE_INDEXER.get(gloss);
+      Integer index = PHRASE_INDEXER.get().get(gloss);
       return index == null ? -1 : index;
     } else {
       String lower = gloss.toLowerCase();
-      Integer index = LOWERCASE_PHRASE_INDEXER.get(lower);
+      Integer index = LOWERCASE_PHRASE_INDEXER.get().get(lower);
       if (index != null) {
-        Integer betterIndex = PHRASE_INDEXER.get(gloss);
+        Integer betterIndex = PHRASE_INDEXER.get().get(gloss);
         if (betterIndex != null) {
           return betterIndex;
         }
-        betterIndex = PHRASE_INDEXER.get(lower);
+        betterIndex = PHRASE_INDEXER.get().get(lower);
         if (betterIndex != null) {
           return betterIndex;
         }
@@ -81,10 +81,10 @@ public class StaticResources {
     }
   };
 
-  public static Map<Integer, Map<String, Integer>> SENSE_INDEXER = Collections.unmodifiableMap(new HashMap<Integer, Map<String, Integer>>(){{
+  public static Lazy<Map<Integer, Map<String, Integer>>> SENSE_INDEXER = Lazy.of(() -> Collections.unmodifiableMap(new HashMap<Integer, Map<String, Integer>>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading sense indexer...");
-    for (String line : IOUtils.readLines(senseFile.get())) {
+    for (String line : IOUtils.readLines(senseFile)) {
       String[] fields = line.split("\t");
       int word = Integer.parseInt(fields[0]);
       Map<String, Integer> definitions = this.get(word);
@@ -95,53 +95,59 @@ public class StaticResources {
       definitions.put(fields[2], Integer.parseInt(fields[1]));
     }
     System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
-  }});
+  }}));
 
-  public static Map<Pair<String, Integer>, Synset[]> SYNSETS = new HashMap<>();
+  public static Lazy<Map<Pair<String, Integer>, Synset[]>> SYNSETS = new Lazy<Map<Pair<String, Integer>, Synset[]>>() {
+    @Override
+    protected Map<Pair<String, Integer>, Synset[]> compute() {
+      long startTime = System.currentTimeMillis();
+      System.err.print("Reading synsets...");
+      String file = wordnetFile;
+      Map<Pair<String, Integer>, Synset[]> map = new HashMap<>();
+      try {
+        map = IOUtils.readObjectFromURLOrClasspathOrFileSystem(file);
+      } catch (IOException e) {
+        System.err.print("[no saved model; re-computing]...{");
+        Interner<MinimalSynset> interner = new Interner<>();
+        WordNetDatabase wordnet = WordNetDatabase.getFileInstance();
+        int count = 0;
+        int incr = PHRASE_INDEXER.get().size() / 100;
+        for (String entry : PHRASE_INDEXER.get().keySet()) {
+          if ( (++count % incr) == 0) {
+            System.err.print("-");
+          }
+          for (SynsetType type : SynsetType.ALL_TYPES) {
+            Synset[] synsets = wordnet.getSynsets(entry, type);
+            if (synsets != null && synsets.length > 0) {
+              for (int i = 0; i < synsets.length; ++i) {
+                synsets[i] = interner.intern(new MinimalSynset(synsets[i]));
+              }
+              map.put(Pair.makePair(entry, type.getCode()), synsets);
+            }
+          }
+          Synset[] allSynsets = wordnet.getSynsets(entry);
+          if (allSynsets != null) {
+            for (int i = 0; i < allSynsets.length; ++i) {
+              allSynsets[i] = interner.intern(new MinimalSynset(allSynsets[i]));
+            }
+            map.put(Pair.makePair(entry, null), allSynsets);
+          }
+        }
+        System.err.print("}...");
+        try {
+          IOUtils.writeObjectToFile(map, file);
+        } catch (IOException e1) {
+          e1.printStackTrace();
+        }
+      } catch (ClassNotFoundException e) {
+        throw new RuntimeException(e);
+      }
+      System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
+      return map;
+    }
+  };
 
   static {
-    long startTime = System.currentTimeMillis();
-    System.err.print("Reading synsets...");
-    String file = wordnetFile.get();
-    try {
-      SYNSETS = IOUtils.readObjectFromURLOrClasspathOrFileSystem(file);
-    } catch (IOException e) {
-      System.err.print("[no saved model; re-computing]...{");
-      Interner<MinimalSynset> interner = new Interner<>();
-      WordNetDatabase wordnet = WordNetDatabase.getFileInstance();
-      int count = 0;
-      int incr = PHRASE_INDEXER.size() / 100;
-      for (String entry : PHRASE_INDEXER.keySet()) {
-        if ( (++count % incr) == 0) {
-          System.err.print("-");
-        }
-        for (SynsetType type : SynsetType.ALL_TYPES) {
-          Synset[] synsets = wordnet.getSynsets(entry, type);
-          if (synsets != null && synsets.length > 0) {
-            for (int i = 0; i < synsets.length; ++i) {
-              synsets[i] = interner.intern(new MinimalSynset(synsets[i]));
-            }
-            SYNSETS.put(Pair.makePair(entry, type.getCode()), synsets);
-          }
-        }
-        Synset[] allSynsets = wordnet.getSynsets(entry);
-        if (allSynsets != null) {
-          for (int i = 0; i < allSynsets.length; ++i) {
-            allSynsets[i] = interner.intern(new MinimalSynset(allSynsets[i]));
-          }
-          SYNSETS.put(Pair.makePair(entry, null), allSynsets);
-        }
-      }
-      System.err.print("}...");
-      try {
-        IOUtils.writeObjectToFile(SYNSETS, file);
-      } catch (IOException e1) {
-        e1.printStackTrace();
-      }
-    } catch (ClassNotFoundException e) {
-      throw new RuntimeException(e);
-    }
-    System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
   }
 
   /**

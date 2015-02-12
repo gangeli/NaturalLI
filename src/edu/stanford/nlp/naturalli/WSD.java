@@ -141,9 +141,9 @@ public class WSD {
       t = SynsetType.ADVERB;
     }
     // Get synsets
-    Synset[] synsets = StaticResources.SYNSETS.get(Pair.makePair(gloss, t == null ? -1 : t.getCode()));  // enforce POS
+    Synset[] synsets = StaticResources.SYNSETS.get().get(Pair.makePair(gloss, t == null ? -1 : t.getCode()));  // enforce POS
     if (synsets == null) {
-      synsets = StaticResources.SYNSETS.get(Pair.makePair(gloss.toLowerCase(), t == null ? -1 : t.getCode()));  // try lowercase?
+      synsets = StaticResources.SYNSETS.get().get(Pair.makePair(gloss.toLowerCase(), t == null ? -1 : t.getCode()));  // try lowercase?
     }
     // Do the WSD
     if (synsets == null || synsets.length == 0) {

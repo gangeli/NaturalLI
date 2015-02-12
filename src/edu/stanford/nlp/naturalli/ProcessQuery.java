@@ -117,7 +117,7 @@ public class ProcessQuery {
 
     // match the Synset to an index
     if (synset.isPresent()) {
-      return Optional.ofNullable(StaticResources.SENSE_INDEXER.get(wordAsInt)).map(x -> x.get(synset.get().getDefinition())).orElse(0);
+      return Optional.ofNullable(StaticResources.SENSE_INDEXER.get().get(wordAsInt)).map(x -> x.get(synset.get().getDefinition())).orElse(0);
     } else {
       return 0;
     }
