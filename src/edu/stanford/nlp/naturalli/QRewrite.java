@@ -151,14 +151,12 @@ public class QRewrite {
     }
 
     // One is a determiner
-    Iterator<SemanticGraphEdge> iter = tree.edgeIterable().iterator();
     List<SemanticGraphEdge> oneEdgesToReplace = new ArrayList<>();
-    while (iter.hasNext()) {
-      SemanticGraphEdge edge = iter.next();
+    for (SemanticGraphEdge edge : tree.edgeListSorted()) {
       if (edge.getRelation().toString().equals("num") &&
           edge.getDependent().word().equalsIgnoreCase("one") || edge.getDependent().word().equals("1")) {
         oneEdgesToReplace.add(edge);
-        iter.remove();
+        tree.removeEdge(edge);
       }
     }
     for (SemanticGraphEdge edge : oneEdgesToReplace) {
