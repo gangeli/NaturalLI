@@ -567,9 +567,7 @@ int32_t main( int32_t argc, char *argv[] ) {
   // Read the knowledge base
   btree_set<uint64_t> kb;
   if (KB_FILE[0] != '\0') {
-    fprintf(stderr, "Reading the knowledge base...");
     kb = readKB(string(KB_FILE));
-    fprintf(stderr, "done.\n");
   } else {
     fprintf(stderr, "No knowledge base given (configure with KB_FILE=/path/to/kb)\n");
   }

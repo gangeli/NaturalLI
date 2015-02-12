@@ -32,12 +32,19 @@ const btree_set<uint64_t> readKB(string path) {
   // Read chunks
   uint64_t* buffer = (uint64_t*) malloc(CHUNK_SIZE * sizeof(uint64_t));
   uint64_t numRead;
+  uint64_t nextPrint = 1000000;
+  fprintf(stderr, "Reading the knowledge base...");
   while ( 
       (numRead = fread(buffer, sizeof(uint64_t), CHUNK_SIZE, file)) 
         == CHUNK_SIZE ) {
     appendToKB(buffer, numRead, &kb);
+    if (kb.size() > nextPrint) {
+      nextPrint += 1000000;
+      fprintf(stderr, ".");
+    }
   }
   appendToKB(buffer, numRead, &kb);
+  fprintf(stderr, "done.\n");
 
   // Return
   free(buffer);
