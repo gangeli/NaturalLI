@@ -439,7 +439,7 @@ bool startServer(const uint32_t& port,
   address.sin_port = htons(port);
   address.sin_addr.s_addr = htonl(INADDR_ANY);
   // (actually perform the bind)
-  if (bind(sock, (struct sockaddr*) &address, sizeof(address)) != 0) {
+  if (!bind(sock, (struct sockaddr*) &address, sizeof(address))) {
   	fprintf(stderr, "Could not bind socket\n");
     return 10;
   } else {
