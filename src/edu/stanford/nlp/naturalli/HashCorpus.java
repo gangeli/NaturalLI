@@ -95,20 +95,29 @@ public class HashCorpus {
     int sentenceIndex = offset;
 
     while ((line = stdin.readLine()) != null) {
-      if (line.trim().equals("")) { continue; }
+      line = line.trim();
+      if (line.equals("")) { continue; }
+      if ((line.charAt(line.length() - 1) >= 'a' && line.charAt(line.length() - 1) <= 'z') ||
+          (line.charAt(line.length() - 1) >= 'A' && line.charAt(line.length() - 1) <= 'Z') ) {
+        line = line + ".";
+      }
       // Write the sentence info
       sentenceOutput.println(sentenceIndex + "\t" + line.replace("\t", " "));
 
       // Write hash(es)
-      Set<BigInteger> hashes = new HashSet<>();
-      for (SentenceFragment entailment : ProcessPremise.forwardEntailments(line, pipeline)) {
-        BigInteger hash = hashEntailment(entailment.parseTree);
-        if (hash.compareTo(new BigInteger("0")) > 0) {
-          hashes.add(hash);
+      try {
+        Set<BigInteger> hashes = new HashSet<>();
+        for (SentenceFragment entailment : ProcessPremise.forwardEntailments(line, pipeline)) {
+          BigInteger hash = hashEntailment(entailment.parseTree);
+          if (hash.compareTo(new BigInteger("0")) > 0) {
+            hashes.add(hash);
+          }
         }
-      }
-      for (BigInteger hash : hashes) {
-        hashOutput.println(hash + "\t" + sentenceIndex);
+        for (BigInteger hash : hashes) {
+          hashOutput.println(hash + "\t" + sentenceIndex);
+        }
+      } catch (Throwable e) {
+        err.println("Error processing sentence " + sentenceIndex + ": " + e.getMessage());
       }
 
       // Update sentence index
