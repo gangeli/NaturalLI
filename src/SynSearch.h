@@ -1050,7 +1050,7 @@ struct syn_search_response {
  */
 syn_search_response SynSearch(
     const Graph* mutationGraph,
-    const btree::btree_set<uint64_t>& mainKB,
+    const btree::btree_set<uint64_t>* mainKB,
     const btree::btree_set<uint64_t>& auxKB,
     const Tree* input,
     const SynSearchCosts* costs,
@@ -1060,7 +1060,7 @@ syn_search_response SynSearch(
 /** @see SynSearch(), but with only one knowledge base */
 inline syn_search_response SynSearch(
     const Graph* mutationGraph,
-    const btree::btree_set<uint64_t>& mainKB,
+    const btree::btree_set<uint64_t>* mainKB,
     const Tree* input,
     const SynSearchCosts* costs,
     const bool& assumedInitialTruth,

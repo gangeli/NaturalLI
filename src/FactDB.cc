@@ -20,8 +20,8 @@ void appendToKB(const uint64_t* factStream,
   }
 }
 
-const btree_set<uint64_t> readKB(string path) {
-  btree_set<uint64_t> kb;
+const btree_set<uint64_t>* readKB(string path) {
+  btree_set<uint64_t>* kb = new btree_set<uint64_t>();
 
   // Open the KB file
   FILE* file;
@@ -40,16 +40,16 @@ const btree_set<uint64_t> readKB(string path) {
   while ( 
       (numRead = fread(buffer, sizeof(uint64_t), CHUNK_SIZE, file)) 
         == CHUNK_SIZE ) {
-    appendToKB(buffer, numRead, &kb);
-    if (kb.size() > nextPrint) {
+    appendToKB(buffer, numRead, kb);
+    if (kb->size() > nextPrint) {
       nextPrint += (10 * 1000 * 1000);
       fprintf(stderr, ".");
     }
   }
-  appendToKB(buffer, numRead, &kb);
+  appendToKB(buffer, numRead, kb);
   fprintf(stderr, "done.\n");
   printTime("[%c] ");
-  fprintf(stderr, "KB size=%lu\n", kb.size());
+  fprintf(stderr, "KB size=%lu\n", kb->size());
 
   // Return
   free(buffer);

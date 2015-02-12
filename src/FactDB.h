@@ -25,10 +25,10 @@ void appendToKB(const uint64_t* factStream,
  *
  * @return A set representing the facts in the knowledge base.
  */
-inline const btree::btree_set<uint64_t> readKB(
+inline const btree::btree_set<uint64_t>* readKB(
     const uint64_t* factStream, const uint64_t& count) {
-  btree::btree_set<uint64_t> kb;
-  appendToKB(factStream, count, &kb);
+  btree::btree_set<uint64_t>* kb = new btree::btree_set<uint64_t>();
+  appendToKB(factStream, count, kb);
   return kb;
 }
 
@@ -41,6 +41,6 @@ inline const btree::btree_set<uint64_t> readKB(
  * 
  * @return A set representing the facts in the knowledge base.
  */
-const btree::btree_set<uint64_t> readKB(std::string path);
+const btree::btree_set<uint64_t>* readKB(std::string path);
 
 #endif

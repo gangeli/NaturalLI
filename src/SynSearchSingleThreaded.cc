@@ -316,7 +316,7 @@ inline uint64_t searchLoop(
 //
 syn_search_response SynSearch(
     const Graph* mutationGraph, 
-    const btree::btree_set<uint64_t>& kb,
+    const btree::btree_set<uint64_t>* kb,
     const btree::btree_set<uint64_t>& auxKB,
     const Tree* input, const SynSearchCosts* costs,
     const bool& assumedInitialTruth, const syn_search_options& opts) {
@@ -347,7 +347,7 @@ syn_search_response SynSearch(
   vector<syn_search_path>& matches = response.paths;
   // (the lookup function)
   std::function<bool(uint64_t)> lookupFn = [&kb,&auxKB](const uint64_t& value) -> bool {
-    return kb.find(value) != kb.end() || auxKB.find(value) != auxKB.end();
+    return kb->find(value) != kb->end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
   auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts] (const ScoredSearchNode& scoredNode) -> void {

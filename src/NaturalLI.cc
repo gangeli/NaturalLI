@@ -107,7 +107,7 @@ inline double probability(const double& confidence, const bool& truth) {
  *
  * @return A JSON formatted response with the result of the search.
  */
-string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>& kb,
+string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
                     const vector<string>& knownFacts, const string& query,
                     const Graph* graph, const SynSearchCosts* costs,
                     const syn_search_options& options, double* truth) {
@@ -264,7 +264,7 @@ string passOrFail(const double& truth,
  * @return The number of failed examples, if any were annotated. 0 by default.
  */
 uint32_t repl(const Graph* graph, JavaBridge* proc,
-              const btree_set<uint64_t>& kb) {
+              const btree_set<uint64_t>* kb) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
@@ -407,7 +407,7 @@ ssize_t readLine(uint32_t fd, char* buf, size_t n) {
  */
 void handleConnection(const uint32_t& socket, sockaddr_in* client,
                       const JavaBridge* proc,
-                      const Graph* graph, const btree_set<uint64_t>& kb) {
+                      const Graph* graph, const btree_set<uint64_t>* kb) {
 
   // Parse input
   fprintf(stderr, "[%d] Reading query...\n", socket);
@@ -462,7 +462,7 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
  */
 bool startServer(const uint32_t& port, 
                  const JavaBridge* proc, const Graph* graph,
-                 const btree_set<uint64_t>& kb) {
+                 const btree_set<uint64_t>* kb) {
   // Get hostname, for debugging
 	char hostname[256];
 	gethostname(hostname, 256);
@@ -565,10 +565,11 @@ int32_t main( int32_t argc, char *argv[] ) {
   sigaction(SIGPIPE, &sigIntHandler, NULL);
 
   // Read the knowledge base
-  btree_set<uint64_t> kb;
+  const btree_set<uint64_t>* kb;
   if (KB_FILE[0] != '\0') {
     kb = readKB(string(KB_FILE));
   } else {
+    kb = new btree_set<uint64_t>;
     fprintf(stderr, "No knowledge base given (configure with KB_FILE=/path/to/kb)\n");
   }
 
@@ -585,5 +586,6 @@ int32_t main( int32_t argc, char *argv[] ) {
   uint32_t retVal =  repl(graph, proc, kb);
   delete graph;
   delete proc;
+  delete kb;
   return retVal;
 }

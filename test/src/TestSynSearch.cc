@@ -1096,14 +1096,14 @@ class SynSearchTest : public ::testing::Test {
 // Crash Test
 //
 TEST_F(SynSearchTest, ThreadsFinish) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, lemursHaveTails, costs, true, opts);
 }
 
 //
 // Expected Tick Count
 //
 TEST_F(SynSearchTest, TickCountNoMutation) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, catsHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
   EXPECT_EQ(12, response.totalTicks);
 #else
@@ -1115,7 +1115,7 @@ TEST_F(SynSearchTest, TickCountNoMutation) {
 // Expected Tick Count (with mutations)
 //
 TEST_F(SynSearchTest, TickCountWithMutations) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, lemursHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
   EXPECT_EQ(24, response.totalTicks);
 #else
@@ -1127,7 +1127,7 @@ TEST_F(SynSearchTest, TickCountWithMutations) {
 // Expected Tick Count (cycles)
 //
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
-  syn_search_response response = SynSearch(cyclicGraph, factdb, lemursHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(cyclicGraph, &factdb, lemursHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
   EXPECT_EQ(24, response.totalTicks);
 #else
@@ -1143,7 +1143,7 @@ TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
 // Literal Lookup
 //
 TEST_F(SynSearchTest, LiteralLookup) {
-  syn_search_response response = SynSearch(graph, factdb, catsHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, catsHaveTails, costs, true, opts);
   EXPECT_EQ(1, response.paths.size());
 }
 
@@ -1151,7 +1151,7 @@ TEST_F(SynSearchTest, LiteralLookup) {
 // Real Search (soft weights)
 //
 TEST_F(SynSearchTest, LemursToCatsSoft) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, lemursHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(5, response.paths[0].size());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].back().factHash());
@@ -1162,7 +1162,7 @@ TEST_F(SynSearchTest, LemursToCatsSoft) {
 // Real Search (strict weights)
 //
 TEST_F(SynSearchTest, LemursToCatsStrict) {
-  syn_search_response response = SynSearch(graph, factdb, lemursHaveTails, strictCosts, true, opts);
+  syn_search_response response = SynSearch(graph, &factdb, lemursHaveTails, strictCosts, true, opts);
   ASSERT_EQ(0, response.paths.size());
 }
 
@@ -1172,7 +1172,7 @@ TEST_F(SynSearchTest, LemursToCatsStrict) {
 TEST_F(SynSearchTest, LemursToAnimalsSoft) {
   btree_set<uint64_t> factdb;
   factdb.insert(lemursHaveTails->hash());
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, costs, true, opts);
+  syn_search_response response = SynSearch(cyclicGraph, &factdb, animalsHaveTails, costs, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
@@ -1185,7 +1185,7 @@ TEST_F(SynSearchTest, LemursToAnimalsSoft) {
 TEST_F(SynSearchTest, LemursToAnimalsStrict) {
   btree_set<uint64_t> factdb;
   factdb.insert(lemursHaveTails->hash());
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, true, opts);
+  syn_search_response response = SynSearch(cyclicGraph, &factdb, animalsHaveTails, strictCosts, true, opts);
   ASSERT_EQ(1, response.paths.size());
   EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
@@ -1196,7 +1196,7 @@ TEST_F(SynSearchTest, LemursToAnimalsStrict) {
 //
 TEST_F(SynSearchTest, EmptyDBTest) {
   btree_set<uint64_t> factdb;
-  syn_search_response response = SynSearch(cyclicGraph, factdb, animalsHaveTails, strictCosts, true, opts);
+  syn_search_response response = SynSearch(cyclicGraph, &factdb, animalsHaveTails, strictCosts, true, opts);
   ASSERT_EQ(0, response.paths.size());
 }
 
