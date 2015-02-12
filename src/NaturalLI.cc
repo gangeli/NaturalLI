@@ -187,6 +187,70 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>& kb,
 }
 
 /**
+ * Parse a query string for whether it has an expected truth value.
+ * This code is shared between the REPL and the server.
+ *
+ * @param query The query to parse.
+ * @haveExpectedTruth True if the query is annotated with an expected truth
+ *                    value. False by default.
+ * @expectUnknown Returns True if we are expecting an 'unknown' judgment
+ *                from the query. This is only well defined if
+ *                haveExpectedTruth is True.
+ * @expectedTruth The expected truth value. This is only well defined if
+ *                haveExpectedTruth is True and if expectUnknown is false.
+ * @return The modified query, with the potential prefix stripped.
+ */
+string grokExpectedTruth(string query, 
+                         bool* haveExpectedTruth, 
+                         bool* expectUnknown,
+                         bool* expectedTruth ) {
+  *haveExpectedTruth = false;
+  if (query.substr(0,5) == "TRUE:") {
+    *haveExpectedTruth = true;
+    *expectedTruth = true;
+    query = query.substr(5);
+    while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
+  } else if (query.substr(0,6) == "FALSE:") {
+    *haveExpectedTruth = true;
+    *expectedTruth = false;
+    query = query.substr(6);
+    while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
+  } else if (query.substr(0,4) == "UNK:") {
+    *haveExpectedTruth = true;
+    *expectUnknown = true;
+    query = query.substr(4);
+    while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
+  }
+  return query;
+}
+
+/**
+ * Parse the actual and expected response of a query, and print it as
+ * a String prefix. This code is shared between the REPL and the server.
+ */
+string passOrFail(const double& truth,
+                  const bool& haveExpectedTruth, 
+                  const bool& expectUnknown,
+                  const bool& expectedTruth) {
+  if (haveExpectedTruth) {
+    if (expectUnknown) {
+      if (truth == 0.5) {
+        return "PASS: ";
+      } else {
+        return "FAIL: ";
+      }
+    } else {
+      if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) { 
+        return "PASS: ";
+      } else { 
+        return "FAIL: ";
+      }
+    }
+  }
+  return "";
+}
+
+/**
  * Start a REPL loop over stdin and stdout.
  * Each query consists of a number of entries (possibly zero) in the knowledge
  * base, seperated by newlines, and then a query.
@@ -230,45 +294,14 @@ uint32_t repl(const Graph* graph, JavaBridge* proc,
       bool haveExpectedTruth = false;
       bool expectedTruth;
       bool expectUnknown = false;
-      if (query.substr(0,5) == "TRUE:") {
-        haveExpectedTruth = true;
-        expectedTruth = true;
-        query = query.substr(5);
-        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
-      } else if (query.substr(0,6) == "FALSE:") {
-        haveExpectedTruth = true;
-        expectedTruth = false;
-        query = query.substr(6);
-        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
-      } else if (query.substr(0,4) == "UNK:") {
-        haveExpectedTruth = true;
-        expectUnknown = true;
-        query = query.substr(4);
-        while (query.at(0) == ' ' || query.at(0) == '\t') { query = query.substr(1); }
-      }
+      query = grokExpectedTruth(query, &haveExpectedTruth, &expectUnknown, &expectedTruth);
       // Run query
       double truth;
       string response = executeQuery(proc, kb, lines, query, graph, costs, opts, &truth);
       // Print
       fprintf(stderr, "\n");
       fflush(stderr);
-      if (haveExpectedTruth) {
-        if (expectUnknown) {
-          if (truth == 0.5) {
-            printf("PASS: ");
-          } else {
-            printf("FAIL: ");
-            failedExamples += 1;
-          }
-        } else {
-          if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) { 
-            printf("PASS: ");
-          } else { 
-            printf("FAIL: ");
-            failedExamples += 1;
-          }
-        }
-      }
+      printf("%s", passOrFail(truth, haveExpectedTruth, expectUnknown, expectedTruth).c_str());
       printf("%s\n", response.c_str());  // Should be the only output to stdout
       fflush(stdout);
       fprintf(stderr, "\n");
@@ -303,7 +336,7 @@ void closeConnection(const uint32_t socket, sockaddr_in* client) {
 		     inet_ntoa(client->sin_addr),
          ntohs(client->sin_port));
   if (shutdown(socket, SHUT_RDWR) != 0) {
-    fprintf(stderr, "Failed to shutdown connection\n");
+    fprintf(stderr, "  Failed to shutdown connection ");
     fprintf(stderr, "  (");
     switch (errno) {
       case EBADF:    fprintf(stderr, "The socket argument is not a valid file descriptor"); break;
@@ -352,7 +385,9 @@ ssize_t readLine(uint32_t fd, char* buf, size_t n) {
         break;
       }
     } else {
-      if (ch == '\n') {
+      if (totRead == 0 && ch == ' ') {
+        continue;
+      } else if (ch == '\n') {
         break;
       }
       if (totRead < n - 1) {
@@ -377,14 +412,18 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
   // Parse input
   fprintf(stderr, "[%d] Reading query...\n", socket);
   char* buffer = (char*) malloc(32768 * sizeof(char));
+  buffer[0] = '\0';
   readLine(socket, buffer, 32768);
   vector<string> knownFacts;
   while ( buffer[0] != '\0' && buffer[0] != '\n' && buffer[0] != '\r' && 
           knownFacts.size() < 256 ) {
-    fprintf(stderr, "  [%d] read line: %s: %u", socket, buffer, buffer[0]);
+    fprintf(stderr, "  [%d] read line: %s\n", socket, buffer);
     knownFacts.push_back(string(buffer));
-    readLine(socket, buffer, 32768);
+    if (readLine(socket, buffer, 32768) == 0) {
+      buffer[0] = '\0';
+    }
   }
+  fprintf(stderr, "  [%d] query read; running inference.\n", socket);
 
   // Parse options
   const SynSearchCosts* costs = strictNaturalLogicCosts();
@@ -401,11 +440,16 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
     return;
   } else {
     string query = knownFacts.back();
+    bool haveExpectedTruth = false;
+    bool expectUnknown;
+    bool expectedTruth;
+    query = grokExpectedTruth(query, &haveExpectedTruth, &expectUnknown, &expectedTruth);
     knownFacts.pop_back();
     double truth = 0.0;
     string json = executeQuery(proc, kb, knownFacts, query, graph, costs, opts, &truth);
-    write(socket, json.c_str(), json.length());
-    fprintf(stderr, "[%d] Wrote output; I'm done.\n", socket);
+    string passFail = passOrFail(truth, haveExpectedTruth, expectUnknown, expectedTruth);
+    write(socket, (passFail + json).c_str(), json.length() + passFail.length());
+    fprintf(stderr, "  [%d] wrote output; I'm done.\n", socket);
   }
 
 //  if (!query.ParseFromFileDescriptor(socket)) { closeConnection(socket, client); return; }
