@@ -1,5 +1,7 @@
 #include "FactDB.h"
 
+#include "Utils.h"
+
 #include <cstdio>
 
 using namespace std;
@@ -33,6 +35,7 @@ const btree_set<uint64_t> readKB(string path) {
   uint64_t* buffer = (uint64_t*) malloc(CHUNK_SIZE * sizeof(uint64_t));
   uint64_t numRead;
   uint64_t nextPrint = 10 * 1000 * 1000;
+  printTime("[%c] ");
   fprintf(stderr, "Reading the knowledge base...");
   while ( 
       (numRead = fread(buffer, sizeof(uint64_t), CHUNK_SIZE, file)) 
@@ -44,7 +47,9 @@ const btree_set<uint64_t> readKB(string path) {
     }
   }
   appendToKB(buffer, numRead, &kb);
-  fprintf(stderr, "done [size=%lu].\n", kb.size());
+  fprintf(stderr, "done.\n");
+  printTime("[%c] ");
+  fprintf(stderr, "KB size=%lu\n", kb.size());
 
   // Return
   free(buffer);
