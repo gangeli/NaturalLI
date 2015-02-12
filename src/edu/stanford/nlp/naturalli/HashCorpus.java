@@ -64,12 +64,16 @@ public class HashCorpus {
 
     try {
       String dump = ProcessQuery.conllDump(fragment, false, false);
-      // Write tree
-      hasherIn.write(dump);
-      hasherIn.write('\n');
-      hasherIn.flush();
-      //Read hash
-      return new BigInteger(hasherOut.readLine());
+      if (dump.trim().equals("")) {
+        return new BigInteger("-1");
+      } else {
+        // Write tree
+        hasherIn.write(dump);
+        hasherIn.write('\n');
+        hasherIn.flush();
+        //Read hash
+        return new BigInteger(hasherOut.readLine());
+      }
     } catch (IOException | NullPointerException e) {
       System.err.println("Exception from hasher: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()));
       return new BigInteger("-1");

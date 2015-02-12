@@ -391,6 +391,9 @@ public class ProcessQuery {
       }
     }
     // Sort the tokens
+    if (conllTokenByStartIndex.size() == 0) {
+      return "\n";
+    }
     Collections.sort(conllTokenByStartIndex);
 
     // Find the incoming edge of every token
