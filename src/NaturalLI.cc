@@ -545,7 +545,6 @@ bool startServer(const uint32_t& port,
     t.detach();
 	}
 
-  free(clientAddress);
   return true;
 }
 
