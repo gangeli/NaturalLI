@@ -11,7 +11,6 @@ EXTRA_DIST = README.md \
              lib/jaws.jar \
              lib/test/hamcrest-core-1.3.jar \
              lib/test/junit-4.11.jar \
-             test/data/unittest_gzip.tab.gz \
              rc \
              etc/depInsert2rel.tab \
              etc/operators.tab \
@@ -20,18 +19,8 @@ EXTRA_DIST = README.md \
              test/run_testcases.sh \
              test/run_perfcase.sh \
              test/run_inet.py \
-             test/data/testcase_complex.examples \
-             test/data/testcase_delete.examples \
-             test/data/testcase_exactlookup.examples \
-             test/data/testcase_insert.examples \
-             test/data/testcase_meronymy.examples \
-             test/data/testcase_quantifier.examples \
-             test/data/testcase_wordnet.examples \
-             test/data/perfcase_fracas_singlepremise.examples \
-             test/data/perfcase_fracas_applicable.examples \
-             test/data/perfcase_fracas_all.examples \
-             test/data/emnlp2014_train.examples \
-             test/data/emnlp2014_test.examples
+             test/data/ \
+						 etc/WordNet-3.1
              
 
 clean-local:
