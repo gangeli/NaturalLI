@@ -546,8 +546,6 @@ insertSegment(Element *to, int sz)
 
 
     // link new segment
-    assert (index < KNKMAX);
-    assert (to != NULL);
     current[index] = segment[index] = to;
     size += sz;
     
@@ -578,7 +576,6 @@ deallocateSegment(int index)
   current[index] = &dummy;
 
   // free memory
-  assert (segment[index] != NULL);
   delete [] segment[index];
   segment[index] = NULL;
 //  segment[index] = 0;
