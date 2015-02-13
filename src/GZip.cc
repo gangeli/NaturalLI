@@ -1,7 +1,7 @@
 #include "GZip.h"
 
 #include <cstdlib>
-#include <cassert>
+#include <assert.h>
 #include <sstream>
   
 using namespace std;

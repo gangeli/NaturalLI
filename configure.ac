@@ -125,11 +125,12 @@ AC_DEFINE_UNQUOTED(NATURALLI_MODELS, "${NATURALLI_MODELS}", [The location of the
 #AC_DEFINE_UNQUOTED(HAVE_GPSQL,  false,  [If true, assume we have Greenplum])
 
 # (check headers)
-AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \
+AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h bitset cmath cstdio \
                   cstdlib cstring ctime exception map netinet/in.h \
-                  queue set sstream stdio.h stdlib.h string \
+                  queue set sstream stddef.h stdint.h stdio.h \
+                  stdlib.h string thread type_traits \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
-                  sys/prctl.h \
+                  sys/prctl.h unistd.h utility zlib.h \
                   vector ])
 
 # (unordered map)
