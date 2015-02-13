@@ -121,10 +121,11 @@ inline uint64_t searchLoop(
 //      node.getBackpointer(), nextQuantifierTokenIndex,
 //      node.truthState(), node.tokenIndex());
     // << end debug 
-    assert (myIndex < opts.maxTicks);
+    assert (myIndex < (opts.maxTicks + 1));  // + 1 to allow for the root
     history[myIndex] = node;
     historySize += 1;
     ticks += 1;
+    assert (historySize == (ticks + 1));
     if (!opts.silent && ticks % 100000 == 0) { 
       printTime("[%c] "); 
       fprintf(stderr, "  |Search Progress| ticks=%luK\n", ticks / 1000);
@@ -338,7 +339,7 @@ syn_search_response SynSearch(
   
   // -- Helpers --
   // Allocate history
-  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 1) * sizeof(SearchNode));
+  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 1) * sizeof(SearchNode));  // + 1 to allow for root
   uint64_t historySize = 0;
   // The fringe
   KNHeap<float,SearchNode>* fringe = new KNHeap<float,SearchNode>(
