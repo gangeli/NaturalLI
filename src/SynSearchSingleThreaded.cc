@@ -340,7 +340,7 @@ syn_search_response SynSearch(
   SearchNode* history = (SearchNode*) malloc(opts.maxTicks * sizeof(SearchNode));
   uint64_t historySize = 0;
   // The fringe
-  KNHeap<float,SearchNode> fringe(
+  KNHeap<float,SearchNode>* fringe = new KNHeap<float,SearchNode>(
     std::numeric_limits<float>::infinity(),
     -std::numeric_limits<float>::infinity());
   // The database lookup function
@@ -406,7 +406,7 @@ syn_search_response SynSearch(
     }
   }
   // (to the history)
-  fringe.insert(0.0f, start);
+  fringe->insert(0.0f, start);
   history[0] = start;
   historySize += 1;
 
@@ -414,13 +414,13 @@ syn_search_response SynSearch(
   response.totalTicks = searchLoop(
     // Insert to fringe
     [&fringe](const ScoredSearchNode elem) -> void { 
-      fringe.insert(elem.cost, elem.node);
+      fringe->insert(elem.cost, elem.node);
     },
     // Pop from fringe
     [&fringe](ScoredSearchNode* output) -> bool { 
-      if (fringe.isEmpty()) { return false; }
-      if (fringe.getSize() > 10000000) { return false; }
-      fringe.deleteMin(&(output->cost), &(output->node));
+      if (fringe->isEmpty()) { return false; }
+      if (fringe->getSize() > 10000000) { return false; }
+      fringe->deleteMin(&(output->cost), &(output->node));
       return true;
     },
     // Register visited
@@ -433,11 +433,11 @@ syn_search_response SynSearch(
   if (opts.checkFringe && response.paths.empty()) {
     if (!opts.silent) {
       printTime("[%c] ");
-      fprintf(stderr, "  |Checking Fringe| size=%u\n", fringe.getSize());
+      fprintf(stderr, "  |Checking Fringe| size=%u\n", fringe->getSize());
     }
     ScoredSearchNode scoredNode;
-    while(!fringe.isEmpty()) {
-      fringe.deleteMin(&(scoredNode.cost), &(scoredNode.node));
+    while(!fringe->isEmpty()) {
+      fringe->deleteMin(&(scoredNode.cost), &(scoredNode.node));
       registerVisited(scoredNode);
     }
     if (!opts.silent) {
@@ -448,6 +448,7 @@ syn_search_response SynSearch(
 
   // Clean up
   free(history);
+  delete fringe;
   
   // Return
   if (!opts.silent) {
