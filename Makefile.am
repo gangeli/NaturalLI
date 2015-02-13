@@ -1,3 +1,6 @@
+current_dir := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+etc := "${current_dir}/etc"
+
 SUBDIRS = src test/src
 ACLOCAL_AMFLAGS=-I m4
 EXTRA_DIST = README.md \
@@ -41,45 +44,45 @@ export TEST_CP=${CP}:${LIB}/test/scalatest_2.11-2.1.6.jar:${LIB}/test/junit-4.11
 
 # (some tasks)
 etc/graphData/:
-	wget -O etc/graphData.tar.gz 'https://www.dropbox.com/s/l8hm7v60mopihwr/naturalli_raw_graph_data.tar.gz?dl=1'
+	wget -O ${etc}/graphData.tar.gz 'https://www.dropbox.com/s/l8hm7v60mopihwr/naturalli_raw_graph_data.tar.gz?dl=1'
 	cd etc && tar xvfz graphData.tar.gz
 
 etc/.pp_affinity: etc/pp.sql
 if HAVE_GPSQL
-	psql -h ${GP_HOST} -p ${GP_PORT} -U ${GP_USER} ${GP_DB} -f etc/pp.sql
+	psql -h ${GP_HOST} -p ${GP_PORT} -U ${GP_USER} ${GP_DB} -f ${etc}/pp.sql
 	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
 	  -c "COPY (SELECT * FROM pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > etc/pp.tab.gz
+	  | gzip > ${etc}/pp.tab.gz
 	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
 	  -c "COPY (SELECT * FROM subj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > etc/subj_pp.tab.gz
+	  | gzip > ${etc}/subj_pp.tab.gz
 	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
 	  -c "COPY (SELECT * FROM subj_obj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > etc/subj_obj_pp.tab.gz
+	  | gzip > ${etc}/subj_obj_pp.tab.gz
 	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
 	  -c "COPY (SELECT * FROM subj_pp_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > etc/subj_pp_pp.tab.gz
+	  | gzip > ${etc}/subj_pp_pp.tab.gz
 	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
 	  -c "COPY (SELECT * FROM subj_pp_obj_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > etc/subj_pp_obj.tab.gz
-	touch etc/.pp_affinity
+	  | gzip > ${etc}/subj_pp_obj.tab.gz
+	touch ${etc}/.pp_affinity
 else
 	@echo "Could not find Greenplum; downloading attachment models instead."
-	wget -O etc/pp.tab.gz 'https://www.dropbox.com/s/tgqwwcvoaspmzj3/pp.tab.gz?dl=1'
-	wget -O etc/subj_obj_pp.tab.gz 'https://www.dropbox.com/s/4sajae63s25i7uw/subj_obj_pp.tab.gz?dl=1'
-	wget -O etc/subj_pp_obj.tab.gz 'https://www.dropbox.com/s/xkw9moy0g91x5zv/subj_pp_obj.tab.gz?dl=1'
-	wget -O etc/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
-	wget -O etc/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
-	touch etc/.pp_affinity
+	wget -O ${etc}/pp.tab.gz 'https://www.dropbox.com/s/tgqwwcvoaspmzj3/pp.tab.gz?dl=1'
+	wget -O ${etc}/subj_obj_pp.tab.gz 'https://www.dropbox.com/s/4sajae63s25i7uw/subj_obj_pp.tab.gz?dl=1'
+	wget -O ${etc}/subj_pp_obj.tab.gz 'https://www.dropbox.com/s/xkw9moy0g91x5zv/subj_pp_obj.tab.gz?dl=1'
+	wget -O ${etc}/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
+	wget -O ${etc}/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
+	touch ${etc}/.pp_affinity
 endif
 
 etc/clauseSearcherModel.ser.gz:
-	wget -O etc/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
+	wget -O ${etc}/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
-	bash -c 'cd etc && ./mkGraph.sh'
-	source rc && validateGraph
-	touch etc/.mk_graph
+	bash -c 'cd ${etc} && ./mkGraph.sh'
+	source ${current_dir}/rc && validateGraph
+	touch ${etc}/.mk_graph
 
 # (script targets)
 etc/pp.tab.gz: etc/.pp_affinity
@@ -96,38 +99,38 @@ etc/edgeTypes.tab: etc/.mk_graph
 etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
 	$(eval TMP := $(shell mktemp -d))
 	mkdir -p ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/subj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/subj_obj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp etc/clauseSearcherModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
-	jar cvf etc/naturalli_models.jar -C ${TMP} .
+	cp ${etc}/pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/subj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/subj_obj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/clauseSearcherModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
+	jar cvf ${etc}/naturalli_models.jar -C ${TMP} .
 
 clean_models:
-	rm -f etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz \
-		    etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz \
-				etc/graph.tab.gz etc/vocab.tab.gz etc/sense.tab.gz etc/privative.tab.gz \
-				etc/naturalli_models.jar
+	rm -f ${etc}/pp.tab.gz ${etc}/subj_pp.tab.gz ${etc}/subj_obj_pp.tab.gz \
+		    ${etc}/subj_pp_pp.tab.gz ${etc}/subj_pp_obj.tab.gz \
+				${etc}/graph.tab.gz ${etc}/vocab.tab.gz ${etc}/sense.tab.gz ${etc}/privative.tab.gz \
+				${etc}/naturalli_models.jar
 
 etc/.have_models: etc/pp.tab.gz etc/edgeTypes.tab etc/naturalli_models.jar
-	touch etc/.have_models
+	touch ${etc}/.have_models
 
 
 # (some targets)
-src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) etc/.have_models
+src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) ${etc}/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
 
-src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml etc/.have_models
+src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml ${etc}/.have_models
 	$(MAKE) -C src naturalli.war
 
-test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) etc/.have_models
+test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) ${etc}/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
 	$(MAKE) -C test/src test_preprocess.jar
 
 
 # (some helpers)
-java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar etc/.have_models
+java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar ${etc}/.have_models
 	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
@@ -135,7 +138,7 @@ if HAVE_ANT
 	CLASSPATH="" CORENLP_JAR="${CORENLP}" CORENLP_MODELS_JAR="${CORENLP_MODELS}" CORENLP_CASELESS_MODELS_JAR="${CORENLP_CASELESS_MODELS}" NATURALLI_MODELS="${NATURALLI_MODELS}" ant test
 else
 	@echo "  (could not find ant -- running directly)"
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.PreprocessITest
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierScopeITest
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=etc/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.WSDTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordN${etc}3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.PreprocessITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierScopeITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.WSDTest
 endif

@@ -1,3 +1,7 @@
+current_dir := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+root_dir := "${current_dir}/.."
+etc := "${root_dir}/etc"
+
 SUBDIRS = fnv knheap
 bin_PROGRAMS=hash_tree write_kb naturalli
 EXTRA_DIST =  edu
@@ -19,59 +23,60 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
-	echo "// DO NOT MODIFY THIS FILE!" > Models.h
-	echo "// It was automatically generated from the Makefile." >> Models.h
-	echo "// You can change it either in src/Makefile.am, or in the" >> Models.h
-	echo "// scripts in rc." >> Models.h
-	echo "" >> Models.h
-	echo "#ifndef MODELS_H" >> Models.h
-	echo "#define MODELS_H" >> Models.h
-	echo "" >> Models.h
-	echo "#include <stdint.h>" >> Models.h
-	echo "#include <string>" >> Models.h
-	echo "" >> Models.h
-	echo "#include <config.h>" >> Models.h
-	echo '#include "Types.h"' >> Models.h
-	echo "" >> Models.h
-	source ../rc && cd .. && dep2header >> src/Models.h
-	echo "" >> Models.h
-	echo '/**' >> Models.h
-	echo ' * Index a dependency arc to an integer.' >> Models.h
-	echo ' */' >> Models.h
-	echo 'uint8_t indexDependency(const std::string& dependencyAsString);' >> Models.h
-	echo '' >> Models.h
-	source ../rc && cd .. && edgeTypes >> src/Models.h
-	echo '' >> Models.h
-	source ../rc && cd .. && dummyVocab >> src/Models.h
-	echo '' >> Models.h
-	echo '/**' >> Models.h
-	echo ' * Get the String gloss for an indexed dependency arc.' >> Models.h
-	echo ' */' >> Models.h
-	echo 'std::string dependencyGloss(const uint8_t& indexed);' >> Models.h
-	echo '/**' >> Models.h
-	echo ' * Characterize a quantifier (as an indexed word) into its monotonicities ' >> Models.h
-	echo ' */' >> Models.h
-	echo "void characterizeQuantifier(word w, quantifier_type* subjType, quantifier_type* objType, monotonicity* subjMono, monotonicity* objMono);" >> Models.h
-	echo "#endif" >> Models.h
+	echo "${root_dir}"
+	echo "// DO NOT MODIFY THIS FILE!" > ${current_dir}/Models.h
+	echo "// It was automatically generated from the Makefile." >> ${current_dir}/Models.h
+	echo "// You can change it either in src/Makefile.am, or in the" >> ${current_dir}/Models.h
+	echo "// scripts in rc." >> ${current_dir}/Models.h
+	echo "" >> ${current_dir}/Models.h
+	echo "#ifndef MODELS_H" >> ${current_dir}/Models.h
+	echo "#define MODELS_H" >> ${current_dir}/Models.h
+	echo "" >> ${current_dir}/Models.h
+	echo "#include <stdint.h>" >> ${current_dir}/Models.h
+	echo "#include <string>" >> ${current_dir}/Models.h
+	echo "" >> ${current_dir}/Models.h
+	echo "#include <config.h>" >> ${current_dir}/Models.h
+	echo '#include "Types.h"' >> ${current_dir}/Models.h
+	echo "" >> ${current_dir}/Models.h
+	source ${root_dir}/rc && cd ${root_dir} && dep2header >> ${current_dir}/Models.h
+	echo "" >> ${current_dir}/Models.h
+	echo '/**' >> ${current_dir}/Models.h
+	echo ' * Index a dependency arc to an integer.' >> ${current_dir}/Models.h
+	echo ' */' >> ${current_dir}/Models.h
+	echo 'uint8_t indexDependency(const std::string& dependencyAsString);' >> ${current_dir}/Models.h
+	echo '' >> ${current_dir}/Models.h
+	source ${root_dir}/rc && cd ${root_dir} && edgeTypes >> ${current_dir}/Models.h
+	echo '' >> ${current_dir}/Models.h
+	source ${root_dir}/rc && cd ${root_dir} && dummyVocab >> ${current_dir}/Models.h
+	echo '' >> ${current_dir}/Models.h
+	echo '/**' >> ${current_dir}/Models.h
+	echo ' * Get the String gloss for an indexed dependency arc.' >> ${current_dir}/Models.h
+	echo ' */' >> ${current_dir}/Models.h
+	echo 'std::string dependencyGloss(const uint8_t& indexed);' >> ${current_dir}/Models.h
+	echo '/**' >> ${current_dir}/Models.h
+	echo ' * Characterize a quantifier (as an indexed word) into its monotonicities ' >> ${current_dir}/Models.h
+	echo ' */' >> ${current_dir}/Models.h
+	echo "void characterizeQuantifier(word w, quantifier_type* subjType, quantifier_type* objType, monotonicity* subjMono, monotonicity* objMono);" >> ${current_dir}/Models.h
+	echo "#endif" >> ${current_dir}/Models.h
 
 Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
-	echo "// DO NOT MODIFY THIS FILE!" > Models.cc
-	echo "// It was automatically generated from the Makefile." >> Models.cc
-	echo "// You can change it either in src/Makefile.am, or in the" >> Models.cc
-	echo "// scripts in rc." >> Models.cc
-	echo '#include "Models.h"' >> Models.cc
-	echo '' >> Models.cc
-	echo '#include <algorithm>' >> Models.cc
-	echo '#include "btree_map.h"' >> Models.cc
-	echo '' >> Models.cc
-	echo 'using namespace std;' >> Models.cc
-	echo 'using namespace btree;' >> Models.cc
-	echo '' >> Models.cc
-	source ../rc && cd .. && dep2string >> src/Models.cc
-	echo "" >> Models.cc
-	source ../rc && cd .. && depInsert2relC >> src/Models.cc
-	echo "" >> Models.cc
-	bash -c 'source ../rc && cd .. && characterizeQuantifiers >> src/Models.cc'
+	echo "// DO NOT MODIFY THIS FILE!" > ${current_dir}/Models.cc
+	echo "// It was automatically generated from the Makefile." >> ${current_dir}/Models.cc
+	echo "// You can change it either in src/Makefile.am, or in the" >> ${current_dir}/Models.cc
+	echo "// scripts in rc." >> ${current_dir}/Models.cc
+	echo '#include "Models.h"' >> ${current_dir}/Models.cc
+	echo '' >> ${current_dir}/Models.cc
+	echo '#include <algorithm>' >> ${current_dir}/Models.cc
+	echo '#include "btree_map.h"' >> ${current_dir}/Models.cc
+	echo '' >> ${current_dir}/Models.cc
+	echo 'using namespace std;' >> ${current_dir}/Models.cc
+	echo 'using namespace btree;' >> ${current_dir}/Models.cc
+	echo '' >> ${current_dir}/Models.cc
+	source ${root_dir}/rc && cd ${root_dir} && dep2string >> ${current_dir}/Models.cc
+	echo "" >> ${current_dir}/Models.cc
+	source ${root_dir}/rc && cd ${root_dir} && depInsert2relC >> ${current_dir}/Models.cc
+	echo "" >> ${current_dir}/Models.cc
+	bash -c 'source ${root_dir}/rc && cd ${root_dir} && characterizeQuantifiers >> ${current_dir}/Models.cc'
 
 BUILT_SOURCES = Models.h Models.cc
 
