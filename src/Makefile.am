@@ -97,7 +97,7 @@ if HAVE_TCMALLOC
 if DEBUG
   naturalli_LDADD += -lprofiler
 if IS_GCC
-  naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC
+  naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_LDADD += -lgcov
 endif
 endif
