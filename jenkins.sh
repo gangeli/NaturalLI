@@ -78,6 +78,16 @@ cd ..
 echo "-- TEST CASES --"
 test/run_testcases.sh
 
+echo "-- DIST TEST CASES --"
+configure
+make dist
+tar xfz `find . -name "naturalli-2.*.tar.gz"`
+cd `find . -type d -name "naturalli-2.*"`
+configure
+test/run_testcases.sh
+cd ..
+rm -r `find . -type d -name "naturalli-2.*"`
+
 echo "-- TEST AND REPORT --"
 configure
 make all check TESTS_ENVIRONMENT=true 

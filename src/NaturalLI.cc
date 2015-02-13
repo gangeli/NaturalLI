@@ -427,7 +427,7 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
 
   // Parse options
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,     // maxTicks
+  syn_search_options opts(10000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
                           false,       // checkFringe  TODO(gabor) make me a parameter
@@ -532,6 +532,7 @@ bool startServer(const uint32_t& port,
           default:            fprintf(stderr,"???"); break;
         }
         fprintf(stderr, ")\n");
+        free(clientAddress);
         return false;
       } 
     }
@@ -542,6 +543,7 @@ bool startServer(const uint32_t& port,
 
     std::thread t(handleConnection, requestSocket, clientAddress, proc, graph, kb);
     t.detach();
+    free(clientAddress);
 	}
 
   return true;

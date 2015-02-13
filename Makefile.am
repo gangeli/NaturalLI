@@ -15,6 +15,7 @@ EXTRA_DIST = README.md \
 						 rc \
 						 etc/depInsert2rel.tab \
 						 etc/operators.tab \
+						 etc/pp.sql \
 						 etc/mkGraph.sh
 
 clean-local:

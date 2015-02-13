@@ -63,7 +63,7 @@ GZIterator::GZIterator(const char* filename, const uint64_t& bufferSize)
   this->strm.next_in = Z_NULL;
   this->strm.avail_out = 0;
   this->strm.next_out = Z_NULL;
-  this->status = inflateInit2(&strm, 16+MAX_WBITS);
+  this->status = inflateInit2(&(this->strm), 16+MAX_WBITS);
   this->outConsumed = 0;
   this->outHave = 0;
   // Make sure we're ok
