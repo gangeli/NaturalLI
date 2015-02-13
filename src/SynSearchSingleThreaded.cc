@@ -53,6 +53,7 @@ inline uint64_t searchLoop(
       quantifierToVisit += 1;
     }
   }
+  assert(quantifierToVisit == numQuantifiers);
 
   // Compute topological order
   uint8_t topologicalOrder[tree.length + 1];

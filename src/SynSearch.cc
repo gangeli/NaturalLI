@@ -378,6 +378,7 @@ Tree::Tree(const string& conll)
           }
           // Register quantifier
           if (isQuantifier) {
+            span.quantifier_index = lineI;
             if (!registerQuantifier(span, subjType, objType, subjMono, objMono)) {
               fprintf(stderr, "WARNING: Too many quantifiers; skipping at word %u\n", lineI);
             }

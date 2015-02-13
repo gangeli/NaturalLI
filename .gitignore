@@ -22,6 +22,7 @@ src/Models.h
 src/fnv/longlong.h
 # (programs)
 src/hash_tree
+src/write_kb
 src/naturalli
 test/src/test_server
 test/src/itest_server

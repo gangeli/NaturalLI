@@ -9,6 +9,15 @@ clean-local:
 ../etc/vocab.tab.gz:
 	${MAKE} -C .. etc/vocab.tab.gz
 
+naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
+	@echo "Ensuring models..."
+	${MAKE} -C .. etc/.have_models
+	@echo "Compiling (${JDK_HOME}/bin/javac)..."
+	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP} `find . -name "*.java"`
+	@echo "Making Jar..."
+	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar -C . .
+	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
+
 Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo "// DO NOT MODIFY THIS FILE!" > Models.h
 	echo "// It was automatically generated from the Makefile." >> Models.h
@@ -72,6 +81,7 @@ naturalli_SOURCES = GZip.cc Models.cc FactDB.cc \
                  		Graph.h Utils.h Types.h  SynSearch.h \
 										JavaBridge.h GZip.h Models.h FactDB.h \
                  		btree.h btree_container.h btree_map.h btree_set.h
+naturalli_DEPENDENCIES =	naturalli_preprocess.jar
 
 
 naturalli_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
@@ -100,15 +110,6 @@ write_kb_SOURCES = FactDB.h FactDB.cc WriteKB.cc \
                    btree.h btree_container.h btree_map.h btree_set.h
 write_kb_CXXFLAGS=-std=c++0x
 write_kb_LDADD=
-
-naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
-	@echo "Ensuring models..."
-	${MAKE} -C .. etc/.have_models
-	@echo "Compiling (${JDK_HOME}/bin/javac)..."
-	@${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${CP} `find . -name "*.java"`
-	@echo "Making Jar..."
-	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar -C . .
-	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 naturalli.war: naturalli_preprocess.jar
 	@echo "Ensuring models..."

@@ -195,10 +195,10 @@ TEST_F(TreeTest, ValidateBitSetBeginsEmpty) {
 }
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(592, sizeof(Tree));
+  EXPECT_EQ(600, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
-  EXPECT_EQ(3, sizeof(quantifier_span));
+  EXPECT_EQ(4, sizeof(quantifier_span));
 }
 
 TEST_F(TreeTest, DefinitionsOk) {
@@ -827,6 +827,25 @@ TEST_F(TreeTest, TopologicalSortIgnoreQuantifiers) {
   EXPECT_EQ(1, buffer[3]);
   EXPECT_EQ(255, buffer[4]);
   EXPECT_EQ(42, buffer[5]);  // don't go past end of buffer
+}
+
+TEST_F(TreeTest, QuantifierCountGetMatch) {
+  const Tree t(
+    string("the\t2\top\t0\tadditive\t2-5\tadditive\t5-8\n") +
+    string("brunt\t6\tnsubj\t2\t-\t-\t-\t-\n") +
+    string("the\t4\top\t0\tadditive\t1-5\tadditive\t5-8\n") +
+    string("fringe\t2\tprep_of\t2\t-\t-\t-\t-\n") +
+    string("be\t6\tcop\t3\t-\t-\t-\t-\n") +
+    string("TD\t0\troot\t0\t-\t-\t-\t-\n") +
+    string("10\t6\tnum\t0\t-\t-\t-\t-\n"));
+  EXPECT_EQ(2, t.getNumQuantifiers());
+  EXPECT_TRUE(t.isQuantifier(0));
+  EXPECT_FALSE(t.isQuantifier(1));
+  EXPECT_TRUE(t.isQuantifier(2));
+  EXPECT_FALSE(t.isQuantifier(3));
+  EXPECT_FALSE(t.isQuantifier(4));
+  EXPECT_FALSE(t.isQuantifier(5));
+  EXPECT_FALSE(t.isQuantifier(6));
 }
 
 // ----------------------------------------------

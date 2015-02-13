@@ -266,12 +266,13 @@ struct alignas(1) quantifier_monotonicity {
 #ifdef __GNUG__
 struct quantifier_span {
 #else
-struct alignas(3) quantifier_span {
+struct alignas(4) quantifier_span {
 #endif
   uint8_t subj_begin:5,
           subj_end:5,
           obj_begin:5,
-          obj_end:5;
+          obj_end:5,
+          quantifier_index;
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
@@ -409,16 +410,14 @@ class Tree {
   /** Gives the quantifier index of the given quantifier. */
   inline int8_t quantifierIndex(const uint8_t& tokenIndex) const {
     for (uint8_t i = 0; i < numQuantifiers; ++i) {
-      if (quantifierSpans[i].subj_begin - 1 == tokenIndex) { return i; }
+      if (quantifierSpans[i].quantifier_index == tokenIndex) { return i; }
     }
     return -1;
   }
   
   /** Gives the token index of the given quantifier. */
   inline int8_t quantifierTokenIndex(const uint8_t& quantifierIndex) const {
-    return quantifierSpans[quantifierIndex].subj_begin <= 0 
-      ? 0 
-      : quantifierSpans[quantifierIndex].subj_begin - 1;
+    return quantifierSpans[quantifierIndex].quantifier_index;
   }
   
   /** If true, the word at the given index is a quantifier. */
