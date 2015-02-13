@@ -4,19 +4,35 @@ etc := "${current_dir}/etc"
 SUBDIRS = src test/src
 ACLOCAL_AMFLAGS=-I m4
 EXTRA_DIST = README.md \
-						 doxygen.conf \
+             doxygen.conf \
              models/ConceptNet/emnlp2014_final.tab \
              qry.jar run \
              build.xml \
              lib/jaws.jar \
              lib/test/hamcrest-core-1.3.jar \
-						 lib/test/junit-4.11.jar \
-						 test/data/unittest_gzip.tab.gz \
-						 rc \
-						 etc/depInsert2rel.tab \
-						 etc/operators.tab \
-						 etc/pp.sql \
-						 etc/mkGraph.sh
+             lib/test/junit-4.11.jar \
+             test/data/unittest_gzip.tab.gz \
+             rc \
+             etc/depInsert2rel.tab \
+             etc/operators.tab \
+             etc/pp.sql \
+             etc/mkGraph.sh \
+             test/run_testcases.sh \
+             test/run_perfcase.sh \
+             test/run_inet.py \
+             test/data/testcase_complex.examples \
+             test/data/testcase_delete.examples \
+             test/data/testcase_exactlookup.examples \
+             test/data/testcase_insert.examples \
+             test/data/testcase_meronymy.examples \
+             test/data/testcase_quantifier.examples \
+             test/data/testcase_wordnet.examples \
+             test/data/perfcase_fracas_singlepremise.examples \
+             test/data/perfcase_fracas_applicable.examples \
+             test/data/perfcase_fracas_all.examples \
+             test/data/emnlp2014_train.examples \
+             test/data/emnlp2014_test.examples
+             
 
 clean-local:
 	rm -f java.hprof.txt
