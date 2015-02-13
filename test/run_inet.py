@@ -8,14 +8,36 @@ import sys
 import json
 
 TCP_IP = '127.0.0.1'
-TCP_PORT = 4242
-PARALLELISM=8
+if len(sys.argv) > 1:
+  TCP_IP = sys.argv[1]
+TCP_PORT = 1337
+if len(sys.argv) > 2:
+  TCP_PORT = int(sys.argv[2])
+PARALLELISM=4
+if len(sys.argv) > 3:
+  PARALLELISM = int(sys.argv[3])
 
+# A bit of help text
+print( "Connecting to %s:%u on %u threads" % (TCP_IP, TCP_PORT, PARALLELISM) )
+print( "Enter a number of optional premises, separated by newlines," )
+print( "followed by a query and two newlines. Or, pipe one of the test" )
+print( "case files in test/data/ ." )
+print( "For example:" )
+print( "" )
+print( "All cats have tails." )
+print( "Some animals have tails." )
+print( "" )
+print( "> 'Some animals have tails.' is true (0.999075)" )
+print( "" )
+print( "vv Your input here (^D to exit) vv" )
+
+# Evaluation variables
 RESULT_LOCK = Lock()
 numGuessAndCorrect = 0
 numGuessTrue       = 0
 numGoldTrue        = 0
 numCorrect         = 0
+numStrictCorrect   = 0
 numTotal           = 0
 
 """
@@ -33,6 +55,7 @@ def query(premises, query):
   global numGuessTrue
   global numGoldTrue
   global numCorrect
+  global numStrictCorrect
   global numTotal
   
   # Open a socket
@@ -43,11 +66,11 @@ def query(premises, query):
   for premise in premises:
     s.send((premise.strip() + "\n").encode("ascii"))
   s.send((query.strip() + '\n\n').encode("ascii"))
-  gold = 'unknown'
+  gold = None
   booleanGold = True
   if query.startswith('TRUE: '):
     query = query[len("TRUE: "):]
-    booleanGold = 'true'
+    gold = 'true'
     booleanGold = True
   elif query.startswith('FALSE: '):
     query = query[len("FALSE: "):]
@@ -80,25 +103,34 @@ def query(premises, query):
     bestPremise = response['bestPremise'] # String
     path        = response['path']        # List
     # Output result
-    truth = 'unknown'
+    guess = 'unknown'
     booleanGuess = False
     if probability > 0.5:
-      truth = 'true'
+      guess = 'true'
       booleanGuess = True
     elif probability < 0.5:
-      truth = 'false'
-    print ("'%s' is %s (%f)" % (query, truth, probability))
+      guess = 'false'
+    if gold != None:
+      pfx = "FAIL:"
+      if gold == guess:
+        pfx = "PASS:"
+      print ("> %s '%s' is %s (%f)" % (pfx, query, guess, probability))
+    else:
+      print ("> '%s' is %s (%f)" % (query, guess, probability))
     # Compute results
     RESULT_LOCK.acquire()
-    numTotal += 1;
-    if booleanGuess == booleanGold:
-      numCorrect += 1
-    if booleanGuess and booleanGold:
-      numGuessAndCorrect += 1
-    if booleanGuess:
-      numGuessTrue += 1
-    if booleanGold:
-      numGoldTrue += 1
+    if gold != None:
+      numTotal += 1;
+      if booleanGuess == booleanGold:
+        numCorrect += 1
+      if guess == gold:
+        numStrictCorrect += 1
+      if booleanGuess and booleanGold:
+        numGuessAndCorrect += 1
+      if booleanGuess:
+        numGuessTrue += 1
+      if booleanGold:
+        numGoldTrue += 1
     RESULT_LOCK.release()
   else:
     print ("Query failed: %s" % response['message'])
@@ -136,17 +168,20 @@ with ThreadPoolExecutor(max_workers=PARALLELISM) as threads:
 
 
 # Compute scores
-p    = 1.0 if numGuessTrue == 0 else (float(numGuessAndCorrect) / float(numGuessTrue))
-r    = 0.0 if numGoldTrue == 0 else (float(numGuessAndCorrect) / float(numGoldTrue))
-f1   = 2.0 * p * r / (p + r)
-accr = 0.0 if numTotal == 0 else (float(numCorrect) / float(numTotal))
+p      = 1.0 if numGuessTrue == 0 else (float(numGuessAndCorrect) / float(numGuessTrue))
+r      = 0.0 if numGoldTrue == 0 else (float(numGuessAndCorrect) / float(numGoldTrue))
+f1     = 2.0 * p * r / (p + r)
+accr   = 0.0 if numTotal == 0 else (float(numCorrect) / float(numTotal))
+strict = 0.0 if numTotal == 0 else (float(numStrictCorrect) / float(numTotal))
 
 # Print scores
-print("--------------------")
-print("P:        %.3g" % p)
-print("R:        %.3g" % r)
-print("F1:       %.3g" % f1)
-print("Accuracy: %.3g" % accr)
-print("")
-print("(Total):  %d"   % numTotal)
-print("--------------------")
+if numTotal > 0:
+  print("--------------------")
+  print("P:        %.3g" % p)
+  print("R:        %.3g" % r)
+  print("F1:       %.3g" % f1)
+  print("Accuracy: %.3g" % accr)
+  print("3-class:  %.3g" % strict)
+  print("")
+  print("(Total):  %d"   % numTotal)
+  print("--------------------")

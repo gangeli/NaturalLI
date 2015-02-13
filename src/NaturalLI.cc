@@ -1,3 +1,8 @@
+/*
+ * TODO(gabor) implement negation intro / elimination
+ *
+ */
+
 #include <arpa/inet.h>
 #include <cmath>
 #include <cstdio>
@@ -427,10 +432,10 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
 
   // Parse options
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,     // maxTicks
+  syn_search_options opts(1000000,     // maxTicks  TODO(gabor) make me a parameter
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
-                          false,       // checkFringe  TODO(gabor) make me a parameter
+                          true,        // checkFringe  TODO(gabor) make me a parameter
                           false);      // silent
 
   // Parse query

@@ -2,6 +2,8 @@ NaturalLI
 ===========
 **Natural [Language|Logic] Inference**
 
+[![Build Status](http://goobs.org/jenkins/buildStatus/icon?job=NaturalLI-dev)](http://goobs.org/jenkins/job/NaturalLI-dev/)
+
 NaturalLI is a Natural Logic reasoning engine aimed at fast inference
 from a large database of known facts.
 The project's primary goal is to infer whether arbitrary common-sense
