@@ -1331,7 +1331,6 @@ int KNHeap<Key, Value>::makeSpaceAvailable(int level)
     Element *newSegment = new Element[segmentSize + 1];
     tree[level].multiMerge(newSegment, segmentSize); // empty this level
     //    tree[level].cleanUp();
-    assert (segmentSize < KNKMAX);
     newSegment[segmentSize].key = buffer1[KNBufferSize1].key; // sentinel
     // for queues where size << #inserts
     // it might make sense to stay in this level if

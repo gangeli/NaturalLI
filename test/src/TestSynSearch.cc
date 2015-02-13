@@ -967,14 +967,14 @@ TEST_F(KNHeapTest, SimpleTestWithPaths) {
 //
 TEST_F(KNHeapTest, StressTest) {
   srand(42);
-  for (uint32_t cycle = 0; cycle < 10; ++cycle) {
+  for (uint32_t cycle = 0; cycle < 3; ++cycle) {
     ASSERT_TRUE(simpleHeap->isEmpty());
-    for (uint32_t insert = 0; insert < 10000; ++insert) {
+    for (uint32_t insert = 0; insert < 100000; ++insert) {
       float cost = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
       simpleHeap->insert(cost, insert);
     }
     ASSERT_FALSE(simpleHeap->isEmpty());
-    for (uint32_t del = 0; del < 10000; ++del) {
+    for (uint32_t del = 0; del < 100000; ++del) {
       float cost;
       uint32_t elem;
       ASSERT_FALSE(simpleHeap->isEmpty());
