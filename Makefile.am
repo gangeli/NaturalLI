@@ -19,7 +19,7 @@ EXTRA_DIST = README.md \
              test/run_testcases.sh \
              test/run_perfcase.sh \
              test/run_inet.py \
-             test/data/ \
+             test/data \
 						 etc/WordNet-3.1
              
 
