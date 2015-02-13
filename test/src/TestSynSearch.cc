@@ -962,6 +962,31 @@ TEST_F(KNHeapTest, SimpleTestWithPaths) {
   ASSERT_EQ(0, pathHeap->getSize());
 }
 
+//
+// Heap Stress Test
+//
+TEST_F(KNHeapTest, StressTest) {
+  srand(42);
+  for (uint32_t cycle = 0; cycle < 10; ++cycle) {
+    ASSERT_TRUE(simpleHeap->isEmpty());
+    for (uint32_t insert = 0; insert < 10000; ++insert) {
+      float cost = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+      simpleHeap->insert(cost, insert);
+    }
+    ASSERT_FALSE(simpleHeap->isEmpty());
+    for (uint32_t del = 0; del < 10000; ++del) {
+      float cost;
+      uint32_t elem;
+      ASSERT_FALSE(simpleHeap->isEmpty());
+      simpleHeap->deleteMin(&cost, &elem);
+      EXPECT_LE(cost, 1.0);
+      EXPECT_GE(cost, 0.0);
+      EXPECT_LE(elem, 1000000);
+    }
+    ASSERT_TRUE(simpleHeap->isEmpty());
+  }
+}
+
 // ----------------------------------------------
 // Natural Logic
 // ----------------------------------------------
