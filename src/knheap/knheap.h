@@ -354,6 +354,7 @@ KNLooserTree<Key, Value>::
 KNLooserTree() : lastFree(0), size(0), logK(0), k(1)
 {
   empty  [0] = 0;
+  assert (0 < KNKMAX);
   segment[0] = 0;
   current[0] = &dummy;
   // entry and dummy are initialized by init
@@ -498,6 +499,8 @@ compactTree()
   for(;  from < k;  from++) {
     if (current[from]->key != sup) {
       current[to] = current[from];
+      assert (to < KNKMAX);
+      assert (from < KNKMAX);
       segment[to] = segment[from];
       to++;
     } 
@@ -541,6 +544,7 @@ insertSegment(Element *to, int sz)
 
 
     // link new segment
+    assert (index < KNKMAX);
     current[index] = segment[index] = to;
     size += sz;
     
@@ -556,6 +560,7 @@ insertSegment(Element *to, int sz)
     // but also needed to keep empty segments from
     // clogging up the tree
     delete [] to;
+    to = NULL;
   }
 }
 
@@ -571,7 +576,8 @@ deallocateSegment(int index)
 
   // free memory
   delete [] segment[index];
-  segment[index] = 0;
+  segment[index] = NULL;
+//  segment[index] = 0;
   
   // push on the stack of free segment indices
   lastFree++;
@@ -1325,6 +1331,7 @@ int KNHeap<Key, Value>::makeSpaceAvailable(int level)
     Element *newSegment = new Element[segmentSize + 1];
     tree[level].multiMerge(newSegment, segmentSize); // empty this level
     //    tree[level].cleanUp();
+    assert (segmentSize < KNKMAX);
     newSegment[segmentSize].key = buffer1[KNBufferSize1].key; // sentinel
     // for queues where size << #inserts
     // it might make sense to stay in this level if
