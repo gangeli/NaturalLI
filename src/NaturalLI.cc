@@ -332,7 +332,7 @@ void signalHandler(int32_t s){
  */
 void closeConnection(const uint32_t socket, sockaddr_in* client) {
   // Close the connection
-  fprintf(stderr, "[%d] CONNECTION CLOSING: %s port %d\n", socket,
+  fprintf(stderr, "  [%d] CONNECTION CLOSING: %s port %d\n", socket,
 		     inet_ntoa(client->sin_addr),
          ntohs(client->sin_port));
   if (shutdown(socket, SHUT_RDWR) != 0) {

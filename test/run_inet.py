@@ -53,6 +53,10 @@ def query(premises, query):
     query = query[len("FALSE: "):]
     gold = 'false'
     booleanGold = False
+  elif query.startswith('UNK: '):
+    query = query[len("UNK: "):]
+    gold = 'unknown'
+    booleanGold = False
 
   # Read the response
   rawResponse = s.recv(32768).decode("ascii");
@@ -111,6 +115,8 @@ with ThreadPoolExecutor(max_workers=PARALLELISM) as threads:
     line = sys.stdin.readline()
     if not line:
       break;
+    if line.strip().startswith('#'):
+      continue
     if (line == '\n'):
       # Parse the lines
       lines.reverse()
