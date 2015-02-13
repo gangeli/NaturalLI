@@ -501,8 +501,6 @@ compactTree()
       current[to] = current[from];
       assert (to < KNKMAX);
       assert (from < KNKMAX);
-      assert (segment[from] != NULL);
-      assert (segment[to] == NULL);
       segment[to] = segment[from];
       to++;
     } 
