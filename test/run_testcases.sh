@@ -31,7 +31,7 @@ echo "Examples failed:"
 cat $OUT | egrep "^FAIL" | wc | awk '{ print $1 }'
 echo "Failures:"
 export GREP_COLOR="1;31"
-if [ $STATUS != 0 ]; then
+if [ "`cat $OUT | egrep "^FAIL" | wc -l`" != "0" ]; then
   echo ""
   cat $OUT | egrep "^FAIL"
 else

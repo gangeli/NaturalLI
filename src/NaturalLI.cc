@@ -267,7 +267,7 @@ uint32_t repl(const Graph* graph, JavaBridge* proc,
               const btree_set<uint64_t>* kb) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(10000,     // maxTicks
+  syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
                           true,        // checkFringe
@@ -427,7 +427,7 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
 
   // Parse options
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(10000,     // maxTicks
+  syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
                           false,       // checkFringe  TODO(gabor) make me a parameter
@@ -543,9 +543,9 @@ bool startServer(const uint32_t& port,
 
     std::thread t(handleConnection, requestSocket, clientAddress, proc, graph, kb);
     t.detach();
-    free(clientAddress);
 	}
 
+  free(clientAddress);
   return true;
 }
 
