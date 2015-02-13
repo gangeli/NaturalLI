@@ -430,7 +430,7 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
   syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
-                          true,        // checkFringe
+                          false,       // checkFringe  TODO(gabor) make me a parameter
                           false);      // silent
 
   // Parse query

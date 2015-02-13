@@ -157,8 +157,13 @@ function characterizeQuantifiers() {
       echo "return;"
     done
   echo "    default:"
-  echo '      fprintf(stderr, "Could not find operator: %u\\n", w);'
-  echo '      exit(1);'
+  echo "      *subjMono = MONOTONE_UP;"
+  echo "      *subjType = QUANTIFIER_TYPE_BOTH;"
+  echo "      *objMono = MONOTONE_UP;"
+  echo "      *objType = QUANTIFIER_TYPE_BOTH;"
+  echo "      break;"
+#  echo '      fprintf(stderr, "Could not find operator: %u\\n", w);'
+#  echo '      exit(1);'
   echo '  }'
   echo "}"
 }

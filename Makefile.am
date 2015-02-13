@@ -118,19 +118,19 @@ etc/.have_models: etc/pp.tab.gz etc/edgeTypes.tab etc/naturalli_models.jar
 
 
 # (some targets)
-src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) ${etc}/.have_models
+src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) etc/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
 
-src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml ${etc}/.have_models
+src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml etc/.have_models
 	$(MAKE) -C src naturalli.war
 
-test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) ${etc}/.have_models
+test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) etc/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
 	$(MAKE) -C test/src test_preprocess.jar
 
 
 # (some helpers)
-java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar ${etc}/.have_models
+java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar etc/.have_models
 	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
