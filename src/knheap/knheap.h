@@ -355,7 +355,7 @@ KNLooserTree() : lastFree(0), size(0), logK(0), k(1)
 {
   empty  [0] = 0;
   assert (0 < KNKMAX);
-  segment[0] = 0;
+  segment[0] = NULL;
   current[0] = &dummy;
   // entry and dummy are initialized by init
   // since they need the value of supremum
@@ -501,6 +501,8 @@ compactTree()
       current[to] = current[from];
       assert (to < KNKMAX);
       assert (from < KNKMAX);
+      assert (segment[from] != NULL);
+      assert (segment[to] != NULL);
       segment[to] = segment[from];
       to++;
     } 
@@ -545,6 +547,7 @@ insertSegment(Element *to, int sz)
 
     // link new segment
     assert (index < KNKMAX);
+    assert (to != NULL);
     current[index] = segment[index] = to;
     size += sz;
     
@@ -575,6 +578,7 @@ deallocateSegment(int index)
   current[index] = &dummy;
 
   // free memory
+  assert (segment[index] != NULL);
   delete [] segment[index];
   segment[index] = NULL;
 //  segment[index] = 0;
