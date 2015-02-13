@@ -113,15 +113,16 @@ AC_ARG_WITH([naturalli-models],
 AC_DEFINE_UNQUOTED(NATURALLI_MODELS, "${NATURALLI_MODELS}", [The location of the NaturalLI auxilliary models jar])
 
 # (greenplum)
-AC_SUBST(GP_HOST)
-GP_HOST=julie0
-AC_SUBST(GP_PORT)
-GP_PORT=4242
-AC_SUBST(GP_USER)
-GP_USER=angeli
-AC_SUBST(GP_DB)
-GP_DB=angeli
-AM_CONDITIONAL(HAVE_GPSQL, psql -h julie0 -p 4242 -U angeli -l | grep angeli)
+#AC_SUBST(GP_HOST)
+#GP_HOST=julie0
+#AC_SUBST(GP_PORT)
+#GP_PORT=4242
+#AC_SUBST(GP_USER)
+#GP_USER=angeli
+#AC_SUBST(GP_DB)
+#GP_DB=angeli
+#AM_CONDITIONAL(HAVE_GPSQL, psql -h julie0 -p 4242 -U angeli -l | grep angeli)
+#AC_DEFINE_UNQUOTED(HAVE_GPSQL,  false,  [If true, assume we have Greenplum])
 
 # (check headers)
 AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h cmath cstdio \

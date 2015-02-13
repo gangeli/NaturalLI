@@ -48,25 +48,25 @@ etc/graphData/:
 	cd etc && tar xvfz graphData.tar.gz
 
 etc/.pp_affinity: etc/pp.sql
-if HAVE_GPSQL
-	psql -h ${GP_HOST} -p ${GP_PORT} -U ${GP_USER} ${GP_DB} -f ${etc}/pp.sql
-	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
-	  -c "COPY (SELECT * FROM pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > ${etc}/pp.tab.gz
-	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
-	  -c "COPY (SELECT * FROM subj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > ${etc}/subj_pp.tab.gz
-	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
-	  -c "COPY (SELECT * FROM subj_obj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > ${etc}/subj_obj_pp.tab.gz
-	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
-	  -c "COPY (SELECT * FROM subj_pp_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > ${etc}/subj_pp_pp.tab.gz
-	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
-	  -c "COPY (SELECT * FROM subj_pp_obj_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
-	  | gzip > ${etc}/subj_pp_obj.tab.gz
-	touch ${etc}/.pp_affinity
-else
+#if HAVE_GPSQL
+#	psql -h ${GP_HOST} -p ${GP_PORT} -U ${GP_USER} ${GP_DB} -f ${etc}/pp.sql
+#	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+#	  -c "COPY (SELECT * FROM pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+#	  | gzip > ${etc}/pp.tab.gz
+#	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+#	  -c "COPY (SELECT * FROM subj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+#	  | gzip > ${etc}/subj_pp.tab.gz
+#	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+#	  -c "COPY (SELECT * FROM subj_obj_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+#	  | gzip > ${etc}/subj_obj_pp.tab.gz
+#	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+#	  -c "COPY (SELECT * FROM subj_pp_pp_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+#	  | gzip > ${etc}/subj_pp_pp.tab.gz
+#	psql -h ${GP_HOST} -U ${GP_USER} -p ${GP_PORT} ${GP_DB} \
+#	  -c "COPY (SELECT * FROM subj_pp_obj_check WHERE positive_count > 100 AND percent > 0.1 ORDER BY percent DESC) TO STDOUT WITH NULL AS ''"\
+#	  | gzip > ${etc}/subj_pp_obj.tab.gz
+#	touch ${etc}/.pp_affinity
+#else
 	@echo "Could not find Greenplum; downloading attachment models instead."
 	wget -O ${etc}/pp.tab.gz 'https://www.dropbox.com/s/tgqwwcvoaspmzj3/pp.tab.gz?dl=1'
 	wget -O ${etc}/subj_obj_pp.tab.gz 'https://www.dropbox.com/s/4sajae63s25i7uw/subj_obj_pp.tab.gz?dl=1'
@@ -74,7 +74,7 @@ else
 	wget -O ${etc}/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
 	wget -O ${etc}/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
 	touch ${etc}/.pp_affinity
-endif
+#endif
 
 etc/clauseSearcherModel.ser.gz:
 	wget -O ${etc}/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
