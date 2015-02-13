@@ -267,7 +267,7 @@ uint32_t repl(const Graph* graph, JavaBridge* proc,
               const btree_set<uint64_t>* kb) {
   uint32_t failedExamples = 0;
   const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,     // maxTicks
+  syn_search_options opts(10000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
                           true,        // checkFringe
