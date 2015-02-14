@@ -31,7 +31,7 @@ make all check TESTS_ENVIRONMENT=true
 make src/naturalli_preprocess.jar
 
 echo "-- C++ TESTS --"
-test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+test/src/test_server
 
 echo "-- JAVA TESTS --"
 make java_test

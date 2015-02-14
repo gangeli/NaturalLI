@@ -1,14 +1,14 @@
-# Meronymy is warranted
-Obama was born in Honolulu
-TRUE: Obama was born in Hawaii
-
-# Meronymy is not warranted
-Honolulu is a city
-UNK: Hawaii is a city
-
-# Make sure we work in negation
-Obama was not born in Texas
-TRUE: Obama was not born in Dallas
+## Meronymy is warranted
+#Obama was born in Honolulu
+#TRUE: Obama was born in Hawaii
+#
+## Meronymy is not warranted
+#Honolulu is a city
+#UNK: Hawaii is a city
+#
+## Make sure we work in negation
+#Obama was not born in Texas
+#TRUE: Obama was not born in Dallas
 
 # And that we don't always work in negation
 Obama was not born in Dallas

@@ -322,7 +322,7 @@ string passOrFail(const double& truth,
 uint32_t repl(const Graph* graph, JavaBridge* proc,
               const btree_set<uint64_t>* kb) {
   uint32_t failedExamples = 0;
-  SynSearchCosts* costs = softNaturalLogicCosts();
+  SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
@@ -466,7 +466,7 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
                       const Graph* graph, const btree_set<uint64_t>* kb) {
 
   // Initialize options
-  SynSearchCosts* costs = softNaturalLogicCosts();
+  SynSearchCosts* costs = strictNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
