@@ -114,6 +114,8 @@ def query(premises, query):
       pfx = "FAIL:"
       if gold == guess:
         pfx = "PASS:"
+      if gold == 'false' and guess == 'unknown':
+        pfx = "????:"  # 3-class failure; 2-class success
       print ("> %s '%s' is %s (%f)" % (pfx, query, guess, probability))
     else:
       print ("> '%s' is %s (%f)" % (query, guess, probability))

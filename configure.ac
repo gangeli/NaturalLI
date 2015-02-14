@@ -130,7 +130,7 @@ AC_CHECK_HEADERS([algorithm arpa/inet.h assert.h bitset cmath cstdio \
                   queue set sstream stddef.h stdint.h stdio.h \
                   stdlib.h string thread type_traits \
                   sys/errno.h sys/resource.h sys/socket.h sys/types.h \
-                  sys/prctl.h unistd.h utility zlib.h \
+                  sys/prctl.h unistd.h utility zlib.h regex \
                   vector ])
 
 # (unordered map)

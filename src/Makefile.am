@@ -47,6 +47,9 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	echo '' >> ${current_dir}/Models.h
 	source ${root_dir}/rc && cd ${root_dir} && edgeTypes >> ${current_dir}/Models.h
 	echo '' >> ${current_dir}/Models.h
+	echo 'uint8_t indexEdgeType(const std::string& edgeAsString);' >> ${current_dir}/Models.h
+	echo '' >> ${current_dir}/Models.h
+	echo '' >> ${current_dir}/Models.h
 	source ${root_dir}/rc && cd ${root_dir} && dummyVocab >> ${current_dir}/Models.h
 	echo '' >> ${current_dir}/Models.h
 	echo '/**' >> ${current_dir}/Models.h
@@ -75,6 +78,8 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 	source ${root_dir}/rc && cd ${root_dir} && dep2string >> ${current_dir}/Models.cc
 	echo "" >> ${current_dir}/Models.cc
 	source ${root_dir}/rc && cd ${root_dir} && depInsert2relC >> ${current_dir}/Models.cc
+	echo "" >> ${current_dir}/Models.cc
+	source ${root_dir}/rc && cd ${root_dir} && edgeType2String >> ${current_dir}/Models.cc
 	echo "" >> ${current_dir}/Models.cc
 	bash -c 'source ${root_dir}/rc && cd ${root_dir} && characterizeQuantifiers >> ${current_dir}/Models.cc'
 

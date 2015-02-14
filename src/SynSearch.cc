@@ -991,7 +991,6 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
   }
   for (uint8_t i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
     costs->insertionLexicalCost[i] = smallConstantCost;
-    costs->deletionLexicalCost[i] = smallConstantCost;
   }
   // Tweak 'fishy' mutation types
   costs->mutationLexicalCost[VERB_ENTAIL] = badCost;

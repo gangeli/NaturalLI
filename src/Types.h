@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <stdint.h>
+#include <algorithm>
 
 #include <config.h>
 
@@ -43,6 +44,28 @@ typedef uint8_t natlog_relation;
 #define FUNCTION_ALTERNATION        4
 #define FUNCTION_COVER              5
 #define FUNCTION_INDEPENDENCE       6
+
+inline uint8_t indexNatlogRelation(const std::string& natlogRelation) {
+  std::string lower = natlogRelation;
+  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);
+  if (lower == "equivalent") {
+    return FUNCTION_EQUIVALENT;
+  } else if (lower == "forward_entailment") {
+    return FUNCTION_FORWARD_ENTAILMENT;
+  } else if (lower == "reverse_entailment") {
+    return FUNCTION_REVERSE_ENTAILMENT;
+  } else if (lower == "negation") {
+    return FUNCTION_NEGATION;
+  } else if (lower == "alternation") {
+    return FUNCTION_ALTERNATION;
+  } else if (lower == "cover") {
+    return FUNCTION_COVER;
+  } else if (lower == "independence") {
+    return FUNCTION_INDEPENDENCE;
+  } else {
+    return 7;
+  }
+}
 
 //
 // Typedefs

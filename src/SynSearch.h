@@ -174,11 +174,10 @@ class SynSearchCosts {
                      const bool& endTruthValue,
                      bool* beginTruthValue) const;
 
-  float mutationLexicalCost[NUM_MUTATION_TYPES];
-  float insertionLexicalCost[NUM_DEPENDENCY_LABELS];
-  float deletionLexicalCost[NUM_DEPENDENCY_LABELS];
-  float transitionCostFromTrue[8];
-  float transitionCostFromFalse[8];
+  float mutationLexicalCost[NUM_MUTATION_TYPES + 1];  // + 1 to allow for dumping parse errors into the null cost
+  float insertionLexicalCost[NUM_DEPENDENCY_LABELS + 1];
+  float transitionCostFromTrue[8 + 1];
+  float transitionCostFromFalse[8 + 1];
 };
 
 /**

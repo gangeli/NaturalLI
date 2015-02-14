@@ -18,6 +18,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <thread>
+#include <regex>
 #include <unistd.h>
 
 #include "config.h"
@@ -95,6 +96,56 @@ inline double probability(const double& confidence, const bool& truth) {
   } else {
     return 0.5 - confidence;
   }
+}
+
+
+regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
+regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+
+/**
+ * Parse a metadata line, returning false if the line didn't match any
+ * known directives.
+ */
+bool parseMetadata(const char* rawLine, SynSearchCosts* costs,
+                   syn_search_options* opts) {
+  assert (rawLine[0] != '\0');
+  assert (rawLine[0] == '%');
+  string line(&(rawLine[1]));
+  smatch result;
+  if (regex_search(line, result, regexSetValue)) {
+    if (result.size() != 4) { return false; }
+    string toSet = result[1].str();
+    string key = result[2].str();
+    float value = atof(result[3].str().c_str());
+    uint32_t ivalue = atoi(result[3].str().c_str());
+    if (toSet == "mutationLexicalCost") {
+      costs->mutationLexicalCost[indexEdgeType(key)] = value;
+    } else if (toSet == "insertionLexicalCost") {
+      costs->insertionLexicalCost[indexEdgeType(key)] = value;
+    } else if (toSet == "transitionCostFromTrue") {
+      costs->transitionCostFromTrue[indexNatlogRelation(key)] = value;
+    } else if (toSet == "transitionCostFromFalse") {
+      costs->transitionCostFromFalse[indexNatlogRelation(key)] = value;
+    } else {
+      fprintf(stderr, "Unknown key: '%s'\n", toSet.c_str());
+      return false;
+    } 
+    return true;
+  } else if (regex_search(line, result, regexSetFlag)) {
+    string toSet = result[1].str();
+    float value = atof(result[2].str().c_str());
+    if (toSet == "maxTicks") {
+      opts->maxTicks = value;
+    } else if (toSet == "checkFringe") {
+      opts->checkFringe = (value != 0);
+    } else {
+      fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
+      return false;
+    }
+    return true;
+  }
+  fprintf(stderr, "WARNING line NOT parsed as a directive: '%s'\n", line.c_str());
+  return false;  // By default, no metadata
 }
 
 /**
@@ -271,7 +322,7 @@ string passOrFail(const double& truth,
 uint32_t repl(const Graph* graph, JavaBridge* proc,
               const btree_set<uint64_t>* kb) {
   uint32_t failedExamples = 0;
-  const SynSearchCosts* costs = strictNaturalLogicCosts();
+  SynSearchCosts* costs = softNaturalLogicCosts();
   syn_search_options opts(1000000,     // maxTicks
                           10000.0f,    // costThreshold
                           false,       // stopWhenResultFound
@@ -287,7 +338,7 @@ uint32_t repl(const Graph* graph, JavaBridge* proc,
     while (!cin.fail()) {
       cin.getline(line, 255);
       if (line[0] == '\0') { break; }
-      if (line[0] != '#') {
+      if (line[0] != '#' && (line[0] != '%' || !parseMetadata(line, costs, &opts))) {
         lines.push_back(string(line));
       }
     }
@@ -414,6 +465,14 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
                       const JavaBridge* proc,
                       const Graph* graph, const btree_set<uint64_t>* kb) {
 
+  // Initialize options
+  SynSearchCosts* costs = softNaturalLogicCosts();
+  syn_search_options opts(1000000,     // maxTicks
+                          10000.0f,    // costThreshold
+                          false,       // stopWhenResultFound
+                          true,        // checkFringe
+                          false);      // silent
+
   // Parse input
   fprintf(stderr, "[%d] Reading query...\n", socket);
   char* buffer = (char*) malloc(32768 * sizeof(char));
@@ -422,21 +481,15 @@ void handleConnection(const uint32_t& socket, sockaddr_in* client,
   vector<string> knownFacts;
   while ( buffer[0] != '\0' && buffer[0] != '\n' && buffer[0] != '\r' && 
           knownFacts.size() < 256 ) {
-    fprintf(stderr, "  [%d] read line: %s\n", socket, buffer);
-    knownFacts.push_back(string(buffer));
+    if (buffer[0] != '%' || !parseMetadata(buffer, costs, &opts)) {
+      fprintf(stderr, "  [%d] read line: %s\n", socket, buffer);
+      knownFacts.push_back(string(buffer));
+    }
     if (readLine(socket, buffer, 32768) == 0) {
       buffer[0] = '\0';
     }
   }
   fprintf(stderr, "  [%d] query read; running inference.\n", socket);
-
-  // Parse options
-  const SynSearchCosts* costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,     // maxTicks  TODO(gabor) make me a parameter
-                          10000.0f,    // costThreshold
-                          false,       // stopWhenResultFound
-                          true,        // checkFringe  TODO(gabor) make me a parameter
-                          false);      // silent
 
   // Parse query
   if (knownFacts.size() == 0) {

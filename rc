@@ -76,6 +76,31 @@ function dep2string() {
   echo "}"
 }
 
+function edgeType2String() {
+  echo "btree_map<string,uint8_t> edgeType2Index;"
+  echo ""
+  echo "void populateEdgeTypeMap() {"
+
+  dependency2index["prep_toward"] = DEP_PREP_TOWARD;
+  cat etc/edgeTypes.tab | sort | uniq |\
+    awk -F'\t' '{ print "  edgeType2Index[\"" tolower($2) "\"] = " $1 ";" }'
+
+  echo "}"
+  echo ""
+  echo "uint8_t indexEdgeType(const string& edgeTypeAsString) {"
+  echo "  if (dependency2index.size() == 0) {"
+  echo "    populateEdgeTypeMap();"
+  echo "  }"
+  echo "  string lower = edgeTypeAsString;"
+  echo "  std::transform(lower.begin(), lower.end(), lower.begin(), ::tolower);"
+  echo "  auto iter = edgeType2Index.find(lower);"
+  echo "  if (iter != edgeType2Index.end()) {"
+  echo "    return iter->second;"
+  echo "  }"
+  echo "  return NUM_MUTATION_TYPES;"
+  echo "}"
+}
+
 # Print out the edge relation indices in a way that can be copied
 # into c++ / java
 function edgeTypes() {
