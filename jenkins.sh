@@ -60,6 +60,10 @@ configure SEARCH_FULL_MEMORY=0 SEARCH_CYCLE_MEMORY=5; make check
 echo "(search full memory)"
 configure SEARCH_FULL_MEMORY=0; make check
 configure SEARCH_FULL_MEMORY=1; make check
+echo "(clang 3.5)"
+configure SEARCH_FULL_MEMORY=0 CXX=clang++-3.5; make check
+echo "(g++ 4.9)"
+configure SEARCH_FULL_MEMORY=0 CXX=g++-4.9; make check
 echo "(back to default)"
 configure  # reconfigure to default
 make all

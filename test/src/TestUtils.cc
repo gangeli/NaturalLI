@@ -1,6 +1,7 @@
 #include <limits.h>
 #include <bitset>
 #include <ctime>
+#include <regex>
 
 #include "gtest/gtest.h"
 
@@ -115,3 +116,40 @@ TEST_F(UtilsTest, FastATOIPeculiarities) {
 }
 
 
+//
+// Apparently the Regex library isn't so mature yet.
+//
+TEST(RegexTest, RelevantRegexesCompile) {
+  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
+  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+}
+
+//
+// Regex for Set Value
+//
+TEST(RegexTest, SetValueMatches) {
+  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
+  smatch result;
+  ASSERT_TRUE(regex_search(string("toSet @ key = 1.0"), result, regexSetValue));
+  ASSERT_EQ(4, result.size());
+  string toSet = result[1].str();
+  EXPECT_EQ("toSet", toSet);
+  string key = result[2].str();
+  EXPECT_EQ("key", key);
+  float value = atof(result[3].str().c_str());
+  EXPECT_EQ(1.0, value);
+}
+
+//
+// Regex for Set Flag
+//
+TEST(RegexTest, SetFlagMatches) {
+  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+  smatch result;
+  ASSERT_TRUE(regex_search(string("key = 1.0"), result, regexSetFlag));
+  ASSERT_EQ(3, result.size());
+  string key = result[1].str();
+  EXPECT_EQ("key", key);
+  float value = atof(result[2].str().c_str());
+  EXPECT_EQ(1.0, value);
+}
