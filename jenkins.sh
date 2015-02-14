@@ -75,8 +75,8 @@ rm -f naturalli_server-Messages.pb.gcda
 rm -f naturalli_server-Messages.pb.gcno
 rm -f naturalli_server-Messages.pb.h.gcno
 rm -f naturalli_server-Messages.pb.h.gcda
-gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
-gcovr -r . --xml -o coverage.xml
+/usr/bin/gcovr -r . --html --html-details -o /var/www/naturalli/coverage/index.html
+/usr/bin/gcovr -r . --xml -o coverage.xml
 cd ..
 
 echo "-- TEST CASES --"
