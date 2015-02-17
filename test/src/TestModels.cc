@@ -35,3 +35,13 @@ TEST(ModelsTest, ParticlarDependencyIndices) {
   EXPECT_EQ(NUM_DEPENDENCY_LABELS, indexDependency("???"));
   EXPECT_EQ(NUM_DEPENDENCY_LABELS, indexDependency("foobarbaz"));
 }
+
+//
+// Enfoce some bounds
+//
+TEST(ModelsTest, EnforceSizes) {
+  EXPECT_LT(NUM_DEPENDENCY_LABELS, 255);  // by bound of uint8_t, and featuized_edge
+                                          // 255 reserved for NONE
+  EXPECT_LT(NUM_MUTATION_TYPES, 31);  // by bound of featurized_edge
+                                      // 31 reserved for NONE
+}

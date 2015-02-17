@@ -147,6 +147,115 @@ bool reverseTransition(const bool& endState,
                        const natlog_relation projectedRelation);
 
 /**
+ * The featurization of a single edge. These will be stored alongsize
+ * the history, so that we can construct a feature vector in reverse.
+ */
+#ifdef __GNUG__
+struct featurized_edge {
+#else
+struct alignas(2) featurized_edge {
+#endif
+  uint8_t mutationTaken:5,
+          transitionTaken:3,
+          insertionTaken:8;
+
+  /** Default constructor (all none) -- This also signifies the root */
+  featurized_edge() {
+    mutationTaken = 31;
+    transitionTaken = 7;
+    insertionTaken = 255;
+  }
+  
+  /** Copy constructor */
+  featurized_edge(const featurized_edge& o) {
+    mutationTaken = o.mutationTaken;
+    transitionTaken = o.transitionTaken;
+    insertionTaken = o.insertionTaken;
+  }
+  
+  /** Setter */
+  void operator=(const featurized_edge& o) {
+    mutationTaken = o.mutationTaken;
+    transitionTaken = o.transitionTaken;
+    insertionTaken = o.insertionTaken;
+  }
+
+  /** This featurized edge was a mutation */
+  inline bool hasMutation() const { return mutationTaken != 31; }
+  /** This featurized edge was an insertion */
+  inline bool hasInsertion() const { return insertionTaken != 255; }
+  /** This is the root */
+  inline bool isEmpty() const { 
+    return insertionTaken == 255 &&
+           transitionTaken == 7 &&
+           mutationTaken == 31;
+  }
+#ifdef __GNUG__
+} __attribute__((packed));
+#else
+};
+#endif
+
+/**
+ * A structure to store a feature vector count. That is, the number of times
+ * each of these types of transitions were taken.
+ */
+struct feature_vector {
+  uint16_t mutationCounts[NUM_MUTATION_TYPES];
+  uint16_t transitionFromTrueCounts[8];
+  uint16_t transitionFromFalseCounts[8];
+  uint16_t insertionCounts[NUM_DEPENDENCY_LABELS];
+
+  feature_vector() {
+    memset(mutationCounts, 0x0, NUM_MUTATION_TYPES * sizeof(uint16_t));
+    memset(transitionFromTrueCounts, 0x0, 8 * sizeof(uint16_t));
+    memset(transitionFromFalseCounts, 0x0, 8 * sizeof(uint16_t));
+    memset(insertionCounts, 0x0, NUM_DEPENDENCY_LABELS * sizeof(uint16_t));
+    for (uint16_t i = 0; i < NUM_MUTATION_TYPES; ++i) {
+      assert(mutationCounts[i] == 0);
+    }
+    for (uint16_t i = 0; i < 8; ++i) {
+      assert(transitionFromTrueCounts[i] == 0);
+    }
+    for (uint16_t i = 0; i < 8; ++i) {
+      assert(transitionFromFalseCounts[i] == 0);
+    }
+    for (uint16_t i = 0; i < NUM_DEPENDENCY_LABELS; ++i) {
+      assert(insertionCounts[i] == 0);
+    }
+  }
+
+  /** 
+   * Increment this feature vector with the particular feature
+   * counts in the given edge.
+   */
+  void increment(const featurized_edge& feats,
+                 const bool& sourceTruth) {
+    if (!feats.isEmpty()) {
+      if (feats.hasInsertion()) {
+        printf("Incrementing insertionCounts[%u] from %u\n",
+          feats.insertionTaken, insertionCounts[feats.insertionTaken]);
+        insertionCounts[feats.insertionTaken] += 1;
+      }
+      if (feats.hasMutation()) {
+        printf("Incrementing mutationCounts[%u] from %u\n",
+          feats.mutationTaken, mutationCounts[feats.mutationTaken]);
+        mutationCounts[feats.mutationTaken] += 1;
+      }
+      if (sourceTruth) {
+        printf("Incrementing transitionFromTrue[%u] from %u\n",
+          feats.transitionTaken, transitionFromTrueCounts[feats.transitionTaken]);
+        transitionFromTrueCounts[feats.transitionTaken] += 1;
+      } else {
+        printf("Incrementing transitionFromFalse[%u] from %u\n",
+          feats.transitionTaken, transitionFromFalseCounts[feats.transitionTaken]);
+        transitionFromFalseCounts[feats.transitionTaken] += 1;
+      }
+    }
+  }
+};
+
+/**
  * A class encapsulating the costs incurred during a search instance.
  */
 class SynSearchCosts {
@@ -156,7 +265,8 @@ class SynSearchCosts {
                      const SearchNode& currentNode,
                      const uint8_t& edgeType,
                      const bool& endTruthValue,
-                     bool* beginTruthValue) const;
+                     bool* beginTruthValue,
+                     featurized_edge* features) const;
   
   /** The cost of an insertion (deletion in search) */
   float insertionCost(const Tree& tree,
@@ -164,15 +274,8 @@ class SynSearchCosts {
                       const dep_label& dependencyLabel,
                       const ::word& dependent,
                       const bool& endTruthValue,
-                      bool* beginTruthValue) const;
-  
-  /** The cost of a deletion (insertion in search) */
-  float deletionCost(const Tree& tree,
-                     const SearchNode& governor,
-                     const dep_label& dependencyLabel,
-                     const ::word& dependent,
-                     const bool& endTruthValue,
-                     bool* beginTruthValue) const;
+                      bool* beginTruthValue,
+                      featurized_edge* features) const;
 
   float mutationLexicalCost[NUM_MUTATION_TYPES + 1];  // + 1 to allow for dumping parse errors into the null cost
   float insertionLexicalCost[NUM_DEPENDENCY_LABELS + 1];
@@ -702,7 +805,7 @@ class Tree {
  * A packed structure with the information relevant to
  * a path element.
  *
- * This struct should take up 16 bytes.
+ * This struct should take up 24 bytes.
  */
 #ifdef __GNUG__
 struct syn_path_data {
@@ -905,6 +1008,8 @@ class SearchNode {
     data.allQuantifiersSeen = true;
   }
 
+  /** The features in this path*/
+  featurized_edge incomingFeatures;
 
  protected:
   /** The data stored in this path */
@@ -1037,6 +1142,7 @@ struct syn_search_path {
  */
 struct syn_search_response {
   std::vector<syn_search_path> paths;
+  std::vector<feature_vector> featurizedPaths;
   uint64_t totalTicks;
 
   inline uint64_t size() const { return paths.size(); }

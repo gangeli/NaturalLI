@@ -34,6 +34,7 @@ inline uint64_t searchLoop(
   uint8_t  dependentIndices[8];
   natlog_relation  dependentRelations[8];
   ScoredSearchNode scoredNode;
+  featurized_edge features;
 #if SEARCH_FULL_MEMORY!=0
   btree::btree_set<uint64_t> fullMemory;
 #else
@@ -86,6 +87,7 @@ inline uint64_t searchLoop(
     const SearchNode& parent = history[node.getBackpointer()];
 #endif
 #endif
+    
     // Register visited
     registerVisited(scoredNode);
 
@@ -180,13 +182,18 @@ inline uint64_t searchLoop(
       assert (edge.cost >= 0.0);
       const float mutationCost = costs->mutationCost(
           tree, node, edge.type,
-          node.truthState(), &newTruthValue);
+          node.truthState(), &newTruthValue, 
+          &features);
       if (isinf(mutationCost)) { continue; }
       const float cost = mutationCost * edge.cost;
 
       // (create child)
       SearchNode mutatedChild  // not const; we may mutate it below
         = node.mutation(edge, myIndex, newTruthValue, tree, graph);
+//      mutatedChild.incomingFeatures = features;
+//      assert(mutatedChild.incomingFeatures.insertionTaken == 255);
+//      assert(mutatedChild.incomingFeatures.mutationTaken != 31);
+//      assert(mutatedChild.incomingFeatures.transitionTaken != 7);
       assert(mutatedChild.word() < graph->vocabSize());
       // (handle quantifier mutation)
       if (quantifierIndex >= 0) {
@@ -240,11 +247,17 @@ inline uint64_t searchLoop(
       bool newTruthValue;
       const float cost = costs->insertionCost(
             tree, node, tree.relation(dependentIndex),
-            tree.word(dependentIndex), node.truthState(), &newTruthValue);
+            tree.word(dependentIndex), node.truthState(), &newTruthValue,
+            &features);
       if (!isinf(cost)) {
+        fprintf(stderr, "DELETING CHILD\n");
         // (create child)
-        const SearchNode deletedChild 
+        SearchNode deletedChild 
           = node.deletion(myIndex, newTruthValue, tree, dependentIndex);
+//        deletedChild.incomingFeatures = features;
+//        assert(deletedChild.incomingFeatures.mutationTaken == 31);
+//        assert(deletedChild.incomingFeatures.transitionTaken != 7);
+//        assert(deletedChild.incomingFeatures.insertionTaken != 255);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
 //        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
@@ -276,6 +289,9 @@ inline uint64_t searchLoop(
         assert(nextIndex < tree.length);
         assert(nextIndex >= 0);
         assert(indexMovedChild.word() < graph->vocabSize());
+        assert(indexMovedChild.incomingFeatures.mutationTaken == 31);
+        assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
+        assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
         // (push child)
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
       }
@@ -294,11 +310,17 @@ inline uint64_t searchLoop(
           // (case: first time through quantifiers; continue to root)
           indexMovedChild.setAllQuantifiersSeen();
 //          fprintf(stderr, "  push index move (quant) -> %u : %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
+          assert(indexMovedChild.incomingFeatures.mutationTaken == 31);
+          assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
+          assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
           enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
         }
       } else {
         // (case: still mutating quantifiers)
 //        fprintf(stderr, "  push index move (quant) -> %u : %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
+        assert(indexMovedChild.incomingFeatures.mutationTaken == 31);
+        assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
+        assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
         enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
       }
     }  // end quantifier push conditional
@@ -339,7 +361,7 @@ syn_search_response SynSearch(
   
   // -- Helpers --
   // Allocate history
-  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 1) * sizeof(SearchNode));  // + 1 to allow for root
+  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 1) * sizeof(SearchNode));  // + 1 to allow for root.
   uint64_t historySize = 0;
   // The fringe
   KNHeap<float,SearchNode>* fringe = new KNHeap<float,SearchNode>(
@@ -348,14 +370,17 @@ syn_search_response SynSearch(
   // The database lookup function
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
+  vector<feature_vector>& featurizedPaths = response.featurizedPaths;
   // (the lookup function)
   std::function<bool(uint64_t)> lookupFn = [&kb,&auxKB](const uint64_t& value) -> bool {
     return kb->find(value) != kb->end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
-  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts] (const ScoredSearchNode& scoredNode) -> void {
+  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts,&assumedInitialTruth,&featurizedPaths]
+        (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
+      fprintf(stderr, "HERE?\n");
 
       // Make sure nodes are unique
       bool unique = true;
@@ -381,12 +406,17 @@ syn_search_response SynSearch(
         // Add this path to the result
         // (get the complete path)
         vector<SearchNode> path;
+        feature_vector myFeatures;
+        fprintf(stderr, "HERE\n");
+        myFeatures.increment(node.incomingFeatures, assumedInitialTruth);
         path.push_back(node);
         if (node.getBackpointer() != 0) {
           SearchNode head = node;
           while (head.getBackpointer() != 0) {
-            path.push_back(head);
             head = history[head.getBackpointer()];
+            path.push_back(head);
+            fprintf(stderr, "HERE2: %u\n", head.incomingFeatures.insertionTaken);
+            myFeatures.increment(head.incomingFeatures, assumedInitialTruth ^ head.truthState());
           }
         }
         // (add to the results list)
@@ -397,6 +427,7 @@ syn_search_response SynSearch(
               path.front().factHash());
         }
         matches.push_back(syn_search_path(path, scoredNode.cost));
+        featurizedPaths.push_back(myFeatures);
       }
     }
   };

@@ -407,6 +407,7 @@ Tree::Tree(const string& conll)
   
   // Initialize cached variables
   for (uint8_t tokenI = 0; tokenI < MAX_QUERY_LENGTH; ++tokenI) {
+    fprintf(stderr, "tokenI=%u MAX_QUANTIFIER_COUNT=%u MAX_QUERY_LENGTH=%u\n", tokenI, MAX_QUANTIFIER_COUNT, MAX_QUERY_LENGTH);
     memset(quantifiersInScope[tokenI], MAX_QUANTIFIER_COUNT, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
     populateQuantifiersInScope(tokenI);
   }
@@ -938,7 +939,8 @@ float SynSearchCosts::mutationCost(const Tree& tree,
                                    const SearchNode& currentNode,
                                    const uint8_t& edgeType,
                                    const bool& endTruthValue,
-                                   bool* beginTruthValue) const {
+                                   bool* beginTruthValue,
+                                   featurized_edge* features) const {
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
   // Get the lexical cost of the relation
   const float lexicalRelationCost = mutationLexicalCost[edgeType];
@@ -955,6 +957,11 @@ float SynSearchCosts::mutationCost(const Tree& tree,
   const float totalCost = lexicalRelationCost + transitionCost;
   assert (totalCost == totalCost);
   assert (totalCost >= 0.0);
+  if (features != NULL) {
+    features->insertionTaken = 255;
+    features->mutationTaken = edgeType;
+    features->transitionTaken = projectedFunction;
+  }
   return totalCost;
 }
 
@@ -966,7 +973,8 @@ float SynSearchCosts::insertionCost(const Tree& tree,
                                     const dep_label& dependencyLabel,
                                     const ::word& dependent,
                                     const bool& endTruthValue,
-                                    bool* beginTruthValue) const {
+                                    bool* beginTruthValue,
+                                    featurized_edge* features) const {
   const natlog_relation lexicalRelation
     = dependencyInsertToLexicalFunction(dependencyLabel, dependent);
   const float lexicalRelationCost = insertionLexicalCost[dependencyLabel];
@@ -975,6 +983,11 @@ float SynSearchCosts::insertionCost(const Tree& tree,
   *beginTruthValue = reverseTransition(endTruthValue, projectedFunction);
   const float transitionCost
     = ((*beginTruthValue) ? transitionCostFromTrue : transitionCostFromFalse)[projectedFunction];
+  if (features != NULL) {
+    features->insertionTaken = dependencyLabel;
+    features->mutationTaken = 31;
+    features->transitionTaken = projectedFunction;
+  }
   return lexicalRelationCost + transitionCost;
 }
 
@@ -1012,68 +1025,3 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
   costs->transitionCostFromFalse[FUNCTION_INDEPENDENCE] = badCost;
   return costs;
 }
-
-
-////
-//// ForwardPartialSearch
-////
-//void ForwardPartialSearch(
-//    const BidirectionalGraph* mutationGraph,
-//    const Tree* input,
-//    std::function<void(const SearchNode&)> callback) {
-//  // Initialize Search
-//  vector<SearchNode> fringe;
-//  fringe.push_back(SearchNode(*input));
-//  uint8_t  dependentIndices[8];
-//  natlog_relation  dependentRelations[8];
-//  SynSearchCosts* guidingCosts = strictNaturalLogicCosts();
-//  bool newTruthValue;
-//  btree::btree_set<uint64_t> seen;
-//
-//  // Run Search
-//  while (fringe.size() > 0) {
-//    const SearchNode node = fringe.back();
-//    fringe.pop_back();
-//    if (seen.find(node.factHash()) == seen.end()) { 
-////      fprintf(stderr, "  %s\n", toString(*(mutationGraph->impl), *input, node).c_str());
-//      callback(node); 
-//    }
-//    seen.insert(node.factHash());
-//
-//    // Valid Mutations
-//    const vector<edge> edges = mutationGraph->outgoingEdges(node.token());
-//    for (auto iter = edges.begin(); iter != edges.end(); ++iter) {
-//      // TODO(gabor) NER raising would go here
-//    }
-//
-//    // Valid Deletions
-//    uint8_t numDependents;
-//    input->dependents(node.tokenIndex(), 8, dependentIndices,
-//                    dependentRelations, &numDependents);
-//    for (uint8_t dependentI = 0; dependentI < numDependents; ++dependentI) {
-//      const uint8_t& dependentIndex = dependentIndices[dependentI];
-//      if (node.isDeleted(dependentIndex)) { continue; }
-//      const float cost = guidingCosts->deletionCost(
-//            *input, node, input->relation(dependentIndex),
-//            input->word(dependentIndex), node.truthState(), &newTruthValue);
-//      // Deletion (optional)
-//      if (newTruthValue && !isinf(cost)) {  // TODO(gabor) handle negation deletions?
-//        // (compute)
-//        uint32_t deletionMask = input->createDeleteMask(dependentIndex);
-//        uint64_t newHash = input->updateHashFromDeletions(
-//            node.factHash(), dependentIndex, input->token(dependentIndex).word,
-//            node.word(), deletionMask);
-//        // (create child)
-//        const SearchNode deletedChild(node, newHash, newTruthValue, deletionMask, 0);
-//        fringe.push_back(deletedChild);
-//      }
-//      // Move (always)
-//      const SearchNode indexMovedChild(node, *input, dependentIndex, 0);
-//      fringe.push_back(indexMovedChild);
-//    }
-//  }
-//
-//  delete guidingCosts;
-//}
-
-

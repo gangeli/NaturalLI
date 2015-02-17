@@ -67,7 +67,8 @@ void setmemlimit() {
  * @return A confidence value between 0 and 1/2;
  */
 double confidence(const syn_search_response& response, 
-                  const vector<SearchNode>** argmax) {
+                  const vector<SearchNode>** argmax,
+                  const feature_vector** argmax2) {
   if (response.size() == 0) { return 0.0; }
   double max = -std::numeric_limits<float>::infinity();
   for (uint64_t i = 0; i < response.paths.size(); ++i) {
@@ -76,6 +77,7 @@ double confidence(const syn_search_response& response,
     if (confidence > max) {
       max = confidence;
       *argmax = &(response.paths[i].nodeSequence);
+      *argmax2 = &(response.featurizedPaths[i]);
     }
   }
   return max;
@@ -222,16 +224,21 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
   // (confidence)
   const vector<SearchNode>* bestPathIfTrue = NULL;
   const vector<SearchNode>* bestPathIfFalse = NULL;
-  double confidenceOfTrue = confidence(resultIfTrue, &bestPathIfTrue);
-  double confidenceOfFalse = confidence(resultIfFalse, &bestPathIfFalse);
+  const feature_vector*     bestFeaturesIfTrue = NULL;
+  const feature_vector*     bestFeaturesIfFalse = NULL;
+  double confidenceOfTrue = confidence(resultIfTrue, &bestPathIfTrue, &bestFeaturesIfTrue);
+  double confidenceOfFalse = confidence(resultIfFalse, &bestPathIfFalse, &bestFeaturesIfFalse);
   // (truth)
   const vector<SearchNode>* bestPath = NULL;
+  const feature_vector* bestFeatures = NULL;
   if (confidenceOfTrue > confidenceOfFalse) {
     *truth = probability(confidenceOfTrue, true);
     bestPath = bestPathIfTrue;
+    bestFeatures = bestFeaturesIfTrue;
   } else if (confidenceOfTrue < confidenceOfFalse) {
     *truth = probability(confidenceOfFalse, false);
     bestPath = bestPathIfFalse;
+    bestFeatures = bestFeaturesIfFalse;
   } else {
     if (resultIfTrue.paths.size() > 0 && resultIfFalse.paths.size() > 0) {
       printTime("[%c] ");
@@ -241,6 +248,7 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
     }
     *truth = 0.5;
   }
+  // (debug)
 //  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf: %f  truth:  %f\n",
 //         resultIfTrue.size(), resultIfFalse.size(),
 //         confidenceOfTrue, confidenceOfFalse, *truth);
@@ -256,8 +264,33 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
       <<  "\"query\": \"" << escapeQuote(query) << "\", "
       <<  "\"bestPremise\": " << (bestPath == NULL ? "null" : ("\"" + escapeQuote(kbGloss(*graph, *input, *bestPath)) + "\"")) << ", "
       <<  "\"success\": true" << ", "
-      <<  "\"path\": " << (bestPath != NULL ? toJSON(*graph, *input, *bestPath) : "[]")
-      << "}";
+      <<  "\"path\": " << (bestPath != NULL ? toJSON(*graph, *input, *bestPath) : "[]");
+  // (dump feature vector)
+  if (bestFeatures != NULL) {
+    rtn <<  ", \"features\": {"
+        <<  " \"mutationCounts\": [";
+    for (uint8_t i = 0; i < NUM_MUTATION_TYPES - 1; ++i) {
+      rtn << bestFeatures->mutationCounts[i] << ", ";
+    }
+    rtn << bestFeatures->mutationCounts[NUM_MUTATION_TYPES - 1] << "], "
+        <<  " \"transitionFromTrueCounts\": [";
+    for (uint8_t i = 0; i < FUNCTION_INDEPENDENCE; ++i) {
+      rtn << bestFeatures->transitionFromTrueCounts[i] << ", ";
+    }
+    rtn << bestFeatures->transitionFromTrueCounts[FUNCTION_INDEPENDENCE] << "], "
+        <<  " \"transitionFromFalseCounts\": [";
+    for (uint8_t i = 0; i < FUNCTION_INDEPENDENCE; ++i) {
+      rtn << bestFeatures->transitionFromFalseCounts[i] << ", ";
+    }
+    rtn << bestFeatures->transitionFromFalseCounts[FUNCTION_INDEPENDENCE] << "], "
+        <<  " \"insertionCosts\": [";
+    for (uint8_t i = 0; i < NUM_DEPENDENCY_LABELS - 1; ++i) {
+      rtn << bestFeatures->insertionCounts[i] << ", ";
+    }
+    rtn << bestFeatures->insertionCounts[NUM_DEPENDENCY_LABELS - 1] << "]"
+        << "} ";
+  }
+  rtn << "}";
   return rtn.str();
 }
 

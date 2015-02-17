@@ -195,7 +195,7 @@ TEST_F(TreeTest, ValidateBitSetBeginsEmpty) {
 }
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(600, sizeof(Tree));
+  EXPECT_EQ(512, sizeof(Tree));
   EXPECT_EQ(6, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(4, sizeof(quantifier_span));
@@ -1025,12 +1025,12 @@ TEST_F(SynSearchCostsTest, MutationsCostGenerics) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 0), HYPERNYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), HYPERNYM, true, &outTruth, NULL);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
   
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 0), HYPONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 0), HYPONYM, true, &outTruth, NULL);
   EXPECT_EQ(true, outTruth);
   EXPECT_TRUE(isinf(cost));
 }
@@ -1042,7 +1042,7 @@ TEST_F(SynSearchCostsTest, GenericsAreAdditiveMultiplicative) {
   Tree tree(CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth, NULL);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
@@ -1054,12 +1054,12 @@ TEST_F(SynSearchCostsTest, MutationsCostQuantificiation) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = false;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), HYPONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), HYPONYM, true, &outTruth, NULL);
   EXPECT_EQ(0.01f, cost);
   EXPECT_EQ(true, outTruth);
 
   cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), HYPERNYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), HYPERNYM, true, &outTruth, NULL);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(true, outTruth);
 }
@@ -1071,7 +1071,7 @@ TEST_F(SynSearchCostsTest, AllAdditiveSubj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 1), ANTONYM, true, &outTruth, NULL);
   EXPECT_TRUE(isinf(cost));
 }
 
@@ -1083,10 +1083,69 @@ TEST_F(SynSearchCostsTest, AllMultiplicativeObj) {
   Tree tree(ALL_CATS_HAVE_TAILS);
   bool outTruth = true;
   float cost = strictCosts->mutationCost(
-    tree, SearchNode(tree, (uint8_t) 3), ANTONYM, true, &outTruth);
+    tree, SearchNode(tree, (uint8_t) 3), ANTONYM, true, &outTruth, NULL);
   EXPECT_TRUE(isinf(cost));
   EXPECT_EQ(false, outTruth);
 }
+
+//
+// Test Featurized Edge Reverse Entailment
+//
+TEST_F(SynSearchCostsTest, FeaturizedEdgeMutationReverse) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = true;
+  featurized_edge feature;
+  float cost = strictCosts->mutationCost(
+    tree, SearchNode(tree, (uint8_t) 1), HYPERNYM, true, &outTruth, 
+    &feature);
+  EXPECT_TRUE(isinf(cost));
+  EXPECT_TRUE(feature.hasMutation());
+  EXPECT_EQ(HYPERNYM, feature.mutationTaken);
+  EXPECT_EQ(FUNCTION_REVERSE_ENTAILMENT, feature.transitionTaken);
+  EXPECT_FALSE(feature.hasInsertion());
+}
+
+//
+// Test Featurized Edge Forward Entailment
+//
+TEST_F(SynSearchCostsTest, FeaturizedEdgeMutationForward) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = true;
+  featurized_edge feature;
+  float cost = strictCosts->mutationCost(
+    tree, SearchNode(tree, (uint8_t) 1), HYPONYM, true, &outTruth, 
+    &feature);
+  EXPECT_EQ(0.01f, cost);
+  EXPECT_TRUE(feature.hasMutation());
+  EXPECT_EQ(HYPONYM, feature.mutationTaken);
+  EXPECT_EQ(FUNCTION_FORWARD_ENTAILMENT, feature.transitionTaken);
+  EXPECT_FALSE(feature.hasInsertion());
+}
+
+//
+// Test Featurized Edge Delete
+//
+TEST_F(SynSearchCostsTest, FeaturizedEdgeInsert) {
+  Tree tree(ALL_CATS_HAVE_TAILS);
+  bool outTruth = true;
+  featurized_edge feature;
+  float cost = strictCosts->insertionCost(
+    tree, SearchNode(tree, (uint8_t) 1), DEP_NSUBJ, CAT.word, true, &outTruth, 
+    &feature);
+  EXPECT_TRUE(isinf(cost));
+  EXPECT_TRUE(feature.hasInsertion());
+  EXPECT_EQ(DEP_NSUBJ, feature.insertionTaken);
+  EXPECT_EQ(FUNCTION_INDEPENDENCE, feature.transitionTaken);
+  EXPECT_FALSE(feature.hasMutation());
+}
+
+//float SynSearchCosts::insertionCost(const Tree& tree,
+//                                    const SearchNode& governor,
+//                                    const dep_label& dependencyLabel,
+//                                    const ::word& dependent,
+//                                    const bool& endTruthValue,
+//                                    bool* beginTruthValue,
+//                                    featurized_edge* features) const {
 
 // ----------------------------------------------
 // Syntactic Search

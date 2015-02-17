@@ -183,7 +183,7 @@ AC_DEFINE_UNQUOTED(WORDNET_DICT,        "${WORDNET_DICT:=etc/WordNet-3.1/dict}",
 
 AC_DEFINE_UNQUOTED(MAX_FACT_LENGTH,      ${MAX_FACT_LENGTH:=255}, [The maximum length of a fact; this is used in various fixed-length arrays])
 AC_DEFINE_UNQUOTED(MAX_QUERY_LENGTH,     39, [The maximum length of an input query fact. Must match SynSearch.h lengths.])
-AC_DEFINE_UNQUOTED(MAX_QUANTIFIER_COUNT, ${MAX_QUANTIFIER_COUNT:=8},  [The maximum number of quantifiers allowed in a sentence.])
+AC_DEFINE_UNQUOTED(MAX_QUANTIFIER_COUNT, ${MAX_QUANTIFIER_COUNT:=6},  [The maximum number of quantifiers allowed in a sentence.])
 
 AC_DEFINE_UNQUOTED(SERVER_PORT,  ${SERVER_PORT:=1337},  [The port to run the server off of])
 
