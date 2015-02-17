@@ -356,6 +356,8 @@ syn_search_response SynSearch(
   auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts] (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
+
+      // Make sure nodes are unique
       bool unique = true;
       for (auto iter = matches.begin(); iter != matches.end(); ++iter) {
         vector<SearchNode> path = iter->nodeSequence;
@@ -364,7 +366,18 @@ syn_search_response SynSearch(
           unique = false;
         }
       }
-      if (unique) {
+
+      // Make sure nodes are more than one word (this is degenerate)
+      uint8_t numWordsInPremise = 0;
+      for (uint8_t i = 0; i < input->length; ++i) {
+        if (!node.isDeleted(i)) {
+          numWordsInPremise += 1;
+        }
+      }
+      const bool degenerate = (numWordsInPremise < 2);
+
+      // Add the node
+      if (unique && !degenerate) {
         // Add this path to the result
         // (get the complete path)
         vector<SearchNode> path;

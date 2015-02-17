@@ -98,6 +98,17 @@ inline double probability(const double& confidence, const bool& truth) {
   }
 }
 
+bool to_bool(std::string str) {
+  transform(str.begin(), str.end(), str.begin(), ::tolower);
+  istringstream is(str);
+  bool b;
+  is >> boolalpha >> b;
+  return b;
+}
+
+// ...
+bool b = to_bool("tRuE");
+
 
 regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
 regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
@@ -133,11 +144,13 @@ bool parseMetadata(const char* rawLine, SynSearchCosts* costs,
     return true;
   } else if (regex_search(line, result, regexSetFlag)) {
     string toSet = result[1].str();
-    float value = atof(result[2].str().c_str());
+    string value = result[2].str();
     if (toSet == "maxTicks") {
-      opts->maxTicks = value;
+      opts->maxTicks = atof(value.c_str());
     } else if (toSet == "checkFringe") {
-      opts->checkFringe = (value != 0);
+      opts->checkFringe = to_bool(value);
+    } else if (toSet == "skipNegationSearch") {
+      opts->skipNegationSearch = to_bool(value);
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
       return false;
@@ -194,10 +207,16 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
   }
 
   // Run Search
+  // (assuming the KB is true)
   const syn_search_response resultIfTrue
     = SynSearch(graph, kb, auxKB, input, costs, true, options);
+  // (assuming the KB is false)
+  syn_search_options falseOptions = options;
+  if (options.skipNegationSearch) {
+    falseOptions.maxTicks = 0l;
+  }
   const syn_search_response resultIfFalse
-    = SynSearch(graph, kb, auxKB, input, costs, false, options);
+    = SynSearch(graph, kb, auxKB, input, costs, false, falseOptions);
 
   // Grok result
   // (confidence)

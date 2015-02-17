@@ -82,8 +82,8 @@ etc/.pp_affinity: etc/pp.sql
 	touch ${etc}/.pp_affinity
 #endif
 
-etc/clauseSearcherModel.ser.gz:
-	wget -O ${etc}/clauseSearcherModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSearcherModel.ser.gz?dl=1
+etc/clauseSplitterModel.ser.gz:
+	wget -O ${etc}/clauseSplitterModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSplitterModel.ser.gz?dl=1
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	bash -c 'cd ${etc} && ./mkGraph.sh'
@@ -102,7 +102,7 @@ etc/sense.tab.gz: etc/.mk_graph
 etc/privative.tab.gz: etc/.mk_graph
 etc/edgeTypes.tab: etc/.mk_graph
 
-etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
+etc/naturalli_models.jar: etc/clauseSplitterModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
 	$(eval TMP := $(shell mktemp -d))
 	mkdir -p ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
@@ -110,7 +110,7 @@ etc/naturalli_models.jar: etc/clauseSearcherModel.ser.gz etc/pp.tab.gz etc/subj_
 	cp ${etc}/subj_obj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
-	cp ${etc}/clauseSearcherModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/clauseSplitterModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
 	jar cvf ${etc}/naturalli_models.jar -C ${TMP} .
 
 clean_models:

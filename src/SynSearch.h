@@ -979,6 +979,13 @@ struct syn_search_options {
   /** If true, do not print anything during the search (for tests, primarily) */
   bool silent;
 
+  //
+  // The following Are set programatically; they're not intended for the
+  // constructor.
+  // 
+  /** If true, only run entailment from the true state. */
+  bool skipNegationSearch;
+
   /**
    * Create the input options for a Search.
    *
@@ -1004,6 +1011,7 @@ struct syn_search_options {
     this->stopWhenResultFound = stopWhenResultFound;
     this->checkFringe = checkFringe;
     this->silent = silent;
+    this->skipNegationSearch = false;
   }
 };
 

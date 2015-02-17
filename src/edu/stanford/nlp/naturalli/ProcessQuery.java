@@ -318,7 +318,8 @@ public class ProcessQuery {
    */
   public static String conllDump(SemanticGraph tree, Pointer<String> readableDump, boolean doSense, boolean doMeronym) {
     if (tree.size() == 0) {
-      return "\n";
+      readableDump.set("<too short>\t0\troot\t0\n\n");
+      return "0\t0\troot\t0\n\n";
     }
     // Find location triggers
     @SuppressWarnings("unchecked")
