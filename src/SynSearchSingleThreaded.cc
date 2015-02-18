@@ -190,10 +190,10 @@ inline uint64_t searchLoop(
       // (create child)
       SearchNode mutatedChild  // not const; we may mutate it below
         = node.mutation(edge, myIndex, newTruthValue, tree, graph);
-//      mutatedChild.incomingFeatures = features;
-//      assert(mutatedChild.incomingFeatures.insertionTaken == 255);
-//      assert(mutatedChild.incomingFeatures.mutationTaken != 31);
-//      assert(mutatedChild.incomingFeatures.transitionTaken != 7);
+      mutatedChild.incomingFeatures = features;
+      assert(mutatedChild.incomingFeatures.insertionTaken == 255);
+      assert(mutatedChild.incomingFeatures.mutationTaken != 31);
+      assert(mutatedChild.incomingFeatures.transitionTaken != 7);
       assert(mutatedChild.word() < graph->vocabSize());
       // (handle quantifier mutation)
       if (quantifierIndex >= 0) {
@@ -220,7 +220,9 @@ inline uint64_t searchLoop(
       assert(!isinf(cost));
       assert(cost == cost);  // NaN check
       assert(cost >= 0.0);
+      assert(mutatedChild.incomingFeatures.transitionTaken != 7);
       enqueue(ScoredSearchNode(mutatedChild, cost));
+      assert(mutatedChild.incomingFeatures.transitionTaken != 7);
 #if SEARCH_FULL_MEMORY!=0
 #else
 #if SEARCH_CYCLE_MEMORY!=0
@@ -250,21 +252,22 @@ inline uint64_t searchLoop(
             tree.word(dependentIndex), node.truthState(), &newTruthValue,
             &features);
       if (!isinf(cost)) {
-        fprintf(stderr, "DELETING CHILD\n");
         // (create child)
         SearchNode deletedChild 
           = node.deletion(myIndex, newTruthValue, tree, dependentIndex);
-//        deletedChild.incomingFeatures = features;
-//        assert(deletedChild.incomingFeatures.mutationTaken == 31);
-//        assert(deletedChild.incomingFeatures.transitionTaken != 7);
-//        assert(deletedChild.incomingFeatures.insertionTaken != 255);
+        deletedChild.incomingFeatures = features;
+        assert(deletedChild.incomingFeatures.mutationTaken == 31);
+        assert(deletedChild.incomingFeatures.transitionTaken != 7);
+        assert(deletedChild.incomingFeatures.insertionTaken != 255);
         assert(deletedChild.word() < graph->vocabSize());
         // (push child)
 //        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
         assert(!isinf(cost));
         assert(cost == cost);  // NaN check
         assert(cost >= 0.0);
+        assert(deletedChild.incomingFeatures.insertionTaken != 255);
         enqueue(ScoredSearchNode(deletedChild, cost));
+        assert(deletedChild.incomingFeatures.insertionTaken != 255);
       }
     }  // end children loop
     
@@ -380,7 +383,6 @@ syn_search_response SynSearch(
         (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     if (node.truthState() && lookupFn(node.factHash())) {
-      fprintf(stderr, "HERE?\n");
 
       // Make sure nodes are unique
       bool unique = true;
@@ -407,7 +409,6 @@ syn_search_response SynSearch(
         // (get the complete path)
         vector<SearchNode> path;
         feature_vector myFeatures;
-        fprintf(stderr, "HERE\n");
         myFeatures.increment(node.incomingFeatures, assumedInitialTruth);
         path.push_back(node);
         if (node.getBackpointer() != 0) {
@@ -415,7 +416,6 @@ syn_search_response SynSearch(
           while (head.getBackpointer() != 0) {
             head = history[head.getBackpointer()];
             path.push_back(head);
-            fprintf(stderr, "HERE2: %u\n", head.incomingFeatures.insertionTaken);
             myFeatures.increment(head.incomingFeatures, assumedInitialTruth ^ head.truthState());
           }
         }
@@ -459,7 +459,7 @@ syn_search_response SynSearch(
   // Run Search
   response.totalTicks = searchLoop(
     // Insert to fringe
-    [&fringe](const ScoredSearchNode elem) -> void { 
+    [&fringe](const ScoredSearchNode& elem) -> void { 
       fringe->insert(elem.cost, elem.node);
     },
     // Pop from fringe

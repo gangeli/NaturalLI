@@ -233,22 +233,14 @@ struct feature_vector {
                  const bool& sourceTruth) {
     if (!feats.isEmpty()) {
       if (feats.hasInsertion()) {
-        printf("Incrementing insertionCounts[%u] from %u\n",
-          feats.insertionTaken, insertionCounts[feats.insertionTaken]);
         insertionCounts[feats.insertionTaken] += 1;
       }
       if (feats.hasMutation()) {
-        printf("Incrementing mutationCounts[%u] from %u\n",
-          feats.mutationTaken, mutationCounts[feats.mutationTaken]);
         mutationCounts[feats.mutationTaken] += 1;
       }
       if (sourceTruth) {
-        printf("Incrementing transitionFromTrue[%u] from %u\n",
-          feats.transitionTaken, transitionFromTrueCounts[feats.transitionTaken]);
         transitionFromTrueCounts[feats.transitionTaken] += 1;
       } else {
-        printf("Incrementing transitionFromFalse[%u] from %u\n",
-          feats.transitionTaken, transitionFromFalseCounts[feats.transitionTaken]);
         transitionFromFalseCounts[feats.transitionTaken] += 1;
       }
     }
@@ -757,11 +749,14 @@ class Tree {
   /** Information about the spans of the quantifiers in the sentence. */
   quantifier_span quantifierSpans[MAX_QUANTIFIER_COUNT];
   
-  /** A cached data structure for which quantifiers are in scope at a given index. */
-  uint8_t quantifiersInScope[MAX_QUERY_LENGTH][MAX_QUANTIFIER_COUNT];
-
   /** The number of quantifiers in the tree. */
   uint8_t numQuantifiers;
+
+  /** 
+   * A cached data structure for which quantifiers are in scope at a given index.
+   * Accessed with (sentence_index) * MAX_QUANTIFIER_COUNT + (quantifier_index);
+   */
+  uint8_t quantifiersInScope[MAX_QUERY_LENGTH * MAX_QUANTIFIER_COUNT];
   
   /** The number of quantifiers in the tree. */
   std::bitset<MAX_QUERY_LENGTH> isLocationMask;
@@ -908,6 +903,7 @@ class SearchNode {
   /** The assignment operator */
   inline void operator=(const SearchNode& from) {
     this->data = from.data;
+    this->incomingFeatures = from.incomingFeatures;
     memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
       MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
   }

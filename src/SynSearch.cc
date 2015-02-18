@@ -131,7 +131,7 @@ SearchNode::SearchNode()
 }
 
 SearchNode::SearchNode(const SearchNode& from)
-    : data(from.data) {
+    : data(from.data), incomingFeatures(from.incomingFeatures) {
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -309,6 +309,13 @@ Tree::Tree(const string& conll)
       : length(computeLength(conll)),
         numQuantifiers(0) {
   memset(this->quantifierMonotonicities, 0, MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+  memset(this->quantifiersInScope, MAX_QUANTIFIER_COUNT, sizeof(this->quantifiersInScope));
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wtautological-pointer-compare"
+  if (&this->quantifiersInScope == NULL) {
+#pragma clang diagnostic pop
+    fprintf(stderr, "^^ accessing the above seems to get rid of a seg fault???\n");
+  }
   // Variables
   stringstream lineStream(conll);
   string line;
@@ -406,9 +413,8 @@ Tree::Tree(const string& conll)
   }
   
   // Initialize cached variables
+  memset(this->quantifiersInScope, MAX_QUANTIFIER_COUNT, MAX_QUANTIFIER_COUNT * MAX_QUERY_LENGTH * sizeof(uint8_t));
   for (uint8_t tokenI = 0; tokenI < MAX_QUERY_LENGTH; ++tokenI) {
-    fprintf(stderr, "tokenI=%u MAX_QUANTIFIER_COUNT=%u MAX_QUERY_LENGTH=%u\n", tokenI, MAX_QUANTIFIER_COUNT, MAX_QUERY_LENGTH);
-    memset(quantifiersInScope[tokenI], MAX_QUANTIFIER_COUNT, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
     populateQuantifiersInScope(tokenI);
   }
 }
@@ -421,7 +427,7 @@ void Tree::foreachQuantifier(
       std::function<void(const quantifier_type,const monotonicity)> visitor) const {
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
     // Get the quantifier in scipe
-    uint8_t quantifier = this->quantifiersInScope[index][i];
+    uint8_t quantifier = this->quantifiersInScope[MAX_QUANTIFIER_COUNT * index + i];
     if (quantifier >= MAX_QUANTIFIER_COUNT) { return; }
     // Check if it's the subject or object
     const quantifier_span& span = this->quantifierSpans[quantifier];
@@ -450,7 +456,9 @@ void Tree::populateQuantifiersInScope(const uint8_t index) {
   memset(valid, 0, MAX_QUANTIFIER_COUNT * sizeof(uint8_t));
   // Collect statistics
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
-    if (i >= numQuantifiers) { break; }
+    if (i >= numQuantifiers) { 
+      break; 
+    }
     if (index >= quantifierSpans[i].subj_begin && index < quantifierSpans[i].subj_end) {
       valid[i] = true;
       const uint8_t d1 = index - quantifierSpans[i].subj_begin;
@@ -464,7 +472,7 @@ void Tree::populateQuantifiersInScope(const uint8_t index) {
     }
   }
   // Run foreach
-  uint8_t outIndex = 0;
+  uint8_t quantIndex = 0;
   bool somethingValid = true;
   while (somethingValid) {
     somethingValid = false;
@@ -482,13 +490,13 @@ void Tree::populateQuantifiersInScope(const uint8_t index) {
     }
     // (call visitor)
     if (somethingValid) {
-      this->quantifiersInScope[index][outIndex] = argmin;
-      outIndex += 1;
+      this->quantifiersInScope[MAX_QUANTIFIER_COUNT * index + quantIndex] = argmin;
+      quantIndex += 1;
     }
     // (update state)
     valid[argmin] = false;
   }
-  this->quantifiersInScope[index][outIndex] = MAX_QUANTIFIER_COUNT;
+  this->quantifiersInScope[MAX_QUANTIFIER_COUNT * index + quantIndex] = MAX_QUANTIFIER_COUNT;
 }
 #pragma GCC pop_options  // matches push_options above
   
@@ -629,7 +637,7 @@ natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
   natlog_relation outputRelation = lexicalRelation;
   for (uint8_t i = 0; i < MAX_QUANTIFIER_COUNT; ++i) {
     // Get the quantifier in scope
-    uint8_t quantifier = this->quantifiersInScope[index][i];
+    uint8_t quantifier = this->quantifiersInScope[MAX_QUANTIFIER_COUNT * index + i];
     if (quantifier >= MAX_QUANTIFIER_COUNT) { break; }
     // Check if it's the subject or object
     const quantifier_span& span = this->quantifierSpans[quantifier];
