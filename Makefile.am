@@ -83,7 +83,7 @@ etc/.pp_affinity: etc/pp.sql
 #endif
 
 etc/clauseSplitterModel.ser.gz:
-	wget -O ${etc}/clauseSplitterModel.ser.gz https://www.dropbox.com/s/s6v1v7wp7el4ytm/clauseSplitterModel.ser.gz?dl=1
+	wget -O ${etc}/clauseSplitterModel.ser.gz 'https://www.dropbox.com/s/cbh3jrzs81m404o/clauseSplitterModel.ser.gz?dl=1'
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	bash -c 'cd ${etc} && ./mkGraph.sh'
