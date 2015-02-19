@@ -1,0 +1,22 @@
+\begin{abstract}
+Short relation triples produced by
+  Open Information Extraction (OpenIE) systems are useful 
+  for a number of NLP tasks.
+%Traditionally, these are collected directly from surface patterns;
+%  however, this encourages short dependency paths, 
+%  and is prone to ignoring the larger context of the sentence.
+%Rather than searching directly for surface patterns,
+We propose casting OpenIE as the restricted entailment task of finding
+  short entailed sentences from a longer utterance.
+This allows us both to capture longer range dependencies,
+  and allows the system to be sensitive to the larger context of the
+  sentence.
+%In our approach, 
+We extract self-contained clauses from the original 
+  sentence, and then run natural logic inference to further 
+  shorten each clause.
+These short fragments can themselves be useful, or simple rules
+  can be applied to produce more conventional OpenIE triples.
+We evaluate our approach on the 2013 TAC-KBP competition, showing
+  an over 9000\% absolute F$_1$ gain over a submission using OpenIE 4.
+\end{abstract}

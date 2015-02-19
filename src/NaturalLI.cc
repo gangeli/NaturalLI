@@ -283,7 +283,7 @@ string executeQuery(const JavaBridge* proc, const btree_set<uint64_t>* kb,
       rtn << bestFeatures->transitionFromFalseCounts[i] << ", ";
     }
     rtn << bestFeatures->transitionFromFalseCounts[FUNCTION_INDEPENDENCE] << "], "
-        <<  " \"insertionCosts\": [";
+        <<  " \"insertionCounts\": [";
     for (uint8_t i = 0; i < NUM_DEPENDENCY_LABELS - 1; ++i) {
       rtn << bestFeatures->insertionCounts[i] << ", ";
     }

@@ -4,8 +4,10 @@
 from socket import *
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
+from copy import copy
 import sys
 import json
+import os.path
 
 TCP_IP = '127.0.0.1'
 if len(sys.argv) > 1:
@@ -16,6 +18,12 @@ if len(sys.argv) > 2:
 PARALLELISM=4
 if len(sys.argv) > 3:
   PARALLELISM = int(sys.argv[3])
+IN_MODEL="/dev/null"
+if len(sys.argv) > 4:
+  IN_MODEL = sys.argv[4]
+OUT_MODEL="/dev/null"
+if len(sys.argv) > 5:
+  OUT_MODEL = sys.argv[5]
 
 # A bit of help text
 print( "Connecting to %s:%u on %u threads" % (TCP_IP, TCP_PORT, PARALLELISM) )
@@ -30,121 +38,6 @@ print( "" )
 print( "=> 'Some animals have tails.' is true (0.999075)" )
 print( "" )
 print( "vv Your input here (^D to exit) vv" )
-
-# Evaluation variables
-RESULT_LOCK = Lock()
-numGuessAndCorrect = 0
-numGuessTrue       = 0
-numGoldTrue        = 0
-numCorrect         = 0
-numStrictCorrect   = 0
-numTotal           = 0
-
-"""
-  Run a query on the server, with an optional premise set.
-  @param premises A list of premises, each of which is a String.
-  @param query A query, as a String, and optionally prepended with either
-               'TRUE: ' or 'FALSE: ' to communicate a value judgment to
-               the server.
-  @return True if the query succeeded, else False.
-"""
-def query(premises, query, preamble=None):
-  # We want these variables
-  global RESULT_LOCK
-  global numGuessAndCorrect
-  global numGuessTrue
-  global numGoldTrue
-  global numCorrect
-  global numStrictCorrect
-  global numTotal
-  
-  # Open a socket
-  s = socket(AF_INET, SOCK_STREAM)
-  s.connect((TCP_IP, TCP_PORT))
-
-  # Write the preamble, if it exists.
-  if preamble:
-    for line in preamble:
-      s.send((line.strip() + "\n").encode("ascii"))
-  # Write the premises + query
-  for premise in premises:
-    s.send((premise.strip() + "\n").encode("ascii"))
-  s.send((query.strip() + '\n\n').encode("ascii"))
-  gold = None
-  booleanGold = True
-  if query.startswith('TRUE: '):
-    query = query[len("TRUE: "):]
-    gold = 'true'
-    booleanGold = True
-  elif query.startswith('FALSE: '):
-    query = query[len("FALSE: "):]
-    gold = 'false'
-    booleanGold = False
-  elif query.startswith('UNK: '):
-    query = query[len("UNK: "):]
-    gold = 'unknown'
-    booleanGold = False
-
-  # Read the response
-  rawResponse = s.recv(32768).decode("ascii");
-
-  # Parse pass/fail judgments
-  didPass=True
-  if rawResponse.startswith("PASS: "):
-    rawResponse = rawResponse[len("PASS: "):]
-    didPass = True
-  elif rawResponse.startswith("FAIL: "):
-    rawResponse = rawResponse[len("FAIL: "):]
-    didPass = False
-
-  # Parse JSON
-  response = json.loads(rawResponse)
-  if response['success']:
-    # Materialize JSON
-    numResults  = response['numResults']  # Int
-    totalTicks  = response['totalTicks']  # Int
-    probability = response['truth']       # Double
-    bestPremise = response['bestPremise'] # String
-    path        = response['path']        # List
-    # Output result
-    guess = 'unknown'
-    booleanGuess = False
-    if probability > 0.5:
-      guess = 'true'
-      booleanGuess = True
-    elif probability < 0.5:
-      guess = 'false'
-    if gold != None:
-      pfx = "FAIL:"
-      if gold == guess:
-        pfx = "PASS:"
-      if gold == 'false' and guess == 'unknown':
-        pfx = "????:"  # 3-class failure; 2-class success
-      print ("=> %s '%s' is %s (%f) because '%s'" % (pfx, query, guess, probability, bestPremise))
-    else:
-      print ("=> '%s' is %s (%f) because '%s'" % (query, guess, probability, bestPremise))
-    # Compute results
-    RESULT_LOCK.acquire()
-    if gold != None:
-      numTotal += 1;
-      if booleanGuess == booleanGold:
-        numCorrect += 1
-      if guess == gold:
-        numStrictCorrect += 1
-      if booleanGuess and booleanGold:
-        numGuessAndCorrect += 1
-      if booleanGuess:
-        numGuessTrue += 1
-      if booleanGold:
-        numGoldTrue += 1
-    RESULT_LOCK.release()
-  else:
-    print ("Query failed: %s" % response['message'])
-    return False
-  
-  # Socket should be closed already, but just in case...
-  s.close()
-  return True
 
 """
   Creates an initial weight array for encoding soft natural logic costs.
@@ -177,8 +70,49 @@ def softNatlogCosts(constant=0.001, good=0.01, soft=0.1, bad=1.0):
   # Insertion costs
   for i in range(28,353):
     costs[i] = constant
+  costs[119] = 1.0  # special case for 'for'
   # Return
   return costs
+
+
+"""
+  Do a single update.
+  @param costs The current costs vector
+  @param features The feature vector of the example, or None if
+         no vector was found.
+  @param discount If true, we should discount all costs.
+"""
+def update(costs, features, discount):
+  global COSTS
+  global COSTS_LOCK
+  COSTS_LOCK.acquire();
+  if discount:
+    for i in range(0,353):
+      COSTS[i] -= 0.1
+      if COSTS[i] < 0.001:
+        COSTS[i] = 0.001
+  else:
+    for i in range(0,353):
+      COSTS[i] += 0.1 * float(features[i])
+  COSTS_LOCK.release();
+
+
+"""
+  Convert the response from the search process into a feature vector,
+  matching the dimensions of the cost vector.
+"""
+def mkFeatureVector(mutate, transFromTrue, transFromFalse, insert):
+  features = [0] * 353
+  for i in range(0, 14):
+    features[i] = mutate[i];
+  for i in range(14, 21):
+    features[i] = transFromTrue[i - 14];
+  for i in range(21, 28):
+    features[i] = transFromFalse[i - 21];
+  for i in range(28, 28 + len(insert)):
+    features[i] = insert[i - 28];
+  return features
+
 
 """
   Defines the preamble string for soft NatLog costs.
@@ -544,6 +478,145 @@ def costsPreamble(costs):
       '%insertionLexicalCost @ prep_dep = ' + str(costs[352]),
   ]
 
+# Evaluation variables
+RESULT_LOCK = Lock()
+numGuessAndCorrect = 0
+numGuessTrue       = 0
+numGoldTrue        = 0
+numCorrect         = 0
+numStrictCorrect   = 0
+numTotal           = 0
+
+# Global Weights
+COSTS_LOCK = Lock()
+COSTS = softNatlogCosts();
+if os.path.isfile(IN_MODEL):
+  with open(IN_MODEL) as costs:
+    content = costs.readlines()
+    for i in range(0, len(COSTS)):
+      COSTS[i] = float(content[i]);
+
+"""
+  Run a query on the server, with an optional premise set.
+  @param premises A list of premises, each of which is a String.
+  @param query A query, as a String, and optionally prepended with either
+               'TRUE: ' or 'FALSE: ' to communicate a value judgment to
+               the server.
+  @return True if the query succeeded, else False.
+"""
+def query(premises, query, costs=None):
+  # We want these variables
+  global RESULT_LOCK
+  global numGuessAndCorrect
+  global numGuessTrue
+  global numGoldTrue
+  global numCorrect
+  global numStrictCorrect
+  global numTotal
+  
+  # Open a socket
+  s = socket(AF_INET, SOCK_STREAM)
+  s.connect((TCP_IP, TCP_PORT))
+
+  # Write the preamble, if it exists.
+  if costs:
+    for line in costsPreamble(costs):
+      s.send((line.strip() + "\n").encode("ascii"))
+  # Write the premises + query
+  for premise in premises:
+    s.send((premise.strip() + "\n").encode("ascii"))
+  s.send((query.strip() + '\n\n').encode("ascii"))
+  gold = None
+  booleanGold = True
+  if query.startswith('TRUE: '):
+    query = query[len("TRUE: "):]
+    gold = 'true'
+    booleanGold = True
+  elif query.startswith('FALSE: '):
+    query = query[len("FALSE: "):]
+    gold = 'false'
+    booleanGold = False
+  elif query.startswith('UNK: '):
+    query = query[len("UNK: "):]
+    gold = 'unknown'
+    booleanGold = False
+
+  # Read the response
+  rawResponse = s.recv(32768).decode("ascii");
+
+  # Parse pass/fail judgments
+  didPass=True
+  if rawResponse.startswith("PASS: "):
+    rawResponse = rawResponse[len("PASS: "):]
+    didPass = True
+  elif rawResponse.startswith("FAIL: "):
+    rawResponse = rawResponse[len("FAIL: "):]
+    didPass = False
+
+  # Parse JSON
+  response = json.loads(rawResponse)
+  if response['success']:
+    # Materialize JSON
+    numResults  = response['numResults']  # Int
+    totalTicks  = response['totalTicks']  # Int
+    probability = response['truth']       # Double
+    bestPremise = response['bestPremise'] # String
+    path        = response['path']        # List
+    # Scrape features
+    features = None
+    if 'features' in response:
+      features = mkFeatureVector(
+          response['features']['mutationCounts'],
+          response['features']['transitionFromTrueCounts'],
+          response['features']['transitionFromFalseCounts'],
+          response['features']['insertionCosts']);  # TODO(gabor) typo in server...
+    # Assess result
+    guess = 'unknown'
+    booleanGuess = False
+    if probability > 0.5:
+      guess = 'true'
+      booleanGuess = True
+    elif probability < 0.5:
+      guess = 'false'
+    # Do weight update
+    if booleanGold and not booleanGuess:
+      pass
+#      update(costs, features, True)
+    elif not booleanGold and booleanGuess:
+      update(costs, features, False)
+    # Output
+    if gold != None:
+      pfx = "FAIL:"
+      if gold == guess:
+        pfx = "PASS:"
+      if gold == 'false' and guess == 'unknown':
+        pfx = "????:"  # 3-class failure; 2-class success
+      print ("=> %s '%s' is %s (%f) because '%s'" % (pfx, query, guess, probability, bestPremise))
+    else:
+      print ("=> '%s' is %s (%f) because '%s'" % (query, guess, probability, bestPremise))
+    # Compute results
+    RESULT_LOCK.acquire()
+    if gold != None:
+      numTotal += 1;
+      if booleanGuess == booleanGold:
+        numCorrect += 1
+      if guess == gold:
+        numStrictCorrect += 1
+      if booleanGuess and booleanGold:
+        numGuessAndCorrect += 1
+      if booleanGuess:
+        numGuessTrue += 1
+      if booleanGold:
+        numGoldTrue += 1
+    RESULT_LOCK.release()
+  else:
+    print ("Query failed: %s" % response['message'])
+    return False
+  
+  # Socket should be closed already, but just in case...
+  s.close()
+  return True
+
 #
 # Interactive Shell Entry Point
 #
@@ -568,9 +641,11 @@ if __name__ == "__main__":
           queryStr, *premises = lines
         lines = []
         # Start the query (async)
-        preamble = costsPreamble(softNatlogCosts())
-        threads.submit(query, premises, queryStr, preamble)
-#        query(premises, queryStr)  # single threaded
+        COSTS_LOCK.acquire()
+        costs = copy(COSTS)
+        COSTS_LOCK.release()
+#        threads.submit(query, premises, queryStr, costs)
+        query(premises, queryStr, costs)
       else:
         lines.append(line.strip());
   
@@ -578,7 +653,7 @@ if __name__ == "__main__":
   # Compute scores
   p      = 1.0 if numGuessTrue == 0 else (float(numGuessAndCorrect) / float(numGuessTrue))
   r      = 0.0 if numGoldTrue == 0 else (float(numGuessAndCorrect) / float(numGoldTrue))
-  f1     = 2.0 * p * r / (p + r)
+  f1     = 0.0 if (p + r == 0) else 2.0 * p * r / (p + r)
   accr   = 0.0 if numTotal == 0 else (float(numCorrect) / float(numTotal))
   strict = 0.0 if numTotal == 0 else (float(numStrictCorrect) / float(numTotal))
   
@@ -593,3 +668,7 @@ if __name__ == "__main__":
     print("")
     print("(Total):  %d"   % numTotal)
     print("--------------------")
+
+  with open(OUT_MODEL, 'w') as model:
+    for i in range(0, len(COSTS)):
+      model.write('' + str(COSTS[i]) + '\n')

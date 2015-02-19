@@ -1,0 +1,107 @@
+\Section{intro}{Introduction}
+\paragraph{main points:}
+\begin{itemize}
+  \item We tackle two big problems with OpenIE:
+    \begin{enumerate}
+      \item Relations can be embedded in more complex syntactic relations;
+        for example, between a subject and the object of a subordinate
+        clause, or the object of a prepositional phrase.
+        For example, in:
+        \w{Born in Honolulu, Hawaii, Obama is a graduate of Columbia University and Harvard Law School}
+        the verb `Born' has an incoming, not outgoing edge to Obama.
+        Similarly:
+        \w{Waldheim left the U.N. in 1982 and served as a visiting professor.}
+        We have a path `left' $\rightarrow$ served $\rightarrow$ professor.
+        This I actually do pretty good with -- we have some nice examples
+        (like the above two) that I get right.
+
+      \item OpenIE often ignores relevant context in the surrounding 
+        sentence. For example, \w{Chris is friends with Fei-Fei}, we would
+        not want to extract the ``Chris be friend''.
+        Honestly, I'm not sure there are many cases where we prohibit such
+        an extraction, but we do penalize them with reasonable accuracy.
+    \end{enumerate}
+
+  \item For clause splitting, we define a class of actions
+    (split on dependency arc, split on dependency arc and take the subject,
+    split on dependency arc and take the entire parent), and use that to
+    recursively break the sentence into smaller and smaller chunks.
+  
+  \item This process isn't well suited for rules, primarily because of the
+    ambiguity of when the subject wants to migrate into the subordinate
+    clause. Mistakes both ways are bad: consider extracting the clause
+    \w{Born in Honolulu, Hawaii} and pretending it's a coherent sentence.
+
+  \item To learn the clause splitting rules, we need training data. 
+    We take inspiration from distant supervision (like a good 
+    indoctrinated Stanford kid), and assume that clause splits that cause
+    us to extract relations are good splits.
+
+    The KBP data lends itself naturally to this kind of task, so we both
+    train and evaluate on it. But, importantly, the relations are not
+    in any way tied to KBP -- we just assume that clauses that express
+    KBP relations are likely to be clauses that express the other relations
+    we care about.
+
+    Importantly, this is a twice-noisy dataset: first, we only have limited
+    annotations for any relations in text, and so we complement the annotations
+    we have with a large distantly supervised set of sentences (distantly supervised
+    in the conventional sense).
+    Second, we know neither whether (1) the relation in the sentence can be captured
+    via the class of actions we are splitting on, and (2) whether if we find another
+    clause in the sentence this should be a negative example, or just happens to be
+    another relation.
+
+  \item There's a bit of learning of the mapping from OpenIE to KBP
+    relations in there too. Nothing really fancy, but it turns out
+    taking the PMI$^2$ between OpenIE and KBP relations works pretty OK,
+    and with Greenplum we have the global statistics to compute it well
+    (i.e., we know the empirical P(kbp\_relation) and P(openie\_relation) --
+    which we've never actually had before).
+    Nonetheless, a good portion of our leverage is from the hard-coded
+    translations, adapted from our rule set.
+    It didn't take me much (if any) longer than the 3 hours UW claims,
+    and by pure necessity it can't possibly take me longer than their
+    2 week system.
+  
+  \item A bit of a random note: 
+      we split the space of possible relations we're extracting into two classes:
+      ``verb-y'' relations, and ``state-y'' relations. The first of these
+      generally pivots around a verb; the second, around a dependency
+      arc or a prepositional phrase. For example:
+      \w{Chris Manning works at Stanford} versus
+      \w{Chris Manning of Stanford}.
+      Particularly relevant is that people tend to have their KBP relations
+      expressed with verbs; organizations tend to have theirs expressed
+      in terms of state (\w{Apple in Cupertino released $\dots$},
+      \w{The CS department at Stanford $\dots$}, etc.).
+
+      This seemed like a potentially interesting insight; and, anyways,
+      gives me a good excuse for why I have patterns for these in there.
+      Namely, we have the conventional OpenIE-ish patterns, and then
+      special cases over the dependency arcs amod (for titles) and
+      prepositions (for things like top employees, headquarters, etc.).
+\end{itemize}
+
+
+\paragraph{contributions:}
+\begin{itemize}
+  \item An approach to process a large sentence into simpler, logically
+    entailed chunks, which can be used even independently of the triple
+    format of OpenIE. This also, in effect, allows us to capture more
+    complicated dependency patterns by first splitting (which mutates
+    the tree) and then applying the simple patterns
+  
+  \item An OpenIE system that's a bit more sensitive to context, particularly
+    dropping PPs and direct objects (from \w{Obama signed the bill}
+    it may not necessarily be useful to entail \w{Obama signed}).
+
+  \item We (hopefully) beat UW on the KBP dataset. Their 2013 numbers are
+    17.7 F$_1$; we're between 11.8 (on 2012) and 18.12 (on 2010) currently.
+    But, we're missing a fifth of the annotated documents (rerunning with
+    Wikifier), as well as all of the prep\_* edges out of organizations.
+    Both should help a bit, plus I still have a week of debugging time.
+\end{itemize}
+
+Obligatory citation to get \LaTeX\ to compile: \newcite{key:stanford-tagger}.
+
