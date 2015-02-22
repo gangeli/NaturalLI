@@ -1,107 +1,129 @@
 \Section{intro}{Introduction}
-\paragraph{main points:}
-\begin{itemize}
-  \item We tackle two big problems with OpenIE:
-    \begin{enumerate}
-      \item Relations can be embedded in more complex syntactic relations;
-        for example, between a subject and the object of a subordinate
-        clause, or the object of a prepositional phrase.
-        For example, in:
-        \w{Born in Honolulu, Hawaii, Obama is a graduate of Columbia University and Harvard Law School}
-        the verb `Born' has an incoming, not outgoing edge to Obama.
-        Similarly:
-        \w{Waldheim left the U.N. in 1982 and served as a visiting professor.}
-        We have a path `left' $\rightarrow$ served $\rightarrow$ professor.
-        This I actually do pretty good with -- we have some nice examples
-        (like the above two) that I get right.
 
-      \item OpenIE often ignores relevant context in the surrounding 
-        sentence. For example, \w{Chris is friends with Fei-Fei}, we would
-        not want to extract the ``Chris be friend''.
-        Honestly, I'm not sure there are many cases where we prohibit such
-        an extraction, but we do penalize them with reasonable accuracy.
-    \end{enumerate}
+% Motivation
+Open information extraction (open IE) has been shown to be useful in a
+  number of NLP tasks, such as question answering\needcite (UW
+  work goes here),
+  relation extraction\needcite (KBP submission; matrix factorization),
+  and probably other things too\needcite.
+In this paper, we address two problems with modern open IE systems:
+  first, they either do not capture relations between mentions which
+  are not canonically connected (e.g., subject verb object triples) or
+  these long-range dependencies are captured using a large number of
+  sparse rules.
+We propose an alternate approach which learns a classifier over a
+  simple set of actions to split long sentences into coherent
+  independent clauses.
 
-  \item For clause splitting, we define a class of actions
-    (split on dependency arc, split on dependency arc and take the subject,
-    split on dependency arc and take the entire parent), and use that to
-    recursively break the sentence into smaller and smaller chunks.
+Second, existing systems generally do a poor job of producing
+  canonical argument forms, either stripping relevant
+  information, or retaining irrelevant information in the argument.
+Both of these are harmuful for downstream applications using the
+  output of the systems
+We address this problem by extracting more specific (i.e., shorter)
+  arguments only if they are logically warranted by the larger
+  context of the sentence.
+This allows us to extract the maximally specific arguments for each
+  extracted triple.
+
+\begin{figure}
+  \begin{tabular}{|lp{7.0cm}|}
+    \hline
+    1 & \w{Born in Honolulu, Hawaii, Obama is a graduate of Columbia.} \\
+      & $~\rightarrow$ (Obama; born in; Honolulu, Hawaii) \\
+    2 & \w{Jeremy and Andrew were married in Connecticut.} \\
+      & $~\rightarrow$ (Jeremy; marry; Andrew) \\
+    \hline
+    3 & \w{Chancelor Merkel of Germany visited China yesterday} \\
+      & $~\rightarrow$ (Chancelor Merkel; visit; China) \\
+    4 & \w{Enemies give fake compliments} \\
+      & $~\rightarrow$ (Enemies, give, fake complements) \\
+    \hline
+  \end{tabular}
+  \caption{
+    \label{fig:teaser}
+    Open IE extractions produced by the system. 
+    Examples above the line exploit clause-level entailment.
+    Examples below the line exploit natural logic semantics to shorten
+      arguments.
+    }
+\end{figure}
+
+% Challenge: many rules
+Conventionally, open IE systems search a collection of patterns over either
+  the surface form or dependency tree of the sentence.
+For simple relations (e.g., subject verb object triples) a small set of
+  patterns covers most sentences.
+However, relevant relations are often expressed in more convoluted
+  ways -- for instance, example 1 in \reffig{teaser}.
+Systems like OLLIE \cite{key:2012mausam-ollie} approach this problem by 
+  using a bootstrapping method to create a large corpus of broad-coverage
+  partially lexicalized patterns.
+Although this is effective at capturing many of these patterns,
+  this level of lexicalization can lead to unintuitive behavior on 
+  out-of-domain text.
+For instance, while \ww{Obama is president} is extracted correctly by
+  the system, \ww{cats are cute} is not.
+
+We propose mitigating the problem by decomposing the extraction task into
+  two sub-tasks:
+  we first learn a classifier for splitting a sentence into shorter
+  utterances, and then extract triples using a simple set of
+  unlexicalized patterns over these short utterances.
+Each split clause, in turn, can optionally borrow either the entire
+  governing clause, or just the subject of the governing clause.
+For example, the first sentence in \reffig{teaser} will produce the
+  clause \ww{Obama born in Honolulu, Hawaii}, borrowing the subject
+  \ww{Obama} from the governing clause.
+This procedure allows us to capture a large variety of long range 
+  dependencies, while keeping both the state space of the clause splitting
+  classifier small, and keeping the set of hand-coded patterns unlexicalized
+  and small.
+
+% Challenge: granularity of arguments
+A second key challenge for open IE systems is chosing the right level of
+  granularity for the triples being expressed.
+To illustrate, example 2 in \reffig{teaser} would \naive ly produce
+  the extraction (Chancelor Merkel of Germany; visit; China);\footnote{
+    Actual output from OLLIE.
+  }
+  however, most downstream applications would strongly prefer the subject
+  of the triple to drop the prepositional phrase.
+For instance, when applying open IE to a conventional relation extraction
+  task, overly fine grained arguments like \ww{Chancelor Merkel of Germany}
+  must either be treated as atomic units (leading to recall errors),
+  use heuristic matching (potentially leading to harmful extractions
+  like \ww{Germany visited China}), or be further parsed by the application
+  (which is counterproductive to using open IE in the first place).
   
-  \item This process isn't well suited for rules, primarily because of the
-    ambiguity of when the subject wants to migrate into the subordinate
-    clause. Mistakes both ways are bad: consider extracting the clause
-    \w{Born in Honolulu, Hawaii} and pretending it's a coherent sentence.
+On the other hand, it's often incorrect to maximally shorten an argument.
+For example, \ww{No house cats have rabbies} should not entail that
+  \ww{cats have rabbies}, or even that \ww{house cats have rabbies}.
+Furthermore, the sentence \ww{enemies give fake compliments} should not
+  produce the triple (enemies; give; compliments).
 
-  \item To learn the clause splitting rules, we need training data. 
-    We take inspiration from distant supervision (like a good 
-    indoctrinated Stanford kid), and assume that clause splits that cause
-    us to extract relations are good splits.
+A natural framework for solving this problem is natural logic -- 
+  a proof system built on the syntax of human language (see Section XYZ).
+We can then observe that
+  \ww{Chancelor Merkel of Germany visited China yesterday} entails
+  that \ww{Chancelor Merkel visited China yesterday},
+  but that \ww{enemies give fake compliments} does not entail that
+  \ww{enemies give ocmpliments}.
+Furthermore, the framework allows us to capture more subtle phenomena:
+  whereas \ww{all rabbits eat fresh vegetables} yields
+  (rabbits; eat; vegetables), the apparently similar sentence
+  \ww{all young rabbits drink milk} does not yield
+  (rabbits; drink; milk).
 
-    The KBP data lends itself naturally to this kind of task, so we both
-    train and evaluate on it. But, importantly, the relations are not
-    in any way tied to KBP -- we just assume that clauses that express
-    KBP relations are likely to be clauses that express the other relations
-    we care about.
-
-    Importantly, this is a twice-noisy dataset: first, we only have limited
-    annotations for any relations in text, and so we complement the annotations
-    we have with a large distantly supervised set of sentences (distantly supervised
-    in the conventional sense).
-    Second, we know neither whether (1) the relation in the sentence can be captured
-    via the class of actions we are splitting on, and (2) whether if we find another
-    clause in the sentence this should be a negative example, or just happens to be
-    another relation.
-
-  \item There's a bit of learning of the mapping from OpenIE to KBP
-    relations in there too. Nothing really fancy, but it turns out
-    taking the PMI$^2$ between OpenIE and KBP relations works pretty OK,
-    and with Greenplum we have the global statistics to compute it well
-    (i.e., we know the empirical P(kbp\_relation) and P(openie\_relation) --
-    which we've never actually had before).
-    Nonetheless, a good portion of our leverage is from the hard-coded
-    translations, adapted from our rule set.
-    It didn't take me much (if any) longer than the 3 hours UW claims,
-    and by pure necessity it can't possibly take me longer than their
-    2 week system.
-  
-  \item A bit of a random note: 
-      we split the space of possible relations we're extracting into two classes:
-      ``verb-y'' relations, and ``state-y'' relations. The first of these
-      generally pivots around a verb; the second, around a dependency
-      arc or a prepositional phrase. For example:
-      \w{Chris Manning works at Stanford} versus
-      \w{Chris Manning of Stanford}.
-      Particularly relevant is that people tend to have their KBP relations
-      expressed with verbs; organizations tend to have theirs expressed
-      in terms of state (\w{Apple in Cupertino released $\dots$},
-      \w{The CS department at Stanford $\dots$}, etc.).
-
-      This seemed like a potentially interesting insight; and, anyways,
-      gives me a good excuse for why I have patterns for these in there.
-      Namely, we have the conventional OpenIE-ish patterns, and then
-      special cases over the dependency arcs amod (for titles) and
-      prepositions (for things like top employees, headquarters, etc.).
-\end{itemize}
-
-
-\paragraph{contributions:}
-\begin{itemize}
-  \item An approach to process a large sentence into simpler, logically
-    entailed chunks, which can be used even independently of the triple
-    format of OpenIE. This also, in effect, allows us to capture more
-    complicated dependency patterns by first splitting (which mutates
-    the tree) and then applying the simple patterns
-  
-  \item An OpenIE system that's a bit more sensitive to context, particularly
-    dropping PPs and direct objects (from \w{Obama signed the bill}
-    it may not necessarily be useful to entail \w{Obama signed}).
-
-  \item We (hopefully) beat UW on the KBP dataset. Their 2013 numbers are
-    17.7 F$_1$; we're between 11.8 (on 2012) and 18.12 (on 2010) currently.
-    But, we're missing a fifth of the annotated documents (rerunning with
-    Wikifier), as well as all of the prep\_* edges out of organizations.
-    Both should help a bit, plus I still have a week of debugging time.
-\end{itemize}
-
-Obligatory citation to get \LaTeX\ to compile: \newcite{key:stanford-tagger}.
-
+% Conclude
+Combining these two insights, we create an open IE system which
+  captures long-range dependencies without requiring a large rule set
+  by learning to split long sentences into coherent shorter utterances
+  from which triples can be extracted,
+  and then exploits natural logic semantics to find the optimal granularity
+  for the arguments of those triples.
+% Scores
+We show that our new system performs well on a real world evaluation --
+  the TAC KBP relation extraction competition.
+We compare against state-of-the-art open IE systems, and show a
+  9000\% absolute F$_1$ improvement over the system.

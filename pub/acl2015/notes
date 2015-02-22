@@ -54,3 +54,47 @@ Accuracy: 0.571
 (Total):  1069
 --------------------
 
+
+
+Evaluating Split 1...
+......................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         226169
+split count:  10116
+interm count: 11056
+
+
+p  (split):   0.751
+r  (split):   0.552
+f1 (split):   0.636
+p  (interm):  0.380
+r  (interm):  0.604
+f1 (interm):  0.467
+
+p  (split):   0.739
+r  (split):   0.556
+f1 (split):   0.635
+p  (interm):  0.386
+r  (interm):  0.605
+f1 (interm):  0.471
+
+p  (split):   0.734
+r  (split):   0.555
+f1 (split):   0.632
+p  (interm):  0.379
+r  (interm):  0.602
+f1 (interm):  0.465
+
+p  (split):   0.743
+r  (split):   0.551
+f1 (split):   0.633
+p  (interm):  0.384
+r  (interm):  0.613
+f1 (interm):  0.472
+
+p  (split):   0.742
+r  (split):   0.555
+f1 (split):   0.635
+p  (interm):  0.372
+r  (interm):  0.605
+f1 (interm):  0.461

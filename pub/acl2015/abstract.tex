@@ -1,22 +1,67 @@
 \begin{abstract}
 Short relation triples produced by
-  Open Information Extraction (OpenIE) systems are useful 
-  for a number of NLP tasks.
-%Traditionally, these are collected directly from surface patterns;
-%  however, this encourages short dependency paths, 
-%  and is prone to ignoring the larger context of the sentence.
-%Rather than searching directly for surface patterns,
-We propose casting OpenIE as the restricted entailment task of finding
-  short entailed sentences from a longer utterance.
-This allows us both to capture longer range dependencies,
-  and allows the system to be sensitive to the larger context of the
-  sentence.
-%In our approach, 
-We extract self-contained clauses from the original 
-  sentence, and then run natural logic inference to further 
-  shorten each clause.
-These short fragments can themselves be useful, or simple rules
-  can be applied to produce more conventional OpenIE triples.
-We evaluate our approach on the 2013 TAC-KBP competition, showing
-  an over 9000\% absolute F$_1$ gain over a submission using OpenIE 4.
+  open domain information extraction (open IE) systems 
+  are useful for a number of NLP tasks.
+Traditionally these are extracted from a large set of patterns;
+  however, this approach can be brittle on out-of-domain text
+  and long-range dependencies, and gives no insight into the correct
+  sub-structure of the arguments extracted.
+We replace the large pattern set of these systems
+  with a small set of patterns for canonically formatted
+  sentences, and a classifier which learns to extract
+  coherent self-contained clauses from longer sentences.
+Furthermore, we run natural logic inference over these short
+  clauses to determine the maximally specific arguments for each
+  candidate triple.
+We show that our approach yields an over 9000\% F$_1$ gain
+  over a state-of-the-art open IE system
+  on the TAC-KBP 2013 test set.
 \end{abstract}
+
+
+%\begin{abstract}
+%Short relation triples produced by
+%  open domain information extraction (open IE) systems 
+%  are useful for a number of NLP tasks.
+%% "top-down entailed" vs "bottom-up eager", with examples.
+%%These systems eagerly match any pattern in the surface
+%%  form.
+%%  encourages short paths and results in output like
+%%  "a is friends"
+%Traditionally these are extracted
+%  \textit{bottom up}, eagerly matching any valid triple
+%  pattern.
+%This approach often misses longer-range dependencies, and
+%  extracts triples which are meaningless without their context.
+%%  from surface patterns;
+%%  however, this encourages short dependency paths
+%%  and is prone to extracting triples which are meaningless
+%%  without their context.
+%%Rather than searching directly for surface patterns,
+%%We observe that these triples are trivial to extract from
+%%  sufficiently short sentences, 
+%We propose a
+%  \textit{top-down} approach, shortening the full sentence
+%  into logically entailed fragments.
+%%  leveraging textual inference to
+%%  find short entailed sentences from a longer utterance.
+%%We propose a ``top-down'' approach to extracting these triples
+%%We propose casting open IE as the restricted entailment task of finding
+%%  short entailed sentences from a longer utterance.
+%This allows us both to capture longer range dependencies,
+%  and allows the system to be sensitive to the larger context of the
+%  sentence.
+%%In our approach, 
+%We extract self-contained clauses from the original 
+%  sentence, and then run natural logic inference to further 
+%  shorten each clause; triples can then be trivially extracted
+%  from these shortened clauses.
+%%These short fragments can themselves be useful, or simple rules
+%%  can be applied to produce more conventional open IE triples.
+%We show that our approach yields an over 9000\% F$_1$ gain
+%  over a state-of-the-art open IE system
+%  on the TAC-KBP 2013 test set.
+%%We validate our approach on the 2013 TAC-KBP competition, showing
+%%  an over 9000\% absolute F$_1$ gain over a submission using
+%%  UW's OpenIE 4 system.
+%\end{abstract}

@@ -1,0 +1,164 @@
+\Section{notes}{Notes}
+With apologies for the scattered format
+
+\paragraph{Approach:}
+\begin{itemize}
+%  \item We tackle two big problems with OpenIE:
+%    \begin{enumerate}
+%      \item Relations can be embedded in more complex syntactic relations;
+%        for example, between a subject and the object of a subordinate
+%        clause, or the object of a prepositional phrase.
+%        For example, in:
+%        \w{Born in Honolulu, Hawaii, Obama is a graduate of Columbia University and Harvard Law School}
+%        the verb `Born' has an incoming, not outgoing edge to Obama.
+%        Similarly:
+%        \w{Waldheim left the U.N. in 1982 and served as a visiting professor.}
+%        We have a path `left' $\rightarrow$ served $\rightarrow$ professor.
+%        This I actually do pretty good with -- we have some nice examples
+%        (like the above two) that I get right.
+%
+%      \item OpenIE often ignores relevant context in the surrounding 
+%        sentence. For example, \w{Chris is friends with Fei-Fei}, we would
+%        not want to extract the ``Chris be friend''.
+%        Honestly, I'm not sure there are many cases where we prohibit such
+%        an extraction, but we do penalize them with reasonable accuracy.
+%    \end{enumerate}
+
+  \item For clause splitting, we define a class of actions
+    (split on dependency arc, split on dependency arc and take the subject,
+    split on dependency arc and take the entire parent), and use that to
+    recursively break the sentence into smaller and smaller chunks.
+  
+  \item This process isn't well suited for rules, primarily because of the
+    ambiguity of when the subject wants to migrate into the subordinate
+    clause. Mistakes both ways are bad: consider extracting the clause
+    \w{Born in Honolulu, Hawaii} and pretending it's a coherent sentence.
+
+  \item To learn the clause splitting rules, we need training data. 
+    We take inspiration from distant supervision (like a good 
+    indoctrinated Stanford kid), and assume that clause splits that cause
+    us to extract relations are good splits.
+
+    The KBP data lends itself naturally to this kind of task, so we both
+    train and evaluate on it. But, importantly, the relations are not
+    in any way tied to KBP -- we just assume that clauses that express
+    KBP relations are likely to be clauses that express the other relations
+    we care about.
+
+    Importantly, this is a twice-noisy dataset: first, we only have limited
+    annotations for any relations in text, and so we complement the annotations
+    we have with a large distantly supervised set of sentences (distantly supervised
+    in the conventional sense).
+    Second, we know neither whether (1) the relation in the sentence can be captured
+    via the class of actions we are splitting on, and (2) whether if we find another
+    clause in the sentence this should be a negative example, or just happens to be
+    another relation.
+
+  \item There's a bit of learning of the mapping from OpenIE to KBP
+    relations in there too. Nothing really fancy, but it turns out
+    taking the PMI$^2$ between OpenIE and KBP relations works pretty OK,
+    and with Greenplum we have the global statistics to compute it well
+    (i.e., we know the empirical P(kbp\_relation) and P(openie\_relation) --
+    which we've never actually had before).
+    Nonetheless, a good portion of our leverage is from the hard-coded
+    translations, adapted from our rule set.
+    It didn't take me much (if any) longer than the 3 hours UW claims,
+    and by pure necessity it can't possibly take me longer than their
+    2 week system.
+  
+  \item A bit of a random note: 
+      we split the space of possible relations we're extracting into two classes:
+      ``verb-y'' relations, and ``state-y'' relations. The first of these
+      generally pivots around a verb; the second, around a dependency
+      arc or a prepositional phrase. For example:
+      \w{Chris Manning works at Stanford} versus
+      \w{Chris Manning of Stanford}.
+      Particularly relevant is that people tend to have their KBP relations
+      expressed with verbs; organizations tend to have theirs expressed
+      in terms of state (\w{Apple in Cupertino released $\dots$},
+      \w{The CS department at Stanford $\dots$}, etc.).
+
+      I don't think this is a new insight (UW has been saying it for 
+      a while), but nonetheless they don't extract anything for phrases
+      like \w{Chancelor Merkel of Germany} and that's kind of awful -- two
+      whole relations in there!
+\end{itemize}
+
+\paragraph{Contributions}
+\begin{itemize}
+  \item I split the task differently. I only need a small number of
+        patterns, and put the rest of the work in the clause splitting.
+        The main advantage of this, that I can think of, is that I also
+        produce coherent sentence fragments rather than triples.
+
+  \item I can tout the benefits of natural logic again.
+        For the sentence \w{blue cats have tails}, Ollie will extract
+        (blue cats, have, tails), while I'll also get that
+        (cats, have, tails).
+        Whereas, for \w{no blue cats have tails}, Ollie will still get
+        (no blue cats, have, tails), and I extract nothing (correctly,
+        I think -- I reject that ``no blue cats'' is a meaningful mention).
+
+        In line with this, I do think I do better at providing more reliable
+        atmoic arguments. For example:
+        \w{Chancelor Merkel of Germany visited China yesterday} gets parsed
+        by Ollie as (Chancelor Merkel of Germany, visit, China).
+
+        Similarly, Ollie completely fails at 
+        \w{Furry cats, who drink milk, play with yarn}: 
+        (milk, be play with, yarn), whereas we correctly get
+        (cat, play with yarn) -- and I guess with low confidence
+        (who, drink, milk), but let's not talk about that one...
+
+  \item I evaluate on a real dataset, and show good performance.    
+        We're about to run OpenIE 4 on the same dataset -- if that gets good
+        performance too, I guess I can talk about how great the relation
+        mapping learning is, and that model combination works well?
+\end{itemize}
+
+
+%\paragraph{contributions:}
+%\begin{itemize}
+%  \item An approach to process a large sentence into simpler, logically
+%    entailed chunks, which can be used even independently of the triple
+%    format of OpenIE. This also, in effect, allows us to capture more
+%    complicated dependency patterns by first splitting (which mutates
+%    the tree) and then applying the simple patterns
+%  
+%  \item An OpenIE system that's a bit more sensitive to context, particularly
+%    dropping PPs and direct objects (from \w{Obama signed the bill}
+%    it may not necessarily be useful to entail \w{Obama signed}).
+%
+%  \item We (hopefully) beat UW on the KBP dataset. Their 2013 numbers are
+%    17.7 F$_1$; we're between 11.8 (on 2012) and 18.12 (on 2010) currently.
+%    But, we're missing a fifth of the annotated documents (rerunning with
+%    Wikifier), as well as all of the prep\_* edges out of organizations.
+%    Both should help a bit, plus I still have a week of debugging time.
+%\end{itemize}
+
+%\paragraph{Help!}
+%So, as it turns out, most of the supposed improvements of this paper are
+%  also in Ollie.
+%They also learn long-range dependencies, by simply extracting more patterns
+%  and learning which ones are correct.
+%I haven't yet found an example of a pattern we get that they don't.
+%I can try to make claims about being higher precision, but I don't put a
+%  high probability on that panning out significantly in the results.
+%
+%Being aware of context, in turn, is also in Ollie.
+%They have both an attribution module (for things like ``X said that triple'')
+%  and try to lexicalize on patterns which are low precision to avoid the same
+%  kinds of PP dropping that I'm avoiding.
+%I suspect this makes the abstract as written pretty much wrong.
+%
+%Open IE can be viewed as a \textit{bottom up} approach to extracting
+%  atomic relation triples.
+%Given the surface form of the sentence, and often additional annotations
+%  such as dependency trees or semantic role labelling frames,
+%  most systems will eagerly extract any matching pattern ignoring most
+%  or all of the context around it. 
+%This is similar in spirit to most ``closed'' domain relation extractors,
+%  where a pair of mentions is classified into the relation between them
+%  based primarily on the basis of very local contexts around the mentions.
+
+

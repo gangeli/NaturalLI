@@ -1,0 +1,165 @@
+\Section{mapping}{Adapting OpenIE to a Known Relation Schema}
+% Intro + kbp schema
+A common use case for open IE systems is to adapt them to a
+  known relation schema.
+As a motivating use-case, we take the KBP relation schema, taken from
+  the TAC-KBP challenges.
+This consists of 42 relations (41 after the 2012 evaluation) roughly
+  aligning to Wikipedia Infoboxes for people and organizations.
+  Examples include \rel{Per:Title}, a person's title in an
+  organization (President, CEO, etc.); \rel{Per:City\_Of\_Birth}, the
+  city a person was born in; or \rel{Org:Founded}, the date an organization
+  was founded.
+
+% Why OpenIE?
+The natural approach for relation extraction when the relation
+  schema is known \textit{a priori} is to train either 
+  a supervised\needcite or distantly supervised\needcite extractor
+  directly on the relation set.
+Nonetheless, there are a number of motivations for using open domain
+  relation triples.
+% Domain adaptation
+The most salient of these is that an open IE system can be adapted
+  easily to new relation schemata.
+In part, this is useful if the new schema does not have any training data
+  to train a supervised (or distantly supervised) classifier on; a relatively
+  small and intuitive annotation effort can translate between open IE relations
+  and many relations in many schemata.
+But, even when training data is available, learning a mapping from open IE
+  relations to the given schema is often faster and higher precision than
+  training a supervised classifier.
+
+% Treat KBP relations as random variables
+We describe our method for mapping from open IE relations to the KBP relation
+  making use of our distantly supervised corpus (see \refsec{distsup}).
+At a high level, our mapping will be pairs which have a high PMI$^2$ value
+  between the open IE and KBP relation.
+We treat the existence of a relation between two mentions in a sentence as
+  a random variable, conditioned on the NER type signature of the metions.
+For instance, we can describe the probability of the relation 
+  \rel{Per:Country\_Of\_Birth} occuring between \ww{Barack Obama} and
+  \ww{America} in the sentence
+\begin{center}
+  \ww{Barack Obama was born in America.}
+\end{center}
+as:
+\begin{equation*}
+  p(\rel{Per:Country\_Of\_Birth} \mid \typ{Person}, \typ{Country})
+\end{equation*}
+
+% Treat open IE relations as random variables
+Similarly, for open IE relations, we can describe the probability of
+  \rel{be born in} occuring between \ww{Barack Obama} and \ww{America} as:
+\begin{equation*}
+  p(\rel{be born in} \mid \typ{Person}, \typ{Country})
+\end{equation*}
+
+% Note on RegexNER
+Note that the NER tag set used is enriched somewhat to reflect the types used
+  in the KBP relations more closely. 
+10 additional named entity tags are added to the standard tag set, covering
+  additional location types (city, state, country), religious affiliation,
+  and some special cases (e.g., title, URL).
+These are generated from a fixed gazette, as described in
+  \newcite{key:2014angeli-kbp}.
+
+% Compute probabilities
+Given a sufficiently large corpus, we can compute these probabilities
+  empirically as the number of times we see a relation ($r$)
+  in the corpus normalized by the number of times we see any relation with the 
+  same type signature ($t_1, t_2$):
+\begin{equation*}
+  p(r \mid t_1, t_2) = \frac{
+    \textrm{count}(r, t_1, t_2)
+  }{
+    \sum_{r'}\textrm{count}(r', t_1, t_2)
+  }
+\end{equation*}
+
+% Misc notes
+For the KBP relations, these counts are the counts derived from the distantly
+  supervised dataset.
+With open IE relations, the counts can be computed directly.
+Relations which do not have a well defined type signature (i.e., are not
+  between named entities) are discarded.
+For brevity, going foward we will drop the conditioning on the type signature
+  of the relation and assume it to be implicitly present.
+
+% Joint probability
+The joint probability between a KBP relation $r_k$ and open IE relation
+  $r_o$, $p(r_k, r_o)$, can then be computed analogously as the fraction of
+  times these two relations co-occur out of the total number of times any two
+  relations co-occur (conditioned on the type signature of the arguments):
+\begin{equation*}
+  p(r_k, r_o) = \frac{
+    \textrm{count}(r_k, r_0)
+  }{
+    \sum_{r_k', r_o'}\textrm{count}(r_k', r_o')
+  }
+\end{equation*}
+
+% PMI^2
+We can then compute The PMI$^2$ value between the two relations:
+\begin{equation*}
+  pmi^2(r_k, r_o) = \log \left( \frac{p(r_k, r_o)^2}{p(r_k) \cdot p(r_o)} \right)
+\end{equation*}
+
+Note that in addition to being a measure related to PMI, this captures
+  a notion similar to \textit{alignment by agreement} 
+  \cite{key:2006liang-alignment};
+  the formula can be equivalently written as 
+  $\log \left[ p(r_k \mid r_o) p(r_o \mid r_k)\right]$.
+It is also functionally the same as the JC WordNet distance measure
+  \cite{key:1997jc-similarity}.
+
+\begin{table*}
+\begin{tabular}{l:lc|l:lc}
+  \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$} & \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$}\\
+  \hline
+  \small{\rel{Org:Founded}}     & \ww{found in} & 1.17             & \small{\rel{Per:Date\_Of\_Birth}}    & \ww{be bear on} & 1.83       \\
+                                & \ww{be found in} & 1.15          &                                      & \ww{bear on} & 1.28          \\
+  \small{\rel{Org:Dissolved}}   & \ww{buy chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
+                                & \ww{membership in}   & 0.60      &                                      & \ww{be assassinate on} & 0.65  \\
+  \small{\rel{Org:LOC\_Of\_HQ}} & \ww{in} & 2.12                   & \small{\rel{Per:LOC\_Of\_Birth}}     & \ww{be bear in} & 1.21        \\
+                                & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{elect president of} & 2.89                \\
+  \small{\rel{Org:Member\_Of}}  & \ww{tough away game in} & 1.80   & \small{\rel{Per:Religion}}           & \ww{speak about} & 0.67   \\
+                                & \ww{away game in} & 1.80         &                                      & \ww{popular for} & 0.60   \\
+  \small{\rel{Org:Parents}}     & \ww{'s bank}     & 1.65          & \small{\rel{Per:Parents}}            & \ww{daughter of}     & 0.54          \\
+                                & \ww{also add to} & 1.52          &                                      & \ww{son of} & 1.52          \\
+  \small{\rel{Org:Founded\_By}} & \ww{invest fund of} & 1.48       & \small{\rel{Per:LOC\_Residence}} & \ww{of} & 1.48       \\
+                                & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
+\end{tabular}
+\caption{\label{tab:samplemapping}
+  A selection of mapped relations between the open IE relation set and the
+    target KBP relations. 
+  The top one or two relations are shown for each of 7 person and 6 organization
+    relations.
+  In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
+    \rel{Org:Founded}), we can note some rare, but high precision pairs
+    (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
+  We can also see the noise in distant supervision occasionally permeate 
+    the mapping, e.g., with \ww{elect president of} $\rightarrow$ \rel{Per:LOC\_Of\_Death}.
+}
+\end{table*}
+
+% Tweaks made in practice
+Some sample extractions are given in \reftab{samplemapping}.
+For the purposes of creating this mapping, relations involving
+  locations (e.g., city of birth and country of birth) have been collapsed,
+  along with their NER types, as these can be fully disambiguated by their
+  context in the sentence.
+If a relation mapped to (\textit{location}) of birth is found in a sentence
+  with a city as its object, then we can unambigously map this to the relation
+  \rel{Per:City\_Of\_Birth}.
+  
+% Compare to Soderland NFL
+Prior work on learning mappings from open IE to a relation schema for NFL
+  games \cite{key:2010soderland-nfl} showed only modest improvements, even
+  when incorporating active learning.
+For their task, they used a metric tuned to precision on the training data:
+  the fraction of correct versus incorrect extractions each relation produces.
+We propose that either the automated mapping of the sort we propose inherently
+  requires a very large corpus to gather accurate statistics, or that the
+  choice of PMI as a selection method creates a more robust mapping than tuning
+  directly to training precision.
+

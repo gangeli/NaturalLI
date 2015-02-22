@@ -3,8 +3,9 @@
 % (stylsheet)
 \usepackage{acl2015}
 % (general libraries)
-\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating,datetime}
 \usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs,mathtools,siunitx,arydshln}
+\usepackage{../tikz-dependency}
 % (tikz dependencies)
 \usepackage{tikz}
 \usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
@@ -24,9 +25,10 @@
 
 % -- PAPER --
 % (metadata)
-\title{Open Information Extraction As Textual Entailment}
+\title{Leveraging Linguistics For Extracting Open Domain Relation Triples}
 %      \note{$\mathsection$1--3 rewritten; others edited}}
 \author{ 
+  Last compiled: \currenttime\ on \today
 %Gabor Angeli \\
 %  Stanford University \\
 %  Stanford, CA 94305 \\
@@ -37,7 +39,7 @@
 %  Stanford, CA 94305 \\
 %  {\tt manning@cs.stanford.edu}
 }
-\date{}
+\date{\currenttime}
 
 % -- CONTENT --
 \begin{document}
@@ -45,11 +47,19 @@
 \maketitle
 
 \input abstract.tex
-%\input intro.tex
-%\newpage
+\input intro.tex
+\input related.tex
+\input natlog.tex
+\input clause.tex
+\input openie2kbp.tex
+\input result.tex
+\input conclude.tex
+\newpage
 
 %(bibliography)
-%\bibliographystyle{acl}
-%\bibliography{ref}
+\bibliographystyle{acl}
+\bibliography{ref}
+\newpage
+\input notes.tex
 
 \end{document}

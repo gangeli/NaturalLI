@@ -1,5 +1,5 @@
 \def\blue#1{\textcolor{blue}{#1}}
-\def\darkblue#1{\textcolor{darkblue}{#1}}
+\def\darkblue#1{\textcolor{blue}{#1}}
 \def\red#1{\textcolor{red}{#1}}
 \def\darkred#1{\textcolor{darkred}{#1}}
 \def\green#1{\textcolor{green}{#1}}
@@ -11,6 +11,7 @@
 
 \newcommand\sys[1]{\textsc{#1}}
 \newcommand\w[1]{\textit{\darkgreen{#1}}}
+\newcommand\ww[1]{\textit{#1}}
 \newcommand\true[1]{\darkgreen{\textit{#1}}}
 \newcommand\false[1]{\darkred{\textit{#1}}}
 \newcommand\unknown[1]{\orange{\textit{#1}}}
@@ -30,6 +31,9 @@
 
 \newcommand\h[1]{\textbf{#1}}
 \newcommand\hh[1]{\textbf{\textcolor[rgb]{0.5,0,0}{#1}}}
+\newcommand\rel[1]{\textsc{#1}}
+\def\ent#1{\text{\small{\textsc{#1}}}}
+\def\typ#1{\textit{#1}}
 %\makeatletter
 %\newcommand{\xRightarrow}[2][]{\ext@arrow 0359\Rightarrowfill@{#1}{#2}}
 %\makeatother
