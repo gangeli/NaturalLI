@@ -5,7 +5,7 @@
   \hline
   \small{\rel{Org:Founded}}     & \ww{found in} & 1.17             & \small{\rel{Per:Date\_Of\_Birth}}    & \ww{be bear on} & 1.83       \\
                                 & \ww{be found in} & 1.15          &                                      & \ww{bear on} & 1.28          \\
-  \small{\rel{Org:Dissolved}}   & \ww{buy chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
+  \small{\rel{Org:Dissolved}}   & \ww{buy Chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
                                 & \ww{membership in}   & 0.60      &                                      & \ww{be assassinate on} & 0.65  \\
   \small{\rel{Org:LOC\_Of\_HQ}} & \ww{in} & 2.12                   & \small{\rel{Per:LOC\_Of\_Birth}}     & \ww{be bear in} & 1.21        \\
                                 & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{elect president of} & 2.89                \\
@@ -66,9 +66,9 @@ We describe our method for mapping from open IE relations to the KBP relation
 At a high level, our mapping will be pairs which have a high PMI$^2$ value
   between the open IE and KBP relation.
 We treat the existence of a relation between two mentions in a sentence as
-  a random variable, conditioned on the NER type signature of the metions.
+  a random variable, conditioned on the NER type signature of the mentions.
 For instance, we can describe the probability of the relation 
-  \rel{Per:Country\_Of\_Birth} occuring between \ww{Barack Obama} and
+  \rel{Per:Country\_Of\_Birth} occurring between \ww{Barack Obama} and
   \ww{America} in the sentence
 \begin{center}
   \ww{Barack Obama was born in America.}
@@ -80,7 +80,7 @@ as:
 
 % Treat open IE relations as random variables
 Similarly, for open IE relations, we can describe the probability of
-  \rel{be born in} occuring between \ww{Barack Obama} and \ww{America} as:
+  \rel{be born in} occurring between \ww{Barack Obama} and \ww{America} as:
 \begin{equation*}
   p(\rel{be born in} \mid \typ{Person}, \typ{Country})
 \end{equation*}
@@ -113,7 +113,7 @@ For the KBP relations, these counts are the counts derived from the distantly
 With open IE relations, the counts can be computed directly.
 Relations which do not have a well defined type signature (i.e., are not
   between named entities) are discarded.
-For brevity, going foward we will drop the conditioning on the type signature
+For brevity, going forward we will drop the conditioning on the type signature
   of the relation and assume it to be implicitly present.
 
 % Joint probability
@@ -150,7 +150,7 @@ For the purposes of creating this mapping, relations involving
   along with their NER types, as these can be fully disambiguated by their
   context in the sentence.
 If a relation mapped to (\textit{location}) of birth is found in a sentence
-  with a city as its object, then we can unambigously map this to the relation
+  with a city as its object, then we can unambiguously map this to the relation
   \rel{Per:City\_Of\_Birth}.
   
 % Compare to Soderland NFL

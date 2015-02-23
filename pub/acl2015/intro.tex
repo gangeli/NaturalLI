@@ -18,7 +18,7 @@ We propose an alternate approach which learns a classifier over a
 Second, existing systems generally do a poor job of producing
   canonical argument forms, either stripping relevant
   information, or retaining irrelevant information in the argument.
-Both of these are harmuful for downstream applications using the
+Both of these are harmful for downstream applications using the
   output of the systems
 We address this problem by extracting more specific (i.e., shorter)
   arguments only if they are logically warranted by the larger
@@ -34,8 +34,8 @@ This allows us to extract the maximally specific arguments for each
     2 & \w{Jeremy and Andrew were married in Connecticut.} \\
       & $~\rightarrow$ (Jeremy; marry; Andrew) \\
     \hline
-    3 & \w{Chancelor Merkel of Germany visited China yesterday} \\
-      & $~\rightarrow$ (Chancelor Merkel; visit; China) \\
+    3 & \w{Chancellor Merkel of Germany visited China yesterday} \\
+      & $~\rightarrow$ (Chancellor Merkel; visit; China) \\
     4 & \w{Enemies give fake compliments} \\
       & $~\rightarrow$ (Enemies, give, fake complements) \\
     \hline
@@ -81,34 +81,34 @@ This procedure allows us to capture a large variety of long range
   and small.
 
 % Challenge: granularity of arguments
-A second key challenge for open IE systems is chosing the right level of
+A second key challenge for open IE systems is choosing the right level of
   granularity for the triples being expressed.
 To illustrate, example 2 in \reffig{teaser} would \naive ly produce
-  the extraction (Chancelor Merkel of Germany; visit; China);\footnote{
+  the extraction (Chancellor Merkel of Germany; visit; China);\footnote{
     Actual output from OLLIE.
   }
   however, most downstream applications would strongly prefer the subject
   of the triple to drop the prepositional phrase.
 For instance, when applying open IE to a conventional relation extraction
-  task, overly fine grained arguments like \ww{Chancelor Merkel of Germany}
+  task, overly fine grained arguments like \ww{Chancellor Merkel of Germany}
   must either be treated as atomic units (leading to recall errors),
   use heuristic matching (potentially leading to harmful extractions
   like \ww{Germany visited China}), or be further parsed by the application
   (which is counterproductive to using open IE in the first place).
   
 On the other hand, it's often incorrect to maximally shorten an argument.
-For example, \ww{No house cats have rabbies} should not entail that
-  \ww{cats have rabbies}, or even that \ww{house cats have rabbies}.
+For example, \ww{No house cats have rabies} should not entail that
+  \ww{cats have rabbis}, or even that \ww{house cats have rabies}.
 Furthermore, the sentence \ww{enemies give fake compliments} should not
   produce the triple (enemies; give; compliments).
 
 A natural framework for solving this problem is natural logic -- 
   a proof system built on the syntax of human language (see Section XYZ).
 We can then observe that
-  \ww{Chancelor Merkel of Germany visited China yesterday} entails
-  that \ww{Chancelor Merkel visited China yesterday},
+  \ww{Chancellor Merkel of Germany visited China yesterday} entails
+  that \ww{Chancellor Merkel visited China yesterday},
   but that \ww{enemies give fake compliments} does not entail that
-  \ww{enemies give ocmpliments}.
+  \ww{enemies give compliments}.
 Furthermore, the framework allows us to capture more subtle phenomena:
   whereas \ww{all rabbits eat fresh vegetables} yields
   (rabbits; eat; vegetables), the apparently similar sentence

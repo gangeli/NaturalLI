@@ -3,7 +3,7 @@
 We evaluate our approach in the context of an end-to-end relation extraction
   task -- the TAC KBP Slot Filling challenge.
 In Slot Filling, we are given a large unlabeled corpus of text, a fixed
-  schema of relations (see \refsec{openie2kbp}), and a set of
+  schema of relations (see \refsec{mapping}), and a set of
   query entities.
 The task is to find all relation triples in the corpus that have as a subject
   the query entity, and as a relation one of the defined relations.
@@ -71,7 +71,7 @@ We report our results in \reftab{results}.
 All results are reported with the \texttt{anydoc} flag set to true
   in the evaluation script, meaning that only the truth of the extracted
   knowledge base entry and not the associated provenance is scored.
-In absense of human evaluators, this is in order to not penalize our 
+In absence of human evaluators, this is in order to not penalize our 
   system unfairly for extracting a new correct provenance.
 
 % Report results (ablation)
@@ -79,4 +79,4 @@ In addition, we run our system with our relation extraction component replaced
   with either Ollie relations over the same corpus \cite{key:2012mausam-ollie},
   or Exemplar relations over the corpus \cite{key:2013mesquita-exemplar}.
 These offer a more isolated comparison between the systems, removing
-  other convoluting factors in the evaluation.
+  other conflating factors in the evaluation.

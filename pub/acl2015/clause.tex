@@ -184,7 +184,7 @@ It's possible for an incorrect sequence of actions to produce the correct
 % Relation to Distant supervision #1
 Furthermore, we still have to mitigate the noise in the distantly supervised
   method for generating our annotated sentences.
-In particular, the problem of \textit{incomplete negtives}: there are sequences
+In particular, the problem of \textit{incomplete negatives}: there are sequences
   of actions which produce a relation, but it is not the known relation in the
   sentence.\needcite
 This however does not inherently mean that it is an incorrect relation -- perhaps
@@ -251,13 +251,13 @@ The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
 % Introduce performance
 We report informal performance numbers for our classifier.
 Note that the performance ceiling for the task is far below 100\%.
-Precision errors are inevitible due to the incompleteness of our
+Precision errors are inevitable due to the incompleteness of our
   knowledge base (we find relations which are correct but not yet known);
   recall errors are in turn often due to the noise of distant supervision.
 % Statistics
 Nonetheless, we report precision and recall
   over 5-fold cross validation on a dataset of
-  \num{1130849} datums -- of wich \num{50217} have label \textbf{Split} and
+  \num{1130849} datums -- of which \num{50217} have label \textbf{Split} and
   \num{54778} have label \textbf{Recurse}.
 The \textbf{Stop} action is taken to be the negative class.
 % Performance
