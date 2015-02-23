@@ -1,4 +1,35 @@
 \Section{mapping}{Adapting OpenIE to a Known Relation Schema}
+\begin{table*}
+\begin{tabular}{l:lc|l:lc}
+  \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$} & \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$}\\
+  \hline
+  \small{\rel{Org:Founded}}     & \ww{found in} & 1.17             & \small{\rel{Per:Date\_Of\_Birth}}    & \ww{be bear on} & 1.83       \\
+                                & \ww{be found in} & 1.15          &                                      & \ww{bear on} & 1.28          \\
+  \small{\rel{Org:Dissolved}}   & \ww{buy chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
+                                & \ww{membership in}   & 0.60      &                                      & \ww{be assassinate on} & 0.65  \\
+  \small{\rel{Org:LOC\_Of\_HQ}} & \ww{in} & 2.12                   & \small{\rel{Per:LOC\_Of\_Birth}}     & \ww{be bear in} & 1.21        \\
+                                & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{elect president of} & 2.89                \\
+  \small{\rel{Org:Member\_Of}}  & \ww{tough away game in} & 1.80   & \small{\rel{Per:Religion}}           & \ww{speak about} & 0.67   \\
+                                & \ww{away game in} & 1.80         &                                      & \ww{popular for} & 0.60   \\
+  \small{\rel{Org:Parents}}     & \ww{'s bank}     & 1.65          & \small{\rel{Per:Parents}}            & \ww{daughter of}     & 0.54          \\
+                                & \ww{also add to} & 1.52          &                                      & \ww{son of} & 1.52          \\
+  \small{\rel{Org:Founded\_By}} & \ww{invest fund of} & 1.48       & \small{\rel{Per:LOC\_Residence}} & \ww{of} & 1.48       \\
+                                & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
+\end{tabular}
+\caption{\label{tab:samplemapping}
+  A selection of mapped relations between the open IE relation set and the
+    target KBP relations. 
+  The top one or two relations are shown for each of 7 person and 6 organization
+    relations.
+  In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
+    \rel{Org:Founded}), we can note some rare, but high precision pairs
+    (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
+  We can also see the noise in distant supervision occasionally permeate 
+    the mapping, e.g., with \ww{elect president of} $\rightarrow$ \rel{Per:LOC\_Of\_Death}.
+}
+\end{table*}
+
+
 % Intro + kbp schema
 A common use case for open IE systems is to adapt them to a
   known relation schema.
@@ -111,36 +142,6 @@ Note that in addition to being a measure related to PMI, this captures
   $\log \left[ p(r_k \mid r_o) p(r_o \mid r_k)\right]$.
 It is also functionally the same as the JC WordNet distance measure
   \cite{key:1997jc-similarity}.
-
-\begin{table*}
-\begin{tabular}{l:lc|l:lc}
-  \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$} & \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$}\\
-  \hline
-  \small{\rel{Org:Founded}}     & \ww{found in} & 1.17             & \small{\rel{Per:Date\_Of\_Birth}}    & \ww{be bear on} & 1.83       \\
-                                & \ww{be found in} & 1.15          &                                      & \ww{bear on} & 1.28          \\
-  \small{\rel{Org:Dissolved}}   & \ww{buy chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
-                                & \ww{membership in}   & 0.60      &                                      & \ww{be assassinate on} & 0.65  \\
-  \small{\rel{Org:LOC\_Of\_HQ}} & \ww{in} & 2.12                   & \small{\rel{Per:LOC\_Of\_Birth}}     & \ww{be bear in} & 1.21        \\
-                                & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{elect president of} & 2.89                \\
-  \small{\rel{Org:Member\_Of}}  & \ww{tough away game in} & 1.80   & \small{\rel{Per:Religion}}           & \ww{speak about} & 0.67   \\
-                                & \ww{away game in} & 1.80         &                                      & \ww{popular for} & 0.60   \\
-  \small{\rel{Org:Parents}}     & \ww{'s bank}     & 1.65          & \small{\rel{Per:Parents}}            & \ww{daughter of}     & 0.54          \\
-                                & \ww{also add to} & 1.52          &                                      & \ww{son of} & 1.52          \\
-  \small{\rel{Org:Founded\_By}} & \ww{invest fund of} & 1.48       & \small{\rel{Per:LOC\_Residence}} & \ww{of} & 1.48       \\
-                                & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
-\end{tabular}
-\caption{\label{tab:samplemapping}
-  A selection of mapped relations between the open IE relation set and the
-    target KBP relations. 
-  The top one or two relations are shown for each of 7 person and 6 organization
-    relations.
-  In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
-    \rel{Org:Founded}), we can note some rare, but high precision pairs
-    (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
-  We can also see the noise in distant supervision occasionally permeate 
-    the mapping, e.g., with \ww{elect president of} $\rightarrow$ \rel{Per:LOC\_Of\_Death}.
-}
-\end{table*}
 
 % Tweaks made in practice
 Some sample extractions are given in \reftab{samplemapping}.

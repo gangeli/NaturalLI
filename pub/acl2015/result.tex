@@ -1,18 +1,82 @@
-\Section{result}{Results}
+\Section{result}{Evaluation}
+% Introduce KBP
+We evaluate our approach in the context of an end-to-end relation extraction
+  task -- the TAC KBP Slot Filling challenge.
+In Slot Filling, we are given a large unlabeled corpus of text, a fixed
+  schema of relations (see \refsec{openie2kbp}), and a set of
+  query entities.
+The task is to find all relation triples in the corpus that have as a subject
+  the query entity, and as a relation one of the defined relations.
+This can be viewed as the task of automatically filling in structured information
+  -- like Wikipedia Infoboxes -- from a large unstructured corpus of text.
+% Motivate KBP
+We use the KBP evaluation to motivate open IE in a real-world, end-to-end task
+  where it can compete with a range of other approaches.
 
-We evaluate our approach on the KBP dataset.
+% Comparison
+We compare our approach to the University of Washington submission to
+  TAC-KBP 2013 \cite{key:2013soderland-kbp}.
+This system, similar to ours, employed OpenIE v4.0 (a successor to Ollie) 
+  run over
+  the KBP corpus and then generated a mapping from the extracted relations to
+  the fixed schema.
 
-Motivate KBP
+% Differences
+Unlike our system Open IE v4.0 employs a full-blown semantic role
+  labeling system extracting structured SRL frames, alongside a conventional
+  open IE system.
+Our system does not make use of such structured information.
+Furthermore, the UW submission allowed for extracting relations and entities
+  from substrings of an open IE triple argument.
+For example, from the triple \textit{(Smith; was appointed; acting director of Acme
+  Corporation)}, they extract that Smith is employed by Acme Corporation.
+We disallow such extractions, passing the burden of finding correct
+  precise extractions to the open IE system itself (see \refsec{extraction}).
 
-Introduce KBP corpus / evaluation
+% Misc differences
+Both the UW submission and our system make use of an entity linker
+  and a coreference system.
+For entity linking, the UW submission made use of Tom Lin's entity linker
+  \cite{key:2012lin-el}; our submission uses the Illinois Wikifier 
+  \cite{key:2011ratinov-el} without the relational inference component, for
+  efficiency.
+For coreference, UW makes use of the Stanford coreference system
+  \cite{key:stanford-coref}; we employ a variant of the simple coref system
+  described in \cite{key:2014pink-kbp}, which removes the need for syntactic
+  parsing and was shown to not reduce end-to-end recall by a significant
+  amount.
 
-Introduce UW system
+\begin{table}
+\begin{center}
+\begin{tabular}{l|cc:c}
+\textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
+\hline
+UW Official & 69.75 & 11.38 & 19.56 \\
+Ollie       & ??.?? & ??.?? & ??.?? \\
+Exemplar    & ??.?? & ??.?? & ??.?? \\
+\hline
+Our System  & ??.?? & ??.?? & 2?.?? \\
+\end{tabular}
+\end{center}
+\caption{\label{tab:results}
+A summary of our results on the end-to-end KBP Slot Filling task.
+We compare against an official submission to the challenge using
+  Open IE v4.0 (UW Official), as well as the performance of our system
+  using Ollie or Exemplar as the backing open IE system.
+}
+\end{table}
 
-Describe our system
+% Report results (KBP)
+We report our results in \reftab{results}.
+All results are reported with the \texttt{anydoc} flag set to true
+  in the evaluation script, meaning that only the truth of the extracted
+  knowledge base entry and not the associated provenance is scored.
+In absense of human evaluators, this is in order to not penalize our 
+  system unfairly for extracting a new correct provenance.
 
-Report results:
-\begin{itemize}
-  \item We perform better than the 2013 submission.
-  \item We perform better than Ollie run with our method.
-  \item We perform better than Exemplar run with our method.
-\end{itemize}
+% Report results (ablation)
+In addition, we run our system with our relation extraction component replaced
+  with either Ollie relations over the same corpus \cite{key:2012mausam-ollie},
+  or Exemplar relations over the corpus \cite{key:2013mesquita-exemplar}.
+These offer a more isolated comparison between the systems, removing
+  other convoluting factors in the evaluation.
