@@ -48,6 +48,7 @@ entitled to try the version I use at home:
     ./autogen.sh
     ./configure CXX=clang++-3.4
     make -j4
+    make src/naturalli_client.jar
     ./run FraCaS
 
 The rest of the section can be thought of as debugging help.
