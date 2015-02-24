@@ -1,23 +1,39 @@
 \Section{related}{Related Work}
-Talk about open IE.
-UW variety \cite{key:2007yates-textrunner,key:2011fader-reverb,key:2012mausam-ollie}.
-NELL \cite{key:2010carlson-nell}.
-Exemplar \cite{key:2013mesquita-exemplar}.
+% Talk about OpenIE
+There has been a large body of work on open information extraction.
+One line of work includes
+  TextRunner \cite{key:2007yates-textrunner},
+  ReVerb \cite{key:2011fader-reverb},
+  and Ollie \cite{key:2012mausam-ollie}.
+The Never Ending Language Learning project \cite{key:2010carlson-nell}
+  has a similar aim, iteratively learning more facts from the internet
+  from a small seed set of examples.
+Exemplar \cite{key:2013mesquita-exemplar} adapts the open IE framework to
+  $n$-ary relationships similar to semantic role labelling, but without the
+  associated expensive machinery.
 
-Talk about relation extraction.
-Supervised (e.g., the ACE datasets)
-  \cite{key:2004doddington-ace,key:2005zhou-ace,key:2007surdeanu-ace}.
-Distant supervision 
-  \cite{key:1999craven-distsup,key:2007wu-distsup,key:2009mintz-distsup,key:2011sun-kbp}.
-Rule-based systems
+% Uses of Open IE
+Open IE triples have been used in a number of applications.
+For example, learning entailment graphs for new triples
+  \cite{key:2011berant-entailment}, and
+  matrix factorization for mapping from open IE to structured schema
+  \cite{key:2012yao-schemas,key:2013riedel-schemas}.
+
+% Talk about relation extraction
+Prior work on the KBP challenge can be categorized into a number of approaches.
+The most common of these are \textit{distantly supervised} relation extractors
+  \cite{key:1999craven-distsup,key:2007wu-distsup,key:2009mintz-distsup,key:2011sun-kbp},
+  and rule based systems
   \cite{key:1997soderland-kbp,key:2010grishman-kbp,key:2010chen-kbp}.
 
-Talk about uses of OpenIE.
-Matrix factorization \cite{key:2012yao-schemas,key:2013riedel-schemas}
+% Natural Logic
+Prior work has used natural logic \cite{key:2008vanbenthem-natlog} 
+  for RTE-style textual entailment \cite{key:2009maccartney-natlog}, as
+  a formalism well-suited for formal entailment in neural networks
+  \cite{key:2013bowman-natlog}, and as a framework for common-sense reasoning
+  \cite{key:2013angeli-truth}.
+We adopt the precise semantics of \newcite{key:2014icard-natlog}.
+Our approach of finding short entailments from a longer utterance is similar
+  in spirit to work on textual entailment for information extraction
+  \cite{key:2006romano-ie}.
 
-Talk about IE as entailment \cite{key:2006romano-ie}.
-
-Talk about natural logic
-  \cite{key:2008vanbenthem-natlog,key:2014icard-natlog}
-and recent applications of natural logic
-  \cite{key:2009maccartney-natlog,key:2013bowman-natlog,key:2013angeli-truth}.

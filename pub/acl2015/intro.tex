@@ -1,119 +1,131 @@
 \Section{intro}{Introduction}
 
-% Motivation
-Open information extraction (open IE) has been shown to be useful in a
-  number of NLP tasks, such as question answering\needcite (UW
-  work goes here),
-  relation extraction\needcite (KBP submission; matrix factorization),
-  and probably other things too\needcite.
-In this paper, we address two problems with modern open IE systems:
-  first, they either do not capture relations between mentions which
-  are not canonically connected (e.g., subject verb object triples) or
-  these long-range dependencies are captured using a large number of
-  sparse rules.
-We propose an alternate approach which learns a classifier over a
-  simple set of actions to split long sentences into coherent
-  independent clauses.
-
-Second, existing systems generally do a poor job of producing
-  canonical argument forms, either stripping relevant
-  information, or retaining irrelevant information in the argument.
-Both of these are harmful for downstream applications using the
-  output of the systems
-We address this problem by extracting more specific (i.e., shorter)
-  arguments only if they are logically warranted by the larger
-  context of the sentence.
-This allows us to extract the maximally specific arguments for each
-  extracted triple.
-
-\begin{figure}
-  \begin{tabular}{|lp{7.0cm}|}
-    \hline
-    1 & \w{Born in Honolulu, Hawaii, Obama is a graduate of Columbia.} \\
-      & $~\rightarrow$ (Obama; born in; Honolulu, Hawaii) \\
-    2 & \w{Jeremy and Andrew were married in Connecticut.} \\
-      & $~\rightarrow$ (Jeremy; marry; Andrew) \\
-    \hline
-    3 & \w{Chancellor Merkel of Germany visited China yesterday} \\
-      & $~\rightarrow$ (Chancellor Merkel; visit; China) \\
-    4 & \w{Enemies give fake compliments} \\
-      & $~\rightarrow$ (Enemies, give, fake complements) \\
-    \hline
+\begin{figure}[t]
+  \hspace{-0.5cm}
+  \begin{tabular}{ll}
+  \multicolumn{2}{c}{\small{\w{Born in Honolulu, Hawaii, Obama is a US Citizen.}}} \\
+  \multicolumn{1}{c}{\scriptsize{\textbf{Our System}}} & \multicolumn{1}{c}{\scriptsize{\textbf{Ollie}}} \\
+  \footnotesize{(Obama; is; US citizen)}             & \footnotesize{(Obama; is; a US citizen)} \\
+  \footnotesize{(Obama; born in; Honolulu)}          & \footnotesize{(Obama; be born in; Honolulu)} \\
+  \footnotesize{(Obama; born in; Hawaii)}            & \footnotesize{\darkred{(Honolulu; be born in; Hawaii)}} \\
+                                                     & \footnotesize{(Obama; is citizen of; US)} \\
+  
+  \multicolumn{2}{c}{\small{\w{Friends give true praise.}}} \\
+  \multicolumn{2}{c}{\small{\w{Enemies give fake praise.}}} \\
+  \multicolumn{1}{c}{\scriptsize{\textbf{Our System}}} & \multicolumn{1}{c}{\scriptsize{\textbf{Ollie}}} \\
+  \footnotesize{(friends; give; true praise)}              & \footnotesize{(friends; give; true praise)} \\
+  \footnotesize{(friends; give; praise)}                   & \\
+  \footnotesize{(enemies; give; fake praise)}              & \footnotesize{(enemies; give; fake praise)} \\
+  
+  \multicolumn{2}{c}{\small{\w{Heinz Fischer of Austria visits the US}}} \\
+  \multicolumn{1}{c}{\scriptsize{\textbf{Our System}}} & \multicolumn{1}{c}{\scriptsize{\textbf{Ollie}}} \\
+  \footnotesize{(Heinz Fischer; visits; US)}              & \footnotesize{(Heinz Fischer \darkred{of Austria};} \\
+                                                             & \footnotesize{$~~$ visits; \darkred{the} US)} \\
   \end{tabular}
   \caption{
     \label{fig:teaser}
-    Open IE extractions produced by the system. 
-    Examples above the line exploit clause-level entailment.
-    Examples below the line exploit natural logic semantics to shorten
-      arguments.
+    Open IE extractions produced by the system, alongside extractions from
+      the state-of-the-art Ollie system.
+    Generating coherent clauses before applying patterns helps reduce
+      false matches such as \textit{(Honolulu; be born in; Hawaii)}.
+    Inference over the sub-structure of arguments, in turn, allows us to
+      drop convoluting information (e.g., \ww{of Austria}), but only when
+      it is warranted (e.g., keep \ww{fake} in \ww{fake praise}).
     }
 \end{figure}
 
+% Motivation
+Open information extraction (open IE) has been shown to be useful in a
+  number of NLP tasks, such as question answering,
+  relation extraction, information retrieval.
 % Challenge: many rules
 Conventionally, open IE systems search a collection of patterns over either
-  the surface form or dependency tree of the sentence.
+  the surface form or dependency tree of a sentence.
 For simple relations (e.g., subject verb object triples) a small set of
   patterns covers most sentences.
-However, relevant relations are often expressed in more convoluted
-  ways -- for instance, example 1 in \reffig{teaser}.
-Systems like OLLIE \cite{key:2012mausam-ollie} approach this problem by 
+However, relevant relations are often spread across clauses (see
+  \reffig{teaser} or presented in a non-canonical form.
+
+% Special case (Ollie)
+Systems like Ollie \cite{key:2012mausam-ollie} approach this problem by 
   using a bootstrapping method to create a large corpus of broad-coverage
   partially lexicalized patterns.
 Although this is effective at capturing many of these patterns,
   this level of lexicalization can lead to unintuitive behavior on 
   out-of-domain text.
-For instance, while \ww{Obama is president} is extracted correctly by
-  the system, \ww{cats are cute} is not.
+For instance, while \ww{Obama is president} is extracted correctly 
+  as \textit{(Obama; is; president)} by Ollie,
+  \ww{cats are felines} produces no extractions.
+Furthermore, existing systems struggle at producing
+  canonical argument forms -- for example, the argument
+  \ww{Heinz Fischer of Austria} is far less useful for downstream
+  applications than simply \ww{Heinz Fischer}.
+%  , either stripping relevant
+%  information, or retaining irrelevant information in the argument.
+%Both of these are harmful for downstream applications using the
+%  output of the systems
 
-We propose mitigating the problem by decomposing the extraction task into
-  two sub-tasks:
+% Sales pitch
+In this paper, we shift the burden of extracting informative and broad
+  coverage triples away from the pattern set used to extract the triples.
+Rather, we first pre-process the sentence in linguistically motivated ways
+  to produce coherent clauses which are (1) logically entailed by the 
+  original sentence, and (2) easy to transform into open IE triples 
+  with a small pattern set.
+% Overview of approach
+Our approach consists of two stages:
   we first learn a classifier for splitting a sentence into shorter
-  utterances, and then extract triples using a simple set of
-  unlexicalized patterns over these short utterances.
-Each split clause, in turn, can optionally borrow either the entire
-  governing clause, or just the subject of the governing clause.
-For example, the first sentence in \reffig{teaser} will produce the
-  clause \ww{Obama born in Honolulu, Hawaii}, borrowing the subject
-  \ww{Obama} from the governing clause.
+  utterances, and then appeal to natural logic semantics to maximally
+  shorten these utterances while maintaining necessary context.
+A small set of 14 hand-crafted patterns can then be used to segment the
+  utterance into an open IE triple.
+
+% Summarize clause splitting
+We treat the first stage as a structured prediction task: we traverse
+  the tree recursively, at each step predicting whether an edge should
+  produce an independent clause.
+%In the first stage, we traverse a tree recursively, allowing an edge
+%  to optionally produce an independent clause.
+Importantly, in many cases \naive ly splitting a clause on a dependency
+  edge produces an incoherent utterance (e.g., \ww{Born in Honolulu, Hawaii},
+  from \reffig{teaser}) often due to the clause's verb having its subject 
+  controlled by the parent verb.
+Therefore, we implicitly identify these sorts of constructions
+  and allow the controlled verb (e.g., \ww{born}) to inherit the subject 
+  of its controller (i.e., \ww{Obama}).
+%Each split clause, in turn, can optionally borrow either the entire
+%  governing clause, or just the subject of the governing clause.
+%For example, the first sentence in \reffig{teaser} will produce the
+%  clause \ww{Obama born in Honolulu, Hawaii}, borrowing the subject
+%  \ww{Obama} from the governing clause.
 This procedure allows us to capture a large variety of long range 
-  dependencies, while keeping both the state space of the clause splitting
-  classifier small, and keeping the set of hand-coded patterns unlexicalized
-  and small.
-
-% Challenge: granularity of arguments
-A second key challenge for open IE systems is choosing the right level of
-  granularity for the triples being expressed.
-To illustrate, example 2 in \reffig{teaser} would \naive ly produce
-  the extraction (Chancellor Merkel of Germany; visit; China);\footnote{
-    Actual output from OLLIE.
-  }
-  however, most downstream applications would strongly prefer the subject
-  of the triple to drop the prepositional phrase.
-For instance, when applying open IE to a conventional relation extraction
-  task, overly fine grained arguments like \ww{Chancellor Merkel of Germany}
-  must either be treated as atomic units (leading to recall errors),
-  use heuristic matching (potentially leading to harmful extractions
-  like \ww{Germany visited China}), or be further parsed by the application
-  (which is counterproductive to using open IE in the first place).
-  
-On the other hand, it's often incorrect to maximally shorten an argument.
-For example, \ww{No house cats have rabies} should not entail that
-  \ww{cats have rabbis}, or even that \ww{house cats have rabies}.
-Furthermore, the sentence \ww{enemies give fake compliments} should not
-  produce the triple (enemies; give; compliments).
-
+  dependencies, while keeping both the state space of learned
+  classifier small and the set of atomic patterns small.
+ 
+% Natural Logic
+From these independent clauses, we then extract shorter sentences, which
+  will produce shorter arguments more likely to be useful for downstream
+  applications.
 A natural framework for solving this problem is natural logic -- 
-  a proof system built on the syntax of human language (see Section XYZ).
+  a proof system built on the syntax of human language (see Section \refsec{natlog}).
 We can then observe that
   \ww{Chancellor Merkel of Germany visited China yesterday} entails
   that \ww{Chancellor Merkel visited China yesterday},
   but that \ww{enemies give fake compliments} does not entail that
   \ww{enemies give compliments}.
-Furthermore, the framework allows us to capture more subtle phenomena:
-  whereas \ww{all rabbits eat fresh vegetables} yields
-  (rabbits; eat; vegetables), the apparently similar sentence
+On the other hand, it's often incorrect to maximally shorten an argument.
+For example, \ww{No house cats have rabies} should not entail that
+  \ww{cats have rabbis}, or even that \ww{house cats have rabies}.
+Likewise, the sentence \ww{enemies give fake praise} should not
+  produce the triple \textit{(enemies; give; praise)}.
+
+% Showing off
+When requiring careful attention to logical validity is necessary -- such as 
+  textual entailment -- this approach captures even more subtle phenomena.
+For example, whereas \ww{all rabbits eat fresh vegetables} yields
+  \textit{(rabbits; eat; vegetables)}, the apparently similar sentence
   \ww{all young rabbits drink milk} does not yield
-  (rabbits; drink; milk).
+  \textit{(rabbits; drink; milk)}.
 
 % Conclude
 Combining these two insights, we create an open IE system which
@@ -127,3 +139,41 @@ We show that our new system performs well on a real world evaluation --
   the TAC KBP relation extraction competition.
 We compare against state-of-the-art open IE systems, and show a
   9000\% absolute F$_1$ improvement over the system.
+
+
+%address two problems with modern open IE systems:
+%  first, they either do not capture relations between mentions which
+%  are not canonically connected (e.g., subject verb object triples) or
+%  these long-range dependencies are captured using a large number of
+%  sparse rules.
+%We propose an alternate approach which learns a classifier over a
+%  simple set of actions to split long sentences into coherent
+%  independent clauses.
+%
+%Second, existing systems generally do a poor job of producing
+%  canonical argument forms, either stripping relevant
+%  information, or retaining irrelevant information in the argument.
+%Both of these are harmful for downstream applications using the
+%  output of the systems
+%We address this problem by extracting more specific (i.e., shorter)
+%  arguments only if they are logically warranted by the larger
+%  context of the sentence.
+%This allows us to extract the maximally specific arguments for each
+%  extracted triple.
+
+
+%% Challenge: granularity of arguments
+%A second key challenge for open IE systems is choosing the right level of
+%  granularity for the triples being expressed.
+%To illustrate, example 2 in \reffig{teaser} would \naive ly produce
+%  the extraction (Chancellor Merkel of Germany; visit; China);\footnote{
+%    This is the actual output from OLLIE.
+%  }
+%  however, most downstream applications would strongly prefer the subject
+%  of the triple to drop the prepositional phrase.
+%For instance, when applying open IE to a conventional relation extraction
+%  task, overly fine grained arguments like \ww{Chancellor Merkel of Germany}
+%  must either be treated as atomic units (leading to recall errors),
+%  use heuristic matching (potentially leading to harmful extractions
+%  like \ww{Germany visited China}), or be further parsed by the application
+%  (which is counterproductive to using open IE in the first place).
