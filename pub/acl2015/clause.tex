@@ -131,7 +131,7 @@ The three actions we can perform on a dependency edge are:
 
 \paragraph{Recurse}
   Recurse on this dependency arc, but do not yield it as a new clause.
-  For example, in the sentence \ww{faries are dancing in the field where
+  For example, in the sentence \ww{faeries are dancing in the field where
   I lost my bike}, we must recurse through the intermediate clause
   \ww{the field where I lost my bike} -- which itself is not relevant
   -- to get to the clause of interest: \ww{I lost my bike}.
@@ -194,7 +194,7 @@ Distant supervision is a method for training a supervised classifier using only
 We can then generate noisy sentence-based annotations, by assuming that every
   sentence which contains two entities in our knowledge base 
 Then, we take this annotation as itself distant supervision for a correct
-  sequence of actions to take: any action sequence which recoveres the 
+  sequence of actions to take: any action sequence which recovers the 
   known relation is correct, whereas other action sequences are assumed to be
   incorrect.
 
@@ -316,7 +316,7 @@ The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
 
 % Introduce performance
 We report informal performance numbers for our classifier, with the
-  caveat that the performance cieling of the classifier is bounded by the
+  caveat that the performance ceiling of the classifier is bounded by the
   noise in the dataset itself.
 %Note that the performance ceiling for the task is far below 100\%.
 Precision errors are inevitable due to the incompleteness of our

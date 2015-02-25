@@ -1,4 +1,4 @@
-\Section{mapping}{Adapting OpenIE to a Known Relation Schema}
+\Section{mapping}{Mapping OpenIE to a Known Relation Schema}
 \begin{table*}
 \begin{tabular}{l:lc|l:lc}
   \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$} & \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$}\\
@@ -17,8 +17,8 @@
                                 & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
 \end{tabular}
 \caption{\label{tab:samplemapping}
-  A selection of mapped relations between the open IE relation set and the
-    target KBP relations. 
+  A selection of type checked mapped relations between the open IE relation 
+    set and the target KBP relations. 
   The top one or two relations are shown for each of 7 person and 6 organization
     relations.
   In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
@@ -29,9 +29,8 @@
 }
 \end{table*}
 
-
 % Intro + kbp schema
-A common use case for open IE systems is to adapt them to a
+A common use case for open IE systems is to map them to a
   known relation schema.
 As a motivating use-case, we take the KBP relation schema, taken from
   the TAC-KBP challenges.
@@ -61,76 +60,27 @@ But, even when training data is available, learning a mapping from open IE
   training a supervised classifier.
 
 % Treat KBP relations as random variables
-We describe our method for mapping from open IE relations to the KBP relation
-  making use of our distantly supervised corpus (see \refsec{distsup}).
-At a high level, our mapping will be pairs which have a high PMI$^2$ value
-  between the open IE and KBP relation.
-We treat the existence of a relation between two mentions in a sentence as
-  a random variable, conditioned on the NER type signature of the mentions.
-For instance, we can describe the probability of the relation 
-  \rel{Per:Country\_Of\_Birth} occurring between \ww{Barack Obama} and
-  \ww{America} in the sentence
-\begin{center}
-  \ww{Barack Obama was born in America.}
-\end{center}
-as:
+We map open IE relations to the KBP schema by searching for co-occurring
+  relations in a large distantly-labeled corpus, and marking open IE and
+  KBP relation pairs which have a high PMI$^2$ value conditioned on their
+  type signatures matching.
+To compute PMI$^2$, we collect probabilities for the open IE and KBP
+  relation co-occurring, the probability of the open IE relation occurring,
+  and the probability of the KBP relation occurring.
+Each of these probabilities is conditioned on the type signature of the relation.
+For example, the joint probability of KBP relation $r_k$ and open IE relation
+  $r_o$, given a type signature of $t_1, t_2$, would be
 \begin{equation*}
-  p(\rel{Per:Country\_Of\_Birth} \mid \typ{Person}, \typ{Country})
-\end{equation*}
-
-% Treat open IE relations as random variables
-Similarly, for open IE relations, we can describe the probability of
-  \rel{be born in} occurring between \ww{Barack Obama} and \ww{America} as:
-\begin{equation*}
-  p(\rel{be born in} \mid \typ{Person}, \typ{Country})
-\end{equation*}
-
-% Note on RegexNER
-Note that the NER tag set used is enriched somewhat to reflect the types used
-  in the KBP relations more closely. 
-10 additional named entity tags are added to the standard tag set, covering
-  additional location types (city, state, country), religious affiliation,
-  and some special cases (e.g., title, URL).
-These are generated from a fixed gazette, as described in
-  \newcite{key:2014angeli-kbp}.
-
-% Compute probabilities
-Given a sufficiently large corpus, we can compute these probabilities
-  empirically as the number of times we see a relation ($r$)
-  in the corpus normalized by the number of times we see any relation with the 
-  same type signature ($t_1, t_2$):
-\begin{equation*}
-  p(r \mid t_1, t_2) = \frac{
-    \textrm{count}(r, t_1, t_2)
+  p(r_k, r_o \mid t_1, t_2) = \frac{
+    \textrm{count}(r_k, r_o,  t_1, t_2)
   }{
-    \sum_{r'}\textrm{count}(r', t_1, t_2)
-  }
-\end{equation*}
-
-% Misc notes
-For the KBP relations, these counts are the counts derived from the distantly
-  supervised dataset.
-With open IE relations, the counts can be computed directly.
-Relations which do not have a well defined type signature (i.e., are not
-  between named entities) are discarded.
-For brevity, going forward we will drop the conditioning on the type signature
-  of the relation and assume it to be implicitly present.
-
-% Joint probability
-The joint probability between a KBP relation $r_k$ and open IE relation
-  $r_o$, $p(r_k, r_o)$, can then be computed analogously as the fraction of
-  times these two relations co-occur out of the total number of times any two
-  relations co-occur (conditioned on the type signature of the arguments):
-\begin{equation*}
-  p(r_k, r_o) = \frac{
-    \textrm{count}(r_k, r_0)
-  }{
-    \sum_{r_k', r_o'}\textrm{count}(r_k', r_o')
-  }
+    \sum_{r_k', r_o'}\textrm{count}(r_k', r_o', t_1, t_2)
+  }.
 \end{equation*}
 
 % PMI^2
-We can then compute The PMI$^2$ value between the two relations:
+Defining $p(r_k)$ and $p(r_o)$ analogously,
+  we can then compute The PMI$^2$ value between the two relations:
 \begin{equation*}
   pmi^2(r_k, r_o) = \log \left( \frac{p(r_k, r_o)^2}{p(r_k) \cdot p(r_o)} \right)
 \end{equation*}
@@ -144,7 +94,7 @@ It is also functionally the same as the JC WordNet distance measure
   \cite{key:1997jc-similarity}.
 
 % Tweaks made in practice
-Some sample extractions are given in \reftab{samplemapping}.
+Some sample type checked relation mappings are given in \reftab{samplemapping}.
 For the purposes of creating this mapping, relations involving
   locations (e.g., city of birth and country of birth) have been collapsed,
   along with their NER types, as these can be fully disambiguated by their
@@ -164,3 +114,84 @@ We propose that either the automated mapping of the sort we propose inherently
   choice of PMI as a selection method creates a more robust mapping than tuning
   directly to training precision.
 
+
+%Given a sufficiently large corpus, we can compute these probabilities
+%  empirically as the number of times we see a relation ($r$)
+%  in the corpus normalized by the number of times we see any relation with the 
+%  same type signature ($t_1, t_2$):
+%\begin{equation*}
+%  p(r \mid t_1, t_2) = \frac{
+%    \textrm{count}(r, t_1, t_2)
+%  }{
+%    \sum_{r'}\textrm{count}(r', t_1, t_2)
+%  }
+%\end{equation*}
+%
+%
+%We describe our method for mapping from open IE relations to the KBP relation
+%  making use of our distantly supervised corpus (see \refsec{distsup}).
+%At a high level, our mapping will be pairs which have a high PMI$^2$ value
+%  between the open IE and KBP relation.
+%We treat the existence of a relation between two mentions in a sentence as
+%  a random variable, conditioned on the NER type signature of the mentions.
+%For instance, we can describe the probability of the relation 
+%  \rel{Per:Country\_Of\_Birth} occurring between \ww{Barack Obama} and
+%  \ww{America} in the sentence
+%\begin{center}
+%  \ww{Barack Obama was born in America.}
+%\end{center}
+%as:
+%\begin{equation*}
+%  p(\rel{Per:Country\_Of\_Birth} \mid \typ{Person}, \typ{Country})
+%\end{equation*}
+%
+%% Treat open IE relations as random variables
+%Similarly, for open IE relations, we can describe the probability of
+%  \rel{be born in} occurring between \ww{Barack Obama} and \ww{America} as:
+%\begin{equation*}
+%  p(\rel{be born in} \mid \typ{Person}, \typ{Country})
+%\end{equation*}
+%
+%% Note on RegexNER
+%Note that the NER tag set used is enriched somewhat to reflect the types used
+%  in the KBP relations more closely. 
+%10 additional named entity tags are added to the standard tag set, covering
+%  additional location types (city, state, country), religious affiliation,
+%  and some special cases (e.g., title, URL).
+%These are generated from a fixed gazette, as described in
+%  \newcite{key:2014angeli-kbp}.
+%
+%% Compute probabilities
+%Given a sufficiently large corpus, we can compute these probabilities
+%  empirically as the number of times we see a relation ($r$)
+%  in the corpus normalized by the number of times we see any relation with the 
+%  same type signature ($t_1, t_2$):
+%\begin{equation*}
+%  p(r \mid t_1, t_2) = \frac{
+%    \textrm{count}(r, t_1, t_2)
+%  }{
+%    \sum_{r'}\textrm{count}(r', t_1, t_2)
+%  }
+%\end{equation*}
+%
+%% Misc notes
+%For the KBP relations, these counts are the counts derived from the distantly
+%  supervised dataset.
+%With open IE relations, the counts can be computed directly.
+%Relations which do not have a well defined type signature (i.e., are not
+%  between named entities) are discarded.
+%For brevity, going forward we will drop the conditioning on the type signature
+%  of the relation and assume it to be implicitly present.
+%
+%% Joint probability
+%The joint probability between a KBP relation $r_k$ and open IE relation
+%  $r_o$, $p(r_k, r_o)$, can then be computed analogously as the fraction of
+%  times these two relations co-occur out of the total number of times any two
+%  relations co-occur (conditioned on the type signature of the arguments):
+%\begin{equation*}
+%  p(r_k, r_o) = \frac{
+%    \textrm{count}(r_k, r_0)
+%  }{
+%    \sum_{r_k', r_o'}\textrm{count}(r_k', r_o')
+%  }
+%\end{equation*}

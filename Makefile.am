@@ -118,7 +118,7 @@ etc/naturalli_models.jar: etc/clauseSplitterModel.ser.gz etc/pp.tab.gz etc/subj_
 
 clean_models:
 	rm -f ${etc}/pp.tab.gz ${etc}/subj_pp.tab.gz ${etc}/subj_obj_pp.tab.gz \
-		    ${etc}/subj_pp_pp.tab.gz ${etc}/subj_pp_obj.tab.gz \
+		    ${etc}/subj_pp_pp.tab.gz ${etc}/subj_pp_obj.tab.gz ${etc}/obj.tab.gz \
 				${etc}/graph.tab.gz ${etc}/vocab.tab.gz ${etc}/sense.tab.gz ${etc}/privative.tab.gz \
 				${etc}/naturalli_models.jar
 
