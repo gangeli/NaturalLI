@@ -79,6 +79,7 @@ etc/.pp_affinity: etc/pp.sql
 	wget -O ${etc}/subj_pp_obj.tab.gz 'https://www.dropbox.com/s/xkw9moy0g91x5zv/subj_pp_obj.tab.gz?dl=1'
 	wget -O ${etc}/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
 	wget -O ${etc}/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
+	wget -O ${etc}/obj.tab.gz 'https://www.dropbox.com/s/bxzrobeh64ts2cw/obj.tab.gz?dl=1'
 	touch ${etc}/.pp_affinity
 #endif
 
@@ -96,13 +97,14 @@ etc/subj_pp.tab.gz: etc/.pp_affinity
 etc/subj_obj_pp.tab.gz: etc/.pp_affinity
 etc/subj_pp_pp.tab.gz: etc/.pp_affinity
 etc/subj_pp_obj.tab.gz: etc/.pp_affinity
+etc/obj.tab.gz: etc/.pp_affinity
 etc/graph.tab.gz: etc/.mk_graph
 etc/vocab.tab.gz: etc/.mk_graph
 etc/sense.tab.gz: etc/.mk_graph
 etc/privative.tab.gz: etc/.mk_graph
 etc/edgeTypes.tab: etc/.mk_graph
 
-etc/naturalli_models.jar: etc/clauseSplitterModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz
+etc/naturalli_models.jar: etc/clauseSplitterModel.ser.gz etc/pp.tab.gz etc/subj_pp.tab.gz etc/subj_obj_pp.tab.gz etc/subj_pp_pp.tab.gz etc/subj_pp_obj.tab.gz etc/obj.tab.gz
 	$(eval TMP := $(shell mktemp -d))
 	mkdir -p ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
@@ -110,6 +112,7 @@ etc/naturalli_models.jar: etc/clauseSplitterModel.ser.gz etc/pp.tab.gz etc/subj_
 	cp ${etc}/subj_obj_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/subj_pp_pp.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/subj_pp_obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
+	cp ${etc}/obj.tab.gz ${TMP}/edu/stanford/nlp/naturalli
 	cp ${etc}/clauseSplitterModel.ser.gz ${TMP}/edu/stanford/nlp/naturalli
 	jar cvf ${etc}/naturalli_models.jar -C ${TMP} .
 

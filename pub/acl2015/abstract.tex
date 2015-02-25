@@ -1,22 +1,22 @@
 \begin{abstract}
 Relation triples produced by
   open domain information extraction (open IE) systems 
-  are useful relation extraction, inference, and other information
-  extraction tasks.
+  are useful for question answering, inference, and other IE tasks.
 Traditionally these are extracted using a large set of patterns;
   however, this approach is brittle on out-of-domain text
   and long-range dependencies, and gives no insight into the
   sub-structure of the arguments.
-We replace the large pattern set of these systems
-  with a small set of patterns for canonically formatted
-  sentences, and a classifier which learns to extract
-  coherent self-contained clauses from longer sentences.
+We replace this large pattern set
+  with a trivial set for canonically formatted
+  sentences, and shift the focus to a classifier 
+  which learns to extract self-contained 
+  clauses from longer sentences.
 Furthermore, we run natural logic inference over these short
   clauses to determine the maximally specific arguments for each
   candidate triple.
-We show that our approach yields an over 9000\% F$_1$ gain
+We show that our approach yields a 5\% absolute F$_1$ gain
   over a state-of-the-art open IE system
-  on the TAC-KBP 2013 test set.
+  on the TAC-KBP 2013 Slot Filling task.
 \end{abstract}
 
 

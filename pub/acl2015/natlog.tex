@@ -1,18 +1,22 @@
 \Section{extraction}{Intra-Clause Open IE}
 
 % Intro
-For this section, we assume that our sentences consist of a single clause --
-  that is, a single open IE relation to extract.
-\refsec{clause} will describe how to split a longer sentence into such clauses.
-The task then becomes generating a maximally compact sentence which retains
+%For this section, we assume that our sentences consist of a single clause --
+%  that is, a single open IE relation to extract.
+%\refsec{clause} will describe how to split a longer sentence into such clauses.
+We now turn to the task of generating a maximally compact sentence which retains
   the core semantics of the original utterance, and parsing the sentence
   into a conventional open IE subject verb object triple.
+For example, \ww{friends give heartfelt praise} should entail that
+  \ww{friends give praise}, and consequently the triple \ww{(friends; give; praise)}.
+But, \ww{enemies give false praise} should not entail that
+  \ww{enemies give praise}.
 
-\Subsection{natlog}{Natural Logic}
+\Subsection{natlog}{Validating Deletions with Natural Logic}
 % Intro
-For the first of these, we adopt a subset of natural logic semantics dictating
+We adopt a subset of natural logic semantics dictating
   contexts in which lexical items can be removed.
-Natural logic, as a formalism, attempts to capture common logical inferences
+Natural logic as a formalism attempts to capture common logical inferences
   appealing directly to the syntax of language, rather than parsing to a
   specialized logical syntax.
 It provides a proof theory for lexical mutations to a sentence which either
@@ -24,10 +28,12 @@ For instance, if \ww{all rabbits eat vegetables} then
   the lexical item \ww{rabbit} to \ww{cute rabbit}.
 This is done by observing that \ww{rabbit} is in scope of the first
   argument to the operator \ww{all}.
-Since \ww{all} is \textit{antitone} in its first argument, we are allowed
+Since \ww{all} induces an \textit{upward polarity} environment for
+  its first argument, we are allowed
   to replace \ww{rabbit} with an item which is more specific -- in this case
   \ww{cute rabbit}.
-To contrast, the operator \ww{some} is \textit{monotone} in its first argument,
+To contrast, the operator \ww{some} induces a \textit{downward polarity}
+  environment for its first argument,
   and therefore we may derive the inference from the more specific
   \ww{cute rabbit} to the more general \ww{rabbit} in:
   \ww{some cute rabbits are small} therefore \ww{some rabbits are small}.
@@ -39,8 +45,8 @@ In this paper, we make use of only the theory on when deletions in a sentence
   are warranted.
 For this, we mark the scopes of all operators (\ww{all}, \ww{no}, \ww{many},
   etc.) in a sentence, and from this determine whether every lexical item
-  can be replaced by something more general (has upwards \textit{polarity}),
-  more specific (downwards polarity), or neither.
+  can be replaced by something more general (has upward polarity),
+  more specific (downward polarity), or neither.
 In the absence of operators, all items have upwards polarity.
 
 % Deleting edges as up/down the hierarchy
@@ -49,65 +55,147 @@ Each dependency arc is then classified into whether deleting the subtree
   more specific (a rare case), or neither.
 We make use of the Stanford Dependencies representation 
   \cite{key:stanford-dependencies}.
-For example, removing the \typ{amod} edge in \ww{cute rabbit} yields the
+For example, removing the \typ{amod} edge in \hbox{\ww{cute $\xleftarrow{amod}$ rabbit}} yields the
   more general lexical item \ww{rabbit}.
-However, removing the \typ{nsubj} edge in \ww{Fido runs} would yield the
-  incomparable phrase \ww{runs}.
+However, removing the \typ{nsubj} edge in \hbox{\ww{Fido $\xleftarrow{nsubj}$ runs}} would yield the
+  unentailed (and nonsensical) phrase \ww{runs}.
 The last, rare, case is an edge that causes the resulting item to be 
   more specific -- e.g., \typ{quantmod}: 
-  \ww{about 200} is more general than \ww{200}.
+  \hbox{\ww{about $\xleftarrow{quantmod}$ 200}} is more general than \ww{200}.
 
 % This is approximate
-Although for many dependency edges this is a good approximation,
-  there are at least two cases where more attention is warranted.
-The first of these concerns privative adjectives: for example a \ww{fake gun}
-  is not a gun.
-For this case, we make use of the list of privative adjectives collected
-  in \newcite{key:2014nayak-adjectives}.
+For most dependencies, this semantics can be hard-coded with high accuracy.
+However, there are at least two cases where more attention is warranted.
+%Although for many dependency edges this is a good approximation,
+%  there are at least two cases where more attention is warranted.
+The first of these concerns non-subsective adjectives: for example 
+  a \ww{fake gun} is not a gun.
+For this case, we make use of the list of non-subsective adjectives collected
+  in \newcite{key:2014nayak-adjectives}, and prohibit their deletion as a
+  hard constraint.
 The second concern is with prepositional attachment, and direct object
   edges.
 
 % PP Attachment
-For example, whereas \ww{Alice went to the playground with Bob} entails
+For example, whereas \ww{Alice went to the playground $\xrightarrow{prep\_with}$ Bob} entails
   that \ww{Alice went to the playground}, it is not meaningful to infer that
-  \ww{Alice is friends with Bob} entails \ww{Alice is friends}.
-Analogously, \ww{Alice played baseball on Sunday} entails that \ww{Alice played
-  on Sunday}; but, \ww{Obama signed a bill on Sunday} should not entail the
+  \ww{Alice is friends $\xrightarrow{prep\_with}$ Bob} entails \ww{Alice is friends}.
+Analogously, \ww{Alice played $\xrightarrow{dobj}$ baseball on Sunday} 
+  entails that \ww{Alice played
+  on Sunday}; but, \ww{Obama signed $\xrightarrow{dobj}$ the bill on Sunday} should not entail the
   awkward phrase \ww{?Obama signed on Sunday}.
 
 % Learning attachment affinity
 We learn these attachment affinities empirically from the syntactic n-grams
   corpus of \newcite{key:2013goldberg-syngrams}.
 This gives us counts for how often object and preposition edges occur in the
-  context of (1) the governing verb, and (2) the other prepositional (or
-  object) outgoing edges.
+  context of the governing verb and relevant neighboring edges.
 We hypothesize that edges which are frequently seen to co-occur 
   (e.g., \ww{is friends} and \ww{friends with}) are likely
   to be essential to the meaning of the sentence.
-To this end, we compute the following probabilities:
+To this end, we compute the probability of seeing an arc of a given type,
+  conditioned on the most specific context we have statistics for.
+These contexts, and the order we back off to more general contexts,
+  is given in \reffig{affinity}.
+
+% Backoff probabilities
+\begin{figure}
+\begin{center}
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.1cm]
+      Obama \& signed \& the \& bill \& into \& law \& on \& Friday \\
+    \end{deptext}
+    \depedge[edge unit distance=1.0ex]{2}{1}{nsubj}
+    \depedge[edge unit distance=1.5ex]{2}{4}{dobj}
+    \depedge[edge unit distance=1.0ex]{4}{3}{det}
+    \depedge[edge unit distance=1.25ex]{2}{6}{prep\_into}
+    \depedge[edge unit distance=1.20ex]{2}{8}{prep\_on}
+  \end{dependency}
+
+  \vspace{-3ex}
+  \[ \verticalcenter{\rotatebox{90}{\textrm{prep backoff}}} \left\{ 
+  \begin{array}{l}
+    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \verticalcenter{\hspace{-0.5em}
+    \begin{dependency}[text only label, label style={above}]
+      \begin{deptext}[column sep=-0.0cm]
+        Obama \& signed \& bill \\
+      \end{deptext}
+      \depedge[edge unit distance=1.0ex]{2}{1}{nsubj}
+      \depedge[edge unit distance=0.5ex]{2}{3}{dobj}
+    \end{dependency}
+    \hspace{-0.5em}} $\Big)$} \\
+    
+    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \verticalcenter{\hspace{-0.5em}
+    \begin{dependency}[text only label, label style={above}]
+      \begin{deptext}[column sep=-0.0cm]
+        Obama \& signed \& law \\
+      \end{deptext}
+      \depedge[edge unit distance=1.0ex]{2}{1}{nsubj}
+      \depedge[edge unit distance=0.5ex]{2}{3}{prep\_into}
+    \end{dependency}
+    \hspace{-0.5em}} $\Big)$} \\
+
+    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \verticalcenter{\hspace{-0.5em}
+    \begin{dependency}[text only label, label style={above}]
+      \begin{deptext}[column sep=-0.0cm]
+        Obama \& signed \\
+      \end{deptext}
+      \depedge[edge unit distance=1.0ex]{2}{1}{nsubj}
+    \end{dependency}
+    \hspace{-0.5em}} $\Big)$} \\
+
+    \textrm{\scriptsize p$_{delete}\Big($prep\_on $\mid$ signed $\Big)$}
+  \end{array} \right.\]
+
+  \vspace{-3ex}
+  \[ \verticalcenter{\rotatebox{90}{\textrm{dobj backoff}}} \left\{ 
+  \begin{array}{l}
+    \textrm{\scriptsize $p_{delete}\Big($dobj $\mid$
+    \verticalcenter{\hspace{-0.5em}
+    \begin{dependency}[text only label, label style={above}]
+      \begin{deptext}[column sep=-0.0cm]
+        Obama \& signed \& bill \\
+      \end{deptext}
+      \depedge[edge unit distance=1.0ex]{2}{1}{nsubj}
+      \depedge[edge unit distance=0.5ex]{2}{3}{dobj}
+    \end{dependency}
+    \hspace{-0.5em}} $\Big)$ } \\
+    
+    \textrm{\scriptsize $p_{delete}\Big($dobj $\mid$ signed $\Big)$ }
+  \end{array} \right.\]
+
+\end{center}
+\caption{\label{fig:affinity}
+  The ordered list of backoff probabilities to use when deciding to drop
+    a prepositional phrase or direct object.
+  The most specific context is chosen for which an empirical probability
+    exists; if no context is found the we allow dropping prepositional
+    phrases and disallow dropping direct objects.
+}
+\end{figure}
 
 % Backoff order
-\begin{enumerate}
-  \item The probability of seeing a PP edge, given the governing verb
-        and verb's direct object.
-  \item The probability of seeing a PP edge, given the governing verb
-        and a neighboring PP edge.
-  \item The probability of seeing a PP edge, given the governing verb.
-  \item The probability of seeing a particular object, given the governing
-        verb and a PP edge.
-  \item The probability of seeing any object, given the governing
-        verb and a PP edge.
-\end{enumerate}
+%\begin{enumerate}
+%  \item The probability of seeing a PP edge, given the governing verb
+%        and verb's direct object.
+%  \item The probability of seeing a PP edge, given the governing verb
+%        and a neighboring PP edge.
+%  \item The probability of seeing a PP edge, given the governing verb.
+%  \item The probability of seeing a particular object, given the governing
+%        verb and a PP edge.
+%  \item The probability of seeing any object, given the governing
+%        verb and a PP edge.
+%\end{enumerate}
 
 % Inference time
-At inference time, we then back off to the most informative probability
-  given the context we are considering, in the order listed above.
-For example, if we are deciding whether to remove the prepositional phrase
-  in \ww{Alice went to the playground with Bob}, we would compute
-  the probability of seeing \ww{with} given the governing verb
-  \ww{go} and the neighboring preposition \ww{to}.
-Calling this probability $p$, the score $s$ of an extraction removing the edge
-  in question becomes:
+To compute a probability of \textit{deleting} the edge from the
+  affinity probability collected from the syntactic n-grams, we simply
+  cap the affinity and subtract it from 1.
+If the affinity probabily from \reffig{affinity} is
+  $p$, the score $s$ of deleting the edge becomes:
 \begin{equation*}
   s = 1 - \min(1, \frac{p}{K})
 \end{equation*}
@@ -115,15 +203,16 @@ where $K$ is a hyperparameter denoting the minimum fraction of the time an
   edge should occur in a context to be considered entirely unremovable.
 In our experiments, we set $K=\frac{1}{3}$.
 
+% Total score
+The score of an extraction, then, is the product of the scores of each
+  deletion multiplied by the score from the clause splitting step
+  in \refsec{clause}.
 
+
+%
+% Atomic Patterns
+%
 \Subsection{patterns}{Atomic Patterns}
-% Verb versus Nominal relations
-The second half of the triple extraction process is the segmenting of a
-  sentence into a subject verb object triple.
-We identify two types of relations commonly extracted by open IE systems:
-  those that center around a verb, and those that center around a noun.
-For example, \ww{cats have tails} versus \ww{Google CEO Larry Page}.
-
 \begin{table}
 \begin{tabular}{l|l}
 \textbf{Input} & \textbf{Extraction} \\
@@ -143,22 +232,39 @@ For example, \ww{cats have tails} versus \ww{Google CEO Larry Page}.
 }
 \end{table}
 
-% The verb patterns
-The first of these we capture with 8 simple hand-coded patterns.
-Sample extractions for each of the patterns are given in \reftab{patterns}.
-The second of these we capture with a mix of 3 dependency and 3 surface
-  form patterns \cite{key:stanford-tokensregex}.
-All six of these capture either variants of the declarative \ww{be} relation
-  (e.g., adjective modification) or simple variants
-  (e.g., \ww{Napoleon of France} entails \ww{Napoleon is of France}).
+% Verb patterns
+Once a set of short entailed sentences is produced, it becomes a straightforward
+  task to segment them into conventional open IE triples.
+We employ 8 simple dependency patterns, given in \reftab{patterns},
+  which cover the majority of
+  atomic relations we are interested in.
 
-% Restrict NER types
-However, for all of these patterns we restrict both the subject and the object
-  to named entities.
-This (1) allows us to find sub-structure in noun phrases
-  (\ww{president Barack Obama} entails \ww{Barack Obama is president},
-  but not \ww{Obama is Barack}); and
-  (2) restricts the number of context specific extractions
-  (\ww{ferocious cats} does not entail that \ww{cats are ferocious} in a
-  general context).
+When named entity information is available to help inform
+  the substructure of compound nouns, we extract additional relations with
+  3 dependency and 3 surface
+  form patterns \cite{key:stanford-tokensregex}.
+All six of these capture either of the declarative \ww{be} relation
+  (e.g., adjective modification) or simple variants of such
+  (e.g., \ww{Napoleon of France} entails \ww{Napoleon is of France}).
+  \todo{linguistics?}
+
+%% Restrict NER types
+%However, for all of these patterns we restrict both the subject and the object
+%  to named entities.
+%This (1) allows us to find sub-structure in noun phrases
+%  (\ww{president Barack Obama} entails \ww{Barack Obama is president},
+%  but not \ww{Obama is Barack}); and
+%  (2) restricts the number of context specific extractions
+%  (\ww{ferocious cats} does not entail that \ww{cats are ferocious} in a
+%  general context).
+%
+%The second half of the triple extraction process is the segmenting of a
+%  sentence into a subject verb object triple.
+%We identify two types of relations commonly extracted by open IE systems:
+%  those that center around a verb, and those that center around a noun.
+%For example, \ww{cats have tails} versus \ww{Google CEO Larry Page}.
+%
+%% The verb patterns
+%The first of these we capture with 8 simple hand-coded patterns.
+%Sample extractions for each of the patterns are given in \reftab{patterns}.
 

@@ -46,3 +46,7 @@
 \newcommand{\invalid}{\reflectbox{\ensuremath{\Rightarrow\lnot}}}
 \newcommand{\noop}{\textcolor{white}{NOOP}}
 \newcommand{\noopTab}{\begin{tabular}{c} \textcolor{white}{NOOP} \\ \textcolor{white}{NOOP} \end{tabular}}
+
+\newcommand{\verticalcenter}[1]{\begingroup
+\setbox0=\hbox{#1}%
+\parbox{\wd0}{\box0}\endgroup}

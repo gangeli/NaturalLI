@@ -3,40 +3,74 @@
 \begin{figure*}
 \begin{center}
 \begin{tabular}{cc}
+\hspace{-3ex}
   % Full tree
   \begin{dependency}[text only label, label style={above}]
-    \begin{deptext}[column sep=-0.1cm]
-      Born \& in \& Honolulu \& , \& Hawaii \& , \& Obama \& is \& a \&
-        graduate \& of \& Columbia \\
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
     \end{deptext}
-    \depedge[edge unit distance=1.0ex]{1}{5}{prep\_in}
-    \depedge[edge unit distance=1.0ex]{5}{3}{nn}
-    \depedge[edge unit distance=1.0ex, edge style={darkred!60!black,thick,densely dotted}]{10}{1}{\textbf{\darkred{vmod}}}
-    \depedge[edge unit distance=2.0ex, edge style={blue!60!black,thick}]{10}{7}{\darkblue{nsubj}}
-    \depedge[edge unit distance=1.75ex]{10}{8}{cop}
-    \depedge[edge unit distance=1.0ex]{10}{9}{det}
-    \depedge[edge unit distance=1.0ex]{10}{12}{prep\_of}
+    \depedge[edge unit distance=1.25ex]{1}{5}{prep\_in}
+    \depedge[edge unit distance=1.0ex]{5}{4}{amod}
+    \depedge[edge unit distance=1.4ex]{5}{3}{det}
+    \depedge[edge unit distance=1.0ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.0ex, edge style={blue!60!black,thick}]{8}{7}{\darkblue{nsubj}}
+    \depedge[edge unit distance=1.75ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.0ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.4ex]{11}{9}{det}
+    \depedge[edge unit distance=1.0ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.0ex]{12}{13}{dobj}
   \end{dependency}
   &
   % Just Clause
   \begin{dependency}[text only label, label style={above}]
-    \begin{deptext}[column sep=-0.1cm]
-      Obama \& Born \& in \& Honolulu \& , \& Hawaii \\
+    \begin{deptext}[column sep=-0.05cm]
+      she \& Born \& in \& a \& small \& town \\
     \end{deptext}
-    \depedge[edge unit distance=1.0ex]{2}{6}{prep\_in}
-    \depedge[edge unit distance=1.0ex]{6}{4}{nn}
+    \depedge[edge unit distance=1.25ex]{2}{6}{prep\_in}
+    \depedge[edge unit distance=1.0ex]{6}{5}{amod}
+    \depedge[edge unit distance=1.4ex]{6}{4}{det}
     \depedge[edge unit distance=2.0ex, edge style={blue!60!black,thick}]{2}{1}{\darkblue{nsubj}}
   \end{dependency}
+  \vspace{-1ex}
   \\
-  (a) & (b)
+  \textbf{\small{(input)}} & \textbf{\small{(extracted clause)}} \\
+  % arrows
+  $\downarrow$ & $\downarrow$ \\
+  % entailments
+  \begin{tabular}{ll}
+    \ww{\small{she took the midnight train going anywhere}} & \ww{\small{she took the midnight train}} \\
+    \ww{\small{Born in a small town, she took the midnight train}} & \ww{\small{\textbf{she took midnight train}}}  \\
+    \ww{\small{Born in a town, she took the midnight train}} & $\dots$ \\
+  \end{tabular} &
+  \begin{tabular}{l}
+    \ww{\small{\textbf{she Born in small town}}} \\
+    \ww{\small{she Born in a town}} \\
+    \ww{\small{\textbf{she Born in town}}} \\
+  \end{tabular}
+  \\
+  % arrows 2
+  $\downarrow$ & $\downarrow$ \\
+  % extractions
+  \begin{tabular}{ll}
+    (she; took; midnight train) \\
+  \end{tabular} &
+  \begin{tabular}{l}
+    (she; born in; small town) \\
+    (she; born in; town)
+  \end{tabular} 
 \end{tabular}
 \end{center}
 \caption{\label{fig:clausesplit}
-A sample sentence illustrating splitting a clause while copying the parent's
-  subject.
-(a) The original tree.
-(b) The tree with the clause \ww{Born in Honolulu, Hawaii} split out, with
-  the borrowed subject.
+An illustration of our approach.
+Self-contained clauses are split off from the main sentence where appropriate
+  (\refsec{clause}).
+Then, each clause -- along with the original sentence -- is shortened until
+  the central relation in the clause becomes salient (\refsec{extraction}).
+Lastly, a set of simple pattern are applied to these clauses to transform them
+  into open IE triples.
+The fragments which produced the triples are bolded in the figure.
+\todo{is dobj the right relation?}
 }
 \end{figure*}
 
@@ -47,37 +81,39 @@ In the first stage of our method, we produce a set of self-contained clauses
   from a longer utterance.
 The objective is to produce a set of clauses which can stand on their own
   syntactically and semantically, and are entailed by original sentence.
-For example, taking the example sentence in \reffig{clausesplit} the sentence:
+For example, taking the example in \reffig{clausesplit} the sentence:
 \begin{quotation}
-\noindent\ww{Born in Honolulu, Hawaii, Obama is a graduate of Columbia.}
+\noindent\ww{Born in a small town, she took the midnight train going anywhere.}
 \end{quotation}
-should produce two clauses:
+should produce the additional clause:\footnote{
+  Arguably, the system should also have produced \ww{She [is] going anywhere}.
+}
 \begin{quotation}
-\noindent\ww{Obama born in Honolulu, Hawaii.} \\
-\noindent\ww{Obama is a graduate of Columbia.}
+\noindent\ww{She [was] born in a small town.}
 \end{quotation}
 
 % Formal description
-We treat this task as structured prediction problem.
-At each node of the parse tree $p$, for each outgoing dependency arc going
+We treat this task as greedy search problem.
+At each node of the parse tree, for each outgoing dependency arc going
   from this parent node $p$ to a child node $c$ with label $l$:
   $e = p \xrightarrow{l} c$, we define a set of actions we can perform.
 This action is decomposed into two parts: (1) the action to take on the outgoing
   edge ($e$), and (2) the action to take on the
   parent node ($p$).
 For example, in our motivating example, we are considering the arc:
-  $e = \ww{graduate} \xrightarrow{vmod} \ww{born}$.
+  $e = \ww{took} \xrightarrow{vmod} \ww{born}$.
 In this case, the correct action is to
   (1) split the sentence on the edge $e$ to create a new clause,
-  and (2) steal the subject of \ww{graduate}.
+  and (2) steal the subject of \ww{born}. \todo{linguistics?}
 
 % Motivation
 We can view the actions in our clause splitter as ensuring that our
   clauses are both \textit{short} and \textit{coherent}.
-Splitting off clauses on dependency edges shortens a sentence, but does not
-  always form a coherent constituent (e.g., \ww{born in Honolulu, Hawaii}).
+\Naive ly splitting clauses on dependency edges shortens a sentence, 
+   but does not
+  always form a coherent constituent (e.g., \ww{born in a small town}).
 However, for a wide range of cases, this incoherence can be fixed by copying
-  part of the parent node.
+  part of the parent node. \todo{linguistics?}
 We proceed to describe this action space in more detail, followed by an
   explanation of our training data, and finally our classifier.
 
@@ -88,6 +124,25 @@ We proceed to describe this action space in more detail, followed by an
 % The actions
 The three actions we can perform on a dependency edge are:
 
+\paragraph{Split}
+  Split a new clause on this dependency arc.
+  A canonical case of this action could be \textit{ccomp} arc from \ww{suggest}
+    to \ww{brush} in \ww{Dentists suggest that you should brush your teeth}.
+
+\paragraph{Recurse}
+  Recurse on this dependency arc, but do not yield it as a new clause.
+  For example, in the sentence \ww{faries are dancing in the field where
+  I lost my bike}, we must recurse through the intermediate clause
+  \ww{the field where I lost my bike} -- which itself is not relevant
+  -- to get to the clause of interest: \ww{I lost my bike}.
+%  This is often useful for long sentences, where a relevant clause is nested
+%    within a constituent that should not itself be a clause.
+%  For example, in the sentence \ww{Obama, our 44$^\textrm{th}$ president, is
+%    the first African-American to hold the office}:
+%    we would like to extract the clause 
+%    \ww{Obama is our 44$^\textrm{th}$ president}, but not the intermediate
+%    clause \ww{Obama, our 44$^\textrm{th}$ president}.
+
 \paragraph{Stop} 
   Do not recurse on this arc, as the subtree under this arc is
     not entailed by the parent sentence.
@@ -97,21 +152,7 @@ The three actions we can perform on a dependency edge are:
     sentence (e.g., \ww{Dentists do not suggest that you should eat rocks}
     should not entail that \ww{you should eat rocks}).
 
-\paragraph{Recurse}
-  Recurse on this dependency arc, but do not yield it as a new clause.
-  This is often useful for long sentences, where a relevant clause is nested
-    within a constituent that should not itself be a clause.
-  For example, in the sentence \ww{Obama, our 44$^\textrm{th}$ president, is
-    the first African-American to hold the office}:
-    we would like to extract the clause 
-    \ww{Obama is our 44$^\textrm{th}$ president}, but not the intermediate
-    clause \ww{Obama, our 44$^\textrm{th}$ president}.
-
-\paragraph{Split}
-  Split a new clause on this dependency arc.
-  A canonical case of this action could be \textit{ccomp} arc from \ww{suggest}
-    to \ww{brush} in \ww{Dentists suggest that you should brush your teeth}.
-
+% Introduce parent action
 For the \textbf{Stop} action, we do not need to further specify an action
   to take on the parent node.
 However, for both of the other actions, it is often the case that we would like
@@ -124,7 +165,8 @@ We define two such common actions -- though this is not necessarily an
     we copy the subject of the parent node and attach it as a subject of the
     child node.
   This is the action taken in the example
-    \ww{Born in Honolulu, Hawaii, Obama graduated from Columbia}.
+    \ww{Born in a small town, she took the midnight train}.
+  \todo{linguistics}
 
 \paragraph{Clone Root} 
   If the arc we are taking is the only outgoing arc from a node, we clone the
@@ -132,37 +174,42 @@ We define two such common actions -- though this is not necessarily an
   This is the action taken in the example
     \ww{Obama, our 44$^\textrm{th}$ president} to yield a clause with the
     semantics of \ww{Obama [is] our 44$^\textrm{th}$ president}.
+  \todo{linguistics}
 
 % Additional actions
 Although additional actions are easy to imagine, we found empirically that
   these cover a wide range of applicable cases.
-We now turn our attention to the training data for learning these actions.
+We turn our attention to the training data for learning these actions.
 
 %
 % Training Data
 %
 \Subsection{distsup}{Training Data}
-
-% Distant supervision
-We make use of distant supervision for training our clause splitting model.
+% Overview
+We collect a noisy dataset to train our clause splitting model.
+We leverage the \textit{distant supervision} assumption for relation extraction
+  to create a noisy annotated corpus of sentences annotated with relations.
 Distant supervision is a method for training a supervised classifier using only
   a large unlabeled corpus, and a knowledge base of known facts.
 We can then generate noisy sentence-based annotations, by assuming that every
   sentence which contains two entities in our knowledge base 
-This, then, can give us a noisy corpus of sentences with known relations 
-  annotated in them.
+Then, we take this annotation as itself distant supervision for a correct
+  sequence of actions to take: any action sequence which recoveres the 
+  known relation is correct, whereas other action sequences are assumed to be
+  incorrect.
 
 % Why KBP data?
-We use a small subset of the KBP source corpora for 
+We use a small subset of the KBP source documents for 
   2010 \cite{key:2010ji-kbpoverview}
   and 2013 \cite{key:2013surdeanu-kbpoverview}
   as our distantly supervised corpus.
 To try to maximize the density of known relations in the training sentences,
   we take all sentences from the source corpora which have at least one known
-  relation for every 10 tokens in the sentence.
-This results in \num{43155} sentences.
+  relation for every 10 tokens in the sentence,
+  resulting in \num{43155} sentences.
 In addition, we incorporate the 23 thousand manually annotated examples
-  from \newcite{key:2014angeli-active}.
+  from \newcite{key:2014angeli-active} -- the relations in these sentences
+  are generally less noisy.
 Although we train our clause splitter on KBP data, we do not incorporate
   anything particular about the KBP relation set.
 Our only assumption is that clauses which contain a KBP relation occur in
@@ -173,33 +220,52 @@ Our only assumption is that clauses which contain a KBP relation occur in
 Once we are given a collection of labeled sentences, we make make a second
   assumption, akin to distant supervision for clause splitting.
 We assume that a sequence of actions which leads to a correct extraction of
-  a known relation is a \textit{positive path}.
-A sequence of actions which results in a clause which produces no relations
-  is a \textit{negative path}.
-This is, however, only distantly supervised training data.
+  a known relation is a \textit{positive sequence}.
+A correct extraction is any extraction we produce from our model
+  (see \refsec{extraction}) which has the same arguments as the known
+  relation.
+For instance, if we know that Obama was born in Hawaii in the sentence
+  \ww{Born in Hawaii, Obama $\dots$}, and an action sequence produces the triple
+  \textit(Obama, born in, Hawaii), then we take that action sequence as
+  a positive sequence.
+
+% Negative sequences
+Any sequence of actions which results in a clause which produces no relations
+  is in turn considered a \textit{negative sequence}.
+Assuming perfect sentence level relation annotations, this is still only
+  distantly supervised training data.
+%This is, however, only distantly supervised training data.
 It's possible for an incorrect sequence of actions to produce the correct
   extraction, or even more commonly for a correct sequence of actions to 
   produce no extraction.
 
 % Relation to Distant supervision #1
-Furthermore, we still have to mitigate the noise in the distantly supervised
-  method for generating our annotated sentences.
-In particular, the problem of \textit{incomplete negatives}: there are sequences
-  of actions which produce a relation, but it is not the known relation in the
-  sentence \cite{key:2013min-incomplete}.
-This however does not inherently mean that it is an incorrect relation -- perhaps
-  it is a relation we don't know about in the knowledge base.
+The third case to consider is a sequence of actions which produces a relation,
+  but it is not one of the annotated relations.
+This arises from the \textit{incomplete negatives} problem in distantly
+  supervised relation extraction \cite{key:2013min-incomplete}: 
+  since our knowledge base is not exhaustive,
+  we cannot be sure if an extracted relation is incorrect or correct but
+  previously unknown.
 In the interest of erring on the side of higher recall -- particularly given
   a dataset already heavily biased towards the \textit{not a clause} action --
-  we discard such paths.
+  we discard such sequences.
+
+%Furthermore, we must still mitigate the noise in the distantly supervised
+%  method for generating our annotated sentences.
+%In particular, the problem of \textit{incomplete negatives}: there are sequences
+%  of actions which produce a relation, but it is not the known relation in the
+%  sentence \cite{key:2013min-incomplete}.
+%This however does not inherently mean that it is an incorrect relation -- perhaps
+%  it is a relation we don't know about in the knowledge base.
 
 % Handling of examples
-Given a set of positive and negative \textit{paths}, we construct training
+Given a set of positive and negative \textit{sequences}, we construct training
   data for our action classifier.
-All but the last action in a positive path are added to the training set
+All but the last action in a positive sequence are added to the training set
   with the label \textbf{Recurse}; the last action is added with the label
   \textbf{Split}.
-Only the last action in a negative path is added with the label \textbf{Stop}.
+Only the last action in a negative sequence is added with the label \textbf{Stop}.
 We partition the feature space of our dataset according to the action
   applied to the parent node.
 
@@ -238,8 +304,8 @@ Note that all features are joined with the action to be taken on the parent
 \end{table}
 
 % Classifier
-We train a multinomial logistic regression classifier on our training data,
-  using the features in \reftab{features}.
+We train a multinomial logistic regression classifier on our noisy
+  training data, using the features in \reftab{features}.
 The most salient features are the label of the edge being taken, the
   incoming edge to the parent of the edge being taken, neighboring edges
   for both the parent and child of the edge, and the part of speech tag of
@@ -249,22 +315,24 @@ The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
   while recall errors are directly harmful to recall.
 
 % Introduce performance
-We report informal performance numbers for our classifier.
-Note that the performance ceiling for the task is far below 100\%.
+We report informal performance numbers for our classifier, with the
+  caveat that the performance cieling of the classifier is bounded by the
+  noise in the dataset itself.
+%Note that the performance ceiling for the task is far below 100\%.
 Precision errors are inevitable due to the incompleteness of our
   knowledge base (we find relations which are correct but not yet known);
   recall errors are in turn often due to the noise of distant supervision.
 % Statistics
 Nonetheless, we report precision and recall
   over 5-fold cross validation on a dataset of
-  \num{1130849} datums -- of which \num{50217} have label \textbf{Split} and
-  \num{54778} have label \textbf{Recurse}.
+  \num{1159395} datums -- of which \num{56962} have label \textbf{Split} and
+  \num{65318} have label \textbf{Recurse}.
 The \textbf{Stop} action is taken to be the negative class.
 % Performance
-For the \textbf{Split} class, we achieve a precision of 74.2, with a recall
-  of 55.4 (63.4 F$_1$)
-For the \textbf{Recurse} class, we achieve a precision of 38.0, with a recall
-  of 60.6 (46.7 F$_1$)
+For the \textbf{Split} class, we achieve a precision of 79.2, with a recall
+  of 65.7 (71.8 F$_1$)
+For the \textbf{Recurse} class, we achieve a precision of 41.1, with a recall
+  of 64.9 (50.3 F$_1$)
 
 % Inference
 Inference now reduces to a search problem.
@@ -279,3 +347,8 @@ In the first two cases, we recurse on the child of the arc, and continue until
   either all arcs have been exhausted, or all remaining candidate arcs
   have been marked as not recursable.
 
+% Score
+The score of a clause is the product of the scores of actions taken to reach
+  the clause.
+This score will be multiplied by the score of the extraction given the clause
+  to produce a score for the final extraction.

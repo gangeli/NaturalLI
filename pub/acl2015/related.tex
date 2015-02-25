@@ -1,10 +1,13 @@
 \Section{related}{Related Work}
 % Talk about OpenIE
 There has been a large body of work on open information extraction.
-One line of work includes
-  TextRunner \cite{key:2007yates-textrunner},
-  ReVerb \cite{key:2011fader-reverb},
-  and Ollie \cite{key:2012mausam-ollie}.
+One line of work begins with
+  TextRunner \cite{key:2007yates-textrunner} and
+  ReVerb \cite{key:2011fader-reverb}, which make use of computationally
+  efficient surface patterns over tokens.
+With the introduction of fast dependency parsers,
+  Ollie \cite{key:2012mausam-ollie} continues in the same spirit, but with
+  learned dependency patterns.
 The Never Ending Language Learning project \cite{key:2010carlson-nell}
   has a similar aim, iteratively learning more facts from the internet
   from a small seed set of examples.
@@ -16,8 +19,11 @@ Exemplar \cite{key:2013mesquita-exemplar} adapts the open IE framework to
 Open IE triples have been used in a number of applications.
 For example, learning entailment graphs for new triples
   \cite{key:2011berant-entailment}, and
-  matrix factorization for mapping from open IE to structured schema
+  matrix factorization for unifying open IE to structured relations
   \cite{key:2012yao-schemas,key:2013riedel-schemas}.
+In each of these cases, the concise extractions provided by open IE allow
+  for efficient symbolic methods for entailment, such as markov logic
+  networks or matrix factorization.
 
 % Talk about relation extraction
 Prior work on the KBP challenge can be categorized into a number of approaches.
@@ -25,11 +31,16 @@ The most common of these are \textit{distantly supervised} relation extractors
   \cite{key:1999craven-distsup,key:2007wu-distsup,key:2009mintz-distsup,key:2011sun-kbp},
   and rule based systems
   \cite{key:1997soderland-kbp,key:2010grishman-kbp,key:2010chen-kbp}.
+However, both of these approaches require careful tuning to the task, and
+  need to be trained explicitly on the KBP relation schema.
+\newcite{key:2013soderland-kbp} submitted a system to KBP making use of
+  open IE relations and an easily constructed mapping to KBP relations.
+We use this as a baseline for our empirical evaluation.
 
 % Natural Logic
 Prior work has used natural logic \cite{key:2008vanbenthem-natlog} 
   for RTE-style textual entailment \cite{key:2009maccartney-natlog}, as
-  a formalism well-suited for formal entailment in neural networks
+  a formalism well-suited for formal semantics in neural networks
   \cite{key:2013bowman-natlog}, and as a framework for common-sense reasoning
   \cite{key:2013angeli-truth}.
 We adopt the precise semantics of \newcite{key:2014icard-natlog}.
