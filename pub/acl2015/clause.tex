@@ -105,7 +105,7 @@ Conventional relation extractors, entailment systems, and other NLP
 % Formal description
 We frame this task as a search problem.
 At a given node in the parse tree, we classify each outgoing arc
-  $e = p \xrightarrow{l} c$, from the governer p to a dependent c with label l,
+  $e = p \xrightarrow{l} c$, from the governor p to a dependent c with label l,
   into an action to perform on that arc.
 Once we have chosen an action to take on that arc, we can recurse on the
   dependent node.
@@ -118,7 +118,7 @@ We decompose the action into two parts: (1) the action to take on the outgoing
 For example, in our motivating example, we are considering the arc:
   $e = \ww{took} \xrightarrow{vmod} \ww{born}$.
 In this case, the correct action is to
-  (1) yield the sentence rooted at \ww{born} as a new clauseon the rooted at \ww{born} as a new clause,
+  (1) yield a new clause rooted at \ww{born},
   and (2) steal the subject of \ww{took}. \todo{linguistics?}
 
 % Motivation

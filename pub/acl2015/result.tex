@@ -76,7 +76,13 @@ Lastly, we report our system, and our system conjoined with an
 \end{table}
 
 % Report results (KBP)
-We report our results in \reftab{results}.
+We report our results in \reftab{results}.\footnote{
+  All results are reported with the \texttt{anydoc} flag set to true
+    in the evaluation script, meaning that only the truth of the extracted
+    knowledge base entry and not the associated provenance is scored.
+  In absence of human evaluators, this is in order to not penalize our 
+    system unfairly for extracting a new correct provenance.
+  }
 UW Official refers to the official submission in the 2013 challenge;
   we show a 1.5 F$_1$ improvement (21.1 F$_1$) over this submission, 
   evaluated using a comparable approach.
@@ -84,24 +90,32 @@ If we add in alternate name relations extracted from entity linking and
   coreference -- a common technique not employed by UW official -- then
   our approach can achieve an end-to-end F$_1$ of 25.7.
 
+% Report Results (Ablation)
+We attempt to isolate variance in scores due to other components in a full
+  KBP system.
+We ran the Ollie open IE system \cite{key:2012mausam-ollie} in an identical
+  framework to ours, and report accuracy in \reftab{results}.
+Note that when an argument to an Ollie extraction contains a named entity, 
+  we take the argument to be that named entity.
+The low performance of this system can be partially attributed to its inability
+  to extract nominal relations.
+To normalize for this, we report results when the Ollie extractions are
+  supplemented with the nominal relations produced by our system.
+The persistent improvement in accuracy suggests that our gains are not
+  entirely from the addition of these relations.
 
-We report two versions of our system: one making use of alternate names
-  via coref and entity linking, and another using only the relations from
-  our system.
-The second of these is a more fair comparision to the UW Official score,
-  which does not make use of coreference for alternate names.
-All results are reported with the \texttt{anydoc} flag set to true
-  in the evaluation script, meaning that only the truth of the extracted
-  knowledge base entry and not the associated provenance is scored.
-%In absence of human evaluators, this is in order to not penalize our 
-%  system unfairly for extracting a new correct provenance.
-
-% Report results (ablation)
-In addition, we run our system with our relation extraction component replaced
-  with Ollie \cite{key:2012mausam-ollie} run over the same corpus.
-These offer a more isolated comparison between the systems, removing
-  other conflating factors in the evaluation.
+%We report two versions of our system: one making use of alternate names
+%  via coref and entity linking, and another using only the relations from
+%  our system.
+%The second of these is a more fair comparision to the UW Official score,
+%  which does not make use of coreference for alternate names.
+%
+%% Report results (ablation)
+%In addition, we run our system with our relation extraction component replaced
+%  with Ollie \cite{key:2012mausam-ollie} run over the same corpus.
+%These offer a more isolated comparison between the systems, removing
+%  other conflating factors in the evaluation.
 
 % Demo
-Lastly, we make a demo of our system publicly available online at
+An anonymous demo of our system available at
   \url{http://128.12.224.119/openie/}.
