@@ -5,59 +5,65 @@
   \hline
   \small{\rel{Org:Founded}}     & \ww{found in} & 1.17             & \small{\rel{Per:Date\_Of\_Birth}}    & \ww{be bear on} & 1.83       \\
                                 & \ww{be found in} & 1.15          &                                      & \ww{bear on} & 1.28          \\
-  \small{\rel{Org:Dissolved}}   & \ww{buy Chrysler in} & 0.95      & \small{\rel{Per:Date\_Of\_Death}}    & \ww{die on} & 0.70  \\
-                                & \ww{membership in}   & 0.60      &                                      & \ww{be assassinate on} & 0.65  \\
+  \small{\rel{Org:Dissolved}}   & \ww{*buy Chrysler in} & 0.95     & \small{\rel{Per:Date\_Of\_Death}}   & \ww{die on} & 0.70  \\
+                                & \ww{*membership in}   & 0.60     &                                     & \ww{be assassinate on} & 0.65  \\
   \small{\rel{Org:LOC\_Of\_HQ}} & \ww{in} & 2.12                   & \small{\rel{Per:LOC\_Of\_Birth}}     & \ww{be bear in} & 1.21        \\
-                                & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{elect president of} & 2.89                \\
-  \small{\rel{Org:Member\_Of}}  & \ww{tough away game in} & 1.80   & \small{\rel{Per:Religion}}           & \ww{speak about} & 0.67   \\
-                                & \ww{away game in} & 1.80         &                                      & \ww{popular for} & 0.60   \\
+                                & \ww{base in} & 1.82              & \small{\rel{Per:LOC\_Of\_Death}}     & \ww{*elect president of} & 2.89                \\
+  \small{\rel{Org:Member\_Of}}  & \ww{*tough away game in} & 1.80  & \small{\rel{Per:Religion}}          & \ww{speak about} & 0.67   \\
+                                & \ww{*away game in} & 1.80        &                                     & \ww{popular for} & 0.60   \\
   \small{\rel{Org:Parents}}     & \ww{'s bank}     & 1.65          & \small{\rel{Per:Parents}}            & \ww{daughter of}     & 0.54          \\
-                                & \ww{also add to} & 1.52          &                                      & \ww{son of} & 1.52          \\
-  \small{\rel{Org:Founded\_By}} & \ww{invest fund of} & 1.48       & \small{\rel{Per:LOC\_Residence}} & \ww{of} & 1.48       \\
-                                & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
+                                & \ww{*also add to} & 1.52         &                                     & \ww{son of} & 1.52          \\
+  \small{\rel{Org:Founded\_By}} & \ww{invest fund of} & 1.48       & \small{\rel{Per:LOC\_Residence}}     & \ww{of} & 1.48       \\
+                                & \ww{own stake besides} & 1.18    &                                      & \ww{*independent from} & 1.18    \\
 \end{tabular}
 \caption{\label{tab:samplemapping}
   A selection of the mapping from KBP to lemmatized open IE relations,
     conditioned on the types of the arguments being correct.
-  The top one or two relations are shown for each of 7 person and 6 organization
+  The top one or two relations are shown 7 person and 6 organization
     relations.
-  In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
-    \rel{Org:Founded}), we can note some rare, but high precision pairs
-    (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
-  We can also see the noise in distant supervision occasionally permeate 
-    the mapping, e.g., with \ww{elect president of} $\rightarrow$ \rel{Per:LOC\_Of\_Death}.
+  Incorrect or dubious mappings are marked with an asterisk.
 }
 \end{table*}
 
 % Intro + kbp schema
 A common use case for open IE systems is to map them to a
   known relation schema.
-As a motivating use-case, we take the KBP relation schema, taken from
-  the TAC-KBP challenges.
-This consists of 42 relations (41 after the 2012 evaluation.
-%  aligning to Wikipedia Infoboxes for people and organizations.
-  Examples include \rel{Per:Title}, a person's title in an
-  organization (President, CEO, etc.); \rel{Per:City\_Of\_Birth}, the
-  city a person was born in; or \rel{Org:Founded}, the date an organization
-  was founded.
-
-% Why OpenIE?
-%The natural approach for relation extraction when the relation
-%  schema is known \textit{a priori} is to train either 
-%  a supervised or distantly supervised extractor
-%  directly on the relation set.
-There are a number of motivations for using open domain
-  relation triples for this task.
-% Domain adaptation
-The most salient of these is that an open IE system can be adapted
-  easily to new relation schemata.
-In part, this is useful if the new schema does not have any training data
-  to train a supervised (or distantly supervised) classifier on; a relatively
-  small and intuitive annotation effort can translate between open IE relations
-  and many relations in many schemata.
-But, even when training data is available, learning a mapping from open IE
-  relations to the given schema is often faster and higher precision than
-  training a supervised classifier.
+This can either be done manually with minimal annotation effort, or
+  automatically from available training data.
+We use both methods in our TAC-KBP evaluation.
+A collection of relation mappings were constructed by a single
+  annotator in approximately a day,\footnote{
+    The official submission we compare against claimed two weeks for constructing
+    their manual mapping, although a version of their system constructed in only
+    3 hours performs nearly as well.
+  } and a relation mapping was learned
+  using the procedure described in this section.
+%We use the KBP relation schema, taken from
+%  the TAC-KBP challenges.
+%This consists of 42 relations (41 after the 2012 evaluation).
+%%  aligning to Wikipedia Infoboxes for people and organizations.
+%  Examples include \rel{Per:Title}, a person's title in an
+%  organization (President, CEO, etc.); \rel{Per:City\_Of\_Birth}, the
+%  city a person was born in; or \rel{Org:Founded}, the date an organization
+%  was founded.
+%
+%% Why OpenIE?
+%%The natural approach for relation extraction when the relation
+%%  schema is known \textit{a priori} is to train either 
+%%  a supervised or distantly supervised extractor
+%%  directly on the relation set.
+%There are a number of motivations for using open domain
+%  relation triples for this task.
+%% Domain adaptation
+%The most salient of these is that an open IE system can be adapted
+%  easily to new relation schemata.
+%In part, this is useful if the new schema does not have any training data
+%  to train a supervised (or distantly supervised) classifier on; a relatively
+%  small and intuitive annotation effort can translate between open IE relations
+%  and many relations in many schemata.
+%But, even when training data is available, learning a mapping from open IE
+%  relations to the given schema is often faster and higher precision than
+%  training a supervised classifier.
 
 % Treat KBP relations as random variables
 We map open IE relations to the KBP schema by searching for co-occurring
@@ -96,10 +102,18 @@ It is also functionally the same as the JC WordNet distance measure
 
 % Tweaks made in practice
 Some sample type checked relation mappings are given in \reftab{samplemapping}.
-For the purposes of creating this mapping, relations involving
-  locations (e.g., city of birth and country of birth) have been collapsed,
-  along with their NER types, as these can be fully disambiguated by their
-  context in the sentence.
+In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
+  \rel{Org:Founded}), we can note some rare, but high precision pairs
+  (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
+We can also see the noise in distant supervision occasionally permeate 
+  the mapping, e.g., with \ww{elect president of} $\rightarrow$ \rel{Per:LOC\_Of\_Death}
+  -- a president is likely to die in his own country.
+
+
+%For the purposes of creating this mapping, relations involving
+%  locations (e.g., city of birth and country of birth) have been collapsed,
+%  along with their NER types, as these can be fully disambiguated by their
+%  context in the sentence.
 %If a relation mapped to (\textit{location}) of birth is found in a sentence
 %  with a city as its object, then we can unambiguously map this to the relation
 %  \rel{Per:City\_Of\_Birth}.

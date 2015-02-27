@@ -63,13 +63,18 @@
 \end{center}
 \caption{\label{fig:clausesplit}
 An illustration of our approach.
-Self-contained clauses are split off from the main sentence where appropriate
-  (\refsec{clause}).
-Then, each clause -- along with the original sentence -- is shortened until
-  the central relation in the clause becomes salient (\refsec{extraction}).
-Lastly, a set of simple pattern are applied to these clauses to transform them
-  into open IE triples.
-The fragments which produced the triples are bolded in the figure.
+From left to right, a sentence yields a number of independent clauses
+  (e.g., \ww{she Born in a small town} -- see \refsec{clause}).
+From top to bottom, each clause produces a set of entailed shorter
+  utterances, and segments those which match an atomic pattern into a
+  relation triple (see \refsec{natlog}).
+%Self-contained clauses are split off from the main sentence where appropriate
+%  (\refsec{clause}).
+%Then, each clause -- along with the original sentence -- is shortened until
+%  the central relation in the clause becomes salient (\refsec{extraction}).
+%Lastly, a set of simple pattern are applied to these clauses to transform them
+%  into open IE triples.
+%The fragments which produced the triples are bolded in the figure.
 \todo{is dobj the right relation?}
 }
 \end{figure*}
@@ -80,46 +85,52 @@ The fragments which produced the triples are bolded in the figure.
 In the first stage of our method, we produce a set of self-contained clauses
   from a longer utterance.
 Our objective is to produce a set of clauses which can stand on their own
-  syntactically and semantically, and are entailed by original sentence.
+  syntactically and semantically, and are entailed by the original 
+  sentence (see \reffig{clausesplit}).
 % Motivate more broadly
 Note that this task is not specific to extracting open IE triples.
 Conventional relation extractors, entailment systems, and other NLP
   applications may also benefit from such a system.
 
-% Example
-For example, taking the example in \reffig{clausesplit} the sentence:
-\begin{quotation}
-\noindent\ww{Born in a small town, she took the midnight train going anywhere.}
-\end{quotation}
-should produce the additional clause:\footnote{
-  Arguably, the system should also have produced \ww{She [is] going anywhere}.
-}
-\begin{quotation}
-\noindent\ww{She [was] born in a small town.}
-\end{quotation}
+%% Example
+%Taking the example in \reffig{clausesplit}, the sentence:
+%\begin{quotation}
+%\noindent\ww{Born in a small town, she took the midnight train going anywhere.}
+%\end{quotation}
+%should produce the additional clause:
+%\begin{quotation}
+%\noindent\ww{She [was] born in a small town.}
+%\end{quotation}
 
 % Formal description
-We treat this task as greedy search problem.
-At each node of the parse tree, for each outgoing dependency arc going
-  from this parent node $p$ to a child node $c$ with label $l$:
-  $e = p \xrightarrow{l} c$, we define a set of actions we can perform.
-This action is decomposed into two parts: (1) the action to take on the outgoing
-  edge ($e$), and (2) the action to take on the
-  parent node ($p$).
+We frame this task as a search problem.
+At a given node in the parse tree, we classify each outgoing arc
+  $e = p \xrightarrow{l} c$, from the governer p to a dependent c with label l,
+  into an action to perform on that arc.
+Once we have chosen an action to take on that arc, we can recurse on the
+  dependent node.
+%At each node of the parse tree, for each outgoing dependency arc going
+%  from this parent node $p$ to a child node $c$ with label $l$:
+%  $e = p \xrightarrow{l} c$, we define a set of actions we can perform.
+We decompose the action into two parts: (1) the action to take on the outgoing
+  edge $e$, and (2) the action to take on the
+  governor $p$.
 For example, in our motivating example, we are considering the arc:
   $e = \ww{took} \xrightarrow{vmod} \ww{born}$.
 In this case, the correct action is to
-  (1) split the sentence on the edge $e$ to create a new clause,
-  and (2) steal the subject of \ww{born}. \todo{linguistics?}
+  (1) yield the sentence rooted at \ww{born} as a new clauseon the rooted at \ww{born} as a new clause,
+  and (2) steal the subject of \ww{took}. \todo{linguistics?}
 
 % Motivation
-We can view the actions in our clause splitter as ensuring that our
-  clauses are both \textit{short} and \textit{coherent}.
-\Naive ly splitting clauses on dependency edges shortens a sentence, 
-   but does not
-  always form a coherent constituent (e.g., \ww{born in a small town}).
-However, for a wide range of cases, this incoherence can be fixed by copying
-  part of the parent node. \todo{linguistics?}
+%We can view the actions in our clause splitter as ensuring that our
+%  clauses are both \textit{short} and \textit{coherent}.
+%\Naive ly splitting clauses on dependency edges shortens a sentence, 
+%   but does not
+%  always form a coherent constituent (e.g., \ww{born in a small town}).
+%However, for a wide range of cases, this incoherence can be fixed by copying
+%  part of the parent node. \todo{linguistics?}
+
+
 We proceed to describe this action space in more detail, followed by an
   explanation of our training data, and finally our classifier.
 
@@ -130,13 +141,16 @@ We proceed to describe this action space in more detail, followed by an
 % The actions
 The three actions we can perform on a dependency edge are:
 
-\paragraph{Split}
-  Split a new clause on this dependency arc.
+\vspace{-1ex}
+\begin{itemize}[leftmargin=2ex]
+\item[] \textbf{Yield} \hspace{1ex}
+  Yields a new clause on this dependency arc.
   A canonical case of this action is the arc 
     \ww{suggest} $\xrightarrow{ccomp}$ \ww{brush} in
-    \ww{Dentists suggest that you should brush your teeth}.
+    \ww{Dentists suggest that you should brush your teeth}, yielding
+    \ww{you should brush your teeth}.
 
-\paragraph{Recurse}
+\item[] \textbf{Recurse} \hspace{1ex}
   Recurse on this dependency arc, but do not yield it as a new clause.
   For example, in the sentence \ww{faeries are dancing in the field where
   I lost my bike}, we must recurse through the intermediate clause
@@ -150,7 +164,7 @@ The three actions we can perform on a dependency edge are:
 %    \ww{Obama is our 44$^\textrm{th}$ president}, but not the intermediate
 %    clause \ww{Obama, our 44$^\textrm{th}$ president}.
 
-\paragraph{Stop} 
+\item[] \textbf{Stop}  \hspace{1ex}
   Do not recurse on this arc, as the subtree under this arc is
     not entailed by the parent sentence.
   This is the case, for example, for most leaf nodes
@@ -158,16 +172,81 @@ The three actions we can perform on a dependency edge are:
     but, also the case when the clause would not be entailed by the original
     sentence (e.g., \ww{Dentists do not suggest that you should eat rocks}
     should not entail that \ww{you should eat rocks}).
+\end{itemize}
+
+%\begin{tikzpicture}[
+%  tlabel/.style={pos=0.4,right=-1pt,font=\footnotesize\color{red!70!black}}
+%  ]
+%  \tikzstyle{level 1}=[level distance=1.0cm, sibling distance=2.5cm]
+%  \tikzstyle{level 2}=[level distance=1.0cm, sibling distance=2cm]
+%  \tikzstyle{level 2}=[level distance=1.0cm, sibling distance=1cm]
+%  \tikzstyle{vertex}=[]
+%  \node[vertex] {*}
+%    child { 
+%      node[vertex] {A}
+%      child {
+%        node[vertex] {D}
+%        edge from parent node[tlabel,left,pos=0.5] {Stop}
+%      }
+%      child {
+%        node[vertex] {E}
+%        edge from parent node[tlabel,right,pos=0.5] {Stop}
+%      }
+%      edge from parent node[tlabel,left,pos=0.3,shift={(-3 ex,0 ex)}] {Yield}
+%    } child {
+%      node[vertex] {B}
+%      child {
+%        node[vertex] {F}
+%      } child {
+%        node[vertex] {G}
+%      }
+%      edge from parent node[tlabel,right,pos=0.5] {Stop}
+%    } child {
+%     node[vertex] {C}
+%     child {
+%       node[vertex] {H}
+%       child {
+%         node[vertex] {I}
+%         edge from parent node[tlabel,left,pos=0.5] {Stop}
+%       }
+%       child {
+%         node[vertex] {J}
+%         edge from parent node[tlabel,right,pos=0.5] {Stop}
+%       }
+%       edge from parent node[tlabel,right,pos=0.5] {Yield}
+%     }
+%     edge from parent node[tlabel,right,pos=0.3,shift={(3 ex,0 ex)}] {Recurse}
+%    }
+%  ;
+%\end{tikzpicture}
+
+% Introduce path
+With these three actions, a search path through the tree becomes a sequence
+  of \textbf{Recurse} and \textbf{Yield} actions, terminated by a \textbf{Stop}
+  action (or leaf node).
+For example, a search sequence 
+  $A \xrightarrow{Recurse} B \xrightarrow{Yield} C \xrightarrow{Stop} D$
+  would yield a clause rooted at $C$.
+A sequence 
+  $A \xrightarrow{Yield} B \xrightarrow{Yield} C \xrightarrow{Stop} D$
+  would yield clauses rooted at both $B$ and $C$.
+Finding all such sequences is in general exponential in the size of the tree.
+In practice, during training we run breadth first search to collect the
+  first \num{10000} sequences.
+During inference we run uniform cost search until our classifier predictions
+  fall below a given threshold.
 
 % Introduce parent action
 For the \textbf{Stop} action, we do not need to further specify an action
   to take on the parent node.
 However, for both of the other actions, it is often the case that we would like
-  to borrow some portion of the parent tree.
-We define two such common actions -- though this is not necessarily an
-  exhaustive list:
+  to borrow some portion of the parent tree. \todo{linguistics}
+We define three such common actions:
+%-- though this is not necessarily an exhaustive list:
 
-\paragraph{Clone Subject} 
+\vspace{-1ex}
+\begin{itemize}[leftmargin=2ex]
+\item[] \textbf{Clone Subject}  \hspace{1ex}
   If the arc we are considering is not a subject arc,
     we copy the subject of the parent node and attach it as a subject of the
     child node.
@@ -175,7 +254,7 @@ We define two such common actions -- though this is not necessarily an
     \ww{Born in a small town, she took the midnight train}.
   \todo{linguistics}
 
-\paragraph{Clone Object} 
+\item[] \textbf{Clone Object}  \hspace{1ex}
   Analogous to the clone subject action above, but taking the object
     instead.
 %  If the arc we are considering is not an object arc,
@@ -183,18 +262,19 @@ We define two such common actions -- though this is not necessarily an
 %    child node.
   This is the intended action for examples like
     \ww{I persuaded Fred to leave the room}.\footnote{
-      The system currently misses most such cases due to lack of training
-      data.
+      The system currently misses most most such cases due to insufficient 
+      support in the training data.
     }
   \todo{linguistics}
 
-\paragraph{Clone Root} 
+\item[] \textbf{Clone Root} \hspace{1ex}
   If the arc we are taking is the only outgoing arc from a node, we clone the
     parent node as the (passive) subject of the child.
   This is the action taken in the example
     \ww{Obama, our 44$^\textrm{th}$ president} to yield a clause with the
     semantics of \ww{Obama [is] our 44$^\textrm{th}$ president}.
   \todo{linguistics}
+\end{itemize}
 
 % Additional actions
 Although additional actions are easy to imagine, we found empirically that
@@ -204,11 +284,13 @@ We turn our attention to the training data for learning these actions.
 %
 % Training Data
 %
-\Subsection{distsup}{Training Data}
+\Subsection{distsup}{Training}
 % Overview
-We collect a noisy dataset to train our clause splitting model.
-We leverage the \textit{distant supervision} assumption for relation extraction
-  to create a noisy annotated corpus of sentences annotated with relations.
+We collect a noisy dataset to train our clause generation model.
+We leverage the \textit{distant supervision} assumption for relation extraction,
+  which creates a noisy corpus of sentences annotated with relation mentions
+  (subject and object spans in the sentence with a known relation).
+%  to create a noisy annotated corpus of sentences annotated with relations.
 %Distant supervision is a method for training a supervised classifier using only
 %  a large unlabeled corpus, and a knowledge base of known facts.
 %We can then generate noisy sentence-based annotations, by assuming that every
@@ -228,14 +310,14 @@ To try to maximize the density of known relations in the training sentences,
   we take all sentences which have at least one known
   relation for every 10 tokens in the sentence,
   resulting in \num{43155} sentences.
-In addition, we incorporate the 23 thousand manually annotated examples
+In addition, we incorporate the \num{23725} manually annotated examples
   from \newcite{key:2014angeli-active}.
 %  -- the relations in these sentences are generally less noisy.
-Although we train our clause splitter on KBP data, we do not incorporate
-  anything particular about the KBP relation set.
-Our only assumption is that clauses which contain a KBP relation occur in
-  a similar distribution as clauses which contain arbitrary open-domain
-  relations.
+%Although we train our mod on KBP data, we do not incorporate
+%  anything particular about the KBP relation set.
+%Our only assumption is that clauses which contain a KBP relation occur in
+%  a similar distribution as clauses which contain arbitrary open-domain
+%  relations.
 
 % Distant supervision x 2
 Once we are given a collection of labeled sentences, 
@@ -294,7 +376,7 @@ We partition the feature space of our dataset according to the action
 %
 % Classifier
 %
-\Subsection{clauseclassifier}{Classifier and Inference}
+\Subsection{clauseclassifier}{Inference}
 
 \begin{table}
 \begin{tabular}{ll}
@@ -302,7 +384,7 @@ We partition the feature space of our dataset according to the action
   \hline
   Edge taken          & $\{ l, \textrm{short\_name}(l) \}$ \\
   Last edge taken     & $\{ \textrm{incoming\_edge}(p) \}$ \\
-  Neighbors of parent & $\{ \textrm{nbr}(e), (e, \textrm{nbr}(e)) \}$ \\
+  Neighbors of parent & $\{ \textrm{nbr}(p), (p, \textrm{nbr}(p)) \}$ \\
   Grandchild edges    & $\{ \textrm{out\_edge}(c), $ \\
                       & $~~ (e, \textrm{out\_edge}(c)) \}$ \\
   Grandchild count    & $\{ \textrm{count}\left( \textrm{nbr}(e_\textrm{child}) \right) $ \\
@@ -335,25 +417,25 @@ The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
   class, as precision errors in this class are relatively harmless for accuracy,
   while recall errors are directly harmful to recall.
 
-% Introduce performance
-We report crude performance numbers for our classifier, with the
-  caveat that the performance ceiling of the classifier is bounded by the
-  noise in the dataset itself.
-%Note that the performance ceiling for the task is far below 100\%.
-%Precision errors are inevitable due to the incompleteness of our
-%  knowledge base (we find relations which are correct but not yet known);
-%  recall errors are in turn often due to the noise of distant supervision.
-% Statistics
-We compute precision and recall by averaging
-  over 5-fold cross validation on a dataset of
-  \num{1159395} datums -- of which \num{56962} have label \textbf{Split} and
-  \num{65318} have label \textbf{Recurse}.
-The \textbf{Stop} action is taken to be the negative class.
-% Performance
-For the \textbf{Split} class, we achieve a precision of 79.2, with a recall
-  of 65.7 (71.8 F$_1$)
-For the \textbf{Recurse} class, we achieve a precision of 41.1, with a recall
-  of 64.9 (50.3 F$_1$)
+%% Introduce performance
+%We report crude performance numbers for our classifier, with the
+%  caveat that the performance ceiling of the classifier is bounded by the
+%  noise in the dataset itself.
+%%Note that the performance ceiling for the task is far below 100\%.
+%%Precision errors are inevitable due to the incompleteness of our
+%%  knowledge base (we find relations which are correct but not yet known);
+%%  recall errors are in turn often due to the noise of distant supervision.
+%% Statistics
+%We compute precision and recall by averaging
+%  over 5-fold cross validation on a dataset of
+%  \num{1159395} datums -- of which \num{56962} have label \textbf{Split} and
+%  \num{65318} have label \textbf{Recurse}.
+%The \textbf{Stop} action is taken to be the negative class.
+%% Performance
+%For the \textbf{Split} class, we achieve a precision of 79.2, with a recall
+%  of 65.7 (71.8 F$_1$)
+%For the \textbf{Recurse} class, we achieve a precision of 41.1, with a recall
+%  of 64.9 (50.3 F$_1$)
 
 % Inference
 Inference now reduces to a search problem.
@@ -369,7 +451,9 @@ In the first two cases, we recurse on the child of the arc, and continue until
   have been marked as not recursable.
 
 % Score
+We will use the scores from this classifier to inform the score assigned to
+  our generated open IE extractions (\refsec{extraction}).
 The score of a clause is the product of the scores of actions taken to reach
   the clause.
-This score will be multiplied by the score of the extraction given the clause
-  to produce a score for the final extraction.
+The score of an extraction will be this score multiplied by the score
+  of the extraction given the clause.

@@ -59,9 +59,10 @@ In the absence of operators, all items have upwards polarity.
 % Deleting edges as up/down the hierarchy
 Each dependency arc is then classified into whether deleting the dependent
   of that arc makes the governing constituent at that node more general,
-  more specific (a rare case), or neither.
-We use the Stanford Dependencies representation 
-  \cite{key:stanford-dependencies}.
+  more specific (a rare case), or neither.\footnote{
+    We use the Stanford Dependencies representation 
+      \cite{key:stanford-dependencies}.
+  }
 For example, removing the \typ{amod} edge in \hbox{\ww{cute $\xleftarrow{amod}$ rabbit}} yields the
   more general lexical item \ww{rabbit}.
 However, removing the \typ{nsubj} edge in \hbox{\ww{Fido $\xleftarrow{nsubj}$ runs}} would yield the
@@ -90,7 +91,7 @@ For example, whereas \ww{Alice went to the playground $\xrightarrow{prep\_with}$
 Analogously, \ww{Alice played $\xrightarrow{dobj}$ baseball on Sunday} 
   entails that \ww{Alice played
   on Sunday}; but, \ww{Obama signed $\xrightarrow{dobj}$ the bill on Sunday} should not entail the
-  awkward phrase \ww{?Obama signed on Sunday}.
+  awkward phrase \ww{*Obama signed on Sunday}.
 
 % Learning attachment affinity
 We learn these attachment affinities empirically from the syntactic n-grams
@@ -122,7 +123,7 @@ These contexts, and the order we back off to more general contexts,
   \vspace{-3ex}
   \[ \verticalcenter{\rotatebox{90}{\textrm{prep backoff}}} \left\{ 
   \begin{array}{l}
-    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \textrm{\scriptsize $p\Big($prep\_on $\mid$
     \verticalcenter{\hspace{-0.5em}
     \begin{dependency}[text only label, label style={above}]
       \begin{deptext}[column sep=-0.0cm]
@@ -133,7 +134,7 @@ These contexts, and the order we back off to more general contexts,
     \end{dependency}
     \hspace{-0.5em}} $\Big)$} \\
     
-    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \textrm{\scriptsize $p\Big($prep\_on $\mid$
     \verticalcenter{\hspace{-0.5em}
     \begin{dependency}[text only label, label style={above}]
       \begin{deptext}[column sep=-0.0cm]
@@ -144,7 +145,7 @@ These contexts, and the order we back off to more general contexts,
     \end{dependency}
     \hspace{-0.5em}} $\Big)$} \\
 
-    \textrm{\scriptsize $p_{delete}\Big($prep\_on $\mid$
+    \textrm{\scriptsize $p\Big($prep\_on $\mid$
     \verticalcenter{\hspace{-0.5em}
     \begin{dependency}[text only label, label style={above}]
       \begin{deptext}[column sep=-0.0cm]
@@ -154,13 +155,13 @@ These contexts, and the order we back off to more general contexts,
     \end{dependency}
     \hspace{-0.5em}} $\Big)$} \\
 
-    \textrm{\scriptsize p$_{delete}\Big($prep\_on $\mid$ signed $\Big)$}
+    \textrm{\scriptsize $p\Big($prep\_on $\mid$ signed $\Big)$}
   \end{array} \right.\]
 
   \vspace{-3ex}
   \[ \verticalcenter{\rotatebox{90}{\textrm{dobj backoff}}} \left\{ 
   \begin{array}{l}
-    \textrm{\scriptsize $p_{delete}\Big($dobj $\mid$
+    \textrm{\scriptsize $p\Big($dobj $\mid$
     \verticalcenter{\hspace{-0.5em}
     \begin{dependency}[text only label, label style={above}]
       \begin{deptext}[column sep=-0.0cm]
@@ -171,7 +172,7 @@ These contexts, and the order we back off to more general contexts,
     \end{dependency}
     \hspace{-0.5em}} $\Big)$ } \\
     
-    \textrm{\scriptsize $p_{delete}\Big($dobj $\mid$ signed $\Big)$ }
+    \textrm{\scriptsize $p\Big($dobj $\mid$ signed $\Big)$ }
   \end{array} \right.\]
 
 \end{center}
@@ -179,8 +180,9 @@ These contexts, and the order we back off to more general contexts,
   The ordered list of backoff probabilities when deciding to drop
     a prepositional phrase or direct object.
   The most specific context is chosen for which an empirical probability
-    exists; if no context is found the we allow dropping prepositional
+    exists; if no context is found then we allow dropping prepositional
     phrases and disallow dropping direct objects.
+  Note that this backoff arbitrarily orders contexts of the same size.
 }
 \end{figure}
 
@@ -199,12 +201,12 @@ These contexts, and the order we back off to more general contexts,
 
 % Inference time
 To compute a score $s$ of \textit{deleting} the edge from the
-  affinity probability $p_delete$ collected from the syntactic n-grams, we simply
+  affinity probability $p$ collected from the syntactic n-grams, we simply
   cap the affinity and subtract it from 1:
 %If the affinity probability from \reffig{affinity} is
 %  $p$, the score $s$ of deleting the edge becomes:
 \begin{equation*}
-  s = 1 - \min(1, \frac{p_{delete}}{K})
+  s = 1 - \min(1, \frac{p}{K})
 \end{equation*}
 where $K$ is a hyperparameter denoting the minimum fraction of the time an
   edge should occur in a context to be considered entirely unremovable.
@@ -228,15 +230,13 @@ The score of an extraction, then, is the product of the scores of each
 \ww{\small{cats play with yarn}}        & \small{(cats; play with; yarn)} \\
 \ww{\small{fish like to swim}}          & \small{(fish; like to; swim)} \\
 \ww{\small{cats have tails}}            & \small{(cats; have; tails)} \\
-\ww{\small{Durin, son of Thorin}}       & \small{(Durin; is son of; Thorin)} \\
-\ww{\small{Thorin's son, Durin}}        & \small{(Durin; is son of; Thorin)} \\
 \ww{\small{cats are cute}}              & \small{(cats; are; cute)} \\
 \ww{\small{Tom and Jerry are fighting}} & \small{(Tom; fighting; Jerry)} \\
 \ww{\small{There are cats with tails}}  & \small{(cats; have; tails)}
 \end{tabular}
 \caption{\label{tab:patterns}
-  The six patterns used to segment an atomic sentence into an open IE
-  triple.
+  The six dependency patterns used to segment an atomic sentence into an 
+  open IE triple.
 }
 \end{table}
 
@@ -257,6 +257,8 @@ The score of an extraction, then, is the product of the scores of each
 \caption{\label{tab:nominal}
   The eight patterns used to segment a noun phrase into an open IE
   triple.
+  The first five are dependency patterns; the last three are surface
+    patterns.
 }
 \end{table}
 

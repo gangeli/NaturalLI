@@ -1,75 +1,90 @@
 \Section{result}{Evaluation}
 % Introduce KBP
-We evaluate our approach in the context of an end-to-end relation extraction
-  task -- the TAC KBP Slot Filling challenge.
+We evaluate our approach in the context of a real-world end-to-end 
+  relation extraction task -- the TAC KBP Slot Filling challenge.
 In Slot Filling, we are given a large unlabeled corpus of text, a fixed
   schema of relations (see \refsec{mapping}), and a set of
   query entities.
 The task is to find all relation triples in the corpus that have as a subject
   the query entity, and as a relation one of the defined relations.
-This can be viewed as the task of automatically filling in structured information
-  -- like Wikipedia Infoboxes -- from a large unstructured corpus of text.
+This can be viewed intuitively as populating Wikipedia Infoboxes from a large
+  unstructured corpus of text.
+%  as the task of automatically filling in structured information
+%  -- like Wikipedia Infoboxes -- from a large unstructured corpus of text.
 % Motivate KBP
-We use the KBP evaluation to motivate open IE in a real-world, end-to-end task
-  where it can compete with a range of other approaches.
+%We use the KBP task to evaluate open IE in a real-world, end-to-end task.
+%  where it can compete with a range of other approaches.
 
 % Comparison
 We compare our approach to the University of Washington submission to
   TAC-KBP 2013 \cite{key:2013soderland-kbp}.
-This system, similar to ours, employed OpenIE v4.0 (a successor to Ollie) 
-  run over
-  the KBP corpus and then generated a mapping from the extracted relations to
-  the fixed schema.
-
+Their system used OpenIE v4.0 (a successor to Ollie) 
+  run over the KBP corpus and then generated a mapping from the 
+  extracted relations to the fixed schema.
 % Differences
-Unlike our system Open IE v4.0 employs a semantic role
+Unlike our system, Open IE v4.0 employs a semantic role
   component extracting structured SRL frames, alongside a conventional
   open IE system.
 %Our system does not make use of such structured information.
-Furthermore, the UW submission allowed for extracting relations and entities
+Furthermore, the UW submission allows for extracting relations and entities
   from substrings of an open IE triple argument.
 For example, from the triple \textit{(Smith; was appointed; acting director of Acme
   Corporation)}, they extract that Smith is employed by Acme Corporation.
 We disallow such extractions, passing the burden of finding correct
   precise extractions to the open IE system itself (see \refsec{extraction}).
-Lastly, it should be noted that our system is penalized when it extracts
-  correct facts that no other team in the competition found.
 
 % Misc differences
-Both the UW submission and our system make use of an entity linker
-  and a coreference system.
-For entity linking, the UW submission made use of Tom Lin's entity linker
+%Both the UW submission and our system use an entity linker
+%  and a coreference system.
+For entity linking, the UW submission uses of Tom Lin's entity linker
   \cite{key:2012lin-el}; our submission uses the Illinois Wikifier 
   \cite{key:2011ratinov-el} without the relational inference component, for
   efficiency.
-For coreference, UW makes use of the Stanford coreference system
+For coreference, UW uses the Stanford coreference system
   \cite{key:stanford-coref}; we employ a variant of the simple coref system
-  described in \cite{key:2014pink-kbp}, which removes the need for syntactic
-  parsing and was shown to not reduce end-to-end recall by a significant
-  amount.
+  described in \cite{key:2014pink-kbp}.
+%  which removes the need for syntactic
+%  parsing and was shown to not reduce end-to-end recall by a significant
+%  amount.
 
 \begin{table}
 \begin{center}
 \begin{tabular}{l|cc:c}
 \textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
 \hline
-UW Official         & \textbf{69.75} & 11.38 & 19.56 \\
-Ollie               & ??.?? & ??.?? & ??.?? \\
+UW Official          & \textbf{69.8} & 11.4 & 19.6 \\
+Ollie                & 57.4 & 4.8   & 8.9  \\
+$~~$ + Nominal Rels  & 56.8 & 12.1  & 19.9 \\
 \hline
-Our System          & 59.05 & 12.75 & 20.97 \\
-$~~$ + Alt. Names & 55.51 & \textbf{16.59} & \textbf{25.54} \\
+Our System           & 61.0 & 12.7  & 21.1 \\
+$~~$ + Alt. Names    & 56.8 & \textbf{16.6} & \textbf{25.7} \\
 \end{tabular}
 \end{center}
 \caption{\label{tab:results}
 A summary of our results on the end-to-end KBP Slot Filling task.
-We compare against an official submission to the challenge using
-  Open IE v4.0 (UW Official), as well as the performance of our system
-  using Ollie or Exemplar as the backing open IE system.
+UW official is the submission made to the 2013 challenge.
+The second row is the accuracy of Ollie embedded in our framework.
+We also include results for Ollie augmented with the nominal 
+  relations from our system.
+Lastly, we report our system, and our system conjoined with an
+  alternate names component.
+%We also run Ollie in the same framework as our open IE system
+%We compare against an official submission to the challenge using
+%  Open IE v4.0 (UW Official), as well as the performance of our system
+%  using Ollie or Exemplar as the backing open IE system.
 }
 \end{table}
 
 % Report results (KBP)
 We report our results in \reftab{results}.
+UW Official refers to the official submission in the 2013 challenge;
+  we show a 1.5 F$_1$ improvement (21.1 F$_1$) over this submission, 
+  evaluated using a comparable approach.
+If we add in alternate name relations extracted from entity linking and
+  coreference -- a common technique not employed by UW official -- then
+  our approach can achieve an end-to-end F$_1$ of 25.7.
+
+
 We report two versions of our system: one making use of alternate names
   via coref and entity linking, and another using only the relations from
   our system.

@@ -42,9 +42,9 @@ Open information extraction (open IE) has been shown to be useful in a
 % Challenge: many rules
 Conventionally, open IE systems search a collection of patterns over either
   the surface form or dependency tree of a sentence.
-a small set of patterns covers most simple sentences (e.g., subject verb
-  object constructions).
-However, relevant relations are often spread across clauses (see
+Although a small set of patterns covers most simple sentences 
+  (e.g., subject verb object constructions),
+  relevant relations are often spread across clauses (see
   \reffig{teaser}) or presented in a non-canonical form.
 
 % Special case (Ollie)
@@ -52,10 +52,11 @@ Systems like Ollie \cite{key:2012mausam-ollie} approach this problem by
   using a bootstrapping method to create a large corpus of broad-coverage
   partially lexicalized patterns.
 Although this is effective at capturing many of these patterns,
-  this level of lexicalization can lead to unintuitive behavior on 
-  out-of-domain text.
+  it can lead to unintuitive behavior on out-of-domain text.
+%  this level of lexicalization can lead to unintuitive behavior on 
+%  out-of-domain text.
 For instance, while \ww{Obama is president} is extracted correctly by Ollie
-  as \textit{(Obama; is; president)},
+  as \textit{(Obama; is; president)}, replacing \w{is} with \w{are} in 
   \ww{cats are felines} produces no extractions.
 Furthermore, existing systems struggle at producing
   canonical argument forms -- for example, in \reffig{teaser} the argument
@@ -76,15 +77,16 @@ Rather, we first pre-process the sentence in linguistically motivated ways
 Our approach consists of two stages:
   we first learn a classifier for splitting a sentence into shorter
   utterances (\refsec{clause}), 
-  and then appeal to natural logic semantics to maximally
+  and then appeal to natural logic \cite{key:1991valencia-natlog}
+  semantics to maximally
   shorten these utterances while maintaining necessary context (\refsec{natlog}).
 A small set of 14 hand-crafted patterns can then be used to segment the
   utterance into an open IE triple.
 
 % Summarize clause splitting
 We treat the first stage as a greedy search problem: we traverse
-  the tree recursively, at each step predicting whether an edge should
-  produce an independent clause.
+  a dependency parse tree recursively, at each step predicting whether an 
+  edge should yield an independent clause.
 %In the first stage, we traverse a tree recursively, allowing an edge
 %  to optionally produce an independent clause.
 Importantly, in many cases \naive ly splitting a clause on a dependency
@@ -112,15 +114,15 @@ From these independent clauses, we then extract shorter sentences, which
 A natural framework for solving this problem is natural logic -- 
   a proof system built on the syntax of human language (see \refsec{natlog}).
 We can then observe that
-  \ww{Chancellor Merkel of Germany visited China yesterday} entails
-  that \ww{Chancellor Merkel visited China yesterday}.
+  \ww{Heinz Fischer of Austria visits China} entails that
+  \ww{Heinz Fischer visits China}.
 %  but that \ww{enemies give fake compliments} does not entail that
 %  \ww{enemies give compliments}.
 On the other hand, 
 %  it's often incorrect to maximally shorten an argument.
   we respect situations where it is incorrect to shorten an argument.
 For example, \ww{No house cats have rabies} should not entail that
-  \ww{cats have rabbis}, or even that \ww{house cats have rabies}.
+  \ww{cats have rabis}, or even that \ww{house cats have rabies}.
 %Likewise, the sentence \ww{enemies give fake praise} should not
 %  produce the triple \textit{(enemies; give; praise)}.
 
@@ -141,10 +143,10 @@ For example, whereas \ww{all rabbits eat fresh vegetables} yields
 %  for the arguments of those triples.
 % Scores
 We show that our new system performs well on a real world evaluation --
-  the TAC KBP relation extraction competition.
-We compare against state-of-the-art open IE systems, and show a
-  5\% absolute F$_1$ improvement over the system.
-
+  the TAC KBP Slot Filling challenge \cite{key:2013surdeanu-kbpoverview}.
+We outperform both an official submission on
+  open IE, and a baseline of replacing our extractor with Ollie,
+  a state-of-the-art open IE systems.
 
 %address two problems with modern open IE systems:
 %  first, they either do not capture relations between mentions which
