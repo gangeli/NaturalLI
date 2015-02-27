@@ -215,3 +215,80 @@ f1 (split):   0.717
 p  (interm):  0.415
 r  (interm):  0.654
 f1 (interm):  0.508
+
+
+
+
+
+Training on full dataset...
+.........................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         1239595
+split count:  55337
+interm count: 62692
+p  (split):   0.845
+r  (split):   0.746
+f1 (split):   0.792
+p  (interm):  0.451
+r  (interm):  0.696
+f1 (interm):  0.548
+Evaluating Split 1...
+................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         247919
+split count:  10944
+interm count: 12490
+p  (split):   0.808
+r  (split):   0.724
+f1 (split):   0.764
+p  (interm):  0.411
+r  (interm):  0.636
+f1 (interm):  0.499
+Evaluating Split 2...
+...................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         247919
+split count:  11130
+interm count: 12602
+p  (split):   0.814
+r  (split):   0.725
+f1 (split):   0.767
+p  (interm):  0.421
+r  (interm):  0.641
+f1 (interm):  0.509
+Evaluating Split 3...
+.........................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         247919
+split count:  11188
+interm count: 12645
+p  (split):   0.814
+r  (split):   0.718
+f1 (split):   0.763
+p  (interm):  0.410
+r  (interm):  0.629
+f1 (interm):  0.496
+Evaluating Split 4...
+......................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         247919
+split count:  11100
+interm count: 12467
+p  (split):   0.808
+r  (split):   0.720
+f1 (split):   0.762
+p  (interm):  0.414
+r  (interm):  0.632
+f1 (interm):  0.500
+Evaluating Split 5...
+........................................................................................................................................................................................
+QNMinimizer terminated due to average improvement: | newest_val - previous_val | / |newestVal| < TOL 
+size:         247919
+split count:  10975
+interm count: 12488
+p  (split):   0.813
+r  (split):   0.720
+f1 (split):   0.763
+p  (interm):  0.415
+r  (interm):  0.636
+f1 (interm):  0.502

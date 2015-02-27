@@ -42,8 +42,8 @@ Open information extraction (open IE) has been shown to be useful in a
 % Challenge: many rules
 Conventionally, open IE systems search a collection of patterns over either
   the surface form or dependency tree of a sentence.
-For simple relations (e.g., subject verb object triples) a small set of
-  patterns covers most sentences.
+a small set of patterns covers most simple sentences (e.g., subject verb
+  object constructions).
 However, relevant relations are often spread across clauses (see
   \reffig{teaser}) or presented in a non-canonical form.
 
@@ -54,11 +54,11 @@ Systems like Ollie \cite{key:2012mausam-ollie} approach this problem by
 Although this is effective at capturing many of these patterns,
   this level of lexicalization can lead to unintuitive behavior on 
   out-of-domain text.
-For instance, while \ww{Obama is president} is extracted correctly 
-  as \textit{(Obama; is; president)} by Ollie,
+For instance, while \ww{Obama is president} is extracted correctly by Ollie
+  as \textit{(Obama; is; president)},
   \ww{cats are felines} produces no extractions.
 Furthermore, existing systems struggle at producing
-  canonical argument forms -- for example, the argument
+  canonical argument forms -- for example, in \reffig{teaser} the argument
   \ww{Heinz Fischer of Austria} is likely less useful for downstream
   applications than \ww{Heinz Fischer}.
 %  , either stripping relevant
@@ -68,16 +68,16 @@ Furthermore, existing systems struggle at producing
 
 % Sales pitch
 In this paper, we shift the burden of extracting informative and broad
-  coverage triples away from the pattern set used to extract the triples.
+  coverage triples away from this large pattern set.
 Rather, we first pre-process the sentence in linguistically motivated ways
   to produce coherent clauses which are (1) logically entailed by the 
-  original sentence, and (2) easy to transform into open IE triples 
-  with a small pattern set.
+  original sentence, and (2) easy to segment into open IE triples.
 % Overview of approach
 Our approach consists of two stages:
   we first learn a classifier for splitting a sentence into shorter
-  utterances, and then appeal to natural logic semantics to maximally
-  shorten these utterances while maintaining necessary context.
+  utterances (\refsec{clause}), 
+  and then appeal to natural logic semantics to maximally
+  shorten these utterances while maintaining necessary context (\refsec{natlog}).
 A small set of 14 hand-crafted patterns can then be used to segment the
   utterance into an open IE triple.
 
@@ -110,20 +110,22 @@ From these independent clauses, we then extract shorter sentences, which
   will produce shorter arguments more likely to be useful for downstream
   applications.
 A natural framework for solving this problem is natural logic -- 
-  a proof system built on the syntax of human language (see Section \refsec{natlog}).
+  a proof system built on the syntax of human language (see \refsec{natlog}).
 We can then observe that
   \ww{Chancellor Merkel of Germany visited China yesterday} entails
   that \ww{Chancellor Merkel visited China yesterday}.
 %  but that \ww{enemies give fake compliments} does not entail that
 %  \ww{enemies give compliments}.
-On the other hand, it's often incorrect to maximally shorten an argument.
+On the other hand, 
+%  it's often incorrect to maximally shorten an argument.
+  we respect situations where it is incorrect to shorten an argument.
 For example, \ww{No house cats have rabies} should not entail that
   \ww{cats have rabbis}, or even that \ww{house cats have rabies}.
 %Likewise, the sentence \ww{enemies give fake praise} should not
 %  produce the triple \textit{(enemies; give; praise)}.
 
 % Showing off
-When requiring careful attention to logical validity is necessary -- such as 
+When careful attention to logical validity is necessary -- such as 
   textual entailment -- this approach captures even more subtle phenomena.
 For example, whereas \ww{all rabbits eat fresh vegetables} yields
   \textit{(rabbits; eat; vegetables)}, the apparently similar sentence

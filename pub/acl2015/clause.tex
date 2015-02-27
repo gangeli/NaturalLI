@@ -1,6 +1,6 @@
 \Section{clause}{Inter-Clause Open IE}
 
-\begin{figure*}
+\begin{figure*}[t]
 \begin{center}
 \begin{tabular}{cc}
 \hspace{-3ex}
@@ -79,8 +79,14 @@ The fragments which produced the triples are bolded in the figure.
 % Introduce task
 In the first stage of our method, we produce a set of self-contained clauses
   from a longer utterance.
-The objective is to produce a set of clauses which can stand on their own
+Our objective is to produce a set of clauses which can stand on their own
   syntactically and semantically, and are entailed by original sentence.
+% Motivate more broadly
+Note that this task is not specific to extracting open IE triples.
+Conventional relation extractors, entailment systems, and other NLP
+  applications may also benefit from such a system.
+
+% Example
 For example, taking the example in \reffig{clausesplit} the sentence:
 \begin{quotation}
 \noindent\ww{Born in a small town, she took the midnight train going anywhere.}
@@ -126,8 +132,9 @@ The three actions we can perform on a dependency edge are:
 
 \paragraph{Split}
   Split a new clause on this dependency arc.
-  A canonical case of this action could be \textit{ccomp} arc from \ww{suggest}
-    to \ww{brush} in \ww{Dentists suggest that you should brush your teeth}.
+  A canonical case of this action is the arc 
+    \ww{suggest} $\xrightarrow{ccomp}$ \ww{brush} in
+    \ww{Dentists suggest that you should brush your teeth}.
 
 \paragraph{Recurse}
   Recurse on this dependency arc, but do not yield it as a new clause.
@@ -158,7 +165,7 @@ For the \textbf{Stop} action, we do not need to further specify an action
 However, for both of the other actions, it is often the case that we would like
   to borrow some portion of the parent tree.
 We define two such common actions -- though this is not necessarily an
-  exhaustive list of possible actions:
+  exhaustive list:
 
 \paragraph{Clone Subject} 
   If the arc we are considering is not a subject arc,
@@ -166,6 +173,19 @@ We define two such common actions -- though this is not necessarily an
     child node.
   This is the action taken in the example
     \ww{Born in a small town, she took the midnight train}.
+  \todo{linguistics}
+
+\paragraph{Clone Object} 
+  Analogous to the clone subject action above, but taking the object
+    instead.
+%  If the arc we are considering is not an object arc,
+%    we copy the object of the parent node and attach it as an object of the
+%    child node.
+  This is the intended action for examples like
+    \ww{I persuaded Fred to leave the room}.\footnote{
+      The system currently misses most such cases due to lack of training
+      data.
+    }
   \todo{linguistics}
 
 \paragraph{Clone Root} 
@@ -189,14 +209,15 @@ We turn our attention to the training data for learning these actions.
 We collect a noisy dataset to train our clause splitting model.
 We leverage the \textit{distant supervision} assumption for relation extraction
   to create a noisy annotated corpus of sentences annotated with relations.
-Distant supervision is a method for training a supervised classifier using only
-  a large unlabeled corpus, and a knowledge base of known facts.
-We can then generate noisy sentence-based annotations, by assuming that every
-  sentence which contains two entities in our knowledge base 
+%Distant supervision is a method for training a supervised classifier using only
+%  a large unlabeled corpus, and a knowledge base of known facts.
+%We can then generate noisy sentence-based annotations, by assuming that every
+%  sentence which contains two entities in our knowledge base 
 Then, we take this annotation as itself distant supervision for a correct
-  sequence of actions to take: any action sequence which recovers the 
-  known relation is correct, whereas other action sequences are assumed to be
-  incorrect.
+  sequence of actions to take: any sequence which recovers the 
+  known relation is correct.
+%  whereas other action sequences are assumed to be
+%  incorrect.
 
 % Why KBP data?
 We use a small subset of the KBP source documents for 
@@ -204,12 +225,12 @@ We use a small subset of the KBP source documents for
   and 2013 \cite{key:2013surdeanu-kbpoverview}
   as our distantly supervised corpus.
 To try to maximize the density of known relations in the training sentences,
-  we take all sentences from the source corpora which have at least one known
+  we take all sentences which have at least one known
   relation for every 10 tokens in the sentence,
   resulting in \num{43155} sentences.
 In addition, we incorporate the 23 thousand manually annotated examples
-  from \newcite{key:2014angeli-active} -- the relations in these sentences
-  are generally less noisy.
+  from \newcite{key:2014angeli-active}.
+%  -- the relations in these sentences are generally less noisy.
 Although we train our clause splitter on KBP data, we do not incorporate
   anything particular about the KBP relation set.
 Our only assumption is that clauses which contain a KBP relation occur in
@@ -217,9 +238,10 @@ Our only assumption is that clauses which contain a KBP relation occur in
   relations.
 
 % Distant supervision x 2
-Once we are given a collection of labeled sentences, we make make a second
-  assumption, akin to distant supervision for clause splitting.
-We assume that a sequence of actions which leads to a correct extraction of
+Once we are given a collection of labeled sentences, 
+%we make make a second
+%  assumption, akin to distant supervision for clause splitting.
+  we assume that a sequence of actions which leads to a correct extraction of
   a known relation is a \textit{positive sequence}.
 A correct extraction is any extraction we produce from our model
   (see \refsec{extraction}) which has the same arguments as the known
@@ -232,13 +254,13 @@ For instance, if we know that Obama was born in Hawaii in the sentence
 % Negative sequences
 Any sequence of actions which results in a clause which produces no relations
   is in turn considered a \textit{negative sequence}.
-Assuming perfect sentence level relation annotations, this is still only
-  distantly supervised training data.
-%This is, however, only distantly supervised training data.
-It's possible for an incorrect sequence of actions to produce the correct
-  extraction, or even more commonly for a correct sequence of actions to 
-  produce no extraction.
-
+%Assuming perfect sentence level relation annotations, this is still only
+%  distantly supervised training data.
+%%This is, however, only distantly supervised training data.
+%It's possible for an incorrect sequence of actions to produce the correct
+%  extraction, or even more commonly for a correct sequence of actions to 
+%  produce no extraction.
+%
 % Relation to Distant supervision #1
 The third case to consider is a sequence of actions which produces a relation,
   but it is not one of the annotated relations.
@@ -260,8 +282,8 @@ In the interest of erring on the side of higher recall -- particularly given
 %  it is a relation we don't know about in the knowledge base.
 
 % Handling of examples
-Given a set of positive and negative \textit{sequences}, we construct training
-  data for our action classifier.
+Given a set noisy of positive and negative \textit{sequences}, we construct 
+  training data for our action classifier.
 All but the last action in a positive sequence are added to the training set
   with the label \textbf{Recurse}; the last action is added with the label
   \textbf{Split}.
@@ -298,8 +320,7 @@ The feature class is a high level description of features; the feature
   templates are the particular templates used.
 For instance, the POS signature contains the tag of the parent, the tag of
   the child, and both tags joined in a single feature.
-Note that all features are joined with the action to be taken on the parent
-  node.
+Note that all features are joined with the action to be taken on the parent.
 }
 \end{table}
 
@@ -315,15 +336,15 @@ The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
   while recall errors are directly harmful to recall.
 
 % Introduce performance
-We report informal performance numbers for our classifier, with the
+We report crude performance numbers for our classifier, with the
   caveat that the performance ceiling of the classifier is bounded by the
   noise in the dataset itself.
 %Note that the performance ceiling for the task is far below 100\%.
-Precision errors are inevitable due to the incompleteness of our
-  knowledge base (we find relations which are correct but not yet known);
-  recall errors are in turn often due to the noise of distant supervision.
+%Precision errors are inevitable due to the incompleteness of our
+%  knowledge base (we find relations which are correct but not yet known);
+%  recall errors are in turn often due to the noise of distant supervision.
 % Statistics
-Nonetheless, we report precision and recall
+We compute precision and recall by averaging
   over 5-fold cross validation on a dataset of
   \num{1159395} datums -- of which \num{56962} have label \textbf{Split} and
   \num{65318} have label \textbf{Recurse}.

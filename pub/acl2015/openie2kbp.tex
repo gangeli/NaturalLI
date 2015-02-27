@@ -1,5 +1,5 @@
 \Section{mapping}{Mapping OpenIE to a Known Relation Schema}
-\begin{table*}
+\begin{table*}[t]
 \begin{tabular}{l:lc|l:lc}
   \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$} & \textbf{KBP Relation} & \textbf{Open IE Relation} & \textbf{PMI$^2$}\\
   \hline
@@ -17,8 +17,8 @@
                                 & \ww{own stake besides} & 1.18    &                                      & \ww{independent from} & 1.18    \\
 \end{tabular}
 \caption{\label{tab:samplemapping}
-  A selection of type checked mapped relations between the open IE relation 
-    set and the target KBP relations. 
+  A selection of the mapping from KBP to lemmatized open IE relations,
+    conditioned on the types of the arguments being correct.
   The top one or two relations are shown for each of 7 person and 6 organization
     relations.
   In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
@@ -34,20 +34,20 @@ A common use case for open IE systems is to map them to a
   known relation schema.
 As a motivating use-case, we take the KBP relation schema, taken from
   the TAC-KBP challenges.
-This consists of 42 relations (41 after the 2012 evaluation) roughly
-  aligning to Wikipedia Infoboxes for people and organizations.
+This consists of 42 relations (41 after the 2012 evaluation.
+%  aligning to Wikipedia Infoboxes for people and organizations.
   Examples include \rel{Per:Title}, a person's title in an
   organization (President, CEO, etc.); \rel{Per:City\_Of\_Birth}, the
   city a person was born in; or \rel{Org:Founded}, the date an organization
   was founded.
 
 % Why OpenIE?
-The natural approach for relation extraction when the relation
-  schema is known \textit{a priori} is to train either 
-  a supervised or distantly supervised extractor
-  directly on the relation set.
-Nonetheless, there are a number of motivations for using open domain
-  relation triples.
+%The natural approach for relation extraction when the relation
+%  schema is known \textit{a priori} is to train either 
+%  a supervised or distantly supervised extractor
+%  directly on the relation set.
+There are a number of motivations for using open domain
+  relation triples for this task.
 % Domain adaptation
 The most salient of these is that an open IE system can be adapted
   easily to new relation schemata.
@@ -79,7 +79,8 @@ For example, the joint probability of KBP relation $r_k$ and open IE relation
 \end{equation*}
 
 % PMI^2
-Defining $p(r_k)$ and $p(r_o)$ analogously,
+Omitting the conditioning on the type signature for notational convenience,
+  and defining $p(r_k)$ and $p(r_o)$ analogously,
   we can then compute The PMI$^2$ value between the two relations:
 \begin{equation*}
   pmi^2(r_k, r_o) = \log \left( \frac{p(r_k, r_o)^2}{p(r_k) \cdot p(r_o)} \right)
@@ -99,20 +100,20 @@ For the purposes of creating this mapping, relations involving
   locations (e.g., city of birth and country of birth) have been collapsed,
   along with their NER types, as these can be fully disambiguated by their
   context in the sentence.
-If a relation mapped to (\textit{location}) of birth is found in a sentence
-  with a city as its object, then we can unambiguously map this to the relation
-  \rel{Per:City\_Of\_Birth}.
+%If a relation mapped to (\textit{location}) of birth is found in a sentence
+%  with a city as its object, then we can unambiguously map this to the relation
+%  \rel{Per:City\_Of\_Birth}.
   
-% Compare to Soderland NFL
-Prior work on learning mappings from open IE to a relation schema for NFL
-  games \cite{key:2010soderland-nfl} showed only modest improvements, even
-  when incorporating active learning.
-For their task, they used a metric tuned to precision on the training data:
-  the fraction of correct versus incorrect extractions each relation produces.
-We propose that either the automated mapping of the sort we propose inherently
-  requires a very large corpus to gather accurate statistics, or that the
-  choice of PMI as a selection method creates a more robust mapping than tuning
-  directly to training precision.
+%% Compare to Soderland NFL
+%Prior work on learning mappings from open IE to a relation schema for NFL
+%  games \cite{key:2010soderland-nfl} showed only modest improvements, even
+%  when incorporating active learning.
+%For their task, they used a metric tuned to precision on the training data:
+%  the fraction of correct versus incorrect extractions each relation produces.
+%We propose that either the automated mapping of the sort we propose inherently
+%  requires a very large corpus to gather accurate statistics, or that the
+%  choice of PMI as a selection method creates a more robust mapping than tuning
+%  directly to training precision.
 
 
 %Given a sufficiently large corpus, we can compute these probabilities

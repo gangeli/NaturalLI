@@ -22,16 +22,18 @@ This system, similar to ours, employed OpenIE v4.0 (a successor to Ollie)
   the fixed schema.
 
 % Differences
-Unlike our system Open IE v4.0 employs a full-blown semantic role
-  labeling system extracting structured SRL frames, alongside a conventional
+Unlike our system Open IE v4.0 employs a semantic role
+  component extracting structured SRL frames, alongside a conventional
   open IE system.
-Our system does not make use of such structured information.
+%Our system does not make use of such structured information.
 Furthermore, the UW submission allowed for extracting relations and entities
   from substrings of an open IE triple argument.
 For example, from the triple \textit{(Smith; was appointed; acting director of Acme
   Corporation)}, they extract that Smith is employed by Acme Corporation.
 We disallow such extractions, passing the burden of finding correct
   precise extractions to the open IE system itself (see \refsec{extraction}).
+Lastly, it should be noted that our system is penalized when it extracts
+  correct facts that no other team in the competition found.
 
 % Misc differences
 Both the UW submission and our system make use of an entity linker
@@ -51,12 +53,11 @@ For coreference, UW makes use of the Stanford coreference system
 \begin{tabular}{l|cc:c}
 \textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
 \hline
-UW Official   & 69.75 & 11.38 & 19.56 \\
-Ollie         & ??.?? & ??.?? & ??.?? \\
-Exemplar      & ??.?? & ??.?? & ??.?? \\
+UW Official         & \textbf{69.75} & 11.38 & 19.56 \\
+Ollie               & ??.?? & ??.?? & ??.?? \\
 \hline
-Our System    & 55.51 & 16.59 & 25.54 \\
-No Alt. Names & 59.05 & 12.75 & 20.97 \\
+Our System          & 59.05 & 12.75 & 20.97 \\
+$~~$ + Alt. Names & 55.51 & \textbf{16.59} & \textbf{25.54} \\
 \end{tabular}
 \end{center}
 \caption{\label{tab:results}
@@ -69,15 +70,23 @@ We compare against an official submission to the challenge using
 
 % Report results (KBP)
 We report our results in \reftab{results}.
+We report two versions of our system: one making use of alternate names
+  via coref and entity linking, and another using only the relations from
+  our system.
+The second of these is a more fair comparision to the UW Official score,
+  which does not make use of coreference for alternate names.
 All results are reported with the \texttt{anydoc} flag set to true
   in the evaluation script, meaning that only the truth of the extracted
   knowledge base entry and not the associated provenance is scored.
-In absence of human evaluators, this is in order to not penalize our 
-  system unfairly for extracting a new correct provenance.
+%In absence of human evaluators, this is in order to not penalize our 
+%  system unfairly for extracting a new correct provenance.
 
 % Report results (ablation)
 In addition, we run our system with our relation extraction component replaced
-  with either Ollie relations over the same corpus \cite{key:2012mausam-ollie},
-  or Exemplar relations over the corpus \cite{key:2013mesquita-exemplar}.
+  with Ollie \cite{key:2012mausam-ollie} run over the same corpus.
 These offer a more isolated comparison between the systems, removing
   other conflating factors in the evaluation.
+
+% Demo
+Lastly, we make a demo of our system publicly available online at
+  \url{http://128.12.224.119/openie/}.
