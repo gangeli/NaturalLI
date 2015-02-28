@@ -19,7 +19,7 @@
 \caption{\label{tab:samplemapping}
   A selection of the mapping from KBP to lemmatized open IE relations,
     conditioned on the types of the arguments being correct.
-  The top one or two relations are shown 7 person and 6 organization
+  The top one or two relations are shown for 7 person and 6 organization
     relations.
   Incorrect or dubious mappings are marked with an asterisk.
 }
@@ -31,7 +31,7 @@ A common use case for open IE systems is to map them to a
 This can either be done manually with minimal annotation effort, or
   automatically from available training data.
 We use both methods in our TAC-KBP evaluation.
-A collection of relation mappings were constructed by a single
+A collection of relation mappings was constructed by a single
   annotator in approximately a day,\footnote{
     The official submission we compare against claimed two weeks for constructing
     their manual mapping, although a version of their system constructed in only
@@ -68,7 +68,9 @@ A collection of relation mappings were constructed by a single
 % Treat KBP relations as random variables
 We map open IE relations to the KBP schema by searching for co-occurring
   relations in a large distantly-labeled corpus, and marking open IE and
-  KBP relation pairs which have a high PMI$^2$ value conditioned on their
+  KBP relation pairs which have a high PMI$^2$ value
+  \cite{key:1994dailee-pmisquared,key:2005evert-pmi}
+  conditioned on their
   type signatures matching.
 To compute PMI$^2$, we collect probabilities for the open IE and KBP
   relation co-occurring, the probability of the open IE relation occurring,
@@ -102,7 +104,7 @@ It is also functionally the same as the JC WordNet distance measure
 
 % Tweaks made in practice
 Some sample type checked relation mappings are given in \reftab{samplemapping}.
-In addition to intuitive mappings (e.g.,\ww{found in} $\rightarrow$ 
+In addition to intuitive mappings (e.g., \ww{found in} $\rightarrow$ 
   \rel{Org:Founded}), we can note some rare, but high precision pairs
   (e.g., \ww{invest fund of} $\rightarrow$ \rel{Org:Founded\_By}).
 We can also see the noise in distant supervision occasionally permeate 

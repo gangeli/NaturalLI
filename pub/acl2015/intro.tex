@@ -29,7 +29,7 @@
     Generating coherent clauses before applying patterns helps reduce
       false matches such as \textit{(Honolulu; be born in; Hawaii)}.
     Inference over the sub-structure of arguments, in turn, allows us to
-      drop convoluting information (e.g., \ww{of Austria}), but only when
+      drop unnecessary information (e.g., \ww{of Austria}), but only when
       it is warranted (e.g., keep \ww{fake} in \ww{fake praise}).
     }
 \end{figure}
@@ -77,10 +77,10 @@ Rather, we first pre-process the sentence in linguistically motivated ways
 Our approach consists of two stages:
   we first learn a classifier for splitting a sentence into shorter
   utterances (\refsec{clause}), 
-  and then appeal to natural logic \cite{key:1991valencia-natlog}
-  semantics to maximally
+  and then appeal to natural logic semantics \cite{key:1991valencia-natlog}
+  to maximally
   shorten these utterances while maintaining necessary context (\refsec{natlog}).
-A small set of 14 hand-crafted patterns can then be used to segment the
+A small set of 14 hand-crafted patterns can then be used to segment an
   utterance into an open IE triple.
 
 % Summarize clause splitting
@@ -89,20 +89,23 @@ We treat the first stage as a greedy search problem: we traverse
   edge should yield an independent clause.
 %In the first stage, we traverse a tree recursively, allowing an edge
 %  to optionally produce an independent clause.
-Importantly, in many cases \naive ly splitting a clause on a dependency
-  edge produces an incoherent utterance (e.g., \ww{Born in Honolulu, Hawaii},
-  from \reffig{teaser}) often due to the clause's verb having its subject 
-  controlled by the parent verb.
-Therefore, we implicitly identify these sorts of constructions
-  and allow the controlled verb (e.g., \ww{born}) to inherit the subject 
-  of its controller (i.e., \ww{Obama}).
-  \todo{linguistics?}
+Importantly, in many cases \naive ly yielding a clause on a dependency
+  edge produces an incomplete utterance (e.g., \ww{Born in Honolulu, Hawaii},
+  from \reffig{teaser}).
+These are often attributable to control relationships, where either the
+  subject or object of the governing clause controls the subject of the
+  subordinate clause.
+We therefore allow the produced clause to sometimes inherit 
+  the subject or object of its governor.
+%Therefore, we implicitly identify these sorts of constructions
+%  and allow the controlled verb (e.g., \ww{born}) to inherit the subject 
+%  of its controller (i.e., \ww{Obama}).
 %Each split clause, in turn, can optionally borrow either the entire
 %  governing clause, or just the subject of the governing clause.
 %For example, the first sentence in \reffig{teaser} will produce the
 %  clause \ww{Obama born in Honolulu, Hawaii}, borrowing the subject
 %  \ww{Obama} from the governing clause.
-This procedure allows us to capture a large variety of long range 
+This allows us to capture a large variety of long range 
   dependencies with a concise classifier.
 %  while keeping both the state space of learned
 %  classifier small and the set of atomic patterns small.

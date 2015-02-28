@@ -66,7 +66,7 @@ An illustration of our approach.
 From left to right, a sentence yields a number of independent clauses
   (e.g., \ww{she Born in a small town} -- see \refsec{clause}).
 From top to bottom, each clause produces a set of entailed shorter
-  utterances, and segments those which match an atomic pattern into a
+  utterances, and segments the ones which match an atomic pattern into a
   relation triple (see \refsec{natlog}).
 %Self-contained clauses are split off from the main sentence where appropriate
 %  (\refsec{clause}).
@@ -75,7 +75,6 @@ From top to bottom, each clause produces a set of entailed shorter
 %Lastly, a set of simple pattern are applied to these clauses to transform them
 %  into open IE triples.
 %The fragments which produced the triples are bolded in the figure.
-\todo{is dobj the right relation?}
 }
 \end{figure*}
 
@@ -105,7 +104,8 @@ Conventional relation extractors, entailment systems, and other NLP
 % Formal description
 We frame this task as a search problem.
 At a given node in the parse tree, we classify each outgoing arc
-  $e = p \xrightarrow{l} c$, from the governor p to a dependent c with label l,
+  $e = p \xrightarrow{l} c$, from the governor $p$ to a dependent $c$ 
+  with label $l$,
   into an action to perform on that arc.
 Once we have chosen an action to take on that arc, we can recurse on the
   dependent node.
@@ -119,7 +119,8 @@ For example, in our motivating example, we are considering the arc:
   $e = \ww{took} \xrightarrow{vmod} \ww{born}$.
 In this case, the correct action is to
   (1) yield a new clause rooted at \ww{born},
-  and (2) steal the subject of \ww{took}. \todo{linguistics?}
+  and (2) interpret the subject of \ww{born} as the subject
+  of \ww{took}.
 
 % Motivation
 %We can view the actions in our clause splitter as ensuring that our
@@ -153,7 +154,7 @@ The three actions we can perform on a dependency edge are:
 \item[] \textbf{Recurse} \hspace{1ex}
   Recurse on this dependency arc, but do not yield it as a new clause.
   For example, in the sentence \ww{faeries are dancing in the field where
-  I lost my bike}, we must recurse through the intermediate clause
+  I lost my bike}, we must recurse through the intermediate constituent
   \ww{the field where I lost my bike} -- which itself is not relevant
   -- to get to the clause of interest: \ww{I lost my bike}.
 %  This is often useful for long sentences, where a relevant clause is nested
@@ -168,10 +169,11 @@ The three actions we can perform on a dependency edge are:
   Do not recurse on this arc, as the subtree under this arc is
     not entailed by the parent sentence.
   This is the case, for example, for most leaf nodes
-    (\ww{furry cats are cute} should not entail the clause \ww{furry});
-    but, also the case when the clause would not be entailed by the original
-    sentence (e.g., \ww{Dentists do not suggest that you should eat rocks}
-    should not entail that \ww{you should eat rocks}).
+    (\ww{furry cats are cute} should not entail the clause \ww{furry}),
+    and is an important action for the efficiency of the algorithm.
+%    but, also the case when the clause would not be entailed by the original
+%    sentence (e.g., \ww{Dentists do not suggest that you should eat rocks}
+%    should not entail that \ww{you should eat rocks}).
 \end{itemize}
 
 %\begin{tikzpicture}[
@@ -240,22 +242,22 @@ During inference we run uniform cost search until our classifier predictions
 For the \textbf{Stop} action, we do not need to further specify an action
   to take on the parent node.
 However, for both of the other actions, it is often the case that we would like
-  to borrow some portion of the parent tree. \todo{linguistics}
+  to capture a controller in the higher clause.
+%borrow some portion of the parent tree.
 We define three such common actions:
 %-- though this is not necessarily an exhaustive list:
 
 \vspace{-1ex}
 \begin{itemize}[leftmargin=2ex]
-\item[] \textbf{Clone Subject}  \hspace{1ex}
-  If the arc we are considering is not a subject arc,
-    we copy the subject of the parent node and attach it as a subject of the
+\item[] \textbf{Subject Controller}  \hspace{1ex}
+  If the arc we are considering is not already subject arc,
+    we can copy the subject of the parent node and attach it as a subject of the
     child node.
   This is the action taken in the example
     \ww{Born in a small town, she took the midnight train}.
-  \todo{linguistics}
 
-\item[] \textbf{Clone Object}  \hspace{1ex}
-  Analogous to the clone subject action above, but taking the object
+\item[] \textbf{Object Controller}  \hspace{1ex}
+  Analogous to the subject controller action above, but taking the object
     instead.
 %  If the arc we are considering is not an object arc,
 %    we copy the object of the parent node and attach it as an object of the
@@ -265,15 +267,13 @@ We define three such common actions:
       The system currently misses most most such cases due to insufficient 
       support in the training data.
     }
-  \todo{linguistics}
 
-\item[] \textbf{Clone Root} \hspace{1ex}
-  If the arc we are taking is the only outgoing arc from a node, we clone the
+\item[] \textbf{Parent Subject} \hspace{1ex}
+  If the arc we are taking is the only outgoing arc from a node, we take the
     parent node as the (passive) subject of the child.
   This is the action taken in the example
     \ww{Obama, our 44$^\textrm{th}$ president} to yield a clause with the
     semantics of \ww{Obama [is] our 44$^\textrm{th}$ president}.
-  \todo{linguistics}
 \end{itemize}
 
 % Additional actions
@@ -328,7 +328,7 @@ Once we are given a collection of labeled sentences,
 A correct extraction is any extraction we produce from our model
   (see \refsec{extraction}) which has the same arguments as the known
   relation.
-For instance, if we know that Obama was born in Hawaii in the sentence
+For instance, if we know that Obama was born in Hawaii from the sentence
   \ww{Born in Hawaii, Obama $\dots$}, and an action sequence produces the triple
   \textit(Obama, born in, Hawaii), then we take that action sequence as
   a positive sequence.
@@ -364,7 +364,7 @@ In the interest of erring on the side of higher recall -- particularly given
 %  it is a relation we don't know about in the knowledge base.
 
 % Handling of examples
-Given a set noisy of positive and negative \textit{sequences}, we construct 
+Given a set of noisy positive and negative \textit{sequences}, we construct 
   training data for our action classifier.
 All but the last action in a positive sequence are added to the training set
   with the label \textbf{Recurse}; the last action is added with the label
@@ -413,7 +413,7 @@ The most salient features are the label of the edge being taken, the
   incoming edge to the parent of the edge being taken, neighboring edges
   for both the parent and child of the edge, and the part of speech tag of
   the endpoints of the edge.
-The dataset is weighted to give $3x$ weight to examples in the \textbf{Recurse}
+The dataset is weighted to give $3\times$ weight to examples in the \textbf{Recurse}
   class, as precision errors in this class are relatively harmless for accuracy,
   while recall errors are directly harmful to recall.
 

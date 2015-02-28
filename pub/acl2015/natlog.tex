@@ -11,7 +11,7 @@ This is often a key component in downstream applications, where extractions
   need to be not only \textit{correct}, but also \textit{informative}.
 Whereas an argument like \ww{Heinz Fischer of Austria} is often correct,
   a downstream application must apply further processing to recover information
-  about either Heinz Fischer, or Austria.
+  about either \ww{Heinz Fischer}, or \ww{Austria}.
 Moreover, it must do so without the ability to appeal to the larger context
   of the sentence.
 %For example, \ww{friends give heartfelt praise} should entail that
@@ -24,7 +24,7 @@ Moreover, it must do so without the ability to appeal to the larger context
 We adopt a subset of natural logic semantics dictating
   contexts in which lexical items can be removed.
 Natural logic as a formalism captures common logical inferences
-  appealing directly to the syntax of language, rather than parsing to a
+  appealing directly to the form of language, rather than parsing to a
   specialized logical syntax.
 It provides a proof theory for lexical mutations to a sentence which either
   preserve or negate the truth of the premise.
@@ -248,7 +248,7 @@ The score of an extraction, then, is the product of the scores of each
 \ww{\small{Durin, son of Thorin}}       & \small{(Durin; is son of; Thorin)} \\
 \ww{\small{Thorin's son, Durin}}        & \small{(Thorin; 's son; Durin)} \\
 \ww{\small{IBM CEO Rometty}}            & \small{(Rometty; is CEO of; IBM)} \\
-\ww{\small{cute cat}}                   & \small{(cat; is; cute)} \\
+\ww{\small{President Obama}}            & \small{(Obama; is; President)} \\
 \ww{\small{Fischer of Austria}}         & \small{(Fischer; is of; Austria)} \\
 \ww{\small{IBM's research group}}       & \small{(IBM; 's; research group)} \\
 \ww{\small{US president Obama}}         & \small{(Obama; president of; US)} \\
