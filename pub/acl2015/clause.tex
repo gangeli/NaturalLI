@@ -351,9 +351,13 @@ This arises from the \textit{incomplete negatives} problem in distantly
   since our knowledge base is not exhaustive,
   we cannot be sure if an extracted relation is incorrect or correct but
   previously unknown.
-In the interest of erring on the side of higher recall -- particularly given
-  a dataset already heavily biased towards the \textit{stop} action --
-  we discard such sequences.
+Although many of these unmatched relations are indeed incorrect, the dataset
+  is sufficiently biased towards the STOP action that the occasional
+  false negative hurts end-to-end performance.
+Therefore, we simply discard such sequences.
+%In the interest of erring on the side of higher recall -- particularly given
+%  a dataset already heavily biased towards the \textit{stop} action --
+%  we discard such sequences.
 
 %Furthermore, we must still mitigate the noise in the distantly supervised
 %  method for generating our annotated sentences.
