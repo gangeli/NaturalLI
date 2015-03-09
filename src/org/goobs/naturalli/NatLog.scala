@@ -361,9 +361,9 @@ object NatLog {
       // (get variables)
       val pos:Array[String] = {
         val candidate = sentence.pos
-        // Fix up things like "running shoes"
-        for ( i <- 0 until (candidate.length - 1)) {
-          if (candidate(i) == "VBG" && candidate(i + 1).startsWith("N")) { candidate(i) = "JJVBG" }
+        for ( i <- 0 until candidate.length) {
+          // Fix up things like "running shoes"
+          if (i < candidate.length - 1 && candidate(i) == "VBG" && candidate(i + 1).startsWith("N")) { candidate(i) = "JJVBG" }
         }
         candidate
       }
