@@ -249,7 +249,9 @@ object Utils {
     var lastElem:Int = -999
     var rtn = List[Int]()
     for (i <- indexResult.length - 1 to 0 by -1) {
-      if (indexResult(i) < 0) { indexResult(i) = wordIndexer(unkProvider(phrase(i))) }
+      if (indexResult(i) < 0) {
+        indexResult(i) = wordIndexer(unkProvider(phrase(i).toLowerCase.replace(".","")))
+      }
       if (indexResult(i) != lastElem) {
         lastElem = indexResult(i)
         rtn = indexResult(i) :: rtn

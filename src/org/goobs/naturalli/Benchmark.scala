@@ -42,6 +42,9 @@ object Benchmark extends Client {
         .setSearchType("ucs")
         .setCacheType("bloom")
         .build(), quiet=false, singleQuery=true), weights)
+      
+      // Recover id
+      val id = if (!query.isEmpty && query.head.hasId()) query.head.getId + " " else ""
 
       // Check if correct
       val guessed = prob >= 0.51
@@ -53,14 +56,14 @@ object Benchmark extends Client {
       }
       if (correct) {
         if (remember.apply( datum )) {
-          log(BOLD, GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
+          log(BOLD, GREEN, id + "correct (gold=" + gold + "; guess=" + prob + ")")
         } else {
-          log(GREEN, "correct (gold=" + gold + "; guess=" + prob + ")")
+          log(GREEN, id + "correct (gold=" + gold + "; guess=" + prob + ")")
         }
       } else {
         if (remember.apply( datum )) {
           log(RED, BOLD, "--------------------")
-          log(RED, BOLD, ">>> incorrect (gold=" + gold + "; guess=" + prob + ")")
+          log(RED, BOLD, id + ">>> incorrect (gold=" + gold + "; guess=" + prob + ")")
           log(RED, BOLD, "--------------------")
         } else {
           log(RED, "incorrect (gold=" + gold + "; guess=" + prob + ")")
