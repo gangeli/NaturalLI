@@ -569,7 +569,7 @@ def query(premises, query, costs=None):
           response['features']['mutationCounts'],
           response['features']['transitionFromTrueCounts'],
           response['features']['transitionFromFalseCounts'],
-          response['features']['insertionCosts']);  # TODO(gabor) typo in server...
+          response['features']['insertionCounts']);
     # Assess result
     guess = 'unknown'
     booleanGuess = False
@@ -644,8 +644,8 @@ if __name__ == "__main__":
         COSTS_LOCK.acquire()
         costs = copy(COSTS)
         COSTS_LOCK.release()
-#        threads.submit(query, premises, queryStr, costs)
-        query(premises, queryStr, costs)
+        threads.submit(query, premises, queryStr, costs)
+#        query(premises, queryStr, costs)
       else:
         lines.append(line.strip());
   
@@ -660,8 +660,8 @@ if __name__ == "__main__":
   # Print scores
   if numTotal > 0:
     print("--------------------")
-    print("P:        %.3g" % p)
-    print("R:        %.3g" % r)
+    print("P:        %.3g (%d / %d)" % (p, numGuessAndCorrect, numGuessTrue))
+    print("R:        %.3g (%d / %d)" % (r, numGuessAndCorrect, numGoldTrue))
     print("F1:       %.3g" % f1)
     print("Accuracy: %.3g" % accr)
     print("3-class:  %.3g" % strict)

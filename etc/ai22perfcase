@@ -1,0 +1,191 @@
+#!/bin/bash
+exec scala "$0" "$@"
+!#
+
+// (scala)
+import scala.collection.JavaConversions._
+
+// Regexes for a sentence with 2, 3, or 4 options
+val Q2 = """(.*)\(A\)(.*)\(B\)(.*)""".r
+val Q3 = """(.*)\(A\)(.*)\(B\)(.*)\(C\)(.*)""".r
+val Q4 = """(.*)\(A\)(.*)\(B\)(.*)\(C\)(.*)\(D\)(.*)""".r
+
+// Grok input file
+for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
+  // (parse the line)
+  val Array(quid, no, points, answer, mc, diag, exam, grade, year, text) = line.split("\t")
+  // (parse the question + answer block)
+  val (question, candidates) = text match {
+    case Q4(question, a, b, c, d) => (question.split("\\.").map(_.trim), Array(a,b,c,d))
+    case Q3(question, a, b, c) => (question.split("\\.").map(_.trim),    Array(a,b,c))
+    case Q2(question, a, b) => (question.split("\\.").map(_.trim),       Array(a,b))
+  }
+  // (print all candidate answers)
+  for ((candidate,index) <- candidates.zipWithIndex) {
+    // (convert the question into statements)
+    val statements = question.map((q:String) => questionToStatement(q.trim, candidate))
+    // (print additional premises
+    for (statement <- statements.dropRight(1)) {
+      println(statement)
+    }
+    // (get the truth of the hypothesis)
+    (answer, index) match {
+      case ("A", 0) => print("TRUE: ")
+      case ("B", 1) => print("TRUE: ")
+      case ("C", 2) => print("TRUE: ")
+      case ("D", 3) => print("TRUE: ")
+      case _ => print("FALSE: ")
+    }
+    // (print the hypothesis)
+    println(statements.last)
+    println("")
+  }
+}
+
+
+
+def questionToStatement(question:String, candidate:String):String = {
+  if (question.endsWith(".")) {
+    question.substring(0, question.length - 1).trim + " " + candidate.trim + "."
+  } else if (!question.endsWith("?")) {
+    question.trim + " " + candidate.trim + "."
+  } else if (question.equalsIgnoreCase("""In New York State, the longest period of daylight occurs during which month?""") ) {
+    """In New York State, the longest period of daylight occurs during """ + candidate.trim + "."
+  } else if ( question.equalsIgnoreCase("""Which form of energy is needed to change water from a liquid to a gas?""") ) {
+    candidate.trim + """ is needed to change water from a liquid to a gas."""
+  } else if ( question.equalsIgnoreCase("""Which type of energy does a person use to pedal a bicycle?""") ) {
+    """a person uses """ + candidate.trim + """ to pedal a bicycle."""
+  } else if ( question.equalsIgnoreCase("""Which object is the best conductor of electricity?""") ) {
+    candidate.trim + """ is the best conductor of electricity."""
+  } else if ( question.equalsIgnoreCase("""Which process caused the rainwater in the pan to disappear as it sat outside in the hot air?""") ) {
+    candidate.trim + """ caused the rainwater in the pan to disappear as it sat outside in the hot air."""
+  } else if ( question.equalsIgnoreCase("""Which characteristic can a human offspring inherit?""") ) {
+    """A human offspring can inherit """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which food is a fruit?""") ) {
+    candidate.trim + """ is a fruit."""
+  } else if ( question.equalsIgnoreCase("""In which environment would a white rabbit be best protected from predators?""") ) {
+    """A white rabbit be best protected from predators in """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which sense helps the chicks receive this warning about danger from their mother?""") ) {
+    candidate.trim + """ helps the chicks receive this warning about danger from their mother."""
+  } else if ( question.equalsIgnoreCase("""What might be done to protect plants growing outside?""") ) {
+    """Temperatures below freezing are expected overnight. """ + candidate.trim + """ might be done to protect plants growing outside."""
+  } else if ( question.equalsIgnoreCase("""Which property of the objects can the student most likely identify?""") ) {
+    """The student can most likely identify """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which property should he change to make the clay float?""") ) {
+    """He should change the """ + candidate.trim + """ to make the clay float."""
+  } else if ( question.equalsIgnoreCase("""Which part of a plant produces the seeds?""") ) {
+    """The """ + candidate.trim + """ of a plant produces the seeds."""
+  } else if ( question.equalsIgnoreCase("""Which surface would be the best for this race?""") ) {
+    candidate.trim + """ would be the best for this race."""
+  } else if ( question.equalsIgnoreCase("""Which instrument would be best to measure the volume of a liquid?""") ) {
+    candidate.trim + """ would be best to measure the volume of a liquid."""
+  } else if ( question.equalsIgnoreCase("""What is one way that humans can maintain good health?""") ) {
+    """Humans can maintain good health with """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which example describes an organism taking in nutrients?""") ) {
+    candidate.trim + """ describes an organism taking in nutrients."""
+  } else if ( question.equalsIgnoreCase("""Which characteristic is inherited rather than learned?""") ) {
+    candidate.trim + """ is inherited rather than learned."""
+  } else if ( question.equalsIgnoreCase("""What is the main function of scales on a fish?""") ) {
+    candidate.trim + """ is the main function of scales on a fish."""
+  } else if ( question.equalsIgnoreCase("""Which behavior is an example of an animal adapting to a change in the environment?""") ) {
+    candidate.trim + """ is an example of an animal adapting to a change in the environment."""
+  } else if ( question.equalsIgnoreCase("""During which season of the year would a rabbit's fur be thickest?""") ) {
+    """A rabbit's fur is thickest during """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which animal is preparing for a seasonal change in the environment?""") ) {
+    candidate.trim + """ is preparing for a seasonal change in the environment."""
+  } else if ( question.equalsIgnoreCase("""Which substance is usually found in nature as a liquid, solid, and gas?""") ) {
+    candidate.trim + """ is usually found in nature as a liquid, solid, and gas."""
+  } else if ( question.equalsIgnoreCase("""Which tool should she use to get a better look at the spots?""") ) {
+    """She should use """ + candidate.trim + """ to get a better look at the spots."""
+  } else if ( question.equalsIgnoreCase("""What is one way to change water from a liquid to a solid?""") ) {
+    candidate.trim + """ is one way to change water from a liquid to a solid."""
+  } else if ( question.equalsIgnoreCase("""When a person speaks into a telephone, sound energy is changed mostly into which form of energy?""") ) {
+    """When a person speaks into a telephone, sound energy is changed mostly into """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""In which example could a thermometer be used to show that heat energy is being transferred?""") ) {
+    """Heat energy is being transferred when """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which form of energy was changed to sound energy?""") ) {
+    candidate.trim + """ was changed to sound energy."""
+  } else if ( question.equalsIgnoreCase("""Which tool is used to measure the volume of a liquid?""") ) {
+    candidate.trim + """ is used to measure the volume of a liquid."""
+  } else if ( question.equalsIgnoreCase("""Which tool should a student use to compare the masses of two small rocks?""") ) {
+    """A student should use """ + candidate.trim + """ to compare the masses of two small rocks."""
+  } else if ( question.equalsIgnoreCase("""Which object is the best conductor of electricity?""") ) {
+    candidate.trim + """ is the best conductor of electricity."""
+  } else if ( question.equalsIgnoreCase("""Which is the best example of evaporation?""") ) {
+    candidate.trim + """ is the best example of evaporation."""
+  } else if ( question.equalsIgnoreCase("""Which force pulls the marble to the bottom of the glass?""") ) {
+    candidate.trim + """ pulls the marble to the bottom of the glass."""
+  } else if ( question.equalsIgnoreCase("""Which characteristic helps a fox find food?""") ) {
+    candidate.trim + """ helps a fox find food."""
+  } else if ( question.equalsIgnoreCase("""Which process causes the leaves of a plant to become larger?""") ) {
+    candidate.trim + """ causes the leaves of a plant to become larger."""
+  } else if ( question.equalsIgnoreCase("""Which human activity most often has a harmful effect on the environment?""") ) {
+    candidate.trim + """ most often has a harmful effect on the environment."""
+  } else if ( question.equalsIgnoreCase("""In New York State, the shortest period of daylight occurs during which month?""") ) {
+    """In New York State, the shortest period of daylight occurs during """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""What form of energy causes an ice cube to melt?""") ) {
+    candidate.trim + """ causes an ice cube to melt."""
+  } else if ( question.equalsIgnoreCase("""Which unit of measurement can be used to describe the length of a desk?""") ) {
+    candidate.trim + """ can be used to describe the length of a desk."""
+  } else if ( question.equalsIgnoreCase("""Which force causes a marble to sink to the bottom of a glass of water?""") ) {
+    candidate.trim + """ causes a marble to sink to the bottom of a glass of water."""
+  } else if ( question.equalsIgnoreCase("""What motion causes day and night?""") ) {
+    candidate.trim + """ causes day and night."""
+  } else if ( question.equalsIgnoreCase("""Which instrument should a student use to measure exactly 10 milliliters (mL) of water?""") ) {
+    """A student should use """ + candidate.trim + """ to measure exactly 10 milliliters (mL) of water."""
+  } else if ( question.equalsIgnoreCase("""Which activity is necessary for humans to maintain good health?""") ) {
+    candidate.trim + """ is necessary for humans to maintain good health."""
+  } else if ( question.equalsIgnoreCase("""Which adaptation often helps an animal attract a mate?""") ) {
+    candidate.trim + """ often helps an animal attract a mate."""
+  } else if ( question.equalsIgnoreCase("""Which sense can be used to determine an object's ability to reflect light?""") ) {
+    candidate.trim + """ can be used to determine an object's ability to reflect light."""
+  } else if ( question.equalsIgnoreCase("""Which force causes the ball to fall to the ground?""") ) {
+    candidate.trim + """ causes the ball to fall to the ground."""
+  } else if ( question.equalsIgnoreCase("""Which unit can be used to describe an object's length?""") ) {
+    candidate.trim + """ can be used to describe an object's length."""
+  } else if ( question.equalsIgnoreCase("""How long does it take for Earth to rotate on its axis seven times?""") ) {
+    """It takes """ + candidate.trim + """ for Earth to rotate on its axis seven times."""
+  } else if ( question.equalsIgnoreCase("""What form of energy is being used when a person pushes a wooden block across the floor?""") ) {
+    candidate.trim + """ is being used when a person pushes a wooden block across the floor."""
+  } else if ( question.equalsIgnoreCase("""Which physical structure would best help a bear to survive a winter in New York State?""") ) {
+    candidate.trim + """ would best help a bear to survive a winter in New York State."""
+  } else if ( question.equalsIgnoreCase("""What do all animals need in order to survive?""") ) {
+    """All animals need """ + candidate.trim + """ in order to survive."""
+  } else if ( question.equalsIgnoreCase("""Which structure of a bird is correctly paired with its function?""") ) {
+    candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Humans depend on which natural resource from the environment?""") ) {
+    """Humans depend on """ + candidate.trim + """ from the environment."""
+  } else if ( question.equalsIgnoreCase("""Which characteristic can a puppy inherit from its parents?""") ) {
+    """A puppy can inherit """ + candidate.trim + """ from its parents."""
+  } else if ( question.equalsIgnoreCase("""When plants and animals die, which organisms help return nutrients to the food chain?""") ) {
+    """When plants and animals die, """ + candidate.trim + """ help return nutrients to the food chain."""
+  } else if ( question.equalsIgnoreCase("""How does the length of daylight in New York State change from summer to fall?""") ) {
+    """The length of daylight in New York State change from summer to fall by """ + candidate.trim + """."""
+  } else if ( question.equalsIgnoreCase("""Which two observations are both used to describe weather?""") ) {
+    candidate.trim + """ are both used to describe weather."""
+  } else if ( question.equalsIgnoreCase("""Which two processes made the puddle form and then disappear?""") ) {
+    candidate.trim + """ made the puddle form and then disappear."""
+  } else if ( question.equalsIgnoreCase("""Which force causes rocks to roll downhill?""") ) {
+    candidate.trim + """ causes rocks to roll downhill."""
+  } else if ( question.equalsIgnoreCase("""Which unit of measurement describes an object's length?""") ) {
+    candidate.trim + """ describes an object's length."""
+  } else if ( question.equalsIgnoreCase("""Which sense is used to determine an object's texture?""") ) {
+    candidate.trim + """ is used to determine an object's texture."""
+  } else if ( question.equalsIgnoreCase("""Which form of energy is found in food?""") ) {
+    candidate.trim + """ energy is found in food."""
+  } else if ( question.equalsIgnoreCase("""Which property of the paper has changed?""") ) {
+    """The """ + candidate.trim + """ of the paper has changed."""
+  } else if ( question.equalsIgnoreCase("""Which object is nonliving?""") ) {
+    candidate.trim + """ is nonliving."""
+  } else if ( question.equalsIgnoreCase("""Which two activities are carried out by all species of living things?""") ) {
+    candidate.trim + """ are carried out by all species of living things."""
+  } else if ( question.equalsIgnoreCase("""Which activity is an example of a good health habit?""") ) {
+    candidate.trim + """ is an example of a good health habit."""
+  } else if ( question.equalsIgnoreCase("""What is the main source of energy for the water cycle?""") ) {
+    candidate.trim + """ is the main source of energy for the water cycle."""
+  } else if ( question.equalsIgnoreCase("""Which human activity is most harmful to the natural environment?""") ) {
+    candidate.trim + """ is most harmful to the natural environment."""
+  } else {
+    throw new IllegalArgumentException("Unknown question: '" + question + "'")
+  }
+}
