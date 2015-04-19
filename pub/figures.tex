@@ -165,7 +165,7 @@
 }
 
 \def\teaserPremises{
-  \node[right = of main](db){\includegraphics[height=2.2cm]{../../img/database.png}};
+  \node[right = of main](db){\includegraphics[height=2.2cm]{../img/database.png}};
   \node[othersink, right = of main](tails) {\w{All cats have tails}};
   \node[othersink, right = of tails](kittens) {\w{All kittens are cute}};
   \draw (db.north west) -- (main.north west);
@@ -193,7 +193,7 @@
       child {
         node[fact] {$\dots$} 
         child {
-          node[fact] {\includegraphics[height=0.75cm]{../../img/fact.jpg}}
+          node[fact] {\includegraphics[height=0.75cm]{../img/fact.jpg}}
           edge from parent [goodPathDown] node[below] {\rotatebox{90}{}}
         }
         edge from parent [goodPathDown] node[below] {\rotatebox{90}{}}
@@ -225,7 +225,7 @@
   \end{tikzpicture}
 }
 
-\def\glass{\includegraphics[height=0.75cm]{../../img/magnifying_glass.png}}
+\def\glass{\includegraphics[height=0.75cm]{../img/magnifying_glass.png}}
 \newcommand\teaserBlindInference{
   \setstyles
 

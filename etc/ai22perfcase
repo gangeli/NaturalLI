@@ -20,14 +20,19 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
     case Q3(question, a, b, c) => (question.split("\\.").map(_.trim),    Array(a,b,c))
     case Q2(question, a, b) => (question.split("\\.").map(_.trim),       Array(a,b))
   }
+  // (print a comment)
+  println("#Q: " + question.reverse.head)
   // (print all candidate answers)
+  val statements = question.reverse.tail.reverse.map( _.trim )
   for ((candidate,index) <- candidates.zipWithIndex) {
     // (convert the question into statements)
-    val statements = question.map((q:String) => questionToStatement(q.trim, candidate))
+    val hypothesis = questionToStatement(question.reverse.head.trim, candidate.trim())
     // (print additional premises
-    for (statement <- statements.dropRight(1)) {
+    for (statement <- statements) {
       println(statement)
     }
+    // (print the candidate)
+    println("#A: " + candidate.trim())
     // (get the truth of the hypothesis)
     (answer, index) match {
       case ("A", 0) => print("TRUE: ")
@@ -37,7 +42,7 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
       case _ => print("FALSE: ")
     }
     // (print the hypothesis)
-    println(statements.last)
+    println(hypothesis)
     println("")
   }
 }
@@ -68,7 +73,7 @@ def questionToStatement(question:String, candidate:String):String = {
   } else if ( question.equalsIgnoreCase("""Which sense helps the chicks receive this warning about danger from their mother?""") ) {
     candidate.trim + """ helps the chicks receive this warning about danger from their mother."""
   } else if ( question.equalsIgnoreCase("""What might be done to protect plants growing outside?""") ) {
-    """Temperatures below freezing are expected overnight. """ + candidate.trim + """ might be done to protect plants growing outside."""
+    candidate.trim + """ might be done to protect plants growing outside."""
   } else if ( question.equalsIgnoreCase("""Which property of the objects can the student most likely identify?""") ) {
     """The student can most likely identify """ + candidate.trim + """."""
   } else if ( question.equalsIgnoreCase("""Which property should he change to make the clay float?""") ) {
