@@ -1,12 +1,14 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #
 
 import argparse
 import json
 import sys
-from urllib.request import urlopen
-from urllib.parse import urlencode
-from math import exp
+#from urllib.request import urlopen
+#from urllib.parse import urlencode
+from urllib import urlopen
+from urllib import urlencode
+from math import exp,log
 
 """
   A question converted to a statement, with the associated
@@ -70,12 +72,12 @@ class StatementGroup:
   results returned from the initial query.
 """
 class QueryResult:
-  def __init__(self, query, numHits, results):
+  def __init__(self, query, numHits, results, maxScore):
     self.query = query
     self.numHits = numHits
-    self.results = []
-    for result in results:
-      self.results.append(result['body'][0])
+    self.results = [r['body'][0] for r in results]
+    self.scoresRelative = [float(r['score'] / maxScore) for r in results]
+    self.scores = [float(r['score']) for r in results]
 
   def __getitem__(self, k):
     return self.results[k]
@@ -85,6 +87,15 @@ class QueryResult:
   
   def __str__(self):
     return 'QueryResult(' + str(self.numHits) + ', ' + self.results[0] + ')'
+
+  def topScore(self):
+    return self.scores[0]
+  
+  def averageScore(self):
+    sumV = 0.0
+    for score in self.scores:
+      sumV += score
+    return sumV / float(len(self.scores))
 
 """
   Parse the command line arguments
@@ -167,9 +178,13 @@ def readData(path):
   @return A QueryResult object representing the result of this query.
 """
 def query(url, query):
-  f = urlopen(url + '?' + urlencode({'wt': 'json', 'q': query}))
+  f = urlopen(url + '?' + 
+      urlencode({'wt': 'json', 'fl': 'title body score', 'q': query}))
   data = json.loads(f.read().decode('utf8'))
-  return QueryResult(query, data['response']['numFound'], data['response']['docs'])
+  return QueryResult(query, 
+      data['response']['numFound'], 
+      data['response']['docs'],
+      float(data['response']['maxScore']))
 
 
 """
@@ -206,8 +221,15 @@ def naiveOverlap(tokA, tokB, stopwords):
 """
 def overlapMeasure(strA, strB, stopwords):
   # Split and lowercase tokens
-  tokA = [x.lower() for x in strA.split(' ')]
-  tokB = [x.lower() for x in strB.split(' ')]
+
+  tokA = [x.lower() for x in strA.split(' ') if x != 'what' and x != 'why' and x != 'how']
+  tokB = [x.lower() for x in strB.split(' ') if x != 'what' and x != 'why' and x != 'how']
+  try:
+    from stemming.porter2 import stem
+    tokA = [stem(x) for x in tokA]
+    tokB = [stem(x) for x in tokB]
+  except:
+    pass
   overlap = naiveOverlap(tokA, tokB, stopwords)
   return overlap
 
@@ -234,18 +256,35 @@ def guessAtLevel(example, results, stopwords, k):
       argmax = i
   return argmax
 
+"""
+  Compute a weighted average score of the overlap between a question and
+  the answer, based on the top search results.
+  The scores are degraded in two ways:
+    (1) If there is no overlap between the question and the result, the
+        score is immediately degraded by half
+    (2) In addition, as we go down the results list, we degrade the score
+        exponentially (though with a low coefficient)
 
+  @param question The question being asked about, as a String.
+  @param statement The statement we are evaluating, as a Statement.
+  @param result The result of the query, as a QueryResult.
+  @param stopwords The stop word set, as a Set.
+
+  @return A score for this statement being the answer to the question,
+          as a Float.
+"""
 def averageScore(question, statement, result, stopwords):
   sumScore = 0.0
   for resultI in range(len(result)):
     score = 0.0
     # Case: take the overlap between the candidate and the result
     score = overlapMeasure(statement.answer, result[resultI], stopwords)
-    if overlapMeasure(question, result[resultI], stopwords) == 0.0:
-      # Case: the result has nothing to do with the question
-      score *= 0.5
+#    if overlapMeasure(question, result[resultI], stopwords) == 0.0:
+#      # Case: the result has nothing to do with the question
+#      score *= 1.00
     # Degrade the score a bit
-    score *= exp(- 4.0 * float(resultI) / float(len(result)))
+    score *= exp(- 10.0 * float(resultI) / float(len(result)))
+#    score *= result.scores[resultI]
 #    score *= (1.0 - float(resultI) / float(len(result)))
     sumScore += score
   return sumScore / float(len(result))
@@ -262,13 +301,19 @@ def averageScore(question, statement, result, stopwords):
 """
 def guess(solrURL, example, stopwords):
   results = [query(solrURL, statement.text) for statement in example]
+#  results = [query(solrURL, statement.answer + ' ' + example.question) for statement in example]
 
   # Average the scores of the top results, with degredation
   # as you go down the results
   maxV = 0.0
   argmax = 0
   for candidateI in range(len(example)):
-    score = averageScore(example.question, example[candidateI], results[candidateI], stopwords)
+    lexScore = averageScore(example.question, example[candidateI], results[candidateI], stopwords)
+    solrScore = results[candidateI].topScore()
+#    solrScore = 1.0
+#    aveSolrScore = results[candidateI].averageScore() / float(len(results[candidateI]))
+    aveSolrScore = 0.0
+    score = pow(lexScore, 2.0) * solrScore + aveSolrScore
     if score > maxV:
       maxV = score
       argmax = candidateI
