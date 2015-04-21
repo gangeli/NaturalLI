@@ -1,101 +1,22 @@
 #!/usr/bin/env python
 #
+# Run an IR baseline, where a query is run for each candidate,
+# and the result which has the best Lucene score and the best
+# lexical overlap is taken as the answer to the question.
+#
+# @see lib/naturalli.py for a lot of the common utilities.
+#
+# @author Gabor
+#
 
 import argparse
-import json
 import sys
-#from urllib.request import urlopen
-#from urllib.parse import urlencode
-from urllib import urlopen
-from urllib import urlencode
+import os
 from math import exp,log
 
-"""
-  A question converted to a statement, with the associated
-  truth value.
-"""
-class Statement:
-  def __init__(self, text, truth, answer):
-    self.text = text
-    self.truth = truth
-    if answer == None:
-      self.answer = text
-    else:
-      self.answer = answer
+sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../lib/')
+from naturalli import *
 
-  def text():
-    return text
-
-  def truth():
-    return truth
-
-  def __str__(self):
-    return str(self.truth) + ": " + self.answer
-
-"""
-  A group of statements, of which one and exactly one is true.
-  This is effectively a multiple choice question group.
-"""
-class StatementGroup:
-  def __init__(self, question, statements):
-    self.question = question
-    self.statements = statements
-    self.correctIndex = None
-    for i in range(len(self.statements)):
-      if self.statements[i].truth:
-        if self.correctIndex != None:
-          raise Exception("Multiple correct indices for group!")
-        self.correctIndex = i
-
-  def __str__(self):
-    return 'StatementGroup(' + str(len(self.statements)) + ', ' + self.question + ')'
-
-  def __getitem__(self, k):
-    return self.statements[k]
-
-  def __len__(self):
-    return len(self.statements)
-
-  def correct(self):
-    return self.statements[self.correctIndex].text
-
-  def incorrect(self):
-    rtn = []
-    for i in range(len(self.statements)):
-      if i != self.correctIndex:
-        rtn.append(self.statements[i].text)
-    return rtn
-
-"""
-  The result of a Lucene (Solr) query.
-  Contains the query, the total number of hits, and the top
-  results returned from the initial query.
-"""
-class QueryResult:
-  def __init__(self, query, numHits, results, maxScore):
-    self.query = query
-    self.numHits = numHits
-    self.results = [r['body'][0] for r in results]
-    self.scoresRelative = [float(r['score'] / maxScore) for r in results]
-    self.scores = [float(r['score']) for r in results]
-
-  def __getitem__(self, k):
-    return self.results[k]
-
-  def __len__(self):
-    return len(self.results)
-  
-  def __str__(self):
-    return 'QueryResult(' + str(self.numHits) + ', ' + self.results[0] + ')'
-
-  def topScore(self):
-    return self.scores[0]
-  
-  def averageScore(self):
-    sumV = 0.0
-    for score in self.scores:
-      sumV += score
-    return sumV / float(len(self.scores))
 
 """
   Parse the command line arguments
@@ -116,76 +37,6 @@ def parseargs():
                       help='The test files to run on.')
   
   return parser.parse_args()
-
-"""
-  Read the data from a file, formatted like the other test files.
-  A statement is the last line of a group before a double newline.
-  Statement groups are separated by a comment beginning with
-  '#Q: ' and then the question being asked. The literal answers can be
-  marked with comments beginning with '#A: '.
-
-  @param path A String representing the file path to read.
-
-  @return A list of StatementGroups representing the multiple choice
-          questions in this file. If these are not multiple choice
-          questions, a single StatementGroup will be returned.
-"""
-def readData(path):
-  # The examples, and example groups
-  examples = []
-  groups = []
-  lastQuestion = None
-  with open(path) as f:
-    # Read the file
-    content = f.readlines()
-    lastLine = None
-    pendingAnswer = None
-    # For each line...
-    for line in content:
-      line = line.strip()
-      if line == '':
-        # ... If it's a newline, register the statement
-        example = Statement(lastLine, True, pendingAnswer)
-        if lastLine.startswith('TRUE: '):
-          example = Statement(lastLine[6:], True, pendingAnswer)
-        elif lastLine.startswith('FALSE: '):
-          example = Statement(lastLine[7:], False, pendingAnswer)
-        elif lastLine.startswith('UNK: '):
-          example = Statement(lastLine[5:], False, pendingAnswer)
-        examples.append(example)
-        pendingAnswer = None
-      elif line.startswith('#A: '):
-        # ... If it's an answer marker, register the answer.
-        pendingAnswer = line[4:]
-      elif line.startswith('#Q: '):
-        # ... If it's a question marker, register the question
-        if len(examples) > 0:
-          groups.append(StatementGroup(lastQuestion, examples))
-        lastQuestion = line[4:]
-        examples = []
-      lastLine = line
-  # Return the groups
-  if len(examples) > 0:
-    groups.append(StatementGroup(lastQuestion, examples))
-  return groups
-
-"""
-  Query Solr at the given URL with the given query
-
-  @param url The URL to query Solr at, as a String.
-  @param query The query, as a String.
-
-  @return A QueryResult object representing the result of this query.
-"""
-def query(url, query):
-  f = urlopen(url + '?' + 
-      urlencode({'wt': 'json', 'fl': 'title body score', 'q': query}))
-  data = json.loads(f.read().decode('utf8'))
-  return QueryResult(query, 
-      data['response']['numFound'], 
-      data['response']['docs'],
-      float(data['response']['maxScore']))
-
 
 """
   Take the overlap between two token lists, ignoring stop words.
@@ -371,10 +222,7 @@ if __name__ == "__main__":
   # Process he examples
   numCorrect = 0
   numTotal = float(len(examples))
-  for i in range(len(examples)):
-    sys.stdout.write("\rRunning queries... %d%%" % (100.0 * float(i+1) / numTotal))
-    sys.stdout.flush()
-    example = examples[i]
+  for example in withProgress(examples, 'Running queries'):
     guessIndex = guess(solrURL, example, stopwords)
     if guessIndex == example.correctIndex:
       numCorrect += 1
@@ -382,4 +230,4 @@ if __name__ == "__main__":
   # Print the accuracy
   print("")
   print("")
-  print("Accuracy: " + '{0:.3g}'.format(float(numCorrect) / numTotal))
+  print("Accuracy: " + '{0:.4g}%'.format(100.0 * float(numCorrect) / numTotal))

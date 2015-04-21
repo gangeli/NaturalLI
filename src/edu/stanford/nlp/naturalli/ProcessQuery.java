@@ -2,6 +2,7 @@ package edu.stanford.nlp.naturalli;
 
 import edu.smu.tspell.wordnet.Synset;
 
+import edu.stanford.nlp.international.Language;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -235,14 +236,14 @@ public class ProcessQuery {
         // Replace arcs into operators with 'op'
         toRemove.add(edge);
         synchronized (SemanticGraphEdge.class) {
-          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "op"), edge.getWeight(), edge.isExtra()));
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, "op"), edge.getWeight(), edge.isExtra()));
         }
       } else if (rel.startsWith("prepc_")) {
         // Rewrite 'prepc_' edges to 'prep_'
         String newRel = rel.replace("prepc_", "prep_");
         toRemove.add(edge);
         synchronized (SemanticGraphEdge.class) {
-          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, newRel), edge.getWeight(), edge.isExtra()));
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, newRel), edge.getWeight(), edge.isExtra()));
         }
       }
     }
@@ -263,9 +264,9 @@ public class ProcessQuery {
       if (!NaturalLogicRelation.knownDependencyArc(rel)) {
         toRemove.add(edge);
         if (rel.startsWith("prep_")) {
-          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "prep_dep"), edge.getWeight(), edge.isExtra()));
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, "prep_dep"), edge.getWeight(), edge.isExtra()));
         } else {
-          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(GrammaticalRelation.Language.English, "dep"), edge.getWeight(), edge.isExtra()));
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, "dep"), edge.getWeight(), edge.isExtra()));
         }
       }
     }

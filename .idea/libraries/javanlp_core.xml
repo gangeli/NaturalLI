@@ -2,10 +2,12 @@
   <library name="javanlp-core">
     <CLASSES>
       <root url="file://$PROJECT_DIR$/../nlp/projects/core/classes" />
+      <root url="file://$PROJECT_DIR$/../nlp/projects/core/lib" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>
       <root url="file://$PROJECT_DIR$/../nlp/projects/core/src" />
     </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../nlp/projects/core/lib" recursive="false" />
   </library>
 </component>
