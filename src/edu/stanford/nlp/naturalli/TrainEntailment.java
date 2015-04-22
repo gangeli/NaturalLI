@@ -594,7 +594,7 @@ public class TrainEntailment {
     forceTrack("Reading test data");
     Stream<EntailmentPair> testData = readDataset(TEST_FILE, TEST_CACHE, -1);
     GeneralDataset<Trilean, String> testDataset = featurize(testData, TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
-    IOUtils.cp(tmp, TEST_CACHE);
+    if (TEST_CACHE != null) { IOUtils.cp(tmp, TEST_CACHE); }
     endTrack("Reading test data");
 
     // Train a model
@@ -604,7 +604,7 @@ public class TrainEntailment {
       forceTrack("Reading training data");
       Stream<EntailmentPair> trainData = readDataset(TRAIN_FILE, TRAIN_CACHE, TRAIN_COUNT);
       GeneralDataset<Trilean, String> trainDataset = featurize(trainData, TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
-      IOUtils.cp(tmp, TRAIN_CACHE);
+      if (TRAIN_CACHE != null) { IOUtils.cp(tmp, TRAIN_CACHE); }
       endTrack("Reading training data");
 
       // Training
