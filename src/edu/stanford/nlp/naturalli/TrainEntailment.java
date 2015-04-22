@@ -5,6 +5,7 @@ import edu.stanford.nlp.classify.LinearClassifier;
 import edu.stanford.nlp.classify.LinearClassifierFactory;
 import edu.stanford.nlp.classify.RVFDataset;
 import edu.stanford.nlp.entail.BleuMeasurer;
+import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.kbp.common.CollectionUtils;
 import edu.stanford.nlp.ling.RVFDatum;
@@ -13,14 +14,17 @@ import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
-import scala.tools.nsc.backend.icode.Primitives;
 
 import java.io.*;
 import java.text.DecimalFormat;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -34,10 +38,12 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class TrainEntailment {
 
-  @Execution.Option(name="trainFile", gloss="The file to use for training the classifier")
+  @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
   public static File TRAIN_FILE = new File("tmp/aristo_train.tab");
-  @Execution.Option(name="trainCache", gloss="A cache of the training annotations")
+  @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public static File TRAIN_CACHE = null;
+  @Execution.Option(name="train.count", gloss="The number of training examples to use.")
+  public static int TRAIN_COUNT = -1;
 
   @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
   public static File TEST_FILE = new File("tmp/aristo_test.tab");
@@ -49,14 +55,35 @@ public class TrainEntailment {
   @Execution.Option(name="retrain", gloss="If true, force the retraining of the classifier")
   public static boolean RETRAIN = true;
 
-  @Execution.Option(name="lexicalize", gloss="If true, use lexical features")
-  public static boolean LEXICALIZE = false;
+  enum FeatureTemplate {
+    BLEU, LENGTH_DIFF,
+    OVERLAP, POS_OVERLAP, KEYWORD_OVERLAP,
+    ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
+    CONCLUSION_NGRAM,
+  }
+  @Execution.Option(name="features", gloss="The feature templates to use during training")
+  public static Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
+    add(FeatureTemplate.BLEU);
+    add(FeatureTemplate.LENGTH_DIFF);
+    add(FeatureTemplate.OVERLAP);
+    add(FeatureTemplate.POS_OVERLAP);
+    add(FeatureTemplate.KEYWORD_OVERLAP);
+    add(FeatureTemplate.ENTAIL_UNIGRAM);
+    add(FeatureTemplate.ENTAIL_BIGRAM);
+    add(FeatureTemplate.ENTAIL_KEYWORD);
+    add(FeatureTemplate.CONCLUSION_NGRAM);
+  }};
+  @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
+  public static boolean FEATURES_NOLEX = true;
 
 
+  /**
+   * A candidate entailment pair. This corresponds to an un-featurized datum.
+   */
   private static class EntailmentPair {
-    Trilean truth;
-    Sentence premise;
-    Sentence conclusion;
+    public final Trilean truth;
+    public final Sentence premise;
+    public final Sentence conclusion;
 
     public EntailmentPair(Trilean truth, String premise, String conclusion) {
       this.truth = truth;
@@ -133,17 +160,184 @@ public class TrainEntailment {
     }
   }
 
+  /**
+   * A pair of aligned keywords that exist in either one of, or both the premise and the hypothesis.
+   */
+  private static class KeywordPair {
+    public final Sentence premise;
+    public final Span premiseSpan;
+    public final Sentence conclusion;
+    public final Span conclusionSpan;
 
-  private static Stream<EntailmentPair> readDataset(File source, File cache) throws IOException {
-    // Read size
-    int size = 0;
-    forceTrack("Counting lines");
-    BufferedReader scanner = IOUtils.readerFromFile(source);
-    while (scanner.readLine() != null) {
-      size += 1;
+    public KeywordPair(Sentence premise, Span premiseSpan, Sentence conclusion, Span conclusionSpan) {
+      this.premise = premise;
+      this.premiseSpan = premiseSpan == null ? new Span(-1, -1) : premiseSpan;
+      this.conclusion = conclusion;
+      this.conclusionSpan = conclusionSpan == null ? new Span(-1, -1) : conclusionSpan;
     }
-    log("dataset has size " + size);
-    endTrack("Counting lines");
+
+    public String premiseChunk() {
+      return StringUtils.join(premise.lemmas().subList(premiseSpan.start(), premiseSpan.end()), " ");
+    }
+
+    public String conclusionChunk() {
+      return StringUtils.join(conclusion.lemmas().subList(conclusionSpan.start(), conclusionSpan.end()), " ");
+    }
+
+    public boolean isAligned() {
+      return premiseSpan.size() > 0 && conclusionSpan.size() > 0;
+    }
+
+    @Override
+    public String toString() {
+      return "< " + (premiseSpan.size() > 0 ? premiseChunk() : "--- ") + "; " + (conclusionSpan.size() > 0 ? conclusionChunk() : "---") + " >";
+    }
+  }
+
+  private static Set<KeywordPair> align(EntailmentPair ex) {
+    // Get the spans
+    List<Span> premiseSpans = ex.premise.algorithms().keyphraseSpans();
+    List<Span> conclusionSpans = ex.conclusion.algorithms().keyphraseSpans();
+
+    // Get other useful metadata
+    List<String> premisePhrases = ex.premise.algorithms().keyphrases(Sentence::lemmas).stream().map(String::toLowerCase).collect(Collectors.toList());
+    boolean[] premiseConsumed = new boolean[premiseSpans.size()];
+    List<String> conclusionPhrases = ex.conclusion.algorithms().keyphrases(Sentence::lemmas).stream().map(String::toLowerCase).collect(Collectors.toList());
+    boolean[] conclusionConsumed = new boolean[conclusionSpans.size()];
+    int[] conclusionForPremise = new int[premiseSpans.size()];
+    Arrays.fill(conclusionForPremise, -1);
+
+    // The return set
+    Set<KeywordPair> alignments = new HashSet<>();
+
+    // Pass 1: exact match
+    for (int pI = 0; pI < premiseSpans.size(); ++pI) {
+      if (premiseConsumed[pI]) { continue; }
+      for (int cI = 0; cI < conclusionSpans.size(); ++cI) {
+        if (conclusionConsumed[cI]) { continue; }
+        if (premisePhrases.get(pI).equals(conclusionPhrases.get(cI))) {
+          alignments.add(new KeywordPair(ex.premise, premiseSpans.get(pI), ex.conclusion, conclusionSpans.get(cI)));
+          premiseConsumed[pI] = true;
+          conclusionConsumed[cI] = true;
+          conclusionForPremise[pI] = cI;
+          break;
+        }
+      }
+    }
+
+    // Pass 2: approximate match (ends with)
+    for (int pI = 0; pI < premiseSpans.size(); ++pI) {
+      if (premiseConsumed[pI]) { continue; }
+      for (int cI = 0; cI < conclusionSpans.size(); ++cI) {
+        if (conclusionConsumed[cI]) { continue; }
+        if (premisePhrases.get(pI).endsWith(conclusionPhrases.get(cI)) || conclusionPhrases.get(cI).endsWith(premisePhrases.get(pI))) {
+          alignments.add(new KeywordPair(ex.premise, premiseSpans.get(pI), ex.conclusion, conclusionSpans.get(cI)));
+          premiseConsumed[pI] = true;
+          conclusionConsumed[cI] = true;
+          conclusionForPremise[pI] = cI;
+          break;
+        }
+      }
+    }
+
+    // Pass 3: approximate match (starts with)
+    for (int pI = 0; pI < premiseSpans.size(); ++pI) {
+      if (premiseConsumed[pI]) { continue; }
+      for (int cI = 0; cI < conclusionSpans.size(); ++cI) {
+        if (conclusionConsumed[cI]) { continue; }
+        if (premisePhrases.get(pI).startsWith(conclusionPhrases.get(cI)) || conclusionPhrases.get(cI).startsWith(premisePhrases.get(pI))) {
+          alignments.add(new KeywordPair(ex.premise, premiseSpans.get(pI), ex.conclusion, conclusionSpans.get(cI)));
+          premiseConsumed[pI] = true;
+          conclusionConsumed[cI] = true;
+          conclusionForPremise[pI] = cI;
+          break;
+        }
+      }
+    }
+
+    // Pass 4: constrained POS match
+    //noinspection StatementWithEmptyBody
+    if (premiseConsumed.length == 0) {
+      // noop
+    } else if (premiseConsumed.length == 1) {
+      // Case: one token keywords
+      if (conclusionSpans.size() == 1 && conclusionForPremise[0] == -1 &&
+          ex.premise.algorithms().modeInSpan(premiseSpans.get(0), Sentence::posTags).charAt(0) == ex.conclusion.algorithms().modeInSpan(conclusionSpans.get(0), Sentence::posTags).charAt(0)) {
+        // ...and the POS tags match, and there's only one consequent. They must align.
+        alignments.add(new KeywordPair(ex.premise, premiseSpans.get(0), ex.conclusion, conclusionSpans.get(0)));
+        premiseConsumed[0] = true;
+        conclusionConsumed[0] = true;
+        conclusionForPremise[0] = 0;
+      }
+    } else {
+      // Case: general alignment
+      for (int i = 0; i < conclusionForPremise.length; ++i) {
+        if (conclusionForPremise[i] < 0) {
+          // find a candidate alignment for token 'i'
+          int candidateAlignment = -1;
+          if (i == 0 && conclusionForPremise[i + 1] > 0) {
+            candidateAlignment = conclusionForPremise[i + 1] - 1;
+          } else if (i == conclusionForPremise.length - 1 && conclusionForPremise[i - 1] >= 0 && conclusionForPremise[i - 1] < conclusionSpans.size() - 1) {
+            candidateAlignment = conclusionForPremise[i - 1] + 1;
+          } else if (i > 0 && i < conclusionForPremise.length - 1 &&
+              conclusionForPremise[i - 1] >= 0 && conclusionForPremise[i + 1] >= 0 &&
+              conclusionForPremise[i + 1] - conclusionForPremise[i - 1] == 2) {
+            candidateAlignment = conclusionForPremise[i - 1] + 1;
+          }
+          // sanity check that alignment (e.g., with POS tags)
+          if (candidateAlignment >= 0 &&
+              ex.premise.algorithms().modeInSpan(premiseSpans.get(i), Sentence::posTags).charAt(0) == ex.conclusion.algorithms().modeInSpan(conclusionSpans.get(candidateAlignment), Sentence::posTags).charAt(0)) {
+            // Add the alignment
+            alignments.add(new KeywordPair(ex.premise, premiseSpans.get(i), ex.conclusion, conclusionSpans.get(candidateAlignment)));
+            premiseConsumed[i] = true;
+            conclusionConsumed[candidateAlignment] = true;
+            conclusionForPremise[i] = candidateAlignment;
+          }
+        }
+      }
+    }
+
+    // Finally: unaligned keywords
+    for (int i = 0; i < premiseSpans.size(); ++i) {
+      if (!premiseConsumed[i]) {
+        alignments.add(new KeywordPair(ex.premise, premiseSpans.get(i), ex.conclusion, null));
+        premiseConsumed[i] = true;
+      }
+    }
+    for (int i = 0; i < conclusionSpans.size(); ++i) {
+      if (!conclusionConsumed[i]) {
+        alignments.add(new KeywordPair(ex.premise, null, ex.conclusion, conclusionSpans.get(i)));
+        conclusionConsumed[i] = true;
+      }
+    }
+
+    // Return
+    return alignments;
+  }
+
+  /**
+   * Read a dataset from a given source, backing off to a given (potentially null or empty) cache.
+   *
+   * @param source The source file to read the dataset from.
+   * @param cache The cache file to use if it exists and is non-empty.
+   * @param size The number of datums to read.
+   *
+   * @return A stream of datums; note that this is lazily loaded, and may be null near the end (e.g., for parallel computations).
+   *
+   * @throws IOException Throw by the underlying read mechanisms.
+   */
+  private static Stream<EntailmentPair> readDataset(File source, File cache, int size) throws IOException {
+    // Read size
+    if (size < 0) {
+      size = 0;
+      forceTrack("Counting lines");
+      BufferedReader scanner = IOUtils.readerFromFile(source);
+      while (scanner.readLine() != null) {
+        size += 1;
+      }
+      log("dataset has size " + size);
+      endTrack("Counting lines");
+    }
 
     // Create stream
     if (cache.exists()) {
@@ -173,53 +367,100 @@ public class TrainEntailment {
         }
       }).limit(size);
     }
-
   }
 
-  private static Counter<String> featurize(EntailmentPair ex) {
-    ClassicCounter<String> feats = new ClassicCounter<>();
 
-    // Lemma overlap
-    int intersect = CollectionUtils.intersect(new HashSet<>(ex.premise.lemmas()), new HashSet<>(ex.conclusion.lemmas())).size();
-    feats.incrementCount("lemma_overlap", intersect);
-    feats.incrementCount("lemma_overlap_percent", ((double) intersect) / ((double) Math.min(ex.premise.length(), ex.conclusion.length())));
-
-    // BLEU score
-    BleuMeasurer bleuScorer = new BleuMeasurer(3);
-    bleuScorer.addSentence(ex.premise.lemmas().toArray(new String[ex.premise.length()]),
-        ex.conclusion.lemmas().toArray(new String[ex.conclusion.length()]));
+  /**
+   * Compute the BLEU score between two sentences.
+   *
+   * @param n The BLEU-X value to compute. Default is BLEU-4.
+   * @param premiseWord The words in the premise.
+   * @param conclusionWord The words in the conclusion.
+   *
+   * @return The BLEU score between the premise and the conclusion.
+   */
+  private static double bleu(int n, List<String> premiseWord, List<String> conclusionWord) {
+    BleuMeasurer bleuScorer = new BleuMeasurer(n);
+    bleuScorer.addSentence(premiseWord.toArray(new String[premiseWord.size()]), conclusionWord.toArray(new String[conclusionWord.size()]));
     double bleu = bleuScorer.bleu();
     if (Double.isNaN(bleu)) {
       bleu = 0.0;
     }
-    feats.incrementCount("BLEU", bleu);
+    return bleu;
+  }
+
+
+  /**
+   * Featurize a given entailment pair.
+   *
+   * @param ex The example to featurize.
+   *
+   * @return A Counter containing the real-valued features for this example.
+   */
+  private static Counter<String> featurize(EntailmentPair ex) {
+    ClassicCounter<String> feats = new ClassicCounter<>();
+
+    // Lemma overlap
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.OVERLAP)) {
+      int intersect = CollectionUtils.intersect(new HashSet<>(ex.premise.lemmas()), new HashSet<>(ex.conclusion.lemmas())).size();
+      feats.incrementCount("lemma_overlap", intersect);
+      feats.incrementCount("lemma_overlap_percent", ((double) intersect) / ((double) Math.min(ex.premise.length(), ex.conclusion.length())));
+    }
 
     // Relevant POS intersection
-    for (char pos : new HashSet<Character>(){{ add('V'); add('N'); add('J'); add('R'); }}) {
-      Set<String> premiseVerbs = new HashSet<>();
-      for (int i = 0; i < ex.premise.length(); ++i) {
-        if(ex.premise.posTag(i).charAt(0) == pos) {
-          premiseVerbs.add(ex.premise.lemma(i));
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.POS_OVERLAP)) {
+      for (char pos : new HashSet<Character>() {{
+        add('V');
+        add('N');
+        add('J');
+        add('R');
+      }}) {
+        Set<String> premiseVerbs = new HashSet<>();
+        for (int i = 0; i < ex.premise.length(); ++i) {
+          if (ex.premise.posTag(i).charAt(0) == pos) {
+            premiseVerbs.add(ex.premise.lemma(i));
+          }
         }
-      }
-      Set<String> conclusionVerbs = new HashSet<>();
-      for (int i = 0; i < ex.conclusion.length(); ++i) {
-        if(ex.conclusion.posTag(i).charAt(0) == pos) {
-          premiseVerbs.add(ex.conclusion.lemma(i));
+        Set<String> conclusionVerbs = new HashSet<>();
+        for (int i = 0; i < ex.conclusion.length(); ++i) {
+          if (ex.conclusion.posTag(i).charAt(0) == pos) {
+            premiseVerbs.add(ex.conclusion.lemma(i));
+          }
         }
+        Set<String> intersectVerbs = CollectionUtils.intersect(premiseVerbs, conclusionVerbs);
+        feats.incrementCount("" + pos + "_overlap_percent", ((double) intersectVerbs.size() / ((double) Math.min(ex.premise.length(), ex.conclusion.length()))));
+        feats.incrementCount("" + pos + "_overlap: " + intersectVerbs.size());
       }
-      Set<String> intersectVerbs = CollectionUtils.intersect(premiseVerbs, conclusionVerbs);
-      feats.incrementCount("" + pos + "_overlap_percent", ((double) intersectVerbs.size() / ((double) Math.min(ex.premise.length(), ex.conclusion.length()))));
-      feats.incrementCount("" + pos + "_overlap: " + intersectVerbs.size());
+    }
+
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_OVERLAP)) {
+      Set<KeywordPair> alignment = align(ex);
+      long alignedCount = alignment.stream().filter(KeywordPair::isAligned).count();
+      long alignedPerfectCount = alignment.stream().filter(x -> x.isAligned() && x.premiseChunk().equalsIgnoreCase(x.conclusionChunk())).count();
+      double totalCount = alignment.size();
+      feats.incrementCount("keyword_align_count:" + alignedCount);
+      feats.incrementCount("keyword_align_percent:" + (((double) alignedCount) / totalCount));
+      feats.incrementCount("keyword_perfect_align_count:" + alignedPerfectCount);
+      feats.incrementCount("keyword_perfect_align_percent:" + (((double) alignedPerfectCount) / totalCount));
+    }
+
+    // BLEU score
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.BLEU)) {
+      feats.incrementCount("BLEU-1", bleu(1, ex.premise.lemmas(), ex.premise.lemmas()));
+      feats.incrementCount("BLEU-2", bleu(2, ex.premise.lemmas(), ex.premise.lemmas()));
+      feats.incrementCount("BLEU-3", bleu(3, ex.premise.lemmas(), ex.premise.lemmas()));
+      feats.incrementCount("BLEU-4", bleu(4, ex.premise.lemmas(), ex.premise.lemmas()));
     }
 
     // Length differences
-    feats.incrementCount("length_diff:" + (ex.conclusion.length() - ex.premise.length()));
-    feats.incrementCount("conclusion_longer?:" + (ex.conclusion.length() > ex.premise.length()));
-    feats.incrementCount("conclusion_length:" + ex.conclusion.length());
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.LENGTH_DIFF)) {
+      feats.incrementCount("length_diff:" + (ex.conclusion.length() - ex.premise.length()));
+      feats.incrementCount("conclusion_longer?:" + (ex.conclusion.length() > ex.premise.length()));
+      feats.incrementCount("conclusion_length:" + ex.conclusion.length());
+    }
 
     // Unigram entailments
-    if (LEXICALIZE) {
+    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_UNIGRAM)) {
       for (int pI = 0; pI < ex.premise.length(); ++pI) {
         for (int cI = 0; cI < ex.conclusion.length(); ++cI) {
           if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0)) {
@@ -229,8 +470,42 @@ public class TrainEntailment {
       }
     }
 
+    // Bigram entailments
+    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_BIGRAM)) {
+      for (int pI = 0; pI <= ex.premise.length(); ++pI) {
+        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
+          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          if ((pI == ex.premise.length() && cI == ex.conclusion.length()) ||
+              (pI < ex.premise.length() && cI < ex.conclusion.length() &&
+                  ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0))) {
+            feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + lastConclusion + "_" + conclusion);
+          }
+        }
+      }
+    }
+
+    // Keyword entailments
+    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_KEYWORD)) {
+      List<Span> premiseKeywords = ex.premise.algorithms().keyphraseSpans();
+      List<Span> conclusionKeywords = ex.conclusion.algorithms().keyphraseSpans();
+      for (Span p : premiseKeywords) {
+        String premisePOS = ex.premise.algorithms().modeInSpan(p, Sentence::posTags);
+        String premisePhrase = StringUtils.join(ex.premise.lemmas().subList(p.start(), p.end()), " ").toLowerCase();
+        for (Span c : conclusionKeywords) {
+          String conclusionPOS = ex.conclusion.algorithms().modeInSpan(c, Sentence::posTags);
+          if (premisePOS.charAt(0) == conclusionPOS.charAt(0)) {
+            String conclusionPhrase = StringUtils.join(ex.conclusion.lemmas().subList(c.start(), c.end()), " ").toLowerCase();
+            feats.incrementCount("keyphrase_entail:" + premisePhrase + "_->_" + conclusionPhrase);
+          }
+        }
+      }
+    }
+
     // Consequent uni/bi-gram
-    if (LEXICALIZE) {
+    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.CONCLUSION_NGRAM)) {
       for (int i = 0; i < ex.conclusion.length(); ++i) {
         String elem = "^_";
         if (i > 0) {
@@ -245,6 +520,17 @@ public class TrainEntailment {
     return feats;
   }
 
+
+  /**
+   * Featurize an entire dataset, caching the intermediate annotations in the process.
+   *
+   * @param data The dataset to featurize, as a (potentially lazy, necessarily parallel) stream.
+   * @param cacheStream The cache stream to write the processed sentences to.
+   *
+   * @return A dataset with the featurized data.
+   *
+   * @throws IOException Thrown from the underlying write method to the cache.
+   */
   private static GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data, OutputStream cacheStream) throws IOException {
     GeneralDataset<Trilean, String> dataset = new RVFDataset<>();
     final AtomicInteger i = new AtomicInteger(0);
@@ -265,12 +551,20 @@ public class TrainEntailment {
   }
 
 
+  /**
+   * The entry point of the code.
+   *
+   * @param args The command line arguments, as filled by {@link edu.stanford.nlp.util.Execution}.
+   *
+   * @throws IOException
+   * @throws ClassNotFoundException
+   */
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     // Initialize the parameters
     Execution.fillOptions(TrainEntailment.class, args);
     forceTrack("main");
     if (TRAIN_CACHE == null) {
-      TRAIN_CACHE = new File(TRAIN_FILE.getPath() + ".cache");
+      TRAIN_CACHE = new File(TRAIN_FILE.getPath() + (TRAIN_COUNT < 0 ? "" : ("." + TRAIN_COUNT)) + ".cache");
     }
     if (TEST_CACHE == null) {
       TEST_CACHE = new File(TEST_FILE.getPath() + ".cache");
@@ -280,7 +574,7 @@ public class TrainEntailment {
 
     // Read the test data
     forceTrack("Reading test data");
-    Stream<EntailmentPair> testData = readDataset(TEST_FILE, TEST_CACHE);
+    Stream<EntailmentPair> testData = readDataset(TEST_FILE, TEST_CACHE, -1);
     GeneralDataset<Trilean, String> testDataset = featurize(testData, new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
     IOUtils.cp(tmp, TEST_CACHE);
     endTrack("Reading test data");
@@ -290,7 +584,7 @@ public class TrainEntailment {
     if (RETRAIN || MODEL == null || !MODEL.exists()) {
       // Create the datasets
       forceTrack("Reading training data");
-      Stream<EntailmentPair> trainData = readDataset(TRAIN_FILE, TRAIN_CACHE);
+      Stream<EntailmentPair> trainData = readDataset(TRAIN_FILE, TRAIN_CACHE, TRAIN_COUNT);
       GeneralDataset<Trilean, String> trainDataset = featurize(trainData, new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
       IOUtils.cp(tmp, TRAIN_CACHE);
       endTrack("Reading training data");
@@ -299,7 +593,7 @@ public class TrainEntailment {
       // (create factory)
       forceTrack("Training the classifier");
       LinearClassifierFactory<Trilean, String> factory = new LinearClassifierFactory<>();
-      log("created factory");
+      log("created factory; training classifier:");
       // (train classifier)
       classifier = factory.trainClassifier(trainDataset);
       // (save classifier)
@@ -324,13 +618,16 @@ public class TrainEntailment {
 
     // Evaluating
     forceTrack("Evaluating the classifier");
-    double accuracy = classifier.evaluateAccuracy(testDataset);
-    Pair<Double, Double> pr = classifier.evaluatePrecisionAndRecall(testDataset, Trilean.TRUE);
+    log("");
     DecimalFormat df = new DecimalFormat("0.00%");
+    double accuracy = classifier.evaluateAccuracy(testDataset);
     log("Accuracy: " + df.format(accuracy));
+    log("");
+    Pair<Double, Double> pr = classifier.evaluatePrecisionAndRecall(testDataset, Trilean.TRUE);
     log("P:        " + df.format(pr.first));
     log("R:        " + df.format(pr.second));
     log("F1:       " + df.format(2.0 * pr.first * pr.second / (pr.first + pr.second)));
+    log("");
     endTrack("Evaluating the classifier");
 
     endTrack("main");
