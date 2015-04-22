@@ -9,7 +9,6 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.kbp.common.CollectionUtils;
 import edu.stanford.nlp.ling.RVFDatum;
-import edu.stanford.nlp.parser.common.ArgUtils;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
@@ -18,7 +17,6 @@ import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
-import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -45,6 +43,8 @@ public class TrainEntailment {
   public static File TRAIN_FILE = new File("tmp/snli_train.tab.large");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public static File TRAIN_CACHE = null;
+  @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
+  public static boolean TRAIN_CACHE_DO = true;
   @Execution.Option(name="train.count", gloss="The number of training examples to use.")
   public static int TRAIN_COUNT = -1;
   @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
@@ -56,6 +56,8 @@ public class TrainEntailment {
   public static File TEST_FILE = new File("tmp/snli_test.tab");
   @Execution.Option(name="testCache", gloss="A cache of the test annotations")
   public static File TEST_CACHE = null;
+  @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
+  public static boolean TEST_CACHE_DO = true;
 
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("tmp/model.ser.gz");
@@ -347,7 +349,7 @@ public class TrainEntailment {
     }
 
     // Create stream
-    if (cache.exists()) {
+    if (cache != null && cache.exists()) {
       log("reading from cache (" + cache + ")");
       return EntailmentPair.deserialize(new GZIPInputStream(new BufferedInputStream(new FileInputStream(cache)))).limit(size);
     } else {
@@ -549,11 +551,15 @@ public class TrainEntailment {
         }
         synchronized (TrainEntailment.class) {
           dataset.add(new RVFDatum<>(featurized, ex.truth));
-          ex.serialize(cacheStream);
+          if (cacheStream != null) {
+            ex.serialize(cacheStream);
+          }
         }
       }
     });
-    cacheStream.close();
+    if (cacheStream != null) {
+      cacheStream.close();
+    }
     return dataset;
   }
 
@@ -571,10 +577,10 @@ public class TrainEntailment {
     Execution.fillOptions(TrainEntailment.class, args);
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
     forceTrack("main");
-    if (TRAIN_CACHE == null) {
+    if (TRAIN_CACHE == null && TRAIN_CACHE_DO) {
       TRAIN_CACHE = new File(TRAIN_FILE.getPath() + (TRAIN_COUNT < 0 ? "" : ("." + TRAIN_COUNT)) + ".cache");
     }
-    if (TEST_CACHE == null) {
+    if (TEST_CACHE == null && TEST_CACHE_DO) {
       TEST_CACHE = new File(TEST_FILE.getPath() + ".cache");
     }
     File tmp = File.createTempFile("cache", ".ser.gz");
@@ -583,7 +589,7 @@ public class TrainEntailment {
     // Read the test data
     forceTrack("Reading test data");
     Stream<EntailmentPair> testData = readDataset(TEST_FILE, TEST_CACHE, -1);
-    GeneralDataset<Trilean, String> testDataset = featurize(testData, new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
+    GeneralDataset<Trilean, String> testDataset = featurize(testData, TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
     IOUtils.cp(tmp, TEST_CACHE);
     endTrack("Reading test data");
 
@@ -593,7 +599,7 @@ public class TrainEntailment {
       // Create the datasets
       forceTrack("Reading training data");
       Stream<EntailmentPair> trainData = readDataset(TRAIN_FILE, TRAIN_CACHE, TRAIN_COUNT);
-      GeneralDataset<Trilean, String> trainDataset = featurize(trainData, new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
+      GeneralDataset<Trilean, String> trainDataset = featurize(trainData, TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))));
       IOUtils.cp(tmp, TRAIN_CACHE);
       endTrack("Reading training data");
 
