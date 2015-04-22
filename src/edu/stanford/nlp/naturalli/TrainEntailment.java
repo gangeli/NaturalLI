@@ -47,6 +47,7 @@ public class TrainEntailment {
   public static boolean TRAIN_CACHE_DO = true;
   @Execution.Option(name="train.count", gloss="The number of training examples to use.")
   public static int TRAIN_COUNT = -1;
+
   @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
   public static int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
@@ -63,6 +64,9 @@ public class TrainEntailment {
   public static File MODEL = new File("tmp/model.ser.gz");
   @Execution.Option(name="retrain", gloss="If true, force the retraining of the classifier")
   public static boolean RETRAIN = true;
+
+  @Execution.Option(name="parallel", gloss="If true, run the featurizer in parallel")
+  public static boolean PARALLEL = false;
 
   enum FeatureTemplate {
     BLEU, LENGTH_DIFF,
@@ -543,7 +547,7 @@ public class TrainEntailment {
   private static GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data, OutputStream cacheStream) throws IOException {
     GeneralDataset<Trilean, String> dataset = new RVFDataset<>();
     final AtomicInteger i = new AtomicInteger(0);
-    data.parallel().forEach(ex -> {
+    (PARALLEL ? data.parallel() : data).forEach(ex -> {
       if (ex != null) {
         Counter<String> featurized = featurize(ex);
         if (i.incrementAndGet() % 1000 == 0) {
