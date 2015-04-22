@@ -39,7 +39,8 @@ clean-local:
 
 # (some paths)
 LIB=${realpath lib}
-JAVANLP=${CORENLP}:${CORENLP_MODELS}:${CORENLP_CASELESS_MODELS}
+# TODO(gabor) remove dependenc on more/ and research/
+JAVANLP=${CORENLP}:${CORENLP_MODELS}:${CORENLP_CASELESS_MODELS}:/home/gabor/workspace/nlp/projects/more/classes:/home/gabor/workspace/nlp/projects/research/classes
 # ((export classpath))
 if SCALA_2_11
   export CP=${JAVANLP}:${LIB}/corenlp-scala.jar:${LIB}/scripts/sim-1.0.jar:${LIB}/jaws.jar:${LIB}/trove.jar:${LIB}/scripts/gson-2.2.4.jar:${LIB}/demo/joda-time.jar:${LIB}/demo/javamail-1.4.5.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar:${SCALA_HOME}/lib/config-1.2.0.jar

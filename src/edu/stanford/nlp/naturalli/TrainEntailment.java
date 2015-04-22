@@ -9,6 +9,7 @@ import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.kbp.common.CollectionUtils;
 import edu.stanford.nlp.ling.RVFDatum;
+import edu.stanford.nlp.parser.common.ArgUtils;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
@@ -16,6 +17,8 @@ import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
+import edu.stanford.nlp.util.logging.RedwoodConfiguration;
+import edu.stanford.nlp.util.logging.StanfordRedwoodConfiguration;
 
 import java.io.*;
 import java.text.DecimalFormat;
@@ -39,14 +42,18 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class TrainEntailment {
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
-  public static File TRAIN_FILE = new File("tmp/aristo_train.tab");
+  public static File TRAIN_FILE = new File("tmp/snli_train.tab.large");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public static File TRAIN_CACHE = null;
   @Execution.Option(name="train.count", gloss="The number of training examples to use.")
   public static int TRAIN_COUNT = -1;
+  @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
+  public static int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
+  @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
+  public static double TRAIN_SIGMA = 1.0;
 
   @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
-  public static File TEST_FILE = new File("tmp/aristo_test.tab");
+  public static File TEST_FILE = new File("tmp/snli_test.tab");
   @Execution.Option(name="testCache", gloss="A cache of the test annotations")
   public static File TEST_CACHE = null;
 
@@ -74,7 +81,7 @@ public class TrainEntailment {
     add(FeatureTemplate.CONCLUSION_NGRAM);
   }};
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
-  public static boolean FEATURES_NOLEX = true;
+  public static boolean FEATURES_NOLEX = false;
 
 
   /**
@@ -562,6 +569,7 @@ public class TrainEntailment {
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     // Initialize the parameters
     Execution.fillOptions(TrainEntailment.class, args);
+    RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
     forceTrack("main");
     if (TRAIN_CACHE == null) {
       TRAIN_CACHE = new File(TRAIN_FILE.getPath() + (TRAIN_COUNT < 0 ? "" : ("." + TRAIN_COUNT)) + ".cache");
@@ -592,9 +600,15 @@ public class TrainEntailment {
       // Training
       // (create factory)
       forceTrack("Training the classifier");
+      startTrack("creating factory");
       LinearClassifierFactory<Trilean, String> factory = new LinearClassifierFactory<>();
-      log("created factory; training classifier:");
+      factory.setSigma(TRAIN_SIGMA);
+      log("sigma: " + TRAIN_SIGMA);
+      trainDataset.applyFeatureCountThreshold(TRAIN_FEATURE_COUNT_THRESHOLD);
+      log("feature threshold: " + TRAIN_FEATURE_COUNT_THRESHOLD);
+      endTrack("creating factory");
       // (train classifier)
+      log("training classifier:");
       classifier = factory.trainClassifier(trainDataset);
       // (save classifier)
       log("trained classifier");
