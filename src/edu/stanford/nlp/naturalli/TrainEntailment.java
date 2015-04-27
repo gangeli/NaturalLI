@@ -40,7 +40,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class TrainEntailment {
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
-  public static File TRAIN_FILE = new File("tmp/snli_train.tab.large");
+  public static File TRAIN_FILE = new File("tmp/aristo_turk.tab");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public static File TRAIN_CACHE = null;
   @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
@@ -54,7 +54,7 @@ public class TrainEntailment {
   public static double TRAIN_SIGMA = 1.0;
 
   @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
-  public static File TEST_FILE = new File("tmp/snli_test.tab");
+  public static File TEST_FILE = new File("tmp/aristo_test.tab");
   @Execution.Option(name="testCache", gloss="A cache of the test annotations")
   public static File TEST_CACHE = null;
   @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
@@ -87,13 +87,13 @@ public class TrainEntailment {
     add(FeatureTemplate.CONCLUSION_NGRAM);
   }};
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
-  public static boolean FEATURES_NOLEX = false;
+  public static boolean FEATURES_NOLEX = true;
 
 
   /**
    * A candidate entailment pair. This corresponds to an un-featurized datum.
    */
-  private static class EntailmentPair {
+  static class EntailmentPair {
     public final Trilean truth;
     public final Sentence premise;
     public final Sentence conclusion;
@@ -410,8 +410,9 @@ public class TrainEntailment {
    *
    * @return A Counter containing the real-valued features for this example.
    */
-  private static Counter<String> featurize(EntailmentPair ex) {
+  static Counter<String> featurize(EntailmentPair ex) {
     ClassicCounter<String> feats = new ClassicCounter<>();
+    feats.incrementCount("bias");
 
     // Lemma overlap
     if (FEATURE_TEMPLATES.contains(FeatureTemplate.OVERLAP)) {

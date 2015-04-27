@@ -164,8 +164,47 @@
   }
 }
 
+\def\setstylesposter{
+  \tikzstyle{level 1}=[level distance=3.75cm, sibling distance=8.5cm]
+  \tikzstyle{level 2}=[level distance=3.75cm, sibling distance=4.75cm]
+  \tikzstyle{level 3}=[level distance=3.75cm, sibling distance=4.75cm]
+  \tikzstyle{level 4}=[level distance=3.75cm, sibling distance=4.75cm]
+  \tikzstyle{fact} = [text width=7em, text centered, line width=2pt]
+  \tikzstyle{boxfact} = [text width=7em, text centered, line width=2pt,
+                         rectangle, draw=black, line width=1pt]
+  \tikzstyle{shortfact} = [text width=3em, text centered, line width=2pt]
+  \tikzstyle{sink} = [text width=7em, text centered, 
+                      rectangle, draw=blue, line width=2pt]
+  \tikzstyle{unksink} = [text width=7em, text centered, 
+                      rectangle, draw=blue]
+  \tikzstyle{othersink} = [text width=5em, text centered, 
+                      rectangle, draw=blue]
+  \tikzset{
+    goodPath/.style={draw=blue}
+  }
+  \tikzset{
+    goodPathDown/.style={draw=blue,->}
+  }
+  \tikzset{
+    goodPathUp/.style={draw=blue,<-}
+  }
+  \tikzset{
+    strongPath/.style={draw=blue, line width=3pt}
+  }
+}
+
 \def\teaserPremises{
   \node[right = of main](db){\includegraphics[height=2.2cm]{../img/database.png}};
+  \node[othersink, right = of main](tails) {\w{All cats have tails}};
+  \node[othersink, right = of tails](kittens) {\w{All kittens are cute}};
+  \draw (db.north west) -- (main.north west);
+  \draw (db.south west) -- (main.south west);
+  \draw (db.north east) -- (kittens.north east);
+  \draw (db.south east) -- (kittens.south east);
+}
+
+\def\teaserPremisesPoster{
+  \node[right = of main](db){\includegraphics[height=4.5cm]{../img/database.png}};
   \node[othersink, right = of main](tails) {\w{All cats have tails}};
   \node[othersink, right = of tails](kittens) {\w{All kittens are cute}};
   \draw (db.north west) -- (main.north west);
@@ -226,6 +265,8 @@
 }
 
 \def\glass{\includegraphics[height=0.75cm]{../img/magnifying_glass.png}}
+\def\glassposter{\includegraphics[height=2.0cm]{../img/magnifying_glass.png}}
+
 \newcommand\teaserBlindInference{
   \setstyles
 
@@ -319,6 +360,52 @@
   \end{tikzpicture}
 }
 
+
+\newcommand\teaserFullDerivationPoster{
+  \setstylesposter
+
+  \begin{tikzpicture}[grow=down, sloped]
+  \node[fact](query) {\w{No carnivores eat animals?}}
+    child {
+      node[fact] {\w{\textbf{The} carnivores eat animals}} 
+      child {
+        node[fact] {\w{The \textbf{cat} \\ eats animals}} 
+        child {
+          node[fact] {\w{The cat \\ ate \textbf{an} animal}}
+          child {
+            node[sink](main) {\w{The cat \\ ate a \textbf{mouse}}} 
+            edge from parent [goodPath] node[below] {\rotatebox{90}{}}
+          }
+          edge from parent [goodPath] node[below] {\rotatebox{90}{}}
+        }
+        edge from parent [goodPath] node[below] {$\rotatebox{90}{}$}
+      }
+      edge from parent [goodPath] node[above] {$\rotatebox{340}{}$}
+    }
+    child {
+      node[fact] {$\dots$} 
+      child {
+        node[fact] {$\dots$}
+          [clockwise from=-50,sibling angle=20]
+          child foreach \x in {1,2,3,4} {
+            [clockwise from=-55,sibling angle=20]
+%            child foreach \x in {1,2,3,4} {}
+          }
+        edge from parent node[above,shift={(-1 ex,0 ex)}] {}
+      }
+      child {
+        node[shortfact] {$\dots$}
+      }
+      edge from parent node[below] {$\rotatebox{90}{}$}
+    }
+    child {
+      node[shortfact] {$\dots$}
+    };
+  \teaserPremisesPoster
+  \node[right = of query]{\hspace{-1.75cm}\glassposter};
+  \end{tikzpicture}
+}
+
 %
 % -----
 % The MacCartney Relations (as Venn Diagrams)
@@ -330,6 +417,10 @@
 \newcommand\frameVenn{
   \draw (-1,-1) rectangle (1,1);
   \draw (0.8,0.8) node {$\ensuremath{\mathcal{D}}$};
+}
+\newcommand\frameVennPoster{
+  \draw (-2.2,-2.2) rectangle (2.5,2.5);
+  \draw (1.8,1.8) node {$\ensuremath{\mathcal{D}}$};
 }
 \newcommand\relName[1]{
   \draw (0, -1.8) node {\small{(\textit{#1})}};
@@ -529,6 +620,58 @@
 
 \newcommand\monoFlat[4]{
   \monoHeader
+    \node[gray]{#4};
+    \node[gray]{#3};
+    \node[punktchain, color=blue]{$---$ #2};
+    \node[gray]{#1};
+  \end{tikzpicture}
+}
+
+\def\monoHeaderPoster{
+  \begin{tikzpicture}[node distance=0cm,
+                      start chain=going below,
+                      punktchain/.style={
+                        rectangle, 
+                        rounded corners, 
+                        draw=black, very thick,
+                        text width=3em, 
+                        minimum height=2em, 
+                        text centered, 
+                        on chain},
+                      black/.style={
+                        text width=3em, 
+                        minimum height=3.25ex, 
+                        text centered, 
+                        text=black,
+                        on chain},
+                      gray/.style={
+                        text width=3em, 
+                        minimum height=3.25ex, 
+                        text centered, 
+                        text=gray,
+                        on chain},
+                      ]
+}
+\newcommand\monoUpPoster[4]{
+  \monoHeaderPoster
+    \node[black]{#4};
+    \node[black]{#3};
+    \node[punktchain, color=blue]{$\uparrow$ #2};
+    \node[gray]{#1};
+  \end{tikzpicture}
+}
+
+\newcommand\monoDownPoster[4]{
+  \monoHeaderPoster
+    \node[gray]{#4};
+    \node[gray]{#3};
+    \node[punktchain, color=blue]{$\downarrow$ #2};
+    \node[black]{#1};
+  \end{tikzpicture}
+}
+
+\newcommand\monoFlatPoster[4]{
+  \monoHeaderPoster
     \node[gray]{#4};
     \node[gray]{#3};
     \node[punktchain, color=blue]{$---$ #2};

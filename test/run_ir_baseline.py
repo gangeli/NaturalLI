@@ -162,9 +162,9 @@ def guess(solrURL, example, stopwords):
     lexScore = averageScore(example.question, example[candidateI], results[candidateI], stopwords)
     solrScore = results[candidateI].topScore()
 #    solrScore = 1.0
-#    aveSolrScore = results[candidateI].averageScore() / float(len(results[candidateI]))
-    aveSolrScore = 0.0
-    score = pow(lexScore, 2.0) * solrScore + aveSolrScore
+    aveSolrScore = results[candidateI].averageScore() / float(len(results[candidateI]))
+#    aveSolrScore = 0.0
+    score = lexScore * solrScore + aveSolrScore
     if score > maxV:
       maxV = score
       argmax = candidateI

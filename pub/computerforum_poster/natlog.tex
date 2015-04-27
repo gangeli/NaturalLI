@@ -1,0 +1,90 @@
+\def\catFelineVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.3,-0.3) circle (0.6)}
+    \def\vennB{(-0.0,-0.0) circle (1.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=light] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=dark] \vennA;
+    \end{scope}
+    
+    \frameVennPoster
+    \draw (0, -3.0) node {\w{cat} $\forward$ \w{feline}};
+  \end{tikzpicture}
+}
+
+\def\someAllVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.3,-0.3) circle (0.6)}
+    \def\vennB{(-0.0,-0.0) circle (1.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=dark] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=light] \vennA;
+    \end{scope}
+    
+    \frameVennPoster
+    \draw (0, -3.0) node {\w{some} $\reverse$ \w{all}};
+  \end{tikzpicture}
+}
+
+
+
+\begin{block}{Natural Logic}
+  \begin{center}
+    \hh{A logic over natural language syntax} \\
+    \vspace{0.25cm}
+    \begin{tabular}{lp{0.45\textwidth}}
+      &Some cat ate a mouse \\
+      & \darkgray{\textit{(all mice are rodents)}} \\
+      $\therefore$& \true{Some cat ate a \textbf{rodent}}
+    \end{tabular}
+  \end{center}
+  \vspace{1cm}
+  
+  \hh{Cognitively easy inferences are easy:}
+  \vspace{0.5cm}
+  \begin{itemize}
+    \item[]
+      \begin{tabular}{lp{0.85\textwidth}}
+        &Most cats eat mice \\
+        $\therefore$& \true{Most cats eat \textbf{rodents}}
+      \end{tabular}
+  \vspace{0.5cm}
+  \item[] 
+      \begin{tabular}{lp{0.85\textwidth}}
+        & \textit{All students who know a foreign language learned it at university.} \\
+        $\therefore$& \true{``They learned it at school.''}
+      \end{tabular}
+  \end{itemize}
+  \vspace{1.0cm}
+  
+  \hh{Facts are text; inference is lexical mutation}
+  
+  \posterline
+
+  \begin{tabular}{cl}
+    \catFelineVenn &  
+      \monoUpPoster{}{\small{all}}{\small{some}}{}
+      \hspace{-10mm}\monoDownPoster{\small{cat}}{\small{feline}}{\small{animal}}{\small{thing}} 
+      \hspace{-10mm}\monoUpPoster{\small{overtake}}{\small{chase}}{\small{pursue}}{\small{follow}}
+      \hspace{-10mm}\monoUpPoster{Mickey}{\small{mice}}{\small{rodents}}{\small{mammals}} \\
+    \someAllVenn   & 
+      \monoUpPoster{}{\small{all}}{\small{some}}{}
+      \hspace{-10mm}\monoDownPoster{\small{kitten}}{\small{cat}}{\small{feline}}{\small{animal}} 
+      \hspace{-10mm}\monoUpPoster{\small{overtake}}{\small{chase}}{\small{pursue}}{\small{follow}}
+      \hspace{-10mm}\monoUpPoster{Mickey}{\small{mice}}{\small{rodents}}{\small{mammals}} \\
+    $\therefore$ &
+      \true{Some cats chase mice}
+  \end{tabular}
+
+
+\end{block}

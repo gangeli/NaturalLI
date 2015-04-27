@@ -1,0 +1,44 @@
+\def\a#1{#1}
+\def\b#1{\textbf{#1}}
+
+\begin{block}{Results}
+  \hh{Strict logical reasoning: FraCaS}
+  \begin{tabular}{rl}
+    \small{P:} &  \small{At \true{least}/\false{most} three commissioners spend} \\
+               &  \small{\hspace{1cm} \textbf{a lot of} time at home.} \\
+    \small{H:} &  \small{\true{At least three commissioners spend time at home.}} \\
+    \small{H:} &  \small{\false{At most ten commissioners spend time at home.}}
+  \end{tabular}
+  \vspace{5mm}
+
+  \begin{center}
+  \begin{tabular}{llccc}
+    \hline
+    $\mathsection$ & Category & M07 & M08 & \darkblue{N}  \\
+    \hline
+                          % Pme           P07   Rme          R08   Ame         A07  A08
+    \a{1} & \a{Quantifiers}  & \a{84} & \a{97} & \a{\darkblue{95}}  \\
+    \a{5} & \a{Adjectives}   & \a{60} & \a{80} & \a{\darkblue{73}}  \\
+    \a{6} & \a{Comparatives} & \a{69} & \a{81} & \a{\darkblue{87}}  \\
+    \hline
+    \multicolumn{2}{l}{\b{Applicable (1,5,6)}}
+                         & \b{76} & \b{90} & \b{\darkblue{89}} \\
+    \hline
+  \end{tabular}
+  \end{center}
+  \vspace{1cm}
+
+  \hh{Real-World Application: ConceptNet} \\
+  \hspace{1cm} \true{not all birds can fly}, \true{noses are used to smell} $\dots$\\
+  \vspace{-10mm}
+  \begin{center}
+    \begin{tabular}{lcc}
+      \hline
+      System             & P     & R    \\
+      \hline
+      Direct Lookup      & 100.0 & \textbf{12.1} \\
+      NaturalLI          & 90.6  & \textbf{49.1} \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{block}

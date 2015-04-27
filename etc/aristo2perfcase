@@ -75,7 +75,7 @@ def questionToStatement(question:String, candidate:String):String = {
   } else if ( question.equalsIgnoreCase("""What might be done to protect plants growing outside?""") ) {
     candidate.trim + """ might be done to protect plants growing outside."""
   } else if ( question.equalsIgnoreCase("""Which property of the objects can the student most likely identify?""") ) {
-    """The student can most likely identify """ + candidate.trim + """."""
+    """The student can likely identify """ + candidate.trim + """."""
   } else if ( question.equalsIgnoreCase("""Which property should he change to make the clay float?""") ) {
     """He should change the """ + candidate.trim + """ to make the clay float."""
   } else if ( question.equalsIgnoreCase("""Which part of a plant produces the seeds?""") ) {
@@ -105,7 +105,7 @@ def questionToStatement(question:String, candidate:String):String = {
   } else if ( question.equalsIgnoreCase("""What is one way to change water from a liquid to a solid?""") ) {
     candidate.trim + """ is one way to change water from a liquid to a solid."""
   } else if ( question.equalsIgnoreCase("""When a person speaks into a telephone, sound energy is changed mostly into which form of energy?""") ) {
-    """When a person speaks into a telephone, sound energy is changed mostly into """ + candidate.trim + """."""
+    """When a person speaks into a telephone, sound energy is changed into """ + candidate.trim + """."""
   } else if ( question.equalsIgnoreCase("""In which example could a thermometer be used to show that heat energy is being transferred?""") ) {
     """Heat energy is being transferred when """ + candidate.trim + """."""
   } else if ( question.equalsIgnoreCase("""Which form of energy was changed to sound energy?""") ) {
@@ -125,7 +125,7 @@ def questionToStatement(question:String, candidate:String):String = {
   } else if ( question.equalsIgnoreCase("""Which process causes the leaves of a plant to become larger?""") ) {
     candidate.trim + """ causes the leaves of a plant to become larger."""
   } else if ( question.equalsIgnoreCase("""Which human activity most often has a harmful effect on the environment?""") ) {
-    candidate.trim + """ most often has a harmful effect on the environment."""
+    candidate.trim + """  often has a harmful effect on the environment."""
   } else if ( question.equalsIgnoreCase("""In New York State, the shortest period of daylight occurs during which month?""") ) {
     """In New York State, the shortest period of daylight occurs during """ + candidate.trim + """."""
   } else if ( question.equalsIgnoreCase("""What form of energy causes an ice cube to melt?""") ) {
@@ -189,7 +189,7 @@ def questionToStatement(question:String, candidate:String):String = {
   } else if ( question.equalsIgnoreCase("""What is the main source of energy for the water cycle?""") ) {
     candidate.trim + """ is the main source of energy for the water cycle."""
   } else if ( question.equalsIgnoreCase("""Which human activity is most harmful to the natural environment?""") ) {
-    candidate.trim + """ is most harmful to the natural environment."""
+    candidate.trim + """ is harmful to the natural environment."""
   } else {
     throw new IllegalArgumentException("Unknown question: '" + question + "'")
   }

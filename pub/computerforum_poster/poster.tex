@@ -1,0 +1,60 @@
+\documentclass[final]{beamer} % beamer 3.10: do NOT use option hyperref={pdfpagelabels=false} !
+\mode<presentation> {  %% check http://www-i6.informatik.rwth-aachen.de/~dreuw/latexbeamerposter.php for examples
+  \usetheme{Lankton}    %% you should define your own theme e.g. for big headlines using your own logos 
+  \newcommand{\footleft}{}
+  \newcommand{\footright}{}
+}
+\usepackage[english]{babel}
+\usepackage[latin1]{inputenc}
+\usepackage{amsmath,amsthm, amssymb, latexsym}
+\usefonttheme[onlymath]{serif}
+\boldmath
+\usepackage[orientation=portrait,size=a1,scale=1.4,debug]{beamerposter}                       % e.g. for DIN-A0 poster
+\usepackage{tikz}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
+
+\input ../macros.tex
+\input ../figures.tex
+\input std-macros.tex
+
+\title[NaturalLI]{Natural Logic for Common Sense Reasoning}
+\author[Gabor Angeli]{Gabor Angeli}
+\institute[Stanford]{Stanford Natural Language Processing}
+\date{April 30, 2015}
+
+\newlength{\columnheight}
+\setlength{\columnheight}{694mm}
+
+\begin{document}
+
+\begin{frame}{} 
+\begin{columns}
+
+\begin{column}{.49\textwidth}
+  \begin{beamercolorbox}[center,wd=\textwidth]{postercolumn}
+    \begin{minipage}[T]{.95\textwidth}  % tweaks the width, makes a new \textwidth
+      \parbox[t][\columnheight]{\textwidth}{% must be some better way to set the the height, width and textwidth simultaneously
+        \input{motivation}
+        \input{natlog}
+      }
+    \end{minipage}
+  \end{beamercolorbox}
+\end{column}
+
+\begin{column}{.49\textwidth}
+  \begin{beamercolorbox}[center,wd=\textwidth]{postercolumn}
+    \begin{minipage}[T]{.95\textwidth}  % tweaks the width, makes a new \textwidth
+      \parbox[t][\columnheight]{\textwidth}{% must be some better way to set the the height, width and textwidth simultaneously
+        \input{approach}
+        \input{results}
+      }
+    \end{minipage}
+  \end{beamercolorbox}
+\end{column}
+
+\end{columns}
+\end{frame}
+
+\end{document}
