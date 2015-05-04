@@ -1,4 +1,4 @@
-package edu.stanford.nlp.naturalli;
+package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.util.Execution;
@@ -6,14 +6,15 @@ import edu.stanford.nlp.util.Execution;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.text.DecimalFormat;
 import java.util.*;
 
-import static edu.stanford.nlp.util.logging.Redwood.Util.log;
+import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 
 /**
  * Run a multiple-choice answering system on a test file formatted like the input file to
- * {@link edu.stanford.nlp.naturalli.TrainEntailment}. That is, the IR step should already have
+ * {@link ClassifierTrainer}. That is, the IR step should already have
  * been done elsewhere (see, e.g., in etc/aristo).
  *
  * This is similar to the run_ir_baseline.py interface.
@@ -87,43 +88,73 @@ public class MultipleChoiceSolver {
 
 
   private static int predict(EntailmentClassifier classifier, MultipleChoiceQuestion question) {
+    startTrack(question.hypotheses.get(question.answer));
     int argmax = -1;
     double max = Double.NEGATIVE_INFINITY;
+    double min = Double.POSITIVE_INFINITY;
     for (int qI = 0; qI < question.size(); ++qI) {
-//      double score = classifier.bestScore(question.premises.get(qI), question.hypotheses.get(qI));
-      double numPremises = (double) question.premises.get(qI).size();
-      double score = classifier.weightedAverageScore(
-          question.premises.get(qI),
-          question.hypotheses.get(qI),
-          i -> Math.exp(-5.0 * i / numPremises)
-          );
+
+     double score = classifier.bestScore(question.premises.get(qI), question.hypotheses.get(qI));
+
+//      double score = classifier.bestAlignmentOverlapScore(question.premises.get(qI), question.hypotheses.get(qI));
+
+//      double numPremises = (double) question.premises.get(qI).size();
+//      double score = classifier.weightedAverageScore(
+//          question.premises.get(qI),
+//          question.hypotheses.get(qI),
+//          i -> Math.exp(-5.0 * i / numPremises)
+//          );
+
+      log(new DecimalFormat("0.0000").format(score) + ": " + question.hypotheses.get(qI));
+
       if (score > max) {
         max = score;
         argmax = qI;
       }
+      if (score < min) {
+        min = score;
+      }
     }
+
+    // Error check scores
     if (argmax == -1) {
       throw new IllegalStateException("No predictions for question: " + question);
     }
+    if (Math.abs(max - min) < 1e-10) {
+      err("All hypotheses have the same score!");
+    }
+
+    endTrack(question.hypotheses.get(question.answer));
     return argmax;
   }
 
 
   private static double accuracy(EntailmentClassifier classifier, Collection<MultipleChoiceQuestion> questions) {
     int correct = 0;
+    List<MultipleChoiceQuestion> missed = new ArrayList<>();
     for (MultipleChoiceQuestion question : questions) {
       if (predict(classifier, question) == question.answer) {
         correct += 1;
+      } else {
+        missed.add(question);
       }
     }
+
+    startTrack("Missed questions");
+    for (MultipleChoiceQuestion q : missed) {
+      log(q.hypotheses.get(q.answer));
+    }
+    endTrack("Missed questions");
 
     return ((double) correct) / ((double) questions.size());
   }
 
 
-  public static void main(String[] args) throws IOException, ClassNotFoundException {
-    EntailmentClassifier classifier = new EntailmentClassifier(MODEL);
+  public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
+    forceTrack("Running evaluation");
     log("Accuracy: " + new DecimalFormat("0.00%").format(accuracy(classifier, dataset)));
+    endTrack("Running evaluation");
   }
 }
