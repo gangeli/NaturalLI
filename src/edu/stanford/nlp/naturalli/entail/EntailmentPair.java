@@ -49,7 +49,7 @@ class EntailmentPair {
     }
   }
 
-  public static Stream<EntailmentPair> deserialize(InputStream cacheStream) throws IOException {
+  public static Stream<EntailmentPair> deserialize(InputStream cacheStream) {
     return Stream.generate(() -> {
       try {
         synchronized (cacheStream) {

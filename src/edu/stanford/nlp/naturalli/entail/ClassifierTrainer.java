@@ -2,13 +2,16 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.*;
 import edu.stanford.nlp.io.IOUtils;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
+import edu.stanford.nlp.util.Triple;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
@@ -24,18 +27,23 @@ public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.SIMPLE;
+  public ClassifierType CLASSIFIER = ClassifierType.DISTANT;
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
   public File TRAIN_FILE = new File("tmp/aristo_turk.tab");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public File TRAIN_CACHE = null;
   @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
-  public boolean TRAIN_CACHE_DO = false;
+  public boolean TRAIN_CACHE_DO = true;
   @Execution.Option(name="train.count", gloss="The number of training examples to use.")
   public int TRAIN_COUNT = -1;
   @Execution.Option(name="train.debugdoc", gloss="A LaTeX document with debugging information about training")
   public File TRAIN_DEBUGDOC = new File("tmp/train_debug.tex");
+
+  @Execution.Option(name="train.distsup.iters", gloss="The number of iterations to run EM for")
+  public int TRAIN_DISTSUP_ITERS = 10;
+  @Execution.Option(name="train.distsup.sample_count", gloss="The number of iterations to run EM for")
+  public int TRAIN_DISTSUP_SAMPLE_COUNT = 1000;
 
   @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
   public int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
@@ -47,7 +55,7 @@ public class ClassifierTrainer {
   @Execution.Option(name="testCache", gloss="A cache of the test annotations")
   public File TEST_CACHE = null;
   @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
-  public boolean TEST_CACHE_DO = false;
+  public boolean TEST_CACHE_DO = true;
 
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("tmp/model.ser.gz");
@@ -75,7 +83,9 @@ public class ClassifierTrainer {
    *
    * @throws IOException Throw by the underlying read mechanisms.
    */
-  public Stream<EntailmentPair> readDataset(File source, File cache, int size) throws IOException {
+  public <E> Stream<E> readDataset(File source, File cache, int size,
+                                   Function<Triple<Trilean, String, String>, E> datumFactory,
+                                   Function<InputStream, Stream<E>> deserialize) throws IOException {
     // Read size
     if (size < 0) {
       size = 0;
@@ -91,7 +101,7 @@ public class ClassifierTrainer {
     // Create stream
     if (cache != null && cache.exists()) {
       log("reading from cache (" + cache + ")");
-      return EntailmentPair.deserialize(new GZIPInputStream(new BufferedInputStream(new FileInputStream(cache)))).limit(size);
+      return deserialize.apply(new GZIPInputStream(new BufferedInputStream(new FileInputStream(cache)))).limit(size);
     } else {
       log("no cached version found. Reading from file (" + source + ")");
       BufferedReader reader = IOUtils.readerFromFile(source);
@@ -111,13 +121,13 @@ public class ClassifierTrainer {
             String premise = fields[2];
             String conclusion = fields[3];
             // Add the pair
-            return new EntailmentPair(truth, premise, conclusion);
+            return datumFactory.apply(Triple.makeTriple(truth, premise, conclusion));
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
         }).limit(size);
       } else {
-        List<EntailmentPair> backingList = new ArrayList<>();
+        List<E> backingList = new ArrayList<>();
         String line;
         while ( (line = reader.readLine()) != null) {
           // Parse the line
@@ -126,11 +136,23 @@ public class ClassifierTrainer {
           String premise = fields[2];
           String conclusion = fields[3];
           // Add the pair
-          backingList.add(new EntailmentPair(truth, premise, conclusion));
+          backingList.add(datumFactory.apply(Triple.makeTriple(truth, premise, conclusion)));
         }
         return backingList.stream();
       }
     }
+  }
+
+  public Stream<EntailmentPair> readFlatDataset(File source, File cache, int size) throws IOException {
+    return readDataset(source, cache, size,
+        triple -> new EntailmentPair(triple.first, triple.second, triple.third),
+        EntailmentPair::deserialize);
+  }
+
+  public Stream<DistantEntailmentPair> readDistantDataset(File source, File cache, int size, StanfordCoreNLP pipeline) throws IOException {
+    return readDataset(source, cache, size,
+        triple -> new DistantEntailmentPair(triple.first, triple.second, triple.third, pipeline),
+        DistantEntailmentPair::deserialize);
   }
 
   /**
@@ -194,19 +216,35 @@ public class ClassifierTrainer {
   }
 
 
+  public LinearClassifier<Trilean, String> trainClassifier(Collection<DistantEntailmentPair> data) {
+    return trainClassifier(featurizer.featurize(data.stream().map(DistantEntailmentPair::asEntailmentPair)));
+  }
+
+
 
   public static void main(String[] args) throws IOException, ClassNotFoundException {
+    // Set up some useful objects
     EntailmentFeaturizer featurizer = new EntailmentFeaturizer(args);
     ClassifierTrainer trainer = new ClassifierTrainer(featurizer);
     Execution.fillOptions(trainer, args);
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
 
+    // Initialize the cache files
+    if (trainer.TRAIN_CACHE == null && trainer.TRAIN_CACHE_DO) {
+      trainer.TRAIN_CACHE = new File(trainer.TRAIN_FILE.getPath() + (trainer.TRAIN_COUNT < 0 ? "" : ("." + trainer.TRAIN_COUNT)) + "." + trainer.CLASSIFIER + ".cache");
+    }
+    if (trainer.TEST_CACHE == null && trainer.TEST_CACHE_DO) {
+      trainer.TEST_CACHE = new File(trainer.TEST_FILE.getPath() + "." + trainer.CLASSIFIER + ".cache");
+    }
+
+    // Train a classifier
     switch (trainer.CLASSIFIER) {
       case SIMPLE:
         SimpleEntailmentClassifier.train(trainer);
         break;
       case DISTANT:
         DistantEntailmentClassifier.train(trainer);
+        break;
       default:
         throw new IllegalStateException("Classifier is not implemented: " + trainer.CLASSIFIER);
     }

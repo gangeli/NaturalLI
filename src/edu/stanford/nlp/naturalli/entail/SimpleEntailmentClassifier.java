@@ -30,8 +30,8 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
-  private final Classifier<Trilean, String> impl;
-  private final EntailmentFeaturizer featurizer;
+  public final Classifier<Trilean, String> impl;
+  public final EntailmentFeaturizer featurizer;
 
 
   SimpleEntailmentClassifier(EntailmentFeaturizer featurizer, Classifier<Trilean, String> impl) {
@@ -64,18 +64,12 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
   public static SimpleEntailmentClassifier train(ClassifierTrainer trainer) throws IOException, ClassNotFoundException {
     // Initialize the parameters
     startTrack("SimpleEntailmentClassifier.train()");
-    if (trainer.TRAIN_CACHE == null && trainer.TRAIN_CACHE_DO) {
-      trainer.TRAIN_CACHE = new File(trainer.TRAIN_FILE.getPath() + (trainer.TRAIN_COUNT < 0 ? "" : ("." + trainer.TRAIN_COUNT)) + ".cache");
-    }
-    if (trainer.TEST_CACHE == null && trainer.TEST_CACHE_DO) {
-      trainer.TEST_CACHE = new File(trainer.TEST_FILE.getPath() + ".cache");
-    }
     File tmp = File.createTempFile("cache", ".ser.gz");
     tmp.deleteOnExit();
 
     // Read the test data
     forceTrack("Reading test data");
-    Stream<EntailmentPair> testData = trainer.readDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1);
+    Stream<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1);
     GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData, trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
     if (trainer.TEST_CACHE != null) { IOUtils.cp(tmp, trainer.TEST_CACHE); }
     endTrack("Reading test data");
@@ -89,7 +83,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         DebugDocument debugDocument = new DebugDocument(trainer.TRAIN_DEBUGDOC);
         // Create the datasets
         forceTrack("Reading training data");
-        Stream<EntailmentPair> trainData = trainer.readDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
+        Stream<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
         trainDataset.set(trainer.featurizer.featurize(trainData, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
         if (trainer.TRAIN_CACHE != null) {
           IOUtils.cp(tmp, trainer.TRAIN_CACHE);

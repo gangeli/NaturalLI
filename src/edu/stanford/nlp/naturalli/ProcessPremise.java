@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  */
 public class ProcessPremise {
 
-  protected static Collection<SentenceFragment> forwardEntailments(String input, StanfordCoreNLP pipeline) {
+  public static Collection<SentenceFragment> forwardEntailments(String input, StanfordCoreNLP pipeline) {
     // Run CoreNLP
     Annotation ann = new Annotation(input);
     pipeline.annotate(ann);
@@ -69,11 +69,11 @@ public class ProcessPremise {
     public Set<Requirement> requires() { return Collections.EMPTY_SET; }
   }
 
-  protected static StanfordCoreNLP constructPipeline() {
+  public static StanfordCoreNLP constructPipeline() {
     return constructPipeline("parse");
   }
 
-  protected static StanfordCoreNLP constructPipeline(String parser) {
+  public static StanfordCoreNLP constructPipeline(String parser) {
     Properties props = new Properties() {{
       setProperty("annotators", "tokenize,ssplit,pos,lemma,"+parser+",natlog,qrewrite,openie");
       setProperty("customAnnotatorClass.qrewrite","edu.stanford.nlp.naturalli.ProcessPremise$QRewriteAnnotator");

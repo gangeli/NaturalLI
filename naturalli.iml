@@ -41,15 +41,6 @@
     <orderEntry type="module-library" scope="RUNTIME">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/etc/naturalli_models.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="RUNTIME">
-      <library>
-        <CLASSES>
           <root url="jar://$USER_HOME$/staging/stanford-corenlp-models-current.jar!/" />
         </CLASSES>
         <JAVADOC />
@@ -60,6 +51,15 @@
       <library>
         <CLASSES>
           <root url="jar://$USER_HOME$/staging/stanford-srparser-models-current.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$USER_HOME$/staging/openie_models.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

@@ -4,6 +4,7 @@ import edu.stanford.nlp.classify.GeneralDataset;
 import edu.stanford.nlp.classify.RVFDataset;
 import edu.stanford.nlp.entail.BleuMeasurer;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
+import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.kbp.common.CollectionUtils;
 import edu.stanford.nlp.ling.RVFDatum;
 import edu.stanford.nlp.simple.Sentence;
@@ -504,8 +505,12 @@ public class EntailmentFeaturizer implements Serializable {
 
 
   /** @see edu.stanford.nlp.naturalli.entail.EntailmentFeaturizer#featurize(Stream, OutputStream, Optional, boolean) */
-  public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data) throws IOException {
-    return featurize(data, null, Optional.empty(), false);
+  public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data) {
+    try {
+      return featurize(data, null, Optional.empty(), false);
+    } catch (IOException e) {
+      throw new RuntimeIOException("(should be impossible!!!)", e);
+    }
   }
 
   enum FeatureTemplate {
