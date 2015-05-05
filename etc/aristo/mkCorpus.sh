@@ -3,10 +3,14 @@
 
 set -o errexit
 
-if [ -e corpus.tab ]; then
-  mv corpus.tab corpus.tab.bak
+if [ -d corpora ]; then
+  mkdir corpora
 fi
-touch corpus.tab
+
+if [ -e corpora/aristo.tab ]; then
+  mv corpora/aristo.tab corpora/aristo.tab.bak
+fi
+touch corpora/aristo.tab
 
 export CLASSPATH="$CLASSPATH:/home/gabor/workspace/naturalli/src/naturalli_preprocess.jar"
 export CLASSPATH="$CLASSPATH:/home/gabor/staging/stanford-srparser-models-current.jar"
@@ -25,25 +29,25 @@ function generalRead() {
     java -mx4g edu.stanford.nlp.naturalli.ExpandCoreference
 }
 
-
+# Resolve coreference + grok the files
 echo "barrons-sentences.txt"
-generalRead barrons-sentences.txt |\
+generalRead rawcorpora/barrons-sentences.txt |\
   awk -F'\t' '{ print "barrons-" $1 "\t" $2 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 
 echo "ck12-biology-sentences.txt"
-generalRead ck12-biology-sentences.txt |\
+generalRead rawcorpora/ck12-biology-sentences.txt |\
   awk -F'\t' '{ print "c12k_biology-" $1 "\t" $2 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 
 echo "CurrentWebCorpus-allSources-v1.txt"
-generalRead CurrentWebCorpus-allSources-v1.txt |\
+generalRead rawcorpora/CurrentWebCorpus-allSources-v1.txt |\
   awk -F'\t' '{ print "currentweb-" NR "\t" $1 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 
 echo "dictionary-sentences.txt"
 TMP=`mktemp`
-cat dictionary-sentences.txt |\
+cat rawcorpora/dictionary-sentences.txt |\
   sed -r \
     -e 's/<term>([^<]+)<\/term>/\1/g' \
     -e 's/<.*:/ is/g' \
@@ -51,19 +55,33 @@ cat dictionary-sentences.txt |\
 echo "Dictionary written to $TMP"
 generalRead "$TMP" |\
   awk -F'\t' '{ print "dictionary-" $1 "\t" $2 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 rm "$TMP"
 
 echo "simplewiki-science-sentences.txt"
-generalRead simplewiki-science-sentences.txt |\
+generalRead rawcorpora/simplewiki-science-sentences.txt |\
   awk -F'\t' '{ print "simplewiki_science-" $1 "\t" $2 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 
 echo "simplewiki-barrons-sentences.txt"
-generalRead simplewiki-barrons-sentences.txt |\
+generalRead rawcorpora/simplewiki-barrons-sentences.txt |\
   awk -F'\t' '{ print "simplewiki_barrons-" $1 "\t" $2 }' \
-  >> corpus.tab
+  >> corpora/aristo.tab
 
-if [ -e corpus.tab.bak ]; then
-  rm -f corpus.tab.bak
+# Clean up the corpus
+mv corpora/aristo.tab corpora/aristo.unicode.nouniq.tab
+
+cat corpora/aristo.unicode.nouniq.tab |\
+  perl -pe 's/[^[:ascii:]]//g' \
+    > corpora/aristo.ascii.nouniq.tab
+
+cat corpora/aristo.ascii.nouniq.tab |\
+  sort -u -t'	' -k2 \
+    > aristo.tab
+
+# Clean up the backup
+if [ -e corpora/aristo.tab.bak ]; then
+  rm -f corpora/aristo.tab.bak
 fi
+
+
