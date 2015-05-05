@@ -27,10 +27,10 @@ public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.DISTANT;
+  public ClassifierType CLASSIFIER = ClassifierType.SIMPLE;
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
-  public File TRAIN_FILE = new File("tmp/aristo_turk.tab");
+  public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public File TRAIN_CACHE = null;
   @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
@@ -51,7 +51,7 @@ public class ClassifierTrainer {
   public double TRAIN_SIGMA = 1.0;
 
   @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
-  public File TEST_FILE = new File("tmp/aristo_turk.tab");
+  public File TEST_FILE = TRAIN_FILE;
   @Execution.Option(name="testCache", gloss="A cache of the test annotations")
   public File TEST_CACHE = null;
   @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")

@@ -1,0 +1,318 @@
+<!-- JQuery -->
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<!-- Bootstrap -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+
+<script>
+  function validateForm() {
+    for (i = 0; i < 8; ++i) {
+      if (!$('input[name=ex'+i+']:checked').length > 0) {
+        alert('Please complete question ' + (i + 1));
+        return false;
+      }
+    }
+    $('#end_time').val(new Date().getTime());
+    return true;
+  }
+
+  window.onload = function() {
+    document.getElementById('submitButton').setAttribute('onclick', 'return validateForm()'); 
+    $('#instructions').mouseover(function() {
+      $('#start_time').val(new Date().getTime());
+    })
+  }
+</script>
+
+<style>
+/* Side notes for calling out things */
+/* Base styles (regardless of theme) */
+.bs-callout {
+  margin: 20px 0;
+  padding: 15px 30px 15px 15px;
+  border-left: 5px solid #eee;
+}
+.bs-callout h4 {
+  margin-top: 0;
+}
+.bs-callout p:last-child {
+  margin-bottom: 0;
+}
+.bs-callout code,
+.bs-callout .highlight {
+  background-color: #fff;
+}
+.bs-callout-info {
+  background-color: #f0f7fd;
+  border-color: #d0e3f0;
+}
+</style>
+
+
+<div class="bs-callout bs-callout-info" id="instructions">
+  Thank you for considering our HIT! This is a data
+  collection task in 
+  <a href="http://en.wikipedia.org/wiki/Natural_language_understanding">natural language understanding</a>,
+  in particular for <a href="http://en.wikipedia.org/wiki/Textual_entailment">textual entailment</a>).
+  <br/>
+  <br/>
+  <h4>Instructions</h4>
+  <ul>
+    <li><b>
+      You will be shown two sentences, and you should decide whether one
+      sentence <i>entails</i> the other (&rArr; or &lArr;),
+      the sentences say the same thing (&hArr;), or the sentences are not 
+      related (?).
+    </b></li>
+    <li><b>
+      One sentence <i>entails</i> another sentence if by reading only the one sentence,
+      you think the other sentence is most likely true.
+    </b></li>
+    <li><b>
+      Two sentences saying the same thing is equivalent to one entailing the other,
+      and the other entailing the one.
+    </b></li>
+    <li><b>
+      Otherwise, the sentences are not related. Unrelated sentences still often
+      talk about the same topic, but neither entails the other.
+    </b></li>
+  </ul>
+
+  <h4>Examples</h4>
+  <table>
+    <tr>
+      <td rowspan=2 style="padding-right:1ex;">0.</td>
+      <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">Plastic is very harmful to the environment . </td>
+    </tr>
+    <tr>
+      <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">cutting down a rain forest is most harmful to the natural environment.</td>
+    </tr>
+  </table>
+  <div class="radio"><label><input type="radio" disabled="true" checked="true"/> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> 
+    <span style="color:darkred;">Although both sentences talk about the environment, "plastic" and "cutting down trees" are not comparable.</div>
+  
+  <table>
+    <tr>
+      <td rowspan=2 style="padding-right:1ex;">0.</td>
+      <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">Other human activities like cutting down forests , land clearing , even building roads and cities has harmful effects on the natural environment . 	</td>
+    </tr>
+    <tr>
+      <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">cutting down a rain forest is harmful to the natural environment.</td>
+    </tr>
+  </table>
+  <div class="radio"><label><input type="radio" disabled="true" checked="true"/> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> 
+    <span style="color:darkred;">The second sentence only has information you would assume to be true from the first sentence; but, the first sentence has more information that may not be true having only read the second sentence.</div>
+    
+    <table>
+    <tr>
+      <td rowspan=2 style="padding-right:1ex;">0.</td>
+      <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">The main source of energy for the water cycle is the sun .</td>
+    </tr>
+    <tr>
+      <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">sunlight is the main source of energy for the water cycle.</td>
+    </tr>
+  </table>
+  <div class="radio"><label><input type="radio" disabled="true" checked="true"/>    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label>
+    <span style="color:darkred;">These sentences have exactly the same information, they just say it differently.</div>
+</div>
+
+
+<div class="row">
+
+  <input id='start_time' type="hidden" name="start_time" value="English">
+  <input id='end_time' type="hidden" name="end_time" value="English">
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex0' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">1.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_0}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_0}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex0" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex0" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex0" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex0" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex1' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">2.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_1}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_1}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex1" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex1" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex1" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex1" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex2' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">3.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_2}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_2}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex2" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex2" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex2" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex2" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex3' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">4.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_3}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_3}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex3" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex3" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex3" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex3" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex4' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">5.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_4}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_4}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex4" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex4" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex4" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex4" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex5' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">6.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_5}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_5}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex5" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex5" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex5" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex5" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex6' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">7.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_6}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_6}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex6" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex6" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex6" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex6" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+  <div class="col-lg-12" style="margin-bottom: 2em;">
+    <div id='ex7' class='' style="padding-left: 2em;">
+      <fieldset>
+        <legend>
+          <table>
+            <tr>
+              <td rowspan=2 style="padding-right:1ex;">8.</td>
+              <td><b>If we know that:</b></td> <td style="padding-left: 1em;">(a)</td><td style="padding-left:1ex;">${premise_7}</td>
+            </tr>
+            <tr>
+              <td><b>What can we say about:</b></td> <td style="padding-left: 1em;">(b)</td><td style="padding-left:1ex;">${hypothesis_7}</td>
+            </tr>
+          </table>
+        </legend>
+        <div style="margin-top:-1em;"></div>
+        <div class="radio"><label><input type="radio" name="ex7" value="Forward" /> <b> (a) &rArr; (b)</b>: The second is true because the first is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex7" value="Backward" /><b> (b) &rArr; (a)</b>: The first is true because the second is true.</label> </div>
+        <div class="radio"><label><input type="radio" name="ex7" value="Both" />    <b> (a) &hArr; (b)</b>: Both sentences say the same thing.           </label> </div>
+        <div class="radio"><label><input type="radio" name="ex7" value="Neither" /> <b> (a) ? (b)</b>: The sentences have nothing to do with each other. </label> </div>
+      </fieldset>
+    </div>
+  </div>
+
+</div>
+
+<b>[optional]: Do you have any comments / suggestions?</b>
+<p>
+Comments about clarity and compensation are particularly useful.
+</p>
+<textarea name="comments" class="form-control" rows="3"></textarea>
+
+<button id="submitButton">Submit</button>

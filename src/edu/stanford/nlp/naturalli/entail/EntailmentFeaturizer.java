@@ -15,6 +15,7 @@ import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
+import edu.stanford.nlp.util.logging.Redwood;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -49,7 +50,7 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.CONCLUSION_NGRAM);
   }};
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
-  public boolean FEATURES_NOLEX = true;
+  public boolean FEATURES_NOLEX = false;
 
   public EntailmentFeaturizer(String[] args) {
     Execution.fillOptions(this, args);
@@ -345,7 +346,7 @@ public class EntailmentFeaturizer implements Serializable {
       double noOverlapPenaltyPremise = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) premiseKeyphrases.size());
       double noOverlapPenaltyConclusion = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) conclusionKeyphrases.size());
       double noOverlapPenaltyPercent = alignments.isEmpty() ? 0.0 : (double) notOverlap / ((double) alignments.size());
-      double anyOverlapBonus = ((double) anyOverlap) / ((double) alignments.size());
+      double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
       double perfectMatchBonusPremise = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) premiseKeyphrases.size());
       double perfectMatchBonusConclusion = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) conclusionKeyphrases.size());
       double perfectMatchBonusPercent = alignments.isEmpty() ? 0.0 :  ((double) perfectMatch) / ((double) alignments.size());
@@ -483,11 +484,12 @@ public class EntailmentFeaturizer implements Serializable {
   public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data, OutputStream cacheStream, Optional<DebugDocument> debugDocument, boolean parallel) throws IOException {
     GeneralDataset<Trilean, String> dataset = new RVFDataset<>();
     final AtomicInteger i = new AtomicInteger(0);
+    long startTime = System.currentTimeMillis();
     (parallel ? data.parallel() : data).forEach(ex -> {
       if (ex != null) {
         Counter<String> featurized = featurize(ex, debugDocument);
         if (i.incrementAndGet() % 1000 == 0) {
-          log("featurized " + (i.get() / 1000) + "k examples");
+          log("[" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "] featurized " + (i.get() / 1000) + "k examples");
         }
         synchronized (ClassifierTrainer.class) {
           dataset.add(new RVFDatum<>(featurized, ex.truth));
