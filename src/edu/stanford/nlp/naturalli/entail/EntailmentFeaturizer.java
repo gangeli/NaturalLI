@@ -12,7 +12,6 @@ import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Execution;
-import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -20,6 +19,7 @@ import edu.stanford.nlp.util.logging.Redwood;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -35,6 +35,14 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
 public class EntailmentFeaturizer implements Serializable {
   private static final long serialVersionUID = 42L;
 
+  enum FeatureTemplate {
+    BLEU, LENGTH_DIFF,
+    OVERLAP, POS_OVERLAP, KEYWORD_OVERLAP, KEYWORD_STATISTICS,
+    ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
+    CONCLUSION_NGRAM,
+  }
+
+
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
 //    add(FeatureTemplate.BLEU);
@@ -42,20 +50,25 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.OVERLAP);
 //    add(FeatureTemplate.POS_OVERLAP);
     add(FeatureTemplate.KEYWORD_OVERLAP);
-//    add(FeatureTemplate.KEYWORD_OVERLAP_KERNEL);
+//    add(FeatureTemplate.KEYWORD_STATISTICS);
 
 //    add(FeatureTemplate.ENTAIL_UNIGRAM);
 //    add(FeatureTemplate.ENTAIL_BIGRAM);
     add(FeatureTemplate.ENTAIL_KEYWORD);
 //    add(FeatureTemplate.CONCLUSION_NGRAM);
   }};
+
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
-  public boolean FEATURES_NOLEX = false;
+  public boolean FEATURES_NOLEX = true;
+
+  @Execution.Option(name="features.keyword.buckets", gloss="The number of buckets to use for keyword overlap statistics")
+  public int FEATURES_KEYWORD_BUCKETS = 10;
 
   public EntailmentFeaturizer(String[] args) {
     Execution.fillOptions(this, args);
   }
 
+  @SuppressWarnings("UnusedDeclaration")
   public EntailmentFeaturizer(Properties props) {
     Execution.fillOptions(this, props);
   }
@@ -282,6 +295,147 @@ public class EntailmentFeaturizer implements Serializable {
   }
 
   /**
+   * Break out the keyword features, because they're a giant monstrosity of code.
+   */
+  private Counter<String> keywordFeatures(EntailmentPair ex, Optional<DebugDocument> debugDocument) {
+    // Prime some variables
+    Counter<String> feats = new ClassicCounter<>();
+    List<Span> premiseKeywords = ex.premise.algorithms().keyphraseSpans();
+    List<Span> conclusionKeywords = ex.conclusion.algorithms().keyphraseSpans();
+    List<String> premiseKeyphrases = premiseKeywords.stream().map(x -> StringUtils.join(ex.premise.lemmas().subList(x.start(), x.end()), " ").toLowerCase()).collect(Collectors.toList());
+    List<String> conclusionKeyphrases = conclusionKeywords.stream().map(x -> StringUtils.join(ex.conclusion.lemmas().subList(x.start(), x.end()), " ").toLowerCase()).collect(Collectors.toList());
+
+    // Align the sentences
+    Set<KeywordPair> alignments = align(ex, premiseKeywords, conclusionKeywords, debugDocument, false);
+
+    // Some basic statistics on the alignment
+    long onlyInPremise = alignments.stream().filter(x -> x.hasPremise() && !x.hasConclusion()).count();
+    long onlyInHypothesis = alignments.stream().filter(x -> x.hasConclusion() && !x.hasPremise()).count();
+    long notOverlap = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> !x.premiseLemma().equalsIgnoreCase(x.conclusionLemma()) && !containmentOverlap(x.premiseLemma(), x.conclusionLemma()) && !wordContainmentOverlap(x.premiseLemma(), x.conclusionLemma())).count();
+    long anyOverlap = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).count();
+    long perfectMatch = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> x.premiseLemma().equalsIgnoreCase(x.conclusionLemma())).count();
+
+    //
+    // Keyword Overlap
+    //
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_OVERLAP)) {
+      // Get the scores
+      double onlyInPremisePenalty = premiseKeyphrases.isEmpty() ? 0.0 : ((double) onlyInPremise) / ((double) premiseKeyphrases.size());
+      double onlyInHypothesisPenalty = conclusionKeyphrases.isEmpty() ? 0.0 : ((double) onlyInHypothesis) / ((double) conclusionKeyphrases.size());
+      double noOverlapPenaltyPremise = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) premiseKeyphrases.size());
+      double noOverlapPenaltyConclusion = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) conclusionKeyphrases.size());
+      double noOverlapPenaltyPercent = alignments.isEmpty() ? 0.0 : (double) notOverlap / ((double) alignments.size());
+      double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
+      double perfectMatchBonusPremise = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) premiseKeyphrases.size());
+      double perfectMatchBonusConclusion = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) conclusionKeyphrases.size());
+      double perfectMatchBonusPercent = alignments.isEmpty() ? 0.0 :  ((double) perfectMatch) / ((double) alignments.size());
+
+      // Add the features
+      feats.incrementCount("onlyInPremise", onlyInPremisePenalty);
+      feats.incrementCount("onlyInConclusion", onlyInHypothesisPenalty);
+      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);
+      feats.incrementCount("noOverlapConclusion", noOverlapPenaltyConclusion);
+      feats.incrementCount("noOverlapPercent", noOverlapPenaltyPercent);
+      feats.incrementCount("noOverlapCount", notOverlap);
+      feats.incrementCount("anyOverlap", anyOverlapBonus);
+      feats.incrementCount("anyOverlapCount", anyOverlap);
+      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
+      feats.incrementCount("perfectMatchConclusion", perfectMatchBonusConclusion);
+      feats.incrementCount("perfectMatchPercent", perfectMatchBonusPercent);
+      feats.incrementCount("perfectMatchCount", perfectMatch);
+      feats.incrementCount("perfectMatchCount", perfectMatch);
+    }
+
+
+    //
+    // Keyword Statistics
+    //
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_STATISTICS)) {
+      int[] editDistanceBuckets = new int[5];
+      List<Double> editDistanceSamples = new ArrayList<>();
+      double sumEditDistance = 0;
+
+      // Collect edit distances
+      for (KeywordPair alignment : alignments) {
+        if (alignment.isAligned()) {
+          String premise = alignment.premiseLemma();
+          String conclusion = alignment.conclusionLemma();
+          double editPercent = 1.0 - ((double) StringUtils.editDistance(premise, conclusion)) / ((double) Math.max(premise.length(), conclusion.length()));
+          sumEditDistance += editPercent;
+          editDistanceSamples.add(editPercent);
+          if (editPercent < 0.2) { editDistanceBuckets[0] += 1; }
+          else if (editPercent < 0.4) { editDistanceBuckets[1] += 1; }
+          else if (editPercent < 0.6) { editDistanceBuckets[1] += 1; }
+          else if (editPercent < 0.8) { editDistanceBuckets[1] += 1; }
+          else if (editPercent <= 1.0) { editDistanceBuckets[1] += 1; }
+          else { throw new IllegalStateException("Edit distance longer than the string!"); }
+        }
+      }
+      if (editDistanceSamples.size() > 0) {
+
+        // Calculate mean + var edit distance
+        double meanEditDistance = sumEditDistance / ((double) editDistanceSamples.size());
+        assert meanEditDistance >= 0.0 && meanEditDistance <= 1.0;
+        double sumSquaredDiff = 0.0;
+        for (Double val : editDistanceSamples) {
+          sumSquaredDiff += (meanEditDistance - val) * (meanEditDistance - val);
+        }
+        double stdevEditDistance = Math.sqrt(sumSquaredDiff / ((double) editDistanceSamples.size()));
+
+        // Add features
+        // (mean + variance)
+        feats.incrementCount("align_editdistance_mean", meanEditDistance);
+        feats.incrementCount("align_editdistance_stdev", stdevEditDistance);
+
+        // (histogram)
+        String meanBucket = null;
+        String stdevBucket = null;
+        double incr = 1.0 / ((double) FEATURES_KEYWORD_BUCKETS);
+        for (double upper = incr; upper <= 1.0000001; ++upper) {
+          if (meanEditDistance < upper) {
+            meanBucket = "<" + new DecimalFormat("0.000").format(upper);
+          }
+          if (Math.sqrt(stdevEditDistance) < upper) {
+            stdevBucket = "<" + new DecimalFormat("0.000").format(upper);
+          }
+        }
+        if (meanBucket == null) {
+          meanBucket = ">1.000";
+        }
+        if (stdevBucket == null) {
+          stdevBucket = ">1.000";
+        }
+        feats.incrementCount("align_editdistance_mean_bucket" + meanBucket);
+        feats.incrementCount("align_editdistance_variance_bucket" + stdevBucket);
+        feats.incrementCount("align_editdistance_mean_variance(" + meanBucket + "," + stdevBucket + ")");
+      }
+    }
+
+
+    //
+    // Keyword entailments (lexicalized)
+    //
+    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_KEYWORD)) {
+      for (Span p : premiseKeywords) {
+        String premisePOS = ex.premise.algorithms().modeInSpan(p, Sentence::posTags);
+        String premisePhrase = StringUtils.join(ex.premise.lemmas().subList(p.start(), p.end()), " ").toLowerCase();
+        for (Span c : conclusionKeywords) {
+          String conclusionPOS = ex.conclusion.algorithms().modeInSpan(c, Sentence::posTags);
+          if (premisePOS.charAt(0) == conclusionPOS.charAt(0)) {
+            String conclusionPhrase = StringUtils.join(ex.conclusion.lemmas().subList(c.start(), c.end()), " ").toLowerCase();
+            feats.incrementCount("keyphrase_entail:" + premisePhrase + "_->_" + conclusionPhrase);
+          }
+        }
+      }
+    }
+
+    return feats;
+  }
+
+
+
+
+  /**
    * Featurize a given entailment pair.
    *
    * @param ex The example to featurize.
@@ -291,10 +445,6 @@ public class EntailmentFeaturizer implements Serializable {
   public Counter<String> featurize(EntailmentPair ex, Optional<DebugDocument> debugDocument) {
     ClassicCounter<String> feats = new ClassicCounter<>();
     feats.incrementCount("bias");
-    List<Span> premiseKeywords = ex.premise.algorithms().keyphraseSpans();
-    List<Span> conclusionKeywords = ex.conclusion.algorithms().keyphraseSpans();
-    List<String> premiseKeyphrases = premiseKeywords.stream().map(x -> StringUtils.join(ex.premise.lemmas().subList(x.start(), x.end()), " ").toLowerCase()).collect(Collectors.toList());
-    List<String> conclusionKeyphrases = conclusionKeywords.stream().map(x -> StringUtils.join(ex.conclusion.lemmas().subList(x.start(), x.end()), " ").toLowerCase()).collect(Collectors.toList());
 
     // Lemma overlap
     if (FEATURE_TEMPLATES.contains(FeatureTemplate.OVERLAP)) {
@@ -326,72 +476,6 @@ public class EntailmentFeaturizer implements Serializable {
         Set<String> intersectVerbs = CollectionUtils.intersect(premiseVerbs, conclusionVerbs);
         feats.incrementCount("" + pos + "_overlap_percent", ((double) intersectVerbs.size() / ((double) Math.min(ex.premise.length(), ex.conclusion.length()))));
         feats.incrementCount("" + pos + "_overlap: " + intersectVerbs.size());
-      }
-    }
-
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_OVERLAP)) {
-      Set<KeywordPair> alignments = align(ex, premiseKeywords, conclusionKeywords, debugDocument, false);
-      long onlyInPremise = alignments.stream().filter(x -> x.hasPremise() && !x.hasConclusion()).count();
-      long onlyInHypothesis = alignments.stream().filter(x -> x.hasConclusion() && !x.hasPremise()).count();
-      long onlyContainmentMatch = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> !x.premiseLemma().equalsIgnoreCase(x.conclusionLemma()) && containmentOverlap(x.premiseLemma(), x.conclusionLemma())).count();
-      long onlyWordContainmentMatch = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> !x.premiseLemma().equalsIgnoreCase(x.conclusionLemma()) && !containmentOverlap(x.premiseLemma(), x.conclusionLemma()) && wordContainmentOverlap(x.premiseLemma(), x.conclusionLemma())).count();
-      long notOverlap = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> !x.premiseLemma().equalsIgnoreCase(x.conclusionLemma()) && !containmentOverlap(x.premiseLemma(), x.conclusionLemma()) && !wordContainmentOverlap(x.premiseLemma(), x.conclusionLemma())).count();
-      long anyOverlap = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).count();
-      long perfectMatch = alignments.stream().filter(EntailmentFeaturizer.KeywordPair::isAligned).filter(x -> x.premiseLemma().equalsIgnoreCase(x.conclusionLemma())).count();
-
-      double onlyInPremisePenalty = premiseKeyphrases.isEmpty() ? 0.0 : ((double) onlyInPremise) / ((double) premiseKeyphrases.size());
-      double onlyInHypothesisPenalty = conclusionKeyphrases.isEmpty() ? 0.0 : ((double) onlyInHypothesis) / ((double) conclusionKeyphrases.size());
-      double onlyContainmentPenalty = (double) onlyContainmentMatch;
-      double onlyWordContainmentPenalty = (double) onlyWordContainmentMatch;
-      double noOverlapPenaltyPremise = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) premiseKeyphrases.size());
-      double noOverlapPenaltyConclusion = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) conclusionKeyphrases.size());
-      double noOverlapPenaltyPercent = alignments.isEmpty() ? 0.0 : (double) notOverlap / ((double) alignments.size());
-      double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
-      double perfectMatchBonusPremise = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) premiseKeyphrases.size());
-      double perfectMatchBonusConclusion = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) conclusionKeyphrases.size());
-      double perfectMatchBonusPercent = alignments.isEmpty() ? 0.0 :  ((double) perfectMatch) / ((double) alignments.size());
-
-      feats.incrementCount("onlyInPremise", onlyInPremisePenalty);
-      feats.incrementCount("onlyInConclusion", onlyInHypothesisPenalty);
-//      feats.incrementCount("onlyContainment", onlyContainmentPenalty);
-//      feats.incrementCount("onlyWordContainment", onlyWordContainmentPenalty);
-      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);
-      feats.incrementCount("noOverlapConclusion", noOverlapPenaltyConclusion);
-      feats.incrementCount("noOverlapPercent", noOverlapPenaltyPercent);
-      feats.incrementCount("noOverlapCount", notOverlap);
-      feats.incrementCount("anyOverlap", anyOverlapBonus);
-//      feats.incrementCount("anyOverlapCount", anyOverlap);
-      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
-      feats.incrementCount("perfectMatchConclusion", perfectMatchBonusConclusion);
-      feats.incrementCount("perfectMatchPercent", perfectMatchBonusPercent);
-      feats.incrementCount("perfectMatchCount", perfectMatch);
-//      feats.incrementCount("perfectMatchCount", perfectMatch);
-
-      if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_OVERLAP_KERNEL)) {
-        List<Pair<String, Double>> stats = new ArrayList<Pair<String, Double>>(){{
-          add(Pair.makePair("onlyInPremise", onlyInPremisePenalty));
-          add(Pair.makePair("onlyInConclusion", onlyInHypothesisPenalty));
-//          add(Pair.makePair("onlyContainment", onlyContainmentPenalty));
-//          add(Pair.makePair("onlyWordContainment", onlyWordContainmentPenalty));
-          add(Pair.makePair("noOverlap", noOverlapPenaltyPercent));
-          add(Pair.makePair("anyOverlap", anyOverlapBonus));
-          add(Pair.makePair("perfectMatch", perfectMatchBonusPercent));
-//          add(Pair.makePair("anyOverlapCount", (double) anyOverlap));
-//          add(Pair.makePair("perfectMatchCount", (double) perfectMatch));
-        }};
-        for (int i = 0; i < stats.size(); ++i) {
-          for (int k = 0; k < stats.size(); ++k) {
-            if (i != k) {
-//              feats.incrementCount("multiplicative_kernel(" + stats.get(i).first + "," + stats.get(k).first + ")", stats.get(i).second * stats.get(k).second);
-//              feats.incrementCount("additive_kernel(" + stats.get(i).first + "," + stats.get(k).first + ")", stats.get(i).second + stats.get(k).second);
-              feats.incrementCount("nonzero_kernel(" + stats.get(i).first + "," + stats.get(k).first + ")",
-                  (stats.get(i).second != 0.0 &&  stats.get(i).second != 0.0) ? 1.0 : 0.0);
-              feats.incrementCount("zero_kernel(" + stats.get(k).first + "," + stats.get(k).first + ")",
-                  (stats.get(i).second == 0.0 &&  stats.get(k).second == 0.0) ? 1.0 : 0.0);
-            }
-          }
-        }
-
       }
     }
 
@@ -438,21 +522,6 @@ public class EntailmentFeaturizer implements Serializable {
       }
     }
 
-    // Keyword entailments
-    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_KEYWORD)) {
-      for (Span p : premiseKeywords) {
-        String premisePOS = ex.premise.algorithms().modeInSpan(p, Sentence::posTags);
-        String premisePhrase = StringUtils.join(ex.premise.lemmas().subList(p.start(), p.end()), " ").toLowerCase();
-        for (Span c : conclusionKeywords) {
-          String conclusionPOS = ex.conclusion.algorithms().modeInSpan(c, Sentence::posTags);
-          if (premisePOS.charAt(0) == conclusionPOS.charAt(0)) {
-            String conclusionPhrase = StringUtils.join(ex.conclusion.lemmas().subList(c.start(), c.end()), " ").toLowerCase();
-            feats.incrementCount("keyphrase_entail:" + premisePhrase + "_->_" + conclusionPhrase);
-          }
-        }
-      }
-    }
-
     // Consequent uni/bi-gram
     if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.CONCLUSION_NGRAM)) {
       for (int i = 0; i < ex.conclusion.length(); ++i) {
@@ -465,6 +534,9 @@ public class EntailmentFeaturizer implements Serializable {
         feats.incrementCount("conclusion_bigram:" + elem);
       }
     }
+
+    // Keyword features
+    feats.addAll(keywordFeatures(ex, debugDocument));
 
     assert Counters.isFinite(feats);
 
@@ -513,13 +585,6 @@ public class EntailmentFeaturizer implements Serializable {
     } catch (IOException e) {
       throw new RuntimeIOException("(should be impossible!!!)", e);
     }
-  }
-
-  enum FeatureTemplate {
-    BLEU, LENGTH_DIFF,
-    OVERLAP, POS_OVERLAP, KEYWORD_OVERLAP, KEYWORD_OVERLAP_KERNEL,
-    ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
-    CONCLUSION_NGRAM,
   }
 
   /**

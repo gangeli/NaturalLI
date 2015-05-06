@@ -78,7 +78,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
     // Train a model
     SimpleEntailmentClassifier classifier = trainer.trainOrLoad(() -> {
-      LinearClassifier<Trilean, String> impl;
+      Classifier<Trilean, String> impl;
       try {
         DebugDocument debugDocument = new DebugDocument(trainer.TRAIN_DEBUGDOC);
         // Create the datasets
@@ -94,10 +94,12 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         impl = trainer.trainClassifier(trainDataset.dereference().get());
         // (write the weights)
         startTrack("Top weights");
-        Map<Trilean, Counter<String>> weights = impl.weightsAsMapOfCounters();
-        DecimalFormat df = new DecimalFormat("0.0000");
-        for (Pair<String, Double> entry : Counters.toSortedListWithCounts(weights.get(Trilean.TRUE)).subList(0, Math.min(100, weights.get(Trilean.TRUE).size()))) {
-          log(((entry.second < 0) ? "" : " ") + df.format(entry.second) + "    " + entry.first);
+        if (impl instanceof LinearClassifier) {
+          Map<Trilean, Counter<String>> weights = ((LinearClassifier<Trilean, String>) impl).weightsAsMapOfCounters();
+          DecimalFormat df = new DecimalFormat("0.0000");
+          for (Pair<String, Double> entry : Counters.toSortedListWithCounts(weights.get(Trilean.TRUE)).subList(0, Math.min(100, weights.get(Trilean.TRUE).size()))) {
+            log(((entry.second < 0) ? "" : " ") + df.format(entry.second) + "    " + entry.first);
+          }
         }
         endTrack("Top weights");
         // (debug document)
@@ -122,7 +124,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
       double sumR = 0.0;
       for (int i = 0; i < 10; ++i) {
         Pair<GeneralDataset<Trilean, String>, GeneralDataset<Trilean, String>> data = trainDataset.dereference().get().splitOutFold(i, 10);
-        LinearClassifier<Trilean, String> foldClassifier = trainer.trainClassifier(data.first);
+        Classifier<Trilean, String> foldClassifier = trainer.trainClassifier(data.first);
         sumAccuracy += foldClassifier.evaluateAccuracy(data.second);
         Pair<Double, Double> pr = foldClassifier.evaluatePrecisionAndRecall(data.second, Trilean.TRUE);
         sumP += pr.first;

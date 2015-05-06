@@ -2,6 +2,7 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.*;
 import edu.stanford.nlp.io.IOUtils;
+import edu.stanford.nlp.optimization.OWLQNMinimizer;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.StringUtils;
@@ -47,8 +48,11 @@ public class ClassifierTrainer {
 
   @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
   public int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
+  private static enum Regularizer {L1, L2}
+  @Execution.Option(name="train.regularizer", gloss="The type of regularization to use (e.g., L1, L2)")
+  public Regularizer TRAIN_REGULARIZER = Regularizer.L2;
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
-  public double TRAIN_SIGMA = 1.0;
+  public double TRAIN_SIGMA = 1.00;
 
   @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
   public File TEST_FILE = TRAIN_FILE;
@@ -194,12 +198,23 @@ public class ClassifierTrainer {
    * @param data The dataset to train the classifier on.
    * @return A trained classifier.
    */
-  public LinearClassifier<Trilean, String> trainClassifier(GeneralDataset<Trilean, String> data) {
+  public Classifier<Trilean, String> trainClassifier(GeneralDataset<Trilean, String> data) {
     // (create factory)
     forceTrack("Training the classifier");
     startTrack("creating factory");
+
+//    ShiftParamsLogisticClassifierFactory<Trilean, String> factory = new ShiftParamsLogisticClassifierFactory<>();
+
     LinearClassifierFactory<Trilean, String> factory = new LinearClassifierFactory<>();
-    factory.setSigma(TRAIN_SIGMA);
+    switch (TRAIN_REGULARIZER) {
+      case L1:
+        factory.setMinimizerCreator(() -> new OWLQNMinimizer(TRAIN_SIGMA).shutUp());
+        break;
+      case L2:
+        factory.setSigma(TRAIN_SIGMA);
+        break;
+    }
+    log("regularizer: " + TRAIN_REGULARIZER);
     log("sigma: " + TRAIN_SIGMA);
     if (TRAIN_FEATURE_COUNT_THRESHOLD > 0) {
       data.applyFeatureCountThreshold(TRAIN_FEATURE_COUNT_THRESHOLD);
@@ -208,7 +223,7 @@ public class ClassifierTrainer {
     endTrack("creating factory");
     // (train classifier)
     log("training classifier:");
-    LinearClassifier<Trilean, String> classifier = factory.trainClassifier(data);
+    Classifier<Trilean, String> classifier = factory.trainClassifier(data);
     // (evaluate training accuracy)
     log("Training accuracy: " + classifier.evaluateAccuracy(data));
     endTrack("Training the classifier");
@@ -216,7 +231,7 @@ public class ClassifierTrainer {
   }
 
 
-  public LinearClassifier<Trilean, String> trainClassifier(Collection<DistantEntailmentPair> data) {
+  public Classifier<Trilean, String> trainClassifier(Collection<DistantEntailmentPair> data) {
     return trainClassifier(featurizer.featurize(data.stream().map(DistantEntailmentPair::asEntailmentPair)));
   }
 
