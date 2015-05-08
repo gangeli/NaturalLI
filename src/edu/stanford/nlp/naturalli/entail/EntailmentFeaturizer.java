@@ -37,7 +37,8 @@ public class EntailmentFeaturizer implements Serializable {
 
   enum FeatureTemplate {
     BLEU, LENGTH_DIFF,
-    OVERLAP, POS_OVERLAP, KEYWORD_OVERLAP, KEYWORD_STATISTICS,
+    OVERLAP, POS_OVERLAP,
+    KEYWORD_OVERLAP, KEYWORD_STATISTICS, KEYWORD_DISFLUENCIES,
     LUCENE_SCORE,
     ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
     CONCLUSION_NGRAM,
@@ -51,6 +52,7 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.OVERLAP);
 //    add(FeatureTemplate.POS_OVERLAP);
     add(FeatureTemplate.KEYWORD_OVERLAP);
+//    add(FeatureTemplate.KEYWORD_DISFLUENCIES);  // TODO(gabor) implement me better
 //    add(FeatureTemplate.KEYWORD_STATISTICS);
 
     add(FeatureTemplate.LUCENE_SCORE);
@@ -310,6 +312,7 @@ public class EntailmentFeaturizer implements Serializable {
 
     // Align the sentences
     Set<KeywordPair> alignments = align(ex, premiseKeywords, conclusionKeywords, debugDocument, false);
+    long numAligned = alignments.stream().filter(KeywordPair::isAligned).count();
 
     // Some basic statistics on the alignment
     long onlyInPremise = alignments.stream().filter(x -> x.hasPremise() && !x.hasConclusion()).count();
@@ -331,22 +334,44 @@ public class EntailmentFeaturizer implements Serializable {
       double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
       double perfectMatchBonusPremise = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) premiseKeyphrases.size());
       double perfectMatchBonusConclusion = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) conclusionKeyphrases.size());
-      double perfectMatchBonusPercent = alignments.isEmpty() ? 0.0 :  ((double) perfectMatch) / ((double) alignments.size());
+      double perfectMatchBonusPercent = numAligned == 0 ? 0.0 :  ((double) perfectMatch) / ((double) numAligned);
 
       // Add the features
+      // (constant biases)
       feats.incrementCount("onlyInPremise", onlyInPremisePenalty);
       feats.incrementCount("onlyInConclusion", onlyInHypothesisPenalty);
-      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);
-      feats.incrementCount("noOverlapConclusion", noOverlapPenaltyConclusion);
-      feats.incrementCount("noOverlapPercent", noOverlapPenaltyPercent);
-      feats.incrementCount("noOverlapCount", notOverlap);
       feats.incrementCount("anyOverlap", anyOverlapBonus);
       feats.incrementCount("anyOverlapCount", anyOverlap);
-      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
+
+      // (conclusion only)
+      feats.incrementCount("noOverlapConclusion", noOverlapPenaltyConclusion);
       feats.incrementCount("perfectMatchConclusion", perfectMatchBonusConclusion);
+
+      // (joint)
       feats.incrementCount("perfectMatchPercent", perfectMatchBonusPercent);
       feats.incrementCount("perfectMatchCount", perfectMatch);
-      feats.incrementCount("perfectMatchCount", perfectMatch);
+      feats.incrementCount("noOverlapPercent", noOverlapPenaltyPercent);
+      feats.incrementCount("noOverlapCount", notOverlap);
+
+      // (premise)
+//      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);
+//      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
+    }
+
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_DISFLUENCIES)) {
+      List<KeywordPair> sortedByConclusion = alignments.stream().filter(KeywordPair::isAligned).sorted( (x, y) -> x.conclusionSpan.start() - y.conclusionSpan.start()).collect(Collectors.toList());
+      int lastPremise = -1;
+      int lastConclusion = -1;
+      int disfluencies = 0;
+      for (KeywordPair pair : sortedByConclusion) {
+        assert pair.conclusionSpan.start() > lastConclusion;
+        lastConclusion = pair.conclusionSpan.start();
+        if (pair.premiseSpan.start() < lastPremise) {
+          disfluencies += 1;
+        }
+        lastPremise = pair.premiseSpan.start();
+      }
+      feats.incrementCount("align_jumps", (double) disfluencies);
     }
 
 

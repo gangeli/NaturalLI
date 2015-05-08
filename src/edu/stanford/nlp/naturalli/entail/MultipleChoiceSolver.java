@@ -114,16 +114,7 @@ public class MultipleChoiceSolver {
           );
       double score = support.second;
 
-//      double score = classifier.bestAlignmentOverlapScore(question.premises.get(qI), question.hypotheses.get(qI));
-
-//      double numPremises = (double) question.premises.get(qI).size();
-//      double score = classifier.weightedAverageScore(
-//          question.premises.get(qI),
-//          question.hypotheses.get(qI),
-//          i -> Math.exp(-5.0 * i / numPremises)
-//          );
-
-      log(new DecimalFormat("0.0000").format(score) + ": " + question.hypotheses.get(qI));
+      log(new DecimalFormat("0.0000").format(score) + ": " + question.hypotheses.get(qI) + "  (because '" + support.first + ")");
 
       if (score > max) {
         max = score;

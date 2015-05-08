@@ -36,7 +36,9 @@ public interface EntailmentClassifier {
     return truthScore(new Sentence(premise), new Sentence(hypothesis), focus, luceneScore);
   }
 
-  public default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis, Optional<String> focus, Optional<List<Double>> luceneScores) {
+  public default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
+                                                  Optional<String> focus, Optional<List<Double>> luceneScores,
+                                                  Function<Integer, Double> decay) {
     double max = Double.NEGATIVE_INFINITY;
     Sentence argmax = null;
     Sentence hypothesisSentence = new Sentence(hypothesis);
@@ -50,6 +52,10 @@ public interface EntailmentClassifier {
           !premiseSentence.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
         score *= 0.25;
       }
+      score *= decay.apply(i);
+      // Check score
+      assert !Double.isNaN(score);
+      assert Double.isFinite(score);
       // Incorporate it into the max calculation
       if (score > max) {
         max = score;
@@ -59,30 +65,43 @@ public interface EntailmentClassifier {
     return Pair.makePair(argmax, max);
   }
 
-  public default int bestCandidate(String premise, List<String> candidates, Optional<String> focus, Optional<Double> luceneScore) {
-    int argmax = -1;
-    double max = Double.NEGATIVE_INFINITY;
-    Sentence premiseSentence = new Sentence(premise);
-    for (int i = 0; i < candidates.size(); ++i) {
-      double score = truthScore(premiseSentence, new Sentence(candidates.get(i)), focus, luceneScore);
-      if (score > max) {
-        max = score;
-        argmax = i;
-      }
-    }
-    return argmax;
+  public default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
+                                                  Optional<String> focus, Optional<List<Double>> luceneScores) {
+    return bestScore(premises, hypothesis, focus, luceneScores, i -> 1.0);
   }
 
-
-  public default double weightedAverageScore(List<String> premises, String hypothesis, Optional<String> focus, Optional<Double> luceneScore, Function<Integer, Double> decay) {
+  public default Pair<Sentence, Double> aveScore(List<String> premises, String hypothesis,
+                                                 Optional<String> focus, Optional<List<Double>> luceneScores,
+                                                 Function<Integer, Double> decay) {
     double sum = 0.0;
+    double max = Double.NEGATIVE_INFINITY;
+    Sentence argmax = null;
     Sentence hypothesisSentence = new Sentence(hypothesis);
     for (int i = 0; i < premises.size(); ++i) {
-      double score = truthScore(new Sentence(premises.get(i)), hypothesisSentence, focus, luceneScore);
-      sum += decay.apply(i) * score;
+      Sentence premiseSentence = new Sentence(premises.get(i));
+      // Score the entailment pair
+      double score = truthScore(premiseSentence, hypothesisSentence, focus, luceneScores.isPresent() ? Optional.of(luceneScores.get().get(i)) : Optional.empty());
+      // Discount the score if the focus is not present
+      if (focus.isPresent() &&
+          !focus.get().contains(" ") &&
+          !premiseSentence.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
+        score *= 0.25;
+      }
+      score *= decay.apply(i);
+      // Check score
+      assert !Double.isNaN(score);
+      assert Double.isFinite(score);
+      // Incorporate it into the max calculation
+      if (score > max) {
+        max = score;
+        argmax = premiseSentence;
+      }
+      // Compute the sum
+      sum += score;
     }
-    return sum / ((double) premises.size());
+    return Pair.makePair(argmax, sum / ((double) premises.size()));
   }
+
 
 
 
