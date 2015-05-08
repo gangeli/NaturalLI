@@ -7,7 +7,7 @@ function depInsert2relC() {
   echo "natlog_relation dependencyInsertToLexicalFunction(const dep_label& dep,"
   echo '                                                  const ::word& dependent) {'
   echo "  switch (dep) {"
-  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq |\
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' -e 's/:/_/g' | sort | uniq |\
     awk -F'	' '{ print toupper($1) "\t" toupper($2) "\t" $3 }' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)\t(.*)$/    case DEP_\1: return FUNCTION_\2;  \/\/  \3/g'
   echo '    default:'
@@ -32,7 +32,7 @@ function depInsert2relJava() {
 function dep2header() {
   echo "typedef uint8_t dep_label;"
   echo ""
-  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq |\
+  cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' -e 's/:/_/g' | sort | uniq |\
     awk -F'	' '{ print toupper($1) }' |\
     awk '{printf("#define DEP_%s  %d\n", $0, NR - 1)}'
   echo "#define NUM_DEPENDENCY_LABELS `cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' -e 's/\\\\\///g' -e 's/vs\./vs/g' | sort | uniq | wc -l`" 
@@ -48,7 +48,7 @@ function dep2string() {
   cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
     awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)$/  dependency2index["\1"] = DEP_\2;/g' |\
-    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g'
+    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/:/_/g'
 
 
   echo "}"
@@ -71,7 +71,7 @@ function dep2string() {
   cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
     awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)$/  if (indexed == DEP_\2) { return "\1"; }/g' |\
-    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g'
+    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/:/_/g'
   echo '  return "???";'
   echo "}"
 }
