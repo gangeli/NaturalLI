@@ -40,13 +40,16 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
   }
 
   @Override
-  public Trilean classify(Sentence premise, Sentence hypothesis) {
-    return impl.classOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis), Optional.empty())));
+  public Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    return impl.classOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty())));
   }
 
   @Override
-  public double truthScore(Sentence premise, Sentence hypothesis) {
-    return impl.scoresOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis), Optional.empty()))).getCount(Trilean.TRUE);
+  public double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    Counter<Trilean> scores = impl.scoresOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty())));
+    Counters.logNormalizeInPlace(scores);
+    Counters.expInPlace(scores);
+    return scores.getCount(Trilean.TRUE);
   }
 
   @Override

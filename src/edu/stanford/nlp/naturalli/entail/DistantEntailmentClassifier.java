@@ -47,13 +47,13 @@ public class DistantEntailmentClassifier implements EntailmentClassifier {
   }
 
   @Override
-  public Trilean classify(Sentence premise, Sentence hypothesis) {
-    return classify(new DistantEntailmentPair(Trilean.UNKNOWN, premise.text(), hypothesis.text(), pipeline.get()));
+  public Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    return classify(new DistantEntailmentPair(Trilean.UNKNOWN, premise.text(), hypothesis.text(), focus, luceneScore, pipeline.get()));
   }
 
   @Override
-  public double truthScore(Sentence premise, Sentence hypothesis) {
-    return truthScore(new DistantEntailmentPair(Trilean.UNKNOWN, premise.text(), hypothesis.text(), pipeline.get()));
+  public double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    return truthScore(new DistantEntailmentPair(Trilean.UNKNOWN, premise.text(), hypothesis.text(), focus, luceneScore, pipeline.get()));
   }
 
   @SuppressWarnings("SuspiciousNameCombination")

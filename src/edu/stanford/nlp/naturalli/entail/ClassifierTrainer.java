@@ -4,10 +4,7 @@ import edu.stanford.nlp.classify.*;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.optimization.OWLQNMinimizer;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import edu.stanford.nlp.util.Execution;
-import edu.stanford.nlp.util.StringUtils;
-import edu.stanford.nlp.util.Trilean;
-import edu.stanford.nlp.util.Triple;
+import edu.stanford.nlp.util.*;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 import java.io.*;
@@ -88,7 +85,7 @@ public class ClassifierTrainer {
    * @throws IOException Throw by the underlying read mechanisms.
    */
   public <E> Stream<E> readDataset(File source, File cache, int size,
-                                   Function<Triple<Trilean, String, String>, E> datumFactory,
+                                   Function<Quintuple<Trilean, String, String, Optional, Optional>, E> datumFactory,
                                    Function<InputStream, Stream<E>> deserialize) throws IOException {
     // Read size
     if (size < 0) {
@@ -109,53 +106,46 @@ public class ClassifierTrainer {
     } else {
       log("no cached version found. Reading from file (" + source + ")");
       BufferedReader reader = IOUtils.readerFromFile(source);
-      if (PARALLEL) {
-        return Stream.generate(() -> {
-          try {
-            String line;
-            synchronized (reader) {  // In case we're reading multithreaded
-              line = reader.readLine();
-            }
-            if (line == null) {
-              return null;
-            }
-            // Parse the line
-            String[] fields = line.split("\t");
-            Trilean truth = Trilean.fromString(fields[1].toLowerCase());
-            String premise = fields[2];
-            String conclusion = fields[3];
-            // Add the pair
-            return datumFactory.apply(Triple.makeTriple(truth, premise, conclusion));
-          } catch (IOException e) {
-            throw new RuntimeException(e);
+      return Stream.generate(() -> {
+        try {
+          String line;
+          synchronized (reader) {  // In case we're reading multithreaded
+            line = reader.readLine();
           }
-        }).limit(size);
-      } else {
-        List<E> backingList = new ArrayList<>();
-        String line;
-        while ( (line = reader.readLine()) != null) {
+          if (line == null) {
+            return null;
+          }
           // Parse the line
           String[] fields = line.split("\t");
           Trilean truth = Trilean.fromString(fields[1].toLowerCase());
           String premise = fields[2];
           String conclusion = fields[3];
+          Optional<String> focus = Optional.empty();
+          if (fields.length > 4 && !"".equals(fields[4])) {
+            focus = Optional.of(fields[4]);
+          }
+          Optional<Double> luceneScore = Optional.empty();
+          if (fields.length > 5 && !"".equals(fields[5])) {
+            luceneScore = Optional.of(Double.parseDouble(fields[5]));
+          }
           // Add the pair
-          backingList.add(datumFactory.apply(Triple.makeTriple(truth, premise, conclusion)));
+          return datumFactory.apply(Quintuple.makeQuadruple(truth, premise, conclusion, focus, luceneScore));
+        } catch (IOException e) {
+          throw new RuntimeException(e);
         }
-        return backingList.stream();
-      }
+      }).limit(size);
     }
   }
 
   public Stream<EntailmentPair> readFlatDataset(File source, File cache, int size) throws IOException {
     return readDataset(source, cache, size,
-        triple -> new EntailmentPair(triple.first, triple.second, triple.third),
+        args -> new EntailmentPair(args.first, args.second, args.third, args.fourth, args.fifth),
         EntailmentPair::deserialize);
   }
 
   public Stream<DistantEntailmentPair> readDistantDataset(File source, File cache, int size, StanfordCoreNLP pipeline) throws IOException {
     return readDataset(source, cache, size,
-        triple -> new DistantEntailmentPair(triple.first, triple.second, triple.third, pipeline),
+        args -> new DistantEntailmentPair(args.first, args.second, args.third, args.fourth, args.fifth, pipeline),
         DistantEntailmentPair::deserialize);
   }
 

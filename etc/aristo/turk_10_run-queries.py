@@ -48,13 +48,15 @@ if __name__ == "__main__":
   qI = 0
   for group in withProgress(examples, 'Running queries'):
     for statement in group:
-      results = query(solrURL, statement.text, opts.count)
-      for result in results:
-        print("%d\t%s\t%s\t%s" % (
+      results = query(solrURL, statement.text, statement.answer, opts.count)
+      for i in range(len(results)):
+        print("%d\t%s\t%s\t%s\t%s\t%f" % (
               qI,
               "True" if statement.truth else "False",
-              result,
-              statement.text
+              results[i],
+              statement.text,
+              statement.focus,
+              results.scores[i]
              ))
     qI += 1
 

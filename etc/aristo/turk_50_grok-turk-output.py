@@ -121,13 +121,20 @@ def parseargs():
                       help='A NaturalLI formatted test file that can be used to sample negatives.')
   parser.add_argument('--filterTurkers', metavar='filterTurkers',
                       help='The turkers to filter from the results. See view-turkers.py, and the statistics at the bottom of this script')
+  parser.add_argument('--host', metavar='host', default='localhost',
+                      help='The hostname where Solr is running (default: localhost).')
+  parser.add_argument('--port', metavar='port', default=8983,
+                      type=int,
+                      help='The port where Solr is running (default: 8983).')
+  parser.add_argument('--collection', metavar='collection', required=True,
+                      help='The Solr collection to query.')
   parser.add_argument('file', metavar='files', nargs='*',
                       help='The files to run on; if none are given, run off of stdin.')
   
   return parser.parse_args()
         
-def writeLine(truth, premise, conclusion):
-  print("%d\t%s\t%s\t%s" % (0, 'True' if truth else 'False', premise, conclusion))
+def writeLine(truth, premise, conclusion, luceneScore):
+  print("%d\t%s\t%s\t%s\t\t%f" % (0, 'True' if truth else 'False', premise, conclusion, luceneScore))
 
 """
   Process a given turk file, writing an output in the Classifier data format.
@@ -137,36 +144,61 @@ def writeLine(truth, premise, conclusion):
                used when creating the HIT.
   @param negativesForPremise A map from a premise to negative hypothesis from
                              that premise.
+  @param solrURL The URL to query SOLR at, for lucene scores
+                 (None to not query).
   @param workerStats An object for collecting statistics on a worker.
   @param filteredWorkers A set of workers which have been filtered out.
 """
-def process(f, count, negativesForPremise, workerStats, filteredWorkers):
+def process(f, count, negativesForPremise, solrURL, workerStats, filteredWorkers):
   reader = csv.DictReader(f, delimiter=',', quotechar='"')
   allPremises = {}
   for row in reader:
     if not row['WorkerId'] in filteredWorkers:
       anySupport = False
       judgments = []
-      for i in range(count):
-        premise = row['Input.premise_' + str(i)]
-        conclusion = row['Input.hypothesis_' + str(i)]
+      for qI in range(count):
+        # Grok the premise / hypothesis
+        premise = row['Input.premise_' + str(qI)]
+        conclusion = row['Input.hypothesis_' + str(qI)]
         if not premise in allPremises:
           allPremises[premise] = True
+      
+        # Get Solr scores
+        # (forward)
+        forwardResults = query(solrURL, conclusion, '', 20)
+        forwardScore = 0.0
+        for i in range(len(forwardResults)):
+          if premise.replace(' ', '') == forwardResults[i].replace(' ', ''):
+            forwardScore = forwardResults.scoresRelative[i]
+        if forwardScore == 0.0:
+          raise Exception('Could not find premise "%s" in query "%s"' % (
+            premise, conclusion))
+        # (backward)
+        backwardResults = query(solrURL, conclusion, '', 20)
+        backwardScore = 0.0
+        for i in range(len(backwardResults)):
+          if premise.replace(' ', '') == backwardResults[i].replace(' ', ''):
+            backwardScore = backwardResults.scoresRelative[i]
+        if backwardScore == 0.0:
+          raise Exception('Could not find premise "%s" in query "%s"' % (
+            premise, conclusion))
         
-        answer = row['Answer.ex' + str(i)]
+        # Print the line
+        answer = row['Answer.ex' + str(qI)]
         judgments.append(answer)
         if answer == 'Forward':
-          writeLine(True, premise, conclusion)
+          writeLine(True, premise, conclusion, forwardScore)
           anySupport = True
         elif answer == 'Backward':
-          writeLine(True, conclusion, premise)
+          writeLine(True, conclusion, premise, backwardScore)
           anySupport = True
         elif answer == 'Both':
-          writeLine(True, premise, conclusion)
-          writeLine(True, conclusion, premise)
+          writeLine(True, premise, conclusion, forwardScore)
+          writeLine(True, conclusion, premise, backwardScore)
           anySupport = True
         elif answer == 'Neither':
-          writeLine(False, premise, conclusion)
+          writeLine(False, premise, conclusion, forwardScore)
+          writeLine(False, conclusion, premise, backwardScore)
         else:
           raise Exception("Unknown answer: %s" % answer)
         
@@ -186,7 +218,7 @@ def process(f, count, negativesForPremise, workerStats, filteredWorkers):
   for premise in allPremises:
     if premise in negativesForPremise:
       for negativeConclusion in negativesForPremise[premise]:
-        writeLine(False, premise, negativeConclusion)
+        writeLine(False, premise, negativeConclusion, 0.0)
     
 
 """
@@ -195,6 +227,7 @@ def process(f, count, negativesForPremise, workerStats, filteredWorkers):
 if __name__ == "__main__":
   # Parse the arguments
   opts = parseargs()
+  solrURL = 'http://' + opts.host + ':' + str(opts.port) + '/solr/' + opts.collection + '/select/'
   
   # Read the negatives
   negativesForPremise = {}
@@ -218,12 +251,12 @@ if __name__ == "__main__":
   workerStats = WorkerStats()
   if len(opts.file) == 0:
     sys.stderr.write("Reading from stdin...\n")
-    process(sys.stdin, opts.count, negativesForPremise, workerStats)
+    process(sys.stdin, opts.count, negativesForPremise, solrURL, workerStats, filteredWorkers)
   else:
     for filename in opts.file:
       sys.stderr.write("Reading %s...\n" % filename)
       with open(filename, 'r') as f:
-        process(f, opts.count, negativesForPremise, workerStats, filteredWorkers)
+        process(f, opts.count, negativesForPremise, solrURL, workerStats, filteredWorkers)
   sys.stderr.write ('Done processing files.\n')
 
   # Print worker stats

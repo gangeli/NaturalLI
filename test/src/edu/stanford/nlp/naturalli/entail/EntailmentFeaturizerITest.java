@@ -25,7 +25,7 @@ public class EntailmentFeaturizerITest {
           add("< checkers; checkers >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Cats play checkers", "Cats play checkers"),
+                "Cats play checkers", "Cats play checkers", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
     assertEquals(
         new HashSet<String>() {{
@@ -36,7 +36,7 @@ public class EntailmentFeaturizerITest {
           add("< --- ; checkers >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Cats eat candy", "Cats play checkers"),
+                "Cats eat candy", "Cats play checkers", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 
@@ -47,7 +47,7 @@ public class EntailmentFeaturizerITest {
           add("< conductor of electricity; best conductor of electricity >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "It is a conductor of electricity.", "It is the best conductor of electricity."),
+                "It is a conductor of electricity.", "It is the best conductor of electricity.", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 
@@ -60,7 +60,7 @@ public class EntailmentFeaturizerITest {
           add("< --- ; include >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Hail is a form of precipitation.", "Examples of precipitation include hail."),
+                "Hail is a form of precipitation.", "Examples of precipitation include hail.", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 
@@ -74,7 +74,7 @@ public class EntailmentFeaturizerITest {
           add("< dogs; dogs >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Cats chase cats and dogs.", "Cats chase dogs."),
+                "Cats chase cats and dogs.", "Cats chase dogs.", Optional.empty(), Optional.empty()),
             Optional.empty(), true).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
     assertEquals(
         new HashSet<String>() {{
@@ -84,7 +84,7 @@ public class EntailmentFeaturizerITest {
           add("< dogs; dogs >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Cats chase dogs.", "Cats chase cats and dogs."),
+                "Cats chase dogs.", "Cats chase cats and dogs.", Optional.empty(), Optional.empty()),
             Optional.empty(), true).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
 
     assertEquals(
@@ -95,7 +95,7 @@ public class EntailmentFeaturizerITest {
           add("< dogs; dogs >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Cats chase dogs.", "Cats chase cats and dogs."),
+                "Cats chase dogs.", "Cats chase cats and dogs.", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 
@@ -108,7 +108,7 @@ public class EntailmentFeaturizerITest {
           add("< wine; wine >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "I create water from wine.", "I create something from wine."),
+                "I create water from wine.", "I create something from wine.", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 
@@ -121,7 +121,7 @@ public class EntailmentFeaturizerITest {
           add("< General; --- >");
         }},
         EntailmentFeaturizer.align(new EntailmentPair(Trilean.FALSE,
-                "Conductors of Heat and Electricity In General.", "an iron nail is the best conductor of electricity."),
+                "Conductors of Heat and Electricity In General.", "an iron nail is the best conductor of electricity.", Optional.empty(), Optional.empty()),
             Optional.empty(), false).stream().map(EntailmentFeaturizer.KeywordPair::toString).collect(Collectors.toSet()));
   }
 }

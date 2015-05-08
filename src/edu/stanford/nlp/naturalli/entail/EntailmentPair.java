@@ -3,9 +3,8 @@ package edu.stanford.nlp.naturalli.entail;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.Trilean;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -15,34 +14,43 @@ class EntailmentPair {
   public final Trilean truth;
   public final Sentence premise;
   public final Sentence conclusion;
+  public final Optional<String> focus;
+  public final Optional<Double> luceneScore;
 
-  public EntailmentPair(Trilean truth, String premise, String conclusion) {
+  public EntailmentPair(Trilean truth, String premise, String conclusion, Optional<String> focus, Optional<Double> luceneScore) {
     this.truth = truth;
     this.premise = new Sentence(premise);
     this.conclusion = new Sentence(conclusion);
+    this.focus = focus;
+    this.luceneScore = luceneScore;
   }
 
-  public EntailmentPair(Trilean truth, Sentence premise, Sentence conclusion) {
+  public EntailmentPair(Trilean truth, Sentence premise, Sentence conclusion, Optional<String> focus, Optional<Double> luceneScore) {
     this.truth = truth;
     this.premise = premise;
     this.conclusion = conclusion;
+    this.focus = focus;
+    this.luceneScore = luceneScore;
   }
 
   @SuppressWarnings("SynchronizationOnLocalVariableOrMethodParameter")
   public void serialize(final OutputStream cacheStream) {
     try {
       synchronized (cacheStream) {
+        DataOutputStream out = new DataOutputStream(cacheStream);
         if (truth.isTrue()) {
-          cacheStream.write(1);
+          out.write(1);
         } else if (truth.isFalse()) {
-          cacheStream.write(0);
+          out.write(0);
         } else if (truth.isUnknown()) {
-          cacheStream.write(2);
+          out.write(2);
         } else {
           throw new IllegalStateException();
         }
-        premise.serialize(cacheStream);
-        conclusion.serialize(cacheStream);
+        premise.serialize(out);
+        conclusion.serialize(out);
+        out.writeUTF(focus.orElse(""));
+        out.writeDouble(luceneScore.orElse(-1.0));
       }
     } catch (IOException e) {
       throw new RuntimeException(e);
@@ -53,10 +61,11 @@ class EntailmentPair {
     return Stream.generate(() -> {
       try {
         synchronized (cacheStream) {
+          DataInputStream in = new DataInputStream(cacheStream);
           // Read the truth byte
           int truthByte;
           try {
-            truthByte = cacheStream.read();
+            truthByte = in.read();
           } catch (IOException e) {
             return null;  // Stream closed exception
           }
@@ -79,10 +88,15 @@ class EntailmentPair {
               throw new IllegalStateException("Error parsing cache!");
           }
           // Read the sentences
-          Sentence premise = Sentence.deserialize(cacheStream);
-          Sentence conclusion = Sentence.deserialize(cacheStream);
+          Sentence premise = Sentence.deserialize(in);
+          Sentence conclusion = Sentence.deserialize(in);
+          // Read the optionals
+          String focus = in.readUTF();
+          double score = in.readDouble();
           // Create the datum
-          return new EntailmentPair(truth, premise, conclusion);
+          return new EntailmentPair(truth, premise, conclusion,
+              "".equals(focus) ? Optional.empty() : Optional.of(focus),
+              score < 0 ? Optional.empty() : Optional.of(score));
         }
       } catch(IOException e) {
         throw new RuntimeException(e);

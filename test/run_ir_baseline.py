@@ -151,7 +151,7 @@ def averageScore(question, statement, result, stopwords):
   @return The guessed index of the correct answer, as an Integer.
 """
 def guess(solrURL, example, stopwords):
-  results = [query(solrURL, statement.text) for statement in example]
+  results = [query(solrURL, statement.text, "") for statement in example]
 #  results = [query(solrURL, statement.answer + ' ' + example.question) for statement in example]
 
   # Average the scores of the top results, with degredation
@@ -164,7 +164,7 @@ def guess(solrURL, example, stopwords):
 #    solrScore = 1.0
     aveSolrScore = results[candidateI].averageScore() / float(len(results[candidateI]))
 #    aveSolrScore = 0.0
-    score = lexScore * solrScore + aveSolrScore
+    score = lexScore * solrScore# + aveSolrScore
     if score > maxV:
       maxV = score
       argmax = candidateI

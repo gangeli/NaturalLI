@@ -38,6 +38,7 @@ public class EntailmentFeaturizer implements Serializable {
   enum FeatureTemplate {
     BLEU, LENGTH_DIFF,
     OVERLAP, POS_OVERLAP, KEYWORD_OVERLAP, KEYWORD_STATISTICS,
+    LUCENE_SCORE,
     ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
     CONCLUSION_NGRAM,
   }
@@ -51,6 +52,8 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.POS_OVERLAP);
     add(FeatureTemplate.KEYWORD_OVERLAP);
 //    add(FeatureTemplate.KEYWORD_STATISTICS);
+
+    add(FeatureTemplate.LUCENE_SCORE);
 
 //    add(FeatureTemplate.ENTAIL_UNIGRAM);
 //    add(FeatureTemplate.ENTAIL_BIGRAM);
@@ -445,6 +448,10 @@ public class EntailmentFeaturizer implements Serializable {
   public Counter<String> featurize(EntailmentPair ex, Optional<DebugDocument> debugDocument) {
     ClassicCounter<String> feats = new ClassicCounter<>();
     feats.incrementCount("bias");
+
+    if (FEATURE_TEMPLATES.contains(FeatureTemplate.LUCENE_SCORE)) {
+      feats.incrementCount("lucene_score", ex.luceneScore.orElse(0.0));
+    }
 
     // Lemma overlap
     if (FEATURE_TEMPLATES.contains(FeatureTemplate.OVERLAP)) {
