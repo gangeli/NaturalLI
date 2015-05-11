@@ -2,6 +2,8 @@
 # (generated models)
 etc/.*
 etc/clauseSearcherModel.ser.gz
+etc/clauseSplitterModel.ser.gz
+etc/clauseSplitterModel_small.ser.gz
 etc/clauseSearcherData.tab.gz
 etc/edgeTypes.tab
 etc/graph.tab.gz
@@ -14,8 +16,13 @@ etc/subj_obj_pp.tab.gz
 etc/subj_pp.tab.gz
 etc/subj_pp_obj.tab.gz
 etc/subj_pp_pp.tab.gz
+etc/obj.tab.gz
 etc/vocab.tab.gz
 etc/wordnet.ser.gz
+etc/wordnet.tab.gz
+etc/naturalli_raw_graph_data.tar.gz
+# (auxilliary tests)
+test/data/perfcase_fracas_failing.examples
 # (generated sources)
 src/Models.cc
 src/Models.h
@@ -24,12 +31,20 @@ src/fnv/longlong.h
 src/hash_tree
 src/write_kb
 src/naturalli
-test/src/test_server
-test/src/itest_server
+src/naturalli_search
+test/src/naturalli_test
+test/src/naturalli_itest
+# (tmp files)
+tmp
 # (misc)
 log
 src/knheap/testPerformance
 test/src/gtest/lib
+# (prohibited/large data)
+*aristo*
+*snli*
+# (releases)
+naturalli-*.tar.gz
 
 # Java
 classes/**
@@ -106,3 +121,11 @@ TAGS
 *.toc
 *.pdf
 *.bak
+*.bbl
+*.blg
+comments.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
