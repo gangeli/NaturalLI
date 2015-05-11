@@ -121,15 +121,15 @@ public class QRewrite {
       IndexedWord lot = matcher.getNode("lot");
       IndexedWord obj = matcher.getNode("obj");
       // Butcher tree
-      if (!tree.removeEdge(new SemanticGraphEdge(verb, lot, GrammaticalRelation.valueOf(Language.English, "dobj"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(verb, lot, GrammaticalRelation.valueOf(Language.Any, "dobj"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
-      if (!tree.removeEdge(new SemanticGraphEdge(lot, obj, GrammaticalRelation.valueOf(Language.English, "prep_of"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(lot, obj, GrammaticalRelation.valueOf(Language.Any, "nmod:of"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
       // Re-assemble tree
-      tree.addEdge(verb, obj, GrammaticalRelation.valueOf(Language.English, "dobj"), Double.NEGATIVE_INFINITY, false);
-      tree.addEdge(obj, lot, GrammaticalRelation.valueOf(Language.English, "amod"), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(verb, obj, GrammaticalRelation.valueOf(Language.Any, "dobj"), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(obj, lot, GrammaticalRelation.valueOf(Language.Any, "amod"), Double.NEGATIVE_INFINITY, false);
     }
 
     // N OF [the]
@@ -140,15 +140,15 @@ public class QRewrite {
       IndexedWord num = matcher.getNode("num");
       IndexedWord obj = matcher.getNode("obj");
       // Butcher tree
-      if (!tree.removeEdge(new SemanticGraphEdge(verb, num, GrammaticalRelation.valueOf(Language.English, "nsubj"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(verb, num, GrammaticalRelation.valueOf(Language.Any, "nsubj"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
-      if (!tree.removeEdge(new SemanticGraphEdge(num, obj, GrammaticalRelation.valueOf(Language.English, "prep_of"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(num, obj, GrammaticalRelation.valueOf(Language.Any, "nmod:of"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
       // Re-assemble tree
-      tree.addEdge(verb, obj, GrammaticalRelation.valueOf(Language.English, "nsubj"), Double.NEGATIVE_INFINITY, false);
-      tree.addEdge(obj, num, GrammaticalRelation.valueOf(Language.English, "amod"), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(verb, obj, GrammaticalRelation.valueOf(Language.Any, "nsubj"), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(obj, num, GrammaticalRelation.valueOf(Language.Any, "amod"), Double.NEGATIVE_INFINITY, false);
     }
 
     // One is a determiner
@@ -161,7 +161,7 @@ public class QRewrite {
       }
     }
     for (SemanticGraphEdge edge : oneEdgesToReplace) {
-      tree.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, "det"), edge.getWeight(), edge.isExtra());
+      tree.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.Any, "det"), edge.getWeight(), edge.isExtra());
     }
 
     return tree;
@@ -183,7 +183,7 @@ public class QRewrite {
           tree.removeEdge(edgeToReverse);
           tree.getRoots().remove(root);
           tree.addRoot(edgeToReverse.getDependent());
-          tree.addEdge(edgeToReverse.getDependent(), edgeToReverse.getGovernor(), GrammaticalRelation.valueOf(Language.English, "op"), edgeToReverse.getWeight(), false);
+          tree.addEdge(edgeToReverse.getDependent(), edgeToReverse.getGovernor(), GrammaticalRelation.valueOf(Language.Any, "op"), edgeToReverse.getWeight(), false);
         }
       }
     }
@@ -199,7 +199,7 @@ public class QRewrite {
       if ("WP".equals(vertex.tag())) {
         for (SemanticGraphEdge edge : tree.incomingEdgeList(vertex)) {
           tree.removeEdge(edge);
-          tree.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.English, "det"), edge.getWeight(), edge.isExtra());
+          tree.addEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.Any, "det"), edge.getWeight(), edge.isExtra());
         }
       }
     }
@@ -219,25 +219,25 @@ public class QRewrite {
       IndexedWord pobj = matcher.getNode("pobj");
       // Butcher tree
       List<SemanticGraphEdge> edgesOutOfHas = new ArrayList<>();
-      if (!tree.removeEdge(new SemanticGraphEdge(root, has, GrammaticalRelation.valueOf(Language.English, matcher.getRelnString("clause")), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(root, has, GrammaticalRelation.valueOf(Language.Any, matcher.getRelnString("clause")), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
-      if (!tree.removeEdge(new SemanticGraphEdge(has, prep, GrammaticalRelation.valueOf(Language.English, "mark"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(has, prep, GrammaticalRelation.valueOf(Language.Any, "mark"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
-      if (!tree.removeEdge(new SemanticGraphEdge(has, pobj, GrammaticalRelation.valueOf(Language.English, "nsubj"), Double.NEGATIVE_INFINITY, false))) {
-        throw new IllegalStateException("Could not remove edge!");
+      if (!tree.removeEdge(new SemanticGraphEdge(has, pobj, GrammaticalRelation.valueOf(Language.Any, "nsubj"), Double.NEGATIVE_INFINITY, false))) {
+//        throw new IllegalStateException("Could not remove edge!");
       }
       tree.removeVertex(prep);
       for (SemanticGraphEdge edge : tree.outgoingEdgeList(has)) {
         edgesOutOfHas.add(edge);
         if (!tree.removeEdge(edge)) {
-          throw new IllegalStateException("Could not remove edge!");
+//          throw new IllegalStateException("Could not remove edge!");
         }
       }
       // Re-assemble tree
-      tree.addEdge(root, pobj, GrammaticalRelation.valueOf(Language.English, "prep_" + prep.word().toLowerCase().replace(" ", "_")), Double.NEGATIVE_INFINITY, false);
-      tree.addEdge(pobj, has, GrammaticalRelation.valueOf(Language.English, "mark"), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(root, pobj, GrammaticalRelation.valueOf(Language.Any, "nmod:" + prep.word().toLowerCase().replace(" ", "_")), Double.NEGATIVE_INFINITY, false);
+      tree.addEdge(pobj, has, GrammaticalRelation.valueOf(Language.Any, "mark"), Double.NEGATIVE_INFINITY, false);
       for (SemanticGraphEdge edge : edgesOutOfHas) {
         tree.addEdge(root, edge.getDependent(), edge.getRelation(), Double.NEGATIVE_INFINITY, false);
       }

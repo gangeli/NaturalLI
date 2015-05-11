@@ -715,6 +715,65 @@ void Tree::topologicalSort(uint8_t* buffer, const bool& ignoreQuantifiers) const
 
 
 // ----------------------------------------------
+// Alignment Similarity
+// ----------------------------------------------
+
+//
+// AlignmentSimilarity::score
+//
+double AlignmentSimilarity::score(const Tree& tree) const {
+  double sum = 0.0;
+  for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
+    if (iter->index < tree.length) {
+      // case: an alignment matched.
+      if (tree.word(iter->index) == iter->target) {
+        sum += iter->bonusIfMatched;
+      } else {
+        sum += iter->penaltyIfMismatched;
+      }
+    } else {
+      // error: an alignment is larger than the tree
+      fprintf(stderr, "WARNING: alignment is larger than premise tree!\n");
+    }
+  }
+  return sum;
+}
+  
+//
+// AlignmentSimilarity::updateScore
+//
+double AlignmentSimilarity::updateScore(const double& score, 
+                                        const uint8_t& index,
+                                        const ::word& oldWord,
+                                        const ::word& newWord
+                                        ) const {
+  for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
+    if (iter->index == index) {
+      // case: an alignment matched.'
+      if (oldWord == iter->target && newWord != iter->target) {
+        return score - iter->bonusIfMatched + iter->penaltyIfMismatched;
+      } else if (oldWord != iter->target && newWord == iter->target) {
+        return score - iter->penaltyIfMismatched + iter->bonusIfMatched;
+      }
+    }
+  }
+  return score;
+}
+  
+//
+// AlignmentSimilarity::targetAt
+//
+const ::word& AlignmentSimilarity::targetAt(const uint8_t& index) const {
+  for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
+    if (iter->index == index) {
+      return iter->target;
+    }
+  }
+  return NULL_WORD;
+}
+
+
+// ----------------------------------------------
 // NATURAL LOGIC
 // ----------------------------------------------
 

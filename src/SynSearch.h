@@ -793,6 +793,67 @@ class Tree {
 
 
 // ----------------------------------------------
+// ALIGNMENT SIMILARITY
+// ----------------------------------------------
+
+
+/**
+ * An actual alignment. This is just a triple of the index,
+ * the bonus if matched, and the penalty if mismatched.
+ */
+struct alignment_instance {
+  /** 
+   * The index of the word in the _hypothesis_ (that is, the query) that we
+   * are trying to match. This is zero indexed.
+   */
+  const uint8_t index;
+  /** The target word we are trying to align to */
+  const ::word  target;
+  /** A non-negative bonus if a word in the search matches the target. Always >= 0. */
+  const float   bonusIfMatched;
+  /** A negative penalty if this word doesn't match. Always <= 0. */
+  const float   penaltyIfMismatched;
+
+  alignment_instance(const uint8_t& index,
+                     const ::word& target,
+                     const double& bonusIfMatched,
+                     const double& penaltyIfMismatched)
+      : index(index), target(target),
+        bonusIfMatched(bonusIfMatched), 
+        penaltyIfMismatched(penaltyIfMismatched) { }
+};
+
+/**
+ * An object to determine if a given {@link Tree} object is close to any
+ * of the candidate premises passed into the program.
+ *
+ * This is based on whether particular indices of the tree match the associated
+ * words in the premise.
+ */
+class AlignmentSimilarity {
+ public:
+  AlignmentSimilarity(const std::vector<alignment_instance>& alignments)
+      : alignments(alignments), NULL_WORD(word(0)) { }
+
+  double score(const Tree& tree) const;
+  
+  double updateScore(const double& score, 
+                     const uint8_t& index,
+                     const ::word& oldWord,
+                     const ::word& newWord
+                     ) const;
+  
+  const ::word& targetAt(const uint8_t& index) const;
+
+
+ private:
+  const std::vector<alignment_instance> alignments;
+  const ::word NULL_WORD;
+};
+
+
+
+// ----------------------------------------------
 // PATH ELEMENT (SEARCH NODE)
 // ----------------------------------------------
 

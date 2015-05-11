@@ -469,6 +469,10 @@ TEST_F(TreeTest, DependencyEdgeFitsIn64Bits) {
   ASSERT_EQ(8, sizeof(dependency_edge));
 }
 
+// ----------------------------------------------
+// Tree Hashing
+// ----------------------------------------------
+
 //
 // Hash Crash Test
 //
@@ -849,6 +853,96 @@ TEST_F(TreeTest, QuantifierCountGetMatch) {
 }
 
 // ----------------------------------------------
+// Alignment Similarity
+// ----------------------------------------------
+
+class AlignmentSimilarityTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    allFurryCatsHaveTails = new Tree(ALL_FURRY_CATS_HAVE_TAILS);
+
+    vector<alignment_instance> v;
+    v.emplace_back(1, FUZZY.word, 0.42, -0.7);
+    v.emplace_back(2, DOG.word, 0.1, -0.2);
+    hard = new AlignmentSimilarity(v);
+    
+    vector<alignment_instance> w;
+    w.emplace_back(1, FURRY.word, 0.42, -0.7);
+    w.emplace_back(2, CAT.word, 0.1, -0.2);
+    easy = new AlignmentSimilarity(w);
+  }
+  
+  virtual void TearDown() {
+    delete allFurryCatsHaveTails;
+    delete hard;
+    delete easy;
+  }
+
+ Tree* allFurryCatsHaveTails;
+ AlignmentSimilarity* hard;
+ AlignmentSimilarity* easy;
+};
+
+//
+// Constructor
+//
+TEST_F(AlignmentSimilarityTest, Constructor) {
+  ASSERT_FALSE(easy == NULL);
+  ASSERT_FALSE(hard == NULL);
+}
+
+//
+// Check easy is easy
+//
+TEST_F(AlignmentSimilarityTest, CheckIndices) {
+  EXPECT_EQ(allFurryCatsHaveTails->word(1), easy->targetAt(1));
+  EXPECT_EQ(allFurryCatsHaveTails->word(2), easy->targetAt(2));
+  EXPECT_NE(allFurryCatsHaveTails->word(1), hard->targetAt(1));
+  EXPECT_NE(allFurryCatsHaveTails->word(2), hard->targetAt(2));
+}
+
+//
+// Score Tree
+//
+TEST_F(AlignmentSimilarityTest, ScoreTree) {
+  EXPECT_NEAR(-0.9, hard->score(*allFurryCatsHaveTails), 1e-7);
+  EXPECT_NEAR(0.52, easy->score(*allFurryCatsHaveTails), 1e-7);
+}
+
+//
+// Update Score
+//
+TEST_F(AlignmentSimilarityTest, UpdateScore) {
+  double score = hard->score(*allFurryCatsHaveTails);
+  ASSERT_NEAR(-0.9, score, 1e-7);
+  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word);
+  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+  double afterDog = hard->updateScore(score, 2, CAT.word, DOG.word);
+  EXPECT_NEAR(-0.6, afterDog, 1e-7);
+  double afterBoth = hard->updateScore(afterDog, 1, FURRY.word, FUZZY.word);
+  EXPECT_NEAR(0.52, afterBoth, 1e-7);
+  double afterBothOtherWay = hard->updateScore(afterFuzzy, 2, CAT.word, DOG.word);
+  EXPECT_NEAR(0.52, afterBothOtherWay, 1e-7);
+}
+
+//
+// Update Score Twice
+//
+TEST_F(AlignmentSimilarityTest, UpdateScoreTwice) {
+  double score = hard->score(*allFurryCatsHaveTails);
+  ASSERT_NEAR(-0.9, score, 1e-7);
+  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word);
+  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+  double afterFurry = hard->updateScore(afterFuzzy, 1, FUZZY.word, FURRY.word);
+  EXPECT_NEAR(-0.9, afterFurry, 1e-7);
+  double afterDog = hard->updateScore(afterFurry, 1, FURRY.word, DOG.word);
+  EXPECT_NEAR(-0.9, afterDog, 1e-7);
+  afterFuzzy = hard->updateScore(afterDog, 1, DOG.word, FUZZY.word);
+  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+}
+
+
+// ----------------------------------------------
 // KNHeap (Priority Queue)
 // ----------------------------------------------
 
@@ -1139,13 +1233,6 @@ TEST_F(SynSearchCostsTest, FeaturizedEdgeInsert) {
   EXPECT_FALSE(feature.hasMutation());
 }
 
-//float SynSearchCosts::insertionCost(const Tree& tree,
-//                                    const SearchNode& governor,
-//                                    const dep_label& dependencyLabel,
-//                                    const ::word& dependent,
-//                                    const bool& endTruthValue,
-//                                    bool* beginTruthValue,
-//                                    featurized_edge* features) const {
 
 // ----------------------------------------------
 // Syntactic Search

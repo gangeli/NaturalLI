@@ -25,7 +25,7 @@ public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.SIMPLE;
+  public ClassifierType CLASSIFIER = ClassifierType.DISTANT;
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
   public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
@@ -39,7 +39,7 @@ public class ClassifierTrainer {
   public File TRAIN_DEBUGDOC = new File("tmp/train_debug.tex");
 
   @Execution.Option(name="train.distsup.iters", gloss="The number of iterations to run EM for")
-  public int TRAIN_DISTSUP_ITERS = 10;
+  public int TRAIN_DISTSUP_ITERS = 0;
   @Execution.Option(name="train.distsup.sample_count", gloss="The number of iterations to run EM for")
   public int TRAIN_DISTSUP_SAMPLE_COUNT = 1000;
 
@@ -137,12 +137,14 @@ public class ClassifierTrainer {
     }
   }
 
+  @SuppressWarnings("unchecked")
   public Stream<EntailmentPair> readFlatDataset(File source, File cache, int size) throws IOException {
     return readDataset(source, cache, size,
         args -> new EntailmentPair(args.first, args.second, args.third, args.fourth, args.fifth),
         EntailmentPair::deserialize);
   }
 
+  @SuppressWarnings("unchecked")
   public Stream<DistantEntailmentPair> readDistantDataset(File source, File cache, int size, StanfordCoreNLP pipeline) throws IOException {
     return readDataset(source, cache, size,
         args -> new DistantEntailmentPair(args.first, args.second, args.third, args.fourth, args.fifth, pipeline),

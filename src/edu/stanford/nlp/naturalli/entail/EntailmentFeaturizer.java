@@ -302,6 +302,7 @@ public class EntailmentFeaturizer implements Serializable {
   /**
    * Break out the keyword features, because they're a giant monstrosity of code.
    */
+  @SuppressWarnings("UnusedDeclaration")
   private Counter<String> keywordFeatures(EntailmentPair ex, Optional<DebugDocument> debugDocument) {
     // Prime some variables
     Counter<String> feats = new ClassicCounter<>();
@@ -379,7 +380,6 @@ public class EntailmentFeaturizer implements Serializable {
     // Keyword Statistics
     //
     if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_STATISTICS)) {
-      int[] editDistanceBuckets = new int[5];
       List<Double> editDistanceSamples = new ArrayList<>();
       double sumEditDistance = 0;
 
@@ -391,12 +391,6 @@ public class EntailmentFeaturizer implements Serializable {
           double editPercent = 1.0 - ((double) StringUtils.editDistance(premise, conclusion)) / ((double) Math.max(premise.length(), conclusion.length()));
           sumEditDistance += editPercent;
           editDistanceSamples.add(editPercent);
-          if (editPercent < 0.2) { editDistanceBuckets[0] += 1; }
-          else if (editPercent < 0.4) { editDistanceBuckets[1] += 1; }
-          else if (editPercent < 0.6) { editDistanceBuckets[1] += 1; }
-          else if (editPercent < 0.8) { editDistanceBuckets[1] += 1; }
-          else if (editPercent <= 1.0) { editDistanceBuckets[1] += 1; }
-          else { throw new IllegalStateException("Edit distance longer than the string!"); }
         }
       }
       if (editDistanceSamples.size() > 0) {
