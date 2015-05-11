@@ -48,7 +48,7 @@ function dep2string() {
   cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
     awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)$/  dependency2index["\1"] = DEP_\2;/g' |\
-    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/:/_/g'
+    sed -r -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/([A-Z]):/\1_/g'
 
 
   echo "}"
@@ -71,7 +71,7 @@ function dep2string() {
   cat etc/depInsert2rel.tab | sed -e 's/prepc_/prep_/g' | sort | uniq |\
     awk -F'	' '{ print tolower($1) "\t" toupper($1)}' |\
     sed -r -e 's/^([^\t]+)\t([^\t]+)$/  if (indexed == DEP_\2) { return "\1"; }/g' |\
-    sed -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/:/_/g'
+    sed -r -e 's/AND\\\\\/OR/ANDOR/g' -e 's/VS\./VS/g' -e 's/([A-Z]):/\1_/g'
   echo '  return "???";'
   echo "}"
 }

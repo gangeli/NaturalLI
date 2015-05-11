@@ -1,7 +1,4 @@
-/*
- * TODO(gabor) implement negation intro / elimination
- *
- */
+#include "NaturalLIIO.h"
 
 #include <arpa/inet.h>
 #include <cmath>
@@ -11,21 +8,13 @@
 #include <exception>
 #include <mutex>
 #include <netinet/in.h>
-#include <signal.h>
 #include <sstream>
 #include <sys/errno.h>
-#include <sys/resource.h>
 #include <sys/socket.h>
 #include <sys/types.h>
-#include <thread>
 #include <regex>
+#include <thread>
 #include <unistd.h>
-
-#include "config.h"
-#include "SynSearch.h"
-#include "Utils.h"
-#include "JavaBridge.h"
-#include "FactDB.h"
 
 #ifndef SERVER_PORT
 #define SERVER_PORT 1337
@@ -33,29 +22,9 @@
 
 #define SERVER_TCP_BUFFER 25
 #define SERVER_READ_SIZE 1024
-#define MEM_ENV_VAR "MAXMEM_GB"
-
-#ifndef ERESTART
-#define ERESTART EINTR
-#endif
-extern int errno;
 
 using namespace std;
 using namespace btree;
-
-/**
- * Set a memory limit, if defined
- */
-void setmemlimit() {
-  struct rlimit memlimit;
-  long bytes;
-  if (getenv(MEM_ENV_VAR) != NULL) {
-    bytes = atol(getenv(MEM_ENV_VAR)) * (1024 * 1024 * 1024);
-    memlimit.rlim_cur = bytes;
-    memlimit.rlim_max = bytes;
-    setrlimit(RLIMIT_AS, &memlimit);
-  }
-}
 
 /**
  * Compute the confidence of a search response.
@@ -191,10 +160,9 @@ regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)",
 regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
 
 
-/**
- * Parse a metadata line, returning false if the line didn't match any
- * known directives.
- */
+//
+// parseMetadata()
+//
 bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
                    vector<AlignmentSimilarity>* alignments,
                    syn_search_options *opts) {
@@ -249,25 +217,10 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
   return false; // By default, no metadata
 }
 
-/**
- * Execute a query, returning a JSON formatted response.
- *
- * @param proc The preprocessor to use to annotate the query string(s).
- * @param kb The [optionally empty] large knowledge base to evaluate against.
- * @param knownFacts An optional knowledge base to use to augment the facts in
- *kb.
- * @param query The query to execute against the knowledge base.
- * @param graph The graph of valid edge instances which can be taken.
- * @param costs The search costs to use for this query
- * @param alignments The soft alignments (if there are any) to run alongside the
- *                   search.
- * @param options The options for the search, to be passed along directly.
- * @param truth [output] The probability that the query is true, as just a
- *simple
- *                       float value.
- *
- * @return A JSON formatted response with the result of the search.
- */
+
+//
+// executeQuery()
+//
 string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
                     const vector<string> &knownFacts, const string &query,
                     const Graph *graph, const SynSearchCosts *costs,
@@ -462,18 +415,21 @@ string grokExpectedTruth(string query, bool *haveExpectedTruth,
  * a String prefix. This code is shared between the REPL and the server.
  */
 string passOrFail(const double &truth, const bool &haveExpectedTruth,
-                  const bool &expectUnknown, const bool &expectedTruth) {
+                  const bool &expectUnknown, const bool &expectedTruth,
+                  uint32_t* failureCount) {
   if (haveExpectedTruth) {
     if (expectUnknown) {
       if (truth == 0.5) {
         return "PASS: ";
       } else {
+        *failureCount += 1;
         return "FAIL: ";
       }
     } else {
       if ((truth > 0.5 && expectedTruth) || (truth < 0.5 && !expectedTruth)) {
         return "PASS: ";
       } else {
+        *failureCount += 1;
         return "FAIL: ";
       }
     }
@@ -481,20 +437,9 @@ string passOrFail(const double &truth, const bool &haveExpectedTruth,
   return "";
 }
 
-/**
- * Start a REPL loop over stdin and stdout.
- * Each query consists of a number of entries (possibly zero) in the knowledge
- * base, seperated by newlines, and then a query.
- * A double newline signals the end of a block, where the first k-1 lines are
- *the
- * knowledge base, and the last line is the query.
- *
- * @param graph The graph containing the edge instances we can traverse.
- * @param proc The preprocessor to use during the search.
- * @param kb The main [i.e., large] knowledge base to use, possibly empty.
- *
- * @return The number of failed examples, if any were annotated. 0 by default.
- */
+//
+// repl()
+//
 uint32_t repl(const Graph *graph, JavaBridge *proc,
               const btree_set<uint64_t> *kb) {
   uint32_t failedExamples = 0;
@@ -542,7 +487,7 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
       fprintf(stderr, "\n");
       fflush(stderr);
       printf("%s", passOrFail(truth, haveExpectedTruth, expectUnknown,
-                              expectedTruth).c_str());
+                              expectedTruth, &failedExamples).c_str());
       printf("%s\n", response.c_str()); // Should be the only output to stdout
       fflush(stdout);
       fprintf(stderr, "\n");
@@ -554,16 +499,6 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
   fprintf(stderr, "EOF on stdin -- exiting REPL\n");
   delete costs;
   return failedExamples;
-}
-
-/**
- * The function to call for caught signals. In practice, this is a NOOP.
- */
-void signalHandler(int32_t s) {
-  fprintf(stderr, "(caught signal %d; use 'kill' or EOF to end the program)\n",
-          s);
-  fprintf(stderr, "What do we say to the God of death?\n");
-  fprintf(stderr, "  \"Not today...\"\n");
 }
 
 /**
@@ -705,8 +640,9 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
     double truth = 0.0;
     string json =
         executeQuery(proc, kb, knownFacts, query, graph, costs, alignments, opts, &truth);
+    uint32_t failedExamples = 0;
     string passFail =
-        passOrFail(truth, haveExpectedTruth, expectUnknown, expectedTruth);
+        passOrFail(truth, haveExpectedTruth, expectUnknown, expectedTruth, &failedExamples);
     write(socket, (passFail + json).c_str(), json.length() + passFail.length());
     fprintf(stderr, "  [%d] wrote output; I'm done.\n", socket);
   }
@@ -717,9 +653,9 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
   closeConnection(socket, client);
 }
 
-/**
- * Set up listening on a server port.
- */
+//
+// startServer
+//
 bool startServer(const uint32_t &port, const JavaBridge *proc,
                  const Graph *graph, const btree_set<uint64_t> *kb) {
   // Get hostname, for debugging
@@ -846,48 +782,4 @@ bool startServer(const uint32_t &port, const JavaBridge *proc,
   }
 
   return true;
-}
-
-/**
- * The Entry point for querying the truth of facts.
- */
-int32_t main(int32_t argc, char *argv[]) {
-  // Handle signals
-  // (set memory limit)
-  setmemlimit();
-  // (set up handler)
-  struct sigaction sigIntHandler;
-  sigIntHandler.sa_handler = signalHandler;
-  sigemptyset(&sigIntHandler.sa_mask);
-  sigIntHandler.sa_flags = 0;
-  // (catch signals)
-  //  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the
-  //  java process to die
-  sigaction(SIGPIPE, &sigIntHandler, NULL);
-
-  // Read the knowledge base
-  const btree_set<uint64_t> *kb;
-  if (KB_FILE[0] != '\0') {
-    kb = readKB(string(KB_FILE));
-  } else {
-    kb = new btree_set<uint64_t>;
-    fprintf(stderr,
-            "No knowledge base given (configure with KB_FILE=/path/to/kb)\n");
-  }
-
-  // Create bridge
-  JavaBridge *proc = new JavaBridge();
-  // Load graph
-  Graph *graph = ReadGraph();
-
-  // Start server
-  std::thread t(startServer, SERVER_PORT, proc, graph, kb);
-  t.detach();
-
-  // Start REPL
-  uint32_t retVal = repl(graph, proc, kb);
-  delete graph;
-  delete proc;
-  delete kb;
-  return retVal;
 }

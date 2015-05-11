@@ -35,6 +35,8 @@ clean-local:
 	rm -f test/naturalli_itest.junit.xml
 	rm -f test/src/naturalli_test.junit.xml
 	rm -f test/src/naturalli_itest.junit.xml
+	rm -rf build/
+	rm -rf test/build/
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 	bash -c 'for file in `find . -name "TEST-*.xml"`; do rm -f $$file; done'
 

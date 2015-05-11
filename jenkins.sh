@@ -97,6 +97,7 @@ make dist
 tar xfz `find . -name "naturalli-2.*.tar.gz"`
 cd `find . -type d -name "naturalli-2.*"`
 configure
+make check
 test/run_testcases.sh
 cd ..
 rm -r `find . -type d -name "naturalli-2.*"`

@@ -3,7 +3,7 @@ root_dir := "${current_dir}/.."
 etc := "${root_dir}/etc"
 
 SUBDIRS = fnv knheap
-bin_PROGRAMS=hash_tree write_kb naturalli
+bin_PROGRAMS=hash_tree write_kb naturalli_search naturalli
 EXTRA_DIST =  edu
 
 clean-local:
@@ -90,24 +90,38 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 BUILT_SOURCES = Models.h Models.cc
 
 naturalli_SOURCES = GZip.cc Models.cc FactDB.cc \
-										NaturalLI.cc Utils.cc Graph.cc SynSearch.cc \
+										NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
                  		SynSearchSingleThreaded.cc JavaBridge.cc \
-                 		Graph.h Utils.h Types.h  SynSearch.h \
+                 		NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
 										JavaBridge.h GZip.h Models.h FactDB.h \
-                 		btree.h btree_container.h btree_map.h btree_set.h
+                 		btree.h btree_container.h btree_map.h btree_set.h \
+									  NaturalLIStandalone.cc
+naturalli_search_SOURCES = GZip.cc Models.cc FactDB.cc \
+													 NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
+                 					 SynSearchSingleThreaded.cc JavaBridge.cc \
+                 					 NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
+													 GZip.h Models.h FactDB.h JavaBridge.h \
+                 					 btree.h btree_container.h btree_map.h btree_set.h \
+									         NaturalLISearch.cc
 naturalli_DEPENDENCIES =	naturalli_preprocess.jar
 
 
 naturalli_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
+naturalli_search_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 naturalli_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+naturalli_search_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 if HAVE_TCMALLOC
   naturalli_LDADD += -ltcmalloc
+  naturalli_search_LDADD += -ltcmalloc
 if DEBUG
   naturalli_LDADD += -lprofiler
+  naturalli_search_LDADD += -lprofiler
 if IS_GCC
   naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
+  naturalli_search_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_LDADD += -lgcov
+  naturalli_search_LDADD += -lgcov
 endif
 endif
 endif

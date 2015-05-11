@@ -40,4 +40,7 @@ fi
 
 echo ""
 rm $OUT $IN
+echo ""
+echo "TEST CASES DONE: EXIT STATUS: $STATUS"
+echo ""
 exit $STATUS
