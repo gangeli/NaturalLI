@@ -1410,8 +1410,11 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
   EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
   EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
   // (check the closest alignment)
+#if MAX_FUZZY_MATCHES > 0
   EXPECT_EQ(0, response.closestSoftAlignment);
   EXPECT_NEAR(0.42, response.closestSoftAlignmentScore, 1e-7);
+  EXPECT_NEAR(0.0010999999940395355f, response.closestSoftAlignmentSearchCost, 1e-7);
+#endif
 }
 
 #undef SEARCH_TIMEOUT_TEST

@@ -1243,8 +1243,9 @@ struct syn_search_path {
 struct syn_search_response {
   std::vector<syn_search_path> paths;
   std::vector<feature_vector> featurizedPaths;
-  uint8_t closestSoftAlignment = -1;
-  float closestSoftAlignmentScore = -1;
+  uint8_t closestSoftAlignment = MAX_FUZZY_MATCHES;
+  float closestSoftAlignmentScore = std::numeric_limits<float>::infinity();
+  float closestSoftAlignmentSearchCost = std::numeric_limits<float>::infinity();
   uint64_t totalTicks;
 
   inline uint64_t size() const { return paths.size(); }

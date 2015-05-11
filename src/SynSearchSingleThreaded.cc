@@ -428,6 +428,7 @@ syn_search_response SynSearch(
   // The closeset approximate match
   uint8_t closestSoftAlignment = 0;
   float   closestSoftAlignmentScore = -std::numeric_limits<float>::infinity();
+  float   closestSoftAlignmentSearchCost = 0.0f;
   // The database lookup function
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
@@ -439,17 +440,16 @@ syn_search_response SynSearch(
   // (register a node as visited)
   auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,
                           &opts,&assumedInitialTruth,&featurizedPaths,
-                          &closestSoftAlignment,&closestSoftAlignmentScore]
+                          &closestSoftAlignment,&closestSoftAlignmentScore,&closestSoftAlignmentSearchCost]
         (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     // Check the soft alignments
 #if MAX_FUZZY_MATCHES > 0
     for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
       if (node.softAlignmentScores()[alignI] > closestSoftAlignmentScore + 1e-7) {  // 1e-7 to be robust to floating point drift
-        fprintf(stderr, "align to %d with score %f > %f\n", 
-            alignI, node.softAlignmentScores()[alignI], closestSoftAlignmentScore);
         closestSoftAlignmentScore = node.softAlignmentScores()[alignI];
         closestSoftAlignment = alignI;
+        closestSoftAlignmentSearchCost = scoredNode.cost;
       }
     }
 #endif
@@ -588,6 +588,7 @@ syn_search_response SynSearch(
   // (set closest matches)
   response.closestSoftAlignment = closestSoftAlignment;
   response.closestSoftAlignmentScore = closestSoftAlignmentScore;
+  response.closestSoftAlignmentSearchCost = closestSoftAlignmentSearchCost;
   // (debug)
   if (!opts.silent) {
     printTime("[%c] ");
