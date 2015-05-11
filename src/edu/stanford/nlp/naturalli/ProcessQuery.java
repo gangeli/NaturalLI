@@ -494,7 +494,7 @@ public class ProcessQuery {
       setProperty("tokenize.language", "en");
       setProperty("naturalli.doPolarity", "false");
     }};
-    return new StanfordCoreNLP(props);
+    return new StanfordCoreNLP(props, false);
   }
 
   protected static String annotateHumanReadable(String line, StanfordCoreNLP pipeline) {

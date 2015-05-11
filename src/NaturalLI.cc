@@ -100,6 +100,82 @@ inline double probability(const double &confidence, const bool &truth) {
   }
 }
 
+
+/**
+ * Parse an alignment instance of the form:
+ *
+ * tokenindex:target:bonus:penalty
+ */
+bool parseAlignmentInstance(
+    string& spec,
+    vector<alignment_instance>* alignments) {
+  string delimiter = ":";
+  const char* origSpec = spec.c_str();
+  size_t pos = 0;
+
+  // Parse the token index
+  if ((pos = spec.find(delimiter)) == string::npos) {
+    fprintf(stderr, "WARNING: bad spec for alignment [1]: %s\n", origSpec);
+    return false;
+  }
+  uint8_t tokenIndex = atoi(spec.substr(0, pos).c_str());
+  spec.erase(0, pos + delimiter.length());
+  // Parse the target word
+  if ((pos = spec.find(delimiter)) == string::npos) {
+    fprintf(stderr, "WARNING: bad spec for alignment [2]: %s\n", origSpec);
+    return false;
+  }
+  ::word target = atoi(spec.substr(0, pos).c_str());
+  spec.erase(0, pos + delimiter.length());
+  // Parse the bonus
+  if ((pos = spec.find(delimiter)) == string::npos) {
+    fprintf(stderr, "WARNING: bad spec for alignment [3]: %s\n", origSpec);
+    return false;
+  }
+  float bonus = atof(spec.substr(0, pos).c_str());
+  spec.erase(0, pos + delimiter.length());
+  // Parse the penalty
+  if ((pos = spec.find(delimiter)) == 0) {
+    fprintf(stderr, "WARNING: bad spec for alignment [4]: %s\n", origSpec);
+    return false;
+  }
+  float penalty = atof(spec.substr(0, pos).c_str());
+  spec.erase(0, pos + delimiter.length());
+  // Enqueue the alignment
+  fprintf(stderr, "align(%d, %d, %f, %f)\n", tokenIndex, target, bonus, penalty);
+  alignments->emplace_back(tokenIndex, target, bonus, penalty);
+  return true;
+}
+
+/**
+ * Parse a full alignment specification of the form:
+ *
+ * tokenindex:target:bonus:penalty#tokenindex:target:bonus:penalty ...
+ */
+AlignmentSimilarity parseAlignment(string& spec) {
+  const char* origSpec = spec.c_str();
+  string delimiter = "#";
+  size_t pos = 0;
+  vector<alignment_instance> instances;
+  // Loop through alignments
+  while ((pos = spec.find(delimiter)) != string::npos) {
+    string instanceSpec = spec.substr(0, pos);
+    parseAlignmentInstance(instanceSpec, &instances);
+    spec.erase(0, pos + delimiter.length());
+  }
+  // Add last alignment
+  string instanceSpec = spec.substr(0, pos);
+  parseAlignmentInstance(instanceSpec, &instances);
+  // Return
+  if (instances.size() == 0) {
+    fprintf(stderr, "WARNING: no alignments parsed in spec: %s\n", origSpec);
+  }
+  return AlignmentSimilarity(instances);
+}
+
+/**
+ * A little helper to convert a string into a boolean.
+ */
 bool to_bool(std::string str) {
   transform(str.begin(), str.end(), str.begin(), ::tolower);
   istringstream is(str);
@@ -108,18 +184,19 @@ bool to_bool(std::string str) {
   return b;
 }
 
-// ...
-bool b = to_bool("tRuE");
-
+/** The regex for a key@specifier=value triple */
 regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)",
                     std::regex_constants::extended);
+/** The regex for a key=value pair */
 regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+
 
 /**
  * Parse a metadata line, returning false if the line didn't match any
  * known directives.
  */
 bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
+                   vector<AlignmentSimilarity>* alignments,
                    syn_search_options *opts) {
   assert(rawLine[0] != '\0');
   assert(rawLine[0] == '%');
@@ -131,16 +208,16 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
     }
     string toSet = result[1].str();
     string key = result[2].str();
-    float value = atof(result[3].str().c_str());
+    string value = result[3].str();
     uint32_t ivalue = atoi(result[3].str().c_str());
     if (toSet == "mutationLexicalCost") {
-      costs->mutationLexicalCost[indexEdgeType(key)] = value;
+      costs->mutationLexicalCost[indexEdgeType(key)] = atof(value.c_str());
     } else if (toSet == "insertionLexicalCost") {
-      costs->insertionLexicalCost[indexEdgeType(key)] = value;
+      costs->insertionLexicalCost[indexEdgeType(key)] = atof(value.c_str());
     } else if (toSet == "transitionCostFromTrue") {
-      costs->transitionCostFromTrue[indexNatlogRelation(key)] = value;
+      costs->transitionCostFromTrue[indexNatlogRelation(key)] = atof(value.c_str());
     } else if (toSet == "transitionCostFromFalse") {
-      costs->transitionCostFromFalse[indexNatlogRelation(key)] = value;
+      costs->transitionCostFromFalse[indexNatlogRelation(key)] = atof(value.c_str());
     } else {
       fprintf(stderr, "Unknown key: '%s'\n", toSet.c_str());
       return false;
@@ -155,6 +232,12 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
       opts->checkFringe = to_bool(value);
     } else if (toSet == "skipNegationSearch") {
       opts->skipNegationSearch = to_bool(value);
+    } else if (toSet == "alignment") {
+      if (alignments->size() < MAX_FUZZY_MATCHES) {
+        alignments->push_back(parseAlignment(value));
+      } else {
+        fprintf(stderr, "WARNING: too many candidate premises passed in; dropping this and future alignments\n");
+      }
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
       return false;
@@ -176,6 +259,8 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
  * @param query The query to execute against the knowledge base.
  * @param graph The graph of valid edge instances which can be taken.
  * @param costs The search costs to use for this query
+ * @param alignments The soft alignments (if there are any) to run alongside the
+ *                   search.
  * @param options The options for the search, to be passed along directly.
  * @param truth [output] The probability that the query is true, as just a
  *simple
@@ -186,7 +271,9 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
 string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
                     const vector<string> &knownFacts, const string &query,
                     const Graph *graph, const SynSearchCosts *costs,
-                    const syn_search_options &options, double *truth) {
+                    const vector<AlignmentSimilarity>& alignments,
+                    const syn_search_options &options,
+                    double *truth) {
   // Create KB
   btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
@@ -206,6 +293,8 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
   printTime("[%c] ");
   fprintf(stderr, "|KB| %lu premise(s) added, yielding %u total facts\n",
           knownFacts.size(), factsInserted);
+  printTime("[%c] ");
+  fprintf(stderr, "|ALIGN| %lu alignment(s) registered\n", alignments.size());
 
   // Create Query
   const Tree *input = proc->annotateQuery(query.c_str());
@@ -218,14 +307,14 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
   // Run Search
   // (assuming the KB is true)
   const syn_search_response resultIfTrue =
-      SynSearch(graph, kb, auxKB, input, costs, true, options);
+      SynSearch(graph, kb, auxKB, input, costs, true, options, alignments);
   // (assuming the KB is false)
   syn_search_options falseOptions = options;
   if (options.skipNegationSearch) {
     falseOptions.maxTicks = 0l;
   }
   const syn_search_response resultIfFalse =
-      SynSearch(graph, kb, auxKB, input, costs, false, falseOptions);
+      SynSearch(graph, kb, auxKB, input, costs, false, falseOptions, alignments);
 
   // Grok result
   // (confidence)
@@ -288,6 +377,11 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
       << ", "
       << "\"success\": true"
       << ", "
+#if MAX_FUZZY_MATCHES > 0
+      << "\"closestSoftAlignment\": " << to_string(resultIfTrue.closestSoftAlignment) << ", "
+      << "\"closestSoftAlignmentScore\": " << to_string(resultIfTrue.closestSoftAlignmentScore) << ", "
+      << "\"closestSoftAlignmentSearchCost\": " << to_string(resultIfTrue.closestSoftAlignmentSearchCost) << ", "
+#endif
       << "\"path\": "
       << (bestPath != NULL ? toJSON(*graph, *input, *bestPath) : "[]");
   // (dump feature vector)
@@ -417,13 +511,16 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
     vector<string> lines;
     char line[256];
     memset(line, 0, sizeof(line));
+    // (create alignments)
+    vector<AlignmentSimilarity> alignments;
+    
     while (!cin.fail()) {
       cin.getline(line, 255);
       if (line[0] == '\0') {
         break;
       }
       if (line[0] != '#' &&
-          (line[0] != '%' || !parseMetadata(line, costs, &opts))) {
+          (line[0] != '%' || !parseMetadata(line, costs, &alignments, &opts))) {
         lines.push_back(string(line));
       }
     }
@@ -440,7 +537,7 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
       // Run query
       double truth;
       string response =
-          executeQuery(proc, kb, lines, query, graph, costs, opts, &truth);
+          executeQuery(proc, kb, lines, query, graph, costs, alignments, opts, &truth);
       // Print
       fprintf(stderr, "\n");
       fflush(stderr);
@@ -579,9 +676,10 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
   buffer[0] = '\0';
   readLine(socket, buffer, 32768);
   vector<string> knownFacts;
+  vector<AlignmentSimilarity> alignments;
   while (buffer[0] != '\0' && buffer[0] != '\n' && buffer[0] != '\r' &&
          knownFacts.size() < 256) {
-    if (buffer[0] != '%' || !parseMetadata(buffer, costs, &opts)) {
+    if (buffer[0] != '%' || !parseMetadata(buffer, costs, &alignments, &opts)) {
       fprintf(stderr, "  [%d] read line: %s\n", socket, buffer);
       knownFacts.push_back(string(buffer));
     }
@@ -606,7 +704,7 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
     knownFacts.pop_back();
     double truth = 0.0;
     string json =
-        executeQuery(proc, kb, knownFacts, query, graph, costs, opts, &truth);
+        executeQuery(proc, kb, knownFacts, query, graph, costs, alignments, opts, &truth);
     string passFail =
         passOrFail(truth, haveExpectedTruth, expectUnknown, expectedTruth);
     write(socket, (passFail + json).c_str(), json.length() + passFail.length());

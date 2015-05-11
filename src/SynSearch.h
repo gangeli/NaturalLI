@@ -834,6 +834,9 @@ class AlignmentSimilarity {
  public:
   AlignmentSimilarity(const std::vector<alignment_instance>& alignments)
       : alignments(alignments), NULL_WORD(word(0)) { }
+  
+  AlignmentSimilarity(const AlignmentSimilarity& other)
+      : alignments(other.alignments), NULL_WORD(word(0)) { }
 
   double score(const Tree& tree) const;
   
@@ -844,6 +847,10 @@ class AlignmentSimilarity {
                      ) const;
   
   const ::word& targetAt(const uint8_t& index) const;
+
+  const inline std::vector<alignment_instance> asVector() const {
+    return alignments;
+  }
 
 
  private:
