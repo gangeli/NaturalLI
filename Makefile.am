@@ -29,6 +29,12 @@ clean-local:
 	rm -f *.gcda
 	rm -f src/naturalli_preprocess.jar
 	rm -f test/src/naturalli_preprocess_test.jar
+	rm -f naturalli_test.junit.xml
+	rm -f naturalli_itest.junit.xml
+	rm -f test/naturalli_test.junit.xml
+	rm -f test/naturalli_itest.junit.xml
+	rm -f test/src/naturalli_test.junit.xml
+	rm -f test/src/naturalli_itest.junit.xml
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 	bash -c 'for file in `find . -name "TEST-*.xml"`; do rm -f $$file; done'
 

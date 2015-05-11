@@ -105,6 +105,7 @@ echo "-- TEST AND REPORT --"
 configure
 make all check TESTS_ENVIRONMENT=true 
 test/src/naturalli_test --gtest_output=xml:test/naturalli_test.junit.xml
+test/src/naturalli_itest --gtest_output=xml:test/naturalli_itest.junit.xml
 make java_test
 
 echo "SUCCESS!"
