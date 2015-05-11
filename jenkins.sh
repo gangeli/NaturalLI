@@ -37,7 +37,7 @@ echo "-- DOCUMENT --"
 doxygen doxygen.conf
 
 echo "-- C++ TESTS --"
-test/src/test_server
+test/src/naturalli_test
 
 echo "-- JAVA TESTS --"
 make java_test
@@ -104,7 +104,7 @@ rm -r `find . -type d -name "naturalli-2.*"`
 echo "-- TEST AND REPORT --"
 configure
 make all check TESTS_ENVIRONMENT=true 
-test/src/test_server --gtest_output=xml:test/test_server.junit.xml
+test/src/naturalli_test --gtest_output=xml:test/naturalli_test.junit.xml
 make java_test
 
 echo "SUCCESS!"

@@ -28,7 +28,7 @@ clean-local:
 	rm -f *.gcno
 	rm -f *.gcda
 	rm -f src/naturalli_preprocess.jar
-	rm -f test/src/test_preprocess.jar
+	rm -f test/src/naturalli_preprocess_test.jar
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 	bash -c 'for file in `find . -name "TEST-*.xml"`; do rm -f $$file; done'
 
@@ -134,13 +134,13 @@ src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) 
 src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml etc/.have_models
 	$(MAKE) -C src naturalli.war
 
-test/src/test_preprocess.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) etc/.have_models
+test/src/naturalli_preprocess_test.jar: $(wildcard test/src/edu/stanford/nlp/naturalli/*.java) $(wildcard test/data/*) etc/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
-	$(MAKE) -C test/src test_preprocess.jar
+	$(MAKE) -C test/src naturalli_preprocess_test.jar
 
 
 # (some helpers)
-java_test: src/naturalli_preprocess.jar test/src/test_preprocess.jar etc/.have_models
+java_test: src/naturalli_preprocess.jar test/src/naturalli_preprocess_test.jar etc/.have_models
 	export CLASSPATH=""
 	@echo "[test] junit *.java"
 if HAVE_ANT
@@ -148,7 +148,7 @@ if HAVE_ANT
 	CLASSPATH="" CORENLP_JAR="${CORENLP}" CORENLP_MODELS_JAR="${CORENLP_MODELS}" CORENLP_CASELESS_MODELS_JAR="${CORENLP_CASELESS_MODELS}" NATURALLI_MODELS="${NATURALLI_MODELS}" ant test
 else
 	@echo "  (could not find ant -- running directly)"
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordN${etc}3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.PreprocessITest
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierScopeITest
-	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/test_preprocess.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.WSDTest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/naturalli_preprocess_test.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordN${etc}3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.PreprocessITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/naturalli_preprocess_test.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.QuantifierScopeITest
+	@${JDK_HOME}/bin/java -cp ${TEST_CP}:test/src/naturalli_preprocess_test.jar:src/naturalli_preprocess.jar -Dwordnet.database.dir=${etc}/WordNet-3.1/dict -mx4g org.junit.runner.JUnitCore edu.stanford.nlp.naturalli.WSDTest
 endif
