@@ -26,7 +26,8 @@ inline uint64_t searchLoop(
     std::function<const bool (ScoredSearchNode*)> dequeue,
     std::function<void(const ScoredSearchNode&)> registerVisited,
     SearchNode* history, uint64_t& historySize,
-    const SynSearchCosts* costs, const syn_search_options& opts, 
+    const SynSearchCosts* costs, const syn_search_options& opts,
+    const vector<AlignmentSimilarity>& softAlignments,
     const Graph* graph, const Tree& tree) {
 
   // Variables
@@ -347,7 +348,8 @@ syn_search_response SynSearch(
     const btree::btree_set<uint64_t>* kb,
     const btree::btree_set<uint64_t>& auxKB,
     const Tree* input, const SynSearchCosts* costs,
-    const bool& assumedInitialTruth, const syn_search_options& opts) {
+    const bool& assumedInitialTruth, const syn_search_options& opts,
+    const vector<AlignmentSimilarity>& softAlignments) {
   syn_search_response response;
 
   // Debug print parameters
@@ -472,7 +474,9 @@ syn_search_response SynSearch(
     // Register visited
     registerVisited,
     // Other crap
-    history, historySize, costs, opts, mutationGraph, *input
+    history, historySize, costs, opts, 
+    softAlignments,
+    mutationGraph, *input
     );
 
   // Check the fringe for known facts

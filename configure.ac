@@ -189,11 +189,11 @@ AC_DEFINE_UNQUOTED(SERVER_PORT,  ${SERVER_PORT:=1337},  [The port to run the ser
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,      ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
 AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,      ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
-AC_DEFINE_UNQUOTED(GREEDY_LOAD,         ${GREEDY_LOAD:=0},  [If true, greedily load the fact database, even if no one is requesting it.])
-AC_DEFINE_UNQUOTED(OLD_TRIE,            ${OLD_TRIE:=0},  [If true, load the old high-memory Trie implementation])
 AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=0},  [If true, pass each dependency arc through the fnv hash before XOR-ing it.])
 AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=3},  [The depth to go back checking for cycles in the search])
 AC_DEFINE_UNQUOTED(SEARCH_FULL_MEMORY,  ${SEARCH_FULL_MEMORY:=0},  [If true, keep a full history of search nodes seen. If true, SEARCH_CYCLE_MEMORY becomes irrelevant.])
+
+AC_DEFINE_UNQUOTED(MAX_FUZZY_MATCHES,   ${MAX_FUZZY_MATCHES:=0},  [The number of fuzzy matches to consider during search. 4 bytes per match per search node (these are expensive!).])
 
 AC_CONFIG_FILES([
                  Makefile \

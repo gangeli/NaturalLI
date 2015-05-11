@@ -33,6 +33,9 @@ configure
 make all check TESTS_ENVIRONMENT=true 
 make src/naturalli_preprocess.jar
 
+echo "-- DOCUMENT --"
+doxygen doxygen.conf
+
 echo "-- C++ TESTS --"
 test/src/test_server
 
@@ -52,6 +55,9 @@ rm -r `find . -type d -name "naturalli-2.*"`
 echo "-- C++ SPECIAL TESTS --"
 echo "(no debugging)"
 configure --disable-debug
+make check
+echo "(fuzzy matches)"
+configure MAX_FUZZY_MATCHES=8
 make check
 echo "(two pass hash)"
 configure TWO_PASS_HASH=1

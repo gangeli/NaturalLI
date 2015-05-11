@@ -1084,15 +1084,23 @@ struct ScoredSearchNode {
   SearchNode node;
   /** The score for this Search Node */
   float cost;
+
+#if MAX_FUZZY_MATCHES > 0
+  float fuzzy_scores[MAX_FUZZY_MATCHES];
+#endif
+
   /** Create a new scored search node */
   ScoredSearchNode(const SearchNode& node, const float& cost)
-    : node(node), cost(cost) { }
+    : node(node), cost(cost) { 
+#if MAX_FUZZY_MATCHES > 0
+      for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
+        fuzzy_scores[i] = -std::numeric_limits<float>::infinity();
+      }
+#endif
+
+    }
   ScoredSearchNode() : cost(0.0f) {}
 
-  void operator=(const ScoredSearchNode& rhs) {
-    this->node = rhs.node;
-    this->cost = rhs.cost;
-  }
 };
 
 
@@ -1224,7 +1232,23 @@ syn_search_response SynSearch(
     const Tree* input,
     const SynSearchCosts* costs,
     const bool& assumedInitialTruth,
-    const syn_search_options& opts);
+    const syn_search_options& opts,
+    const std::vector<AlignmentSimilarity>& softAlignments
+    );
+
+/** @see SynSearch(), but with no soft alignments*/
+inline syn_search_response SynSearch(
+    const Graph* mutationGraph,
+    const btree::btree_set<uint64_t>* mainKB,
+    const btree::btree_set<uint64_t>& auxKB,
+    const Tree* input,
+    const SynSearchCosts* costs,
+    const bool& assumedInitialTruth,
+    const syn_search_options& opts) {
+  std::vector<AlignmentSimilarity> alignments;
+  return SynSearch(mutationGraph, mainKB, auxKB, input, costs, 
+                   assumedInitialTruth, opts, alignments);
+}
 
 /** @see SynSearch(), but with only one knowledge base */
 inline syn_search_response SynSearch(
@@ -1233,9 +1257,24 @@ inline syn_search_response SynSearch(
     const Tree* input,
     const SynSearchCosts* costs,
     const bool& assumedInitialTruth,
-    const syn_search_options& opts) {
+    const syn_search_options& opts,
+    const std::vector<AlignmentSimilarity>& softAlignments
+    ) {
   return SynSearch(mutationGraph, mainKB, btree::btree_set<uint64_t>(), 
       input, costs, assumedInitialTruth, opts);
+}
+
+/** @see SynSearch(), but with only one knowledge base and no soft alignments */
+inline syn_search_response SynSearch(
+    const Graph* mutationGraph,
+    const btree::btree_set<uint64_t>* mainKB,
+    const Tree* input,
+    const SynSearchCosts* costs,
+    const bool& assumedInitialTruth,
+    const syn_search_options& opts) {
+  std::vector<AlignmentSimilarity> alignments;
+  return SynSearch(mutationGraph, mainKB, btree::btree_set<uint64_t>(), 
+      input, costs, assumedInitialTruth, opts, alignments);
 }
 
 #endif
