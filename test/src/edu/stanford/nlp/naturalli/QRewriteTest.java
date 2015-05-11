@@ -120,7 +120,7 @@ public class QRewriteTest {
         "2\thave\t0\troot\n" +
         "3\ta\t4\tdet\n" +
         "4\tlot\t2\tdobj\n" +
-        "5\tenergy\t4\tprep_of\n"
+        "5\tenergy\t4\tnmod:of\n"
     );
     SemanticGraph expected = mkTree(
         "1\tcats\t2\tnsubj\n" +
@@ -137,7 +137,7 @@ public class QRewriteTest {
     SemanticGraph input = mkTree(
         "1\tTwo\t4\tnsubj\tCD\n" +
         "2\tthe\t3\tdet\n" +
-        "3\tcats\t1\tprep_of\n" +
+        "3\tcats\t1\tnmod:of\n" +
         "4\thave\t0\troot\n" +
         "5\ttails\t4\tdobj\n"
     );
@@ -200,7 +200,7 @@ public class QRewriteTest {
         "1\tI\t2\tnsubj\n" +
         "2\thave\t0\troot\n" +
         "3\tmore\t2\tadvmod\n" +
-        "5\the\t2\tprep_than\n" +
+        "5\the\t2\tnmod:than\n" +
         "6\thas\t4\tmark\n"
     );
     SemanticGraph actual = QRewrite.rewriteTerminalHas(input);
@@ -221,7 +221,7 @@ public class QRewriteTest {
         "1\tI\t2\tnsubj\n" +
         "2\thave\t0\troot\n" +
         "3\tmore\t2\tadvmod\n" +
-        "5\the\t2\tprep_than\n" +
+        "5\the\t2\tnmod:than\n" +
         "6\tis\t4\tmark\n"
     );
     SemanticGraph actual = QRewrite.rewriteTerminalHas(input);

@@ -45,7 +45,7 @@ public class ProcessQueryITest {
         "1\tsome	2	op	0	additive	2-3	additive	3-5\n" +
         "2\tcat	3	nsubj	2	-	-	-	-\n" +
         "3\tplay	0	root	11	-	-	-	-\n" +
-        "4\tyarn	3	prep_with	2	-	-	-	-\n",
+        "4\tyarn	3	nmod:with	2	-	-	-	-\n",
         ProcessQuery.annotateHumanReadable("some cats play with yarn", pipeline)
     );
   }
@@ -117,7 +117,7 @@ public class ProcessQueryITest {
         "1\tObama	3	nsubjpass	0	-	-	-	-\n"+
         "2\tbe	3	auxpass	3	-	-	-	-\n"+
         "3\tbear	0	root	4	-	-	-	-\n" +
-        "4\tHawaii	3	prep_in	2	-	-	-	-	l\n";
+        "4\tHawaii	3	nmod:in	2	-	-	-	-	l\n";
     assertEquals(expected, ProcessQuery.annotateHumanReadable("Obama was born in Hawaii", pipeline));
   }
 
