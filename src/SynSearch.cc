@@ -134,6 +134,9 @@ SearchNode::SearchNode(const SearchNode& from)
     : data(from.data), incomingFeatures(from.incomingFeatures) {
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+#if MAX_FUZZY_MATCHES > 0
+    memcpy(this->fuzzy_scores, from.fuzzy_scores, MAX_FUZZY_MATCHES * sizeof(float));
+#endif
 }
   
 SearchNode::SearchNode(const Tree& init)

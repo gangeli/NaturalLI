@@ -96,8 +96,8 @@ inline uint64_t searchLoop(
 #endif
     // (handle soft alignments)
 #if MAX_FUZZY_MATCHES > 0
-    memcpy(currentNodeSoftAlignmentScores, node.softAlignmentScores(), MAX_FUZZY_MATCHES);
-    memcpy(childNodeSoftAlignmentScores, currentNodeSoftAlignmentScores, MAX_FUZZY_MATCHES);
+    memcpy(currentNodeSoftAlignmentScores, node.softAlignmentScores(), MAX_FUZZY_MATCHES * sizeof(float));
+    memcpy(childNodeSoftAlignmentScores, currentNodeSoftAlignmentScores, MAX_FUZZY_MATCHES * sizeof(float));
 #endif
     
     // Register visited
@@ -425,6 +425,9 @@ syn_search_response SynSearch(
   KNHeap<float,SearchNode>* fringe = new KNHeap<float,SearchNode>(
     std::numeric_limits<float>::infinity(),
     -std::numeric_limits<float>::infinity());
+  // The closeset approximate match
+  uint8_t closestSoftAlignment = 0;
+  float   closestSoftAlignmentScore = -std::numeric_limits<float>::infinity();
   // The database lookup function
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
@@ -434,9 +437,23 @@ syn_search_response SynSearch(
     return kb->find(value) != kb->end() || auxKB.find(value) != auxKB.end();
   };
   // (register a node as visited)
-  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,&opts,&assumedInitialTruth,&featurizedPaths]
+  auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,
+                          &opts,&assumedInitialTruth,&featurizedPaths,
+                          &closestSoftAlignment,&closestSoftAlignmentScore]
         (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
+    // Check the soft alignments
+#if MAX_FUZZY_MATCHES > 0
+    for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
+      if (node.softAlignmentScores()[alignI] > closestSoftAlignmentScore + 1e-7) {  // 1e-7 to be robust to floating point drift
+        fprintf(stderr, "align to %d with score %f > %f\n", 
+            alignI, node.softAlignmentScores()[alignI], closestSoftAlignmentScore);
+        closestSoftAlignmentScore = node.softAlignmentScores()[alignI];
+        closestSoftAlignment = alignI;
+      }
+    }
+#endif
+    
     if (node.truthState() && lookupFn(node.factHash())) {
 
       // Make sure nodes are unique
@@ -490,19 +507,7 @@ syn_search_response SynSearch(
   // -- Run Search --
   // Enqueue the first element
   SearchNode start;
-  // (compute fuzzy scores for soft alignment)
-#if MAX_FUZZY_MATCHES > 0
-  float fuzzyScores[MAX_FUZZY_MATCHES];
-  for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
-    if (i < softAlignments.size()) {
-      fuzzyScores[i] = softAlignments[i].score(*input);
-    } else {
-      fuzzyScores[i] = -std::numeric_limits<float>::infinity();
-    }
-  }
-  start.setFuzzyScores(fuzzyScores);
-#endif
-  // (to the fringe)
+  // (compute quantifiers)
   if (!opts.silent) { printTime("[%c] "); }
   if (input->getNumQuantifiers() > 0) {
     // (case: there are quantifiers in the sentence)
@@ -518,6 +523,19 @@ syn_search_response SynSearch(
       fprintf(stderr, "  no quantifiers; starting at root=%u\n", input->root());
     }
   }
+  // (compute fuzzy scores for soft alignment)
+#if MAX_FUZZY_MATCHES > 0
+  float fuzzyScores[MAX_FUZZY_MATCHES];
+  for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
+    if (i < softAlignments.size()) {
+      fuzzyScores[i] = softAlignments[i].score(*input);
+    } else {
+      fuzzyScores[i] = -std::numeric_limits<float>::infinity();
+    }
+  }
+  start.setFuzzyScores(fuzzyScores);
+#endif
+  // (add the node to the fringe)
   fringe->insert(0.0f, start);
 
   // (to the history)
@@ -567,9 +585,14 @@ syn_search_response SynSearch(
   delete fringe;
   
   // Return
+  // (set closest matches)
+  response.closestSoftAlignment = closestSoftAlignment;
+  response.closestSoftAlignmentScore = closestSoftAlignmentScore;
+  // (debug)
   if (!opts.silent) {
     printTime("[%c] ");
     fprintf(stderr, "  |Search End| Returning %lu responses\n",response.paths.size());
   }
+  // (return)
   return response;
 }

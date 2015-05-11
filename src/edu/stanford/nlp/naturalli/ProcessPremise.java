@@ -82,7 +82,7 @@ public class ProcessPremise {
       setProperty("tokenize.language", "en");
       setProperty("naturalli.doPolarity", "false");
     }};
-    return new StanfordCoreNLP(props);
+    return new StanfordCoreNLP(props, false);
   }
 
   public static void main(String[] args) throws IOException {

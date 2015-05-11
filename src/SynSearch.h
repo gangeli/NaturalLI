@@ -967,6 +967,9 @@ class SearchNode {
     this->incomingFeatures = from.incomingFeatures;
     memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
       MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
+#if MAX_FUZZY_MATCHES > 0
+    memcpy(this->fuzzy_scores, from.fuzzy_scores, MAX_FUZZY_MATCHES * sizeof(float));
+#endif
   }
 
   /** Returns the hash of the current fact. */
@@ -1071,9 +1074,13 @@ class SearchNode {
    * scores to each of the premises from this search state.
    */
   inline void setFuzzyScores(const float* newScores) {
-    memcpy(this->fuzzy_scores, newScores, MAX_FUZZY_MATCHES);
+    memcpy(this->fuzzy_scores, newScores, MAX_FUZZY_MATCHES * sizeof(float));
   }
   
+  /**
+   * Return the list of soft alignments scores at this node.
+   * The returned array will always be of length MAX_FUZZY_MATCHES
+   */
   inline const float* softAlignmentScores() const {
     return fuzzy_scores;
   }
@@ -1236,6 +1243,8 @@ struct syn_search_path {
 struct syn_search_response {
   std::vector<syn_search_path> paths;
   std::vector<feature_vector> featurizedPaths;
+  uint8_t closestSoftAlignment = -1;
+  float closestSoftAlignmentScore = -1;
   uint64_t totalTicks;
 
   inline uint64_t size() const { return paths.size(); }
@@ -1289,7 +1298,7 @@ inline syn_search_response SynSearch(
     const std::vector<AlignmentSimilarity>& softAlignments
     ) {
   return SynSearch(mutationGraph, mainKB, btree::btree_set<uint64_t>(), 
-      input, costs, assumedInitialTruth, opts);
+      input, costs, assumedInitialTruth, opts, softAlignments);
 }
 
 /** @see SynSearch(), but with only one knowledge base and no soft alignments */

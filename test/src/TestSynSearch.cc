@@ -1390,4 +1390,28 @@ TEST_F(SynSearchTest, EmptyDBTest) {
   ASSERT_EQ(0, response.paths.size());
 }
 
+//
+// Real Search 2 (soft alignments)
+//
+TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
+  // (initialize some prerequisites)
+  btree_set<uint64_t> factdb;
+  factdb.insert(lemursHaveTails->hash());
+  // (create an alignment)
+  vector<alignment_instance> v;
+  v.emplace_back(0, POTTO.word, 0.42, -0.7);
+  vector<AlignmentSimilarity> alignments;
+  alignments.emplace_back(v);
+  // (run the search)
+  syn_search_response response = SynSearch(cyclicGraph, &factdb, 
+      animalsHaveTails, costs, true, opts, alignments);
+  // (check that the path is still OK)
+  ASSERT_EQ(1, response.paths.size());
+  EXPECT_EQ(animalsHaveTails->hash(), response.paths[0].back().factHash());
+  EXPECT_EQ(lemursHaveTails->hash(), response.paths[0].front().factHash());
+  // (check the closest alignment)
+  EXPECT_EQ(0, response.closestSoftAlignment);
+  EXPECT_NEAR(0.42, response.closestSoftAlignmentScore, 1e-7);
+}
+
 #undef SEARCH_TIMEOUT_TEST
