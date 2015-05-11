@@ -193,7 +193,7 @@ AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=0},  [If true, pass eac
 AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=3},  [The depth to go back checking for cycles in the search])
 AC_DEFINE_UNQUOTED(SEARCH_FULL_MEMORY,  ${SEARCH_FULL_MEMORY:=0},  [If true, keep a full history of search nodes seen. If true, SEARCH_CYCLE_MEMORY becomes irrelevant.])
 
-AC_DEFINE_UNQUOTED(MAX_FUZZY_MATCHES,   ${MAX_FUZZY_MATCHES:=0},  [The number of fuzzy matches to consider during search. 4 bytes per match per search node (these are expensive!).])
+AC_DEFINE_UNQUOTED(MAX_FUZZY_MATCHES,   ${MAX_FUZZY_MATCHES:=0},  [The number of fuzzy matches to consider during search. 4 bytes per match per search node (these are expensive!). Max value is 255])
 
 AC_CONFIG_FILES([
                  Makefile \

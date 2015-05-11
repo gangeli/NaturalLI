@@ -34,8 +34,9 @@ inline uint64_t searchLoop(
   uint64_t ticks = 0;
   uint8_t  dependentIndices[8];
   natlog_relation  dependentRelations[8];
-  ScoredSearchNode scoredNode;
+  ScoredSearchNode* scoredNode = (ScoredSearchNode*) alloca(sizeof(ScoredSearchNode));
   featurized_edge features;
+  // (initialize the memory)
 #if SEARCH_FULL_MEMORY!=0
   btree::btree_set<uint64_t> fullMemory;
 #else
@@ -44,6 +45,9 @@ inline uint64_t searchLoop(
   SearchNode memory[SEARCH_CYCLE_MEMORY];
 #endif
 #endif
+  // (initialize the scores array)
+  float currentNodeSoftAlignmentScores[MAX_FUZZY_MATCHES];
+  float childNodeSoftAlignmentScores[MAX_FUZZY_MATCHES];
 
   // Compute quantifiers
   const uint8_t numQuantifiers = tree.getNumQuantifiers();
@@ -62,13 +66,14 @@ inline uint64_t searchLoop(
   tree.topologicalSort(topologicalOrder);
 
   // Main Loop
-  while (ticks < opts.maxTicks && dequeue(&scoredNode)) {
+  while (ticks < opts.maxTicks && dequeue(scoredNode)) {
     // ---
     // POP NODE
     // ---
 
     // Register the dequeue'd element
-    const SearchNode& node = scoredNode.node;
+    const SearchNode& node = scoredNode->node;
+    // (handle the memory: e.g., duplicate visits)
 #if SEARCH_FULL_MEMORY!=0
     const uint64_t fullMemoryItem = memoryItem(node.factHash(), node.tokenIndex(), node.truthState());
     if (fullMemory.find(fullMemoryItem) != fullMemory.end()) {
@@ -77,6 +82,7 @@ inline uint64_t searchLoop(
     fullMemory.insert(fullMemoryItem);
 #else
 #if SEARCH_CYCLE_MEMORY!=0
+    // ??? [gabor May 2015 was wondering]
     memory[0] = history[node.getBackpointer()];
     memorySize = 1;
     for (uint8_t i = 1; i < SEARCH_CYCLE_MEMORY; ++i) {
@@ -88,9 +94,14 @@ inline uint64_t searchLoop(
     const SearchNode& parent = history[node.getBackpointer()];
 #endif
 #endif
+    // (handle soft alignments)
+#if MAX_FUZZY_MATCHES > 0
+    memcpy(currentNodeSoftAlignmentScores, node.softAlignmentScores(), MAX_FUZZY_MATCHES);
+    memcpy(childNodeSoftAlignmentScores, currentNodeSoftAlignmentScores, MAX_FUZZY_MATCHES);
+#endif
     
     // Register visited
-    registerVisited(scoredNode);
+    registerVisited(*scoredNode);
 
     // Collect info on whether this was a quantifier
     const uint8_t tokenIndex = node.tokenIndex();
@@ -135,7 +146,7 @@ inline uint64_t searchLoop(
     }
     
     // ---
-    // HANDLE NODE
+    // HANDLE MUTATIONS
     // ---
 
     // PUSH 1: Mutations
@@ -207,6 +218,7 @@ inline uint64_t searchLoop(
             subjMono, subjType, objMono, objType);
       }
       // (push child)
+      // ((check memory))
 #if SEARCH_FULL_MEMORY!=0
 #else
 #if SEARCH_CYCLE_MEMORY!=0
@@ -217,12 +229,27 @@ inline uint64_t searchLoop(
       if (isNewChild) {
 #endif
 #endif
+      // ((update alignment scores))
+      for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
+        if (alignI < softAlignments.size()) {
+          childNodeSoftAlignmentScores[alignI] = softAlignments[alignI].updateScore(
+              currentNodeSoftAlignmentScores[alignI],
+              node.tokenIndex(),
+              edge.sink,
+              edge.source);
+        }
+      }
+      // ((perform push))
 //      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
       assert(!isinf(cost));
       assert(cost == cost);  // NaN check
       assert(cost >= 0.0);
       assert(mutatedChild.incomingFeatures.transitionTaken != 7);
+#if MAX_FUZZY_MATCHES > 0
+      enqueue(ScoredSearchNode(mutatedChild, cost, childNodeSoftAlignmentScores));
+#else 
       enqueue(ScoredSearchNode(mutatedChild, cost));
+#endif
       assert(mutatedChild.incomingFeatures.transitionTaken != 7);
 #if SEARCH_FULL_MEMORY!=0
 #else
@@ -233,7 +260,7 @@ inline uint64_t searchLoop(
     }
     
     // ---
-    // HANDLE CHILDREN
+    // HANDLE DELETIONS
     // ---
   
     // Get Children
@@ -261,13 +288,27 @@ inline uint64_t searchLoop(
         assert(deletedChild.incomingFeatures.transitionTaken != 7);
         assert(deletedChild.incomingFeatures.insertionTaken != 255);
         assert(deletedChild.word() < graph->vocabSize());
+        // ((update alignment scores))
+        for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
+          if (alignI < softAlignments.size()) {
+            childNodeSoftAlignmentScores[alignI] = softAlignments[alignI].updateScore(
+                currentNodeSoftAlignmentScores[alignI],
+                node.tokenIndex(),
+                node.word(),
+                INVALID_WORD);
+          }
+        }
         // (push child)
 //        fprintf(stderr, "  push deletion %s\n", toString(*graph, tree, deletedChild).c_str());
         assert(!isinf(cost));
         assert(cost == cost);  // NaN check
         assert(cost >= 0.0);
         assert(deletedChild.incomingFeatures.insertionTaken != 255);
+#if MAX_FUZZY_MATCHES > 0
+        enqueue(ScoredSearchNode(deletedChild, cost, childNodeSoftAlignmentScores));
+#else 
         enqueue(ScoredSearchNode(deletedChild, cost));
+#endif
         assert(deletedChild.incomingFeatures.insertionTaken != 255);
       }
     }  // end children loop
@@ -297,7 +338,11 @@ inline uint64_t searchLoop(
         assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
         assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
         // (push child)
-        enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+#if MAX_FUZZY_MATCHES > 0
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost, currentNodeSoftAlignmentScores));
+#else
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost));
+#endif
       }
   
     } else if (nextQuantifierTokenIndex >= 0) {
@@ -317,7 +362,11 @@ inline uint64_t searchLoop(
           assert(indexMovedChild.incomingFeatures.mutationTaken == 31);
           assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
           assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
-          enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+#if MAX_FUZZY_MATCHES > 0
+          enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost, currentNodeSoftAlignmentScores));
+#else
+          enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost));
+#endif
         }
       } else {
         // (case: still mutating quantifiers)
@@ -325,7 +374,11 @@ inline uint64_t searchLoop(
         assert(indexMovedChild.incomingFeatures.mutationTaken == 31);
         assert(indexMovedChild.incomingFeatures.transitionTaken == 7);
         assert(indexMovedChild.incomingFeatures.insertionTaken == 255);
-        enqueue(ScoredSearchNode(indexMovedChild, scoredNode.cost));
+#if MAX_FUZZY_MATCHES > 0
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost, currentNodeSoftAlignmentScores));
+#else
+        enqueue(ScoredSearchNode(indexMovedChild, scoredNode->cost));
+#endif
       }
     }  // end quantifier push conditional
   }  // end search loop
@@ -436,9 +489,21 @@ syn_search_response SynSearch(
 
   // -- Run Search --
   // Enqueue the first element
+  SearchNode start;
+  // (compute fuzzy scores for soft alignment)
+#if MAX_FUZZY_MATCHES > 0
+  float fuzzyScores[MAX_FUZZY_MATCHES];
+  for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
+    if (i < softAlignments.size()) {
+      fuzzyScores[i] = softAlignments[i].score(*input);
+    } else {
+      fuzzyScores[i] = -std::numeric_limits<float>::infinity();
+    }
+  }
+  start.setFuzzyScores(fuzzyScores);
+#endif
   // (to the fringe)
   if (!opts.silent) { printTime("[%c] "); }
-  SearchNode start;
   if (input->getNumQuantifiers() > 0) {
     // (case: there are quantifiers in the sentence)
     start = SearchNode(*input, assumedInitialTruth, input->quantifierTokenIndex(0));
@@ -453,8 +518,9 @@ syn_search_response SynSearch(
       fprintf(stderr, "  no quantifiers; starting at root=%u\n", input->root());
     }
   }
-  // (to the history)
   fringe->insert(0.0f, start);
+
+  // (to the history)
   history[0] = start;
   historySize += 1;
 
@@ -485,10 +551,10 @@ syn_search_response SynSearch(
       printTime("[%c] ");
       fprintf(stderr, "  |Checking Fringe| size=%u\n", fringe->getSize());
     }
-    ScoredSearchNode scoredNode;
+    ScoredSearchNode* scoredNode = (ScoredSearchNode*) alloca(sizeof(ScoredSearchNode));
     while(!fringe->isEmpty()) {
-      fringe->deleteMin(&(scoredNode.cost), &(scoredNode.node));
-      registerVisited(scoredNode);
+      fringe->deleteMin(&(scoredNode->cost), &(scoredNode->node));
+      registerVisited(*scoredNode);
     }
     if (!opts.silent) {
       printTime("[%c] ");

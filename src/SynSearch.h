@@ -1065,6 +1065,20 @@ class SearchNode {
     data.allQuantifiersSeen = true;
   }
 
+#if MAX_FUZZY_MATCHES > 0
+  /**
+   * If fuzzy searching to a premise is enabled, this function sets the fuzzy
+   * scores to each of the premises from this search state.
+   */
+  inline void setFuzzyScores(const float* newScores) {
+    memcpy(this->fuzzy_scores, newScores, MAX_FUZZY_MATCHES);
+  }
+  
+  inline const float* softAlignmentScores() const {
+    return fuzzy_scores;
+  }
+#endif
+
   /** The features in this path*/
   featurized_edge incomingFeatures;
 
@@ -1075,31 +1089,45 @@ class SearchNode {
  private:
   /** The data stored in this path */
   syn_path_data data;
+
+#if MAX_FUZZY_MATCHES > 0
+  /** 
+   * The alignment score of this search node to each of the candidate
+   * premises passed into the search function. This is the cumulative
+   * score, not just the difference.
+   */
+  float fuzzy_scores[MAX_FUZZY_MATCHES];
+#endif
 };
+
+
+
 
 /**
  * A search node with an associated score.
  */
 struct ScoredSearchNode {
+  /** The node */
   SearchNode node;
   /** The score for this Search Node */
   float cost;
-
+  
 #if MAX_FUZZY_MATCHES > 0
-  float fuzzy_scores[MAX_FUZZY_MATCHES];
-#endif
-
+  /** Create a new scored search node, with new fuzzy scores. */
+  ScoredSearchNode(const SearchNode& node, const float& cost,
+                   const float* newScores)
+      : node(node), cost(cost) { 
+    // This constructor is here just to ensure that this method always
+    // gets called.
+    // TODO(gabor) at some point when I become less lazy, the constructors for
+    // SearchNode should themselves be changed.
+    this->node.setFuzzyScores(newScores);
+  }
+#else
   /** Create a new scored search node */
   ScoredSearchNode(const SearchNode& node, const float& cost)
-    : node(node), cost(cost) { 
-#if MAX_FUZZY_MATCHES > 0
-      for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
-        fuzzy_scores[i] = -std::numeric_limits<float>::infinity();
-      }
+      : node(node), cost(cost) { }
 #endif
-
-    }
-  ScoredSearchNode() : cost(0.0f) {}
 
 };
 

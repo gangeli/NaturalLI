@@ -57,7 +57,7 @@ TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(39, MAX_QUERY_LENGTH);
   EXPECT_EQ(24, sizeof(syn_path_data));
 #if MAX_QUANTIFIER_COUNT < 10
-  EXPECT_EQ(32, sizeof(SearchNode));
+  EXPECT_EQ(32 + 4 * MAX_FUZZY_MATCHES, sizeof(SearchNode));
   EXPECT_LE(sizeof(SearchNode), CACHE_LINE_SIZE);
 #endif
 }
@@ -503,7 +503,7 @@ TEST_F(TreeTest, HashValueNoOperators) {
 #if TWO_PASS_HASH!=0
   EXPECT_EQ(16580362366810359621lu, tree->hash());
 #else
-  EXPECT_EQ(6516248485063243418lu, tree->hash());
+  EXPECT_EQ(8127041229877306660lu, tree->hash());
 #endif
 }
 
@@ -515,7 +515,7 @@ TEST_F(TreeTest, HashValueOperators) {
 #if TWO_PASS_HASH!=0
   EXPECT_EQ(1167386340556778649lu, opTree->hash());
 #else
-  EXPECT_EQ(13926664513589630756lu, opTree->hash());
+  EXPECT_EQ(13863414509731629006lu, opTree->hash());
 #endif
 }
 
