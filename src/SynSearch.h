@@ -299,7 +299,7 @@ inline SynSearchCosts* strictNaturalLogicCosts() {
 
 /** Create a version of the weights encoding soft natural logic inference */
 inline SynSearchCosts* softNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.1f, 0.25);
+  return createStrictCosts(0.01f, 0.1f, 0.25f);
 }
 
 // ----------------------------------------------

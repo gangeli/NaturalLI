@@ -98,6 +98,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       fromNaturalLI = new BufferedReader(new InputStreamReader(searcher.getInputStream()));
       toNaturalLI = new OutputStreamWriter(new BufferedOutputStream(searcher.getOutputStream()));
 
+      // Set some parameters
+      toNaturalLI.write("%softCosts=true\n");
+      toNaturalLI.write("%skipNegationSearch=true\n");
+      toNaturalLI.flush();
+
 
       endTrack("Creating connection to NaturalLI");
     } catch (IOException e) {
@@ -106,30 +111,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   }
 
 
-  /*
-  private String generateAlignmentSpec(String premiseCoNLL, String hypothesisCoNLL, Counter<String> features) {
-    // Create a premise and hypothesis sentence
-    Sentence premise = new Sentence(Arrays.asList(premiseCoNLL.split("\n")).stream().map(x -> StaticResources.SURFACE_FORM.get().get(Integer.parseInt(x.split("\t")[0]))).collect(Collectors.toList()));
-    Sentence hypothesis = new Sentence(Arrays.asList(hypothesisCoNLL.split("\n")).stream().map(x -> StaticResources.SURFACE_FORM.get().get(Integer.parseInt(x.split("\t")[0]))).collect(Collectors.toList()));
-    // Align the sentences
-    Set<EntailmentFeaturizer.KeywordPair> alignment = EntailmentFeaturizer.alignTokens(premise, hypothesis);
-    //
-    return ""; // TODO(gabor)
-  }
-  */
-
-//  /**
-//   * Get the best alignment score between the hypothesis and the best premise.
-//   * @param premises The premises to possibly align to.
-//   * @param hypothesis The hypothesis we are testing.
-//   * @return The alignment score returned from NaturalLI.
-//   * @throws IOException Thrown if the pipe to NaturalLI is broken.
-//   */
-  /*
-  private synchronized double getBestAlignment(List<String> premises, String hypothesis) throws IOException {
+  /**
+   * Get the best alignment score between the hypothesis and the best premise.
+   * @param premises The premises to possibly align to.
+   * @param hypothesis The hypothesis we are testing.
+   * @return The alignment score returned from NaturalLI.
+   * @throws IOException Thrown if the pipe to NaturalLI is broken.
+   */
+  private synchronized Pair<Integer, Double> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
     // Write the premises
     for (String premise : premises) {
-//      toNaturalLI.write("%alignment = " + generateAlignmentSpec(premise, hypothesis) + "\n");
       toNaturalLI.write(premise);
     }
 
@@ -157,9 +148,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double alignmentSearchCost = matcher.group(1).equals("-inf") ? Double.NEGATIVE_INFINITY : Double.parseDouble(matcher.group(1));
 
     // Return
-    return alignmentScore;
+    return Pair.makePair(alignmentIndex, alignmentScore);
   }
-  */
 
   private double scoreBeforeNaturalli(Counter<String> features) {
     double sum = 0.0;
@@ -211,13 +201,26 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     Sentence hypothesis = new Sentence(hypothesisText);
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
+    // Query NaturalLI
+    Pair<Integer, Double> bestNaturalLIScore;
+    try {
+      bestNaturalLIScore = getBestAlignment(premisesText, hypothesisText);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+
     for (int i = 0; i < premises.size(); ++i) {
       // Featurize the pair
       Sentence premise = premises.get(i);
       Optional<Double> luceneScore = luceneScores.isPresent() ? Optional.of(luceneScores.get().get(i)) : Optional.empty();
       Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
-      double score = scoreBeforeNaturalli(features) + scoreAlignmentSimple(features);
+      double score = scoreBeforeNaturalli(features);
+      if (bestNaturalLIScore.first == i) {
+        score += bestNaturalLIScore.second;
+      } else {
+        score += scoreAlignmentSimple(features);
+      }
       assert !Double.isNaN(score);
       assert Double.isFinite(score);
       // Computer the probability

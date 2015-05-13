@@ -215,7 +215,7 @@ regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
 //
 // parseMetadata()
 //
-bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
+bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
                    vector<AlignmentSimilarity>* alignments,
                    syn_search_options *opts) {
   assert(rawLine[0] != '\0');
@@ -231,13 +231,13 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
     string value = result[3].str();
     uint32_t ivalue = atoi(result[3].str().c_str());
     if (toSet == "mutationLexicalCost") {
-      costs->mutationLexicalCost[indexEdgeType(key)] = atof(value.c_str());
+      (*costs)->mutationLexicalCost[indexEdgeType(key)] = atof(value.c_str());
     } else if (toSet == "insertionLexicalCost") {
-      costs->insertionLexicalCost[indexEdgeType(key)] = atof(value.c_str());
+      (*costs)->insertionLexicalCost[indexEdgeType(key)] = atof(value.c_str());
     } else if (toSet == "transitionCostFromTrue") {
-      costs->transitionCostFromTrue[indexNatlogRelation(key)] = atof(value.c_str());
+      (*costs)->transitionCostFromTrue[indexNatlogRelation(key)] = atof(value.c_str());
     } else if (toSet == "transitionCostFromFalse") {
-      costs->transitionCostFromFalse[indexNatlogRelation(key)] = atof(value.c_str());
+      (*costs)->transitionCostFromFalse[indexNatlogRelation(key)] = atof(value.c_str());
     } else {
       fprintf(stderr, "Unknown key: '%s'\n", toSet.c_str());
       return false;
@@ -250,13 +250,21 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
       opts->maxTicks = atof(value.c_str());
     } else if (toSet == "checkFringe") {
       opts->checkFringe = to_bool(value);
+      fprintf(stderr, "set checkFringe to %u\n", to_bool(value));
     } else if (toSet == "skipNegationSearch") {
       opts->skipNegationSearch = to_bool(value);
+      fprintf(stderr, "set skipNegationSearch to %u\n", to_bool(value));
     } else if (toSet == "alignment") {
       if (alignments->size() < MAX_FUZZY_MATCHES) {
         alignments->push_back(parseAlignment(value));
       } else {
         fprintf(stderr, "WARNING: too many candidate premises passed in; dropping this and future alignments\n");
+      }
+    } else if (toSet == "softCosts") {
+      if (to_bool(value)) {
+        delete *costs;
+        *costs = softNaturalLogicCosts();
+        fprintf(stderr, "set softCosts to %u\n", to_bool(value));
       }
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
@@ -276,21 +284,26 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
 string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
                     const Tree* query,
                     const Graph *graph, const SynSearchCosts *costs,
-                    const vector<AlignmentSimilarity>& alignments,
+                    vector<AlignmentSimilarity> alignments,
                     const syn_search_options &options,
                     double *truth) {
   // Create KB
+  bool doAlignments = (alignments.size() == 0);
   btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
   for (auto treeIter = premises.begin(); treeIter != premises.end();
        ++treeIter) {
     Tree *premise = *treeIter;
+    // hash the tree
     const uint64_t hash = SearchNode(*premise).factHash();
     printTime("[%c] ");
     fprintf(stderr, "|KB| adding premise with hash: %lu\n", hash);
     auxKB.insert(hash);
     factsInserted += 1;
-    delete premise;
+    // align the tree
+    if (doAlignments && alignments.size() < MAX_FUZZY_MATCHES) {
+      alignments.push_back(query->alignToPremise(*premise));
+    }
   }
   printTime("[%c] ");
   fprintf(stderr, "|KB| %lu premise(s) added, yielding %u total facts\n",
@@ -500,7 +513,7 @@ Tree* readTreeFromStdin(SynSearchCosts* costs,
     if (line[0] == '#') {
       continue;
     }
-    if (line[0] != '%' || !parseMetadata(line, costs, alignments, opts)) {
+    if (line[0] != '%' || !parseMetadata(line, &costs, alignments, opts)) {
       numLines += 1;
       conll.append(line, strlen(line));
       conll.append(&newline, 1);
@@ -550,7 +563,7 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
         break;
       }
       if (line[0] != '#' &&
-          (line[0] != '%' || !parseMetadata(line, costs, &alignments, &opts))) {
+          (line[0] != '%' || !parseMetadata(line, &costs, &alignments, &opts))) {
         lines.push_back(string(line));
       }
     }
@@ -784,7 +797,7 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
   vector<AlignmentSimilarity> alignments;
   while (buffer[0] != '\0' && buffer[0] != '\n' && buffer[0] != '\r' &&
          knownFacts.size() < 256) {
-    if (buffer[0] != '%' || !parseMetadata(buffer, costs, &alignments, &opts)) {
+    if (buffer[0] != '%' || !parseMetadata(buffer, &costs, &alignments, &opts)) {
       fprintf(stderr, "  [%d] read line: %s\n", socket, buffer);
       knownFacts.push_back(string(buffer));
     }

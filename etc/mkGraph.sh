@@ -248,9 +248,17 @@ cat $DIR/operators.tab |\
 #
 # Create graph
 #
+
+# Index a given file ($1) using cat program ($2), and write the output to stdout
 function index() {
   FILE=`mktemp`
-  cat $1 | sort | uniq | sed -e 's/_/ /g' > $FILE
+  pv --progress --timer --eta --rate $1 |\
+    $2 |\
+    egrep -v '^[0-9]+	[0-9]+'  |\
+    egrep -v '^[^	]+	[0-9]+	[0-9]+'  |\
+    egrep -v '		'  |\
+    sort | uniq | sed -e 's/_/ /g' \
+      > $FILE
   awk -F'	' '
       FNR == NR {
           assoc[ $2 ] = $1;
@@ -260,8 +268,14 @@ function index() {
         if ( $1 in assoc ) {
           $1 = assoc[ $1 ]
         }
+        if ( $2 > 31 ) {
+          $2 = 31
+        }
         if ( $3 in assoc ) {
           $3 = assoc[ $3 ]
+        }
+        if ( $4 > 31 ) {
+          $4 = 31
         }
         if ( $5 < 0.0 ) {
           $5 = 0.0
@@ -273,7 +287,19 @@ function index() {
   rm $FILE
 }
 
+# index, but with cat as the program
+function indexCat() {
+  index "$1" cat
+}
+
+# index, but with bzcat as the program
+function indexBZ() {
+  index "$1" bzcat
+}
+
+# Index all of the graph spec files
 function indexAll() {
+  # (index the txt files)
   for file in `find $DIR/graphData -name "edge_*.txt"`; do
     type=`echo $file |\
       sed -r -e 's/.*\/edge_(.*)_[qanrvs].txt/\1/g' |\
@@ -284,7 +310,7 @@ function indexAll() {
 #      cat $file > $modFile
 #      cat $file | awk -F'	' '{ print $3 "\t" $4 "\t" $1 "\t" $2 "\t" $5 }' >> $modFile
 #    fi
-    index $modFile | sed -e "s/^/$type	/g" |\
+    indexCat $modFile | sed -e "s/^/$type	/g" |\
       awk '
         FNR == NR {
             assoc[ $2 ] = $1;
@@ -296,12 +322,32 @@ function indexAll() {
         } ' $DIR/edgeTypes.tab - |\
       sed -e 's/ /	/g'
   done
+  # (index the nearest neighbors file)
+  indexBZ $DIR/graphData/edge_nn.txt.bz2 |\
+    sed -e "s/^/angle_nn	/g" |\
+    awk '
+      FNR == NR {
+          assoc[ $2 ] = $1;
+          next;
+      }
+      FNR < NR {
+        $1 = assoc[ $1 ];
+        printf $2 " " $3 " " $4 " " $5 " " $1 " " "%f\n", $6
+      } ' $DIR/edgeTypes.tab - |\
+    sed -e 's/ /	/g'
 }
 
+# Put everything together into a single (validated) gz file.
 echo "Indexing edges (in $DIR/graph.tab.gz)..."
-indexAll | sort | uniq | gzip > $DIR/graph.tab.gz
+indexAll |\
+  egrep -v '0\.0+$' |\
+  egrep '[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9\.]+' |\
+  sort | uniq |\
+  gzip \
+  > $DIR/graph.tab.gz
 echo "DONE"
 
+# Compress some other stuff
 rm -f $VOCAB.gz
 gzip $VOCAB
 rm -f $SENSE.gz

@@ -25,7 +25,7 @@ public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT, NATURALLI }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.NATURALLI;
+  public ClassifierType CLASSIFIER = ClassifierType.SIMPLE;
   @Execution.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
   public String NATURALLI_SEARCH = "src/naturalli_search";
 
@@ -53,9 +53,9 @@ public class ClassifierTrainer {
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
   public double TRAIN_SIGMA = 1.00;
 
-  @Execution.Option(name="testFile", gloss="The file to use for testing the classifier")
+  @Execution.Option(name="test.file", gloss="The file to use for testing the classifier")
   public File TEST_FILE = TRAIN_FILE;
-  @Execution.Option(name="testCache", gloss="A cache of the test annotations")
+  @Execution.Option(name="test.cache", gloss="A cache of the test annotations")
   public File TEST_CACHE = null;
   @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
   public boolean TEST_CACHE_DO = true;
@@ -237,8 +237,16 @@ public class ClassifierTrainer {
     // Set up some useful objects
     EntailmentFeaturizer featurizer = new EntailmentFeaturizer(args);
     ClassifierTrainer trainer = new ClassifierTrainer(featurizer);
-    Execution.fillOptions(trainer, args);
+    Execution.fillOptions(new Object[]{trainer, featurizer}, args);
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
+
+    forceTrack("Options");
+    log("training data:   " + trainer.TRAIN_FILE);
+    log("training count:  " + trainer.TRAIN_COUNT);
+    log("evaluation data: " + trainer.TEST_FILE);
+    log("using features:  " + StringUtils.join(featurizer.FEATURE_TEMPLATES, ", "));
+    log("                  (" + (featurizer.FEATURES_NOLEX ? "unlexicalized only" : "lexicalized") + ")");
+    endTrack("Options");
 
     // Initialize the cache files
     if (trainer.TRAIN_CACHE == null && trainer.TRAIN_CACHE_DO) {

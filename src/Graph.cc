@@ -191,7 +191,7 @@ Graph* readGraph(const uint32_t numWords,
     }
     e.source_sense = fast_atoi(row[1]);
     if (e.source_sense >= (0x1 << SENSE_ENTROPY)) {
-      fprintf(stderr, "Invalid source sense=%u (SENSE_ENTROPY=%u)\n", e.source_sense, SENSE_ENTROPY);
+      fprintf(stderr, "Invalid source sense=%u (SENSE_ENTROPY=%u; edgeType=%s)\n", e.source_sense, SENSE_ENTROPY, row[4]);
       exit(1);
     }
     e.sink         = fast_atoi(row[2]);
@@ -201,7 +201,7 @@ Graph* readGraph(const uint32_t numWords,
     }
     e.sink_sense   = fast_atoi(row[3]);
     if (e.sink_sense >= (0x1 << SENSE_ENTROPY)) {
-      fprintf(stderr, "Invalid sink sense=%u (SENSE_ENTROPY=%u)\n", e.sink_sense, SENSE_ENTROPY);
+      fprintf(stderr, "Invalid sink sense=%u (SENSE_ENTROPY=%u; edgeType=%s)\n", e.sink_sense, SENSE_ENTROPY, row[4]);
       exit(1);
     }
     e.type         = fast_atoi(row[4]);

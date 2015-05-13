@@ -460,6 +460,10 @@ syn_search_response SynSearch(
         closestSoftAlignmentScore = node.softAlignmentScores()[alignI];
         closestSoftAlignment = alignI;
         closestSoftAlignmentSearchCost = scoredNode.cost;
+        if (!opts.silent) {
+          printTime("[%c] "); 
+          fprintf(stderr, "  best soft match @ %f to %u\n", closestSoftAlignmentScore, alignI);
+        }
       }
     }
 #endif

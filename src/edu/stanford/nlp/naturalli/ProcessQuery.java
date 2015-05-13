@@ -263,8 +263,8 @@ public class ProcessQuery {
       String rel = edge.getRelation().toString().toLowerCase();
       if (!NaturalLogicRelation.knownDependencyArc(rel)) {
         toRemove.add(edge);
-        if (rel.startsWith("prep_")) {
-          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.Any, "prep_dep"), edge.getWeight(), edge.isExtra()));
+        if (rel.startsWith("nmod:")) {
+          toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.Any, "nmod:dep"), edge.getWeight(), edge.isExtra()));
         } else {
           toAdd.add(new SemanticGraphEdge(edge.getGovernor(), edge.getDependent(), GrammaticalRelation.valueOf(Language.Any, "dep"), edge.getWeight(), edge.isExtra()));
         }
@@ -372,7 +372,7 @@ public class ProcessQuery {
         // Find the most likely POS tag
         Counter<Character> posVotes = new ClassicCounter<>();
         for (int i = start; i < end; ++i) {
-          char tag = posTags[i].charAt(0);
+          char tag = posTags[i].toLowerCase().charAt(0);
           double count = 1.0;
           if (tag == 'n' || tag == 'v') { count += 1e-5; }
           posVotes.incrementCount(tag, count);

@@ -323,6 +323,17 @@ public class EntailmentFeaturizer implements Serializable {
   }
 
   /**
+   * Bloody generics. Make sure the string form of the enum also gets picked up.
+   */
+  @SuppressWarnings("SuspiciousMethodCalls")
+  private boolean hasFeature(Object feat) {
+    return
+        FEATURE_TEMPLATES.contains(feat) ||
+        FEATURE_TEMPLATES.contains(feat.toString()) ||
+        FEATURE_TEMPLATES.contains(feat.toString().toLowerCase());
+  }
+
+  /**
    * Break out the keyword features, because they're a giant monstrosity of code.
    */
   @SuppressWarnings("UnusedDeclaration")
@@ -348,7 +359,7 @@ public class EntailmentFeaturizer implements Serializable {
     //
     // Keyword Overlap
     //
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_OVERLAP)) {
+    if (hasFeature(FeatureTemplate.KEYWORD_OVERLAP)) {
       // Get the scores
       double onlyInPremisePenalty = premiseKeyphrases.isEmpty() ? 0.0 : ((double) onlyInPremise) / ((double) premiseKeyphrases.size());
       double onlyInHypothesisPenalty = conclusionKeyphrases.isEmpty() ? 0.0 : ((double) onlyInHypothesis) / ((double) conclusionKeyphrases.size());
@@ -385,7 +396,7 @@ public class EntailmentFeaturizer implements Serializable {
 //      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
     }
 
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_DISFLUENCIES)) {
+    if (hasFeature(FeatureTemplate.KEYWORD_DISFLUENCIES)) {
       List<KeywordPair> sortedByConclusion = alignments.stream().filter(KeywordPair::isAligned).sorted( (x, y) -> x.conclusionSpan.start() - y.conclusionSpan.start()).collect(Collectors.toList());
       int lastPremise = -1;
       int lastConclusion = -1;
@@ -405,7 +416,7 @@ public class EntailmentFeaturizer implements Serializable {
     //
     // Keyword Statistics
     //
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.KEYWORD_STATISTICS)) {
+    if (hasFeature(FeatureTemplate.KEYWORD_STATISTICS)) {
       List<Double> editDistanceSamples = new ArrayList<>();
       double sumEditDistance = 0;
 
@@ -463,7 +474,7 @@ public class EntailmentFeaturizer implements Serializable {
     //
     // Keyword entailments (lexicalized)
     //
-    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_KEYWORD)) {
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_KEYWORD)) {
       for (Span p : premiseKeywords) {
         String premisePOS = ex.premise.algorithms().modeInSpan(p, Sentence::posTags);
         String premisePhrase = StringUtils.join(ex.premise.lemmas().subList(p.start(), p.end()), " ").toLowerCase();
@@ -494,19 +505,19 @@ public class EntailmentFeaturizer implements Serializable {
     ClassicCounter<String> feats = new ClassicCounter<>();
     feats.incrementCount("bias");
 
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.LUCENE_SCORE)) {
+    if (hasFeature(FeatureTemplate.LUCENE_SCORE)) {
       feats.incrementCount("lucene_score", ex.luceneScore.orElse(0.0));
     }
 
     // Lemma overlap
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.OVERLAP)) {
+    if (hasFeature(FeatureTemplate.OVERLAP)) {
       int intersect = CollectionUtils.intersect(new HashSet<>(ex.premise.lemmas()), new HashSet<>(ex.conclusion.lemmas())).size();
       feats.incrementCount("lemma_overlap", intersect);
       feats.incrementCount("lemma_overlap_percent", ((double) intersect) / ((double) Math.min(ex.premise.length(), ex.conclusion.length())));
     }
 
     // Relevant POS intersection
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.POS_OVERLAP)) {
+    if (hasFeature(FeatureTemplate.POS_OVERLAP)) {
       for (char pos : new HashSet<Character>() {{
         add('V');
         add('N');
@@ -532,7 +543,7 @@ public class EntailmentFeaturizer implements Serializable {
     }
 
     // BLEU score
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.BLEU)) {
+    if (hasFeature(FeatureTemplate.BLEU)) {
       feats.incrementCount("BLEU-1", bleu(1, ex.premise.lemmas(), ex.premise.lemmas()));
       feats.incrementCount("BLEU-2", bleu(2, ex.premise.lemmas(), ex.premise.lemmas()));
       feats.incrementCount("BLEU-3", bleu(3, ex.premise.lemmas(), ex.premise.lemmas()));
@@ -540,14 +551,14 @@ public class EntailmentFeaturizer implements Serializable {
     }
 
     // Length differences
-    if (FEATURE_TEMPLATES.contains(FeatureTemplate.LENGTH_DIFF)) {
+    if (hasFeature(FeatureTemplate.LENGTH_DIFF)) {
       feats.incrementCount("length_diff:" + (ex.conclusion.length() - ex.premise.length()));
       feats.incrementCount("conclusion_longer?:" + (ex.conclusion.length() > ex.premise.length()));
       feats.incrementCount("conclusion_length:" + ex.conclusion.length());
     }
 
     // Unigram entailments
-    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_UNIGRAM)) {
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_UNIGRAM)) {
       for (int pI = 0; pI < ex.premise.length(); ++pI) {
         for (int cI = 0; cI < ex.conclusion.length(); ++cI) {
           if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0)) {
@@ -558,7 +569,7 @@ public class EntailmentFeaturizer implements Serializable {
     }
 
     // Bigram entailments
-    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.ENTAIL_BIGRAM)) {
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_BIGRAM)) {
       for (int pI = 0; pI <= ex.premise.length(); ++pI) {
         String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
         String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
@@ -575,7 +586,7 @@ public class EntailmentFeaturizer implements Serializable {
     }
 
     // Consequent uni/bi-gram
-    if (!FEATURES_NOLEX && FEATURE_TEMPLATES.contains(FeatureTemplate.CONCLUSION_NGRAM)) {
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.CONCLUSION_NGRAM)) {
       for (int i = 0; i < ex.conclusion.length(); ++i) {
         String elem = "^_";
         if (i > 0) {
@@ -588,7 +599,11 @@ public class EntailmentFeaturizer implements Serializable {
     }
 
     // Keyword features
-    feats.addAll(keywordFeatures(ex, debugDocument));
+    if (hasFeature(FeatureTemplate.KEYWORD_OVERLAP) ||
+        hasFeature(FeatureTemplate.KEYWORD_STATISTICS) ||
+        hasFeature(FeatureTemplate.KEYWORD_DISFLUENCIES)) {
+      feats.addAll(keywordFeatures(ex, debugDocument));
+    }
 
     assert Counters.isFinite(feats);
 

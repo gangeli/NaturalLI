@@ -33,15 +33,16 @@ if __name__ == "__main__":
   for path in opts.file:
     with open(path) as f:
       for line in withProgress(f.readlines(), 'Reading JSON'):
-        try:
-          data = json.loads(line.decode('utf-8'))
-          print("%d\t%s\t%s\t%s" % (
-            i,
-            toTrilean(mode(data['annotator_labels'])),
-            data['sentence1'].encode('utf-8'),
-            data['sentence2_corrected'].encode('utf-8')
-            ))
-          i += 1
-        except:
-          sys.stderr.write("\nError on line %d\n" % i)
-  sys.stderr.write("Done.\n")
+        data = json.loads(line.decode('utf-8'))
+        if data['gold_label'] != '-':
+          try:
+            print("%d\t%s\t%s\t%s" % (
+              i,
+              toTrilean(data['gold_label']),
+              data['sentence1'].encode('utf-8'),
+              data['sentence2'].encode('utf-8')
+              ))
+            i += 1
+          except:
+            sys.stderr.write("\nError on line %d\n" % i)
+  sys.stderr.write("Done; read %d lines.\n" % i)

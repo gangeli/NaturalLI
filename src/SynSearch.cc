@@ -795,9 +795,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
           ::word premNextWord = (premI == premise.length - 1) ? INVALID_WORD : premise.data[premI + 1].word; \
           ::word premNextNextWord = (premI > premise.length - 3) ? INVALID_WORD : premise.data[premI + 2].word; \
           monotonicity premPolarity = premPolarities[premI]; \
-          fprintf(stderr, "  considering prem:%d -> hyp:%d\n", premI, hypI); \
           if (__align_condition__) { \
-            fprintf(stderr, "  >>Aligned prem:%d -> hyp:%d\n", premI, hypI); \
             alreadyAlignedInPremise[premI] = true; \
             alreadyAlignedInHypothesis[hypI] = true; \
             premiseForHypothesis[hypI] = premI; \
@@ -943,7 +941,6 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
   free(alreadyAlignedInHypothesis);
   free(premiseForHypothesis);
   // Return
-  fprintf(stderr, "done aligning\n");
   return AlignmentSimilarity(alignments);
 
 }
@@ -1326,8 +1323,11 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
     costs->insertionLexicalCost[i] = smallConstantCost;
   }
   // Tweak 'fishy' mutation types
-  costs->mutationLexicalCost[VERB_ENTAIL] = badCost;
-  costs->mutationLexicalCost[ANGLE_NN]    = badCost;
+  costs->mutationLexicalCost[VERB_ENTAIL] = okCost;
+  costs->mutationLexicalCost[ANGLE_NN]    = okCost;
+  // Sense shifts
+  costs->mutationLexicalCost[SENSE_ADD]    = badCost;
+  costs->mutationLexicalCost[SENSE_REMOVE] = okCost;
   // Set NatLog
   costs->transitionCostFromTrue[FUNCTION_EQUIVALENT] = okCost;
   costs->transitionCostFromTrue[FUNCTION_FORWARD_ENTAILMENT] = okCost;
