@@ -16,7 +16,7 @@ submit("rm" ->"etc/snli/snli_1.0rc1_test.tab.SIMPLE.cache")
 val program:List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx7G"
+	-"Xmx8500M"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
@@ -28,7 +28,7 @@ val program:List[String] = ("java"
 using("runs/")
 
 //
-// Run the full train/test set
+// Warm up the cache
 //
 submit(program
   -("train.file", "etc/snli/snli_1.0rc1_train.tab")
@@ -37,8 +37,10 @@ submit(program
   -("test.cache.do", "true")
 
   -("model", touch("model.ser.gz"))
-  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""")
+  -("features", """[ ]""")
   -("features.nolex", "false")
+  
+  -("parallel", "true")
   
   -("log.file", touch("redwood.log"))
 )
@@ -46,16 +48,37 @@ submit(program
 //
 // Run the ablation studies
 //
-submit(program
+parallel(8) submit(program
   -("train.file", "etc/snli/snli_1.0rc1_train.tab")
   -("train.cache.do", "true")
   -("test.file", "etc/snli/snli_1.0rc1_dev.tab")
   -("test.cache.do", "true")
 
-  -("train.count", "100" & "1000" & "10000" & "50000" & "100000" & "250000")
+  -("train.count", "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
   -("model", touch("model.ser.gz"))
-  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""")
-  -("features.nolex", "false")
+  -("features", """[ OVERLAP  POS_OVERLAP ]""" )  // just minimal features to heat up the POS tagger
+  -("features.nolex", "true" & "false")
+
+  -("parallel", "false")
+  
+  -("log.file", touch("redwood.log"))
+)
+
+//
+// Run ablation studies with keyword features
+//
+parallel(8) submit(program
+  -("train.file", "etc/snli/snli_1.0rc1_train.tab")
+  -("train.cache.do", "true")
+  -("test.file", "etc/snli/snli_1.0rc1_dev.tab")
+  -("test.cache.do", "true")
+
+  -("train.count", "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
+  -("model", touch("model.ser.gz"))
+  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  KEYWORD_OVERLAP  ENTAIL_KEYWORD ]""" )
+  -("features.nolex", "true" & "false")
+
+  -("parallel", "false")
   
   -("log.file", touch("redwood.log"))
 )
