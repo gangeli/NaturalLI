@@ -39,7 +39,8 @@ rm $TMP
 echo "Creating sense mapping (in $SENSE)..."
 
 cat $DIR/graphData/lemma_sense_synset_defn.txt |\
-  awk -F'	' '{ print $1 "\t" $2 "\t" $4 }' |\
+  sed -r -e 's/[^	]+\.([a-z])\.[0-9]+/\1/g' |\
+  awk -F'	' '{ print $1 "\t" $2 "\t" $4 "\t" $3 }' |\
   sed -e 's/_/ /g' |\
   awk -F'	' '
       FNR == NR {
@@ -50,9 +51,10 @@ cat $DIR/graphData/lemma_sense_synset_defn.txt |\
           if ( $1 in assoc ) {
               $1 = assoc[ $1 ]
           }
-          print $1 "\t" $2 "\t" $3
+          print $1 "\t" $2 "\t" $3 "\t" $4
       }
-  ' $VOCAB - > $SENSE
+  ' $VOCAB - |\
+  sed -r -e 's/location$/n/' -e 's/a$/j/' > $SENSE
 
 #
 # Create privatives
@@ -296,7 +298,7 @@ function indexAll() {
   done
 }
 
-echo "Indexing edges..."
+echo "Indexing edges (in $DIR/graph.tab.gz)..."
 indexAll | sort | uniq | gzip > $DIR/graph.tab.gz
 echo "DONE"
 

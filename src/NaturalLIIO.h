@@ -3,8 +3,23 @@
 
 #include "config.h"
 #include "SynSearch.h"
-#include "Utils.h"
 #include "JavaBridge.h"
+
+#define MEM_ENV_VAR "MAXMEM_GB"
+
+#ifndef ERESTART
+#define ERESTART EINTR
+#endif
+
+
+/**
+ * A bunch of stuff to be done when starting the program. For example:
+ * <ul>
+ *  <li> Set up signal handlers </li>
+ *  <li> Set the maximum memory </li>
+ * </ul>
+ */
+void init();
 
 /**
  * Parse a metadata line, returning false if the line didn't match any
@@ -17,7 +32,7 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
 /**
  * Execute a query, returning a JSON formatted response.
  *
- * @param proc The preprocessor to use to annotate the query string(s).
+ * @param premises The premises to use to augment the knowledge base.
  * @param kb The [optionally empty] large knowledge base to evaluate against.
  * @param knownFacts An optional knowledge base to use to augment the facts in 
  *                   kb.
@@ -32,12 +47,37 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
  *
  * @return A JSON formatted response with the result of the search.
  */
+std::string executeQuery(const std::vector<Tree*> premises, const btree::btree_set<uint64_t> *kb,
+                         const std::vector<std::string> &knownFacts, const std::string &query,
+                         const Graph *graph, const SynSearchCosts *costs,
+                         const std::vector<AlignmentSimilarity>& alignments,
+                         const syn_search_options &options,
+                         double *truth);
+
+/**
+ * Execute a query using the java bridge to annotate the trees.
+ */
 std::string executeQuery(const JavaBridge *proc, const btree::btree_set<uint64_t> *kb,
                          const std::vector<std::string> &knownFacts, const std::string &query,
                          const Graph *graph, const SynSearchCosts *costs,
                          const std::vector<AlignmentSimilarity>& alignments,
                          const syn_search_options &options,
                          double *truth);
+
+/**
+ * Reads a tree from standard input, where the standard input is
+ * already a CoNLL representation of the tree.
+ */
+Tree* readTreeFromStdin();
+
+/**
+ * Reads a tree from standard input, where the standard input is
+ * already a CoNLL representation of the tree.
+ * This method additionally parses optional metadata passed in along with the tree.
+ */
+Tree* readTreeFromStdin(SynSearchCosts* costs,
+                        std::vector<AlignmentSimilarity>* alignments,
+                        syn_search_options* opts);
 
 /**
  * Start a REPL loop over stdin and stdout.
@@ -55,6 +95,11 @@ std::string executeQuery(const JavaBridge *proc, const btree::btree_set<uint64_t
  */
 uint32_t repl(const Graph *graph, JavaBridge *proc,
               const btree::btree_set<uint64_t> *kb);
+
+/**
+ * @see repl(Graph* JavaBridge* btree::btree_set<uint64_t>)
+ */
+uint32_t repl(const Graph *graph, const btree::btree_set<uint64_t> *kb);
 
 /**
  * Set up listening on a server port.

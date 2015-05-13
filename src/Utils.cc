@@ -55,6 +55,14 @@ const vector<tagged_word> someDogsChaseCats() {
   return cats;
 }
 
+string toString(const Tree& tree, const Graph& graph) {
+  string gloss = "";
+  for (int i = 0; i < tree.length; ++i) {
+    gloss = " " + string(graph.gloss(tree.token(i)));
+  }
+  return gloss.substr(1);
+}
+
 string toString(const Graph& graph, const tagged_word* fact, const uint8_t factLength) {
   string gloss = "";
   for (int i = 0; i < factLength; ++i) {

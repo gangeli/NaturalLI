@@ -126,10 +126,13 @@ endif
 endif
 endif
 
-hash_tree_SOURCES = HashTree.cc Utils.cc Graph.cc SynSearch.cc \
-                    Models.cc GZip.cc \
-                 		Graph.h Utils.h Types.h  SynSearch.h GZip.h Models.h \
-                 		btree.h btree_container.h btree_map.h btree_set.h
+hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc \
+										NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
+                 		SynSearchSingleThreaded.cc JavaBridge.cc \
+                 		NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
+										JavaBridge.h GZip.h Models.h FactDB.h \
+                 		btree.h btree_container.h btree_map.h btree_set.h \
+									  HashTree.cc
 
 hash_tree_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 hash_tree_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap

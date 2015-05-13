@@ -26,6 +26,11 @@ std::string escapeQuote(const std::string& input);
 std::string toString(const Graph& graph, const tagged_word* fact, const uint8_t factSize);
 
 /**
+ * Print the string gloss of a tree; this is just the tokens.
+ */
+std::string toString(const Tree& tree, const Graph& graph);
+
+/**
  * Print the string gloss for the given fact.
  */
 inline std::string toString(const Graph& graph, 

@@ -64,7 +64,9 @@ class InMemoryGraph : public Graph {
       if (index2gloss[i] != NULL) {
         free(index2gloss[i]);
       }
-      free(edgesBySink[i]);
+      if (edgesBySink[i] != NULL) {
+        free(edgesBySink[i]);
+      }
     }
     free(index2gloss);
     free(edgesBySink);
@@ -165,6 +167,7 @@ Graph* readGraph(const uint32_t numWords,
   // Read edges
   // (initialize variables)
   struct edge** edges = (struct edge**) malloc((numWords+1) * sizeof(struct edge*));
+  memset(edges, 0, (numWords+1) * sizeof(struct edge*));
   uint32_t* edgesSizes = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));
   memset(edgesSizes, 0, (numWords+1) * sizeof(uint32_t));
   uint32_t* edgeCapacities = (uint32_t*) malloc((numWords+1) * sizeof(uint32_t));

@@ -1,5 +1,7 @@
 #include "NaturalLIIO.h"
 
+#include "Utils.h"
+
 #include <arpa/inet.h>
 #include <cmath>
 #include <cstdio>
@@ -12,6 +14,8 @@
 #include <sys/errno.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/resource.h>
+#include <signal.h>
 #include <regex>
 #include <thread>
 #include <unistd.h>
@@ -23,8 +27,56 @@
 #define SERVER_TCP_BUFFER 25
 #define SERVER_READ_SIZE 1024
 
+extern int errno;
+
 using namespace std;
 using namespace btree;
+
+
+/**
+ * Set a memory limit, if defined
+ */
+void setmemlimit() {
+  struct rlimit memlimit;
+  long bytes;
+  if (getenv(MEM_ENV_VAR) != NULL) {
+    bytes = atol(getenv(MEM_ENV_VAR)) * (1024 * 1024 * 1024);
+    memlimit.rlim_cur = bytes;
+    memlimit.rlim_max = bytes;
+    setrlimit(RLIMIT_AS, &memlimit);
+  }
+}
+
+
+/**
+ * The function to call for caught signals. In practice, this is a NOOP.
+ */
+void signalHandler(int32_t s) {
+  fprintf(stderr, "(caught signal %d; use 'kill' or EOF to end the program)\n",
+          s);
+  fprintf(stderr, "What do we say to the God of death?\n");
+  fprintf(stderr, "  \"Not today...\"\n");
+}
+
+
+//
+// init()
+//
+void init() {
+  // Handle signals
+  // (set memory limit)
+  setmemlimit();
+  // (set up handler)
+  struct sigaction sigIntHandler;
+  sigIntHandler.sa_handler = signalHandler;
+  sigemptyset(&sigIntHandler.sa_mask);
+  sigIntHandler.sa_flags = 0;
+  // (catch signals)
+  //  sigaction(SIGINT,  &sigIntHandler, NULL);  // Stopping SIGINT causes the
+  //  java process to die
+  sigaction(SIGPIPE, &sigIntHandler, NULL);
+}
+
 
 /**
  * Compute the confidence of a search response.
@@ -112,7 +164,7 @@ bool parseAlignmentInstance(
   spec.erase(0, pos + delimiter.length());
   // Enqueue the alignment
   fprintf(stderr, "align(%d, %d, %f, %f)\n", tokenIndex, target, bonus, penalty);
-  alignments->emplace_back(tokenIndex, target, bonus, penalty);
+  alignments->emplace_back(tokenIndex, target, MONOTONE_UP, bonus, penalty);
   return true;
 }
 
@@ -221,8 +273,8 @@ bool parseMetadata(const char *rawLine, SynSearchCosts *costs,
 //
 // executeQuery()
 //
-string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
-                    const vector<string> &knownFacts, const string &query,
+string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
+                    const Tree* query,
                     const Graph *graph, const SynSearchCosts *costs,
                     const vector<AlignmentSimilarity>& alignments,
                     const syn_search_options &options,
@@ -230,28 +282,24 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
   // Create KB
   btree_set<uint64_t> auxKB;
   uint32_t factsInserted = 0;
-  for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
-    vector<Tree *> treesForFact = proc->annotatePremise(iter->c_str());
-    for (auto treeIter = treesForFact.begin(); treeIter != treesForFact.end();
-         ++treeIter) {
-      Tree *premise = *treeIter;
-      const uint64_t hash = SearchNode(*premise).factHash();
-      printTime("[%c] ");
-      fprintf(stderr, "|KB| adding premise with hash: %lu\n", hash);
-      auxKB.insert(hash);
-      factsInserted += 1;
-      delete premise;
-    }
+  for (auto treeIter = premises.begin(); treeIter != premises.end();
+       ++treeIter) {
+    Tree *premise = *treeIter;
+    const uint64_t hash = SearchNode(*premise).factHash();
+    printTime("[%c] ");
+    fprintf(stderr, "|KB| adding premise with hash: %lu\n", hash);
+    auxKB.insert(hash);
+    factsInserted += 1;
+    delete premise;
   }
   printTime("[%c] ");
   fprintf(stderr, "|KB| %lu premise(s) added, yielding %u total facts\n",
-          knownFacts.size(), factsInserted);
+          premises.size(), factsInserted);
   printTime("[%c] ");
   fprintf(stderr, "|ALIGN| %lu alignment(s) registered\n", alignments.size());
 
-  // Create Query
-  const Tree *input = proc->annotateQuery(query.c_str());
-  if (input == NULL) {
+  // Error check query
+  if (query == NULL) {
     *truth = 0.0;
     return "{\"success\": false, \"reason\": \"hypothesis (query) is too "
            "long\"}";
@@ -260,14 +308,14 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
   // Run Search
   // (assuming the KB is true)
   const syn_search_response resultIfTrue =
-      SynSearch(graph, kb, auxKB, input, costs, true, options, alignments);
+      SynSearch(graph, kb, auxKB, query, costs, true, options, alignments);
   // (assuming the KB is false)
   syn_search_options falseOptions = options;
   if (options.skipNegationSearch) {
     falseOptions.maxTicks = 0l;
   }
   const syn_search_response resultIfFalse =
-      SynSearch(graph, kb, auxKB, input, costs, false, falseOptions, alignments);
+      SynSearch(graph, kb, auxKB, query, costs, false, falseOptions, alignments);
 
   // Grok result
   // (confidence)
@@ -296,9 +344,9 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
       fprintf(stderr, "\033[1;33mWARNING:\033[0m Exactly the same max "
                       "confidence returned for both 'true' and 'false'");
       fprintf(stderr, "  if true: %s\n",
-              toJSON(*graph, *input, *bestPathIfTrue).c_str());
+              toJSON(*graph, *query, *bestPathIfTrue).c_str());
       fprintf(stderr, "  if false: %s\n",
-              toJSON(*graph, *input, *bestPathIfFalse).c_str());
+              toJSON(*graph, *query, *bestPathIfFalse).c_str());
     }
     *truth = 0.5;
   }
@@ -322,11 +370,11 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
       << "\"totalTicks\": "
       << (resultIfTrue.totalTicks + resultIfFalse.totalTicks) << ", "
       << "\"truth\": " << (*truth) << ", "
-      << "\"query\": \"" << escapeQuote(query) << "\", "
+      << "\"query\": \"" << escapeQuote(toString(*query, *graph)) << "\", "
       << "\"bestPremise\": "
       << (bestPath == NULL
               ? "null"
-              : ("\"" + escapeQuote(kbGloss(*graph, *input, *bestPath)) + "\""))
+              : ("\"" + escapeQuote(kbGloss(*graph, *query, *bestPath)) + "\""))
       << ", "
       << "\"success\": true"
       << ", "
@@ -336,7 +384,7 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
       << "\"closestSoftAlignmentSearchCost\": " << to_string(resultIfTrue.closestSoftAlignmentSearchCost) << ", "
 #endif
       << "\"path\": "
-      << (bestPath != NULL ? toJSON(*graph, *input, *bestPath) : "[]");
+      << (bestPath != NULL ? toJSON(*graph, *query, *bestPath) : "[]");
   // (dump feature vector)
   if (bestFeatures != NULL) {
     rtn << ", \"features\": {"
@@ -438,17 +486,54 @@ string passOrFail(const double &truth, const bool &haveExpectedTruth,
 }
 
 //
+// readTreeFromStdin()
+//
+Tree* readTreeFromStdin(SynSearchCosts* costs,
+                        vector<AlignmentSimilarity>* alignments,
+                        syn_search_options* opts) {
+  string conll = "";
+  char line[256];
+  char newline = '\n';
+  uint32_t numLines = 0;
+  while (!cin.fail()) {
+    cin.getline(line, 255);
+    if (line[0] == '#') {
+      continue;
+    }
+    if (line[0] != '%' || !parseMetadata(line, costs, alignments, opts)) {
+      numLines += 1;
+      conll.append(line, strlen(line));
+      conll.append(&newline, 1);
+      if (numLines > 0 && line[0] == '\0') { 
+        break;
+      }
+    }
+  }
+  if (numLines >= MAX_FACT_LENGTH) {
+    return NULL;
+  } else {
+    return new Tree(conll);
+  }
+}
+
+//
+// readTreeFromStdin()
+//
+Tree* readTreeFromStdin() {
+  SynSearchCosts costs;
+  vector<AlignmentSimilarity> alignments;
+  syn_search_options opts;
+  return readTreeFromStdin(&costs, &alignments, &opts);
+}
+
+//
 // repl()
 //
 uint32_t repl(const Graph *graph, JavaBridge *proc,
               const btree_set<uint64_t> *kb) {
   uint32_t failedExamples = 0;
-  SynSearchCosts *costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,  // maxTicks
-                          10000.0f, // costThreshold
-                          false,    // stopWhenResultFound
-                          true,     // checkFringe
-                          false);   // silent
+  SynSearchCosts* costs = strictNaturalLogicCosts();
+  syn_search_options opts;
 
   fprintf(stderr, "REPL is ready for text (maybe still waiting on CBridge)\n");
   while (!cin.fail()) {
@@ -501,6 +586,62 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
   return failedExamples;
 }
 
+//
+// repl (with trees)
+//
+uint32_t repl(const Graph *graph, const btree_set<uint64_t> *kb) {
+  uint32_t failedExamples = 0;
+  SynSearchCosts* costs = strictNaturalLogicCosts();
+  syn_search_options opts;
+
+  fprintf(stderr, "REPL is ready for trees\n");
+  while (!cin.fail()) {
+    vector<Tree*> trees;
+    // (create alignments)
+    vector<AlignmentSimilarity> alignments;
+    
+    while (!cin.fail()) {
+      Tree* tree = readTreeFromStdin(costs, &alignments, &opts);
+      if (tree == NULL) {
+        continue;
+      }
+      if (tree->length == 0) {
+        break;
+      }
+      trees.push_back(tree);
+    }
+
+    if (trees.size() > 0) {
+      // Check if query is annotated with truth
+      Tree* query = trees.back();
+      trees.pop_back();
+      fprintf(stderr, "%lu premise trees read\n", trees.size());
+      // Run query
+      double truth;
+      string response =
+          executeQuery(trees, kb, query, graph, costs, alignments, opts, &truth);
+      // Print
+      fprintf(stderr, "\n");
+      fflush(stderr);
+      printf("%s\n", response.c_str()); // Should be the only output to stdout
+      fflush(stdout);
+      fprintf(stderr, "\n");
+      fflush(stderr);
+    }
+
+    // Clean up trees
+    for (auto treeIter = trees.begin(); treeIter != trees.end();
+         ++treeIter) {
+      delete *treeIter;
+    }
+  }
+
+  // Should never reach here!
+  fprintf(stderr, "EOF on stdin -- exiting REPL\n");
+  delete costs;
+  return failedExamples;
+}
+
 /**
  * Close a given socket connection, either due to the request being completed,
  * or
@@ -538,6 +679,35 @@ void closeConnection(const uint32_t socket, sockaddr_in *client) {
   close(socket);
   free(client);
   fflush(stdout);
+}
+
+
+//
+// executeQuery() w/JavaBridge
+//
+string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
+                    const vector<string> &knownFacts, const string &query,
+                    const Graph *graph, const SynSearchCosts *costs,
+                    const vector<AlignmentSimilarity>& alignments,
+                    const syn_search_options &options,
+                    double *truth) {
+  // Collect trees
+  vector<Tree*> allTrees;
+  for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
+    vector<Tree *> treesForFact = proc->annotatePremise(iter->c_str());
+    allTrees.insert(allTrees.end(), treesForFact.begin(), treesForFact.end());
+  }
+  // Parse the query
+  const Tree *input = proc->annotateQuery(query.c_str());
+  // Run the query
+  string retval = executeQuery(allTrees, kb, input,
+                               graph, costs, alignments, options, truth);
+  // Clean up trees
+  for (auto treeIter = allTrees.begin(); treeIter != allTrees.end();
+       ++treeIter) {
+    delete *treeIter;
+  }
+  return retval;
 }
 
 /**

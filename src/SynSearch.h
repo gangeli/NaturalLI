@@ -29,6 +29,7 @@
 
 class Tree;
 class SearchNode;
+class AlignmentSimilarity;
 
 // ----------------------------------------------
 // NATURAL LOGIC
@@ -380,12 +381,13 @@ struct alignas(4) quantifier_span {
 #ifdef __GNUG__
 struct dep_tree_word {
 #else
-struct alignas(6) dep_tree_word {
+struct alignas(7) dep_tree_word {
 #endif
   ::word        word:VOCABULARY_ENTROPY;  // 24
   uint8_t       sense:SENSE_ENTROPY,      // 5
                 governor:6,
                 relation:DEPENDENCY_ENTROPY;
+  char          posTag;
 #ifdef __GNUG__
 } __attribute__((packed));
 #else
@@ -431,11 +433,12 @@ class Tree {
    * <tr> <td>   2    </td> <td> The governor of this word, 1 indexed. </td> </tr>
    * <tr> <td>   3    </td> <td> The dependency label of the incoming arc, which must match an arc in Models.h </td> </tr>
    * <tr> <td>   4    </td> <td> The word sense of this word, with 0 denoting the general (or unknown) sense. </td> </tr>
-   * <tr> <td>   5    </td> <td> The monotonicity spec of the subject (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
-   * <tr> <td>   6    </td> <td> The span of the subject, if this is a quantifier. Otherwise, '-'. </td> </tr>
-   * <tr> <td>   7    </td> <td> The monotonicity spec of the object (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
-   * <tr> <td>   8    </td> <td> The span of the object, if this is a quantifier. Otherwise, '-'. </td> </tr>
-   * <tr> <td>   9    </td> <td> Optional additional flags, as a string of (case-insensitive) characters. </td> </tr>
+   * <tr> <td>   5    </td> <td> The coarse POS tag of this word. </td> </tr>
+   * <tr> <td>   6    </td> <td> The monotonicity spec of the subject (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
+   * <tr> <td>   7    </td> <td> The span of the subject, if this is a quantifier. Otherwise, '-'. </td> </tr>
+   * <tr> <td>   8    </td> <td> The monotonicity spec of the object (e.g., anti-additive), if this is a quantifier. Otherwise, '-' denotes that this is not a quantifier. </td> </tr>
+   * <tr> <td>   9    </td> <td> The span of the object, if this is a quantifier. Otherwise, '-'. </td> </tr>
+   * <tr> <td>   10   </td> <td> Optional additional flags, as a string of (case-insensitive) characters. </td> </tr>
    * </table>
    *
    * <p>
@@ -734,6 +737,21 @@ class Tree {
   }
 
   /**
+   * Align this tree to another tree, for fuzzy search.
+   * Note that the weights on the alignment are simply hard-coded into this metho
+   * (or at least abstracted out into #define clauses).
+   * 
+   * This method will, at a high level, take all nouns, verbs, and adjectives
+   * in WordNet, and align them between the two trees in a heuristic fashion.
+   *
+   * @param other The tree to align this tree to.
+   *
+   * @return A vector of alignments between the two trees, suitable to be passed
+   *         into the search method.
+   */
+  AlignmentSimilarity alignToPremise(const Tree& premise) const;
+
+  /**
    * The number of words in this dependency graph
    */
   const uint8_t length;
@@ -801,14 +819,20 @@ class Tree {
  * An actual alignment. This is just a triple of the index,
  * the bonus if matched, and the penalty if mismatched.
  */
+#ifdef __GNUG__
 struct alignment_instance {
+#else
+struct alignas(10) alignment_instance {
+#endif
   /** 
    * The index of the word in the _hypothesis_ (that is, the query) that we
    * are trying to match. This is zero indexed.
    */
   const uint8_t index;
   /** The target word we are trying to align to */
-  const ::word  target;
+  const ::word  target:VOCABULARY_ENTROPY;
+  /** The target word we are trying to align to */
+  const monotonicity  targetPolarity:2;
   /** A non-negative bonus if a word in the search matches the target. Always >= 0. */
   const float   bonusIfMatched;
   /** A negative penalty if this word doesn't match. Always <= 0. */
@@ -816,9 +840,10 @@ struct alignment_instance {
 
   alignment_instance(const uint8_t& index,
                      const ::word& target,
+                     const monotonicity& targetPolarity,
                      const double& bonusIfMatched,
                      const double& penaltyIfMismatched)
-      : index(index), target(target),
+      : index(index), target(target), targetPolarity(targetPolarity),
         bonusIfMatched(bonusIfMatched), 
         penaltyIfMismatched(penaltyIfMismatched) { }
 };
@@ -843,10 +868,14 @@ class AlignmentSimilarity {
   double updateScore(const double& score, 
                      const uint8_t& index,
                      const ::word& oldWord,
-                     const ::word& newWord
+                     const ::word& newWord,
+                     const monotonicity& oldPolarity,
+                     const monotonicity& newPolarity
                      ) const;
   
-  const ::word& targetAt(const uint8_t& index) const;
+  const ::word targetAt(const uint8_t& index) const;
+  
+  const monotonicity targetPolarityAt(const uint8_t& index) const;
 
   const inline std::vector<alignment_instance> asVector() const {
     return alignments;
@@ -1224,6 +1253,15 @@ struct syn_search_options {
     this->checkFringe = checkFringe;
     this->silent = silent;
     this->skipNegationSearch = false;
+  }
+
+  syn_search_options() {
+    this->maxTicks =            1000000;
+    this->costThreshold =       10000.0f;
+    this->stopWhenResultFound = false;
+    this->checkFringe =         true;
+    this->silent =              false;
+    this->skipNegationSearch =  false;
   }
 };
 

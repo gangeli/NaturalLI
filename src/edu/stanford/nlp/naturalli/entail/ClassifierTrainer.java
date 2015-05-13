@@ -23,9 +23,11 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class ClassifierTrainer {
 
-  enum ClassifierType{ SIMPLE, DISTANT }
+  enum ClassifierType{ SIMPLE, DISTANT, NATURALLI }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.DISTANT;
+  public ClassifierType CLASSIFIER = ClassifierType.NATURALLI;
+  @Execution.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
+  public String NATURALLI_SEARCH = "src/naturalli_search";
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
   public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
@@ -168,7 +170,9 @@ public class ClassifierTrainer {
       } else {
         E classifier = supplier.get();
         try {
-          classifier.save(MODEL);
+          if (CLASSIFIER == ClassifierType.NATURALLI) {
+            new NaturalLIClassifier(NATURALLI_SEARCH, classifier).save(MODEL);
+          }
           log("saved classifier to " + MODEL);
         } catch (Throwable t) {
           err("ERROR SAVING MODEL TO: " + MODEL);
@@ -251,6 +255,9 @@ public class ClassifierTrainer {
         break;
       case DISTANT:
         DistantEntailmentClassifier.train(trainer);
+        break;
+      case NATURALLI:
+        SimpleEntailmentClassifier.train(trainer);
         break;
       default:
         throw new IllegalStateException("Classifier is not implemented: " + trainer.CLASSIFIER);

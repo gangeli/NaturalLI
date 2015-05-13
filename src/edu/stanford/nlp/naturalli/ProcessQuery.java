@@ -20,9 +20,7 @@ import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.Pointer;
 import edu.stanford.nlp.util.StringUtils;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
@@ -131,11 +129,12 @@ public class ProcessQuery {
     public final String gloss;
     public final int word;
     public final int sense;
+    public final char posTag;
     public final Optional<OperatorSpec> operatorInfo;
     public final int originalStartIndex;
     public final int originalEndIndex;
 
-    public Token(String gloss, int word, int sense, Optional<OperatorSpec> operatorInfo, int originalStartIndex, int originalEndIndex) {
+    public Token(String gloss, int word, int sense, char posTag, Optional<OperatorSpec> operatorInfo, int originalStartIndex, int originalEndIndex) {
       for (int i = 0; i < gloss.length(); ++i) {
         if (gloss.charAt(i) == '\t') {
           gloss = gloss.replace('\t', ' ');
@@ -144,6 +143,7 @@ public class ProcessQuery {
       this.gloss = gloss;
       this.word = word;
       this.sense = sense;
+      this.posTag = posTag;
       this.operatorInfo = operatorInfo;
       this.originalStartIndex = originalStartIndex;
       this.originalEndIndex = originalEndIndex;
@@ -162,7 +162,7 @@ public class ProcessQuery {
    * @return A token corresponding to the UNK word.
    */
   private static Token UNK(int originalIndex) {
-    return new Token("__UNK__", 1, 0, Optional.empty(), originalIndex, originalIndex + 1);
+    return new Token("__UNK__", 1, 0, 'n', Optional.empty(), originalIndex, originalIndex + 1);
   }
 
   private static int originalToTokenizedIndex(List<Token> newTokens, int originalIndex) {
@@ -281,15 +281,6 @@ public class ProcessQuery {
   }
 
   /**
-   * A hacky method to clean up the dependency trees so that they conform a bit more to what we'd expect
-   * logical trees to look like (e.g., not rooted at quantifiers).
-   *
-   * @param dependencies The dependency tree to clean, in place.
-   */
-  private static void hackDependencies(SemanticGraph dependencies) {
-  }
-
-  /**
    * Write the given tree into the format NaturalLI expects as input.
    * @param tree The tree to dump, as a SemanticGraph.
    * @return A string, which can be passed into NaturalLI
@@ -328,13 +319,13 @@ public class ProcessQuery {
 
     // Sanitize the tree
     sanitizeTreeForNaturalli(tree);
-    hackDependencies(tree);
 
     // Variables
     List<IndexedWord> sentence = new ArrayList<>();
     List<Boolean> isMeronymTarget = new ArrayList<>();
     tree.vertexListSorted().forEach((IndexedWord x) -> { sentence.add(x); isMeronymTarget.add(meronymTargets.contains(x)); });
     String[] words = sentence.stream().map(IndexedWord::lemma).toArray(String[]::new);
+    String[] posTags = sentence.stream().map(IndexedWord::tag).toArray(String[]::new);
 
     // Compute the tree to sentence index
     int[] treeToSentenceIndex = new int[sentence.get(sentence.size() - 1).index() + 1];
@@ -378,12 +369,24 @@ public class ProcessQuery {
             operator = Optional.ofNullable(sentence.get(k).get(NaturalLogicAnnotations.OperatorAnnotation.class));
           }
         }
+        // Find the most likely POS tag
+        Counter<Character> posVotes = new ClassicCounter<>();
+        for (int i = start; i < end; ++i) {
+          char tag = posTags[i].charAt(0);
+          double count = 1.0;
+          if (tag == 'n' || tag == 'v') { count += 1e-5; }
+          posVotes.incrementCount(tag, count);
+        }
+        Character tag = Counters.argmax(posVotes);
+        if (operator.isPresent()) {
+          tag = 'q';
+        }
         // Add the token
         if (add) {
           // Find the word sense of the word
           int sense = doSense ? computeSense(wordAsInt, gloss, sentence, words, start, end) : 0;
           // Add
-          conllTokenByStartIndex.add(new Token(gloss, wordAsInt, sense, operator, start, end));
+          conllTokenByStartIndex.add(new Token(gloss, wordAsInt, sense, tag, operator, start, end));
         }
       }
     });
@@ -435,6 +438,8 @@ public class ProcessQuery {
           .append("\t").append(incomingEdge.second);
       // Word sense
       b.append("\t").append(token.sense);
+      // POS tag
+      b.append("\t").append(token.posTag);
       // Operator info
       if (token.operatorInfo.isPresent()) {
         // (if present)

@@ -81,6 +81,16 @@ public class StaticResources {
     }
   };
 
+  public static Lazy<Map<Integer, String>> SURFACE_FORM = Lazy.of( () ->new HashMap<Integer, String>() {{
+    long startTime = System.currentTimeMillis();
+    System.err.print("Reading phrase indexer (index->gloss)...");
+    for (String line : IOUtils.readLines(vocabFile)) {
+      String[] fields = line.split("\t");
+      put(Integer.parseInt(fields[0]), fields[1]);
+    }
+    System.err.println("done. [" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "]");
+  }});
+
   public static Lazy<Map<Integer, Map<String, Integer>>> SENSE_INDEXER = Lazy.of(() -> Collections.unmodifiableMap(new HashMap<Integer, Map<String, Integer>>() {{
     long startTime = System.currentTimeMillis();
     System.err.print("Reading sense indexer...");

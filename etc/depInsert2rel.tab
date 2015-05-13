@@ -32,11 +32,12 @@ number	independence
 parataxis	independence	or, reverse?
 pcomp	independence	though, not so in collapsed dependencies
 pobj	independence	must delete whole preposition
+case	reverse_entailment
 nmod:poss	forward_entailment	professors are smart -> Berkeley's professors are smart
 possessive	independence	see dep_poss
 preconj	independence	forbidden to see this
 predet	independence	forbidden to see this
-prep	reverse_entailment	
+nmod	reverse_entailment	
 prt	independence	
 punct	equivalent	
 quantmod	forward_entailment	
@@ -47,14 +48,14 @@ vmod	reverse_entailment
 partmod	reverse_entailment	deprecated into vmod
 infmod	reverse_entailment	deprecated into vmod
 xcomp	reverse_entailment	
-conj_and	reverse_entailment	
-conj_and\\/or	reverse_entailment	
-conj_both	reverse_entailment	
-conj_but	reverse_entailment	
-conj_or	forward_entailment	
-conj_nor	forward_entailment	
-conj_plus	forward_entailment	
-conj_x	reverse_entailment	
+conj:and	reverse_entailment	
+conj:and\\/or	reverse_entailment	
+conj:both	reverse_entailment	
+conj:but	reverse_entailment	
+conj:or	forward_entailment	
+conj:nor	forward_entailment	
+conj:plus	forward_entailment	
+conj:x	reverse_entailment	
 nmod:aboard	reverse_entailment
 nmod:about	reverse_entailment
 nmod:above	reverse_entailment

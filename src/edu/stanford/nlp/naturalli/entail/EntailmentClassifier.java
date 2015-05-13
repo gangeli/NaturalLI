@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 
+import static edu.stanford.nlp.util.logging.Redwood.Util.log;
+
 /**
  * An interface for classifying whether a sentence entails another sentence.
  *
@@ -111,6 +113,7 @@ public interface EntailmentClassifier {
 
   public static EntailmentClassifier load(File file) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Pair<Class<? extends EntailmentClassifier>, Object> spec = IOUtils.readObjectFromFile(file);
+    log("loading a classifier of type " + spec.first.getSimpleName());
     Method loader = spec.first.getMethod("deserialize", Object.class);
     return (EntailmentClassifier) loader.invoke(null, spec.second);
   }

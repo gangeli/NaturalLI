@@ -5,6 +5,9 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
+#define ALIGN_MATCH_BONUS 1.0f
+#define ALIGN_MISMATCH_PENALTY -1.0f
+
 using namespace std;
 
 // ----------------------------------------------
@@ -308,6 +311,9 @@ void stringToSpan(string field, uint8_t* begin, uint8_t* end) {
   }
 }
 
+//
+// Tree::Tree
+//
 Tree::Tree(const string& conll) 
       : length(computeLength(conll)),
         numQuantifiers(0) {
@@ -341,6 +347,7 @@ Tree::Tree(const string& conll)
         case 0:  // Word (as integer)
           data[lineI].word = atoi(field.c_str());
           data[lineI].sense = 0;
+          data[lineI].posTag = '?';
           break;
         case 1:  // Governor
           data[lineI].governor = atoi(field.c_str());
@@ -356,20 +363,27 @@ Tree::Tree(const string& conll)
         case 3:  // Word Sense
           data[lineI].sense = atoi(field.c_str());
           break;
-        case 4:  // Subject monotonicity
+        case 4:  // POS tag
+          data[lineI].posTag = field.at(0);
+          // (validate the tag)
+          if (data[lineI].posTag < 'a' || data[lineI].posTag > 'z') {
+            fprintf(stderr, "WARNING: Unknown POS tag: %c\n", data[lineI].posTag);
+          }
+          break;
+        case 5:  // Subject monotonicity
           if (field[0] != '-') {
             isQuantifier = true;
             stringToMonotonicity(field, &subjMono, &subjType);
           }
           break;
-        case 5:  // Subject span
+        case 6:  // Subject span
           if (field[0] != '-') {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
             span.subj_begin = begin; span.subj_end = end;
           }
           break;
-        case 6:  // Object monotonicity
+        case 7:  // Object monotonicity
           if (field[0] != '-') {
             stringToMonotonicity(field, &objMono, &objType);
           } else {
@@ -377,7 +391,7 @@ Tree::Tree(const string& conll)
             objType = QUANTIFIER_TYPE_NONE;
           }
           break;
-        case 7:  // Object span
+        case 8:  // Object span
           if (field[0] != '-') {
             uint8_t begin, end;
             stringToSpan(field, &begin, &end);
@@ -394,7 +408,7 @@ Tree::Tree(const string& conll)
             }
           }
           break;
-        case 8:  // Auxilliary information
+        case 9:  // Auxilliary information
           for (auto iter = field.begin(); iter != field.end(); ++iter) {
             switch (*iter) {
               case 'l':
@@ -409,8 +423,8 @@ Tree::Tree(const string& conll)
       }
       fieldI += 1;
     }
-    if (fieldI != 3 && fieldI != 8 && fieldI != 9) {
-      fprintf(stderr, "ERROR: Bad number of CoNLL fields in line (expected 3, 8 or 9. Was %u): %s\n", fieldI, line.c_str());
+    if (fieldI != 3 && fieldI != 4 && fieldI != 5 && fieldI != 9 && fieldI != 10) {
+      fprintf(stderr, "ERROR: Bad number of CoNLL fields in line (expected 3, 4, 5, 8 or 9. Was %u): %s\n", fieldI, line.c_str());
     }
     lineI += 1;
   }
@@ -682,7 +696,7 @@ void Tree::topologicalSort(uint8_t* buffer, const bool& ignoreQuantifiers) const
   uint8_t stack[256];
   stack[0] = this->root();
   uint16_t stackSize = 1;
-  // THe output
+  // The output
   uint8_t bufferLength = 0;
   // Temporary variables
   uint8_t childrenBuffer[256];
@@ -715,6 +729,224 @@ void Tree::topologicalSort(uint8_t* buffer, const bool& ignoreQuantifiers) const
   }
   buffer[bufferLength] = 255;
 }
+  
+//
+// Tree::alignToPremise()
+//
+AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
+  // The alignments
+  vector<alignment_instance> alignments;
+
+  // Get the polarities at each token of the hypothesis / premise
+  // (hypothesis)
+  SearchNode hypNode(*this);
+  monotonicity* hypPolarities = (monotonicity*) malloc(this->length * sizeof(monotonicity));
+  for (uint8_t hypI = 0; hypI < this->length; ++hypI) {
+    hypPolarities[hypI] = this->polarityAt(hypNode, hypI);
+  }
+  // (premise)
+  SearchNode premNode(premise);
+  monotonicity* premPolarities = (monotonicity*) malloc(premise.length * sizeof(monotonicity));
+  for (uint8_t premI = 0; premI < premise.length; ++premI) {
+    premPolarities[premI] = premise.polarityAt(premNode, premI);
+  }
+
+  // The list of premise words already aligned to
+  // (initially, all false)
+  bool* alreadyAlignedInPremise = (bool*) malloc(premise.length * sizeof(bool));
+  memset(alreadyAlignedInPremise, 0, premise.length * sizeof(bool));
+  bool* alreadyAlignedInHypothesis = (bool*) malloc(this->length * sizeof(bool));
+  memset(alreadyAlignedInHypothesis, 0, this->length * sizeof(bool));
+  int16_t* premiseForHypothesis = (int16_t*) malloc(this->length * sizeof(int16_t));
+  for (uint8_t i = 0; i < this->length; ++i) {
+    premiseForHypothesis[i] = -1;
+  }
+
+  // The function to loop over alignment candidates
+  // This is an O(n^2) loop each time, but 'n' is just the size of
+  // the sentence.
+#define ALIGN_MATCH_LOOP(__align_condition__) \
+  for (uint8_t hypI = 0; hypI < this->length; ++hypI) { \
+    if (alreadyAlignedInHypothesis[hypI]) { continue; } \
+    char hypTag = this->data[hypI].posTag; \
+    char hypLastTag = hypI == 0 ? '?' : this->data[hypI - 1].posTag; \
+    char hypLastLastTag = hypI < 2 ? '?' : this->data[hypI - 2].posTag; \
+    char hypNextTag = (hypI == this->length - 1) ? '?' : this->data[hypI + 1].posTag; \
+    char hypNextNextTag = (hypI > this->length - 3) ? '?' : this->data[hypI + 2].posTag; \
+    ::word hypWord = this->data[hypI].word; \
+    ::word hypLastWord = hypI == 0 ? INVALID_WORD : this->data[hypI - 1].word; \
+    ::word hypLastLastWord = hypI < 2 ? INVALID_WORD : this->data[hypI - 2].word; \
+    ::word hypNextWord = (hypI == this->length - 1) ? INVALID_WORD : this->data[hypI + 1].word; \
+    ::word hypNextNextWord = (hypI > this->length - 3) ? INVALID_WORD : this->data[hypI + 2].word; \
+    monotonicity hypPolarity = hypPolarities[hypI]; \
+    switch (hypTag) { \
+      case 'n': case 'v': case 'j': \
+        for (uint8_t premI = 0; premI < premise.length; ++premI) { \
+          if (alreadyAlignedInPremise[premI]) { continue; } \
+          char premTag = premise.data[premI].posTag; \
+          if (premTag != 'n' && premTag != 'v' && premTag != 'j') { continue; } \
+          char premLastTag = premI == 0 ? '?' : premise.data[premI - 1].posTag; \
+          char premLastLastTag = premI < 2 ? '?' : premise.data[premI - 2].posTag; \
+          char premNextTag = (premI == premise.length - 1) ? '?' : premise.data[premI + 1].posTag; \
+          char premNextNextTag = (premI > premise.length - 3) ? '?' : premise.data[premI + 2].posTag; \
+          ::word premWord = premise.data[premI].word; \
+          ::word premLastWord = premI == 0 ? INVALID_WORD : premise.data[premI - 1].word; \
+          ::word premLastLastWord = premI < 2 ? INVALID_WORD : premise.data[premI - 2].word; \
+          ::word premNextWord = (premI == premise.length - 1) ? INVALID_WORD : premise.data[premI + 1].word; \
+          ::word premNextNextWord = (premI > premise.length - 3) ? INVALID_WORD : premise.data[premI + 2].word; \
+          monotonicity premPolarity = premPolarities[premI]; \
+          fprintf(stderr, "  considering prem:%d -> hyp:%d\n", premI, hypI); \
+          if (__align_condition__) { \
+            fprintf(stderr, "  >>Aligned prem:%d -> hyp:%d\n", premI, hypI); \
+            alreadyAlignedInPremise[premI] = true; \
+            alreadyAlignedInHypothesis[hypI] = true; \
+            premiseForHypothesis[hypI] = premI; \
+            alignments.emplace_back( \
+                hypI, \
+                premWord, \
+                premPolarity, \
+                ALIGN_MATCH_BONUS, \
+                ALIGN_MISMATCH_PENALTY); \
+          } \
+        } \
+      default: \
+        continue; \
+    } \
+  }
+  
+  // Group 1: Exact match and variants
+  // Pass 1.1: Exact match (with polarity + POS)
+  ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag && premPolarity == hypPolarity)
+  // Pass 1.2: Exact match (without polarity)
+  ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag)
+  // Pass 1.3: Exact match (without POS)
+  ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag)
+  
+  // Group 2: Neighbors
+  // Pass 2.1: NN or JJ left attachment
+  ALIGN_MATCH_LOOP(hypI < this->length - 1 && premI < premise.length - 1 &&
+                   premiseForHypothesis[hypI + 1] == (premI + 1) &&
+                   hypTag == premTag)
+  // Pass 2.2: NN or JJ right attachment
+  ALIGN_MATCH_LOOP(hypI > 0 && premI > 0 &&
+                   premiseForHypothesis[hypI - 1] == (premI - 1) &&
+                   hypTag == premTag)
+  // Pass 2.3:    premise: "? MATCHED" or "MATCHED ?" or "MATCHED of _?_"
+  //           -> hypothesis: "MATCHED of _?_"
+  ALIGN_MATCH_LOOP(hypI < this->length - 2 &&
+                   hypLastWord == WOF.word &&
+                   (
+                      ( premI > 0 && premiseForHypothesis[hypI-2] == premI - 1) ||
+                      ( premI < premise.length - 1 && 
+                        premiseForHypothesis[hypI-2] == premI + 1) ||
+                      ( premI < premise.length - 2 && 
+                        premiseForHypothesis[hypI-2] == premI - 2 &&
+                        premLastLastWord == WOF.word)
+                   ))
+  // Pass 2.4:    premise: "MATCHED of _?_"
+  //           -> hypothesis: "_?_ MATCHED" or "MATCHED _?_"
+  ALIGN_MATCH_LOOP(premI > 1 &&
+                   premLastWord == WOF.word &&
+                   (
+                      ( hypI > 0 && premiseForHypothesis[hypI-1] == premI - 2) ||
+                      ( hypI < premise.length - 1 && 
+                        premiseForHypothesis[hypI+1] == premI - 2)
+                   ))
+  // Pass 2.5:    premise: "_?_ of MATCHED"
+  //           -> hypothesis: "_?_ MATCHED"
+  ALIGN_MATCH_LOOP(premI < premise.length - 2 &&
+                   premNextWord == WOF.word &&
+                   hypI < this->length - 1 &&
+                   premiseForHypothesis[hypI + 1] == premI + 2)
+  // Pass 2.6:    premise: "_?_ of MATCHED"
+  //           -> hypothesis: "_?_ of MATCHED"
+  ALIGN_MATCH_LOOP(premI < premise.length - 2 &&
+                   premNextWord == WOF.word &&
+                   hypI < this->length - 2 &&
+                   hypNextWord == WOF.word &&
+                   premiseForHypothesis[hypI + 2] == premI + 2)
+  
+  // Group 3: Constrained match
+  // (get keyphrases in the premise)
+  vector<uint8_t> premiseKeywords;
+  for (uint8_t premI = 0; premI < premise.length; ++premI) {
+    if (!alreadyAlignedInPremise[premI]) {
+      switch (premise.data[premI].posTag) {
+        case 'n': case 'v': case 'j': premiseKeywords.push_back(premI); break;
+      }
+    }
+  }
+  // (get keyphrases in the concusion)
+  vector<uint8_t> hypothesisKeywords;
+  for (uint8_t hypI = 0; hypI < this->length; ++hypI) {
+    if (!alreadyAlignedInHypothesis[hypI]) {
+      switch (this->data[hypI].posTag) {
+        case 'n': case 'v': case 'j': hypothesisKeywords.push_back(hypI); break;
+      }
+    }
+  }
+  // Pass 3.1: Squished between two other alignments
+  for (uint8_t hypAlignI = 1; 
+       hypAlignI < (hypothesisKeywords.size() < 2 ? 0 : hypothesisKeywords.size() - 1); 
+       ++hypAlignI) {
+    auto nextPremiseKeyword =
+      find(premiseKeywords.begin(), premiseKeywords.end(),
+           premiseForHypothesis[hypothesisKeywords[hypAlignI + 1]]);
+    auto lastPremiseKeyword =
+      find(premiseKeywords.begin(), premiseKeywords.end(),
+           premiseForHypothesis[hypothesisKeywords[hypAlignI - 1]]);
+    if (nextPremiseKeyword != premiseKeywords.end() &&
+        lastPremiseKeyword != premiseKeywords.end() &&
+        *nextPremiseKeyword == *lastPremiseKeyword + 2) {
+      uint8_t premI = premiseKeywords[*nextPremiseKeyword - 1];
+      uint8_t hypI  = hypothesisKeywords[hypAlignI];
+      if (this->data[hypI].posTag == premise.data[premI].posTag) {
+        alreadyAlignedInPremise[premI] = true;
+        alreadyAlignedInHypothesis[hypI] = true;
+        premiseForHypothesis[hypI] = premI;
+        alignments.emplace_back(
+            hypI,
+            premise.data[premI].word,
+            premPolarities[premI],
+            ALIGN_MATCH_BONUS,
+            ALIGN_MISMATCH_PENALTY);
+      }
+    }
+  }
+  // Pass 3.2: Squished at the beginning or end
+  if (hypothesisKeywords.size() > 0 && premiseKeywords.size() > 0) {
+    if (!alreadyAlignedInHypothesis[hypothesisKeywords[0]] &&
+        !alreadyAlignedInPremise[premiseKeywords[0]]) {
+      // first premise and conclusion keywords are not aligned
+      bool align = false;
+      if (hypothesisKeywords.size() == 1 || premiseKeywords.size() == 1) {
+        // align if this is the last remaining alignment
+        align = true;
+      } else if (premiseForHypothesis[hypothesisKeywords[1]] == premiseKeywords[1]) {
+        // align if the next tokens align
+      }
+      if (align) {
+        alignments.emplace_back(
+            hypothesisKeywords[0],
+            premise.data[premiseKeywords[0]].word,
+            premPolarities[premiseKeywords[0]],
+            ALIGN_MATCH_BONUS,
+            ALIGN_MISMATCH_PENALTY);
+      }
+    }
+  }
+
+  // Clean up
+  free(hypPolarities);
+  free(premPolarities);
+  free(alreadyAlignedInPremise);
+  free(alreadyAlignedInHypothesis);
+  free(premiseForHypothesis);
+  // Return
+  fprintf(stderr, "done aligning\n");
+  return AlignmentSimilarity(alignments);
+
+}
 
 
 // ----------------------------------------------
@@ -729,7 +961,8 @@ double AlignmentSimilarity::score(const Tree& tree) const {
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index < tree.length) {
       // case: an alignment matched.
-      if (tree.word(iter->index) == iter->target) {
+      if (tree.word(iter->index) == iter->target &&
+          tree.polarityAt(SearchNode(tree), iter->index) == iter->targetPolarity) {
         sum += iter->bonusIfMatched;
       } else {
         sum += iter->penaltyIfMismatched;
@@ -748,14 +981,19 @@ double AlignmentSimilarity::score(const Tree& tree) const {
 double AlignmentSimilarity::updateScore(const double& score, 
                                         const uint8_t& index,
                                         const ::word& oldWord,
-                                        const ::word& newWord
+                                        const ::word& newWord,
+                                        const monotonicity& oldPolarity,
+                                        const monotonicity& newPolarity
                                         ) const {
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index == index) {
-      // case: an alignment matched.'
-      if (oldWord == iter->target && newWord != iter->target) {
+      bool oldMatched = (oldWord == iter->target && 
+                         oldPolarity == iter->targetPolarity);
+      bool newMatches = (newWord == iter->target && 
+                         newPolarity == iter->targetPolarity);
+      if (oldMatched && !newMatches) {
         return score - iter->bonusIfMatched + iter->penaltyIfMismatched;
-      } else if (oldWord != iter->target && newWord == iter->target) {
+      } else if (!oldMatched && newMatches) {
         return score - iter->penaltyIfMismatched + iter->bonusIfMatched;
       }
     }
@@ -766,13 +1004,25 @@ double AlignmentSimilarity::updateScore(const double& score,
 //
 // AlignmentSimilarity::targetAt
 //
-const ::word& AlignmentSimilarity::targetAt(const uint8_t& index) const {
-  for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
+const ::word AlignmentSimilarity::targetAt(const uint8_t& index) const {
+  for (auto iter = this->alignments.begin(); iter != this->alignments.end(); ++iter) {
     if (iter->index == index) {
       return iter->target;
     }
   }
   return NULL_WORD;
+}
+  
+//
+// AlignmentSimilarity::targetPolarityAt
+//
+const monotonicity AlignmentSimilarity::targetPolarityAt(const uint8_t& index) const {
+  for (auto iter = this->alignments.begin(); iter != this->alignments.end(); ++iter) {
+    if (iter->index == index) {
+      return iter->targetPolarity;
+    }
+  }
+  return MONOTONE_INVALID;
 }
 
 

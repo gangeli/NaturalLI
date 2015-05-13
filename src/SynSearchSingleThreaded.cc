@@ -19,6 +19,12 @@ inline uint64_t memoryItem(const uint64_t& fact, const uint8_t& currentIndex,
 } 
 
 
+//
+// -----------
+// SEARCH LOOP
+// -----------
+//
+//
 #pragma GCC push_options  // matches pop_options below
 #pragma GCC optimize ("unroll-loops")
 inline uint64_t searchLoop(
@@ -234,9 +240,11 @@ inline uint64_t searchLoop(
         if (alignI < softAlignments.size()) {
           childNodeSoftAlignmentScores[alignI] = softAlignments[alignI].updateScore(
               currentNodeSoftAlignmentScores[alignI],
-              node.tokenIndex(),
+              mutatedChild.tokenIndex(),
               edge.sink,
-              edge.source);
+              edge.source,
+              tree.polarityAt(node, node.tokenIndex()),
+              tree.polarityAt(mutatedChild, mutatedChild.tokenIndex()) );
         }
       }
       // ((perform push))
@@ -293,9 +301,11 @@ inline uint64_t searchLoop(
           if (alignI < softAlignments.size()) {
             childNodeSoftAlignmentScores[alignI] = softAlignments[alignI].updateScore(
                 currentNodeSoftAlignmentScores[alignI],
-                node.tokenIndex(),
+                deletedChild.tokenIndex(),
                 node.word(),
-                INVALID_WORD);
+                INVALID_WORD,
+                tree.polarityAt(node, node.tokenIndex()),
+                tree.polarityAt(deletedChild, deletedChild.tokenIndex()) );
           }
         }
         // (push child)

@@ -10,27 +10,54 @@
 #define SILENT true
 
 #define ALL_CATS_HAVE_TAILS \
-                       string(ALL_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\tmultiplicative\t3-5\n") + \
-                       string(CAT_STR) + string("\t3\tnsubj\t1\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t3\tdobj\t2\t-\t-\t-\t-\n")
+                       string(ALL_STR) + string("\t2\tdet\t0\tq\tanti-additive\t2-3\tmultiplicative\t3-5\n") + \
+                       string(CAT_STR) + string("\t3\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t3\tdobj\t2\tn\t-\t-\t-\t-\n")
 
 #define ALL_FURRY_CATS_HAVE_TAILS \
-                       string(ALL_STR)   + string("\t3\tdet\t0\tanti-additive\t2-4\tmultiplicative\t4-6\n") + \
-                       string(FURRY_STR) + string("\t3\tamod\t1\t-\t-\t-\t-\n") + \
-                       string(CAT_STR)   + string("\t4\tnsubj\t1\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR)  + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR)  + string("\t4\tdobj\t2\t-\t-\t-\t-\n")
+                       string(ALL_STR)   + string("\t3\tdet\t0\tq\tanti-additive\t2-4\tmultiplicative\t4-6\n") + \
+                       string(FURRY_STR) + string("\t3\tamod\t1\tj\t-\t-\t-\t-\n") + \
+                       string(CAT_STR)   + string("\t4\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR)  + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR)  + string("\t4\tdobj\t2\tn\t-\t-\t-\t-\n")
+
+#define ALL_CATS_OF_FURRY_HAVE_TAILS \
+                       string(ALL_STR)   + string("\t2\tdet\t0\tq\tanti-additive\t2-5\tmultiplicative\t5-7\n") + \
+                       string(CAT_STR)   + string("\t5\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(WOF_STR)   + string("\t4\tcase\t1\ti\t-\t-\t-\t-\n") + \
+                       string(FURRY_STR) + string("\t2\tnmod:of\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR)  + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR)  + string("\t5\tdobj\t2\tn\t-\t-\t-\t-\n")
+
+#define ALL_FUZZY_CATS_HAVE_TAILS \
+                       string(ALL_STR)   + string("\t3\tdet\t0\tq\tanti-additive\t2-4\tmultiplicative\t4-6\n") + \
+                       string(FUZZY_STR) + string("\t3\tamod\t1\tj\t-\t-\t-\t-\n") + \
+                       string(CAT_STR)   + string("\t4\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR)  + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR)  + string("\t4\tdobj\t2\tn\t-\t-\t-\t-\n")
 
 #define CATS_HAVE_TAILS \
-                       string(CAT_STR) + string("\t2\tnsubj\t1\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t2\tdobj\t2\t-\t-\t-\t-\n")
+                       string(CAT_STR) + string("\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t2\tn\t-\t-\t-\t-\n")
 
 #define TAIL_AS_LOCATION \
-                       string(CAT_STR) + string("\t2\tnsubj\t1\t-\t-\t-\t-\n") + \
-                       string(HAVE_STR) + string("\t0\troot\t2\t-\t-\t-\t-\n") + \
-                       string(TAIL_STR) + string("\t2\tdobj\t2\t-\t-\t-\t-\tl\n")
+                       string(CAT_STR) + string("\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(HAVE_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(TAIL_STR) + string("\t2\tdobj\t2\tn\t-\t-\t-\t-\tl\n")
+
+#define PLASMA_BE_CONDUCTOR_OF_ELECTRICITY \
+                       string(PLASMA_STR) + string("\t3\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(BE_STR) + string("\t3\tcop\t1\tv\t-\t-\t-\t-\n") + \
+                       string(CONDUCTOR_STR) + string("\t0\troot\t0\tn\t-\t-\t-\t-\n") + \
+                       string(WOF_STR) + string("\t5\tcase\t1\ti\t-\t-\t-\t-\n") + \
+                       string(ELECTRICITY_STR) + string("\t3\tnmod:of\t1\tn\t-\t-\t-\t-\n")
+
+#define NAIL_CONDUCT_ELECTRICITY \
+                       string(NAIL_STR) + string("\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(CONDUCT_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(ELECTRICITY_STR) + string("\t2\tdobj\t2\tn\t-\t-\t-\t-\n")
 
 using namespace std;
 using namespace btree;
@@ -97,13 +124,13 @@ TEST_F(SearchNodeTest, AssignmentOperator) {
 //
 TEST_F(SearchNodeTest, HashMutateQuantifier) {
   // Variables
-  Tree targetTree(string("42\t2\top\t0\tmonotone\t2-4\t-\t-\n") +
+  Tree targetTree(string("42\t2\top\t0\tq\tmonotone\t2-4\t-\t-\n") +
                   string("43\t0\troot\n") +
                   string("44\t2\tdobj"));
-  Tree sameAsTargetTree(string("50\t2\top\t0\tmonotone\t2-4\t-\t-\n") +
+  Tree sameAsTargetTree(string("50\t2\top\t0\tq\tmonotone\t2-4\t-\t-\n") +
                         string("43\t0\troot\n") +
                         string("44\t2\tdobj"));
-  Tree differentTree(string("42\t2\top\t0\tantitone\t2-4\t-\t-\n") +
+  Tree differentTree(string("42\t2\top\t0\tq\tantitone\t2-4\t-\t-\n") +
                      string("43\t0\troot\n") +
                      string("44\t2\tdobj"));
   EXPECT_EQ(targetTree.hash(), sameAsTargetTree.hash());
@@ -195,8 +222,8 @@ TEST_F(TreeTest, ValidateBitSetBeginsEmpty) {
 }
 
 TEST_F(TreeTest, HasExpectedSizes) {
-  EXPECT_EQ(512, sizeof(Tree));
-  EXPECT_EQ(6, sizeof(dep_tree_word));
+  EXPECT_EQ(552, sizeof(Tree));
+  EXPECT_EQ(7, sizeof(dep_tree_word));
   EXPECT_EQ(1, sizeof(quantifier_monotonicity));
   EXPECT_EQ(4, sizeof(quantifier_span));
 }
@@ -501,7 +528,7 @@ TEST_F(TreeTest, HashRepeatable) {
 TEST_F(TreeTest, HashValueNoOperators) {
   // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(16580362366810359621lu, tree->hash());
+  EXPECT_EQ(16605809463908668005lu, tree->hash());
 #else
   EXPECT_EQ(8127041229877306660lu, tree->hash());
 #endif
@@ -513,7 +540,7 @@ TEST_F(TreeTest, HashValueNoOperators) {
 TEST_F(TreeTest, HashValueOperators) {
   // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(1167386340556778649lu, opTree->hash());
+  EXPECT_EQ(1171885542138732619lu, opTree->hash());
 #else
   EXPECT_EQ(13863414509731629006lu, opTree->hash());
 #endif
@@ -573,12 +600,12 @@ TEST_F(TreeTest, HashNotBagOfWords) {
 // Hash Sense Agnostic
 //
 TEST_F(TreeTest, HashSenseAgnostic) {
-  Tree t1(string("42\t2\tnsubj\t0\t-\t-\t-\t-\n") +
-          string("43\t0\troot\t0\t-\t-\t-\t-\n") +
-          string("44\t2\tdobj\t0\t-\t-\t-\t-"));
-  Tree t2(string("42\t2\tnsubj\t1\t-\t-\t-\t-\n") +
-          string("43\t0\troot\t8\t-\t-\t-\t-\n") +
-          string("44\t2\tdobj\t2\t-\t-\t-\t-"));
+  Tree t1(string("42\t2\tnsubj\t0\tq\t-\t-\t-\t-\n") +
+          string("43\t0\troot\t0\tn\t-\t-\t-\t-\n") +
+          string("44\t2\tdobj\t0\tn\t-\t-\t-\t-"));
+  Tree t2(string("42\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") +
+          string("43\t0\troot\t8\tn\t-\t-\t-\t-\n") +
+          string("44\t2\tdobj\t2\tn\t-\t-\t-\t-"));
   EXPECT_EQ(0, t1.token(0).sense);
   EXPECT_EQ(1, t2.token(0).sense);
   EXPECT_EQ(t1.hash(), t2.hash());
@@ -588,11 +615,11 @@ TEST_F(TreeTest, HashSenseAgnostic) {
 // Hash Existential Agnostic
 //
 TEST_F(TreeTest, HashExistentialAgnostic) {
-  Tree quantified(string("42\t2\top\t0\tadditive\tadditive\tadditive\tadditive\n") +
-                  string("43\t0\troot\t0\t-\t-\t-\t-\n") +
-                  string("44\t2\tdobj\t0\t-\t-\t-\t-"));
-  Tree unquantified(string("43\t0\troot\t0\t-\t-\t-\t-\n") +
-                    string("44\t1\tdobj\t0\t-\t-\t-\t-"));
+  Tree quantified(string("42\t2\top\t0\tq\tadditive\tadditive\tadditive\tadditive\n") +
+                  string("43\t0\troot\t0\tn\t-\t-\t-\t-\n") +
+                  string("44\t2\tdobj\t0\tn\t-\t-\t-\t-"));
+  Tree unquantified(string("43\t0\troot\t0\tn\t-\t-\t-\t-\n") +
+                    string("44\t1\tdobj\t0\tn\t-\t-\t-\t-"));
   EXPECT_EQ(quantified.hash(), unquantified.hash());
 }
 
@@ -600,29 +627,29 @@ TEST_F(TreeTest, HashExistentialAgnostic) {
 // Hash Quantifier (Unary)
 //
 TEST_F(TreeTest, HashQuantifiersUnary) {
-  Tree unaryMonotone(string("42\t2\top\t0\tmonotone\t1-2\t-\t-\n") +
-                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryMonotone(string("42\t2\top\t0\tq\tmonotone\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(unaryMonotone.hash(), unaryMonotone.hash());
-  Tree unaryAntitone(string("42\t2\top\t0\tantitone\t1-2\t-\t-\n") +
-                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryAntitone(string("42\t2\top\t0\tq\tantitone\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_NE(unaryAntitone.hash(), unaryMonotone.hash());
-  Tree unaryAdditive(string("42\t2\top\t0\tadditive\t1-2\t-\t-\n") +
-                     string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryAdditive(string("42\t2\top\t0\tq\tadditive\t1-2\t-\t-\n") +
+                     string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_NE(unaryAdditive.hash(), unaryMonotone.hash());
   EXPECT_NE(unaryAdditive.hash(), unaryAntitone.hash());
-  Tree unaryAntiAdditive(string("42\t2\top\t0\tanti-additive\t1-2\t-\t-\n") +
-                         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryAntiAdditive(string("42\t2\top\t0\tq\tanti-additive\t1-2\t-\t-\n") +
+                         string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_NE(unaryAntiAdditive.hash(), unaryMonotone.hash());
   EXPECT_NE(unaryAntiAdditive.hash(), unaryAntitone.hash());
   EXPECT_NE(unaryAntiAdditive.hash(), unaryAdditive.hash());
-  Tree unaryMultiplicative(string("42\t2\top\t0\tmultiplicative\t1-2\t-\t-\n") +
-                           string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryMultiplicative(string("42\t2\top\t0\tq\tmultiplicative\t1-2\t-\t-\n") +
+                           string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_NE(unaryMultiplicative.hash(), unaryMonotone.hash());
   EXPECT_NE(unaryMultiplicative.hash(), unaryAntitone.hash());
   EXPECT_NE(unaryMultiplicative.hash(), unaryAdditive.hash());
   EXPECT_NE(unaryMultiplicative.hash(), unaryAntiAdditive.hash());
-  Tree unaryAntiMultiplicative(string("42\t2\top\t0\tanti-multiplicative\t1-2\t-\t-\n") +
-                           string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree unaryAntiMultiplicative(string("42\t2\top\t0\tq\tanti-multiplicative\t1-2\t-\t-\n") +
+                           string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_NE(unaryAntiMultiplicative.hash(), unaryMonotone.hash());
   EXPECT_NE(unaryAntiMultiplicative.hash(), unaryAntitone.hash());
   EXPECT_NE(unaryAntiMultiplicative.hash(), unaryAdditive.hash());
@@ -634,26 +661,26 @@ TEST_F(TreeTest, HashQuantifiersUnary) {
 // Hash Quantifier (Binary)
 //
 TEST_F(TreeTest, HashQuantifiersBinary) {
-  Tree mono_mono(string("42\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
-                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree mono_mono(string("42\t2\top\t0\tq\tmonotone\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(mono_mono.hash(), mono_mono.hash());
-  Tree mono_anti(string("42\t2\top\t0\tmonotone\t1-2\tantitone\t1-2\n") +
-                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree mono_anti(string("42\t2\top\t0\tq\tmonotone\t1-2\tantitone\t1-2\n") +
+                 string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(mono_anti.hash(), mono_anti.hash());
   EXPECT_NE(mono_anti.hash(), mono_mono.hash());
-  Tree anti_mono(string("42\t2\top\t0\tantitone\t1-2\tmonotone\t1-2\n") +
-                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree anti_mono(string("42\t2\top\t0\tq\tantitone\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(anti_mono.hash(), anti_mono.hash());
   EXPECT_NE(anti_mono.hash(), mono_mono.hash());
   EXPECT_NE(anti_mono.hash(), mono_anti.hash());
-  Tree mult_mono(string("42\t2\top\t0\tmultiplicative\t1-2\tmonotone\t1-2\n") +
-                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree mult_mono(string("42\t2\top\t0\tq\tmultiplicative\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(mult_mono.hash(), mult_mono.hash());
   EXPECT_NE(mult_mono.hash(), mono_mono.hash());
   EXPECT_NE(mult_mono.hash(), mono_anti.hash());
   EXPECT_NE(mult_mono.hash(), anti_mono.hash());
-  Tree add_mono(string("42\t2\top\t0\tadditive\t1-2\tmonotone\t1-2\n") +
-                 string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree add_mono(string("42\t2\top\t0\tq\tadditive\t1-2\tmonotone\t1-2\n") +
+                 string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(add_mono.hash(), add_mono.hash());
   EXPECT_NE(add_mono.hash(), mono_mono.hash());
   EXPECT_NE(add_mono.hash(), mono_anti.hash());
@@ -665,13 +692,13 @@ TEST_F(TreeTest, HashQuantifiersBinary) {
 // Hash Quantifier (Gloss Independent)
 //
 TEST_F(TreeTest, HashQuantifiersGlossIndependent) {
-  Tree a(string("42\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
-         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
-  Tree b(string("90\t2\top\t0\tmonotone\t1-2\tmonotone\t1-2\n") +
-         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree a(string("42\t2\top\t0\tq\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
+  Tree b(string("90\t2\top\t0\tq\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(a.hash(), b.hash());
-  Tree c(string("42\t2\top\t9\tmonotone\t1-2\tmonotone\t1-2\n") +
-         string("43\t0\troot\t0\t-\t-\t-\t-\n"));
+  Tree c(string("42\t2\top\t9\tq\tmonotone\t1-2\tmonotone\t1-2\n") +
+         string("43\t0\troot\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(a.hash(), c.hash());
 }
 
@@ -779,12 +806,12 @@ TEST_F(TreeTest, HashMultipleSteps) {
 // Hash collapse determiners and negation
 //
 TEST_F(TreeTest, HashCollapseDetNeg) {
-  Tree neg(string(NO_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
-  Tree det(string(NO_STR) + string("\t2\tdet\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
-  Tree amod(string(NO_STR) + string("\t2\tamod\t0\tanti-additive\t2-3\t-\t-\n") + \
-           string(CAT_STR) + string("\t0\tnsubj\t0\t-\t-\t-\t-\n"));
+  Tree neg(string(NO_STR) + string("\t2\tdet\t0\tq\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t0\tnsubj\t0\tn\t-\t-\t-\t-\n"));
+  Tree det(string(NO_STR) + string("\t2\tdet\t0\tq\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t0\tnsubj\t0\tn\t-\t-\t-\t-\n"));
+  Tree amod(string(NO_STR) + string("\t2\tamod\t0\tq\tanti-additive\t2-3\t-\t-\n") + \
+           string(CAT_STR) + string("\t0\tnsubj\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(neg.hash(), det.hash());
   EXPECT_NE(neg.hash(), amod.hash());
   EXPECT_NE(det.hash(), amod.hash());
@@ -835,13 +862,13 @@ TEST_F(TreeTest, TopologicalSortIgnoreQuantifiers) {
 
 TEST_F(TreeTest, QuantifierCountGetMatch) {
   const Tree t(
-    string("the\t2\top\t0\tadditive\t2-5\tadditive\t5-8\n") +
-    string("brunt\t6\tnsubj\t2\t-\t-\t-\t-\n") +
-    string("the\t4\top\t0\tadditive\t1-5\tadditive\t5-8\n") +
-    string("fringe\t2\tprep_of\t2\t-\t-\t-\t-\n") +
-    string("be\t6\tcop\t3\t-\t-\t-\t-\n") +
-    string("TD\t0\troot\t0\t-\t-\t-\t-\n") +
-    string("10\t6\tnum\t0\t-\t-\t-\t-\n"));
+    string("the\t2\top\t0\tq\tadditive\t2-5\tadditive\t5-8\n") +
+    string("brunt\t6\tnsubj\t2\tn\t-\t-\t-\t-\n") +
+    string("the\t4\top\t0\tq\tadditive\t1-5\tadditive\t5-8\n") +
+    string("fringe\t2\tprep_of\t2\tn\t-\t-\t-\t-\n") +
+    string("be\t6\tcop\t3\tn\t-\t-\t-\t-\n") +
+    string("TD\t0\troot\t0\tn\t-\t-\t-\t-\n") +
+    string("10\t6\tnum\t0\tn\t-\t-\t-\t-\n"));
   EXPECT_EQ(2, t.getNumQuantifiers());
   EXPECT_TRUE(t.isQuantifier(0));
   EXPECT_FALSE(t.isQuantifier(1));
@@ -851,6 +878,75 @@ TEST_F(TreeTest, QuantifierCountGetMatch) {
   EXPECT_FALSE(t.isQuantifier(5));
   EXPECT_FALSE(t.isQuantifier(6));
 }
+
+//
+// Align (trivial -- same sentence)
+//
+TEST_F(TreeTest, AlignTrivial) {
+  Tree premise(ALL_CATS_HAVE_TAILS);
+  Tree hypothesis(ALL_CATS_HAVE_TAILS);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(0, alignments.targetAt(0));
+  EXPECT_EQ(MONOTONE_INVALID, alignments.targetPolarityAt(0));
+  EXPECT_EQ(CAT.word, alignments.targetAt(1));
+  EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(1));
+  EXPECT_EQ(HAVE.word, alignments.targetAt(2));
+  EXPECT_EQ(MONOTONE_UP, alignments.targetPolarityAt(2));
+  EXPECT_EQ(TAIL.word, alignments.targetAt(3));
+  EXPECT_EQ(MONOTONE_UP, alignments.targetPolarityAt(3));
+}
+
+//
+// Align (adjective)
+//
+TEST_F(TreeTest, AlignAdjective) {
+  Tree premise(ALL_FURRY_CATS_HAVE_TAILS);
+  Tree hypothesis(ALL_FUZZY_CATS_HAVE_TAILS);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(FURRY.word, alignments.targetAt(1));
+  EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(1));
+  EXPECT_EQ(CAT.word, alignments.targetAt(2));
+  EXPECT_EQ(TAIL.word, alignments.targetAt(4));
+}
+
+//
+// Align (PP "of"; premise has PP)
+//
+TEST_F(TreeTest, AlignPrepositionInPremise) {
+  Tree premise(ALL_CATS_OF_FURRY_HAVE_TAILS);
+  Tree hypothesis(ALL_FUZZY_CATS_HAVE_TAILS);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(FURRY.word, alignments.targetAt(1));
+  EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(1));
+  EXPECT_EQ(CAT.word, alignments.targetAt(2));
+  EXPECT_EQ(TAIL.word, alignments.targetAt(4));
+}
+
+//
+// Align (PP "of"; hypothesis has PP)
+//
+TEST_F(TreeTest, AlignPrepositionInHypothesis) {
+  Tree premise(ALL_FUZZY_CATS_HAVE_TAILS);
+  Tree hypothesis(ALL_CATS_OF_FURRY_HAVE_TAILS);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(FUZZY.word, alignments.targetAt(3));
+  EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(3));
+  EXPECT_EQ(CAT.word, alignments.targetAt(1));
+  EXPECT_EQ(TAIL.word, alignments.targetAt(5));
+}
+
+//
+// Align (constrained to begin)
+//
+TEST_F(TreeTest, AlignConstrainedBegin) {
+  Tree premise(PLASMA_BE_CONDUCTOR_OF_ELECTRICITY);
+  Tree hypothesis(NAIL_CONDUCT_ELECTRICITY);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(PLASMA.word, alignments.targetAt(0));
+  EXPECT_EQ(CONDUCTOR.word, alignments.targetAt(1));
+  EXPECT_EQ(ELECTRICITY.word, alignments.targetAt(2));
+}
+
 
 // ----------------------------------------------
 // Alignment Similarity
@@ -862,14 +958,19 @@ class AlignmentSimilarityTest : public ::testing::Test {
     allFurryCatsHaveTails = new Tree(ALL_FURRY_CATS_HAVE_TAILS);
 
     vector<alignment_instance> v;
-    v.emplace_back(1, FUZZY.word, 0.42, -0.7);
-    v.emplace_back(2, DOG.word, 0.1, -0.2);
+    v.emplace_back(1, FUZZY.word, MONOTONE_DOWN, 0.42, -0.7);
+    v.emplace_back(2, DOG.word, MONOTONE_DOWN, 0.1, -0.2);
     hard = new AlignmentSimilarity(v);
     
     vector<alignment_instance> w;
-    w.emplace_back(1, FURRY.word, 0.42, -0.7);
-    w.emplace_back(2, CAT.word, 0.1, -0.2);
+    w.emplace_back(1, FURRY.word, MONOTONE_DOWN, 0.42, -0.7);
+    w.emplace_back(2, CAT.word, MONOTONE_DOWN, 0.1, -0.2);
     easy = new AlignmentSimilarity(w);
+    
+    vector<alignment_instance> x;
+    x.emplace_back(1, FURRY.word, MONOTONE_UP, 0.42, -0.7);
+    x.emplace_back(2, CAT.word, MONOTONE_UP, 0.1, -0.2);
+    monoMismatch = new AlignmentSimilarity(x);
   }
   
   virtual void TearDown() {
@@ -881,6 +982,7 @@ class AlignmentSimilarityTest : public ::testing::Test {
  Tree* allFurryCatsHaveTails;
  AlignmentSimilarity* hard;
  AlignmentSimilarity* easy;
+ AlignmentSimilarity* monoMismatch;
 };
 
 //
@@ -910,18 +1012,25 @@ TEST_F(AlignmentSimilarityTest, ScoreTree) {
 }
 
 //
+// Respect monotonicity
+//
+TEST_F(AlignmentSimilarityTest, RespectMonotonicity) {
+  EXPECT_NEAR(-0.9, monoMismatch->score(*allFurryCatsHaveTails), 1e-7);
+}
+
+//
 // Update Score
 //
 TEST_F(AlignmentSimilarityTest, UpdateScore) {
   double score = hard->score(*allFurryCatsHaveTails);
   ASSERT_NEAR(-0.9, score, 1e-7);
-  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word);
+  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
-  double afterDog = hard->updateScore(score, 2, CAT.word, DOG.word);
+  double afterDog = hard->updateScore(score, 2, CAT.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(-0.6, afterDog, 1e-7);
-  double afterBoth = hard->updateScore(afterDog, 1, FURRY.word, FUZZY.word);
+  double afterBoth = hard->updateScore(afterDog, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(0.52, afterBoth, 1e-7);
-  double afterBothOtherWay = hard->updateScore(afterFuzzy, 2, CAT.word, DOG.word);
+  double afterBothOtherWay = hard->updateScore(afterFuzzy, 2, CAT.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(0.52, afterBothOtherWay, 1e-7);
 }
 
@@ -931,14 +1040,36 @@ TEST_F(AlignmentSimilarityTest, UpdateScore) {
 TEST_F(AlignmentSimilarityTest, UpdateScoreTwice) {
   double score = hard->score(*allFurryCatsHaveTails);
   ASSERT_NEAR(-0.9, score, 1e-7);
-  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word);
+  double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
-  double afterFurry = hard->updateScore(afterFuzzy, 1, FUZZY.word, FURRY.word);
+  double afterFurry = hard->updateScore(afterFuzzy, 1, FUZZY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(-0.9, afterFurry, 1e-7);
-  double afterDog = hard->updateScore(afterFurry, 1, FURRY.word, DOG.word);
+  double afterDog = hard->updateScore(afterFurry, 1, FURRY.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(-0.9, afterDog, 1e-7);
-  afterFuzzy = hard->updateScore(afterDog, 1, DOG.word, FUZZY.word);
+  afterFuzzy = hard->updateScore(afterDog, 1, DOG.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
   EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+}
+
+//
+// Update Score Match Mono
+//
+TEST_F(AlignmentSimilarityTest, UpdateScoreMatchMono) {
+  double score = monoMismatch->score(*allFurryCatsHaveTails);
+  ASSERT_NEAR(-0.9, score, 1e-7);
+  double afterFuzzy = monoMismatch->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
+  ASSERT_NEAR(-0.9, afterFuzzy, 1e-7);
+  double afterFurry = monoMismatch->updateScore(score, 1, FUZZY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_UP);
+  EXPECT_NEAR(0.22, afterFurry, 1e-7);
+}
+
+//
+// Update Score Match Mono
+//
+TEST_F(AlignmentSimilarityTest, UpdateScoreMatchMonoOnly) {
+  double score = monoMismatch->score(*allFurryCatsHaveTails);
+  ASSERT_NEAR(-0.9, score, 1e-7);
+  double afterFurry = monoMismatch->updateScore(score, 1, FURRY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_UP);
+  ASSERT_NEAR(0.22, afterFurry, 1e-7);
 }
 
 
@@ -1399,7 +1530,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
   factdb.insert(lemursHaveTails->hash());
   // (create an alignment)
   vector<alignment_instance> v;
-  v.emplace_back(0, POTTO.word, 0.42, -0.7);
+  v.emplace_back(0, POTTO.word, MONOTONE_UP, 0.42, -0.7);
   vector<AlignmentSimilarity> alignments;
   alignments.emplace_back(v);
   // (run the search)

@@ -86,6 +86,25 @@ public class EntailmentFeaturizer implements Serializable {
     return align(ex, premiseSpans, conclusionSpans, debugDocument, manyToMany);
   }
 
+  static Set<KeywordPair> alignTokens(Sentence premise, Sentence conclusion) {
+    EntailmentPair ex = new EntailmentPair(Trilean.UNKNOWN, premise, conclusion, Optional.empty(), Optional.empty());
+    // Get the spans
+    List<Span> premiseSpans = new ArrayList<>();
+    for (int tokI = 0; tokI < premise.length(); ++tokI) {
+      if (premise.posTag(tokI).startsWith("V") || premise.posTag(tokI).startsWith("N")) {
+        premiseSpans.add(new Span(tokI, tokI +1));
+      }
+    }
+    List<Span> conclusionSpans = new ArrayList<>();
+    for (int tokI = 0; tokI < conclusion.length(); ++tokI) {
+      if (conclusion.posTag(tokI).startsWith("V") || conclusion.posTag(tokI).startsWith("N")) {
+        conclusionSpans.add(new Span(tokI, tokI +1));
+      }
+    }
+    // Run algorithm
+    return align(ex, premiseSpans, conclusionSpans, Optional.empty(), false);
+  }
+
   /**
    * Heuristically align the keywords in the premise to the keywords in the conclusion.
    * @param ex The premise/hypothesis pair to align.
@@ -93,7 +112,11 @@ public class EntailmentFeaturizer implements Serializable {
    * @param manyToMany If true, allow many-to-many alignments.
    * @return An set of keyword pairs representing the alignment.
    */
-  static Set<KeywordPair> align(EntailmentPair ex, List<Span> premiseSpans, List<Span> conclusionSpans, Optional<DebugDocument> debugDocument, boolean manyToMany) {
+  static Set<KeywordPair> align(EntailmentPair ex,
+                                List<Span> premiseSpans,
+                                List<Span> conclusionSpans,
+                                Optional<DebugDocument> debugDocument,
+                                boolean manyToMany) {
 
     // Get other useful metadata
     List<String> premisePhrases = premiseSpans.stream().map(x -> StringUtils.join(ex.premise.lemmas().subList(x.start(), x.end()), " ").toLowerCase()).collect(Collectors.toList());
@@ -331,28 +354,31 @@ public class EntailmentFeaturizer implements Serializable {
       double onlyInHypothesisPenalty = conclusionKeyphrases.isEmpty() ? 0.0 : ((double) onlyInHypothesis) / ((double) conclusionKeyphrases.size());
       double noOverlapPenaltyPremise = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) premiseKeyphrases.size());
       double noOverlapPenaltyConclusion = notOverlap == 0 ? 0.0 : (double) notOverlap / ((double) conclusionKeyphrases.size());
-      double noOverlapPenaltyPercent = alignments.isEmpty() ? 0.0 : (double) notOverlap / ((double) alignments.size());
-      double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
+//      double noOverlapPenaltyPercent = alignments.isEmpty() ? 0.0 : (double) notOverlap / ((double) alignments.size());
+//      double anyOverlapBonus = alignments.size() == 0 ? 0.0 : ((double) anyOverlap) / ((double) alignments.size());
       double perfectMatchBonusPremise = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) premiseKeyphrases.size());
       double perfectMatchBonusConclusion = perfectMatch == 0 ? 0.0 : ((double) perfectMatch) / ((double) conclusionKeyphrases.size());
       double perfectMatchBonusPercent = numAligned == 0 ? 0.0 :  ((double) perfectMatch) / ((double) numAligned);
 
       // Add the features
+      // (counts)
+      feats.incrementCount(NaturalLIClassifier.PREMISE_KEYWORD_COUNT, premiseKeyphrases.size());
+      feats.incrementCount(NaturalLIClassifier.CONCLUSION_KEYWORD_COUNT, conclusionKeyphrases.size());
+      feats.incrementCount(NaturalLIClassifier.ALIGNED_KEYWORD_COUNT, numAligned);
+
       // (constant biases)
-      feats.incrementCount("onlyInPremise", onlyInPremisePenalty);
-      feats.incrementCount("onlyInConclusion", onlyInHypothesisPenalty);
-      feats.incrementCount("anyOverlap", anyOverlapBonus);
-      feats.incrementCount("anyOverlapCount", anyOverlap);
+      feats.incrementCount(NaturalLIClassifier.ONLY_IN_PREMISE, onlyInPremisePenalty);
+      feats.incrementCount(NaturalLIClassifier.ONLY_IN_CONCLUSION, onlyInHypothesisPenalty);
+      feats.incrementCount(NaturalLIClassifier.ANY_OVERLAP_COUNT, anyOverlap);
 
       // (conclusion only)
-      feats.incrementCount("noOverlapConclusion", noOverlapPenaltyConclusion);
-      feats.incrementCount("perfectMatchConclusion", perfectMatchBonusConclusion);
+      feats.incrementCount(NaturalLIClassifier.CONCLUSION_OVERLAP_NO, noOverlapPenaltyConclusion);
+      feats.incrementCount(NaturalLIClassifier.CONCLUSION_OVERLAP_PERFECT, perfectMatchBonusConclusion);
 
       // (joint)
-      feats.incrementCount("perfectMatchPercent", perfectMatchBonusPercent);
-      feats.incrementCount("perfectMatchCount", perfectMatch);
-      feats.incrementCount("noOverlapPercent", noOverlapPenaltyPercent);
-      feats.incrementCount("noOverlapCount", notOverlap);
+      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_PERFECT, perfectMatchBonusPercent);
+      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_PERFECT_COUNT, perfectMatch);
+      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_NO_COUNT, notOverlap);
 
       // (premise)
 //      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);

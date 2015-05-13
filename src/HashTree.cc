@@ -7,36 +7,12 @@
 #include <iomanip>
 #include <unistd.h>
 
-#include "config.h"
+#include "NaturalLIIO.h"
 #include "SynSearch.h"
 #include "Graph.h"
 
 using namespace std;
 
-/**
- * Reads a tree from standard input, where the standard input is
- * already a CoNLL representation of the tree.
- */
-Tree* readTreeFromStdin() {
-  string conll = "";
-  char line[256];
-  char newline = '\n';
-  uint32_t numLines = 0;
-  while (!cin.fail()) {
-    cin.getline(line, 255);
-    numLines += 1;
-    conll.append(line, strlen(line));
-    conll.append(&newline, 1);
-    if (numLines > 0 && line[0] == '\0') { 
-      break;
-    }
-  }
-  if (numLines >= MAX_FACT_LENGTH) {
-    return NULL;
-  } else {
-    return new Tree(conll);
-  }
-}
 
 /**
  * The Entry point for streaming dependency trees into candidate
