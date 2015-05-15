@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # Negation on both the subject and object
 # (super easy versions)
 Neither cat has a tail

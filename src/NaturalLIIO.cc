@@ -266,6 +266,12 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
         *costs = softNaturalLogicCosts();
         fprintf(stderr, "set softCosts to %u\n", to_bool(value));
       }
+    } else if (toSet == "strictCosts") {
+      if (to_bool(value)) {
+        delete *costs;
+        *costs = strictNaturalLogicCosts();
+        fprintf(stderr, "set strictCosts to %u\n", to_bool(value));
+      }
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
       return false;
@@ -545,7 +551,7 @@ Tree* readTreeFromStdin() {
 uint32_t repl(const Graph *graph, JavaBridge *proc,
               const btree_set<uint64_t> *kb) {
   uint32_t failedExamples = 0;
-  SynSearchCosts* costs = strictNaturalLogicCosts();
+  SynSearchCosts* costs = intermediateNaturalLogicCosts();
   syn_search_options opts;
 
   fprintf(stderr, "REPL is ready for text (maybe still waiting on CBridge)\n");
@@ -604,7 +610,7 @@ uint32_t repl(const Graph *graph, JavaBridge *proc,
 //
 uint32_t repl(const Graph *graph, const btree_set<uint64_t> *kb) {
   uint32_t failedExamples = 0;
-  SynSearchCosts* costs = strictNaturalLogicCosts();
+  SynSearchCosts* costs = intermediateNaturalLogicCosts();
   syn_search_options opts;
 
   fprintf(stderr, "REPL is ready for trees\n");
@@ -781,8 +787,8 @@ void handleConnection(const uint32_t &socket, sockaddr_in *client,
                       const btree_set<uint64_t> *kb) {
 
   // Initialize options
-  SynSearchCosts *costs = strictNaturalLogicCosts();
-  syn_search_options opts(1000000,  // maxTicks
+  SynSearchCosts* costs = intermediateNaturalLogicCosts();
+  syn_search_options opts(100000,  // maxTicks
                           10000.0f, // costThreshold
                           false,    // stopWhenResultFound
                           true,     // checkFringe

@@ -530,7 +530,7 @@ TEST_F(TreeTest, HashValueNoOperators) {
 #if TWO_PASS_HASH!=0
   EXPECT_EQ(16605809463908668005lu, tree->hash());
 #else
-  EXPECT_EQ(8127041229877306660lu, tree->hash());
+  EXPECT_EQ(4371864790233797722lu, tree->hash());
 #endif
 }
 
@@ -542,7 +542,7 @@ TEST_F(TreeTest, HashValueOperators) {
 #if TWO_PASS_HASH!=0
   EXPECT_EQ(1171885542138732619lu, opTree->hash());
 #else
-  EXPECT_EQ(13863414509731629006lu, opTree->hash());
+  EXPECT_EQ(5965632721169780864lu, opTree->hash());
 #endif
 }
 

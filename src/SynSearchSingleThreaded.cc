@@ -146,7 +146,7 @@ inline uint64_t searchLoop(
     historySize += 1;
     ticks += 1;
     assert (historySize == (ticks + 1));
-    if (!opts.silent && ticks % 100000 == 0) { 
+    if (!opts.silent && ticks % 100000 == 0) {
       printTime("[%c] "); 
       fprintf(stderr, "  |Search Progress| ticks=%luK\n", ticks / 1000);
     }

@@ -86,6 +86,24 @@ TEST_F(UtilsTest, ToStringTree) {
   EXPECT_EQ(string("[^]cat_0 [^]have_0 [^]tail_0"), toString(*graph, tree));
 }
 
+
+TEST_F(UtilsTest, ToStringTreeTheOtherWay) {
+  Tree tree(CAT_STR + string("\t2\tnsubj\n") +
+            HAVE_STR + string("\t0\troot\n") +
+            TAIL_STR + string("\t2\tdobj"));
+  EXPECT_EQ(string("cat have tail"), toString(tree, *graph));
+}
+
+
+TEST_F(UtilsTest, EscapeQuote) {
+  EXPECT_EQ(string("abc\\\"def"), escapeQuote(string("abc\"def")));
+
+  Tree tree(CAT_STR + string("\t2\tnsubj\n") +
+            HAVE_STR + string("\t0\troot\n") +
+            TAIL_STR + string("\t2\tdobj"));
+  EXPECT_EQ(string("cat have tail"), escapeQuote(toString(tree, *graph)));
+}
+
 TEST_F(UtilsTest, ToStringTime) {
   EXPECT_EQ(string("0s"), toString(0l * CLOCKS_PER_SEC));
   EXPECT_EQ(string("1s"), toString(1l * CLOCKS_PER_SEC));

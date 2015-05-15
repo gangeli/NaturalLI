@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # ACOMP
 # no examples?
 
@@ -28,8 +30,8 @@ All cats should play
 UNK: All cats play
 
 # AUXPASS
-some cat got adopted
-UNK: some cat adopted
+Kennedy has been killed
+UNK: Kennedy has killed
 
 # CC / CONJ
 some cats and dogs have tails

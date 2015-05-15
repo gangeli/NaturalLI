@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # ACOMP
 # no examples?
 
@@ -6,32 +8,32 @@ No dog chased a cat
 TRUE: No dog chased a cat in order to catch it
 
 # ADVMOD
-no man is beautiful
-TRUE: no man is very beautiful
+No man is beautiful
+TRUE: No man is very beautiful
 
 # AGENT
 # no examples?
 
 # AMOD
 # 'furry' is prone to cycles in nearest neighbors
-all cats have tails
-TRUE: all furry cats have tails
+All cats have tails
+TRUE: All furry cats have tails
 
-all cats have tails
-TRUE: all green cats have tails
+All cats have tails
+TRUE: All green cats have tails
 
-all cats have tails
-TRUE: all red cats have tails
+All cats have tails
+TRUE: All red cats have tails
 
-all cats have tails
-TRUE: all friendly cats have tails
+All cats have tails
+TRUE: All friendly cats have tails
 
-all cats have tails
-TRUE: all beautiful cats have tails
+All cats have tails
+TRUE: All beautiful cats have tails
 
 # wrong because of a parse error
-#all cats have tails
-#TRUE: all cute cats have tails
+#All cats have tails
+#TRUE: All cute cats have tails
 
 # APPOS
 No dogs chase the cat
@@ -46,22 +48,22 @@ some cat adopts
 UNK: some cat got adopted
 
 # CC / CONJ
-no cats have fleas
-TRUE: no cats have fleas and rabbies
+No cats have fleas
+TRUE: No cats have fleas and rabbies
 
-no green cats have fleas
-TRUE: no green and red cats have fleas
+No green cats have fleas
+TRUE: No green and red cats have fleas
 
 # the amod attaches to green not black :(. TODO(gabor) this is maybe fixable?
-#no green cats have fleas
-#TRUE: no black and green cats have fleas
+#No green cats have fleas
+#TRUE: No black and green cats have fleas
 
 # CCOMP
-no cat said that all dogs lie
-UNK: no cat
+No cat said that All dogs lie
+UNK: No cat
 
 # COP
-no cats play
-UNK: no cats are play
+No cats play
+UNK: No cats are play
 
 # TODO(gabor) finish me

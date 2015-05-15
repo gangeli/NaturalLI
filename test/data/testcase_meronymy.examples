@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # Meronymy is warranted
 Obama was born in Honolulu
 TRUE: Obama was born in Hawaii

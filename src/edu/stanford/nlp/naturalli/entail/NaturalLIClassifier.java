@@ -2,12 +2,8 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.Classifier;
 import edu.stanford.nlp.classify.LinearClassifier;
-import edu.stanford.nlp.ling.RVFDatum;
-import edu.stanford.nlp.naturalli.ProcessQuery;
-import edu.stanford.nlp.naturalli.StaticResources;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.Counter;
-import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.*;
 
 import java.io.*;
@@ -31,8 +27,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   static final String CONCLUSION_KEYWORD_COUNT = "conclusionKeywordCount";
   static final String ALIGNED_KEYWORD_COUNT = "alignedKeywordCount";
 
-  static final String ONLY_IN_PREMISE = "onlyInPremise";
-  static final String ONLY_IN_CONCLUSION = "onlyInConclusion";
+  static final String ONLY_IN_PREMISE_PERCENT = "onlyInPremise";
+  static final String ONLY_IN_CONCLUSION_PERCENT = "onlyInConclusion";
   static final String ANY_OVERLAP_COUNT = "anyOverlapCount";
   static final String CONCLUSION_OVERLAP_NO = "conclusionOverlapNo";
   static final String CONCLUSION_OVERLAP_PERFECT = "conclusionOverlapPerfect";
@@ -155,8 +151,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch (entry.getKey()) {
-        case ONLY_IN_PREMISE:
-        case ONLY_IN_CONCLUSION:
+        case ONLY_IN_PREMISE_PERCENT:
+        case ONLY_IN_CONCLUSION_PERCENT:
         case ANY_OVERLAP_COUNT:
         case CONCLUSION_OVERLAP_NO:
         case CONCLUSION_OVERLAP_PERFECT:
@@ -175,8 +171,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch(entry.getKey()) {
-        case ONLY_IN_PREMISE:
-        case ONLY_IN_CONCLUSION:
+        case ONLY_IN_PREMISE_PERCENT:
+        case ONLY_IN_CONCLUSION_PERCENT:
         case ANY_OVERLAP_COUNT:
         case CONCLUSION_OVERLAP_NO:
         case CONCLUSION_OVERLAP_PERFECT:

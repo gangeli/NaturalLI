@@ -378,8 +378,8 @@ public class EntailmentFeaturizer implements Serializable {
       feats.incrementCount(NaturalLIClassifier.ALIGNED_KEYWORD_COUNT, numAligned);
 
       // (constant biases)
-      feats.incrementCount(NaturalLIClassifier.ONLY_IN_PREMISE, onlyInPremisePenalty);
-      feats.incrementCount(NaturalLIClassifier.ONLY_IN_CONCLUSION, onlyInHypothesisPenalty);
+      feats.incrementCount(NaturalLIClassifier.ONLY_IN_PREMISE_PERCENT, onlyInPremisePenalty);
+      feats.incrementCount(NaturalLIClassifier.ONLY_IN_CONCLUSION_PERCENT, onlyInHypothesisPenalty);
       feats.incrementCount(NaturalLIClassifier.ANY_OVERLAP_COUNT, anyOverlap);
 
       // (conclusion only)

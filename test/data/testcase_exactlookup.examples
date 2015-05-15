@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # Simple lookup; just a sanity check to make sure seach runs at all
 
 All cats have tails

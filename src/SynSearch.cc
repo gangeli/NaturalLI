@@ -1313,6 +1313,7 @@ float SynSearchCosts::insertionCost(const Tree& tree,
 //
 SynSearchCosts* createStrictCosts(const float& smallConstantCost,
                                   const float& okCost,
+                                  const float& fishyCost,
                                   const float& badCost) {
   SynSearchCosts* costs = new SynSearchCosts();
   // Set Constant Costs
@@ -1323,11 +1324,11 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
     costs->insertionLexicalCost[i] = smallConstantCost;
   }
   // Tweak 'fishy' mutation types
-  costs->mutationLexicalCost[VERB_ENTAIL] = okCost;
-  costs->mutationLexicalCost[ANGLE_NN]    = okCost;
+  costs->mutationLexicalCost[VERB_ENTAIL] = fishyCost;
+  costs->mutationLexicalCost[ANGLE_NN]    = badCost;
   // Sense shifts
   costs->mutationLexicalCost[SENSE_ADD]    = badCost;
-  costs->mutationLexicalCost[SENSE_REMOVE] = okCost;
+  costs->mutationLexicalCost[SENSE_REMOVE] = fishyCost;
   // Set NatLog
   costs->transitionCostFromTrue[FUNCTION_EQUIVALENT] = okCost;
   costs->transitionCostFromTrue[FUNCTION_FORWARD_ENTAILMENT] = okCost;

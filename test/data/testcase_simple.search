@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # all cats have tails -> some felines have tails
 53707	2	op	0	anti-additive	2-3	multiplicative	3-5
 107652	3	nsubj	0

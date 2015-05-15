@@ -1,3 +1,5 @@
+%strictCosts=true
+
 # Quantifier up
 All cats have tails
 TRUE: Some cats have tails

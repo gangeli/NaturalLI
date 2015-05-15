@@ -283,6 +283,8 @@ class SynSearchCosts {
  * @param smallConstantCost A small constant cost for all transitions.
  * @param okCost A cost to be added to the smallConstantCost for an OK
  *               transition.
+ * @param fishyCost A cost to be added to the smallConstantCost for OK, but maybe
+ *                  a bit fishy transitions
  * @param badCost A cost to be added to the smallConstantCost for a bad
  *                transition.
  *
@@ -290,16 +292,22 @@ class SynSearchCosts {
  */
 SynSearchCosts* createStrictCosts(const float& smallConstantCost,
                                   const float& okCost,
+                                  const float& fishyCost,
                                   const float& badCost);
 
 /** Create a version of the weights encoding strict natural logic inference */
 inline SynSearchCosts* strictNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.0f, std::numeric_limits<float>::infinity());
+  return createStrictCosts(0.01f, 0.0f, std::numeric_limits<float>::infinity(), std::numeric_limits<float>::infinity());
+}
+
+/** Create a version of the weights encoding more-or-less strict natural logic inference */
+inline SynSearchCosts* intermediateNaturalLogicCosts() {
+  return createStrictCosts(0.01f, 0.05f, 0.15f, std::numeric_limits<float>::infinity());
 }
 
 /** Create a version of the weights encoding soft natural logic inference */
 inline SynSearchCosts* softNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.1f, 0.25f);
+  return createStrictCosts(0.01f, 0.1f, 0.15f, 0.25f);
 }
 
 // ----------------------------------------------
@@ -904,15 +912,15 @@ struct syn_path_data {
 #else
 struct alignas(24) syn_path_data {
 #endif
-  uint64_t    factHash:64,
-              currentWord:VOCABULARY_ENTROPY,  // 24
+  uint64_t    factHash:64,                            // 8 bytes
+              currentWord:VOCABULARY_ENTROPY,  // 24  // vv           vv
               currentSense:SENSE_ENTROPY,      // 5
               deleteMask:MAX_QUERY_LENGTH,     // 39
               backpointer:25;
   word        governor:VOCABULARY_ENTROPY;     // 24
   uint8_t     index:6;
   bool        truth:1,
-              allQuantifiersSeen:1;
+              allQuantifiersSeen:1;                   // ^^ + 16 bytes ^^
 
   bool operator==(const syn_path_data& rhs) const {
     return factHash == rhs.factHash &&
