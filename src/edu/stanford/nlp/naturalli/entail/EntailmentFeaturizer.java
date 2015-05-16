@@ -373,27 +373,62 @@ public class EntailmentFeaturizer implements Serializable {
 
       // Add the features
       // (counts)
-      feats.incrementCount(NaturalLIClassifier.PREMISE_KEYWORD_COUNT, premiseKeyphrases.size());
-      feats.incrementCount(NaturalLIClassifier.CONCLUSION_KEYWORD_COUNT, conclusionKeyphrases.size());
-      feats.incrementCount(NaturalLIClassifier.ALIGNED_KEYWORD_COUNT, numAligned);
+//      feats.incrementCount(NaturalLIClassifier.COUNT_PREMISE, premiseKeyphrases.size());
+//      feats.incrementCount(NaturalLIClassifier.COUNT_CONCLUSION, conclusionKeyphrases.size());
 
-      // (constant biases)
-      feats.incrementCount(NaturalLIClassifier.ONLY_IN_PREMISE_PERCENT, onlyInPremisePenalty);
-      feats.incrementCount(NaturalLIClassifier.ONLY_IN_CONCLUSION_PERCENT, onlyInHypothesisPenalty);
-      feats.incrementCount(NaturalLIClassifier.ANY_OVERLAP_COUNT, anyOverlap);
+      // (count alignable)
+      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNABLE, anyOverlap);
 
-      // (conclusion only)
-      feats.incrementCount(NaturalLIClassifier.CONCLUSION_OVERLAP_NO, noOverlapPenaltyConclusion);
-      feats.incrementCount(NaturalLIClassifier.CONCLUSION_OVERLAP_PERFECT, perfectMatchBonusConclusion);
+      // (count aligned)
+      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
 
-      // (joint)
-      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_PERFECT, perfectMatchBonusPercent);
-      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_PERFECT_COUNT, perfectMatch);
-      feats.incrementCount(NaturalLIClassifier.JOINT_OVERLAP_NO_COUNT, notOverlap);
+      // (count unaligned)
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
 
-      // (premise)
-//      feats.incrementCount("noOverlapPremise", noOverlapPenaltyPremise);
-//      feats.incrementCount("perfectMatchPremise", perfectMatchBonusPremise);
+      // (count unalignable)
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
+
+      /*
+      // (percent aligable)
+      if (premiseKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNABLE_PREMISE, ((double) anyOverlap) / ((double) premiseKeywords.size()));
+      }
+      if (conclusionKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNABLE_CONCLUSION, ((double) anyOverlap) / ((double) conclusionKeywords.size()));
+      }
+      if (alignments.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNABLE_JOINT, ((double) anyOverlap) / ((double) alignments.size()));
+      }
+
+      // (percent aligned)
+      if (premiseKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNED_PREMISE, ((double) perfectMatch) / ((double) premiseKeywords.size()));
+      }
+      if (conclusionKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNED_CONCLUSION, ((double) perfectMatch) / ((double) conclusionKeywords.size()));
+      }
+      if (alignments.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_ALIGNED_JOINT, ((double) perfectMatch) / ((double) alignments.size()));
+      }
+
+      // (percent unaligned)
+      feats.incrementCount(NaturalLIClassifier.PERCENT_UNALIGNED_PREMISE,
+          feats.getCount(NaturalLIClassifier.PERCENT_ALIGNABLE_PREMISE) - feats.getCount(NaturalLIClassifier.PERCENT_ALIGNED_PREMISE));
+      feats.incrementCount(NaturalLIClassifier.PERCENT_UNALIGNED_CONCLUSION,
+          feats.getCount(NaturalLIClassifier.PERCENT_ALIGNABLE_CONCLUSION) - feats.getCount(NaturalLIClassifier.PERCENT_ALIGNED_CONCLUSION));
+      feats.incrementCount(NaturalLIClassifier.PERCENT_UNALIGNED_JOINT,
+          feats.getCount(NaturalLIClassifier.PERCENT_ALIGNABLE_JOINT) - feats.getCount(NaturalLIClassifier.PERCENT_ALIGNED_JOINT));
+
+      // (percent unalignable)
+      if (premiseKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_UNALIGNABLE_PREMISE, onlyInPremise);
+      }
+      if (conclusionKeywords.size() > 0) {
+        feats.incrementCount(NaturalLIClassifier.PERCENT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
+      }
+      */
     }
 
     if (hasFeature(FeatureTemplate.KEYWORD_DISFLUENCIES)) {

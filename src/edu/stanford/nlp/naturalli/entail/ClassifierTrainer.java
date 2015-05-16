@@ -172,6 +172,8 @@ public class ClassifierTrainer {
         try {
           if (CLASSIFIER == ClassifierType.NATURALLI) {
             new NaturalLIClassifier(NATURALLI_SEARCH, classifier).save(MODEL);
+          } else {
+            classifier.save(MODEL);
           }
           log("saved classifier to " + MODEL);
         } catch (Throwable t) {

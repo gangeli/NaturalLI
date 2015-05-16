@@ -23,18 +23,33 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.forceTrack;
  */
 public class NaturalLIClassifier implements EntailmentClassifier {
 
-  static final String PREMISE_KEYWORD_COUNT = "premiseKeywordCount";
-  static final String CONCLUSION_KEYWORD_COUNT = "conclusionKeywordCount";
-  static final String ALIGNED_KEYWORD_COUNT = "alignedKeywordCount";
+  static final String COUNT_ALIGNED      = "count_aligned";
+  static final String COUNT_ALIGNABLE    = "count_alignable";
+  static final String COUNT_UNALIGNED    = "count_unaligned";
 
-  static final String ONLY_IN_PREMISE_PERCENT = "onlyInPremise";
-  static final String ONLY_IN_CONCLUSION_PERCENT = "onlyInConclusion";
-  static final String ANY_OVERLAP_COUNT = "anyOverlapCount";
-  static final String CONCLUSION_OVERLAP_NO = "conclusionOverlapNo";
-  static final String CONCLUSION_OVERLAP_PERFECT = "conclusionOverlapPerfect";
-  static final String JOINT_OVERLAP_PERFECT = "jointOverlapPerfect";
-  static final String JOINT_OVERLAP_PERFECT_COUNT = "jointOverlapPerfectCount";
-  static final String JOINT_OVERLAP_NO_COUNT = "jointOverlapNoCount";
+  static final String COUNT_UNALIGNABLE_PREMISE    = "count_unalignable_premise";
+  static final String COUNT_UNALIGNABLE_CONCLUSION = "count_unalignable_conclusion";
+  static final String COUNT_UNALIGNABLE_JOINT      = "count_unalignable_joint";
+
+  static final String COUNT_PREMISE    = "count_premise";
+  static final String COUNT_CONCLUSION = "count_conclusion";
+
+
+  static final String PERCENT_ALIGNABLE_PREMISE    = "percent_alignable_premise";
+  static final String PERCENT_ALIGNABLE_CONCLUSION = "percent_alignable_conclusion";
+  static final String PERCENT_ALIGNABLE_JOINT      = "percent_alignable_joint";
+
+  static final String PERCENT_ALIGNED_PREMISE    = "percent_aligned_premise";
+  static final String PERCENT_ALIGNED_CONCLUSION = "percent_aligned_conclusion";
+  static final String PERCENT_ALIGNED_JOINT      = "percent_aligned_joint";
+
+  static final String PERCENT_UNALIGNED_PREMISE    = "percent_unaligned_premise";
+  static final String PERCENT_UNALIGNED_CONCLUSION = "percent_unaligned_conclusion";
+  static final String PERCENT_UNALIGNED_JOINT      = "percent_unaligned_joint";
+
+  static final String PERCENT_UNALIGNABLE_PREMISE    = "percent_unalignable_premise";
+  static final String PERCENT_UNALIGNABLE_CONCLUSION = "percent_unalignable_conclusion";
+  static final String PERCENT_UNALIGNABLE_JOINT      = "percent_unalignable_joint";
 
   private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": ([0-9]+)");
   private static final Pattern alignmentScorePattern = Pattern.compile("\"closestSoftAlignmentScore\": (-?(:?[0-9\\.]+|inf))");
@@ -151,14 +166,19 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch (entry.getKey()) {
-        case ONLY_IN_PREMISE_PERCENT:
-        case ONLY_IN_CONCLUSION_PERCENT:
-        case ANY_OVERLAP_COUNT:
-        case CONCLUSION_OVERLAP_NO:
-        case CONCLUSION_OVERLAP_PERFECT:
-        case JOINT_OVERLAP_PERFECT:
-        case JOINT_OVERLAP_PERFECT_COUNT:
-        case JOINT_OVERLAP_NO_COUNT:
+        case COUNT_ALIGNED:
+        case COUNT_ALIGNABLE:
+        case COUNT_PREMISE:
+        case COUNT_CONCLUSION:
+        case PERCENT_ALIGNABLE_PREMISE:
+        case PERCENT_ALIGNABLE_CONCLUSION:
+        case PERCENT_ALIGNABLE_JOINT:
+        case PERCENT_ALIGNED_PREMISE:
+        case PERCENT_ALIGNED_CONCLUSION:
+        case PERCENT_ALIGNED_JOINT:
+        case PERCENT_UNALIGNED_PREMISE:
+        case PERCENT_UNALIGNED_CONCLUSION:
+        case PERCENT_UNALIGNED_JOINT:
           break;
         default:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
@@ -171,14 +191,19 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch(entry.getKey()) {
-        case ONLY_IN_PREMISE_PERCENT:
-        case ONLY_IN_CONCLUSION_PERCENT:
-        case ANY_OVERLAP_COUNT:
-        case CONCLUSION_OVERLAP_NO:
-        case CONCLUSION_OVERLAP_PERFECT:
-        case JOINT_OVERLAP_PERFECT:
-        case JOINT_OVERLAP_PERFECT_COUNT:
-        case JOINT_OVERLAP_NO_COUNT:
+        case COUNT_ALIGNED:
+        case COUNT_ALIGNABLE:
+        case COUNT_PREMISE:
+        case COUNT_CONCLUSION:
+        case PERCENT_ALIGNABLE_PREMISE:
+        case PERCENT_ALIGNABLE_CONCLUSION:
+        case PERCENT_ALIGNABLE_JOINT:
+        case PERCENT_ALIGNED_PREMISE:
+        case PERCENT_ALIGNED_CONCLUSION:
+        case PERCENT_ALIGNED_JOINT:
+        case PERCENT_UNALIGNED_PREMISE:
+        case PERCENT_UNALIGNED_CONCLUSION:
+        case PERCENT_UNALIGNED_JOINT:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
           break;
         default:
