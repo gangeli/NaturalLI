@@ -173,8 +173,8 @@ inline uint64_t searchLoop(
         continue;
       }
       // (ignore multiple quantifier mutations)
-      if (edge.type == QUANTIFIER_REWORD || edge.type == QUANTIFIER_NEGATE ||
-          edge.type == QUANTIFIER_UP || edge.type == QUANTIFIER_DOWN) {
+      if (edge.type == QUANTREWORD || edge.type == QUANTNEGATE ||
+          edge.type == QUANTUP || edge.type == QUANTDOWN) {
         if (quantifierIndex < 0) {
           continue;
         } else if (tree.word(tokenIndex) != nodeToken.word) { 
@@ -189,7 +189,7 @@ inline uint64_t searchLoop(
           continue;  // don't mutate quantifiers twice (the more likely check)
         }
       } else if ( quantifierIndex >= 0 &&
-                  (edge.type == SENSE_REMOVE || edge.type == SENSE_ADD) ) {
+                  (edge.type == SENSEREMOVE || edge.type == SENSEADD) ) {
         // Disallow quantifiers changing their sense.
         continue;
       }
@@ -438,7 +438,12 @@ syn_search_response SynSearch(
   // The closeset approximate match
   uint8_t closestSoftAlignment = 0;
   float   closestSoftAlignmentScore = -std::numeric_limits<float>::infinity();
-  float   closestSoftAlignmentSearchCost = 0.0f;
+  float   closestSoftAlignmentScores[MAX_FUZZY_MATCHES];
+  float   closestSoftAlignmentSearchCosts[MAX_FUZZY_MATCHES];
+  for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
+    closestSoftAlignmentScores[i] = -std::numeric_limits<float>::infinity();
+    closestSoftAlignmentSearchCosts[i] = 0.0f;
+  }
   // The database lookup function
   // (the matches found)
   vector<syn_search_path>& matches = response.paths;
@@ -450,19 +455,30 @@ syn_search_response SynSearch(
   // (register a node as visited)
   auto registerVisited = [&matches,&lookupFn,&history,&mutationGraph,&input,
                           &opts,&assumedInitialTruth,&featurizedPaths,
-                          &closestSoftAlignment,&closestSoftAlignmentScore,&closestSoftAlignmentSearchCost]
+                          &closestSoftAlignment,&closestSoftAlignmentScore,
+                          &closestSoftAlignmentScores,&closestSoftAlignmentSearchCosts]
         (const ScoredSearchNode& scoredNode) -> void {
     const SearchNode& node = scoredNode.node;
     // Check the soft alignments
 #if MAX_FUZZY_MATCHES > 0
     for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
-      if (node.softAlignmentScores()[alignI] > closestSoftAlignmentScore + 1e-7) {  // 1e-7 to be robust to floating point drift
-        closestSoftAlignmentScore = node.softAlignmentScores()[alignI];
-        closestSoftAlignment = alignI;
-        closestSoftAlignmentSearchCost = scoredNode.cost;
+      const float& nodeAlignmentScore = node.softAlignmentScores()[alignI];
+      if (nodeAlignmentScore > closestSoftAlignmentScores[alignI] + 1e-7) {  // 1e-7 to be robust to floating point drift
+        // Update the per-premise alignment scores
+        closestSoftAlignmentScores[alignI] = node.softAlignmentScores()[alignI];
+        closestSoftAlignmentSearchCosts[alignI] = scoredNode.cost;
         if (!opts.silent) {
           printTime("[%c] "); 
-          fprintf(stderr, "  best soft match @ %f to %u\n", closestSoftAlignmentScore, alignI);
+          fprintf(stderr, "  best soft match @ %u = %f\n", alignI, closestSoftAlignmentScore);
+        }
+        // Update the global best alignment
+        if (nodeAlignmentScore > closestSoftAlignmentScore) {
+          closestSoftAlignment = alignI;
+          closestSoftAlignmentScore = nodeAlignmentScore;
+          if (!opts.silent) {
+            printTime("[%c] "); 
+            fprintf(stderr, "  best alignment = %u\n", alignI);
+          }
         }
       }
     }
@@ -601,8 +617,9 @@ syn_search_response SynSearch(
   // Return
   // (set closest matches)
   response.closestSoftAlignment = closestSoftAlignment;
+  memcpy(response.closestSoftAlignmentScores, closestSoftAlignmentScores, MAX_FUZZY_MATCHES * sizeof(float));
+  memcpy(response.closestSoftAlignmentSearchCosts, closestSoftAlignmentSearchCosts, MAX_FUZZY_MATCHES * sizeof(float));
   response.closestSoftAlignmentScore = closestSoftAlignmentScore;
-  response.closestSoftAlignmentSearchCost = closestSoftAlignmentSearchCost;
   // (debug)
   if (!opts.silent) {
     printTime("[%c] ");

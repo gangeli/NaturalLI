@@ -106,13 +106,13 @@ string toString(const edge_type& edge) {
     case HYPONYM                      : return "HYPONYM";
     case ANTONYM                      : return "WORDNET_NOUN_ANTONYM";
     case SYNONYM                      : return "WORDNET_NOUN_SYNONYM";
-    case ANGLE_NN                     : return "ANGLE_NN";
-    case SENSE_REMOVE                 : return "SENSE_REMOVE";
-    case SENSE_ADD                    : return "SENSE_ADD";
-    case QUANTIFIER_UP                : return "QUANTIFIER_UP";
-    case QUANTIFIER_DOWN              : return "QUANTIFIER_DOWN";
-    case QUANTIFIER_NEGATE            : return "QUANTIFIER_NEGATE";
-    case QUANTIFIER_REWORD            : return "QUANTIFIER_REWORD";
+    case NN                           : return "ANGLE_NN";
+    case SENSEREMOVE                  : return "SENSE_REMOVE";
+    case SENSEADD                     : return "SENSE_ADD";
+    case QUANTUP                      : return "QUANTIFIER_UP";
+    case QUANTDOWN                    : return "QUANTIFIER_DOWN";
+    case QUANTNEGATE                  : return "QUANTIFIER_NEGATE";
+    case QUANTREWORD                  : return "QUANTIFIER_REWORD";
     default: return "UNK_EDGE_TYPE";
   }
 }
@@ -199,6 +199,19 @@ string toJSON(const Graph& graph, const Tree& tree,
     if (iter != lines.end()) { out << ", "; }
   }
   out << " ]";
+  return out.str();
+}
+
+//
+// toJSON
+//
+std::string toJSON(const float* elems, const uint32_t& length) {
+  stringstream out;
+  out << "[ ";
+  for (uint8_t i = 0; i < length; ++i) {
+    out << elems[i] << ", ";
+  }
+  out << "]";
   return out.str();
 }
 

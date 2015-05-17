@@ -63,7 +63,7 @@ TEST_F(UtilsTest, pathToStringTest) {
   // (mutate tail -> lemur)
   e.source = LEMUR.word; e.source_sense = LEMUR.sense;
   e.sink   = TAIL.word;    e.sink_sense   = TAIL.sense;
-  e.type = ANGLE_NN; e.cost = 1.0f;
+  e.type = NN; e.cost = 1.0f;
   const SearchNode allAnimalsHaveLEMUR
     = allAnimalsHaveTAILS.mutation(e, ++i, true, *tree, graph);
   path.insert(path.begin(), allAnimalsHaveLEMUR);

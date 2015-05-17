@@ -144,7 +144,7 @@ TEST_F(SearchNodeTest, HashMutateQuantifier) {
   equivalentRevEdge.source_sense = 0;
   equivalentRevEdge.sink = 50;
   equivalentRevEdge.sink_sense = 0;
-  equivalentRevEdge.type = QUANTIFIER_NEGATE;
+  equivalentRevEdge.type = QUANTNEGATE;
   equivalentRevEdge.cost = 1.0f;
   SearchNode sameAsTargetBegin(sameAsTargetTree, (uint8_t) 0);
   SearchNode sameAsTargetEnd = sameAsTargetBegin.mutation(equivalentRevEdge, 1, true, sameAsTargetTree, graph);
@@ -157,7 +157,7 @@ TEST_F(SearchNodeTest, HashMutateQuantifier) {
   differentRevEdge.source_sense = 0;
   differentRevEdge.sink = 42;
   differentRevEdge.sink_sense = 0;
-  differentRevEdge.type = QUANTIFIER_NEGATE;
+  differentRevEdge.type = QUANTNEGATE;
   differentRevEdge.cost = 1.0f;
   SearchNode differentBegin(differentTree, (uint8_t) 0);
   // (mutate)
@@ -1544,7 +1544,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
 #if MAX_FUZZY_MATCHES > 0
   EXPECT_EQ(0, response.closestSoftAlignment);
   EXPECT_NEAR(0.42, response.closestSoftAlignmentScore, 1e-7);
-  EXPECT_NEAR(0.0010999999940395355f, response.closestSoftAlignmentSearchCost, 1e-7);
+  EXPECT_NEAR(0.0010999999940395355f, response.closestSoftAlignmentSearchCosts[response.closestSoftAlignment], 1e-7);
 #endif
 }
 

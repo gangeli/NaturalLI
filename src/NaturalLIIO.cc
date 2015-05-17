@@ -248,6 +248,7 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
     string value = result[2].str();
     if (toSet == "maxTicks") {
       opts->maxTicks = atof(value.c_str());
+      fprintf(stderr, "set maxTicks to %u\n", opts->maxTicks);
     } else if (toSet == "checkFringe") {
       opts->checkFringe = to_bool(value);
       fprintf(stderr, "set checkFringe to %u\n", to_bool(value));
@@ -264,13 +265,19 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
       if (to_bool(value)) {
         delete *costs;
         *costs = softNaturalLogicCosts();
-        fprintf(stderr, "set softCosts to %u\n", to_bool(value));
+        fprintf(stderr, "set costs to 'softCosts'\n");
+      }
+    } else if (toSet == "defaultCosts") {
+      if (to_bool(value)) {
+        delete *costs;
+        *costs = softNaturalLogicCosts();
+        fprintf(stderr, "set costs to 'defaultCosts'\n");
       }
     } else if (toSet == "strictCosts") {
       if (to_bool(value)) {
         delete *costs;
         *costs = strictNaturalLogicCosts();
-        fprintf(stderr, "set strictCosts to %u\n", to_bool(value));
+        fprintf(stderr, "set costs to 'strictCosts'\n");
       }
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
@@ -399,8 +406,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       << ", "
 #if MAX_FUZZY_MATCHES > 0
       << "\"closestSoftAlignment\": " << to_string(resultIfTrue.closestSoftAlignment) << ", "
-      << "\"closestSoftAlignmentScore\": " << to_string(resultIfTrue.closestSoftAlignmentScore) << ", "
-      << "\"closestSoftAlignmentSearchCost\": " << to_string(resultIfTrue.closestSoftAlignmentSearchCost) << ", "
+      << "\"closestSoftAlignmentScores\": " << toJSON(resultIfTrue.closestSoftAlignmentScores, MAX_FUZZY_MATCHES) << ", "
+      << "\"closestSoftAlignmentSearchCosts\": " << toJSON(resultIfTrue.closestSoftAlignmentSearchCosts, MAX_FUZZY_MATCHES) << ", "
 #endif
       << "\"path\": "
       << (bestPath != NULL ? toJSON(*graph, *query, *bestPath) : "[]");

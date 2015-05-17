@@ -54,19 +54,19 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case HOLONYM:              return FUNCTION_FORWARD_ENTAILMENT;
     case MERONYM:              return FUNCTION_REVERSE_ENTAILMENT;
     // Nearest Neighbors
-    case ANGLE_NN:             return FUNCTION_EQUIVALENT;
+    case NN:                   return FUNCTION_EQUIVALENT;
     // WordNet Similar
     case SIMILAR:              return FUNCTION_EQUIVALENT;
     // Quantifier Morphs
-    case QUANTIFIER_UP:        return FUNCTION_FORWARD_ENTAILMENT;
-    case QUANTIFIER_DOWN:      return FUNCTION_REVERSE_ENTAILMENT;
-    case QUANTIFIER_NEGATE:    return FUNCTION_NEGATION;
-    case QUANTIFIER_REWORD:    return FUNCTION_EQUIVALENT;
+    case QUANTUP:              return FUNCTION_FORWARD_ENTAILMENT;
+    case QUANTDOWN:            return FUNCTION_REVERSE_ENTAILMENT;
+    case QUANTNEGATE:          return FUNCTION_NEGATION;
+    case QUANTREWORD:          return FUNCTION_EQUIVALENT;
     // Sense shifts
-    case SENSE_ADD:            return FUNCTION_EQUIVALENT;
-    case SENSE_REMOVE:         return FUNCTION_EQUIVALENT;
+    case SENSEADD:            return FUNCTION_EQUIVALENT;
+    case SENSEREMOVE:         return FUNCTION_EQUIVALENT;
     // Verb entailment
-    case VERB_ENTAIL:          return FUNCTION_FORWARD_ENTAILMENT;
+    case VENTAIL:              return FUNCTION_FORWARD_ENTAILMENT;
     default:
       fprintf(stderr, "No such edge: %u\n", edge);
       std::exit(1);
@@ -1297,9 +1297,20 @@ struct syn_search_response {
   std::vector<syn_search_path> paths;
   std::vector<feature_vector> featurizedPaths;
   uint8_t closestSoftAlignment = MAX_FUZZY_MATCHES;
-  float closestSoftAlignmentScore = std::numeric_limits<float>::infinity();
-  float closestSoftAlignmentSearchCost = std::numeric_limits<float>::infinity();
+  float closestSoftAlignmentScores[MAX_FUZZY_MATCHES];
+  float closestSoftAlignmentScore = -std::numeric_limits<float>::infinity();
+  float closestSoftAlignmentSearchCosts[MAX_FUZZY_MATCHES];
   uint64_t totalTicks;
+    
+  /**
+   * Initialize some values while creating a new syn_search_response
+   */
+  syn_search_response() {
+    for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
+      closestSoftAlignmentScores[i] = -std::numeric_limits<float>::infinity();
+      closestSoftAlignmentSearchCosts[i] = 0.0f;
+    }
+  }
 
   inline uint64_t size() const { return paths.size(); }
 };

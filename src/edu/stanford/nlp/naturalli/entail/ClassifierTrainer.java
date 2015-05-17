@@ -25,7 +25,7 @@ public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT, NATURALLI }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
-  public ClassifierType CLASSIFIER = ClassifierType.SIMPLE;
+  public ClassifierType CLASSIFIER = ClassifierType.NATURALLI;
   @Execution.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
   public String NATURALLI_SEARCH = "src/naturalli_search";
 

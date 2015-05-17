@@ -47,20 +47,27 @@ public class EntailmentFeaturizer implements Serializable {
 
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
+    // standard unlexicalized features
 //    add(FeatureTemplate.BLEU);
-//    add(FeatureTemplate.LENGTH_DIFF);
 //    add(FeatureTemplate.OVERLAP);
 //    add(FeatureTemplate.POS_OVERLAP);
+//    add(FeatureTemplate.LENGTH_DIFF);
+
+    // keyword unlexicalized features
     add(FeatureTemplate.KEYWORD_OVERLAP);
 //    add(FeatureTemplate.KEYWORD_DISFLUENCIES);  // TODO(gabor) implement me better
 //    add(FeatureTemplate.KEYWORD_STATISTICS);
 
-    add(FeatureTemplate.LUCENE_SCORE);
-
+    // standard lexicalized features
 //    add(FeatureTemplate.ENTAIL_UNIGRAM);
 //    add(FeatureTemplate.ENTAIL_BIGRAM);
-    add(FeatureTemplate.ENTAIL_KEYWORD);
 //    add(FeatureTemplate.CONCLUSION_NGRAM);
+
+    // keyword lexicalized features
+    add(FeatureTemplate.ENTAIL_KEYWORD);
+
+    // lucene score
+    add(FeatureTemplate.LUCENE_SCORE);
   }};
 
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
@@ -383,7 +390,7 @@ public class EntailmentFeaturizer implements Serializable {
       feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
 
       // (count unaligned)
-      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
+//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
 
       // (count unalignable)
       feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);

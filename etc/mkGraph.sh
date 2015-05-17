@@ -10,18 +10,29 @@ VOCAB=$DIR/vocab.tab
 SENSE=$DIR/sense.tab
 PRIV=$DIR/privative.tab
 
+GRAPH_DATA='graphData_new'
+  
+# Delete files which will be auto-generated
+# Having the old versions of these around mess with
+# detecting the edge types.
+rm -f $DIR/$GRAPH_DATA/edge_quantifier_reword.txt
+rm -f $DIR/$GRAPH_DATA/edge_quantifier_negate.txt
+rm -f $DIR/$GRAPH_DATA/edge_quantifier_up.txt
+rm -f $DIR/$GRAPH_DATA/edge_quantifier_down.txt
+
 
 #
 # Create vocabulary
 #
 echo "Creating vocabulary (in $VOCAB)..."
 TMP=`mktemp`
-cat $DIR/graphData/lemma_sense_synset_defn.txt |\
+cat $DIR/$GRAPH_DATA/table_lemma_defn.txt |\
   awk -F'	' '{ print $1 }' |\
   sed -e 's/_/ /g' > $TMP
 
-zcat $DIR/graphData/glove.6B.50d.txt.gz |\
-  awk '{ print $1 }' >> $TMP
+zcat $DIR/$GRAPH_DATA/glove.6B.50d.txt.gz |\
+  awk '{ print $1 }' |\
+  sed -r -e 's/^[0-9\.]+$/--num--/g' >> $TMP
 
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
@@ -38,7 +49,7 @@ rm $TMP
 #
 echo "Creating sense mapping (in $SENSE)..."
 
-cat $DIR/graphData/lemma_sense_synset_defn.txt |\
+cat $DIR/$GRAPH_DATA/table_lemma_defn.txt |\
   sed -r -e 's/[^	]+\.([a-z])\.[0-9]+/\1/g' |\
   awk -F'	' '{ print $1 "\t" $2 "\t" $4 "\t" $3 }' |\
   sed -e 's/_/ /g' |\
@@ -118,7 +129,7 @@ PRIVATIVE_WORDS=`echo "^(" \
      "proposed" \
      ")	[0-9]+" | sed -e 's/| /|/g'`
 
-cat $DIR/graphData/edge_*.txt |\
+cat $DIR/$GRAPH_DATA/edge_*.txt |\
   sed -e 's/_/ /g' |\
   awk -F'	' '{ print $1 "\t" $2 }' |\
   egrep "$PRIVATIVE_WORDS" |\
@@ -142,16 +153,12 @@ cat $DIR/graphData/edge_*.txt |\
 #
 echo "Creating edge types (in $DIR/edgeTypes.tab)..."
 TMP=`mktemp`
-for file in `find $DIR/graphData -name "edge_*.txt"`; do
-  echo $file |\
-    sed -r -e 's/.*\/edge_(.*)_[anrvs].txt/\1/g' |\
-    sed -r -e 's/.*\/edge_(.*).txt/\1/g'
-done > $TMP
-echo "quantifier_up" >> $TMP
-echo "quantifier_down" >> $TMP
-echo "quantifier_negate" >> $TMP
-echo "quantifier_reword" >> $TMP
-echo "angle_nn" >> $TMP
+cat "$DIR/$GRAPH_DATA/"edge_*.txt | awk -F'\t' '{ print $3 }' | sort | uniq > $TMP
+echo "quantup" >> $TMP
+echo "quantdown" >> $TMP
+echo "quantnegate" >> $TMP
+echo "quantreword" >> $TMP
+echo "nn" >> $TMP
 cat $TMP | sort | uniq | awk '{ printf("%d\t%s\n", NR - 1, $0) }' > $DIR/edgeTypes.tab
 rm $TMP
 
@@ -174,12 +181,12 @@ echo "Creating quantifier edges..."
 #  for source in values:
 #    for sink in values:
 #      if source != sink:
-#        print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+#        print ("%s\t0\tquantreword\t%s\t0\t1.0" % (source, sink))
 #EOF
 #cat $DIR/operators.tab |\
 #  grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
 #  awk -F'	' '{ print $1 "\t" $3 }' |\
-#  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_reword.txt
+#  python $GENERIC_TMP > $DIR/$GRAPH_DATA/edge_quantifier_reword.txt
 
 # (antonyms)
 cat <<EOF > $GENERIC_TMP
@@ -197,12 +204,12 @@ antonyms = [ ["all", "no"], ["no", "all"],
 for [classA, classB] in antonyms:
   for source in synonyms[classA]:
     for sink in synonyms[classB]:
-      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+      print ("%s\t0\tquantnegate\t%s\t0\t1.0" % (source, sink))
 EOF
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_negate.txt
+  python $GENERIC_TMP > $DIR/$GRAPH_DATA/edge_quantifier_negate.txt
 
 # (quantifier down)
 cat <<EOF > $GENERIC_TMP
@@ -217,12 +224,12 @@ up = [ ["all", "some"], ["most", "some"] ]
 for [classA, classB] in up:
   for source in synonyms[classA]:
     for sink in synonyms[classB]:
-      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+      print ("%s\t0\tquantup\t%s\t0\t1.0" % (source, sink))
 EOF
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_up.txt
+  python $GENERIC_TMP > $DIR/$GRAPH_DATA/edge_quantifier_up.txt
 
 # (quantifier up)
 cat <<EOF > $GENERIC_TMP
@@ -237,12 +244,12 @@ down = [ ["some", "all"], ["some", "most"] ]
 for [classA, classB] in down:
   for source in synonyms[classA]:
     for sink in synonyms[classB]:
-      print ("%s\t0\t%s\t0\t1.0" % (source, sink))
+      print ("%s\t0\tquantdown\t%s\t0\t1.0" % (source, sink))
 EOF
 cat $DIR/operators.tab |\
   grep -v '^$' | grep -v '^#' | grep -v '__implicit' |\
   awk -F'	' '{ print $1 "\t" $3 }' |\
-  python $GENERIC_TMP > $DIR/graphData/edge_quantifier_down.txt
+  python $GENERIC_TMP > $DIR/$GRAPH_DATA/edge_quantifier_down.txt
 
 
 #
@@ -271,14 +278,14 @@ function index() {
         if ( $2 > 31 ) {
           $2 = 31
         }
-        if ( $3 in assoc ) {
-          $3 = assoc[ $3 ]
+        if ( $4 in assoc ) {
+          $4 = assoc[ $4 ]
         }
-        if ( $4 > 31 ) {
-          $4 = 31
+        if ( $5 > 31 ) {
+          $5 = 31
         }
-        if ( $5 < 0.0 ) {
-          $5 = 0.0
+        if ( $6 < 0.0 ) {
+          $6 = 0.0
         }
         print
       }
@@ -300,31 +307,23 @@ function indexBZ() {
 # Index all of the graph spec files
 function indexAll() {
   # (index the txt files)
-  for file in `find $DIR/graphData -name "edge_*.txt"`; do
-    type=`echo $file |\
-      sed -r -e 's/.*\/edge_(.*)_[qanrvs].txt/\1/g' |\
-      sed -r -e 's/.*\/edge_(.*).txt/\1/g'`
-    modFile="$file"
-#    if [ "$type" == "antonym" ]; then
-#      modFile="$GENERIC_TMP"
-#      cat $file > $modFile
-#      cat $file | awk -F'	' '{ print $3 "\t" $4 "\t" $1 "\t" $2 "\t" $5 }' >> $modFile
-#    fi
-    indexCat $modFile | sed -e "s/^/$type	/g" |\
+  for file in `find $DIR/$GRAPH_DATA -name "edge_*.txt"`; do
+    echo "$file" 1>&2
+    indexCat $file |\
       awk '
         FNR == NR {
             assoc[ $2 ] = $1;
             next;
         }
         FNR < NR {
-          $1 = assoc[ $1 ];
-          printf $2 " " $3 " " $4 " " $5 " " $1 " " "%f\n", $6
+          $3 = assoc[ $3 ];
+          printf $1 " " $2 " " $4 " " $5 " " $3 " " "%f\n", $6
         } ' $DIR/edgeTypes.tab - |\
       sed -e 's/ /	/g'
   done
   # (index the nearest neighbors file)
-  indexBZ $DIR/graphData/edge_nn.txt.bz2 |\
-    sed -e "s/^/angle_nn	/g" |\
+  echo "$DIR/$GRAPH_DATA/edge_nn.txt.bz2" 1>&2
+  indexBZ $DIR/$GRAPH_DATA/edge_nn.txt.bz2 |\
     awk '
       FNR == NR {
           assoc[ $2 ] = $1;
@@ -332,7 +331,7 @@ function indexAll() {
       }
       FNR < NR {
         $1 = assoc[ $1 ];
-        printf $2 " " $3 " " $4 " " $5 " " $1 " " "%f\n", $6
+        printf $1 " " $2 " " $4 " " $5 " " $3 " " "%f\n", $6
       } ' $DIR/edgeTypes.tab - |\
     sed -e 's/ /	/g'
 }

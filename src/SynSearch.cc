@@ -5,8 +5,8 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define ALIGN_MATCH_BONUS 1.0f
-#define ALIGN_MISMATCH_PENALTY -1.0f
+#define ALIGN_MATCH_BONUS 0.0186f
+#define ALIGN_MISMATCH_PENALTY -0.0186f
 
 using namespace std;
 
@@ -1324,11 +1324,11 @@ SynSearchCosts* createStrictCosts(const float& smallConstantCost,
     costs->insertionLexicalCost[i] = smallConstantCost;
   }
   // Tweak 'fishy' mutation types
-  costs->mutationLexicalCost[VERB_ENTAIL] = fishyCost;
-  costs->mutationLexicalCost[ANGLE_NN]    = badCost;
+  costs->mutationLexicalCost[VENTAIL] = fishyCost;
+  costs->mutationLexicalCost[NN]    = badCost;
   // Sense shifts
-  costs->mutationLexicalCost[SENSE_ADD]    = badCost;
-  costs->mutationLexicalCost[SENSE_REMOVE] = fishyCost;
+  costs->mutationLexicalCost[SENSEADD]    = badCost;
+  costs->mutationLexicalCost[SENSEREMOVE] = fishyCost;
   // Set NatLog
   costs->transitionCostFromTrue[FUNCTION_EQUIVALENT] = okCost;
   costs->transitionCostFromTrue[FUNCTION_FORWARD_ENTAILMENT] = okCost;

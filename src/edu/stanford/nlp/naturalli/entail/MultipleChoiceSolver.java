@@ -4,6 +4,7 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -111,7 +112,7 @@ public class MultipleChoiceSolver {
           question.hypotheses.get(qI),
           Optional.of(question.focuses.get(qI)),
           Optional.of(question.luceneScores.get(qI))
-          );
+      );
       double score = support.second;
 
       log(new DecimalFormat("0.0000").format(score) + ": " + question.hypotheses.get(qI) + "  (because '" + support.first + ")");
@@ -165,6 +166,7 @@ public class MultipleChoiceSolver {
 
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    RedwoodConfiguration.current().capture(System.err).apply();
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
     forceTrack("Running evaluation");

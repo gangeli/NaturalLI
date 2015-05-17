@@ -96,6 +96,11 @@ std::string toJSON(const Graph& graph,
                    const std::vector<SearchNode>& path);
 
 /**
+ * Print a list of floats in JSON format.
+ */
+std::string toJSON(const float* elems, const uint32_t& length);
+
+/**
  * Print the gloss of the knowledge base entry corresponding to
  * this path.
  */

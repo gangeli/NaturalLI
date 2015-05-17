@@ -520,7 +520,7 @@ public class ProcessQuery {
     return annotate(qRewrite, line, pipeline, new Pointer<>(), doSense);
   }
 
-  protected static String annotate(QRewrite qrewrite, String line, StanfordCoreNLP pipeline, Pointer<String> debugDump, boolean doSense) {
+  public static String annotate(QRewrite qrewrite, String line, StanfordCoreNLP pipeline, Pointer<String> debugDump, boolean doSense) {
     String rewritten = qrewrite.rewriteGloss(line);
     if (!rewritten.equals(line)) {
       System.err.println("Rewrote '" + line + "' to '" + rewritten + "'");
