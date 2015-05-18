@@ -1,0 +1,57 @@
+\documentclass[11pt,a4paper]{article}
+% -- IMPORTS --
+% (stylsheet)
+\usepackage{acl2015}
+% (general libraries)
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating}
+\usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs,mathtools,siunitx,arydshln}
+% (tikz dependencies)
+\usepackage{tikz}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
+% (print algorithms)
+\usepackage[ruled,lined,linesnumbered]{algorithm2e}
+% (custom)
+\input std-macros.tex
+\input ../macros.tex	
+\input ../figures.tex	
+
+\hyphenation{Open-IE}
+
+% -- PAPER --
+% (metadata)
+\title{Combining Soft Classifiers with Logical Reasoning}
+%      \note{$\mathsection$1--3 rewritten; others edited}}
+\author{ 
+Gabor Angeli \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+  {\tt angeli@cs.stanford.edu}
+\And
+Neha Nayak \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+  {\tt nayakne@cs.stanford.edu}
+\And
+Christopher D. Manning \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+  {\tt manning@cs.stanford.edu}
+}
+\date{}
+
+% -- CONTENT --
+\begin{document}
+
+\maketitle
+
+\input abstract.tex
+\input intro.tex
+\newpage
+
+%(bibliography)
+\bibliographystyle{acl}
+\bibliography{ref}
+
+\end{document}

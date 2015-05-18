@@ -2,6 +2,8 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.Classifier;
 import edu.stanford.nlp.classify.LinearClassifier;
+import edu.stanford.nlp.io.IOUtils;
+import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.naturalli.ProcessPremise;
 import edu.stanford.nlp.naturalli.ProcessQuery;
 import edu.stanford.nlp.naturalli.QRewrite;
@@ -28,6 +30,8 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
  * @author Gabor Angeli
  */
 public class NaturalLIClassifier implements EntailmentClassifier {
+
+  private static final double ALIGNMENT_WEIGHT = 0.00;
 
   static final String COUNT_ALIGNED      = "count_aligned";
   static final String COUNT_ALIGNABLE    = "count_alignable";
@@ -58,8 +62,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   static final String PERCENT_UNALIGNABLE_JOINT      = "percent_unalignable_joint";
 
   private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": ([0-9]+)");
-  private static final Pattern alignmentScorePattern = Pattern.compile("\"closestSoftAlignmentScores\": (-?(:?[0-9\\.]+|inf))");
-  private static final Pattern alignmentSearchCostPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": (-?(:?[0-9\\.]+|inf))");
+  private static final Pattern alignmentScoresPattern = Pattern.compile("\"closestSoftAlignmentScores\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
+  private static final Pattern alignmentSearchCostsPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
 
 
   public final String searchProgram;
@@ -70,7 +74,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private OutputStreamWriter toNaturalLI;
   private final Counter<String> weights;
 
-  private final StanfordCoreNLP pipeline;
+  private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("depparse") );
+
+  private final Map<Pair<String, String>, Double> naturalliCache = new HashMap<>();
+  private PrintWriter naturalliWriteCache;
 
 
   NaturalLIClassifier(String naturalliSearch, EntailmentFeaturizer featurizer, Classifier<Trilean, String> impl) {
@@ -78,7 +85,6 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     this.impl = impl;
     this.featurizer = featurizer;
     this.weights = ((LinearClassifier<Trilean,String>) impl).weightsAsMapOfCounters().get(Trilean.TRUE);
-    this.pipeline = ProcessPremise.constructPipeline("depparse");
     init();
   }
 
@@ -91,7 +97,6 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       throw new IllegalArgumentException("Cannot create NaturalLI classifier from " + underlyingImpl.getClass());
     }
     this.weights = ((LinearClassifier<Trilean,String>) impl).weightsAsMapOfCounters().get(Trilean.TRUE);
-    this.pipeline = ProcessPremise.constructPipeline("depparse");
     init();
   }
 
@@ -100,6 +105,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    */
   private synchronized void init() {
     try {
+      Arrays.stream(IOUtils.slurpFile("tmp/naturalli_classifier_search.cache").split("\n")).map(x -> x.split("\t"))
+          .forEach(triple ->
+              naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")), Double.parseDouble(triple[2])));
+      naturalliWriteCache = new PrintWriter(new FileWriter("tmp/naturalli_classifier_search_2.cache"));
+
+
       forceTrack("Creating connection to NaturalLI");
       ProcessBuilder searcherBuilder = new ProcessBuilder(searchProgram);
       final Process searcher = searcherBuilder.start();
@@ -132,12 +143,22 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     }
   }
 
+  /** Convert a plain-text string to a CoNLL parse tree that can be fed into NaturalLI */
   private String toParseTree(String text) {
 //    log("Annotating sentence: '" + text + "'");
     Pointer<String> debug = new Pointer<>();
-    String annotated = ProcessQuery.annotate(QRewrite.FOR_PREMISE, text, pipeline, debug, true);
+    String annotated = ProcessQuery.annotate(QRewrite.FOR_PREMISE, text, pipeline.get(), debug, true);
 //    debug.dereference().ifPresent(Redwood.Util::log);
     return annotated;
+  }
+
+  /** Convert a comma-separated list to a list of doubles */
+  private List<Double> parseDoubleList(String list) {
+    return Arrays.stream(list.split(" *, *")).map(x -> {switch (x) {
+      case "-inf": return Double.NEGATIVE_INFINITY;
+      case "inf": return Double.POSITIVE_INFINITY;
+      default: return Double.parseDouble(x);
+    }}).collect(Collectors.toList());
   }
 
   /**
@@ -147,8 +168,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    * @return The alignment score returned from NaturalLI.
    * @throws IOException Thrown if the pipe to NaturalLI is broken.
    */
-  private synchronized Pair<Integer, Double> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
+  private synchronized Pair<Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
+    if (premises.stream().allMatch(x -> naturalliCache.containsKey(Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", ""))))) {
+      return Pair.makePair(-1, premises.stream().map(x -> naturalliCache.get(Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", "")))).collect(Collectors.toList()));
+    }
     // Write the premises
+    List<Double> premiseAlignmentCosts = new ArrayList<>();
     for (String premise : premises) {
       String tree = toParseTree(premise);
       if (tree.split("\n").length > 30) {
@@ -158,6 +183,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         toNaturalLI.write(toParseTree(premise));
       }
       toNaturalLI.write("\n");
+      premiseAlignmentCosts.add(0.0);
     }
 
     // Write the query
@@ -175,17 +201,24 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
     int alignmentIndex = Integer.parseInt(matcher.group(1));
-    if (!(matcher = alignmentScorePattern.matcher(json)).find()) {
+    if (!(matcher = alignmentScoresPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
-    double alignmentScore = matcher.group(1).equals("-inf") ? Double.NEGATIVE_INFINITY : Double.parseDouble(matcher.group(1));
-    if (!(matcher = alignmentSearchCostPattern.matcher(json)).find()) {
+    List<Double> alignmentScores = parseDoubleList(matcher.group(1));
+    for (int i = 0; i < alignmentScores.size(); ++i) {
+      premiseAlignmentCosts.set(i, alignmentScores.get(i));
+    }
+    if (!(matcher = alignmentSearchCostsPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
-    double alignmentSearchCost = matcher.group(1).equals("-inf") ? Double.NEGATIVE_INFINITY : Double.parseDouble(matcher.group(1));
+    List<Double> alignmentSearchCosts = parseDoubleList(matcher.group(1));
 
     // Return
-    return Pair.makePair(alignmentIndex, alignmentScore);
+    for (int i = 0; i < premises.size(); ++i) {
+      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + premiseAlignmentCosts.get(i));
+      naturalliWriteCache.flush();
+    }
+    return Pair.makePair(alignmentIndex, premiseAlignmentCosts);
   }
 
 
@@ -194,7 +227,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch (entry.getKey()) {
-        case COUNT_ALIGNED:
+        case COUNT_ALIGNED:  // this is the one that gets changed most
         case PERCENT_ALIGNED_PREMISE:
         case PERCENT_ALIGNED_CONCLUSION:
         case PERCENT_ALIGNED_JOINT:
@@ -233,9 +266,9 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
     // Query NaturalLI
-    Pair<Integer, Double> bestNaturalLIScore;
+    Pair<Integer, List<Double>> bestNaturalLIScores;
     try {
-      bestNaturalLIScore = getBestAlignment(premisesText, hypothesisText);
+      bestNaturalLIScores = getBestAlignment(premisesText, hypothesisText);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -247,11 +280,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
       double score = scoreBeforeNaturalli(features);
-      if (bestNaturalLIScore.first == i) {
-        score += bestNaturalLIScore.second;
-      } else {
-        score += scoreAlignmentSimple(features);
-      }
+      double naturalLIScore = bestNaturalLIScores.second.get(i);
+      score += naturalLIScore * ALIGNMENT_WEIGHT;
       assert !Double.isNaN(score);
       assert Double.isFinite(score);
       // Computer the probability

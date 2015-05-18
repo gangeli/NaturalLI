@@ -209,9 +209,9 @@ std::string toJSON(const float* elems, const uint32_t& length) {
   stringstream out;
   out << "[ ";
   for (uint8_t i = 0; i < length; ++i) {
-    out << elems[i] << ", ";
+    out << elems[i] << (i == length - 1 ? "" : ", ");
   }
-  out << "]";
+  out << " ]";
   return out.str();
 }
 

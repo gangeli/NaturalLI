@@ -64,7 +64,7 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.CONCLUSION_NGRAM);
 
     // keyword lexicalized features
-    add(FeatureTemplate.ENTAIL_KEYWORD);
+//    add(FeatureTemplate.ENTAIL_KEYWORD);
 
     // lucene score
     add(FeatureTemplate.LUCENE_SCORE);

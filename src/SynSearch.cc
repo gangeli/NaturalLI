@@ -5,8 +5,8 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define ALIGN_MATCH_BONUS 0.0186f
-#define ALIGN_MISMATCH_PENALTY -0.0186f
+#define ALIGN_MATCH_BONUS 1.0f
+#define ALIGN_MISMATCH_PENALTY -1.0f
 
 using namespace std;
 
