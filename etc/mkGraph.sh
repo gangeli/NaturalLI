@@ -266,7 +266,7 @@ function index() {
     egrep -v '		'  |\
     sort | uniq | sed -e 's/_/ /g' \
       > $FILE
-  awk -F'	' '
+  awk -F'\t' '
       FNR == NR {
           assoc[ $2 ] = $1;
           next;
@@ -274,12 +274,16 @@ function index() {
       FNR < NR {
         if ( $1 in assoc ) {
           $1 = assoc[ $1 ]
+        } else {
+          $1 = "NOVOCAB"
         }
         if ( $2 > 31 ) {
           $2 = 31
         }
         if ( $4 in assoc ) {
           $4 = assoc[ $4 ]
+        } else {
+          $4 = "NOVOCAB"
         }
         if ( $5 > 31 ) {
           $5 = 31
@@ -290,6 +294,7 @@ function index() {
         print
       }
   ' $VOCAB $FILE |\
+    grep -v 'NOVOCAB' |\
     sed -e 's/ /\t/g'
   rm $FILE
 }
@@ -330,7 +335,7 @@ function indexAll() {
           next;
       }
       FNR < NR {
-        $1 = assoc[ $1 ];
+        $3 = assoc[ $3 ];
         printf $1 " " $2 " " $4 " " $5 " " $3 " " "%f\n", $6
       } ' $DIR/edgeTypes.tab - |\
     sed -e 's/ /	/g'
@@ -339,12 +344,12 @@ function indexAll() {
 # Put everything together into a single (validated) gz file.
 echo "Indexing edges (in $DIR/graph.tab.gz)..."
 indexAll |\
-  egrep -v '0\.0+$' |\
-  egrep '[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9\.]+' |\
   sort | uniq |\
   gzip \
   > $DIR/graph.tab.gz
 echo "DONE"
+#  egrep -v '0\.0+$' |\
+#  egrep '[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9]+	[0-9\.]+' |\
 
 # Compress some other stuff
 rm -f $VOCAB.gz

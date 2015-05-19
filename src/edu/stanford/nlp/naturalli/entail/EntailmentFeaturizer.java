@@ -54,7 +54,6 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.LENGTH_DIFF);
 
     // keyword unlexicalized features
-    add(FeatureTemplate.KEYWORD_OVERLAP);
 //    add(FeatureTemplate.KEYWORD_DISFLUENCIES);  // TODO(gabor) implement me better
 //    add(FeatureTemplate.KEYWORD_STATISTICS);
 
@@ -67,7 +66,10 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.ENTAIL_KEYWORD);
 
     // lucene score
-    add(FeatureTemplate.LUCENE_SCORE);
+
+
+    add(FeatureTemplate.KEYWORD_OVERLAP);
+//    add(FeatureTemplate.LUCENE_SCORE);
   }};
 
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
@@ -379,23 +381,18 @@ public class EntailmentFeaturizer implements Serializable {
       double perfectMatchBonusPercent = numAligned == 0 ? 0.0 :  ((double) perfectMatch) / ((double) numAligned);
 
       // Add the features
-      // (counts)
 //      feats.incrementCount(NaturalLIClassifier.COUNT_PREMISE, premiseKeyphrases.size());
 //      feats.incrementCount(NaturalLIClassifier.COUNT_CONCLUSION, conclusionKeyphrases.size());
+//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
 
       // (count alignable)
       feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNABLE, anyOverlap);
-
       // (count aligned)
-      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
-
-      // (count unaligned)
-//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
-
+//      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
       // (count unalignable)
-      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
-      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
-      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
+//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
+//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
+//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
 
       /*
       // (percent aligable)

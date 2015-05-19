@@ -61,7 +61,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   static final String PERCENT_UNALIGNABLE_CONCLUSION = "percent_unalignable_conclusion";
   static final String PERCENT_UNALIGNABLE_JOINT      = "percent_unalignable_joint";
 
-  private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": ([0-9]+)");
+  private static final Pattern truthPattern = Pattern.compile("\"truth\": *([0-9\\.]+)");
+  private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": *([0-9]+)");
   private static final Pattern alignmentScoresPattern = Pattern.compile("\"closestSoftAlignmentScores\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
   private static final Pattern alignmentSearchCostsPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
 
@@ -76,7 +77,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
   private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("depparse") );
 
-  private final Map<Pair<String, String>, Double> naturalliCache = new HashMap<>();
+  private final Map<Pair<String, String>, Pair<Boolean, Double>> naturalliCache = new HashMap<>();
   private PrintWriter naturalliWriteCache;
 
 
@@ -105,9 +106,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    */
   private synchronized void init() {
     try {
-      Arrays.stream(IOUtils.slurpFile("tmp/naturalli_classifier_search.cache").split("\n")).map(x -> x.split("\t"))
-          .forEach(triple ->
-              naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")), Double.parseDouble(triple[2])));
+      if (new File("tmp/naturalli_classifier_search.cache").exists()) {
+        Arrays.stream(IOUtils.slurpFile("tmp/naturalli_classifier_search.cache").split("\n")).map(x -> x.split("\t"))
+            .forEach(triple ->
+                naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")),
+                    Pair.makePair(Boolean.parseBoolean(triple[2]), Double.parseDouble(triple[3]))));
+      }
       naturalliWriteCache = new PrintWriter(new FileWriter("tmp/naturalli_classifier_search_2.cache"));
 
 
@@ -132,7 +136,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
       // Set some parameters
       toNaturalLI.write("%softCosts=true\n");
-      toNaturalLI.write("%skipNegationSearch=true\n");
+//      toNaturalLI.write("%skipNegationSearch=true\n");
       toNaturalLI.write("%maxTicks=100000\n");
       toNaturalLI.flush();
 
@@ -165,12 +169,13 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    * Get the best alignment score between the hypothesis and the best premise.
    * @param premises The premises to possibly align to.
    * @param hypothesis The hypothesis we are testing.
-   * @return The alignment score returned from NaturalLI.
+   * @return A triple: the truth of the hypothesis, the best alignment, and the best soft alignment scores.
    * @throws IOException Thrown if the pipe to NaturalLI is broken.
    */
-  private synchronized Pair<Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
-    if (premises.stream().allMatch(x -> naturalliCache.containsKey(Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", ""))))) {
-      return Pair.makePair(-1, premises.stream().map(x -> naturalliCache.get(Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", "")))).collect(Collectors.toList()));
+  private synchronized Triple<Boolean, Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
+    Function<String,Pair<String,String>> key = x -> Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", ""));
+    if (premises.stream().allMatch(x -> naturalliCache.containsKey(key.apply(x)))) {
+      return Triple.makeTriple(naturalliCache.get(key.apply(premises.get(0))).first, -1, premises.stream().map(x -> naturalliCache.get(key.apply(x)).second).collect(Collectors.toList()));
     }
     // Write the premises
     List<Double> premiseAlignmentCosts = new ArrayList<>();
@@ -197,10 +202,17 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     // Read the result
     Matcher matcher;
     String json = fromNaturalLI.readLine();
+    // (alignment index)
     if (json == null || !(matcher = alignmentIndexPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
     int alignmentIndex = Integer.parseInt(matcher.group(1));
+    // (truth)
+    if (!(matcher = truthPattern.matcher(json)).find()) {
+      throw new IllegalArgumentException("Invalid JSON response: " + json);
+    }
+    boolean truth = Double.parseDouble(matcher.group(1)) >= 0.5;
+    // (scores)
     if (!(matcher = alignmentScoresPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
@@ -208,6 +220,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     for (int i = 0; i < alignmentScores.size(); ++i) {
       premiseAlignmentCosts.set(i, alignmentScores.get(i));
     }
+    // (search costs)
     if (!(matcher = alignmentSearchCostsPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
@@ -215,10 +228,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
     // Return
     for (int i = 0; i < premises.size(); ++i) {
-      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + premiseAlignmentCosts.get(i));
+      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + truth + "\t" + premiseAlignmentCosts.get(i));
       naturalliWriteCache.flush();
     }
-    return Pair.makePair(alignmentIndex, premiseAlignmentCosts);
+    return Triple.makeTriple(truth, alignmentIndex, premiseAlignmentCosts);
   }
 
 
@@ -266,11 +279,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
     // Query NaturalLI
-    Pair<Integer, List<Double>> bestNaturalLIScores;
+    Triple<Boolean, Integer, List<Double>> bestNaturalLIScores;
     try {
       bestNaturalLIScores = getBestAlignment(premisesText, hypothesisText);
     } catch (IOException e) {
       throw new RuntimeException(e);
+    }
+
+    // Short circuit if logically contradicted
+    if (!bestNaturalLIScores.first) {
+      return Pair.makePair(premises.get(0), 0.0);
     }
 
     for (int i = 0; i < premises.size(); ++i) {
@@ -280,17 +298,24 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
       double score = scoreBeforeNaturalli(features);
-      double naturalLIScore = bestNaturalLIScores.second.get(i);
+      double naturalLIScore = bestNaturalLIScores.third.get(i);
+//      double naturalLIScore = scoreAlignmentSimple(features);
       score += naturalLIScore * ALIGNMENT_WEIGHT;
       assert !Double.isNaN(score);
       assert Double.isFinite(score);
       // Computer the probability
       double prob = 1.0 / (1.0 + Math.exp(-score));
       // Discount the score if the focus is not present
-      if (focus.isPresent() &&
-          !focus.get().contains(" ") &&
-          !premise.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
-        prob *= 0.25;
+      if (focus.isPresent()) {
+        if (focus.get().contains(" ")) {
+          if (!premise.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
+            prob *= 0.75;  // Slight penalty for not matching a long focus
+          }
+        } else {
+          if (!premise.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
+            prob *= 0.25;  // Big penalty for not matching a short focus.
+          }
+        }
       }
       // Take the argmax
       if (prob > max) {
