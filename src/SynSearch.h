@@ -841,19 +841,11 @@ struct alignas(10) alignment_instance {
   const ::word  target:VOCABULARY_ENTROPY;
   /** The target word we are trying to align to */
   const monotonicity  targetPolarity:2;
-  /** A non-negative bonus if a word in the search matches the target. Always >= 0. */
-  const float   bonusIfMatched;
-  /** A negative penalty if this word doesn't match. Always <= 0. */
-  const float   penaltyIfMismatched;
 
   alignment_instance(const uint8_t& index,
                      const ::word& target,
-                     const monotonicity& targetPolarity,
-                     const double& bonusIfMatched,
-                     const double& penaltyIfMismatched)
-      : index(index), target(target), targetPolarity(targetPolarity),
-        bonusIfMatched(bonusIfMatched), 
-        penaltyIfMismatched(penaltyIfMismatched) { }
+                     const monotonicity& targetPolarity) 
+      : index(index), target(target), targetPolarity(targetPolarity) { }
 };
 
 /**
@@ -889,6 +881,10 @@ class AlignmentSimilarity {
     return alignments;
   }
 
+  /**
+   * A utility to print the alignment in a semi-human-readable form.
+   */
+  void debugPrint(const Graph& graph) const;
 
  private:
   const std::vector<alignment_instance> alignments;

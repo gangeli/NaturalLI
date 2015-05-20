@@ -5,8 +5,8 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define ALIGN_MATCH_BONUS 1.0f
-#define ALIGN_MISMATCH_PENALTY -1.0f
+#define BONUS_COUNT_ALIGNED 1.0f
+#define PENALTY_ONLY_IN_HYPOTHESIS -1.0f
 
 using namespace std;
 
@@ -802,9 +802,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
             alignments.emplace_back( \
                 hypI, \
                 premWord, \
-                premPolarity, \
-                ALIGN_MATCH_BONUS, \
-                ALIGN_MISMATCH_PENALTY); \
+                premPolarity); \
           } \
         } \
       default: \
@@ -905,9 +903,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
         alignments.emplace_back(
             hypI,
             premise.data[premI].word,
-            premPolarities[premI],
-            ALIGN_MATCH_BONUS,
-            ALIGN_MISMATCH_PENALTY);
+            premPolarities[premI]);
       }
     }
   }
@@ -927,9 +923,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
         alignments.emplace_back(
             hypothesisKeywords[0],
             premise.data[premiseKeywords[0]].word,
-            premPolarities[premiseKeywords[0]],
-            ALIGN_MATCH_BONUS,
-            ALIGN_MISMATCH_PENALTY);
+            premPolarities[premiseKeywords[0]]);
       }
     }
   }
@@ -954,22 +948,22 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
 // AlignmentSimilarity::score
 //
 double AlignmentSimilarity::score(const Tree& tree) const {
-  double sum = 0.0;
+  double score = 0.0;
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index < tree.length) {
-      // case: an alignment matched.
+      // case: check an alignment
       if (tree.word(iter->index) == iter->target &&
           tree.polarityAt(SearchNode(tree), iter->index) == iter->targetPolarity) {
-        sum += iter->bonusIfMatched;
+        score += BONUS_COUNT_ALIGNED;
       } else {
-        sum += iter->penaltyIfMismatched;
+        score += PENALTY_ONLY_IN_HYPOTHESIS;
       }
     } else {
       // error: an alignment is larger than the tree
       fprintf(stderr, "WARNING: alignment is larger than premise tree!\n");
     }
   }
-  return sum;
+  return score;
 }
   
 //
@@ -984,14 +978,34 @@ double AlignmentSimilarity::updateScore(const double& score,
                                         ) const {
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index == index) {
+      // Some variables for the logic
       bool oldMatched = (oldWord == iter->target && 
                          oldPolarity == iter->targetPolarity);
       bool newMatches = (newWord == iter->target && 
                          newPolarity == iter->targetPolarity);
-      if (oldMatched && !newMatches) {
-        return score - iter->bonusIfMatched + iter->penaltyIfMismatched;
-      } else if (!oldMatched && newMatches) {
-        return score - iter->penaltyIfMismatched + iter->bonusIfMatched;
+      bool isDelete = (newWord == INVALID_WORD);
+      // The logic of updating scores
+      if (oldMatched) {
+        if (newMatches) {
+          return score;  // This should be impossible! We didn't change the word...
+        } else {
+          if (isDelete) {
+            // broke match via a delete
+            return score - BONUS_COUNT_ALIGNED;
+          } else {
+            // broke match via a mutate
+            return score - BONUS_COUNT_ALIGNED + PENALTY_ONLY_IN_HYPOTHESIS;
+          }
+        }
+      } else {
+        if (newMatches) {
+          assert (!isDelete);  // Matched on a delete?
+          return score + BONUS_COUNT_ALIGNED - PENALTY_ONLY_IN_HYPOTHESIS;
+        } else {
+          if (isDelete) {
+            return score - PENALTY_ONLY_IN_HYPOTHESIS;
+          }
+        }
       }
     }
   }
@@ -1020,6 +1034,15 @@ const monotonicity AlignmentSimilarity::targetPolarityAt(const uint8_t& index) c
     }
   }
   return MONOTONE_INVALID;
+}
+  
+void AlignmentSimilarity::debugPrint(const Graph& graph) const {
+  fprintf(stderr, "Alignment:\n");
+  for (uint32_t i = 0; i < alignments.size(); ++i) {
+    fprintf(stderr, "  index: %u  should be %s\n", 
+        alignments[i].index,
+        graph.gloss(getTaggedWord(alignments[i].target, MONOTONE_UP)));
+  }
 }
 
 

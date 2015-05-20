@@ -468,23 +468,26 @@ syn_search_response SynSearch(
     const SearchNode& node = scoredNode.node;
     // Check the soft alignments
 #if MAX_FUZZY_MATCHES > 0
-    for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
-      const float& nodeAlignmentScore = node.softAlignmentScores()[alignI];
-      if (nodeAlignmentScore > closestSoftAlignmentScores[alignI] + 1e-7) {  // 1e-7 to be robust to floating point drift
-        // Update the per-premise alignment scores
-        closestSoftAlignmentScores[alignI] = node.softAlignmentScores()[alignI];
-        closestSoftAlignmentSearchCosts[alignI] = scoredNode.cost;
-        if (!opts.silent) {
-          printTime("[%c] "); 
-          fprintf(stderr, "  best soft match @ %u = %f\n", alignI, closestSoftAlignmentScore);
-        }
-        // Update the global best alignment
-        if (nodeAlignmentScore > closestSoftAlignmentScore) {
-          closestSoftAlignment = alignI;
-          closestSoftAlignmentScore = nodeAlignmentScore;
+    if (node.truthState()) {  // matches in the negative context don't count
+      for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
+        const float& nodeAlignmentScore = node.softAlignmentScores()[alignI];
+        if (nodeAlignmentScore > closestSoftAlignmentScores[alignI] + 1e-7) {  // 1e-7 to be robust to floating point drift
+          // Update the per-premise alignment scores
+          closestSoftAlignmentScores[alignI] = node.softAlignmentScores()[alignI];
+          closestSoftAlignmentSearchCosts[alignI] = scoredNode.cost;
           if (!opts.silent) {
             printTime("[%c] "); 
-            fprintf(stderr, "  best alignment = %u\n", alignI);
+            fprintf(stderr, "  best soft match @ %u = %f\n", alignI, 
+                    closestSoftAlignmentScores[alignI]);
+          }
+          // Update the global best alignment
+          if (nodeAlignmentScore > closestSoftAlignmentScore) {
+            closestSoftAlignment = alignI;
+            closestSoftAlignmentScore = nodeAlignmentScore;
+            if (!opts.silent) {
+              printTime("[%c] "); 
+              fprintf(stderr, "  best alignment = %u\n", alignI);
+            }
           }
         }
       }

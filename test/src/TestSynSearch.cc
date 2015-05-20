@@ -958,18 +958,18 @@ class AlignmentSimilarityTest : public ::testing::Test {
     allFurryCatsHaveTails = new Tree(ALL_FURRY_CATS_HAVE_TAILS);
 
     vector<alignment_instance> v;
-    v.emplace_back(1, FUZZY.word, MONOTONE_DOWN, 0.42, -0.7);
-    v.emplace_back(2, DOG.word, MONOTONE_DOWN, 0.1, -0.2);
+    v.emplace_back(1, FUZZY.word, MONOTONE_DOWN);
+    v.emplace_back(2, DOG.word, MONOTONE_DOWN);
     hard = new AlignmentSimilarity(v);
     
     vector<alignment_instance> w;
-    w.emplace_back(1, FURRY.word, MONOTONE_DOWN, 0.42, -0.7);
-    w.emplace_back(2, CAT.word, MONOTONE_DOWN, 0.1, -0.2);
+    w.emplace_back(1, FURRY.word, MONOTONE_DOWN);
+    w.emplace_back(2, CAT.word, MONOTONE_DOWN);
     easy = new AlignmentSimilarity(w);
     
     vector<alignment_instance> x;
-    x.emplace_back(1, FURRY.word, MONOTONE_UP, 0.42, -0.7);
-    x.emplace_back(2, CAT.word, MONOTONE_UP, 0.1, -0.2);
+    x.emplace_back(1, FURRY.word, MONOTONE_UP);
+    x.emplace_back(2, CAT.word, MONOTONE_UP);
     monoMismatch = new AlignmentSimilarity(x);
   }
   
@@ -1007,15 +1007,15 @@ TEST_F(AlignmentSimilarityTest, CheckIndices) {
 // Score Tree
 //
 TEST_F(AlignmentSimilarityTest, ScoreTree) {
-  EXPECT_NEAR(-0.9, hard->score(*allFurryCatsHaveTails), 1e-7);
-  EXPECT_NEAR(0.52, easy->score(*allFurryCatsHaveTails), 1e-7);
+  EXPECT_NEAR(-2.0, hard->score(*allFurryCatsHaveTails), 1e-7);
+  EXPECT_NEAR(2.0, easy->score(*allFurryCatsHaveTails), 1e-7);
 }
 
 //
 // Respect monotonicity
 //
 TEST_F(AlignmentSimilarityTest, RespectMonotonicity) {
-  EXPECT_NEAR(-0.9, monoMismatch->score(*allFurryCatsHaveTails), 1e-7);
+  EXPECT_NEAR(-2.0, monoMismatch->score(*allFurryCatsHaveTails), 1e-7);
 }
 
 //
@@ -1023,15 +1023,15 @@ TEST_F(AlignmentSimilarityTest, RespectMonotonicity) {
 //
 TEST_F(AlignmentSimilarityTest, UpdateScore) {
   double score = hard->score(*allFurryCatsHaveTails);
-  ASSERT_NEAR(-0.9, score, 1e-7);
+  ASSERT_NEAR(-2.0, score, 1e-7);
   double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+  EXPECT_NEAR(0.0, afterFuzzy, 1e-7);
   double afterDog = hard->updateScore(score, 2, CAT.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(-0.6, afterDog, 1e-7);
+  EXPECT_NEAR(0.0, afterDog, 1e-7);
   double afterBoth = hard->updateScore(afterDog, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(0.52, afterBoth, 1e-7);
+  EXPECT_NEAR(2.0, afterBoth, 1e-7);
   double afterBothOtherWay = hard->updateScore(afterFuzzy, 2, CAT.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(0.52, afterBothOtherWay, 1e-7);
+  EXPECT_NEAR(2.0, afterBothOtherWay, 1e-7);
 }
 
 //
@@ -1039,15 +1039,15 @@ TEST_F(AlignmentSimilarityTest, UpdateScore) {
 //
 TEST_F(AlignmentSimilarityTest, UpdateScoreTwice) {
   double score = hard->score(*allFurryCatsHaveTails);
-  ASSERT_NEAR(-0.9, score, 1e-7);
+  ASSERT_NEAR(-2.0, score, 1e-7);
   double afterFuzzy = hard->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+  EXPECT_NEAR(0.0, afterFuzzy, 1e-7);
   double afterFurry = hard->updateScore(afterFuzzy, 1, FUZZY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(-0.9, afterFurry, 1e-7);
+  EXPECT_NEAR(-2.0, afterFurry, 1e-7);
   double afterDog = hard->updateScore(afterFurry, 1, FURRY.word, DOG.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(-0.9, afterDog, 1e-7);
+  EXPECT_NEAR(-2.0, afterDog, 1e-7);
   afterFuzzy = hard->updateScore(afterDog, 1, DOG.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  EXPECT_NEAR(0.22, afterFuzzy, 1e-7);
+  EXPECT_NEAR(0.0, afterFuzzy, 1e-7);
 }
 
 //
@@ -1055,11 +1055,11 @@ TEST_F(AlignmentSimilarityTest, UpdateScoreTwice) {
 //
 TEST_F(AlignmentSimilarityTest, UpdateScoreMatchMono) {
   double score = monoMismatch->score(*allFurryCatsHaveTails);
-  ASSERT_NEAR(-0.9, score, 1e-7);
+  ASSERT_NEAR(-2.0, score, 1e-7);
   double afterFuzzy = monoMismatch->updateScore(score, 1, FURRY.word, FUZZY.word, MONOTONE_DOWN, MONOTONE_DOWN);
-  ASSERT_NEAR(-0.9, afterFuzzy, 1e-7);
+  EXPECT_NEAR(-2.0, afterFuzzy, 1e-7);
   double afterFurry = monoMismatch->updateScore(score, 1, FUZZY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_UP);
-  EXPECT_NEAR(0.22, afterFurry, 1e-7);
+  EXPECT_NEAR(0.0, afterFurry, 1e-7);
 }
 
 //
@@ -1067,9 +1067,9 @@ TEST_F(AlignmentSimilarityTest, UpdateScoreMatchMono) {
 //
 TEST_F(AlignmentSimilarityTest, UpdateScoreMatchMonoOnly) {
   double score = monoMismatch->score(*allFurryCatsHaveTails);
-  ASSERT_NEAR(-0.9, score, 1e-7);
+  ASSERT_NEAR(-2.0, score, 1e-7);
   double afterFurry = monoMismatch->updateScore(score, 1, FURRY.word, FURRY.word, MONOTONE_DOWN, MONOTONE_UP);
-  ASSERT_NEAR(0.22, afterFurry, 1e-7);
+  EXPECT_NEAR(0.0, afterFurry, 1e-7);
 }
 
 
@@ -1426,7 +1426,7 @@ TEST_F(SynSearchTest, ThreadsFinish) {
 TEST_F(SynSearchTest, TickCountNoMutation) {
   syn_search_response response = SynSearch(graph, &factdb, catsHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
-  EXPECT_EQ(12, response.totalTicks);
+  EXPECT_EQ(7, response.totalTicks);
 #else
   EXPECT_EQ(15, response.totalTicks);
 #endif
@@ -1438,7 +1438,7 @@ TEST_F(SynSearchTest, TickCountNoMutation) {
 TEST_F(SynSearchTest, TickCountWithMutations) {
   syn_search_response response = SynSearch(graph, &factdb, lemursHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
-  EXPECT_EQ(24, response.totalTicks);
+  EXPECT_EQ(10, response.totalTicks);
 #else
   EXPECT_EQ(30, response.totalTicks);
 #endif
@@ -1450,7 +1450,7 @@ TEST_F(SynSearchTest, TickCountWithMutations) {
 TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
   syn_search_response response = SynSearch(cyclicGraph, &factdb, lemursHaveTails, costs, true, opts);
 #if SEARCH_FULL_MEMORY!=0
-  EXPECT_EQ(24, response.totalTicks);
+  EXPECT_EQ(10, response.totalTicks);
 #else
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
@@ -1530,7 +1530,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
   factdb.insert(lemursHaveTails->hash());
   // (create an alignment)
   vector<alignment_instance> v;
-  v.emplace_back(0, POTTO.word, MONOTONE_UP, 0.42, -0.7);
+  v.emplace_back(0, POTTO.word, MONOTONE_UP);
   vector<AlignmentSimilarity> alignments;
   alignments.emplace_back(v);
   // (run the search)
@@ -1543,7 +1543,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
   // (check the closest alignment)
 #if MAX_FUZZY_MATCHES > 0
   EXPECT_EQ(0, response.closestSoftAlignment);
-  EXPECT_NEAR(0.42, response.closestSoftAlignmentScore, 1e-7);
+  EXPECT_NEAR(1.0, response.closestSoftAlignmentScore, 1e-7);
   EXPECT_NEAR(0.0010999999940395355f, response.closestSoftAlignmentSearchCosts[response.closestSoftAlignment], 1e-7);
 #endif
 }

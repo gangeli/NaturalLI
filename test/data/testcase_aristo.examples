@@ -1,22 +1,26 @@
-#%defaultCosts = true
-## Explicit contradiction
-#Candy is good
-#FALSE: candy is bad
-#
-#Candy is bad
-#TRUE: Candy is poor
-#
-#Candy is good
-#FALSE: candy is poor
-#
-#Eating candy is example.
-#FALSE: Eating candy is example of good health habit.
+%strictCosts = true
+# Explicit contradiction
+Candy is good
+FALSE: candy is bad
+
+%defaultCosts = true
+
+Candy is bad
+TRUE: Candy is poor
+
+Candy is good
+FALSE: candy is poor
+
+%strictCosts = true
+
+Eating candy is example.
+UNK: Eating candy is example of good health habit.
 
 Eating candy for diner is an example of a poor health habit.
 FALSE: Eating candy is an example of a good health habit.
 
-## Near-explicit contradiction
-#The shortest number of daylight hours in New York State occurs during December.
-#FALSE: In New York State, the longest period of daylight occurs during December.
+# Near-explicit contradiction
+The shortest number of daylight hours in New York State occurs during December.
+FALSE: In New York State, the longest period of daylight occurs during December.
 
 %strictCosts = true

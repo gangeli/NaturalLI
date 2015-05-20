@@ -164,7 +164,8 @@ bool parseAlignmentInstance(
   spec.erase(0, pos + delimiter.length());
   // Enqueue the alignment
   fprintf(stderr, "align(%d, %d, %f, %f)\n", tokenIndex, target, bonus, penalty);
-  alignments->emplace_back(tokenIndex, target, MONOTONE_UP, bonus, penalty);
+  // TODO(gabor) this was supposed to have a bonus and penalty associated
+  alignments->emplace_back(tokenIndex, target, MONOTONE_UP);
   return true;
 }
 
@@ -315,7 +316,10 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     factsInserted += 1;
     // align the tree
     if (doAlignments && alignments.size() < MAX_FUZZY_MATCHES) {
-      alignments.push_back(query->alignToPremise(*premise));
+      AlignmentSimilarity alignment = query->alignToPremise(*premise);
+//      alignment.debugPrint(*graph);  // debug print the alignment
+//      fprintf(stderr, "  score: %f\n", alignment.score(*query));
+      alignments.push_back(alignment);
     }
   }
   printTime("[%c] ");
@@ -353,6 +357,10 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       confidence(resultIfTrue, &bestPathIfTrue, &bestFeaturesIfTrue);
   double confidenceOfFalse =
       confidence(resultIfFalse, &bestPathIfFalse, &bestFeaturesIfFalse);
+  // (soft alignments)
+  const uint8_t* closestSoftAlignment = &resultIfTrue.closestSoftAlignment;
+  const float* closestSoftAlignmentScores = resultIfTrue.closestSoftAlignmentScores;
+  const float* closestSoftAlignmentSearchCosts = resultIfTrue.closestSoftAlignmentSearchCosts;
   // (truth)
   const vector<SearchNode> *bestPath = NULL;
   const feature_vector *bestFeatures = NULL;
@@ -373,8 +381,21 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
               toJSON(*graph, *query, *bestPathIfTrue).c_str());
       fprintf(stderr, "  if false: %s\n",
               toJSON(*graph, *query, *bestPathIfFalse).c_str());
+      *truth = 0.5;
+    } else if (resultIfFalse.closestSoftAlignmentScore > resultIfTrue.closestSoftAlignmentScore) {
+      printTime("[%c] ");
+      fprintf(stderr, "Closest alignment is false, in absense of responses\n");
+      closestSoftAlignment = &resultIfFalse.closestSoftAlignment;
+      closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
+      closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
+      *truth = 0.5 - ((double) resultIfFalse.closestSoftAlignmentScore) / 1000.0;
+    } else if (resultIfTrue.closestSoftAlignmentScore > resultIfFalse.closestSoftAlignmentScore) {
+      printTime("[%c] ");
+      fprintf(stderr, "Closest alignment is true, in absense of responses\n");
+      *truth = 0.5 + ((double) resultIfTrue.closestSoftAlignmentScore) / 1000.0;
+    } else {
+      *truth = 0.5;
     }
-    *truth = 0.5;
   }
   // (debug)
   //  fprintf(stderr, "trueCount: %lu  falseCount: %lu  trueConf: %f  falseConf:
@@ -405,9 +426,9 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       << "\"success\": true"
       << ", "
 #if MAX_FUZZY_MATCHES > 0
-      << "\"closestSoftAlignment\": " << to_string(resultIfTrue.closestSoftAlignment) << ", "
-      << "\"closestSoftAlignmentScores\": " << toJSON(resultIfTrue.closestSoftAlignmentScores, MAX_FUZZY_MATCHES) << ", "
-      << "\"closestSoftAlignmentSearchCosts\": " << toJSON(resultIfTrue.closestSoftAlignmentSearchCosts, MAX_FUZZY_MATCHES) << ", "
+      << "\"closestSoftAlignment\": " << to_string(*closestSoftAlignment) << ", "
+      << "\"closestSoftAlignmentScores\": " << toJSON(closestSoftAlignmentScores, MAX_FUZZY_MATCHES) << ", "
+      << "\"closestSoftAlignmentSearchCosts\": " << toJSON(closestSoftAlignmentSearchCosts, MAX_FUZZY_MATCHES) << ", "
 #endif
       << "\"path\": "
       << (bestPath != NULL ? toJSON(*graph, *query, *bestPath) : "[]");

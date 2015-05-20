@@ -30,7 +30,7 @@ public class ClassifierTrainer {
   public String NATURALLI_SEARCH = "src/naturalli_search";
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
-  public File TRAIN_FILE = new File("etc/aristo/eval_train_barrons.tab");
+  public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public File TRAIN_CACHE = null;
   @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
