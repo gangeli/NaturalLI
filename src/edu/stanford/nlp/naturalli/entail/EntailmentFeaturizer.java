@@ -47,6 +47,12 @@ public class EntailmentFeaturizer implements Serializable {
 
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
+    add(FeatureTemplate.KEYWORD_OVERLAP);
+    add(FeatureTemplate.LUCENE_SCORE);
+
+
+
+//    add(FeatureTemplate.LUCENE_SCORE);
     // standard unlexicalized features
 //    add(FeatureTemplate.BLEU);
 //    add(FeatureTemplate.OVERLAP);
@@ -66,10 +72,6 @@ public class EntailmentFeaturizer implements Serializable {
 //    add(FeatureTemplate.ENTAIL_KEYWORD);
 
     // lucene score
-
-
-    add(FeatureTemplate.KEYWORD_OVERLAP);
-//    add(FeatureTemplate.LUCENE_SCORE);
   }};
 
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
@@ -385,14 +387,13 @@ public class EntailmentFeaturizer implements Serializable {
 //      feats.incrementCount(NaturalLIClassifier.COUNT_CONCLUSION, conclusionKeyphrases.size());
 //      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNED, anyOverlap - perfectMatch);
 
-      // (count alignable)
-      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNABLE, anyOverlap);
-      // (count aligned)
+      // MINIMAL GOOD FEATURE SET
 //      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
-      // (count unalignable)
-//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
-//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
-//      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
+      feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNABLE, anyOverlap);
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
+      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
+      // END MINIMAL GOOD FEATURE SET
 
       /*
       // (percent aligable)

@@ -337,6 +337,7 @@ function indexAll() {
       FNR < NR {
         $3 = assoc[ $3 ];
         printf $1 " " $2 " " $4 " " $5 " " $3 " " "%f\n", $6
+        printf $4 " " $5 " " $1 " " $2 " " $3 " " "%f\n", $6
       } ' $DIR/edgeTypes.tab - |\
     sed -e 's/ /	/g'
 }

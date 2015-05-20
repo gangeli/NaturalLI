@@ -4,6 +4,8 @@ exec scala "$0" "$@"
 
 // (scala)
 import scala.collection.JavaConversions._
+// (corenlp)
+import edu.stanford.nlp.simple._
 
 // Regexes for a sentence with 2, 3, or 4 options
 val Q2 = """(.*)\(A\)(.*)\(B\)(.*)""".r
@@ -13,38 +15,33 @@ val Q4 = """(.*)\(A\)(.*)\(B\)(.*)\(C\)(.*)\(D\)(.*)""".r
 // Grok input file
 for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
   // (parse the line)
-  val Array(quid, no, points, answer, mc, diag, exam, grade, year, text) = line.split("\t")
-  // (parse the question + answer block)
-  val (question, candidates) = text match {
-    case Q4(question, a, b, c, d) => (question.split("\\.").map(_.trim), Array(a,b,c,d))
-    case Q3(question, a, b, c) => (question.split("\\.").map(_.trim),    Array(a,b,c))
-    case Q2(question, a, b) => (question.split("\\.").map(_.trim),       Array(a,b))
+  val fields = line.split("\t");
+  val year = fields(0)
+  val id = fields(1)
+  var question = fields(2).substring(0, fields(2).indexOf("(A)"))
+  val correct = fields(3) == fields(4)
+  val statement = new Document(fields(5)).sentences.last.text
+  val focus = fields(6)
+
+  // Write the question
+  if (fields(4) == "A") {
+    println("#Q: " + question)
   }
-  // (print a comment)
-  println("#Q: " + question.reverse.head)
-  // (print all candidate answers)
-  val statements = question.reverse.tail.reverse.map( _.trim )
-  for ((candidate,index) <- candidates.zipWithIndex) {
-    // (convert the question into statements)
-    val hypothesis = questionToStatement(question.reverse.head.trim, candidate.trim())
-    // (print additional premises
-    for (statement <- statements) {
-      println(statement)
-    }
-    // (print the candidate)
-    println("#A: " + candidate.trim())
-    // (get the truth of the hypothesis)
-    (answer, index) match {
-      case ("A", 0) => print("TRUE: ")
-      case ("B", 1) => print("TRUE: ")
-      case ("C", 2) => print("TRUE: ")
-      case ("D", 3) => print("TRUE: ")
-      case _ => print("FALSE: ")
-    }
-    // (print the hypothesis)
-    println(hypothesis)
-    println("")
+  // Write the answer
+  println("#A: " + focus)
+  if (correct) {
+    print("TRUE: ")
+  } else {
+    print("FALSE: ")
   }
+  // Write the statement
+  if (statement == "FAIL") {
+    println (question + " " + focus)
+  } else {
+    println(statement)
+  }
+  // Newline to signify a new example
+  println()
 }
 
 

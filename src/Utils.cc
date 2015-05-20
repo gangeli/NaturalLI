@@ -107,8 +107,8 @@ string toString(const edge_type& edge) {
     case ANTONYM                      : return "WORDNET_NOUN_ANTONYM";
     case SYNONYM                      : return "WORDNET_NOUN_SYNONYM";
     case NN                           : return "ANGLE_NN";
-    case SENSEREMOVE                  : return "SENSE_REMOVE";
-    case SENSEADD                     : return "SENSE_ADD";
+//    case SENSEREMOVE                  : return "SENSE_REMOVE";
+//    case SENSEADD                     : return "SENSE_ADD";
     case QUANTUP                      : return "QUANTIFIER_UP";
     case QUANTDOWN                    : return "QUANTIFIER_DOWN";
     case QUANTNEGATE                  : return "QUANTIFIER_NEGATE";

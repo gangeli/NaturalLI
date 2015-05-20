@@ -63,8 +63,8 @@ inline natlog_relation edgeToLexicalFunction(const natlog_relation& edge) {
     case QUANTNEGATE:          return FUNCTION_NEGATION;
     case QUANTREWORD:          return FUNCTION_EQUIVALENT;
     // Sense shifts
-    case SENSEADD:            return FUNCTION_EQUIVALENT;
-    case SENSEREMOVE:         return FUNCTION_EQUIVALENT;
+//    case SENSEADD:            return FUNCTION_EQUIVALENT;
+//    case SENSEREMOVE:         return FUNCTION_EQUIVALENT;
     // Verb entailment
     case VENTAIL:              return FUNCTION_FORWARD_ENTAILMENT;
     default:
@@ -307,7 +307,7 @@ inline SynSearchCosts* intermediateNaturalLogicCosts() {
 
 /** Create a version of the weights encoding soft natural logic inference */
 inline SynSearchCosts* softNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.1f, 0.15f, 0.25f);
+  return createStrictCosts(0.01f, 0.1f, 0.15f, 1.0f);
 }
 
 // ----------------------------------------------
@@ -1078,7 +1078,7 @@ class SearchNode {
     // Get the word we're mutating
     const tagged_word nodeToken = this->token();
     assert(nodeToken.word == edge.sink);
-    assert(nodeToken.sense == edge.sink_sense);
+    assert(nodeToken.sense == edge.sink_sense || edge.source_sense == 0);
     // Compute the new hash
     const uint64_t newHash = tree.updateHashFromMutation(
         this->factHash(), this->tokenIndex(), nodeToken.word,

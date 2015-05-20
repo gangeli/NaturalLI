@@ -162,11 +162,16 @@ inline uint64_t searchLoop(
     const edge* edges = graph->incomingEdgesFast(nodeToken.word, &numEdges);
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       const edge& edge = edges[edgeI];
+//      fprintf(stderr, "%u / %u: edge %u[%u]  -->  %u[%u]\n", 
+//          edgeI, numEdges,
+//          edge.source, edge.source_sense, edge.sink, edge.sink_sense);
       assert(edge.source < graph->vocabSize());
       assert(nodeToken.word < graph->vocabSize());
       assert(edge.sink == nodeToken.word);
       // (ignore when sense doesn't match)
-      if (edge.sink_sense != nodeToken.sense) { continue; }
+      if (edge.source_sense != 0 && edge.sink_sense != nodeToken.sense) { 
+        continue; 
+      }
       // (ignore meronym edges if not a location)
       if ( (edge.type == MERONYM || edge.type == HOLONYM) &&
            !tree.isLocation(tokenIndex) ) {
@@ -188,8 +193,8 @@ inline uint64_t searchLoop(
         if (originalMonotonicity != nodeMonotonicity) {
           continue;  // don't mutate quantifiers twice (the more likely check)
         }
-      } else if ( quantifierIndex >= 0 &&
-                  (edge.type == SENSEREMOVE || edge.type == SENSEADD) ) {
+      } else if ( quantifierIndex >= 0 ) {
+//                  && (edge.type == SENSEREMOVE || edge.type == SENSEADD) ) {
         // Disallow quantifiers changing their sense.
         continue;
       }
@@ -338,8 +343,9 @@ inline uint64_t searchLoop(
       assert (topologicalOrder[i] == tokenIndex || topologicalOrder[i] == 255);
       const uint8_t& nextIndex = topologicalOrder[i] == 255 ? 255 : topologicalOrder[i + 1];
       // (if there is such an index, push it)
-      if (nextIndex != 255) {
+      if (nextIndex != 255 && !node.isDeleted(nextIndex)) {
         const SearchNode indexMovedChild(node, tree, nextIndex, myIndex);
+        assert (indexMovedChild.truthState() == node.truthState());
 //        fprintf(stderr, "  push index move (reg) -> %u: %s\n", indexMovedChild.tokenIndex(), toString(*graph, tree, indexMovedChild).c_str());
         assert(nextIndex < tree.length);
         assert(nextIndex >= 0);
@@ -360,6 +366,7 @@ inline uint64_t searchLoop(
       // (create child)
       SearchNode indexMovedChild(node, tree, nextQuantifierTokenIndex,
                                        myIndex);
+      assert (indexMovedChild.truthState() == node.truthState());
       assert(nextQuantifierTokenIndex < tree.length);
       assert(nextQuantifierTokenIndex >= 0);
       assert(indexMovedChild.word() < graph->vocabSize());
@@ -524,9 +531,9 @@ syn_search_response SynSearch(
         // (add to the results list)
         if (!opts.silent) {
           printTime("[%c] "); 
-          fprintf(stderr, "  found premise: %s {hash: %lu}\n", 
+          fprintf(stderr, "  found premise: %s {hash: %lu; points to: %u}\n", 
               kbGloss(*mutationGraph, *input, path).c_str(),
-              path.front().factHash());
+              path.front().factHash(), path.front().getBackpointer());
         }
         matches.push_back(syn_search_path(path, scoredNode.cost));
         featurizedPaths.push_back(myFeatures);

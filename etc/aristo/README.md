@@ -34,8 +34,27 @@ and will produce files -- roughly 300 MB in total:
     duplicates and including awkward non-ascii characters.
 
 
+Creating Evaluation Files
+-------------------------
+This is really a two-step process. 
+First, convert the data format into a NaturalLI data file.
+Then, convert that into a NaturalLI classifier data file.
+The first of these is done with the `aristo2perfcase` function.
+The second is done with the `turk_10_run-queries.py` script.
+For example (with your NaturalLI data file from above in 
+`etc/aristo/eval_train_allcorpora.tab` in the example):
+
+```bash
+etc/aristo/turk_10_run-queries.py \
+    --host jonsson.stanford.edu \
+    --collection aristo \
+    test/data/perfcase_aristo_train.examples \
+      > etc/aristo/eval_train_allcorpora.tab
+```
+
+
 Mturk Pipeline
-----------
+--------------
 
 The following was used to create the Turk CSV, and then the training data from
 that.

@@ -209,6 +209,9 @@ Graph* readGraph(const uint32_t numWords,
       fprintf(stderr, "Invalid mutation type=%u (NUM_MUTATION_TYPES=%u)\n", e.type, NUM_MUTATION_TYPES);
       exit(1);
     }
+    if (e.sink == e.source && e.sink_sense == e.source_sense) {
+      continue;  // Ignore any identity edges
+    }
     e.cost         = atof(row[5]);
     if (isinf(e.cost)) { fprintf(stderr, "Infinite cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }
     if (e.cost != e.cost) { fprintf(stderr, "NaN cost edge: %f (parsed from %s)\n", e.cost, row[5]); exit(1); }

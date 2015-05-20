@@ -270,7 +270,7 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
     } else if (toSet == "defaultCosts") {
       if (to_bool(value)) {
         delete *costs;
-        *costs = softNaturalLogicCosts();
+        *costs = intermediateNaturalLogicCosts();
         fprintf(stderr, "set costs to 'defaultCosts'\n");
       }
     } else if (toSet == "strictCosts") {

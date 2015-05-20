@@ -20,9 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static edu.stanford.nlp.util.logging.Redwood.Util.endTrack;
-import static edu.stanford.nlp.util.logging.Redwood.Util.forceTrack;
-import static edu.stanford.nlp.util.logging.Redwood.Util.log;
+import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 
 /**
  * An interface for calling NaturalLI in alignment mode.
@@ -31,7 +29,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
  */
 public class NaturalLIClassifier implements EntailmentClassifier {
 
-  private static final double ALIGNMENT_WEIGHT = 0.00;
+  private static final double ALIGNMENT_WEIGHT = 0.10;
 
   static final String COUNT_ALIGNED      = "count_aligned";
   static final String COUNT_ALIGNABLE    = "count_alignable";
@@ -149,11 +147,14 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
   /** Convert a plain-text string to a CoNLL parse tree that can be fed into NaturalLI */
   private String toParseTree(String text) {
-//    log("Annotating sentence: '" + text + "'");
     Pointer<String> debug = new Pointer<>();
-    String annotated = ProcessQuery.annotate(QRewrite.FOR_PREMISE, text, pipeline.get(), debug, true);
-//    debug.dereference().ifPresent(Redwood.Util::log);
-    return annotated;
+    try {
+      String annotated = ProcessQuery.annotate(QRewrite.FOR_PREMISE, text, pipeline.get(), debug, true);
+      return annotated;
+    } catch (AssertionError e) {
+      err("Assertion error when processing sentence: " + text);
+      return "cats\t0\troot\t0";
+    }
   }
 
   /** Convert a comma-separated list to a list of doubles */
