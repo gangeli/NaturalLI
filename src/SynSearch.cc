@@ -774,6 +774,10 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
     char hypNextTag = (hypI == this->length - 1) ? '?' : this->data[hypI + 1].posTag; \
     char hypNextNextTag = (hypI > this->length - 3) ? '?' : this->data[hypI + 2].posTag; \
     ::word hypWord = this->data[hypI].word; \
+    if (hypWord == BE.word) { \
+      alreadyAlignedInHypothesis[hypI] = true; \
+      continue; \
+    } \
     ::word hypLastWord = hypI == 0 ? INVALID_WORD : this->data[hypI - 1].word; \
     ::word hypLastLastWord = hypI < 2 ? INVALID_WORD : this->data[hypI - 2].word; \
     ::word hypNextWord = (hypI == this->length - 1) ? INVALID_WORD : this->data[hypI + 1].word; \
@@ -783,6 +787,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
       case 'n': case 'v': case 'j': \
         for (uint8_t premI = 0; premI < premise.length; ++premI) { \
           if (alreadyAlignedInPremise[premI]) { continue; } \
+          if (alreadyAlignedInHypothesis[hypI]) { continue; } \
           char premTag = premise.data[premI].posTag; \
           if (premTag != 'n' && premTag != 'v' && premTag != 'j') { continue; } \
           char premLastTag = premI == 0 ? '?' : premise.data[premI - 1].posTag; \
@@ -790,6 +795,10 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
           char premNextTag = (premI == premise.length - 1) ? '?' : premise.data[premI + 1].posTag; \
           char premNextNextTag = (premI > premise.length - 3) ? '?' : premise.data[premI + 2].posTag; \
           ::word premWord = premise.data[premI].word; \
+          if (premWord == BE.word) { \
+            alreadyAlignedInPremise[premI] = true; \
+            continue; \
+          } \
           ::word premLastWord = premI == 0 ? INVALID_WORD : premise.data[premI - 1].word; \
           ::word premLastLastWord = premI < 2 ? INVALID_WORD : premise.data[premI - 2].word; \
           ::word premNextWord = (premI == premise.length - 1) ? INVALID_WORD : premise.data[premI + 1].word; \
@@ -868,7 +877,9 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
   for (uint8_t premI = 0; premI < premise.length; ++premI) {
     if (!alreadyAlignedInPremise[premI]) {
       switch (premise.data[premI].posTag) {
-        case 'n': case 'v': case 'j': premiseKeywords.push_back(premI); break;
+        case 'n': case 'v': case 'j': 
+          assert (premise.data[premI].word != BE.word);
+          premiseKeywords.push_back(premI); break;
       }
     }
   }
@@ -877,7 +888,9 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
   for (uint8_t hypI = 0; hypI < this->length; ++hypI) {
     if (!alreadyAlignedInHypothesis[hypI]) {
       switch (this->data[hypI].posTag) {
-        case 'n': case 'v': case 'j': hypothesisKeywords.push_back(hypI); break;
+        case 'n': case 'v': case 'j': 
+          assert (this->data[hypI].word != BE.word);
+          hypothesisKeywords.push_back(hypI); break;
       }
     }
   }
@@ -920,10 +933,29 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
         // align if the next tokens align
       }
       if (align) {
+        alreadyAlignedInHypothesis[hypothesisKeywords[0]] = true;
+        alreadyAlignedInPremise[premiseKeywords[0]] = true;
         alignments.emplace_back(
             hypothesisKeywords[0],
             premise.data[premiseKeywords[0]].word,
             premPolarities[premiseKeywords[0]]);
+      }
+    }
+  }
+
+  // Pass 4: unaligned hypotheses
+  for (uint8_t hypI = 0; hypI < this->length; ++hypI) {
+    if (!alreadyAlignedInHypothesis[hypI]) {
+      char hypTag = this->data[hypI].posTag;
+      monotonicity hypPolarity = hypPolarities[hypI];
+      switch (hypTag) {
+        case 'n': case 'v': case 'j':
+          assert (this->data[hypI].word != BE.word);
+          alreadyAlignedInHypothesis[hypI] = true;
+          alignments.emplace_back(
+              hypI,
+              INVALID_WORD,
+              hypPolarity);
       }
     }
   }
@@ -999,12 +1031,15 @@ double AlignmentSimilarity::updateScore(const double& score,
         }
       } else {
         if (newMatches) {
-          assert (!isDelete);  // Matched on a delete?
-          return score + BONUS_COUNT_ALIGNED - PENALTY_ONLY_IN_HYPOTHESIS;
-        } else {
           if (isDelete) {
+            // deleted a word that should have been deleted
             return score - PENALTY_ONLY_IN_HYPOTHESIS;
+          } else {
+            // mutated a word to the right target
+            return score + BONUS_COUNT_ALIGNED - PENALTY_ONLY_IN_HYPOTHESIS;
           }
+        } else {
+          // didn't used to match, and still doesn't.
         }
       }
     }
@@ -1036,11 +1071,12 @@ const monotonicity AlignmentSimilarity::targetPolarityAt(const uint8_t& index) c
   return MONOTONE_INVALID;
 }
   
-void AlignmentSimilarity::debugPrint(const Graph& graph) const {
+void AlignmentSimilarity::debugPrint(const Tree& hypothesis, const Graph& graph) const {
   fprintf(stderr, "Alignment:\n");
   for (uint32_t i = 0; i < alignments.size(); ++i) {
-    fprintf(stderr, "  index: %u  should be %s\n", 
+    fprintf(stderr, "  %u: %s  <--  %s\n", 
         alignments[i].index,
+        graph.gloss(hypothesis.token(alignments[i].index)),
         graph.gloss(getTaggedWord(alignments[i].target, MONOTONE_UP)));
   }
 }

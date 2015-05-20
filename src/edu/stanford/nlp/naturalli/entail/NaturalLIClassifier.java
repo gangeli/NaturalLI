@@ -75,7 +75,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
   private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("depparse") );
 
-  private final Map<Pair<String, String>, Pair<Boolean, Double>> naturalliCache = new HashMap<>();
+  private final Map<Pair<String, String>, Pair<Double, Double>> naturalliCache = new HashMap<>();
   private PrintWriter naturalliWriteCache;
 
 
@@ -108,7 +108,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         Arrays.stream(IOUtils.slurpFile("tmp/naturalli_classifier_search.cache").split("\n")).map(x -> x.split("\t"))
             .forEach(triple ->
                 naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")),
-                    Pair.makePair(Boolean.parseBoolean(triple[2]), Double.parseDouble(triple[3]))));
+                    Pair.makePair(Double.parseDouble(triple[2]), Double.parseDouble(triple[3]))));
       }
       naturalliWriteCache = new PrintWriter(new FileWriter("tmp/naturalli_classifier_search_2.cache"));
 
@@ -173,7 +173,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    * @return A triple: the truth of the hypothesis, the best alignment, and the best soft alignment scores.
    * @throws IOException Thrown if the pipe to NaturalLI is broken.
    */
-  private synchronized Triple<Boolean, Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
+  private synchronized Triple<Double, Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
     Function<String,Pair<String,String>> key = x -> Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", ""));
     if (premises.stream().allMatch(x -> naturalliCache.containsKey(key.apply(x)))) {
       return Triple.makeTriple(naturalliCache.get(key.apply(premises.get(0))).first, -1, premises.stream().map(x -> naturalliCache.get(key.apply(x)).second).collect(Collectors.toList()));
@@ -212,7 +212,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     if (!(matcher = truthPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
     }
-    boolean truth = Double.parseDouble(matcher.group(1)) >= 0.5;
+    double prob = Double.parseDouble(matcher.group(1));
     // (scores)
     if (!(matcher = alignmentScoresPattern.matcher(json)).find()) {
       throw new IllegalArgumentException("Invalid JSON response: " + json);
@@ -229,10 +229,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
     // Return
     for (int i = 0; i < premises.size(); ++i) {
-      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + truth + "\t" + premiseAlignmentCosts.get(i));
+      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + prob + "\t" + premiseAlignmentCosts.get(i));
       naturalliWriteCache.flush();
     }
-    return Triple.makeTriple(truth, alignmentIndex, premiseAlignmentCosts);
+    return Triple.makeTriple(prob, alignmentIndex, premiseAlignmentCosts);
   }
 
 
@@ -280,16 +280,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
     // Query NaturalLI
-    Triple<Boolean, Integer, List<Double>> bestNaturalLIScores;
+    Triple<Double, Integer, List<Double>> bestNaturalLIScores;
     try {
       bestNaturalLIScores = getBestAlignment(premisesText, hypothesisText);
     } catch (IOException e) {
       throw new RuntimeException(e);
-    }
-
-    // Short circuit if logically contradicted
-    if (!bestNaturalLIScores.first) {
-      return Pair.makePair(premises.get(0), 0.0);
     }
 
     for (int i = 0; i < premises.size(); ++i) {
@@ -317,6 +312,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
             prob *= 0.25;  // Big penalty for not matching a short focus.
           }
         }
+      }
+      // Discount the score if NaturalLI thinks this conclusion is false
+      if (bestNaturalLIScores.first < 0.48) {
+        prob *= 0.1;
+      } else if (bestNaturalLIScores.first < 0.5) {
+        prob *= 0.9;
       }
       // Take the argmax
       if (prob > max) {

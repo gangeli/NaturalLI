@@ -37,6 +37,11 @@
                        string(HAVE_STR)  + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
                        string(TAIL_STR)  + string("\t4\tdobj\t2\tn\t-\t-\t-\t-\n")
 
+#define CAT_BE_FURRY \
+                       string(CAT_STR) + string("\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
+                       string(BE_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
+                       string(FURRY_STR) + string("\t2\tdobj\t2\tn\t-\t-\t-\t-\n")
+
 #define CATS_HAVE_TAILS \
                        string(CAT_STR) + string("\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") + \
                        string(HAVE_STR) + string("\t0\troot\t2\tv\t-\t-\t-\t-\n") + \
@@ -894,6 +899,18 @@ TEST_F(TreeTest, AlignTrivial) {
   EXPECT_EQ(MONOTONE_UP, alignments.targetPolarityAt(2));
   EXPECT_EQ(TAIL.word, alignments.targetAt(3));
   EXPECT_EQ(MONOTONE_UP, alignments.targetPolarityAt(3));
+}
+
+//
+// Align (trivial -- same sentence)
+//
+TEST_F(TreeTest, AlignBe) {
+  Tree premise(CAT_BE_FURRY);
+  Tree hypothesis(CAT_BE_FURRY);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  EXPECT_EQ(CAT.word, alignments.targetAt(0));
+  EXPECT_EQ(0, alignments.targetAt(1));
+  EXPECT_EQ(FURRY.word, alignments.targetAt(2));
 }
 
 //

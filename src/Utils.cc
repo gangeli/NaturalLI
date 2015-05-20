@@ -207,7 +207,7 @@ string toJSON(const Graph& graph, const Tree& tree,
 //
 std::string toJSON(const float* elems, const uint32_t& length) {
   stringstream out;
-  out << "[ ";
+  out << fixed << "[ ";
   for (uint8_t i = 0; i < length; ++i) {
     out << elems[i] << (i == length - 1 ? "" : ", ");
   }

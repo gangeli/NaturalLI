@@ -34,7 +34,7 @@ public class ProcessPremise {
     }
     // In case nothing was produced
     if (entailments.isEmpty()) {
-      entailments.add(new SentenceFragment(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
+      entailments.add(new SentenceFragment(ann.get(CoreAnnotations.SentencesAnnotation.class).get(0).get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), true, false));
     }
     // Clean the entailments
     Iterator<SentenceFragment> iter = entailments.iterator();

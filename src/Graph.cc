@@ -81,7 +81,9 @@ class InMemoryGraph : public Graph {
 
   virtual const char* gloss(const tagged_word& word) const {
     const uint32_t w = word.word;
-    if (index2gloss[w] == NULL) {
+    if (w == INVALID_WORD) {
+      return "<INVALID_WORD>";
+    } else if (index2gloss[w] == NULL) {
       return "<UNK>";
     } else {
       return index2gloss[word.word];

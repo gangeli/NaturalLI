@@ -884,7 +884,7 @@ class AlignmentSimilarity {
   /**
    * A utility to print the alignment in a semi-human-readable form.
    */
-  void debugPrint(const Graph& graph) const;
+  void debugPrint(const Tree& hypothesis, const Graph& graph) const;
 
  private:
   const std::vector<alignment_instance> alignments;

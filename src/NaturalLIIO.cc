@@ -317,8 +317,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     // align the tree
     if (doAlignments && alignments.size() < MAX_FUZZY_MATCHES) {
       AlignmentSimilarity alignment = query->alignToPremise(*premise);
-//      alignment.debugPrint(*graph);  // debug print the alignment
-//      fprintf(stderr, "  score: %f\n", alignment.score(*query));
+      alignment.debugPrint(*query, *graph);  // debug print the alignment
+      fprintf(stderr, "  score: %f\n", alignment.score(*query));
       alignments.push_back(alignment);
     }
   }
@@ -412,7 +412,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
 
   // Generate JSON
   stringstream rtn;
-  rtn << "{\"numResults\": " << (resultIfTrue.size() + resultIfFalse.size())
+  rtn << fixed
+      << "{\"numResults\": " << (resultIfTrue.size() + resultIfFalse.size())
       << ", "
       << "\"totalTicks\": "
       << (resultIfTrue.totalTicks + resultIfFalse.totalTicks) << ", "
@@ -514,7 +515,7 @@ string passOrFail(const double &truth, const bool &haveExpectedTruth,
                   uint32_t* failureCount) {
   if (haveExpectedTruth) {
     if (expectUnknown) {
-      if (truth == 0.5) {
+      if (truth > 0.48 && truth < 0.52) {
         return "PASS: ";
       } else {
         *failureCount += 1;

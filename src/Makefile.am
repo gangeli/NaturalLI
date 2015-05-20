@@ -63,7 +63,7 @@ Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz ../etc/edgeTypes.ta
 	echo '/**' >> ${current_dir}/Models.h
 	echo ' * A large value that we can safely assume will never be a known word.' >> ${current_dir}/Models.h
 	echo ' */' >> ${current_dir}/Models.h
-	echo "#define INVALID_WORD 33554431" >> ${current_dir}/Models.h
+	echo "#define INVALID_WORD 33554430" >> ${current_dir}/Models.h
 	echo "#endif" >> ${current_dir}/Models.h
 
 Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
