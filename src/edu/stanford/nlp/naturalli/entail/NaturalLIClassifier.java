@@ -7,6 +7,7 @@ import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.naturalli.ProcessPremise;
 import edu.stanford.nlp.naturalli.ProcessQuery;
 import edu.stanford.nlp.naturalli.QRewrite;
+import edu.stanford.nlp.naturalli.SentenceFragment;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.Counter;
@@ -29,7 +30,10 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class NaturalLIClassifier implements EntailmentClassifier {
 
-  private static final double ALIGNMENT_WEIGHT = 0.10;
+  @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
+  private static boolean USE_NATURALLI = true;
+  @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
+  private static double ALIGNMENT_WEIGHT = 0.00;
 
   static final String COUNT_ALIGNED      = "count_aligned";
   static final String COUNT_ALIGNABLE    = "count_alignable";
@@ -125,6 +129,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       });
       // Gobble naturalli.stderr to real stderr
       Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
+//      Writer errWriter = new BufferedWriter(new OutputStreamWriter(System.err));
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
 
@@ -133,9 +138,9 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       toNaturalLI = new OutputStreamWriter(new BufferedOutputStream(searcher.getOutputStream()));
 
       // Set some parameters
-      toNaturalLI.write("%softCosts=true\n");
+      toNaturalLI.write("%defaultCosts = true\n");
 //      toNaturalLI.write("%skipNegationSearch=true\n");
-      toNaturalLI.write("%maxTicks=100000\n");
+//      toNaturalLI.write("%maxTicks=100000\n");
       toNaturalLI.flush();
 
 
@@ -181,23 +186,24 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     // Write the premises
     List<Double> premiseAlignmentCosts = new ArrayList<>();
     for (String premise : premises) {
-      String tree = toParseTree(premise);
-      if (tree.split("\n").length > 30) {
-        // Tree is too long; don't write it or else the program will crash
-        toNaturalLI.write(toParseTree("cats have tails"));
-      } else {
-        toNaturalLI.write(toParseTree(premise));
+      for (SentenceFragment entailment : ProcessPremise.forwardEntailments(premise, pipeline.get())) {
+        String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
+        if (tree.split("\n").length > 30) {
+          // Tree is too long; don't write it or else the program will crash
+          toNaturalLI.write(toParseTree("cats have tails"));
+        } else {
+          toNaturalLI.write(tree);
+        }
+        toNaturalLI.write("\n");
+        premiseAlignmentCosts.add(Double.NEGATIVE_INFINITY);
       }
-      toNaturalLI.write("\n");
-      premiseAlignmentCosts.add(0.0);
     }
 
     // Write the query
     toNaturalLI.write(toParseTree(hypothesis));
 
     // Start the search
-    toNaturalLI.write("\n");
-    toNaturalLI.write("\n");
+    toNaturalLI.write("\n\n");
     toNaturalLI.flush();
 
     // Read the result
@@ -294,8 +300,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
       double score = scoreBeforeNaturalli(features);
-      double naturalLIScore = bestNaturalLIScores.third.get(i);
-//      double naturalLIScore = scoreAlignmentSimple(features);
+      double naturalLIScore = 0.0;
+      if (USE_NATURALLI) {
+        naturalLIScore = bestNaturalLIScores.third.get(i);
+      } else {
+//        double naturalLIScore = scoreAlignmentSimple(features);
+      }
       score += naturalLIScore * ALIGNMENT_WEIGHT;
       assert !Double.isNaN(score);
       assert Double.isFinite(score);
@@ -314,10 +324,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         }
       }
       // Discount the score if NaturalLI thinks this conclusion is false
-      if (bestNaturalLIScores.first < 0.48) {
-        prob *= 0.1;
-      } else if (bestNaturalLIScores.first < 0.5) {
-        prob *= 0.9;
+      if (USE_NATURALLI) {
+        if (bestNaturalLIScores.first < 0.48) {
+          prob *= 0.1;
+        } else if (bestNaturalLIScores.first < 0.5) {
+          prob *= 0.9;
+        }
       }
       // Take the argmax
       if (prob > max) {

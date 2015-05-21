@@ -90,7 +90,9 @@ TEST_F(SearchNodeTest, HasExpectedSizes) {
   EXPECT_EQ(24, sizeof(syn_path_data));
 #if MAX_QUANTIFIER_COUNT < 10
   EXPECT_EQ(32 + 4 * MAX_FUZZY_MATCHES, sizeof(SearchNode));
+#if MAX_FUZZY_MATCHES <= 8
   EXPECT_LE(sizeof(SearchNode), CACHE_LINE_SIZE);
+#endif
 #endif
 }
 

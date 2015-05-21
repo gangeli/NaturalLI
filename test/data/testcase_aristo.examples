@@ -1,26 +1,17 @@
-%strictCosts = true
-# Explicit contradiction
-Candy is good
-FALSE: candy is bad
-
+# Set costs to the setting used in Aristo
 %defaultCosts = true
 
-Candy is bad
-TRUE: Candy is poor
-
-Candy is good
-FALSE: candy is poor
-
-%strictCosts = true
-
-Eating candy is example.
-UNK: Eating candy is example of good health habit.
+# Competitive Edge #1
+Not smoking or drinking alcohol is good for health , regardless of whether clothing is worn or not .
+FALSE: Smoking cigarettes is an example of a good health habit.
 
 Eating candy for diner is an example of a poor health habit.
 FALSE: Eating candy is an example of a good health habit.
 
-## Near-explicit contradiction
-#The shortest number of daylight hours in New York State occurs during December.
-#FALSE: In New York State, the longest period of daylight occurs during December.
+# Competitive Edge #2
+The shortest number of daylight hours in New York State occurs during December.
+FALSE: In New York State, the longest period of daylight occurs during December.
 
+# Reset costs
 %strictCosts = true
+

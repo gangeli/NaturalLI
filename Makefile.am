@@ -136,7 +136,7 @@ etc/.have_models: etc/pp.tab.gz etc/edgeTypes.tab etc/naturalli_models.jar
 
 
 # (some targets)
-src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) etc/.have_models
+src/naturalli_preprocess.jar: $(wildcard src/edu/stanford/nlp/naturalli/*.java) $(wildcard src/edu/stanford/nlp/naturalli/entail/*.java) etc/.have_models
 	$(MAKE) -C src naturalli_preprocess.jar
 
 src/naturalli.war: src/naturalli_preprocess.jar $(wildcard src/edu/stanford/nlp/naturalli/demo/*.java) src/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml etc/.have_models

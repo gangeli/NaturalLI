@@ -13,7 +13,7 @@ clean-local:
 ../etc/vocab.tab.gz:
 	${MAKE} -C .. etc/vocab.tab.gz
 
-naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java)
+naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildcard edu/stanford/nlp/naturalli/entail/*.java)
 	@echo "Ensuring models..."
 	${MAKE} -C .. etc/.have_models
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."

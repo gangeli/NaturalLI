@@ -279,6 +279,16 @@ function define() {
   sense "$@"
 }
 
+function updateCache() {
+  cat tmp/naturalli_classifier_search.cache tmp/naturalli_classifier_search_2.cache |\
+    sort |\
+    uniq \
+    > tmp/foo && \
+  rm -f tmp/naturalli_classifier_search.cache && \
+  mv tmp/foo tmp/naturalli_classifier_search.cache && \
+  chmod -w tmp/naturalli_classifier_search.cache
+}
+
 function help() {
   echo "Utilities installed:"
   echo "  * index <word_form> : Print the index of the given word gloss."

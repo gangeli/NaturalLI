@@ -878,7 +878,10 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
     if (!alreadyAlignedInPremise[premI]) {
       switch (premise.data[premI].posTag) {
         case 'n': case 'v': case 'j': 
-          assert (premise.data[premI].word != BE.word);
+          if (premise.data[premI].word == BE.word) {
+            alreadyAlignedInPremise[premI] = true;
+            continue;
+          }
           premiseKeywords.push_back(premI); break;
       }
     }
@@ -889,7 +892,10 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
     if (!alreadyAlignedInHypothesis[hypI]) {
       switch (this->data[hypI].posTag) {
         case 'n': case 'v': case 'j': 
-          assert (this->data[hypI].word != BE.word);
+          if (this->data[hypI].word == BE.word) {
+            alreadyAlignedInHypothesis[hypI] = true;
+            continue;
+          }
           hypothesisKeywords.push_back(hypI); break;
       }
     }
