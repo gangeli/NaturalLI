@@ -66,7 +66,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static final Pattern truthPattern = Pattern.compile("\"truth\": *([0-9\\.]+)");
   private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": *([0-9]+)");
   private static final Pattern alignmentScoresPattern = Pattern.compile("\"closestSoftAlignmentScores\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
-  private static final Pattern alignmentSearchCostsPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
+  private static final Pattern alignmentSearchCostsPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": *\\[ *((:?-?(:?[1-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
 
 
   public final String searchProgram;
@@ -228,10 +228,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       premiseAlignmentCosts.set(i, alignmentScores.get(i));
     }
     // (search costs)
-    if (!(matcher = alignmentSearchCostsPattern.matcher(json)).find()) {
-      throw new IllegalArgumentException("Invalid JSON response: " + json);
-    }
-    List<Double> alignmentSearchCosts = parseDoubleList(matcher.group(1));
+//    if (!(matcher = alignmentSearchCostsPattern.matcher(json)).find()) {
+//      throw new IllegalArgumentException("Invalid JSON response: " + json);
+//    }
+//    List<Double> alignmentSearchCosts = parseDoubleList(matcher.group(1));
 
     // Return
     for (int i = 0; i < premises.size(); ++i) {

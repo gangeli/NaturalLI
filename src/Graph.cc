@@ -274,6 +274,8 @@ Graph* ReadGraph() {
   fprintf(stderr, "  creating valid deletion iterator...\n");
   GZIterator invalidDeletionIter = GZIterator(PRIVATIVE_FILE);
 
+  // Invalid deletions
+  fprintf(stderr, "  reading the graph...\n");
   return readGraph(numWords, &wordIter, &edgeIter, &invalidDeletionIter, false);
 }
 
