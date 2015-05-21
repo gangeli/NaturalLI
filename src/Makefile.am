@@ -111,20 +111,22 @@ naturalli_search_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 naturalli_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_search_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
-if HAVE_TCMALLOC
-  naturalli_LDADD += -ltcmalloc
-  naturalli_search_LDADD += -ltcmalloc
 if DEBUG
-  naturalli_LDADD += -lprofiler
-  naturalli_search_LDADD += -lprofiler
+#  note[gabor]: electric fence crashes before the graph gets allocated
+#  naturalli_LDADD += -L../lib -lefence
+#  naturalli_search_LDADD += -L../lib -lefence
 if IS_GCC
   naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_search_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_LDADD += -lgcov
   naturalli_search_LDADD += -lgcov
-endif
-endif
-endif
+endif # end IS_GCC
+else  # case: !DEBUG
+if HAVE_TCMALLOC
+  naturalli_LDADD += -ltcmalloc -lprofiler
+  naturalli_search_LDADD += -ltcmalloc -lprofiler
+endif # end HAVE_TCMALLOC
+endif # end DEBUG
 
 hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc \
 										NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \

@@ -536,7 +536,7 @@ string passOrFail(const double &truth, const bool &haveExpectedTruth,
 //
 // readTreeFromStdin()
 //
-Tree* readTreeFromStdin(SynSearchCosts* costs,
+Tree* readTreeFromStdin(SynSearchCosts** costs,
                         vector<AlignmentSimilarity>* alignments,
                         syn_search_options* opts) {
   string conll = "";
@@ -548,7 +548,7 @@ Tree* readTreeFromStdin(SynSearchCosts* costs,
     if (line[0] == '#') {
       continue;
     }
-    if (line[0] != '%' || !parseMetadata(line, &costs, alignments, opts)) {
+    if (line[0] != '%' || !parseMetadata(line, costs, alignments, opts)) {
       numLines += 1;
       conll.append(line, strlen(line));
       conll.append(&newline, 1);
@@ -568,10 +568,12 @@ Tree* readTreeFromStdin(SynSearchCosts* costs,
 // readTreeFromStdin()
 //
 Tree* readTreeFromStdin() {
-  SynSearchCosts costs;
+  SynSearchCosts* costs = intermediateNaturalLogicCosts();
   vector<AlignmentSimilarity> alignments;
   syn_search_options opts;
-  return readTreeFromStdin(&costs, &alignments, &opts);
+  Tree* rtn =  readTreeFromStdin(&costs, &alignments, &opts);
+  delete costs;
+  return rtn;
 }
 
 //
@@ -649,7 +651,7 @@ uint32_t repl(const Graph *graph, const btree_set<uint64_t> *kb) {
     vector<AlignmentSimilarity> alignments;
     
     while (!cin.fail()) {
-      Tree* tree = readTreeFromStdin(costs, &alignments, &opts);
+      Tree* tree = readTreeFromStdin(&costs, &alignments, &opts);
       if (tree == NULL) {
         continue;
       }

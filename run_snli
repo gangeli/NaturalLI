@@ -3,20 +3,25 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
+val TRAIN = "etc/snli/snli_1.0rc2_train.tab"
+val TEST = "etc/snli/snli_1.0rc2_dev.tab"
+
+val SICK_TRAIN = "etc/sick/sick_train.tab"
+val SICK_TEST = "etc/sick/sick_test.tab"
+
 //
 // Remove potentially stale caches
 //
-submit("rm" ->"etc/snli/snli_1.0rc1_train.tab.SIMPLE.cache")
-submit("rm" ->"etc/snli/snli_1.0rc1_dev.tab.SIMPLE.cache")
-submit("rm" ->"etc/snli/snli_1.0rc1_test.tab.SIMPLE.cache")
+submit("rm" ->(TRAIN + ".SIMPLE.cache"))
+submit("rm" ->(TEST + ".SIMPLE.cache"))
 
 //
 // Define the program
 //
-val program:List[String] = ("java"
+def program(memoryMB:Int):List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx8500M"
+	-("Xmx" + memoryMB + "M")
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
@@ -27,55 +32,93 @@ val program:List[String] = ("java"
 
 using("runs/")
 
+////
+//// Warm up the cache
+////
+//submit(program(16000)
+//  -("train.file", TRAIN)
+//  -("train.cache.do", "true")
+//  -("test.file", TEST)
+//  -("test.cache.do", "true")
 //
-// Warm up the cache
+//  -("model", touch("model.ser.gz"))
+//  -("features", """[ OVERLAP  POS_OVERLAP ]""" )  // just minimal features to heat up the POS tagger
+//  -("features.nolex", "false")
+//  
+//  -("parallel", "true")
+//  
+//  -("log.file", touch("redwood.log"))
+//)
 //
-submit(program
-  -("train.file", "etc/snli/snli_1.0rc1_train.tab")
+////
+//// Run the ablation studies
+////
+//parallel(8) submit(program(8500)
+//  -("train.file", TRAIN)
+//  -("train.cache.do", "true")
+//  -("test.file", TEST)
+//  -("test.cache.do", "true")
+//
+//  -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
+//  -("model", touch("model.ser.gz"))
+//  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" )
+//  -("features.nolex", "true" & "false")
+//
+//  -("parallel", "false")
+//  
+//  -("log.file", touch("redwood.log"))
+//)
+//
+////
+//// Run the unigram studies
+////
+//parallel(8) submit(program(8500)
+//  -("train.file", TRAIN)
+//  -("train.cache.do", "true")
+//  -("test.file", TEST)
+//  -("test.cache.do", "true")
+//
+//  -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
+//  -("model", touch("model.ser.gz"))
+//  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM ]""" )
+//  -("features.nolex", "false")
+//
+//  -("parallel", "false")
+//  
+//  -("log.file", touch("redwood.log"))
+//)
+//
+////
+//// Run ablation studies with keyword features
+////
+//parallel(1) submit(program(70000)
+//  -("train.file", TRAIN)
+//  -("train.cache.do", "true")
+//  -("test.file", TEST)
+//  -("test.cache.do", "true")
+//
+//  -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
+//  -("model", touch("model.ser.gz"))
+//  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  KEYWORD_OVERLAP  ENTAIL_KEYWORD ]""" )
+//  -("features.nolex", "true" & "false")
+//
+//  -("parallel", "false")
+//  
+//  -("log.file", touch("redwood.log"))
+//)
+
+//
+// Run the SICK data
+//
+parallel(8) submit(program(8500)
+  -("train.file", SICK_TRAIN)
   -("train.cache.do", "true")
-  -("test.file", "etc/snli/snli_1.0rc1_dev.tab")
+  -("test.file", SICK_TEST)
   -("test.cache.do", "true")
 
+  -("train.count", "10000")
   -("model", touch("model.ser.gz"))
-  -("features", """[ ]""")
-  -("features.nolex", "false")
-  
-  -("parallel", "true")
-  
-  -("log.file", touch("redwood.log"))
-)
-
-//
-// Run the ablation studies
-//
-parallel(8) submit(program
-  -("train.file", "etc/snli/snli_1.0rc1_train.tab")
-  -("train.cache.do", "true")
-  -("test.file", "etc/snli/snli_1.0rc1_dev.tab")
-  -("test.cache.do", "true")
-
-  -("train.count", "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
-  -("model", touch("model.ser.gz"))
-  -("features", """[ OVERLAP  POS_OVERLAP ]""" )  // just minimal features to heat up the POS tagger
-  -("features.nolex", "true" & "false")
-
-  -("parallel", "false")
-  
-  -("log.file", touch("redwood.log"))
-)
-
-//
-// Run ablation studies with keyword features
-//
-parallel(8) submit(program
-  -("train.file", "etc/snli/snli_1.0rc1_train.tab")
-  -("train.cache.do", "true")
-  -("test.file", "etc/snli/snli_1.0rc1_dev.tab")
-  -("test.cache.do", "true")
-
-  -("train.count", "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
-  -("model", touch("model.ser.gz"))
-  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  KEYWORD_OVERLAP  ENTAIL_KEYWORD ]""" )
+  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" )
   -("features.nolex", "true" & "false")
 
   -("parallel", "false")

@@ -56,7 +56,7 @@ inline uint64_t searchLoop(
   float childNodeSoftAlignmentScores[MAX_FUZZY_MATCHES];
 
   // Compute quantifiers
-  const uint8_t numQuantifiers = tree.getNumQuantifiers();
+  const int16_t numQuantifiers = tree.getNumQuantifiers();
   uint8_t quantifierToVisit = 0;
   uint8_t quantifierVisitOrder[numQuantifiers];
   for (uint8_t i = 0; i < tree.length; ++i) {
@@ -89,10 +89,13 @@ inline uint64_t searchLoop(
 #else
 #if SEARCH_CYCLE_MEMORY!=0
     // ??? [gabor May 2015 was wondering]
+    assert (node.getBackpointer() < historySize);
     memory[0] = history[node.getBackpointer()];
     memorySize = 1;
     for (uint8_t i = 1; i < SEARCH_CYCLE_MEMORY; ++i) {
+      assert (i > 0);
       if (memory[i - 1].getBackpointer() != 0) {
+        assert (memory[i - 1].getBackpointer() < historySize);
         memory[i] = history[memory[i - 1].getBackpointer()];
         memorySize = i + 1;
       }
@@ -436,7 +439,7 @@ syn_search_response SynSearch(
   
   // -- Helpers --
   // Allocate history
-  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 1) * sizeof(SearchNode));  // + 1 to allow for root.
+  SearchNode* history = (SearchNode*) malloc((opts.maxTicks + 2) * sizeof(SearchNode));  // + 1 to allow for root; +1 for paranoia
   uint64_t historySize = 0;
   // The fringe
   KNHeap<float,SearchNode>* fringe = new KNHeap<float,SearchNode>(

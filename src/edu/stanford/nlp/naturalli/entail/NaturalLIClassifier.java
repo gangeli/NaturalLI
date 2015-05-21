@@ -140,7 +140,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       // Set some parameters
       toNaturalLI.write("%defaultCosts = true\n");
 //      toNaturalLI.write("%skipNegationSearch=true\n");
-//      toNaturalLI.write("%maxTicks=100000\n");
+      toNaturalLI.write("%maxTicks=500000\n");
       toNaturalLI.flush();
 
 

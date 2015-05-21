@@ -1326,6 +1326,7 @@ float SynSearchCosts::mutationCost(const Tree& tree,
   const natlog_relation lexicalRelation = edgeToLexicalFunction(edgeType);
   // Get the lexical cost of the relation
   const float lexicalRelationCost = mutationLexicalCost[edgeType];
+  assert (edgeType <= NUM_MUTATION_TYPES);
   assert (lexicalRelationCost == lexicalRelationCost);
   assert (lexicalRelationCost >= 0.0);
   const natlog_relation projectedFunction
