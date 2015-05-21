@@ -1,7 +1,7 @@
 %strictCosts=true
 
 # all cats have tails -> some felines have tails
-53707	2	op	0	anti-additive	2-3	multiplicative	3-5
+53707	2	op	0	v	anti-additive	2-3	multiplicative	3-5
 107652	3	nsubj	0
 215884	0	root	0
 435354	3	dobj	0
@@ -14,12 +14,12 @@
 
 
 # some cats have tails -> some felines have tails
-416503	2	op	0	additive	2-3	additive	3-5
+416503	2	op	0	v	additive	2-3	additive	3-5
 107652	3	nsubj	0
 215884	0	root	0
 435354	3	dobj	0
 
-416503	2	op	0	additive	2-3	additive	3-5
+416503	2	op	0	v	additive	2-3	additive	3-5
 177144	3	nsubj	2
 215884	0	root	3
 435354	3	dobj	2
