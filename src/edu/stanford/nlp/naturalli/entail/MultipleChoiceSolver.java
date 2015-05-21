@@ -167,6 +167,7 @@ public class MultipleChoiceSolver {
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     RedwoodConfiguration.current().capture(System.err).apply();
+    Execution.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
     forceTrack("Running evaluation");

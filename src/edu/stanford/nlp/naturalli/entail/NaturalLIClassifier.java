@@ -34,6 +34,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static boolean USE_NATURALLI = true;
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
   private static double ALIGNMENT_WEIGHT = 0.00;
+  @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
+  private static String NATURALLI_INCACHE = "tmp/naturalli.cache";
+  @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
+  private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
 
   static final String COUNT_ALIGNED      = "count_aligned";
   static final String COUNT_ALIGNABLE    = "count_alignable";
@@ -109,12 +113,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private synchronized void init() {
     try {
       if (new File("tmp/naturalli_classifier_search.cache").exists()) {
-        Arrays.stream(IOUtils.slurpFile("tmp/naturalli_classifier_search.cache").split("\n")).map(x -> x.split("\t"))
+        Arrays.stream(IOUtils.slurpFile(NATURALLI_INCACHE).split("\n")).map(x -> x.split("\t"))
             .forEach(triple ->
                 naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")),
                     Pair.makePair(Double.parseDouble(triple[2]), Double.parseDouble(triple[3]))));
       }
-      naturalliWriteCache = new PrintWriter(new FileWriter("tmp/naturalli_classifier_search_2.cache"));
+      naturalliWriteCache = new PrintWriter(new FileWriter(NATURALLI_OUTCACHE));
 
 
       forceTrack("Creating connection to NaturalLI");
