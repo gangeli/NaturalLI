@@ -187,15 +187,19 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Double> premiseAlignmentCosts = new ArrayList<>();
     for (String premise : premises) {
       for (SentenceFragment entailment : ProcessPremise.forwardEntailments(premise, pipeline.get())) {
-        String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
-        if (tree.split("\n").length > 30) {
-          // Tree is too long; don't write it or else the program will crash
-          toNaturalLI.write(toParseTree("cats have tails"));
-        } else {
-          toNaturalLI.write(tree);
+        try {
+          String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
+          if (tree.split("\n").length > 30) {
+            // Tree is too long; don't write it or else the program will crash
+            toNaturalLI.write(toParseTree("cats have tails"));
+          } else {
+            toNaturalLI.write(tree);
+          }
+          toNaturalLI.write("\n");
+          premiseAlignmentCosts.add(Double.NEGATIVE_INFINITY);
+        } catch (Exception e) {
+          err("Caught exception: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
-        toNaturalLI.write("\n");
-        premiseAlignmentCosts.add(Double.NEGATIVE_INFINITY);
       }
     }
 
