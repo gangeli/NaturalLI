@@ -111,7 +111,7 @@ TEST_F(SearchNodeTest, InitFromTree) {
   SearchNode path(tree);
   EXPECT_EQ(tree.hash(), path.factHash());
   EXPECT_EQ(TREE_ROOT_WORD, path.governor());
-  EXPECT_EQ(getTaggedWord(43, 0, 0), path.token());
+  EXPECT_EQ(getTaggedWord(43, 0, MONOTONE_INVALID), path.wordAndSense());
   EXPECT_EQ(1, path.tokenIndex());
   EXPECT_EQ(0, path.getBackpointer());
   EXPECT_EQ(path, path);
@@ -264,9 +264,12 @@ TEST_F(TreeTest, BitShifts) {
 // CoNLL Format
 //
 TEST_F(TreeTest, CoNLLShortConstructor) {
-  EXPECT_EQ(getTaggedWord(42, 0, 0), tree->token(0));
-  EXPECT_EQ(getTaggedWord(43, 0, 0), tree->token(1));
-  EXPECT_EQ(getTaggedWord(44, 0, 0), tree->token(2));
+  EXPECT_EQ(getTaggedWord(42, 0, MONOTONE_INVALID), tree->wordAndSense(0));
+  EXPECT_EQ(getTaggedWord(43, 0, MONOTONE_INVALID), tree->wordAndSense(1));
+  EXPECT_EQ(getTaggedWord(44, 0, MONOTONE_INVALID), tree->wordAndSense(2));
+  EXPECT_EQ(getTaggedWord(42, 0, MONOTONE_UP), tree->token(0));
+  EXPECT_EQ(getTaggedWord(43, 0, MONOTONE_UP), tree->token(1));
+  EXPECT_EQ(getTaggedWord(44, 0, MONOTONE_UP), tree->token(2));
   
   EXPECT_EQ(1, tree->governor(0));
   EXPECT_EQ(TREE_ROOT, tree->governor(1));
@@ -285,10 +288,10 @@ TEST_F(TreeTest, CoNLLLongConstructor) {
   Tree tree(ALL_CATS_HAVE_TAILS);
 
   // Sanity check
-  EXPECT_EQ(ALL.word, tree.token(0).word);
-  EXPECT_EQ(CAT.word, tree.token(1).word);
-  EXPECT_EQ(HAVE.word, tree.token(2).word);
-  EXPECT_EQ(TAIL.word, tree.token(3).word);
+  EXPECT_EQ(ALL.word, tree.wordAndSense(0).word);
+  EXPECT_EQ(CAT.word, tree.wordAndSense(1).word);
+  EXPECT_EQ(HAVE.word, tree.wordAndSense(2).word);
+  EXPECT_EQ(TAIL.word, tree.wordAndSense(3).word);
 }
 
 uint8_t countQuantifiers(const Tree& tree, const uint8_t& index) {
@@ -613,8 +616,8 @@ TEST_F(TreeTest, HashSenseAgnostic) {
   Tree t2(string("42\t2\tnsubj\t1\tn\t-\t-\t-\t-\n") +
           string("43\t0\troot\t8\tn\t-\t-\t-\t-\n") +
           string("44\t2\tdobj\t2\tn\t-\t-\t-\t-"));
-  EXPECT_EQ(0, t1.token(0).sense);
-  EXPECT_EQ(1, t2.token(0).sense);
+  EXPECT_EQ(0, t1.wordAndSense(0).sense);
+  EXPECT_EQ(1, t2.wordAndSense(0).sense);
   EXPECT_EQ(t1.hash(), t2.hash());
 }
 
