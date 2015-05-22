@@ -25,7 +25,10 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildca
 ../etc/.have_models:
 	make -C .. etc/.have_models
 
-Models.h: ../rc ../etc/.have_models ../etc/depInsert2rel.tab ../etc/vocab.tab.gz ../etc/edgeTypes.tab Makefile.am
+../etc/.mk_graph:
+	make -C .. etc/.mk_graph
+
+Models.h: ../rc ../etc/.have_models ../etc/.mk_graph ../etc/depInsert2rel.tab ../etc/vocab.tab.gz ../etc/edgeTypes.tab Makefile.am
 	echo "${root_dir}"
 	echo "// DO NOT MODIFY THIS FILE!" > ${current_dir}/Models.h
 	echo "// It was automatically generated from the Makefile." >> ${current_dir}/Models.h
