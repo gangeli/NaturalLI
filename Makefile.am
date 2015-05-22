@@ -96,7 +96,7 @@ etc/.pp_affinity: etc/pp.sql
 etc/clauseSplitterModel.ser.gz:
 	wget -O ${etc}/clauseSplitterModel.ser.gz 'https://www.dropbox.com/s/cbh3jrzs81m404o/clauseSplitterModel.ser.gz?dl=1'
 
-etc/.mk_graph: etc/graphData/ etc/mkGraph.sh etc/graph.tab.gz etc/vocab.tab.gz etc/sense.tab.gz etc/privative.tab.gz etc/edgeTypes.tab
+etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	bash -c 'cd ${etc} && ./mkGraph.sh'
 	source ${current_dir}/rc && validateGraph
 	touch ${etc}/.mk_graph

@@ -121,6 +121,10 @@ if DEBUG
 #  note[gabor]: electric fence crashes before the graph gets allocated
 #  naturalli_LDADD += -L../lib -lefence
 #  naturalli_search_LDADD += -L../lib -lefence
+if HAVE_TCMALLOC
+  naturalli_LDADD += -ltcmalloc -lprofiler
+  naturalli_search_LDADD += -ltcmalloc -lprofiler
+endif # end HAVE_TCMALLOC
 if IS_GCC
   naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_search_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
@@ -128,10 +132,6 @@ if IS_GCC
   naturalli_search_LDADD += -lgcov
 endif # end IS_GCC
 else  # case: !DEBUG
-if HAVE_TCMALLOC
-  naturalli_LDADD += -ltcmalloc -lprofiler
-  naturalli_search_LDADD += -ltcmalloc -lprofiler
-endif # end HAVE_TCMALLOC
 endif # end DEBUG
 
 hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
