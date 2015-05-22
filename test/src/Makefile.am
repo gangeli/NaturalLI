@@ -7,7 +7,7 @@ clean-local:
 
 _OBJS_SPEC = Graph.o Utils.o GZip.o Models.o \
              SynSearch.o SynSearchSingleThreaded.o \
-						 FactDB.o
+						 FactDB.o Types.o
 OBJ_NAMES = $(patsubst %,naturalli-%,${_OBJS_SPEC})
 OBJS = $(patsubst %,${MAIN_SRC}/%,${OBJ_NAMES})
 
@@ -35,7 +35,7 @@ AM_LDFLAGS  =  -L${MAIN_SRC}/fnv -lfnv32 -lfnv64 \
 naturalli_test_SOURCES = TestGraph.cc TestGZip.cc \
                          TestUtils.cc TestTypes.cc \
                          TestSynSearch.cc TestModels.cc \
-							   				TestFactDB.cc
+							   				 TestFactDB.cc
 naturalli_test_LDADD =  ${OBJS}
 
 naturalli_itest_SOURCES= ITest.cc

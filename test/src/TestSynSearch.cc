@@ -1563,7 +1563,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
 #if MAX_FUZZY_MATCHES > 0
   EXPECT_EQ(0, response.closestSoftAlignment);
   EXPECT_NEAR(1.0, response.closestSoftAlignmentScore, 1e-7);
-  EXPECT_NEAR(0.0010999999940395355f, response.closestSoftAlignmentSearchCosts[response.closestSoftAlignment], 1e-7);
+  EXPECT_NEAR(0.00060000002849847078, response.closestSoftAlignmentSearchCosts[response.closestSoftAlignment], 1e-7);
 #endif
 }
 

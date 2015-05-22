@@ -45,4 +45,5 @@ if __name__ == "__main__":
             i += 1
           except:
             sys.stderr.write("\nError on line %d\n" % i)
+            sys.stderr.write("%s" % line)
   sys.stderr.write("Done; read %d lines.\n" % i)
