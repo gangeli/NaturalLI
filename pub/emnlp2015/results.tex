@@ -47,6 +47,20 @@ The corpus is then filtered for non-ascii characters (yielding \num{945956} sent
   and exact duplicate sentences are removed.
 This results in a total of \num{822748} facts in the supporting corpus.
 
+% Lucene
+These sentences were then indexed using Solr.
+The set of promising premises for the soft alignment in \refsec{softsignal}, as well as
+  the Lucene score feature in the lexical classifier (\refsec{softsignal-classifier}),
+  were obtained by querying Solr using the default similarity metric and scoring function.
+
+% Questions to Candidates
+On the query side, questions were converted to answers using the same methodology as
+  \newcite{key:2015hixon-aristo}.
+In cases where the question contained multiple sentences, only the last sentence
+  was considered.
+As discussed below, this renders these multi-sentence questions effectively out of
+  scope for the model.
+
 \Subsubsection{aristo-data}{Multiple-Choice as Entailment}
 
 \Subsubsection{aristo-data}{Experimental Results}
