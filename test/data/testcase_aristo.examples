@@ -12,6 +12,13 @@ FALSE: Eating candy is an example of a good health habit.
 The shortest number of daylight hours in New York State occurs during December.
 FALSE: In New York State, the longest period of daylight occurs during December.
 
+# Neat example #1
+Electrical energy can be changed to sound.
+Electrical energy was changed to sound energy.  
+
+Electrical energy can be changed to sound , light an heat energy only through speakers , light bulbs ( and LEDs ) ... and electric heaters .
+Electrical energy was changed to sound energy.  
+
 # Reset costs
 %strictCosts = true
 
