@@ -166,11 +166,9 @@ inline uint64_t searchLoop(
     uint32_t numEdgesTaken = 0;
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       const edge& edge = edges[edgeI];
-      if (edge.sink == 118154 && edge.source == 421101) {
-        fprintf(stderr, "    %u / %u: edge %u[%u]  -->  %u[%u]\n", 
-            edgeI, numEdges,
-            edge.source, edge.source_sense, edge.sink, edge.sink_sense);
-      }
+//      fprintf(stderr, "    %u / %u: edge %u[%u]  -->  %u[%u]\n", 
+//          edgeI, numEdges,
+//          edge.source, edge.source_sense, edge.sink, edge.sink_sense);
       assert(edge.source < graph->vocabSize());
       assert(nodeToken.word < graph->vocabSize());
       assert(edge.sink == nodeToken.word);
