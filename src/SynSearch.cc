@@ -1352,8 +1352,10 @@ float SynSearchCosts::mutationCost(const Tree& tree,
     features->mutationTaken = edgeType;
     features->transitionTaken = projectedFunction;
   }
-//  fprintf(stderr,"      lexRel: %u  lexRelCost: %f  projFun: %u  transCost: %f  beginTruth: %u  endTruth: %u\n",
-//      lexicalRelation, lexicalRelationCost, projectedFunction, transitionCost, *beginTruthValue, endTruthValue);
+  if (currentNode.word() == 118154 && edgeType == MERONYM) {
+    fprintf(stderr,"      lexRel: %u  lexRelCost: %f  projFun: %u  transCost: %f  beginTruth: %u  endTruth: %u\n",
+        lexicalRelation, lexicalRelationCost, projectedFunction, transitionCost, *beginTruthValue, endTruthValue);
+  }
   return totalCost;
 }
 

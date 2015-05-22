@@ -194,7 +194,7 @@ AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=3},  [The depth t
 AC_DEFINE_UNQUOTED(SEARCH_FULL_MEMORY,  ${SEARCH_FULL_MEMORY:=0},  [If true, keep a full history of search nodes seen. If true, SEARCH_CYCLE_MEMORY becomes irrelevant.])
 
 AC_DEFINE_UNQUOTED(MAX_FUZZY_MATCHES,   ${MAX_FUZZY_MATCHES:=0},  [The number of fuzzy matches to consider during search. 4 bytes per match per search node (these are expensive!). Max value is 255])
-AC_DEFINE_UNQUOTED(MAX_BRANCHOUT,       ${MAX_BRANCHOUT:=10},  [The maximum branching factor of the search])
+AC_DEFINE_UNQUOTED(MAX_BRANCHOUT,       ${MAX_BRANCHOUT:=100},  [The maximum branching factor of the search])
 
 AC_CONFIG_FILES([
                  Makefile \
