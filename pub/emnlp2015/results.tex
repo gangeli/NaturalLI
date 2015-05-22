@@ -1,0 +1,90 @@
+\Section{results}{Evaluation}
+
+\Subsection{fracas}{FraCaS}
+
+\Subsection{aristo}{Aristo Regents Science Exams}
+% What is Aristo?
+We evaluate our entailment system on the Regents Science Exam portion of
+  the Aristo dataset \cite{key:2013clark-aristo,key:2015clark-aristo}.
+The dataset consists of a collection of multiple-choice science questions
+  from the New York Regents 4$^{\textrm{th}}$ Grade Science Exams
+  \cite{key:NYSED}.
+This is then cast as an question answering task -- given a corpus of
+  supporting facts, find evidence for the truth of a particular answer.
+
+% Why do we use it?
+Our system is in many ways well-suited to the dataset.
+Although certainly many of the facts require complex reasoning
+  (see \refsec{aristo-analysis}), the majority of questions can be
+  answered from a single premise -- allowing Natural Logic to be used
+  as the inference formalism.
+Unlike FraCaS or the RTE challenges, however, the task does not have explicit
+  premises to run inference from, but rather must infer the truth of the
+  hypothesis from a large collection of supporting text.
+In contrast to the common-sense reasoning task in \newcite{key:2014angeli-naturalli}
+  though, the queries in the aristo dataset are relatively longer, complete sentences.
+This necessitates the adaptations in \refsec{naturalli}, and benefits more from the
+  soft signals from \refsec{softsignal}.
+
+\Subsubsection{aristo-data}{Data Processing}
+% Corpora
+We make use of two collections of corpora for our experiments.
+The first of these is the Barrons study guide (\textsc{Barrons}, 
+  consisting of \num{1200} sentences.
+This is the corpus used by \newcite{key:2015hixon-aristo} for their conversational
+  dialog engine \knowbot, and therefore constitutes a more fair comparision against 
+  their results.
+However, we also make use of the full \textsc{Scitext} corpus \cite{key:2014clark-aristo}.
+This corpus consists of \num{1316278} supporting sentences, 
+  including the Barrons alongside simple Wikipedia, dictionaries, and a science
+  textbook.
+
+% Pre-processing
+Since we lose all document context when searching over the corpus with NaturalLI,
+  we first pre-process the corpus to resolve high-precision cases of
+  pronominal coreference, via a set of simple high-precision sieves.
+The corpus is then filtered for non-ascii characters (yielding \num{945956} sentences),
+  and exact duplicate sentences are removed.
+This results in a total of \num{822748} facts in the supporting corpus.
+
+\Subsubsection{aristo-data}{Multiple-Choice as Entailment}
+
+\Subsubsection{aristo-data}{Experimental Results}
+
+%
+% ARISTO NATURALLI ONLY
+%
+% Some definitions
+\def\t#1{\small{#1}}
+\def\b#1{\t{\textbf{#1}}}
+\def\colspaceS{2.0mm}
+\def\colspaceM{3.0mm}
+\def\colspaceL{4.0mm}
+
+% The table
+\begin{table}
+\begin{center}
+\begin{tabular}{l@{\hskip \colspaceL}c}
+\hline
+\textbf{System} & \textbf{Accuracy} \\
+\hline
+\t{NaturalLI Only}                 & \t{54.6} \\
+\t{Lucene Only}                    & \t{63.9} \\
+\t{Alignment Features Only}        & \t{67.6} \\
+\t{Alignment + Lucene}             & \t{72.2} \\
+\t{Alignment + Lucene + NaturalLI} & \b{71.3} \\
+\hline
+\end{tabular}
+\end{center}
+% The caption
+\caption{
+\label{tab:aristonaturalli}
+Accuracy of various systems on the Aristo science questions dataset.
+\todo{numbers are on dev.}
+}
+\end{table}
+%
+% END ARISTO NATURALLI ONLY
+%
+
+\Subsubsection{aristo-analysis}{Error Analysis}

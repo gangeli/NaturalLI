@@ -103,6 +103,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static final class NaturalLIPair {
     public NaturalLIQuery query;
     public NaturalLIResponse response;
+
+    public NaturalLIPair(NaturalLIQuery query, NaturalLIResponse response) {
+      this.query = query;
+      this.response = response;
+    }
   }
 
 
@@ -274,7 +279,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     String json = fromNaturalLI.readLine();
     Gson gson = new Gson();
     NaturalLIResponse response = gson.fromJson(json, NaturalLIResponse.class);
-    naturalliWriteCache.println(gson.toJson(response));
+    naturalliWriteCache.println(gson.toJson(new NaturalLIPair(query, response)));
     naturalliWriteCache.flush();
     return response;
   }
@@ -340,7 +345,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore = 0.0;
       if (USE_NATURALLI) {
-        naturalLIScore = bestNaturalLIScores.closestSoftAlignmentScores[i];
+        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : 0.0;
       } else {
 //        double naturalLIScore = scoreAlignmentSimple(features);
       }

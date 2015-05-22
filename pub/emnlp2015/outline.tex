@@ -1,0 +1,54 @@
+\Section{outline}{Outline}
+\begin{itemize}
+
+\item Motivation argument:
+  \begin{itemize}
+    \item Logical entailment is high-precision, but often hopelessly low recall.
+          Find some citations for this.
+    \item Lexical classification is high-recall, and often a surprisingly good baseline
+          for a number of tasks.
+          Steal Bill's citations for this in RTE.
+          \tred{Is ``lexical classification'' the word to use here?}
+    \item But, these lexical classifiers often make embarasing mistakes.
+          For example, omitting a `not' in one sentence.
+    \item Furthermore, these classifiers have a narrow view of the corpus.
+  \end{itemize}
+
+\item System description: We build a system which
+  \begin{enumerate}
+    \item Will search an arbitrarily large corpus for support or contradiction of
+          a fact.
+    \item Will do this search over a range of common entailment rules: natural
+          logic + relational entailment + meronymy.
+    \item Will back off to a soft lexical classifier if the search fails.
+    \item BUT, which uses the information from the search to prevent the
+          classifier from making embarassing errors.
+  \end{enumerate}
+
+\item Sales pitch:
+  The fact that natural logic operates directly on natural language allows us
+  to both (1) do precise fact-finding over a large knowledge base using a
+  wide range of common inference rules, and (2) directly provide signals to
+  a standard IR + classifier approach when no fact is found.
+\end{itemize}
+
+\Subsection{examples}{Example Bank}
+Some examples from the training set that motivate why this is a good idea to begin
+with.
+
+\begin{itemize}
+\item \textbf{Explicit contradiction detection.} 
+      The following is the highest classified
+      entailment pair by the lexical classifier, but can be marked as a 
+      contradiction: \\
+  P: \w{Eating candy for diner [sic] is an example of a poor health habit.} \\
+  H: \w{eating candy is an example of a good health habit.}
+
+\item \textbf{Suggestive contradiction detection.} 
+      If we ever match nearly every keyword on a negative state, consider the conclusion
+      false:
+  P: \w{The shortest number of daylight hours in New York State occurs during December.} \\
+  H: \w{In New York State, the longest period of daylight occurs during December.}
+\end{itemize}
+
+\newpage
