@@ -1,9 +1,9 @@
 package edu.stanford.nlp.naturalli.entail;
 
+import com.google.gson.Gson;
 import edu.stanford.nlp.classify.Classifier;
 import edu.stanford.nlp.classify.LinearClassifier;
 import edu.stanford.nlp.io.IOUtils;
-import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.naturalli.ProcessPremise;
 import edu.stanford.nlp.naturalli.ProcessQuery;
 import edu.stanford.nlp.naturalli.QRewrite;
@@ -12,7 +12,6 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.util.*;
-import edu.stanford.nlp.util.logging.Redwood;
 
 import java.io.*;
 import java.util.*;
@@ -48,7 +47,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   static final String COUNT_UNALIGNABLE_JOINT      = "count_unalignable_joint";
 
   static final String COUNT_PREMISE    = "count_premise";
-  static final String COUNT_CONCLUSION = "count_conclusion";
+  static final String COUNT_CONCLUSkION = "count_conclusion";
 
 
   static final String PERCENT_ALIGNABLE_PREMISE    = "percent_alignable_premise";
@@ -70,7 +69,41 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static final Pattern truthPattern = Pattern.compile("\"truth\": *([0-9\\.]+)");
   private static final Pattern alignmentIndexPattern = Pattern.compile("\"closestSoftAlignment\": *([0-9]+)");
   private static final Pattern alignmentScoresPattern = Pattern.compile("\"closestSoftAlignmentScores\": *\\[ *((:?-?(:?[0-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
-  private static final Pattern alignmentSearchCostsPattern = Pattern.compile("\"closestSoftAlignmentSearchCosts\": *\\[ *((:?-?(:?[1-9\\.]+|inf), *)*-?(:?[0-9\\.]+|inf)) *\\]");
+  private static final Pattern hardGuessPattern = Pattern.compile("\"hardGuess\": \"(true|false|uknown)\"");
+  private static final Pattern softGuessPattern = Pattern.compile("\"softGuess\": \"(true|false|uknown)\"");
+
+  /**
+   * A query to NaturalLI. Serialized with GSON.
+   */
+  private static final class NaturalLIQuery {
+    public String[] premises;
+    public String   hypothesis;
+
+    public NaturalLIQuery(List<String> premises, String hypothesis) {
+      this.premises = premises.toArray(new String[premises.size()]);
+    }
+  }
+
+  /**
+   * A response to a NaturalLI query. Populated with GSON.
+   */
+  private static final class NaturalLIResponse {
+    public int numResults;
+    public int totalTicks;
+    public String hardGuess;
+    public String softGuess;
+    public String query;
+    public String bestPremise;
+    public boolean success;
+    public int closestSoftAlignment;
+    public double[] closestSoftAlignmentScores;
+    public double[] closestSoftAlignmentSearchCosts;
+  }
+
+  private static final class NaturalLIPair {
+    public NaturalLIQuery query;
+    public NaturalLIResponse response;
+  }
 
 
   public final String searchProgram;
@@ -83,7 +116,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
   private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("depparse") );
 
-  private final Map<Pair<String, String>, Pair<Double, Double>> naturalliCache = new HashMap<>();
+  private final Map<NaturalLIQuery, NaturalLIResponse> naturalliCache = new HashMap<>();
   private PrintWriter naturalliWriteCache;
 
 
@@ -112,11 +145,13 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    */
   private synchronized void init() {
     try {
-      if (new File("tmp/naturalli_classifier_search.cache").exists()) {
-        Arrays.stream(IOUtils.slurpFile(NATURALLI_INCACHE).split("\n")).map(x -> x.split("\t"))
-            .forEach(triple ->
-                naturalliCache.put(Pair.makePair(triple[0].toLowerCase().replace(" ", ""), triple[1].toLowerCase().replace(" ", "")),
-                    Pair.makePair(Double.parseDouble(triple[2]), Double.parseDouble(triple[3]))));
+      Gson gson = new Gson();
+      if (new File(NATURALLI_INCACHE).exists()) {
+        FileReader reader = new FileReader(NATURALLI_INCACHE);
+        NaturalLIPair entry;
+        while ((entry = gson.fromJson(reader, NaturalLIPair.class)) != null) {
+          naturalliCache.put(entry.query, entry.response);
+        }
       }
       naturalliWriteCache = new PrintWriter(new FileWriter(NATURALLI_OUTCACHE));
 
@@ -182,27 +217,47 @@ public class NaturalLIClassifier implements EntailmentClassifier {
    * @return A triple: the truth of the hypothesis, the best alignment, and the best soft alignment scores.
    * @throws IOException Thrown if the pipe to NaturalLI is broken.
    */
-  private synchronized Triple<Double, Integer, List<Double>> getBestAlignment(List<String> premises, String hypothesis) throws IOException {
-    Function<String,Pair<String,String>> key = x -> Pair.makePair(x.toLowerCase().replace(" ", ""), hypothesis.toLowerCase().replace(" ", ""));
-    if (premises.stream().allMatch(x -> naturalliCache.containsKey(key.apply(x)))) {
-      return Triple.makeTriple(naturalliCache.get(key.apply(premises.get(0))).first, -1, premises.stream().map(x -> naturalliCache.get(key.apply(x)).second).collect(Collectors.toList()));
+  private synchronized NaturalLIResponse queryNaturalLI(List<String> premises, String hypothesis) throws IOException {
+    NaturalLIQuery query = new NaturalLIQuery(premises, hypothesis);
+    if (naturalliCache.containsKey(query)) {
+      return naturalliCache.get(query);
     }
+
     // Write the premises
-    List<Double> premiseAlignmentCosts = new ArrayList<>();
+    // Note: we write all the premises first so that the index of the costs
+    // matches the index of the premise. Also, so we don't overflow the soft match buffer
+    // with entailments from the first premise.
+    for (String premise : premises) {
+      try {
+        String tree = toParseTree(premise);
+        if (tree.split("\n").length > 30) {
+          // Tree is too long; don't write it or else the program will crash
+          toNaturalLI.write(toParseTree("cats have tails"));
+        } else {
+          toNaturalLI.write(tree);
+        }
+        toNaturalLI.write("\n");
+      } catch (Exception e) {
+        err("Caught exception: " + e.getClass().getSimpleName() + ": " + e.getMessage());
+      }
+    }
+
+    // Write entailments
     for (String premise : premises) {
       for (SentenceFragment entailment : ProcessPremise.forwardEntailments(premise, pipeline.get())) {
-        try {
-          String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
-          if (tree.split("\n").length > 30) {
-            // Tree is too long; don't write it or else the program will crash
-            toNaturalLI.write(toParseTree("cats have tails"));
-          } else {
-            toNaturalLI.write(tree);
+        if (!entailment.toString().equals(premise)) {
+          try {
+            String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
+            if (tree.split("\n").length > 30) {
+              // Tree is too long; don't write it or else the program will crash
+              toNaturalLI.write(toParseTree("cats have tails"));
+            } else {
+              toNaturalLI.write(tree);
+            }
+            toNaturalLI.write("\n");
+          } catch (Exception e) {
+            err("Caught exception: " + e.getClass().getSimpleName() + ": " + e.getMessage());
           }
-          toNaturalLI.write("\n");
-          premiseAlignmentCosts.add(Double.NEGATIVE_INFINITY);
-        } catch (Exception e) {
-          err("Caught exception: " + e.getClass().getSimpleName() + ": " + e.getMessage());
         }
       }
     }
@@ -217,36 +272,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     // Read the result
     Matcher matcher;
     String json = fromNaturalLI.readLine();
-    // (alignment index)
-    if (json == null || !(matcher = alignmentIndexPattern.matcher(json)).find()) {
-      throw new IllegalArgumentException("Invalid JSON response: " + json);
-    }
-    int alignmentIndex = Integer.parseInt(matcher.group(1));
-    // (truth)
-    if (!(matcher = truthPattern.matcher(json)).find()) {
-      throw new IllegalArgumentException("Invalid JSON response: " + json);
-    }
-    double prob = Double.parseDouble(matcher.group(1));
-    // (scores)
-    if (!(matcher = alignmentScoresPattern.matcher(json)).find()) {
-      throw new IllegalArgumentException("Invalid JSON response: " + json);
-    }
-    List<Double> alignmentScores = parseDoubleList(matcher.group(1));
-    for (int i = 0; i < alignmentScores.size(); ++i) {
-      premiseAlignmentCosts.set(i, alignmentScores.get(i));
-    }
-    // (search costs)
-//    if (!(matcher = alignmentSearchCostsPattern.matcher(json)).find()) {
-//      throw new IllegalArgumentException("Invalid JSON response: " + json);
-//    }
-//    List<Double> alignmentSearchCosts = parseDoubleList(matcher.group(1));
-
-    // Return
-    for (int i = 0; i < premises.size(); ++i) {
-      naturalliWriteCache.println(premises.get(i) + "\t" + hypothesis + "\t" + prob + "\t" + premiseAlignmentCosts.get(i));
-      naturalliWriteCache.flush();
-    }
-    return Triple.makeTriple(prob, alignmentIndex, premiseAlignmentCosts);
+    Gson gson = new Gson();
+    NaturalLIResponse response = gson.fromJson(json, NaturalLIResponse.class);
+    naturalliWriteCache.println(gson.toJson(response));
+    naturalliWriteCache.flush();
+    return response;
   }
 
 
@@ -294,9 +324,9 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
     // Query NaturalLI
-    Triple<Double, Integer, List<Double>> bestNaturalLIScores;
+    NaturalLIResponse bestNaturalLIScores;
     try {
-      bestNaturalLIScores = getBestAlignment(premisesText, hypothesisText);
+      bestNaturalLIScores = queryNaturalLI(premisesText, hypothesisText);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -310,7 +340,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore = 0.0;
       if (USE_NATURALLI) {
-        naturalLIScore = bestNaturalLIScores.third.get(i);
+        naturalLIScore = bestNaturalLIScores.closestSoftAlignmentScores[i];
       } else {
 //        double naturalLIScore = scoreAlignmentSimple(features);
       }
@@ -333,10 +363,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       }
       // Discount the score if NaturalLI thinks this conclusion is false
       if (USE_NATURALLI) {
-        if (bestNaturalLIScores.first < 0.48) {
+        if (Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse()) {
           prob *= 0.1;
-        } else if (bestNaturalLIScores.first < 0.5) {
-          prob *= 0.9;
+        } else if (Trilean.fromString(bestNaturalLIScores.softGuess).isFalse()) {
+          prob *= 0.75;
         }
       }
       // Take the argmax

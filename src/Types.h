@@ -127,6 +127,8 @@ struct edge {
   uint8_t   sink_sense;
   edge_type type;
   float     cost;
+
+  bool operator<(const edge& other) const;
 };
 
 //

@@ -10,7 +10,7 @@ VOCAB=$DIR/vocab.tab
 SENSE=$DIR/sense.tab
 PRIV=$DIR/privative.tab
 
-GRAPH_DATA='graphData_new'
+GRAPH_DATA='graphData'
   
 # Delete files which will be auto-generated
 # Having the old versions of these around mess with

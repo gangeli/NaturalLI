@@ -8,9 +8,6 @@ FALSE: candy is bad
 # Some near negations
 %defaultCosts = true
 
-Candy is bad
-TRUE: Candy is poor
-
 Candy is good
 FALSE: candy is poor
 

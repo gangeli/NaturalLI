@@ -362,16 +362,22 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
   const float* closestSoftAlignmentScores = resultIfTrue.closestSoftAlignmentScores;
   const float* closestSoftAlignmentSearchCosts = resultIfTrue.closestSoftAlignmentSearchCosts;
   // (truth)
+  const char* hardGuess = "unknown";
+  const char* softGuess = "unknown";
   const vector<SearchNode> *bestPath = NULL;
   const feature_vector *bestFeatures = NULL;
   if (confidenceOfTrue > confidenceOfFalse) {
     *truth = probability(confidenceOfTrue, true);
     bestPath = bestPathIfTrue;
     bestFeatures = bestFeaturesIfTrue;
+    hardGuess = "true";
+    softGuess = "true";
   } else if (confidenceOfTrue < confidenceOfFalse) {
     *truth = probability(confidenceOfFalse, false);
     bestPath = bestPathIfFalse;
     bestFeatures = bestFeaturesIfFalse;
+    hardGuess = "false";
+    softGuess = "false";
   } else {
     if (resultIfTrue.paths.size() > 0 && resultIfFalse.paths.size() > 0) {
       printTime("[%c] ");
@@ -389,10 +395,12 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
       closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
       *truth = 0.5 - ((double) resultIfFalse.closestSoftAlignmentScore) / 1000.0;
+      softGuess = "false";
     } else if (resultIfTrue.closestSoftAlignmentScore > resultIfFalse.closestSoftAlignmentScore) {
       printTime("[%c] ");
       fprintf(stderr, "Closest alignment is true, in absense of responses\n");
       *truth = 0.5 + ((double) resultIfTrue.closestSoftAlignmentScore) / 1000.0;
+      softGuess = "true";
     } else {
       *truth = 0.5;
     }
@@ -418,6 +426,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       << "\"totalTicks\": "
       << (resultIfTrue.totalTicks + resultIfFalse.totalTicks) << ", "
       << "\"truth\": " << (*truth) << ", "
+      << "\"hardGuess\": \"" << (hardGuess) << "\", "
+      << "\"softGuess\": \"" << (softGuess) << "\", "
       << "\"query\": \"" << escapeQuote(toString(*query, *graph)) << "\", "
       << "\"bestPremise\": "
       << (bestPath == NULL

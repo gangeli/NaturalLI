@@ -57,6 +57,12 @@ class InMemoryGraph : public Graph {
               iter != invalidDeletions.end(); ++iter) {
       invalidDeletionWords.insert(iter->word);
     }
+    fprintf(stderr,"  sorting the graph edges..");
+    for (uint32_t i = 0; i < size; ++i) {
+      if (i % 100000 == 0) { fprintf(stderr, "."); fflush(stderr); }
+      std::sort(edgesBySink[i], edgesBySink[i] + edgesSizes[i]);
+    }
+    fprintf(stderr,"done.\n");
   }
 
   ~InMemoryGraph() {

@@ -89,14 +89,14 @@ Models.cc: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz Makefile.am
 
 BUILT_SOURCES = Models.h Models.cc
 
-naturalli_SOURCES = GZip.cc Models.cc FactDB.cc \
+naturalli_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
 										NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
                  		SynSearchSingleThreaded.cc JavaBridge.cc \
                  		NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
 										JavaBridge.h GZip.h Models.h FactDB.h \
                  		btree.h btree_container.h btree_map.h btree_set.h \
 									  NaturalLIStandalone.cc
-naturalli_search_SOURCES = GZip.cc Models.cc FactDB.cc \
+naturalli_search_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
 													 NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
                  					 SynSearchSingleThreaded.cc JavaBridge.cc \
                  					 NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
@@ -128,7 +128,7 @@ if HAVE_TCMALLOC
 endif # end HAVE_TCMALLOC
 endif # end DEBUG
 
-hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc \
+hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
 										NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
                  		SynSearchSingleThreaded.cc JavaBridge.cc \
                  		NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
@@ -139,7 +139,7 @@ hash_tree_SOURCES = GZip.cc Models.cc FactDB.cc \
 hash_tree_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 hash_tree_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
-write_kb_SOURCES = FactDB.h FactDB.cc WriteKB.cc \
+write_kb_SOURCES = FactDB.h FactDB.cc WriteKB.cc Types.cc \
                    btree.h btree_container.h btree_map.h btree_set.h
 write_kb_CXXFLAGS=-std=c++0x
 write_kb_LDADD=

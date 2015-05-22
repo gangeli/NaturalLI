@@ -1017,11 +1017,11 @@ double AlignmentSimilarity::updateScore(const double& score,
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index == index) {
       // Some variables for the logic
-      bool oldMatched = (oldWord == iter->target && 
-                         oldPolarity == iter->targetPolarity);
-      bool newMatches = (newWord == iter->target && 
-                         newPolarity == iter->targetPolarity);
-      bool isDelete = (newWord == INVALID_WORD);
+      const bool oldMatched = (oldWord == iter->target && 
+                               oldPolarity == iter->targetPolarity);
+      const bool newMatches = (newWord == iter->target && 
+                               newPolarity == iter->targetPolarity);
+      const bool isDelete = (newWord == INVALID_WORD);
       // The logic of updating scores
       if (oldMatched) {
         if (newMatches) {
@@ -1345,6 +1345,8 @@ float SynSearchCosts::mutationCost(const Tree& tree,
     features->mutationTaken = edgeType;
     features->transitionTaken = projectedFunction;
   }
+//  fprintf(stderr,"      lexRel: %u  lexRelCost: %f  projFun: %u  transCost: %f  beginTruth: %u  endTruth: %u\n",
+//      lexicalRelation, lexicalRelationCost, projectedFunction, transitionCost, *beginTruthValue, endTruthValue);
   return totalCost;
 }
 

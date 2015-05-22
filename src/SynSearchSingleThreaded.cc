@@ -163,9 +163,10 @@ inline uint64_t searchLoop(
     const tagged_word nodeToken = node.token();
     assert(nodeToken.word < graph->vocabSize());
     const edge* edges = graph->incomingEdgesFast(nodeToken.word, &numEdges);
+    uint32_t numEdgesTaken = 0;
     for (uint32_t edgeI = 0; edgeI < numEdges; ++edgeI) {
       const edge& edge = edges[edgeI];
-//      fprintf(stderr, "%u / %u: edge %u[%u]  -->  %u[%u]\n", 
+//      fprintf(stderr, "    %u / %u: edge %u[%u]  -->  %u[%u]\n", 
 //          edgeI, numEdges,
 //          edge.source, edge.source_sense, edge.sink, edge.sink_sense);
       assert(edge.source < graph->vocabSize());
@@ -210,7 +211,9 @@ inline uint64_t searchLoop(
           tree, node, edge.type,
           node.truthState(), &newTruthValue, 
           &features);
-      if (isinf(mutationCost)) { continue; }
+      if (isinf(mutationCost)) { 
+        continue; 
+      }
       const float cost = mutationCost * edge.cost;
 
       // (create child)
@@ -256,7 +259,6 @@ inline uint64_t searchLoop(
         }
       }
       // ((perform push))
-//      fprintf(stderr, "  push mutation %s\n", toString(*graph, tree, mutatedChild).c_str());
       assert(!isinf(cost));
       assert(cost == cost);  // NaN check
       assert(cost >= 0.0);
@@ -273,6 +275,11 @@ inline uint64_t searchLoop(
       }
 #endif
 #endif
+      // Short-circuit the search if branching factor is too large
+      numEdgesTaken += 1;
+      if (numEdgesTaken >= MAX_BRANCHOUT) {
+        break;
+      }
     }
     
     // ---

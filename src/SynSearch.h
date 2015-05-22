@@ -302,12 +302,12 @@ inline SynSearchCosts* strictNaturalLogicCosts() {
 
 /** Create a version of the weights encoding more-or-less strict natural logic inference */
 inline SynSearchCosts* intermediateNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.05f, 0.15f, std::numeric_limits<float>::infinity());
+  return createStrictCosts(0.01f, 0.01f, 0.10f, std::numeric_limits<float>::infinity());
 }
 
 /** Create a version of the weights encoding soft natural logic inference */
 inline SynSearchCosts* softNaturalLogicCosts() {
-  return createStrictCosts(0.01f, 0.1f, 0.15f, 1.0f);
+  return createStrictCosts(0.01f, 0.05f, 0.15f, 1.0f);
 }
 
 // ----------------------------------------------
