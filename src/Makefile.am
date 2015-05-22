@@ -22,7 +22,7 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildca
 	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar -C . .
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
-Models.h: ../rc ../etc/depInsert2rel.tab ../etc/vocab.tab.gz ../etc/edgeTypes.tab Makefile.am
+Models.h: ../rc ../etc/.have_models ../etc/depInsert2rel.tab ../etc/vocab.tab.gz ../etc/edgeTypes.tab Makefile.am
 	echo "${root_dir}"
 	echo "// DO NOT MODIFY THIS FILE!" > ${current_dir}/Models.h
 	echo "// It was automatically generated from the Makefile." >> ${current_dir}/Models.h
