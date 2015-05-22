@@ -366,9 +366,9 @@ Tree::Tree(const string& conll)
         case 4:  // POS tag
           data[lineI].posTag = field.at(0);
           // (validate the tag)
-          if (data[lineI].posTag < 'a' || data[lineI].posTag > 'z') {
-            fprintf(stderr, "WARNING: Unknown POS tag: %c\n", data[lineI].posTag);
-          }
+//          if (data[lineI].posTag < 'a' || data[lineI].posTag > 'z') {
+//            fprintf(stderr, "WARNING: Unknown POS tag: %c\n", data[lineI].posTag);
+//          }
           break;
         case 5:  // Subject monotonicity
           if (field[0] != '-') {

@@ -34,7 +34,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
   private static double ALIGNMENT_WEIGHT = 0.00;
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "tmp/naturalli.cache";
+  private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_all.cache";
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
 
@@ -81,6 +81,31 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
     public NaturalLIQuery(List<String> premises, String hypothesis) {
       this.premises = premises.toArray(new String[premises.size()]);
+      this.hypothesis = hypothesis;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof NaturalLIQuery)) return false;
+
+      NaturalLIQuery that = (NaturalLIQuery) o;
+
+      if (!hypothesis.toLowerCase().replace(" ", "").equals(that.hypothesis.toLowerCase().replace(" ", ""))) return false;
+      if (!Arrays.equals(
+          Arrays.stream(premises).map(x -> x.toLowerCase().replace(" ", "")).toArray(),
+          Arrays.stream(that.premises).map(x -> x.toLowerCase().replace(" ", "")).toArray())) {
+        return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = Arrays.hashCode(Arrays.stream(premises).map(x -> x.toLowerCase().replace(" ", "")).toArray());
+      result = 31 * result + hypothesis.toLowerCase().replace(" ", "").hashCode();
+      return result;
     }
   }
 
@@ -107,6 +132,26 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     public NaturalLIPair(NaturalLIQuery query, NaturalLIResponse response) {
       this.query = query;
       this.response = response;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (!(o instanceof NaturalLIPair)) return false;
+
+      NaturalLIPair that = (NaturalLIPair) o;
+
+      if (!query.equals(that.query)) return false;
+      if (!response.equals(that.response)) return false;
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      int result = query.hashCode();
+      result = 31 * result + response.hashCode();
+      return result;
     }
   }
 
@@ -152,9 +197,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     try {
       Gson gson = new Gson();
       if (new File(NATURALLI_INCACHE).exists()) {
-        FileReader reader = new FileReader(NATURALLI_INCACHE);
-        NaturalLIPair entry;
-        while ((entry = gson.fromJson(reader, NaturalLIPair.class)) != null) {
+        BufferedReader reader = new BufferedReader( new FileReader(NATURALLI_INCACHE) );
+        String line;
+        while ( (line = reader.readLine()) != null) {
+          NaturalLIPair entry = gson.fromJson(line, NaturalLIPair.class);
           naturalliCache.put(entry.query, entry.response);
         }
       }
