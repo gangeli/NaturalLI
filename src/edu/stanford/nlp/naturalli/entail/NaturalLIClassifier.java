@@ -366,7 +366,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         if (Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse()) {
           prob *= 0.1;
         } else if (Trilean.fromString(bestNaturalLIScores.softGuess).isFalse()) {
-          prob *= 0.75;
+          prob *= 0.5;
         }
       }
       // Take the argmax
