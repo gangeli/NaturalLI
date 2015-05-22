@@ -160,7 +160,7 @@ inline uint64_t searchLoop(
 
     // PUSH 1: Mutations
     uint32_t numEdges;
-    const tagged_word nodeToken = node.token();
+    const tagged_word nodeToken = node.wordAndSense();
     assert(nodeToken.word < graph->vocabSize());
     const edge* edges = graph->incomingEdgesFast(nodeToken.word, &numEdges);
     uint32_t numEdgesTaken = 0;

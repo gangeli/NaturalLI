@@ -89,8 +89,8 @@ std::string toString(const Graph& graph, const Tree& tree, const SearchNode& pat
   str += std::to_string(path.factHash()) + ": ";
   for (uint8_t i = 0; i < tree.length; ++i) {
     if (i == path.tokenIndex()) {
-    string sense = to_string((long long int) path.token().sense);
-      str += "*" + string(graph.gloss(path.token())) + "_" + sense + " ";
+    string sense = to_string((long long int) path.wordAndSense().sense);
+      str += "*" + string(graph.gloss(path.wordAndSense())) + "_" + sense + " ";
     } else if (path.isDeleted(i)) {
       str += "-- ";
     } else {
@@ -163,7 +163,7 @@ vector<string> toStringList(
   while (iter != path.rend()) {
     stringstream line;
     // (update state)
-    gloss[iter->tokenIndex()] = iter->token();
+    gloss[iter->tokenIndex()] = iter->wordAndSense();
     vector<tagged_word> nodeGloss;
     for (uint8_t i = 0; i < tree.length; ++i) {
       if (!iter->isDeleted(i)) {

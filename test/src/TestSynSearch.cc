@@ -1447,7 +1447,7 @@ TEST_F(SynSearchTest, TickCountNoMutation) {
 #if SEARCH_FULL_MEMORY!=0
   EXPECT_EQ(7, response.totalTicks);
 #else
-  EXPECT_EQ(15, response.totalTicks);
+  EXPECT_EQ(8, response.totalTicks);
 #endif
 }
 
@@ -1459,7 +1459,7 @@ TEST_F(SynSearchTest, TickCountWithMutations) {
 #if SEARCH_FULL_MEMORY!=0
   EXPECT_EQ(10, response.totalTicks);
 #else
-  EXPECT_EQ(30, response.totalTicks);
+  EXPECT_EQ(11, response.totalTicks);
 #endif
 }
 
@@ -1474,7 +1474,7 @@ TEST_F(SynSearchTest, TickCountWithMutationsCyclic) {
 #if SEARCH_CYCLE_MEMORY==0
   EXPECT_EQ(SEARCH_TIMEOUT_TEST, response.totalTicks);
 #else
-  EXPECT_EQ(30, response.totalTicks);
+  EXPECT_EQ(11, response.totalTicks);
 #endif
 #endif
 }

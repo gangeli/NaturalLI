@@ -144,14 +144,14 @@ SearchNode::SearchNode(const SearchNode& from)
   
 SearchNode::SearchNode(const Tree& init)
     : data(mkSearchNodeData(init.hash(), init.root(), true, 
-                         0x0, init.token(init.root()), TREE_ROOT_WORD, 0, false)) {
+                         0x0, init.wordAndSense(init.root()), TREE_ROOT_WORD, 0, false)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
  
 SearchNode::SearchNode(const Tree& init, const bool& assumedInitialTruth)
     : data(mkSearchNodeData(init.hash(), init.root(), assumedInitialTruth, 
-                         0x0, init.token(init.root()), TREE_ROOT_WORD, 0, false)) {
+                         0x0, init.wordAndSense(init.root()), TREE_ROOT_WORD, 0, false)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -159,14 +159,14 @@ SearchNode::SearchNode(const Tree& init, const bool& assumedInitialTruth)
 SearchNode::SearchNode(const Tree& init, const bool& assumedInitialTruth,
                        const uint8_t& index)
     : data(mkSearchNodeData(init.hash(), index, assumedInitialTruth, 
-                         0x0, init.token(index), init.word(init.governor(index)), 0, false)) {
+                         0x0, init.wordAndSense(index), init.word(init.governor(index)), 0, false)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
  
 SearchNode::SearchNode(const Tree& init, const uint8_t& index)
     : data(mkSearchNodeData(init.hash(), index, true, 
-                         0x0, init.token(index), init.word(init.governor(index)), 0, false)) {
+                         0x0, init.wordAndSense(index), init.word(init.governor(index)), 0, false)) {
   memcpy(this->quantifierMonotonicities, init.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
 }
@@ -205,8 +205,8 @@ SearchNode::SearchNode(const SearchNode& from, const uint64_t& newHash,
 SearchNode::SearchNode(const SearchNode& from, const Tree& tree,
                  const uint8_t& newIndex, const uint32_t& backpointer)
     : data(mkSearchNodeData(from.data.factHash, newIndex, from.data.truth, 
-                         from.data.deleteMask, tree.token(newIndex), 
-                         tree.token(tree.governor(newIndex)).word, backpointer,
+                         from.data.deleteMask, tree.wordAndSense(newIndex), 
+                         tree.wordAndSense(tree.governor(newIndex)).word, backpointer,
                          from.data.allQuantifiersSeen)) { 
   memcpy(this->quantifierMonotonicities, from.quantifierMonotonicities,
     MAX_QUANTIFIER_COUNT * sizeof(quantifier_monotonicity));
@@ -239,7 +239,7 @@ SearchNode SearchNode::deletion(const uint32_t& myIndexInHistory,
   // Compute deletion
   uint32_t deletionMask = tree.createDeleteMask(dependentIndex);
   uint64_t newHash = tree.updateHashFromDeletions(
-      this->factHash(), dependentIndex, tree.token(dependentIndex).word,
+      this->factHash(), dependentIndex, tree.wordAndSense(dependentIndex).word,
       this->word(), deletionMask);
   // Create child node
   SearchNode rtn(*this, newHash, newTruthValue, deletionMask, myIndexInHistory);
@@ -671,6 +671,13 @@ natlog_relation Tree::projectLexicalRelation( const SearchNode& currentNode,
     }
   }
   return outputRelation;
+}
+  
+//
+// Tree::polarityAt()
+//
+monotonicity Tree::polarityAt(const uint8_t& index) const {
+  return polarityAt(SearchNode(*this), index);
 }
   
 

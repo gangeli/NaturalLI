@@ -564,10 +564,17 @@ class Tree {
   uint8_t root() const;
 
   /**
+   * The tagged word at the given index (zero indexed), without monotonicity
+   */
+  inline tagged_word wordAndSense(const uint8_t& index) const {
+    return getTaggedWord(data[index].word, data[index].sense, MONOTONE_INVALID);
+  }
+  
+  /**
    * The tagged word at the given index (zero indexed).
    */
   inline tagged_word token(const uint8_t& index) const {
-    return getTaggedWord(data[index].word, data[index].sense, MONOTONE_UP);
+    return getTaggedWord(data[index].word, data[index].sense, polarityAt(index));
   }
   
   /**
@@ -702,6 +709,9 @@ class Tree {
         return MONOTONE_INVALID;
     }
   }
+  
+  /** @see polarityAt(SearchNode& uint8_t&) */
+  monotonicity polarityAt(const uint8_t& index) const;
   
   /** Returns the number of quantifiers in the sentence. */
   inline uint8_t getNumQuantifiers() const { return numQuantifiers; }
@@ -1015,12 +1025,11 @@ class SearchNode {
   /** Returns the hash of the current fact. */
   inline uint64_t factHash() const { return data.factHash; }
   
-  // TODO(gabor) refactor this so it's clear it has no monotonicity info
-  /** Returns the current word being mutated. */
-  inline tagged_word token() const { 
-    return getTaggedWord(data.currentWord, data.currentSense, 0); 
+  /** Returns the current word being mutated, without monotonicity */
+  inline tagged_word wordAndSense() const { 
+    return getTaggedWord(data.currentWord, data.currentSense, MONOTONE_INVALID); 
   }
-  
+
   /** Returns the current word being mutated. */
   inline ::word word() const { return data.currentWord; }
   
@@ -1072,7 +1081,7 @@ class SearchNode {
                              const Tree& tree,
                              const Graph* graph) const {
     // Get the word we're mutating
-    const tagged_word nodeToken = this->token();
+    const tagged_word nodeToken = this->wordAndSense();
     assert(nodeToken.word == edge.sink);
     assert(nodeToken.sense == edge.sink_sense || edge.source_sense == 0);
     // Compute the new hash
