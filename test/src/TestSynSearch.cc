@@ -207,17 +207,20 @@ class TreeTest : public ::testing::Test {
     opTree = new Tree(string("42\t2\top\n") +
                       string("43\t0\troot\n") +
                       string("44\t2\tdobj"));
+    graph = ReadMockGraph();
   }
   
   virtual void TearDown() {
     delete tree;
     delete bigTree;
     delete opTree;
+    delete graph;
   }
 
   const Tree* tree;
   const Tree* bigTree;
   const Tree* opTree;
+  const Graph* graph;
 };
 
 
@@ -895,7 +898,7 @@ TEST_F(TreeTest, QuantifierCountGetMatch) {
 TEST_F(TreeTest, AlignTrivial) {
   Tree premise(ALL_CATS_HAVE_TAILS);
   Tree hypothesis(ALL_CATS_HAVE_TAILS);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(0, alignments.targetAt(0));
   EXPECT_EQ(MONOTONE_INVALID, alignments.targetPolarityAt(0));
   EXPECT_EQ(CAT.word, alignments.targetAt(1));
@@ -912,7 +915,7 @@ TEST_F(TreeTest, AlignTrivial) {
 TEST_F(TreeTest, AlignBe) {
   Tree premise(CAT_BE_FURRY);
   Tree hypothesis(CAT_BE_FURRY);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(CAT.word, alignments.targetAt(0));
   EXPECT_EQ(0, alignments.targetAt(1));
   EXPECT_EQ(FURRY.word, alignments.targetAt(2));
@@ -924,7 +927,7 @@ TEST_F(TreeTest, AlignBe) {
 TEST_F(TreeTest, AlignAdjective) {
   Tree premise(ALL_FURRY_CATS_HAVE_TAILS);
   Tree hypothesis(ALL_FUZZY_CATS_HAVE_TAILS);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(FURRY.word, alignments.targetAt(1));
   EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(1));
   EXPECT_EQ(CAT.word, alignments.targetAt(2));
@@ -937,7 +940,7 @@ TEST_F(TreeTest, AlignAdjective) {
 TEST_F(TreeTest, AlignPrepositionInPremise) {
   Tree premise(ALL_CATS_OF_FURRY_HAVE_TAILS);
   Tree hypothesis(ALL_FUZZY_CATS_HAVE_TAILS);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(FURRY.word, alignments.targetAt(1));
   EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(1));
   EXPECT_EQ(CAT.word, alignments.targetAt(2));
@@ -950,7 +953,7 @@ TEST_F(TreeTest, AlignPrepositionInPremise) {
 TEST_F(TreeTest, AlignPrepositionInHypothesis) {
   Tree premise(ALL_FUZZY_CATS_HAVE_TAILS);
   Tree hypothesis(ALL_CATS_OF_FURRY_HAVE_TAILS);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(FUZZY.word, alignments.targetAt(3));
   EXPECT_EQ(MONOTONE_DOWN, alignments.targetPolarityAt(3));
   EXPECT_EQ(CAT.word, alignments.targetAt(1));
@@ -963,7 +966,7 @@ TEST_F(TreeTest, AlignPrepositionInHypothesis) {
 TEST_F(TreeTest, AlignConstrainedBegin) {
   Tree premise(PLASMA_BE_CONDUCTOR_OF_ELECTRICITY);
   Tree hypothesis(NAIL_CONDUCT_ELECTRICITY);
-  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise);
+  AlignmentSimilarity alignments = hypothesis.alignToPremise(premise, *graph);
   EXPECT_EQ(PLASMA.word, alignments.targetAt(0));
   EXPECT_EQ(CONDUCTOR.word, alignments.targetAt(1));
   EXPECT_EQ(ELECTRICITY.word, alignments.targetAt(2));

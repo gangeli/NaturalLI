@@ -27,14 +27,18 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * @author Gabor Angeli
  */
+@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration"})
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
   private static boolean USE_NATURALLI = true;
+
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
   private static double ALIGNMENT_WEIGHT = 0.00;
+
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
   private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_all.cache";
+
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
 
@@ -218,8 +222,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
       });
       // Gobble naturalli.stderr to real stderr
-      Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
-//      Writer errWriter = new BufferedWriter(new OutputStreamWriter(System.err));
+//      Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
+      Writer errWriter = new OutputStreamWriter(System.err);
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
 
@@ -228,9 +232,9 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       toNaturalLI = new OutputStreamWriter(new BufferedOutputStream(searcher.getOutputStream()));
 
       // Set some parameters
-      toNaturalLI.write("%defaultCosts = true\n");
+//      toNaturalLI.write("%defaultCosts = true\n");
 //      toNaturalLI.write("%skipNegationSearch=true\n");
-      toNaturalLI.write("%maxTicks=500000\n");
+      //toNaturalLI.write("%maxTicks=500000\n");
       toNaturalLI.flush();
 
 
@@ -414,10 +418,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       }
       // Discount the score if NaturalLI thinks this conclusion is false
       if (USE_NATURALLI) {
-        if (Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse()) {
+        Trilean naturalLIVote = Trilean.fromString(bestNaturalLIScores.hardGuess);
+        Trilean naturalLISoftVote = Trilean.fromString(bestNaturalLIScores.softGuess);
+        if (naturalLIVote.isFalse()) {
           prob *= 0.1;
-        } else if (Trilean.fromString(bestNaturalLIScores.softGuess).isFalse()) {
+        } else if (naturalLIVote.isTrue()) {
+//          prob = 0.9 + prob / 10.0;
+        } else if (naturalLISoftVote.isFalse()) {
           prob *= 0.5;
+        } else if (naturalLISoftVote.isTrue()) {
+//          prob = 0.5 + prob / 2.0;
         }
       }
       // Take the argmax

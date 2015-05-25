@@ -40,7 +40,7 @@ public class CBridge {
                 Pointer<String> debug = new Pointer<>();
                 String annotated = ProcessQuery.conllDump(tree, debug, false, false);
                 System.out.println(annotated);
-                debug.dereference().ifPresent(System.err::println);
+//                debug.dereference().ifPresent(System.err::println);
               }
               break;
             case 'Q':

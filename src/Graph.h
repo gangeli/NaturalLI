@@ -24,6 +24,10 @@ class Graph {
   virtual const edge* incomingEdgesFast(const word& sink, uint32_t* outputLength) const = 0;
   /** For debugging, get the string form of the given word */
   virtual const char* gloss(const tagged_word&) const = 0;
+  /** @see gloss(const tagged_word&) */
+  inline const char* gloss(const word& w) const {
+    return gloss(getTaggedWord(w, 0, 0));
+  }
   /** The set of all words in the graph, created as a vector */
   virtual const std::vector<word> keys() const = 0;
   /** Returns whether this edge is a valid deletion */

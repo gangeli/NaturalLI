@@ -1,24 +1,69 @@
 # Set costs to the setting used in Aristo
 %defaultCosts = true
 
-# Competitive Edge #1
+# Regression # 1
+mere rotation of Earth on its own axis causes day and night .
+Rotation of the Earth causes night and day to alternate .
+The movement of Earth on its own axis is called Rotation and it causes day and night .
+Causes of Day and Night Speed of Rotation The Earth rotates on its own axis .
+In the end , the students should understand that the rotation of the Earth causes the occurrence of day and night .
+Possible answer The earth \u0027s rotation on its axis causes day and night , while the heat from the sun is one cause of the seasons . 
+Rotation causes day and night .
+The sequence of day and night on Earth is the result of Earth completing a rotation on its axis .
+TRUE: Rotation of Earth causes day and night.
+
+# Regression # 2: just can't be False (soft classifier will take care of it)
+Water is found in nature as a solid , liquid , and gas .
+Properties of water : Clip - 1:05 min - Water is a common compound which can be found in nature in forms of solid , liquid or gas and has many specific properties .
+Water is can be found in three states : solid , liquid , and gas .
+Water is the only matter on earth that can be found naturally in all three - solid , liquid and a gas .
+Water is the only substance found on earth naturally in three forms : solid , liquid and gas .
+Water is the only common substance that can exist naturally as a gas , liquid , or solid at the relatively small range of temperatures and pressures found on the Earth \u0027s surface .
+Water is usually found in its liquid state , but is also common in its gaseous state as vapor in the air , or as a solid -LRB- frozen -RRB- .
+Water existing as a gas is called water vapor , water as a liquid we generally just refer to as water , and water as a solid is called ice . 
+UNK: Water is usually found in nature as a liquid, solid, and gas.
+
+# Competitive Edge # 1.1
+Eating candy for diner is an example of a poor health habit .
+Eating candy for dinner is an example of a poor health habit .
+Balanced eating is a way of eating that promotes good health .
+Eating a balanced diet is one of the most important steps toward having good health .
+Eating a variety of the right types of foods promotes good health and provides energy for growth and activity .
+beam is experience a feeling of well-being or happiness , as from good health or an intense emotion
+A good example of chemical energy is an electrochemical cell or battery .
+candy is A piece of candy . 
+FALSE: Eating candy is an example of a good health habit.
+
+# Competitive Edge # 1.2
 Not smoking or drinking alcohol is good for health , regardless of whether clothing is worn or not .
 FALSE: Smoking cigarettes is an example of a good health habit.
 
-Eating candy for diner is an example of a poor health habit.
-FALSE: Eating candy is an example of a good health habit.
+Eating candy for diner is an example of a poor health habit .
+Eating candy for dinner is an example of a poor health habit .
+Harm of Smoking : What Cigarettes Do to Your Body Smoking is not only dangerous to your health but to the people around you too .
+Not smoking or drinking alcohol is good for health , regardless of whether clothing is worn or not .
+A good portion of the series is unlikely to be aired , due to the show 's longtime sponsorship by Winston cigarettes , which remains an existing brand .
+joint is Specifically -- Such a place , usually kept by Chinese , for the accommodation of persons addicted to the habit of opium-smoking , and where persons are provided with pipes , opium , etc. .
+smoking is usually caused by smoking cigarettes , and around half of people who smoke for their whole lives will develop COPDLaniado-Laborn , R -LRB- 2009 Jan -RRB- . 
+FALSE: Smoking cigarettes is an example of a good health habit.
 
-# Competitive Edge #2
-The shortest number of daylight hours in New York State occurs during December.
-FALSE: In New York State, the longest period of daylight occurs during December.
+# Competitive Edge # 2
+The shortest number of daylight hours in New York State occurs during December .
+The longest period of daylight hours occurs at the beginning of Summer .
+The line on the graph in your answer booklet shows the altitude of the noontime Sun observed during the same time period at the same New York State location .
+The shortest period of daylight hours occurs at the beginning of Winter .
+Longest day in the north The June solstice day has the most hours of daylight for people north of the equator . "
+A town in the state of New York , see Conquest , New York .
+Having been the king since June 9 , 1946 , Bhumibol Adulyadej is the world \u0027s longest-serving current head of state and the longest-serving monarch in Thai history .
+Each season that occurs in New York state experiences specific climate conditions . 
+FALSE: In New York State, the longest period of daylight occurs during June.
 
-# Neat example #1
-Electrical energy can be changed to sound.
-Electrical energy was changed to sound energy.  
-
-Electrical energy can be changed to sound , light an heat energy only through speakers , light bulbs ( and LEDs ) ... and electric heaters .
-Electrical energy was changed to sound energy.  
+## Neat example #1
+#Electrical energy can be changed to sound.
+#Electrical energy was changed to sound energy.  
+#
+#Electrical energy can be changed to sound , light an heat energy only through speakers , light bulbs ( and LEDs ) ... and electric heaters .
+#Electrical energy was changed to sound energy.  
 
 # Reset costs
 %strictCosts = true
-

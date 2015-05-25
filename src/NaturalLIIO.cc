@@ -293,6 +293,31 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
 
 
 //
+// Sigmoid utility function
+//
+inline double sigmoid(double x) {
+  return 1.0 / (1.0 + exp(-x));
+}
+
+//
+// Find if any top alignments increased in the true setting
+//
+bool existsSoftFalseJudgment(const float* ifTrue, const float* ifFalse, const float maxValue,
+                             const uint8_t& numAlignments) {
+  float maxTowardsFalse = 0.0f;
+  float maxTowardsTrue = 0.0f;
+  for (uint8_t i = 0; i < numAlignments; ++i) {
+    if (ifFalse[i] - ifTrue[i] > maxTowardsFalse) {
+      maxTowardsFalse = ifFalse[i] - ifTrue[i];
+    }
+    if (ifTrue[i] - ifFalse[i] > maxTowardsTrue) {
+      maxTowardsTrue = ifTrue[i] - ifFalse[i];
+    }
+  }
+  return maxTowardsFalse > maxTowardsTrue;
+}
+
+//
 // executeQuery()
 //
 string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
@@ -316,9 +341,11 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     factsInserted += 1;
     // align the tree
     if (doAlignments && alignments.size() < MAX_FUZZY_MATCHES) {
-      AlignmentSimilarity alignment = query->alignToPremise(*premise);
+      fprintf(stderr, "ALIGNING %s\n", toString(*premise, *graph).c_str());
+      AlignmentSimilarity alignment = query->alignToPremise(*premise, *graph);
       alignment.debugPrint(*query, *graph);  // debug print the alignment
-      fprintf(stderr, "  score: %f\n", alignment.score(*query));
+      fprintf(stderr, "  score (if true):  %f\n", alignment.score(*query, true));
+      fprintf(stderr, "  score (if false): %f\n", alignment.score(*query, false));
       alignments.push_back(alignment);
     }
   }
@@ -367,19 +394,24 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
   const vector<SearchNode> *bestPath = NULL;
   const feature_vector *bestFeatures = NULL;
   if (confidenceOfTrue > confidenceOfFalse) {
+    // Case: hard true
     *truth = probability(confidenceOfTrue, true);
     bestPath = bestPathIfTrue;
     bestFeatures = bestFeaturesIfTrue;
     hardGuess = "true";
     softGuess = "true";
   } else if (confidenceOfTrue < confidenceOfFalse) {
+    // Case: hard false
     *truth = probability(confidenceOfFalse, false);
     bestPath = bestPathIfFalse;
     bestFeatures = bestFeaturesIfFalse;
+    closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
+    closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
     hardGuess = "false";
     softGuess = "false";
   } else {
     if (resultIfTrue.paths.size() > 0 && resultIfFalse.paths.size() > 0) {
+      // Case: weird tie on hard truth
       printTime("[%c] ");
       fprintf(stderr, "\033[1;33mWARNING:\033[0m Exactly the same max "
                       "confidence returned for both 'true' and 'false'");
@@ -388,19 +420,31 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       fprintf(stderr, "  if false: %s\n",
               toJSON(*graph, *query, *bestPathIfFalse).c_str());
       *truth = 0.5;
-    } else if (resultIfFalse.closestSoftAlignmentScore > resultIfTrue.closestSoftAlignmentScore) {
+    } else if (resultIfFalse.closestSoftAlignmentScore < resultIfTrue.closestSoftAlignmentScore) {
+      // Case: soft true
+      printTime("[%c] ");
+      fprintf(stderr, "Closest alignment is true, in absense of responses\n");
+      *truth = 0.5 + sigmoid(resultIfTrue.closestSoftAlignmentScore) / 1000.0 + 1e-5;
+      softGuess = "true";
+    } else if (
+                // Either the closest alignment is false...
+                resultIfTrue.closestSoftAlignmentScore < resultIfFalse.closestSoftAlignmentScore ||
+                // ... or the alignments are tied and one of the tied elements became more
+                //     true in the false state.
+                ( abs(resultIfTrue.closestSoftAlignmentScore - resultIfFalse.closestSoftAlignmentScore) < 1e-10 &&
+                  existsSoftFalseJudgment(resultIfTrue.closestSoftAlignmentScores,
+                                          resultIfFalse.closestSoftAlignmentScores,
+                                          resultIfTrue.closestSoftAlignmentScore,
+                                          alignments.size())
+                ) ) {
+      // Case: soft false
       printTime("[%c] ");
       fprintf(stderr, "Closest alignment is false, in absense of responses\n");
       closestSoftAlignment = &resultIfFalse.closestSoftAlignment;
       closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
       closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
-      *truth = 0.5 - ((double) resultIfFalse.closestSoftAlignmentScore) / 1000.0;
+      *truth = 0.5 - sigmoid(resultIfFalse.closestSoftAlignmentScore) / 1000.0 - 1e-5;
       softGuess = "false";
-    } else if (resultIfTrue.closestSoftAlignmentScore > resultIfFalse.closestSoftAlignmentScore) {
-      printTime("[%c] ");
-      fprintf(stderr, "Closest alignment is true, in absense of responses\n");
-      *truth = 0.5 + ((double) resultIfTrue.closestSoftAlignmentScore) / 1000.0;
-      softGuess = "true";
     } else {
       *truth = 0.5;
     }
@@ -752,11 +796,18 @@ string executeQuery(const JavaBridge *proc, const btree_set<uint64_t> *kb,
                     const syn_search_options &options,
                     double *truth) {
   // Collect trees
-  vector<Tree*> allTrees;
+  vector<Tree*> canonicalTrees;  // the first tree from every premise
+  vector<Tree*> fragments;       // the other trees from every premise
   for (auto iter = knownFacts.begin(); iter != knownFacts.end(); ++iter) {
     vector<Tree *> treesForFact = proc->annotatePremise(iter->c_str());
-    allTrees.insert(allTrees.end(), treesForFact.begin(), treesForFact.end());
+    auto treeIter = treesForFact.begin();
+    canonicalTrees.push_back(*treeIter);
+    ++treeIter;
+    fragments.insert(fragments.end(), treeIter, treesForFact.end());
   }
+  vector<Tree*> allTrees;
+  allTrees.insert(allTrees.end(), canonicalTrees.begin(), canonicalTrees.end());
+  allTrees.insert(allTrees.end(), fragments.begin(), fragments.end());
   // Parse the query
   const Tree *input = proc->annotateQuery(query.c_str());
   // Run the query

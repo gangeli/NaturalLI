@@ -29,7 +29,7 @@ public class ProcessPremise {
     // Collect the entailments
     List<SentenceFragment> entailments = new ArrayList<>();
     for (CoreMap sentence : ann.get(CoreAnnotations.SentencesAnnotation.class)) {
-//      entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), false));
+      entailments.add(new SentenceFragment(sentence.get(SemanticGraphCoreAnnotations.CollapsedDependenciesAnnotation.class), true, false));
       entailments.addAll(sentence.get(NaturalLogicAnnotations.EntailedSentencesAnnotation.class).stream().collect(Collectors.toList()));
     }
     // In case nothing was produced
@@ -75,7 +75,8 @@ public class ProcessPremise {
 
   public static StanfordCoreNLP constructPipeline(String parser) {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,"+parser+",natlog,qrewrite,openie");
+      setProperty("annotators", "tokenize,ssplit,pos,ing,lemma,"+parser+",natlog,qrewrite,openie");
+      setProperty("customAnnotatorClass.ing","edu.stanford.nlp.naturalli.VerbIngTranslator");
       setProperty("customAnnotatorClass.qrewrite","edu.stanford.nlp.naturalli.ProcessPremise$QRewriteAnnotator");
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("tokenize.class", "PTBTokenizer");

@@ -492,7 +492,8 @@ public class ProcessQuery {
 
   protected static StanfordCoreNLP constructPipeline() {
     Properties props = new Properties() {{
-      setProperty("annotators", "tokenize,ssplit,pos,lemma,parse,natlog");
+      setProperty("annotators", "tokenize,ssplit,pos,ing,lemma,parse,natlog");
+      setProperty("customAnnotatorClass.ing","edu.stanford.nlp.naturalli.VerbIngTranslator");
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("ssplit.isOneSentence", "true");
       setProperty("tokenize.class", "PTBTokenizer");

@@ -81,7 +81,11 @@ inline uint64_t searchLoop(
     const SearchNode& node = scoredNode->node;
     // (handle the memory: e.g., duplicate visits)
 #if SEARCH_FULL_MEMORY!=0
-    const uint64_t fullMemoryItem = memoryItem(node.factHash(), node.tokenIndex(), node.truthState());
+    const uint64_t fullMemoryItem = memoryItem(
+        node.factHash(), 
+        node.tokenIndex(), 
+        true);
+//        node.truthState());  // note[gabor] should we consider true and false states different?
     if (fullMemory.find(fullMemoryItem) != fullMemory.end()) {
       continue;  // Prohibit duplicate visits
     }
@@ -255,7 +259,9 @@ inline uint64_t searchLoop(
               edge.sink,
               edge.source,
               tree.polarityAt(node, node.tokenIndex()),
-              tree.polarityAt(mutatedChild, mutatedChild.tokenIndex()) );
+              tree.polarityAt(mutatedChild, mutatedChild.tokenIndex()),
+              node.truthState(),
+              newTruthValue);
         }
       }
       // ((perform push))
@@ -320,7 +326,9 @@ inline uint64_t searchLoop(
                 node.word(),
                 INVALID_WORD,
                 tree.polarityAt(node, node.tokenIndex()),
-                tree.polarityAt(deletedChild, deletedChild.tokenIndex()) );
+                tree.polarityAt(deletedChild, deletedChild.tokenIndex()),
+                node.truthState(),
+                newTruthValue);
           }
         }
         // (push child)
@@ -478,7 +486,7 @@ syn_search_response SynSearch(
     const SearchNode& node = scoredNode.node;
     // Check the soft alignments
 #if MAX_FUZZY_MATCHES > 0
-    if (node.truthState()) {  // matches in the negative context don't count
+//    if (node.truthState()) {  // matches in the negative context don't count
       for (uint8_t alignI = 0; alignI < MAX_FUZZY_MATCHES; ++alignI) {
         const float& nodeAlignmentScore = node.softAlignmentScores()[alignI];
         if (nodeAlignmentScore > closestSoftAlignmentScores[alignI] + 1e-7) {  // 1e-7 to be robust to floating point drift
@@ -501,7 +509,7 @@ syn_search_response SynSearch(
           }
         }
       }
-    }
+//    }
 #endif
     
     if (node.truthState() && lookupFn(node.factHash())) {
@@ -578,7 +586,7 @@ syn_search_response SynSearch(
   float fuzzyScores[MAX_FUZZY_MATCHES];
   for (uint8_t i = 0; i < MAX_FUZZY_MATCHES; ++i) {
     if (i < softAlignments.size()) {
-      fuzzyScores[i] = softAlignments[i].score(*input);
+      fuzzyScores[i] = softAlignments[i].score(*input, assumedInitialTruth);
     } else {
       fuzzyScores[i] = -std::numeric_limits<float>::infinity();
     }

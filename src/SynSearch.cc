@@ -8,6 +8,9 @@
 #define BONUS_COUNT_ALIGNED 1.0f
 #define PENALTY_ONLY_IN_HYPOTHESIS -1.0f
 
+#define min(a, b) (a < b ? a : b)
+#define max(a, b) (a < b ? b : a)
+
 using namespace std;
 
 // ----------------------------------------------
@@ -740,7 +743,7 @@ void Tree::topologicalSort(uint8_t* buffer, const bool& ignoreQuantifiers) const
 //
 // Tree::alignToPremise()
 //
-AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
+AlignmentSimilarity Tree::alignToPremise(const Tree& premise, const Graph& graph) const {
   // The alignments
   vector<alignment_instance> alignments;
 
@@ -825,14 +828,17 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
         continue; \
     } \
   }
-  
+
   // Group 1: Exact match and variants
   // Pass 1.1: Exact match (with polarity + POS)
   ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag && premPolarity == hypPolarity)
   // Pass 1.2: Exact match (without polarity)
   ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag)
   // Pass 1.3: Exact match (without POS)
-  ALIGN_MATCH_LOOP(premWord == hypWord && premTag == hypTag)
+  ALIGN_MATCH_LOOP(premWord == hypWord)
+  // Pass 1.4: Prefix match
+  ALIGN_MATCH_LOOP(strncmp(graph.gloss(premWord), graph.gloss(hypWord),
+        max(3, min(strlen(graph.gloss(premWord)), strlen(graph.gloss(hypWord))) - 2)) == 0);
   
   // Group 2: Neighbors
   // Pass 2.1: NN or JJ left attachment
@@ -990,15 +996,31 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise) const {
 // ----------------------------------------------
 
 //
+// A little helper for determining if two monotonicities match.
+// Up always matches up. Otherwise, they should either match or not based on the truth
+// of the hypothesis.
+//
+inline bool polarityMatches(const monotonicity& a, const monotonicity& b, const bool& truth) {
+  if (a == MONOTONE_UP && b == MONOTONE_UP) {
+    return true;
+  } else if (truth) {
+    return a == b;
+  } else {
+    return a != b;
+  }
+}
+
+//
 // AlignmentSimilarity::score
 //
-double AlignmentSimilarity::score(const Tree& tree) const {
+double AlignmentSimilarity::score(const Tree& tree, const bool& initTruth) const {
   double score = 0.0;
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index < tree.length) {
       // case: check an alignment
+      monotonicity polarityAtI = tree.polarityAt(SearchNode(tree), iter->index);
       if (tree.word(iter->index) == iter->target &&
-          tree.polarityAt(SearchNode(tree), iter->index) == iter->targetPolarity) {
+          polarityMatches(polarityAtI, iter->targetPolarity, initTruth)) {
         score += BONUS_COUNT_ALIGNED;
       } else {
         score += PENALTY_ONLY_IN_HYPOTHESIS;
@@ -1019,15 +1041,17 @@ double AlignmentSimilarity::updateScore(const double& score,
                                         const ::word& oldWord,
                                         const ::word& newWord,
                                         const monotonicity& oldPolarity,
-                                        const monotonicity& newPolarity
+                                        const monotonicity& newPolarity,
+                                        const bool& oldTruth,
+                                        const bool& newTruth
                                         ) const {
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index == index) {
       // Some variables for the logic
       const bool oldMatched = (oldWord == iter->target && 
-                               oldPolarity == iter->targetPolarity);
+                               polarityMatches(oldPolarity, iter->targetPolarity, oldTruth));
       const bool newMatches = (newWord == iter->target && 
-                               newPolarity == iter->targetPolarity);
+                               polarityMatches(newPolarity, iter->targetPolarity, newTruth));
       const bool isDelete = (newWord == INVALID_WORD);
       // The logic of updating scores
       if (oldMatched) {

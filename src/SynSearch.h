@@ -763,11 +763,12 @@ class Tree {
    * in WordNet, and align them between the two trees in a heuristic fashion.
    *
    * @param other The tree to align this tree to.
+   * @param graph The mutation graph, for looking up glosses.
    *
    * @return A vector of alignments between the two trees, suitable to be passed
    *         into the search method.
    */
-  AlignmentSimilarity alignToPremise(const Tree& premise) const;
+  AlignmentSimilarity alignToPremise(const Tree& premise, const Graph& graph) const;
 
   /**
    * The number of words in this dependency graph
@@ -873,15 +874,30 @@ class AlignmentSimilarity {
   AlignmentSimilarity(const AlignmentSimilarity& other)
       : alignments(other.alignments), NULL_WORD(word(0)) { }
 
-  double score(const Tree& tree) const;
+  double score(const Tree& tree, const bool& initTruth) const;
+
+  inline double score(const Tree& tree) const {
+    return score(tree, true);
+  }
   
   double updateScore(const double& score, 
                      const uint8_t& index,
                      const ::word& oldWord,
                      const ::word& newWord,
                      const monotonicity& oldPolarity,
-                     const monotonicity& newPolarity
+                     const monotonicity& newPolarity,
+                     const bool& oldTruth,
+                     const bool& newTruth
                      ) const;
+
+  inline double updateScore(const double& score, 
+                     const uint8_t& index,
+                     const ::word& oldWord,
+                     const ::word& newWord,
+                     const monotonicity& oldPolarity,
+                     const monotonicity& newPolarity) const {
+    return updateScore(score, index, oldWord, newWord, oldPolarity, newPolarity, true, true);
+  }
   
   const ::word targetAt(const uint8_t& index) const;
   
