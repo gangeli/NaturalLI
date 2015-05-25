@@ -1,6 +1,160 @@
 \Section{naturalli}{Adapting NaturalLI to Long Sentences}
+% Overview paragraph
+We extend NaturalLI in a few key ways to make it more suitable for question
+  answering tasks over long, complete sentences.
+Unlike the original version, we define a search algorithm over dependency
+  trees, rather than the surface form of the sentence (\refsec{naturalli-trees}).
+We further enrich the class of inferences warranted by Natural Logic beyond
+  hypernymy and operator rewording to also encompase meronymy and
+  relational entailment (\refsec{naturalli-meronym}).
+Lastly, we handle \textit{deletions} during logical inference more elegantly
+  (\refsec{naturalli-forward}).
 
+%
+% Dependency Trees
+%
 \Subsection{naturalli-trees}{Natural Logic over Dependency Trees}
+% Three search operations
+The search algorithm in NaturalLI is parameterized as follows:
+First, an order is chosen to traverse the tokens in a sentence.
+For example, the original paper traverses tokens left-to-right.
+At each token, one of three operations can be performed:
+  these are \textit{deleting} a token
+  -- corresponding to inserting a word in the forward entailment,
+  \textit{mutating} a token, and \textit{inserting} a token -- again, corresponding
+  to deleting a token in the forward entailment.
 
+% Zoom in on what we're changing
+We handle this last operation outside of the search procedure (see \refsec{naturalli-forward}),
+  and turn our attention to the first two.
+Mutating a token in turn remains unchanged, beyond the addition of new inference rules
+  (see \refsec{naturalli-meronym}).
+This leaves us to define the semantics of deleting tokens during the search, and
+  deciding an order in which to traverse the tokens.
+
+% Talk about deletion
+Recent work by \newcite{key:2015angeli-openie} defined a mapping from Stanford
+  Dependency relations to the associated MacCartney-style relation deleting the
+  dependent subtree would induce.
+We adapt this mapping to yield the relation induced by \textit{inserting} a
+  given dependency edge (recall, a deletion during search is an insertion during
+  inference); we also convert the mapping to use Universal Dependencies
+  \cite{key:stanford-ud}.
+This now lends a natural deletion operation: at a given node, the subtree rooted
+  at that node can be deleted to induce the associated Natural Logic relation.
+
+% Example of deletion
+For example, we can infer that \w{all villains have lairs} entails that
+  \textit{all truly notorious villains have lairs} by observing that inserting
+  on an \textit{amod} arc induces the relation \reverse, which in the downward
+  polarity context of \textit{\tagDown{villains}} projects to \forward\ (entailment):
+
+\begin{center}
+\begin{dependency}[text only label, label style={above}]
+  \begin{deptext}[column sep=-0.00cm]
+    \tagUp{All} \& \tagDown{truly} \& \tagDown{\darkred{notorious}} \& 
+      \tagDown{villains} \& \tagUp{have} \& \tagUp{lairs} \&[-1ex] .\\
+  \end{deptext}
+  \depedge[edge unit distance=1.0ex]{5}{1}{operator}
+  \depedge[edge unit distance=1.25ex]{5}{4}{nsubj}
+  \depedge[edge unit distance=1.25ex, edge style={darkred!100!black,thick}]{4}{3}{\darkred{amod}}
+  \depedge[edge unit distance=1.25ex, edge style={darkred!100!black,thick}]{3}{2}{advmod}
+  \depedge[edge unit distance=1.25ex]{5}{6}{dobj}
+\end{dependency}
+\end{center}
+
+% Talk about ordering
+This leaves the question of the order to traverse the token in the sentence.
+The natural order, rather than left-to-right, is to perform a breadth-first
+  traversal of the dependency tree.
+This avoids repeated deletion of nodes, as we do not have to traverse any
+  subtree which has been deleted.
+
+% Subtlety about operators
+A subtlety to consider here is the effect of mutating operator on the
+  polarity of their arguments -- for example, mutating \w{some} to
+  \w{all}.
+There are both cases where we must mutate the argument to the operator before
+  the operator itself, as well as cases where we must mutate the operator
+  before its arguments.
+Consider, for instance:
+
+\entailmentExample
+{All felines have a tail}
+{Some cats have a tail}
+
+\noindent where we must first mutate \w{cat} to \w{feline}, contrasted with:
+
+\entailmentExample
+{All cats have a tail}
+{Some felines have a tail}
+
+\noindent where we must first mutate \w{some} to \w{all}.
+Therefore, our traversal first visits each operator, then performs a breadth-first
+  traversal of the tree, and then visits each operator a second time.
+
+%
+% Meronymy
+%
+\Subsection{naturalli-meronym}{Meronymy and Relational Entailment}
+% Cute example of partial orders
+Although Natural Logic and the underlying monotonicity calculus has 
+  dealt only with hypernymy, the underlying framework
+  can be applied to any definition of a partial order over lexical items.
+To give a cute example, we can consider a natural logic over integers \cite{key:2014icard-natlog} 
+  -- which have a total, and therefore partial order.
+If we observe that the numeric operator $2^{-x} : \bZ \rightarrow \bZ$ is
+  antitone, then we can infer that because $2 \geq 1$ (i.e., $2 \reverse 1$)
+  we know that $2^{-2} \leq 2^{-1}$ (i.e., $2^{-2} \forward 2^{-1}$), without
+  ever evaluating the operator $2^{-x}$ explicitly.
+
+% Translate to language
+In the same way, natural language operators are defined as a mapping from
+  denotations of objects, to truth values.
+Truth values define a trivial partial order (false $\leq$ true).\footnote{
+  Note that this is exactly entailment: if \hbox{$t_1 \leq t_2$} 
+  (i.e., \hbox{$t_1 \forward t_2$}),
+  and you know that $t_1$ is true, then $t_2$ must be true.
+}
+The domain of word denotations is then ordered by the subset operator, corresponding
+  to ordering by hypernymy over the words: a hypernym of a word has a denotation
+  that completely subsumes it.
+
+% New partial orders
+However, hypernymy is not the only relation we can use to define the ordering over
+  denotations.
+We include two useful additional orderings as motivating examples: relational
+  entailment and meronymy.
+
+% Relational entailment
+\paragraph{Relational Entailment}
+For two verbs $v_1$ and $v_2$, we define $v_1 \leq v_2$ if the first verb
+  entails the second.
+This entailment judgment can be gathered from an external resource, such as
+  \textsc{VerbOcean}.
+In many cases, these entailments are not hypernymy.
+For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
+Apart from esoteric context-specific cases (e.g., \w{orbit} entails \w{launch} only
+  for manmade objects), these relations hold largely independent of context.
+
+% Meronymy
+\paragraph{Meronymy}
+The most salient use-case for meronymy is with locations.
+For example, if Obama was born in Hawaii, then we know that Obama was born in
+  America, because Hawaii is a meronym of (part of) America.
+Unlike relational entailment, this is only \textit{conditionally} true:
+  if \w{Hawaii is an island}, we cannot necessarily entail that \w{America
+  is an island}.
+Therefore, we define a set of \textit{triggers} which enable the meronymy
+  order over their target.
+
+% Other orders
+Note that these are not the only two orders that can be incorporated into our
+  framework; they just happen to be two which have lexical resources available
+  and are likely to be useful in real-world entailment tasks.
+
+%
+% Forward Search
+%
 \Subsection{naturalli-forward}{Bidirectional Search}
 
