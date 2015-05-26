@@ -5,7 +5,7 @@ We extend NaturalLI in a few key ways to make it more suitable for question
 Unlike the original version, we define a search algorithm over dependency
   trees, rather than the surface form of the sentence (\refsec{naturalli-trees}).
 We further enrich the class of inferences warranted by Natural Logic beyond
-  hypernymy and operator rewording to also encompase meronymy and
+  hypernymy and operator rewording to also encompass meronymy and
   relational entailment (\refsec{naturalli-meronym}).
 Lastly, we handle \textit{deletions} during logical inference more elegantly
   (\refsec{naturalli-forward}).
@@ -15,7 +15,7 @@ Lastly, we handle \textit{deletions} during logical inference more elegantly
 %
 \Subsection{naturalli-trees}{Natural Logic over Dependency Trees}
 % Three search operations
-The search algorithm in NaturalLI is parameterized as follows:
+The search algorithm in NaturalLI is parametrized as follows:
 First, an order is chosen to traverse the tokens in a sentence.
 For example, the original paper traverses tokens left-to-right.
 At each token, one of three operations can be performed:
@@ -158,7 +158,7 @@ This entailment judgment can be gathered from an external resource, such as
 In many cases, these entailments are not hypernymy.
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
 Apart from esoteric context-specific cases (e.g., \w{orbit} entails \w{launch} only
-  for manmade objects), these relations hold largely independent of context.
+  for man-made objects), these relations hold largely independent of context.
 Note that the usual operators apply to relational entailments -- if 
   \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
@@ -229,6 +229,6 @@ In this way, each search node need only carry an 8 byte hash, local information
   about the edge currently being considered (8 bytes), global information about the words
   deleted during search (5 bytes), a 3 byte backpointer, and 8 bytes of
   operator metadata -- 32 bytes in all.
-This results in an indicental contribution of having made NaturalLI significantly
+This results in an incidental contribution of having made NaturalLI significantly
   faster and more memory efficient.
 

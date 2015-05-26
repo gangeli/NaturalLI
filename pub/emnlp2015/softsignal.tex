@@ -28,7 +28,7 @@ We build such a simple entailment classifier (\refsec{softsignal-classifier}) bu
 % Why are soft signals valuable
 The transition types in NaturalLI's search are roughly the analogue of complex features
   used in entailment systems, e.g., for the RTE challenges.
-Wordnet features are encoded in the hypernym and antonym edge types; distributional
+WordNet features are encoded in the hypernym and antonym edge types; distributional
   similarity in the nearest neighbors edges; negation scope in the quantifier
   mutations.
 We argue that our approach has two advantages here: 
@@ -55,7 +55,7 @@ All five of the core features are based off an alignment of keyphrases between t
 % Define a keyphrase
 A keyphrase is defined as a span of text which is either
   (1) a possibly empty sequence of adjectives and adverbs followed by a 
-      sequence of nouns, and optionally followed by either \w{of} or the posessive
+      sequence of nouns, and optionally followed by either \w{of} or the possessive
       marker (\w{'s}), and another noun;
   (2) a possibly empty sequence of adverbs followed by a verb; or
   (3) a VBG verb followed by a noun.
@@ -85,7 +85,7 @@ The verb \w{to be} is never a keyphrase.
 \\
   When you & |(hw)|\darkred{heat water} & on a & |(stove2)|\darkred{stove}, & 
     |(te)|\darkred{thermal energy} & 
-    is & |(transferred2)|\darkred{transfered}. \\
+    is & |(transferred2)|\darkred{transferred}. \\
 };
 \begin{scope}[every path/.style={line width=4pt,white,double=black},every to/.style={arm}, arm angleA=-90, arm angleB=90, arm length=5mm]
   \draw (water) to (hw);
@@ -122,7 +122,7 @@ Features are extracted for the number of alignments, the numbers of alignments
   which match perfectly and do not match perfectly, 
   and the number of keyphrases in the premise and hypothesis
   which were not aligned.
-A feature for the lucene score of the premise given the hypothesis is optionally
+A feature for the Lucene score of the premise given the hypothesis is optionally
   included; we revisit this issue in the evaluation.
 Additional features were not shown to improve performance substantially, and
   were therefore dropped for simplicity.
@@ -142,7 +142,7 @@ The first of these is providing a better calibrated exact alignment match measur
 For example, if \w{cat} in the premise aligns to \w{furry cat} in hypothesis,
   and NaturalLI finds finds that \w{furry} can be deleted during search, the
   exact match count should go up by one.
-Symmetricaly, the inexact match count should go down by one.
+Symmetrically, the inexact match count should go down by one.
 
 % Semantics of a matching keyword
 This already allows us to capture notions of soft matching, distributional similarity
@@ -180,11 +180,11 @@ We therefore define a pair of keywords as \textit{matching} if the following two
   conditions hold: 
   (1) their lemmatized surface forms match exactly, and 
   (2) they have the same polarity in the sentence.
-The second constraint encodes a good aproximation for negation (see \reftab{operatormono});
+The second constraint encodes a good approximation for negation (see \reftab{operatormono});
   e.g., \textit{some}
   and \textit{no} induce the exact opposite polarity on their arguments,
   and therefore in our example above there is no keyword overlap.
-The conspicous counterexamples to this is the operator pairs \w{all} and \w{no},
+The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
   which have the same monotonicity in their subjects but are nonetheless negations
   of each other.
 Otherwise, any pair of operators which share half their signature are at least
