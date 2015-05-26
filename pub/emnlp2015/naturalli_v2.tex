@@ -97,16 +97,39 @@ Therefore, our traversal first visits each operator, then performs a breadth-fir
 % Meronymy
 %
 \Subsection{naturalli-meronym}{Meronymy and Relational Entailment}
+%
+% Parital Orders Figure
+%
+\begin{figure*}
+\begin{center}
+\begin{tabular}{ccc}
+\includegraphics[scale=0.27]{../img/monotonicity_math.pdf} &
+\hspace{-2em}\includegraphics[scale=0.27]{../img/monotonicity_lex_all.pdf} &
+\hspace{-2em}\includegraphics[scale=0.27]{../img/monotonicity_lex_meronymy.pdf}\\
+(a) & (b) & (c)
+\end{tabular}
+\end{center}
+\caption{
+An illustration of monotonicity using different partial orders.
+(a) Monotonicity illustrated over real numbers -- $e^x-1$ is monotone whereas
+    $e^{-x}$ is antitone.
+(b) The monotonicity of \w{all} and \w{some} in their first arguments, over
+    a domain of denotations.
+(c) An illustration of the \w{born in} monotone operator over the meronymy hierarchy,
+    and the operator \w{is an island} as neither monotone or antitone.
+}
+\end{figure*}
+
 % Cute example of partial orders
 Although Natural Logic and the underlying monotonicity calculus has 
   dealt only with hypernymy, the underlying framework
   can be applied to any definition of a partial order over lexical items.
 To give a cute example, we can consider a natural logic over integers \cite{key:2014icard-natlog} 
   -- which have a total, and therefore partial order.
-If we observe that the numeric operator $2^{-x} : \bZ \rightarrow \bZ$ is
+If we observe that the numeric operator $e^{-x} : \bR \rightarrow \bR$ is
   antitone, then we can infer that because $2 \geq 1$ (i.e., $2 \reverse 1$)
-  we know that $2^{-2} \leq 2^{-1}$ (i.e., $2^{-2} \forward 2^{-1}$), without
-  ever evaluating the operator $2^{-x}$ explicitly.
+  we know that $e^{-2} \leq e^{-1}$ (i.e., $e^{-2} \forward e^{-1}$), without
+  ever evaluating the operator $e^{-x}$ explicitly.
 
 % Translate to language
 In the same way, natural language operators are defined as a mapping from
@@ -136,17 +159,21 @@ In many cases, these entailments are not hypernymy.
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
 Apart from esoteric context-specific cases (e.g., \w{orbit} entails \w{launch} only
   for manmade objects), these relations hold largely independent of context.
+Note that the usual operators apply to relational entailments -- if 
+  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
 % Meronymy
 \paragraph{Meronymy}
 The most salient use-case for meronymy is with locations.
 For example, if Obama was born in Hawaii, then we know that Obama was born in
   America, because Hawaii is a meronym of (part of) America.
-Unlike relational entailment, this is only \textit{conditionally} true:
+Unlike relational entailment and hypernymy, meronymy is is operated on by its own
+  set of quantifiers:
   if \w{Hawaii is an island}, we cannot necessarily entail that \w{America
   is an island}.
-Therefore, we define a set of \textit{triggers} which enable the meronymy
-  order over their target.
+We collect a set of operators which are either monotone or antitone with respect
+  to the meronymy hierarchy; these then compose with the usual operators to project
+  lexical relations in the usual fashion.
 
 % Other orders
 Note that these are not the only two orders that can be incorporated into our
@@ -157,4 +184,51 @@ Note that these are not the only two orders that can be incorporated into our
 % Forward Search
 %
 \Subsection{naturalli-forward}{Bidirectional Search}
+% Review Trie
+Deleting tokens in a natural logic inference manifest as inserting tokens
+  during search.
+This poses an inherent problem, as the space of possible words to insert at any
+  given position in a sentence is on the order of the size of the vocabulary.
+In NaturalLI, this was solved by keeping a Trie of possible insertions, and
+  using that to prune this space.
+However, this is both computationally slow and adapts awkwardly to a search over
+  dependency trees.
+
+% Pre-compute deletion
+Therefore, we instead opt to perform a bidirectional search:
+  when constructing the knowledge base, we add not only the original sentence but
+  also all variants of the sentence with subtrees deleted.
+For example, a premise of \w{some furry cats have tails} would yield two facts
+  for the knowledge base: \w{some furry cats have tails} as well as \w{some cats
+  have tails}.
+For this, we use the process described in \newcite{key:2015angeli-openie} to
+  generate short entailed sentences from a long utterance using natural logic.
+This then leaves the reverse search to only deal with mutations and inference  
+  insertions, which are relatively easier.
+
+% Difficulties
+The additional challenge this introduces, of course, is the additional space required
+  to store the new facts.
+To mitigate this, we hash every fact into a 64 bit integer, and store only the hashed 
+  value in the knowledge base.
+We construct this hash function such that it operates over a bag of edges in the
+  dependency tree -- in particular, the XOR of hash of each dependency edge in
+  the tree.
+This has two key properties: it allows us to be invariant to the word order of
+  of the sentence, and more importantly it allows us to run our search directly
+  over modifications to this hash function.
+
+% Elaborate on search over hash function
+To elaborate, we notice that each of the two classes of operations our search is
+  performing are done locally over a single dependency edge.
+When adding an edge, we can simply take the XOR of the hash saved in the 
+  parent state and the hash of the added edge.
+When mutating an edge, we XOR the hash of the parent state with the edge we are
+  mutating, and again with the mutated edge.
+In this way, each search node need only carry an 8 byte hash, local information
+  about the edge currently being considered (8 bytes), global information about the words
+  deleted during search (5 bytes), a 3 byte backpointer, and 8 bytes of
+  operator metadata -- 32 bytes in all.
+This results in an indicental contribution of having made NaturalLI significantly
+  faster and more memory efficient.
 
