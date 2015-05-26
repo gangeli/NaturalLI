@@ -1,7 +1,64 @@
 \Section{results}{Evaluation}
+We evaluate our system in two settings:
+  we sanity check that our modifications to NaturalLI have not hindered
+  its ability to capture strict logical entailments on the FraCaS test suite,
+  and then evaluate the system on answering multiple choice science questions
+  from the Aristo dataset.
 
+%
+% FraCaS
+%
 \Subsection{fracas}{FraCaS}
+\def\a#1{\textbf{#1}}
+\begin{table}
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{
+  \begin{tabular}{llcccccccc}
+    \hline
+    $\mathsection$ & Category & Count & \multicolumn{2}{c}{Precision} & \multicolumn{2}{c}{Recall} & \multicolumn{3}{c}{Accuracy} \\
+                   &          &       & \blue{N} & M08          & \blue{N} & M08          & \blue{N}  & M08 & N' \\
+    \hline
+                          % Pme           P07   Rme          R08   Ame         A07  A08
+    \a{1} & \a{Quantifiers}  & \a{44} & \a{\blue{ }}  & \a{95}  & \a{\blue{   }} & \a{100} & \a{\blue{}} & \a{97} & \a{95} \\
+    \a{5} & \a{Adjectives}   & \a{15} & \a{\blue{ }}  & \a{71}  & \a{\blue{   }} & \a{83}  & \a{\blue{}} & \a{80} & \a{73} \\
+    \a{6} & \a{Comparatives} & \a{16} & \a{\blue{ }}  & \a{88}  & \a{\blue{   }} & \a{89}  & \a{\blue{}} & \a{81} & \a{87} \\
+    \hline                                                                                                                 
+\multicolumn{2}{l}{\a{Total}}                                                                                              
+                         & \a{75}     & \a{\blue{ }}  & \a{89}  & \a{\blue{   }}  & \a{94}  & \a{\blue{}} & \a{90} & \a{89} \\
+    \hline
+  \end{tabular}
+  }
+  \caption{
+    \label{tab:fracas}
+    Results on the FraCaS textual entailment suite.
+    N is this work; M08 is \newcite{key:2008maccartney-natlog};
+    N' is the original NaturalLI implementation in
+      \newcite{key:2014angeli-naturalli}.
+    Note that these results assume gold parse trees, and
+      that following prior work this is not a blind test set.
+  }
+\end{center}
+\end{table}
 
+% Intro to FraCaS
+The FraCaS corpus \cite{key:1996cooper-fracas}
+  is a small corpus of entailment problems, aimed at providing a
+  comprehensive test of a system's handling of various
+  entailment patterns.
+We process the corpus following \newcite{key:2007maccartney-natlog} and
+  \newcite{key:2014angeli-naturalli}.
+Results are reported in \reftab{fracas}.
+
+% Qualify results
+The results confirm that moving to dependency trees has not hindered the
+  system's ability to capture valid entailments.
+Although, it should be noted that the evaluation assumes gold dependency
+  trees, and following prior work the test suite is not a blind test
+  set.
+
+%
+% Aristo
+%
 \Subsection{aristo}{Aristo Regents Science Exams}
 % What is Aristo?
 We evaluate our entailment system on the Regents Science Exam portion of
@@ -36,8 +93,8 @@ This is the corpus used by \newcite{key:2015hixon-aristo} for their conversation
   their results.
 However, we also make use of the full \textsc{Scitext} corpus \cite{key:2014clark-aristo}.
 This corpus consists of \num{1316278} supporting sentences, 
-  including the Barron's alongside simple Wikipedia, dictionaries, and a science
-  textbook.
+  including the Barron's study guide alongside 
+  simple Wikipedia, dictionaries, and a science textbook.
 
 % Pre-processing
 Since we lose all document context when searching over the corpus with NaturalLI,
@@ -58,14 +115,57 @@ On the query side, questions were converted to answers using the same methodolog
   \newcite{key:2015hixon-aristo}.
 In cases where the question contained multiple sentences, only the last sentence
   was considered.
-As discussed below, this renders these multi-sentence questions effectively out of
-  scope for the model.
+As discussed in \refsec{aristo-analysis}, 
+  this renders these multi-sentence questions effectively out of scope for the model.
 
-\Subsubsection{aristo-data}{Multiple-Choice as Entailment}
+%
+% Mutliple Choice as Entailment
+%
+\Subsubsection{aristo-train}{Training an Entailment Classifier}
+To train a soft entailment classifier, we needed a training set of positive
+  and negative entailment instances.
+These were collected on mechanical turk from a set of candidate entailment pairs.
+In particular, for each true hypothesis in the training set and for each sentence
+  in the Barron's study guide, we found the top 8 results from Lucene and considered
+  these to be candidate entailments.
+These were then shown to Turkers, who decided whether the premise entailed the
+  hypothesis, the hypothesis entailed the premise, both, or neither.
+Note that each pair was shown to only one Turker, lowering the cost of
+  data collection, but consequently resulting in a somewhat noisy dataset.
 
+The data was then augmented with an additional set of negatives, collected by taking
+  the top 10 Lucene results for each negative hypothesis in the training set.
+This yielded a total of \num{21306} training examples, which was used to train
+  a simple logistic regression classifier.
 
+%
+% Results
+%
+\Subsubsection{aristo-results}{Experimental Results}
+Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
+We compare the performance of a number of variants of our system.
+\textit{NaturalLI Only} is a run using only NaturalLI inferences (both hard and
+  soft) to decide the truth of the question.
+Note that this already performs as well as prior work published on the dataset,
+  and scales gracefully to a larger supporting corpus.
 
-\Subsubsection{aristo-data}{Experimental Results}
+We additionally report results for a number of traditional baselines.
+The simplest of these is to rank answers based on the Lucene score returned by
+  Solr.
+This turned out to be a surprisingly strong baseline -- furthermore, as the supporting
+  corpus size increases, the scores become significantly better calibrated, and
+  performance improves dramatically.
+
+Our second baseline uses only the keyword overlap classifier, either with or without
+  the Lucene scores included as a feature.
+Both of these baselines offer a boost over using the Lucene score alone -- although
+  it's interesting to note that the Lucene score actively hurts the classifier's
+  performance if the corpus size is small (i.e, when run on the Barron's corpus).
+
+Lastly, we present results for the combination of NaturalLI with a soft classifier,
+  and show that it outperforms both prior work and the above baselines.
+In fact, on the training set, the classifier can nearly pass the exam with a score
+  of \todo{hopefully 70?}.
 
 %
 % ARISTO NATURALLI ONLY
@@ -80,15 +180,19 @@ As discussed below, this renders these multi-sentence questions effectively out 
 % The table
 \begin{table}
 \begin{center}
-\begin{tabular}{l@{\hskip \colspaceL}c}
+\begin{tabular}{l@{\hskip \colspaceL}c@{\hskip \colspaceS}c@{\hskip \colspaceL}c@{\hskip \colspaceS}c}
 \hline
-\textbf{System} & \textbf{Accuracy} \\
+\textbf{System} & \multicolumn{2}{c}{\textbf{Barron's}} & \multicolumn{2}{c}{\textbf{\textsc{Scitext}}} \\
+ & Train & Test & Train & Test \\
 \hline
-\t{NaturalLI Only}                 & \t{54.6} \\
-\t{Lucene Only}                    & \t{63.9} \\
-\t{Alignment Features Only}        & \t{67.6} \\
-\t{Alignment + Lucene}             & \t{72.2} \\
-\t{Alignment + Lucene + NaturalLI} & \b{71.3} \\
+\t{\textsc{Knowbot} (held-out)} & \t{45} & \t{--} & \t{--} & \t{--} \\
+\t{\textsc{Knowbot} (oracle)}   & \t{57} & \t{--} & \t{--} & \t{--} \\
+\hline                                                         
+\t{NaturalLI Only}              & \t{45} & \t{  } & \t{55} & \t{ } \\
+\t{Solr Only}                   & \t{48} & \t{  } & \t{64} & \t{ } \\
+\t{Align Features Only}         & \t{54} & \t{  } & \t{68} & \t{ } \\
+\t{Align + Solr}                & \t{50} & \t{  } & \t{69} & \t{ } \\
+\t{Align + Solr + NaturalLI}    & \b{50} & \b{  } & \b{68} & \b{ } \\
 \hline
 \end{tabular}
 \end{center}
@@ -96,7 +200,14 @@ As discussed below, this renders these multi-sentence questions effectively out 
 \caption{
 \label{tab:aristonaturalli}
 Accuracy of various systems on the Aristo science questions dataset.
-\todo{numbers are on dev.}
+Results are reported using only the Barron's study guide as the supporting
+  text, and using all of \textsc{Scitext}.
+\textsc{Knowbot} is the dialogue system presented in \newcite{key:2015hixon-aristo}.
+The held-out version used only additional facts from other question's dialogues;
+  the oracle version directly made use of human input on the question it was 
+  answering.
+The test set did not exist at the time \textsc{Knowbot} was published.
+\todo{get good numbers}
 }
 \end{table}
 %
@@ -104,3 +215,9 @@ Accuracy of various systems on the Aristo science questions dataset.
 %
 
 \Subsubsection{aristo-analysis}{Error Analysis}
+\dome
+\begin{itemize}
+\item Count questions that have multiple premises. We're hosed on these.
+\item Classify the remainder of the missed questions during training.
+      There'll only be like 15 of these -- it's a tractable task...
+\end{itemize}

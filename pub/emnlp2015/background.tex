@@ -1,8 +1,241 @@
 \Section{bg}{Background}
+We briefly review Natural Logic and the NaturalLI system -- which this
+  paper extends -- and review related work.
 
 \Subsection{bg-natlog}{Natural Logic}
+% Bag of citations
+Natural logics aims to capture a subset of valid logical
+  inferences by appealing directly to the structure of language,
+  as opposed to running deduction on an abstract logical form.
+Like \newcite{key:2014angeli-naturalli}, we use the logic
+  introduced by the NatLog system (MacCartney and Manning, 2007; 2008; 2009),
+  \nocite{key:2007maccartney-natlog}
+  \nocite{key:2008maccartney-natlog}
+  \nocite{key:2009maccartney-natlog},
+  which was in turn
+  based on earlier theoretical work on Monotonicity Calculus
+  \cite{key:1986benthem-natlog,key:1991valencia-natlog}.
+We adopt the precise semantics of \newcite{key:2014icard-natlog};
+  we refer the reader to this paper for a more thorough introduction to
+  the formalism.
 
-\Subsection{bg-qa}{Question Answering}
+% Give a teaser
+At a high level, Natural Logic proofs operate by mutating spans of text
+  to ensure that the mutated sentence follows from the
+  original -- each step is much like a syllogistic inference.
+Each mutation in the proof follows three steps:
+  (1) an atomic relation is induced by the mutated lexical item,
+  (2) this relation is \textit{projected} up to yield a relation
+      between the original and mutated sentence, and
+  (3) these sentence-level relations are \textit{joined} together to
+      yield a relation between the original premise and the final
+      hypothesis.
+Some example relations are given below, corresponding to the example inference
+  in \reffig{naturalli}:
+
+\vspace{1.0em}
+\begin{center}
+\begin{tabular}{rcl}
+\w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
+\w{cat}        & \forward    & \w{carnivore} \\
+\w{animal}     & \equivalent & \w{a animal} \\
+\w{animal}     & \reverse    & \w{mouse} \\
+\end{tabular}
+\end{center}
+\vspace{1.0em}
+
+% Punt on things
+We refer the reader to \newcite{key:2014icard-natlog} for a
+  more comprehensive introduction to the atomic relations (1), and to the
+  join table between these relations (3).
+However, the notion of \textit{projecting} a relation from a lexical item to
+  a sentence will be important to understand, and therefore we give
+  a simplified explanation here.\footnote{
+    Note that the implementation leverages the semantics in 
+    \newcite{key:2014icard-natlog}, rather than the simplified semantics
+    described here.
+  }
+To illustrate, \textit{cat} \forward\ \textit{animal},
+  and \textit{some cat meows} \forward\ \textit{some animal meows},
+  but
+  \textit{no cat barks} \nforward\ \textit{no animal barks}.
+Despite differing by the same \textit{lexical} relation,
+  the \textit{sentence-level} relation is different in the two cases.
+
+% Monotonicity
+We appeal to two important concepts: \textit{monotonicity} -- a
+  property of arguments to natural language operators;
+  and \textit{polarity} -- a property of tokens.
+From the example above, \w{some} is [upward] monotone in its first
+  argument, and \w{no} is antitone (downward monotone) in its first argument.
+This means that the first argument to \w{some} is allowed to mutate up the
+  hypernymy tree, whereas the first argument to \w{no} is allowed to mutate
+  down the hypernymy tree.
+
+% Polarity
+\textit{Polarity} is
+  a property of tokens in a sentence determined by the
+  operators acting on it.
+All lexical items have \textit{upward} polarity by default;
+  monotone operators preserve polarity,
+  and antitone operators reverse polarity.
+For example, \w{mice} in \w{\textbf{no} cats eat mice} has downward 
+  polarity, whereas \w{mice} in \w{\textbf{no} cats do\textbf{n't} eat mice}
+  has upward polarity
+  (it is in the scope of two downward monotone operators).
+The polarity of a token therefore completely defines the valid mutations
+  on that token.
+
+%
+% NaturalLI
+%
+\Subsection{bg-natlog}{NaturalLI}
+
+% Teaser search figure
+\begin{figure}[t]
+\begin{center}
+  \resizebox{0.48\textwidth}{!}{\teaserSearch} \\
+\end{center}
+\caption{
+  An illustration of a NaturalLI search.
+  In this case, we are searching from a query (hypothesis)
+  \w{no carnivores eat animals}, and find a contradicting
+  premise \w{the cat ate a mouse}.
+  The edge labels denote Natural Logic inference steps.
+  \label{fig:naturalli}
+}
+\end{figure}
+
+% Introduce NaturalLI
+This paper makes use of and extends NaturalLI \cite{key:2014angeli-naturalli}
+  as the means of natural logic inference.
+NaturalLI casts inference as a search problem: given a hypothesis and an arbitrarily
+  large knowledge base of candidate premises, it searches through the space of valid
+  or approximately valid mutations (with associated costs) until a premise is
+  found.
+This allows it to capture both strict natural logic inferences (e.g., over hypernymy
+  or operator mutations), as well as likely correct inferences with an assciated
+  cost (e.g., nearest neighbors in vector space).
+Most importantly for a question answering task, however, NaturalLI allows for an
+  arbitrarily large knowledge base to search for answers in, contrasted with traditional
+  entailment systems which classify entailment between one (or a few) premises and a
+  hypothesis.
+
+% Explain example
+An example search using NaturalLI is given in \reffig{naturalli}.
+The relations along the edges denote relations between the associated sentences
+  -- i.e., the projected lexical relations from \refsec{bg-natlog}.
+In practice, NaturalLI generally searches around \num{100000} candidate premises
+  per second, on knowledge bases ranging from 1M premises (e.g., the \textsc{Scitest}
+  corpus used in this word) to 300M premises (the dataset used in the original paper).
+
+%
+% Related Work
+%
+\Subsection{bg-qa}{Related Work}
+\todo{don't plagarize the EMNLP2014 paper}
+\todo{also, should be shorter...}
+% -- OpenIE
+% UW
+A large body of work is devoted to compiling open-domain knowledge
+  bases.
+For instance, OpenIE systems
+  \cite{key:2007yates-textrunner,key:2011fader-reverb}
+  extract concise facts via surface or dependency patterns.
+% NELL
+In a similar vein, NELL \cite{key:2010carlson-nell,key:2013gardnerpra-nell}
+  continuously learns new high-precision facts from the internet.
+%% ConceptNet
+%The MIT Media Lab's \sys{ConceptNet} project
+%  \cite{key:2004liu-conceptnet}
+%  has been working on creating a large knowledge base emphasizing
+%  common sense facts.
+
+% -- Applications
+Many NLP applications query large knowledge bases.
+Prominent examples include
+  question answering
+    \cite{key:2001voorhees-trec},
+  semantic parsing
+    \cite{key:1996zelle-semantics,key:2007zettlemoyer-semantics,key:2013kwiatkowski-semantics,key:2014berant-semantics},
+  and information extraction systems
+    \cite{key:2011hoffman-kbp,key:2012surdeanu-mimlre}.
+A goal of this work is to improve accuracy on these
+  downstream tasks by providing a \textit{probabilistic} knowledge base
+  for
+%  both explicitly known and 
+  likely true facts.
+
+% -- Extending OpenIE
+% (people extending OpenIE)
+A natural alternative to the approach taken in this paper is to
+  extend knowledge bases by inferring and adding new facts directly.
+% (misc)
+For instance,
+  \newcite{key:2006snow-wordnet} present an approach to enriching 
+    the WordNet taxonomy;
+  \newcite{key:2011tandon-conceptnet} extend ConceptNet with new facts;
+  \newcite{key:2010soderland-adapting} use ReVerb extractions to 
+    enrich a domain-specific ontology.
+% Richard
+\newcite{key:2013chen-completion} and \newcite{key:2013socher-completion}
+  use Neural Tensor Networks to predict unseen relation triples in
+  WordNet and Freebase, following a line of work by
+  \newcite{key:2011bordes-completion} and
+  \newcite{key:2012jenatton-completion}.
+% Universal schemas
+\newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
+  present a related line of work, inferring new relations between
+  Freebase entities via inference over both Freebase and
+  OpenIE relations.
+In contrast, this work runs inference over arbitrary text, without 
+  restricting itself to a particular set of relations, or even entities.
+%This work, however, focuses primarily on common-sense reasoning rather
+%  than inferring relations between named entities.
+
+
+% -- GOFAI
+% (intro)
+The goal of tackling common-sense reasoning is by no means novel in
+  itself.
+Work by Reiter and McCarthy \cite{key:1980reiter-logic,key:1980mccarthy-circumscription}
+  attempts to reason about the truth of a consequent
+  in the absence of strict logical entailment.
+Similarly, \newcite{key:1989pearl-probabilistic} presents a framework for
+  assigning confidences to inferences which can be reasonably assumed.
+Our approach differs from these attempts in part in its use of Natural Logic
+  as the underlying inference engine, and more substantially in its
+  attempt at creating a broad-coverage system.
+More recently, work by \newcite{key:2002schubert-commonsense} and
+  \newcite{key:2009durme-commonsense} approach common sense reasoning
+  with \textit{episodic logic}; we differ in our focus on inferring
+  truth from an arbitrary query, and in making use of longer inferences.
+%  dealing with millions of candidate antecedents.
+
+% -- RTE
+This work is similar in many ways to work on 
+  recognizing textual entailment -- e.g., 
+  \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment}.
+Work by \newcite{key:2013lewis-entailment} is particularly relevant,
+  as they likewise evaluate on the FraCaS suite (Section 1;
+  89\% accuracy with gold trees).
+They approach entailment by constructing a CCG parse of the query,
+  while mapping questions which are paraphrases of each other to the
+  same logical form using distributional relation clustering.
+However, their system is unlikely to scale to either our large
+  database of premises, or our breadth of relations.
+
+% Paraphrase-based Q/A
+\newcite{key:2014fader-openqa} propose a system for question answering
+  based on a sequence of paraphrase rewrites followed by a fuzzy query to
+  a structured knowledge base.
+This work can be thought of as an elegant framework for unifying this
+  two-stage process, while explicitly tracking the ``risk'' taken with
+  each paraphrase step.
+Furthermore, our system is able to explore mutations which are only
+  valid in one direction, rather than the bidirectional entailment of
+  paraphrases, and does not require a corpus of such paraphrases for
+  training.
 
 
 
