@@ -1,11 +1,16 @@
 \begin{abstract}
 Simple lexical methods are often surprisingly effective at
   solving entailment problems.
-However, they are easily thrown off by even simple logical
+However, they are easily thrown off by lexically subtle logical
   fallacies -- e.g., negation.
-We treat question answering as an entailment task from a large
-  premise set, and present an approach combining lexical
-  classification with soft logical reasoning.
-We validate on the FraCaS test suite for entailment, and present
+We present an approach for combining logical reasoning with
+  Natural Logic with a broad-coverage but lower-precision
+  lexical classifier, and show that this combination outperforms
+  either system in isolation.
+We evaluate our system in a question answering setting, where
+  a large set of candidate premises can confirm or contradict
+  the truth of a query.
+We validate our system on strict entailments in the FraCaS test suite,
+  and present
   the best published results on the Aristo science exams corpus.
 \end{abstract}

@@ -336,7 +336,9 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     // hash the tree
     const uint64_t hash = SearchNode(*premise).factHash();
     printTime("[%c] ");
-    fprintf(stderr, "|KB| adding premise with hash: %lu\n", hash);
+    fprintf(stderr, "|KB| adding premise '%s'with hash: %lu\n", 
+        toString(*premise, *graph).c_str(),
+        hash);
     auxKB.insert(hash);
     factsInserted += 1;
     // align the tree

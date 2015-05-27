@@ -222,8 +222,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
       });
       // Gobble naturalli.stderr to real stderr
-//      Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
-      Writer errWriter = new OutputStreamWriter(System.err);
+      Writer errWriter = new BufferedWriter(new FileWriter(new File("/home/gabor/workspace/naturalli/tmp/debug.txt")));
+//      Writer errWriter = new OutputStreamWriter(System.err);
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
 

@@ -40,7 +40,7 @@ public class EntailmentFeaturizer implements Serializable {
     OVERLAP, POS_OVERLAP,
     KEYWORD_OVERLAP, KEYWORD_STATISTICS, KEYWORD_DISFLUENCIES,
     LUCENE_SCORE,
-    ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_KEYWORD,
+    ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_TRIGRAM, ENTAIL_BOTH_GRAM, ENTAIL_KEYWORD,
     CONCLUSION_NGRAM,
   }
 
@@ -620,6 +620,39 @@ public class EntailmentFeaturizer implements Serializable {
               (pI < ex.premise.length() && cI < ex.conclusion.length() &&
                   ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0))) {
             feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + lastConclusion + "_" + conclusion);
+          }
+        }
+      }
+    }
+
+    //
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_BOTH_GRAM)) {
+      for (int pI = 0; pI <= ex.premise.length(); ++pI) {
+        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
+          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + conclusion);
+          feats.incrementCount("lemma_entail:" + premise + "_->_" + lastConclusion + "_" + conclusion);
+        }
+      }
+    }
+
+    // Trigram entailments
+    if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_TRIGRAM)) {
+      for (int pI = 0; pI <= ex.premise.length(); ++pI) {
+        String lastLastPremise = (pI < 2 ? "^" : ex.premise.lemma(pI - 2));
+        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
+          String lastLastConclusion = (cI < 2 ? "^" : ex.conclusion.lemma(cI - 2));
+          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          if ((pI == ex.premise.length() && cI == ex.conclusion.length()) ||
+              (pI < ex.premise.length() && cI < ex.conclusion.length() &&
+                  ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0))) {
+            feats.incrementCount("lemma_entail:" + lastLastPremise + "_" + lastPremise + "_" + premise + "_->_" + lastLastConclusion + "_" + lastConclusion + "_" + conclusion);
           }
         }
       }

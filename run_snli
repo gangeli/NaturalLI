@@ -3,17 +3,22 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
-val TRAIN = "etc/snli/snli_1.0rc3_train.tab"
-val TEST = "etc/snli/snli_1.0rc3_test.tab"
+val SNLI_TRAIN = "etc/snli/snli_1.0rc3_train.tab"
+val SNLI_TEST = "etc/snli/snli_1.0rc3_dev.tab"
 
 val SICK_TRAIN = "etc/sick/sick_train.tab"
-val SICK_TEST = "etc/sick/sick_test.tab"
+val SICK_SNLI_TRAIN = "etc/sick/sick+snli_train.tab"
+val SICK_TEST = "etc/sick/sick_dev.tab"
+
+val RTE_TRAIN = "etc/RTE-3/English_dev.tab"
+val RTE_SNLI_TRAIN = "etc/sick/rte+snli_train.tab"
+val RTE_TEST = "etc/RTE-3/English_dev.tab"
 
 //
 // Remove potentially stale caches
 //
-submit("rm" ->(TRAIN + ".SIMPLE.cache"))
-submit("rm" ->(TEST + ".SIMPLE.cache"))
+submit("rm" ->(SNLI_TRAIN + ".SIMPLE.cache"))
+submit("rm" ->(SNLI_TEST + ".SIMPLE.cache"))
 
 //
 // Define the program
@@ -28,6 +33,8 @@ def program(memoryMB:Int):List[String] = ("java"
 	-'server
   -'ea
 	->"edu.stanford.nlp.naturalli.entail.ClassifierTrainer"
+  -("classifier", "SIMPLE")
+  -("naturalli_search", "/dev/null")
 ).toList
 
 using("run_test/")
@@ -36,9 +43,9 @@ using("run_test/")
 // Warm up the cache
 //
 submit(program(16000)
-  -("train.file", TRAIN)
+  -("train.file", SNLI_TRAIN)
   -("train.cache.do", "true")
-  -("test.file", TEST)
+  -("test.file", SNLI_TEST)
   -("test.cache.do", "true")
 
   -("model", touch("model.ser.gz"))
@@ -51,12 +58,12 @@ submit(program(16000)
 )
 
 //
-// Run the ablation studies
+// Run the learning curve
 //
 parallel(8) submit(program(8500)
-  -("train.file", TRAIN)
+  -("train.file", SNLI_TRAIN)
   -("train.cache.do", "true")
-  -("test.file", TEST)
+  -("test.file", SNLI_TEST)
   -("test.cache.do", "true")
 
   -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
@@ -70,12 +77,12 @@ parallel(8) submit(program(8500)
 )
 
 //
-// Run the unigram studies
+// Run the unigram learning curve
 //
 parallel(8) submit(program(8500)
-  -("train.file", TRAIN)
+  -("train.file", SNLI_TRAIN)
   -("train.cache.do", "true")
-  -("test.file", TEST)
+  -("test.file", SNLI_TEST)
   -("test.cache.do", "true")
 
   -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
@@ -89,12 +96,34 @@ parallel(8) submit(program(8500)
 )
 
 //
+// Try out other features
+//
+parallel(4) submit(program(15000)
+  -("train.file", SNLI_TRAIN)
+  -("train.cache.do", "true")
+  -("test.file", SNLI_TEST)
+  -("test.cache.do", "true")
+
+  -("train.count", "1000000")
+  -("model", touch("model.ser.gz"))
+  -("features", 
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" &
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ]""" &
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_BOTH_GRAM ]""" &
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ENTAIL_BOTH_GRAM ]"""
+      )
+  -("features.nolex", "false")
+  -("parallel", "false")
+  -("log.file", touch("redwood.log"))
+)
+
+//
 // Run ablation studies with keyword features
 //
 parallel(1) submit(program(70000)
-  -("train.file", TRAIN)
+  -("train.file", SNLI_TRAIN)
   -("train.cache.do", "true")
-  -("test.file", TEST)
+  -("test.file", SNLI_TEST)
   -("test.cache.do", "true")
 
   -("train.count", "10" & "100" & "1000" & "10000" & "50000" & "100000" & "250000" & "1000000")
@@ -111,7 +140,26 @@ parallel(1) submit(program(70000)
 // Run the SICK data
 //
 parallel(8) submit(program(8500)
-  -("train.file", SICK_TRAIN)
+  -("train.file", SICK_TRAIN & SNLI_TRAIN & SICK_SNLI_TRAIN)
+  -("train.cache.do", "true")
+  -("test.file", SICK_TEST)
+  -("test.cache.do", "true")
+
+  -("train.count", "10000")
+  -("model", touch("model.ser.gz"))
+  -("features", """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" )
+  -("features.nolex", "true" & "false")
+
+  -("parallel", "false")
+  
+  -("log.file", touch("redwood.log"))
+)
+
+//
+// Run the RTE data
+//
+parallel(8) submit(program(8500)
+  -("train.file", RTE_TRAIN & SNLI_TRAIN & RTE_SNLI_TRAIN)
   -("train.cache.do", "true")
   -("test.file", SICK_TEST)
   -("test.cache.do", "true")
