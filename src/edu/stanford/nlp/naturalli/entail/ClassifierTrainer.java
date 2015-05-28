@@ -26,6 +26,7 @@ public class ClassifierTrainer {
   enum ClassifierType{ SIMPLE, DISTANT, NATURALLI }
   @Execution.Option(name="classifier", gloss="The type of classifier to train")
   public ClassifierType CLASSIFIER = ClassifierType.NATURALLI;
+
   @Execution.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
   public String NATURALLI_SEARCH = "src/naturalli_search";
 
@@ -59,6 +60,8 @@ public class ClassifierTrainer {
   public File TEST_CACHE = null;
   @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
   public boolean TEST_CACHE_DO = true;
+  @Execution.Option(name="test.errors", gloss="A file to dump errors made by the classifier to")
+  public String TEST_ERRORS = null;
 
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("tmp/model.ser.gz");

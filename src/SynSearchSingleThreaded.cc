@@ -133,20 +133,20 @@ inline uint64_t searchLoop(
     // Update history
     const uint32_t myIndex = historySize;
     // >> debug (warning: very verbose!)
-    vector<SearchNode> path;
-    path.push_back(node);
-    if (node.getBackpointer() != 0) {
-      SearchNode head = node;
-      while (head.getBackpointer() != 0) {
-        path.push_back(head);
-        head = history[head.getBackpointer()];
-      }
-    }
-    fprintf(stderr, "%u>> %s = %s (points to %u; nextQuant=%d; truth=%u; index=%u)\n", 
-      myIndex, toString(*graph, tree, node).c_str(),
-      kbGloss(*graph, tree, path).c_str(),
-      node.getBackpointer(), nextQuantifierTokenIndex,
-      node.truthState(), node.tokenIndex());
+//    vector<SearchNode> path;
+//    path.push_back(node);
+//    if (node.getBackpointer() != 0) {
+//      SearchNode head = node;
+//      while (head.getBackpointer() != 0) {
+//        path.push_back(head);
+//        head = history[head.getBackpointer()];
+//      }
+//    }
+//    fprintf(stderr, "%u>> %s = %s (points to %u; nextQuant=%d; truth=%u; index=%u)\n", 
+//      myIndex, toString(*graph, tree, node).c_str(),
+//      kbGloss(*graph, tree, path).c_str(),
+//      node.getBackpointer(), nextQuantifierTokenIndex,
+//      node.truthState(), node.tokenIndex());
     // << end debug 
     assert (myIndex < (opts.maxTicks + 1));  // + 1 to allow for the root
     history[myIndex] = node;

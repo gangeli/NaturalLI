@@ -3,7 +3,6 @@ package edu.stanford.nlp.naturalli.entail;
 import com.google.gson.Gson;
 import edu.stanford.nlp.classify.Classifier;
 import edu.stanford.nlp.classify.LinearClassifier;
-import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.naturalli.ProcessPremise;
 import edu.stanford.nlp.naturalli.ProcessQuery;
 import edu.stanford.nlp.naturalli.QRewrite;
@@ -34,7 +33,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 0.00;
+  private static double ALIGNMENT_WEIGHT = 0.10;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
   private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_all.cache";
@@ -168,10 +167,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private OutputStreamWriter toNaturalLI;
   private final Counter<String> weights;
 
-  private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("depparse") );
+  private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("parse") );
 
   private final Map<NaturalLIQuery, NaturalLIResponse> naturalliCache = new HashMap<>();
   private PrintWriter naturalliWriteCache;
+  private PrintWriter queryStream;
 
 
   NaturalLIClassifier(String naturalliSearch, EntailmentFeaturizer featurizer, Classifier<Trilean, String> impl) {
@@ -209,6 +209,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         }
       }
       naturalliWriteCache = new PrintWriter(new FileWriter(NATURALLI_OUTCACHE));
+      queryStream = new PrintWriter(new FileWriter("tmp/queries.examples"));
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        public void run() {
+          naturalliWriteCache.close();
+          queryStream.close();
+        }});
 
 
       forceTrack("Creating connection to NaturalLI");
@@ -288,8 +294,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         if (tree.split("\n").length > 30) {
           // Tree is too long; don't write it or else the program will crash
           toNaturalLI.write(toParseTree("cats have tails"));
+          queryStream.println(toParseTree("cats have tails"));
         } else {
           toNaturalLI.write(tree);
+          queryStream.println(tree);
         }
         toNaturalLI.write("\n");
       } catch (Exception e) {
@@ -302,12 +310,14 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       for (SentenceFragment entailment : ProcessPremise.forwardEntailments(premise, pipeline.get())) {
         if (!entailment.toString().equals(premise)) {
           try {
-            String tree = ProcessQuery.conllDump(entailment.parseTree, false, true);
+            String tree = ProcessQuery.conllDump(entailment.parseTree, new Pointer<>(), false, true);
             if (tree.split("\n").length > 30) {
               // Tree is too long; don't write it or else the program will crash
               toNaturalLI.write(toParseTree("cats have tails"));
+              queryStream.println(toParseTree("cats have tails"));
             } else {
               toNaturalLI.write(tree);
+              queryStream.println(tree);
             }
             toNaturalLI.write("\n");
           } catch (Exception e) {
@@ -323,6 +333,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     // Start the search
     toNaturalLI.write("\n\n");
     toNaturalLI.flush();
+    queryStream.println("\n");
+    queryStream.flush();
 
     // Read the result
     Matcher matcher;

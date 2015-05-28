@@ -335,10 +335,10 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     Tree *premise = *treeIter;
     // hash the tree
     const uint64_t hash = SearchNode(*premise).factHash();
-    printTime("[%c] ");
-    fprintf(stderr, "|KB| adding premise '%s'with hash: %lu\n", 
-        toString(*premise, *graph).c_str(),
-        hash);
+//    printTime("[%c] ");
+//    fprintf(stderr, "|KB| adding premise '%s'with hash: %lu\n", 
+//        toString(*premise, *graph).c_str(),
+//        hash);
     auxKB.insert(hash);
     factsInserted += 1;
     // align the tree

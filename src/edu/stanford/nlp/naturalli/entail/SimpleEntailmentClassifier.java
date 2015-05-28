@@ -11,12 +11,10 @@ import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.*;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.GZIPOutputStream;
 
@@ -72,8 +70,8 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
     // Read the test data
     forceTrack("Reading test data");
-    Stream<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1);
-    GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData, trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
+    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
+    GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData.stream(), trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
     if (trainer.TEST_CACHE != null) { IOUtils.cp(tmp, trainer.TEST_CACHE); }
     endTrack("Reading test data");
 
@@ -137,11 +135,24 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
       p = sumP / 10.0;
       r = sumR / 10.0;
     } else {
+      // Evaluate accuracy
       log("");
       accuracy = classifier.impl.evaluateAccuracy(testDataset);
       Pair<Double, Double> pr = classifier.impl.evaluatePrecisionAndRecall(testDataset, Trilean.TRUE);
       p = pr.first;
       r = pr.second;
+      // Print mistakes
+      if (trainer.TEST_ERRORS != null && !"null".equals(trainer.TEST_ERRORS)) {
+        PrintWriter errWriter = new PrintWriter(trainer.TEST_ERRORS);
+        errWriter.println("Guess_Truth\tGold_Truth\tPremise\tHypothesis");
+        for (EntailmentPair ex : testData) {
+          Trilean guess = classifier.impl.classOf(new RVFDatum<>(trainer.featurizer.featurize(ex, Optional.empty())));
+          if (!guess.equals(ex.truth)) {
+            errWriter.println(guess + "\t" + ex.truth + "\t" + ex.premise.text() + "\t" + ex.conclusion.text());
+          }
+        }
+        errWriter.close();
+      }
     }
 
     // Report results

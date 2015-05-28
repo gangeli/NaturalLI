@@ -716,6 +716,26 @@ TEST_F(TreeTest, HashQuantifiersGlossIndependent) {
 }
 
 //
+// Hash Check Value
+//
+TEST_F(TreeTest, HashRegressionTest) {
+  Tree c(
+         string("454527\t3\tnsubjpass\t2\tn\t-\t-\t-\t-\n") + 
+         string("60000\t3\tauxpass\t3\tv\t-\t-\t-\t-\n") + 
+         string("160102\t0\troot\t4\tv\t-\t-\t-\t-\n") + 
+         string("213475\t5\tcase\t0\ti\t-\t-\t-\t-\n") + 
+         string("295096\t3\tnmod:in\t2\tn\t-\t-\t-\t-\n") + 
+         string("47100\t9\tcase\t0\ti\t-\t-\t-\t-\n") + 
+         string("24172\t9\tdet\t0\td\t-\t-\t-\t-\n") + 
+         string("395641\t9\tamod\t6\tj\t-\t-\t-\t-\n") + 
+         string("254746\t3\tnmod:as\t6\tj\t-\t-\t-\t-\n") + 
+         string("39140\t9\tcc\t0\tc\t-\t-\t-\t-\n") + 
+         string("172273\t9\tconj:and\t2\tn\t-\t-\t-\t-\n"));
+  EXPECT_EQ(14476351285734641642lu, c.hash());
+  EXPECT_EQ(5483073851196124686lu, c.hash());
+}
+
+//
 // Hash Mutate (simple)
 //
 TEST_F(TreeTest, HashMutateSimple) {
