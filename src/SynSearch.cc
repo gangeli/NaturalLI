@@ -5,8 +5,10 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
-#define BONUS_COUNT_ALIGNED 1.0f
-#define PENALTY_ONLY_IN_HYPOTHESIS -1.0f
+// NaturalLI Only Weights
+#define BONUS_COUNT_ALIGNED 0.2774f
+#define PENALTY_ONLY_IN_HYPOTHESIS -0.0492f
+#define BIAS -0.7631f
 
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a < b ? b : a)

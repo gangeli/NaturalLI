@@ -26,10 +26,10 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class MultipleChoiceSolver {
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
-  public static File MODEL = new File("models/aristo/classifier.ser.gz");
+  public static File MODEL = new File("models/aristo/naturalli_only.ser.gz");
 
   @Execution.Option(name="data", gloss="The file to evaluate on")
-  public static File DATA_FILE = new File("etc/aristo/eval_train_allcorpora.tab");
+  public static File DATA_FILE = new File("etc/aristo/eval_train_barrons.tab");
 
   private static final DecimalFormat percent = new DecimalFormat("0.000%");
 

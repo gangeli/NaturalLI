@@ -71,7 +71,7 @@ public class QRewriteTest {
         tree.addEdge(
             new IndexedWord(sentence.get(parent - 1)),
             new IndexedWord(sentence.get(i)),
-            new GrammaticalRelation(Language.English, reln, null, null),
+            new GrammaticalRelation(Language.UniversalEnglish, reln, null, null),
             1.0, false
         );
       }
@@ -94,6 +94,7 @@ public class QRewriteTest {
   public void testAtLeastAFew() {
     assertEquals("A few cats have tails", QRewrite.rewriteAtLeastAFew("At least a few cats have tails"));
     assertEquals("A few cats have tails", QRewrite.rewriteAtLeastAFew("At least a few cats have tails"));
+    assertEquals("Seven cats have tails", QRewrite.rewriteAtLeastAFew("At least seven cats have tails"));
   }
 
   @Test

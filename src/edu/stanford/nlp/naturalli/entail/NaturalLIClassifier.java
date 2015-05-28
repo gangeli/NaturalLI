@@ -33,10 +33,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 0.10;
+  private static double ALIGNMENT_WEIGHT = 1.00;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_all.cache";
+  private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_barrons.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -353,9 +353,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch (entry.getKey()) {
         case COUNT_ALIGNED:  // this is the one that gets changed most
-        case PERCENT_ALIGNED_PREMISE:
-        case PERCENT_ALIGNED_CONCLUSION:
-        case PERCENT_ALIGNED_JOINT:
+        case COUNT_UNALIGNABLE_CONCLUSION:
           break;
         default:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());

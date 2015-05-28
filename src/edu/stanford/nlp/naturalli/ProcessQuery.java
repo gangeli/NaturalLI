@@ -539,7 +539,7 @@ public class ProcessQuery {
     // Create pipeline
     StanfordCoreNLP pipeline = constructPipeline();
 
-    System.out.println(annotate(QRewrite.FOR_QUERY, "Two of the cats have tails.", pipeline, true));
+    System.out.println(annotate(QRewrite.FOR_QUERY, "At most ten commissioners spend a lot of time at home.", pipeline, true));
 
     /*
     // Read input

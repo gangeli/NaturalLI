@@ -1,6 +1,5 @@
 package edu.stanford.nlp.naturalli;
 
-import edu.stanford.nlp.annotation.Annotator;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -8,15 +7,17 @@ import edu.stanford.nlp.pipeline.SentenceAnnotator;
 import edu.stanford.nlp.util.CoreMap;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
 /**
- * Make all *ing words verbs. I'm sick of approximate matches on these.
+ * Make all *ing words verbs (unless they're clearly adjectives).
+ * I'm sick of approximate matches on these.
  *
  * @author Gabor Angeli
  */
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "UnusedParameters", "UnusedDeclaration"})
 public class VerbIngTranslator extends SentenceAnnotator {
 
   public VerbIngTranslator(String name, Properties props) {
@@ -35,9 +36,12 @@ public class VerbIngTranslator extends SentenceAnnotator {
 
   @Override
   protected void doOneSentence(Annotation annotation, CoreMap sentence) {
-    for (CoreLabel token : sentence.get(CoreAnnotations.TokensAnnotation.class)) {
-      if (token.word().toLowerCase().endsWith("ing")) {
-        token.setTag("VBG");
+    List<CoreLabel> tokens = sentence.get(CoreAnnotations.TokensAnnotation.class);
+    for (int i = 0; i < tokens.size(); ++i) {
+      if (tokens.get(i).word().endsWith("ing")) {
+        if (i == tokens.size() - 1 || !tokens.get(i + 1).tag().startsWith("N")) {
+          tokens.get(i).setTag("VBG");
+        }
       }
     }
   }

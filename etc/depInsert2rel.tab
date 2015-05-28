@@ -192,5 +192,5 @@ nmod:in_addition_to	reverse_entailment
 nmod:in_lieu_of	reverse_entailment
 nmod:on_account_of	reverse_entailment
 nmod:with_regard_to	reverse_entailment
-op	independence
 nmod:dep	reverse_entailment
+op	independence
