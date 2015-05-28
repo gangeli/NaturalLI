@@ -29,7 +29,7 @@ public class MultipleChoiceSolver {
   public static File MODEL = new File("models/aristo/naturalli_only.ser.gz");
 
   @Execution.Option(name="data", gloss="The file to evaluate on")
-  public static File DATA_FILE = new File("etc/aristo/eval_train_barrons.tab");
+  public static File DATA_FILE = new File("etc/aristo/eval_train_allcorpora.tab");
 
   private static final DecimalFormat percent = new DecimalFormat("0.000%");
 

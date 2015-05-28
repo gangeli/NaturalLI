@@ -27,6 +27,8 @@
 #define SERVER_TCP_BUFFER 25
 #define SERVER_READ_SIZE 1024
 
+#define BIAS -0.7631f
+
 extern int errno;
 
 using namespace std;
@@ -307,10 +309,12 @@ bool existsSoftFalseJudgment(const float* ifTrue, const float* ifFalse, const fl
   float maxTowardsFalse = 0.0f;
   float maxTowardsTrue = 0.0f;
   for (uint8_t i = 0; i < numAlignments; ++i) {
-    if (ifFalse[i] - ifTrue[i] > maxTowardsFalse) {
+    if (ifFalse[i] - ifTrue[i] > maxTowardsFalse &&
+        ifFalse[i] > 0.0 && ifTrue[i] < 0.0) {
       maxTowardsFalse = ifFalse[i] - ifTrue[i];
     }
-    if (ifTrue[i] - ifFalse[i] > maxTowardsTrue) {
+    if (ifTrue[i] - ifFalse[i] > maxTowardsTrue &&
+        ifTrue[i] > 0.0 && ifFalse[i] < 0.0) {
       maxTowardsTrue = ifTrue[i] - ifFalse[i];
     }
   }
@@ -428,27 +432,34 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       fprintf(stderr, "Closest alignment is true, in absense of responses\n");
       *truth = 0.5 + sigmoid(resultIfTrue.closestSoftAlignmentScore) / 1000.0 + 1e-5;
       softGuess = "true";
-    } else if (
-                // Either the closest alignment is false...
-                resultIfTrue.closestSoftAlignmentScore < resultIfFalse.closestSoftAlignmentScore ||
-                // ... or the alignments are tied and one of the tied elements became more
-                //     true in the false state.
-                ( abs(resultIfTrue.closestSoftAlignmentScore - resultIfFalse.closestSoftAlignmentScore) < 1e-10 &&
-                  existsSoftFalseJudgment(resultIfTrue.closestSoftAlignmentScores,
+    } else {
+      bool falseIsCloser = resultIfTrue.closestSoftAlignmentScore < resultIfFalse.closestSoftAlignmentScore;
+      bool sameScore = abs(resultIfTrue.closestSoftAlignmentScore - resultIfFalse.closestSoftAlignmentScore) < 1e-10;
+      bool existsSoftFalse = existsSoftFalseJudgment(
+                                          resultIfTrue.closestSoftAlignmentScores,
                                           resultIfFalse.closestSoftAlignmentScores,
                                           resultIfTrue.closestSoftAlignmentScore,
-                                          alignments.size())
-                ) ) {
-      // Case: soft false
-      printTime("[%c] ");
-      fprintf(stderr, "Closest alignment is false, in absense of responses\n");
-      closestSoftAlignment = &resultIfFalse.closestSoftAlignment;
-      closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
-      closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
-      *truth = 0.5 - sigmoid(resultIfFalse.closestSoftAlignmentScore) / 1000.0 - 1e-5;
-      softGuess = "false";
-    } else {
-      *truth = 0.5;
+                                          alignments.size());
+      // Either the closest alignment is false...
+      // ... or the alignments are tied and one of the tied elements became more
+      //     true in the false state.
+      if ( falseIsCloser ) { // || (sameScore && existsSoftFalse) ) {
+        // Case: soft false
+        printTime("[%c] ");
+        fprintf(stderr, "Closest alignment is false, in absense of responses {falseCloser=%u; sameScore=%u; existSoftFalse=%u}\n",
+            falseIsCloser, sameScore, existsSoftFalse);
+        printTime("[%c] ");
+        fprintf(stderr, "Score if true: %f     Score if false: %f\n", 
+                resultIfTrue.closestSoftAlignmentScore, resultIfFalse.closestSoftAlignmentScore);
+        closestSoftAlignment = &resultIfFalse.closestSoftAlignment;
+        closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
+        closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
+        *truth = 0.5 - sigmoid(resultIfFalse.closestSoftAlignmentScore) / 1000.0 - 1e-5;
+        softGuess = "false";
+      } else {
+        // Case: no clue
+        *truth = 0.5;
+      }
     }
   }
   // (debug)

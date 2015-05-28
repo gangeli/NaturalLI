@@ -33,10 +33,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 1.00;
+  private static double ALIGNMENT_WEIGHT = 0.10;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/classifier+naturalli_0.0_barrons.cache";
+  private static String NATURALLI_INCACHE = "logs/all_1.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";

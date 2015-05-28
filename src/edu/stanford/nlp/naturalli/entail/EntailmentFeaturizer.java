@@ -48,7 +48,7 @@ public class EntailmentFeaturizer implements Serializable {
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
     add(FeatureTemplate.KEYWORD_OVERLAP);
-//    add(FeatureTemplate.LUCENE_SCORE);
+    add(FeatureTemplate.LUCENE_SCORE);
 
 
 

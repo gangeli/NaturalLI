@@ -6,9 +6,16 @@
 #include "Utils.h"
 
 // NaturalLI Only Weights
-#define BONUS_COUNT_ALIGNED 0.2774f
-#define PENALTY_ONLY_IN_HYPOTHESIS -0.0492f
-#define BIAS -0.7631f
+#define BONUS_COUNT_ALIGNED 0.2881f
+#define PENALTY_ONLY_IN_HYPOTHESIS -0.1374f
+
+// Overlap Only Weights
+//#define BONUS_COUNT_ALIGNED 0.0678f
+//#define PENALTY_ONLY_IN_HYPOTHESIS -0.5558f
+
+// Overlap+Lucene Only Weights
+//#define BONUS_COUNT_ALIGNED 0.0186f
+//#define PENALTY_ONLY_IN_HYPOTHESIS -0.4685f
 
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a < b ? b : a)
