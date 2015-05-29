@@ -166,7 +166,7 @@ Note that the usual operators apply to relational entailments -- if
 Verb entailment information was incorporated using data from \textsc{VerbOcean}.
 \newcite{key:chklovski2004verbocean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-We approximate the \textsc{VerbOcean} relations $\mathit{stronger-than}(v_1,v_2)$ and $\mathit{happens-before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
+We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 These \textit{verb entailment} transitions are incorporated using the original weights from \newcite{key:chklovski2004verbocean}, thresholded as indicated in the original paper. 
 
 % Meronymy
@@ -182,7 +182,7 @@ We collect a set of operators which are either monotone or antitone with respect
   to the meronymy hierarchy; these then compose with the usual operators to project
   lexical relations in the usual fashion.
 
-\textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase\cite{key:2008bollacker-freebase}.
+\textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
 As this relation is also based on an underlying partial order, we are able to use a weighting scheme analogous to that used for the hypernymy transitions.
 We also instantiate the inverse, \textit{holonymy} transitions.
