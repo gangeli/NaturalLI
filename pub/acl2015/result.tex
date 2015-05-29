@@ -50,14 +50,16 @@ For coreference, UW uses the Stanford coreference system
 \begin{table}
 \begin{center}
 \begin{tabular}{l|cc:c}
-\textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
+\textbf{System}       & \textbf{P}    & \textbf{R}    & \textbf{F$_1$} \\
 \hline
-UW Official          & \textbf{69.8} & 11.4 & 19.6 \\
-Ollie                & 57.4 & 4.8   & 8.9  \\
-$~~$ + Nominal Rels  & 56.8 & 12.1  & 19.9 \\
+UW Official           & \textbf{69.8} & 11.4          & 19.6 \\
+Ollie                 & 57.4          & 4.8           & 8.9  \\
+$~~$ + Nominal Rels   & 56.8          & 12.1          & 19.9 \\
 \hline
-Our System           & 61.0 & 12.7  & 21.1 \\
-$~~$ + Alt. Names    & 56.8 & \textbf{16.6} & \textbf{25.7} \\
+Our System            & 59.6          & 14.1          & 22.7 \\
+$~~$ - Nominal Rels   & --.-          &               & \\
+$~~$ + Alt. Names     & 56.8          &               & \\
+$~~$ + Websites       & 56.8          &               & \\
 \end{tabular}
 \end{center}
 \caption{\label{tab:results}

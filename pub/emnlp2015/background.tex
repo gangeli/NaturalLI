@@ -1,12 +1,16 @@
 \Section{bg}{Background}
-We briefly review Natural Logic and the NaturalLI system -- which this
-  paper extends -- and review related work.
+We briefly review natural logic and the existing NaturalLI system.
+Much of this paper extends this system, with additional inferences
+  (\refsec{naturalli}) and a soft lexical classifier (\refsec{softsignal}).
 
 \Subsection{bg-natlog}{Natural Logic}
 % Bag of citations
-Natural logic aims to capture a subset of valid logical
+Natural logic is a formal proof theory that 
+  aims to capture a subset of valid logical
   inferences by appealing directly to the structure of language,
-  as opposed to running deduction on an abstract logical form.
+  without needing either an abstract logical language 
+  (e.g., Markov Logic Networks; \newcite{key:2006richardson-mln})
+  or denotations (e.g., semantic parsing; \newcite{key:2015liang-denotations}).
 Like \newcite{key:2014angeli-naturalli}, we use the logic
   introduced by the NatLog system (MacCartney and Manning, 2007; 2008; 2009),
   \nocite{key:2007maccartney-natlog}
@@ -20,43 +24,62 @@ We adopt the precise semantics of \newcite{key:2014icard-natlog};
   the formalism.
 
 % Give a teaser
-At a high level, Natural Logic proofs operate by mutating spans of text
+At a high level, natural logic proofs operate by mutating spans of text
   to ensure that the mutated sentence follows from the
   original -- each step is much like a syllogistic inference.
 Each mutation in the proof follows three steps:
-  (1) an atomic relation is induced by the mutated lexical item,
-  (2) this relation is \textit{projected} up to yield a relation
-      between the original and mutated sentence, and
-  (3) these sentence-level relations are \textit{joined} together to
-      yield a relation between the original premise and the final
-      hypothesis.
-Some example relations are given below, corresponding to the example inference
-  in \reffig{naturalli}:
 
-\vspace{1.0em}
-\begin{center}
-\begin{tabular}{rcl}
-\w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
-\w{cat}        & \forward    & \w{carnivore} \\
-\w{animal}     & \equivalent & \w{a animal} \\
-\w{animal}     & \reverse    & \w{mouse} \\
-\end{tabular}
-\end{center}
-\vspace{1.0em}
+\begin{enumerate}
+\setlength\itemsep{-0.25em}
+\item An atomic lexical relation is induced by either inserting, deleting
+      or mutating a token in the sentence. 
+      For example, in \reffig{naturalli},
+      mutating \w{The} to \w{No} induces the \negate\ relation;
+      mutating \w{cat} to \w{carnivore} induces the \forward\ relation.
+      
+      The relations \equivalent\ and \forward\ are variants of  entailment;
+      \negate\ and \alternate\ are variants of negation.
 
-% Punt on things
-We refer the reader to \newcite{key:2014icard-natlog} for a
-  more comprehensive introduction to the atomic relations (1), and to the
-  join table between these relations (3).
-However, the notion of \textit{projecting} a relation from a lexical item to
-  a sentence will be important to understand, and therefore we give
-  a simplified explanation here.\footnote{
-    Note that the implementation leverages the semantics in 
-    \newcite{key:2014icard-natlog}, rather than the simplified semantics
-    described here.
+\item This lexical relation between words is projected up to yield a relation between
+      sentences, based on the operators in the sentence.
+      For instance, \w{The cat eats animals} \forward\ \w{the carnivores eat animals}.
+      We explain this in more details below.
+
+\item These sentence level relations are \textit{joined} together to produce a
+      relation between a premise, and a hypothesis multiple mutations away.
+      For example in \reffig{naturalli}, if we join 
+      \forward, \equivalent, \forward, and \negate, we
+      get negation (\alternate).
+\end{enumerate}
+
+%Some example relations are given below, corresponding to the example inference
+%  in \reffig{naturalli}:
+%
+%\vspace{1.0em}
+%\begin{center}
+%\begin{tabular}{rcl}
+%\w{No $x$ $y$} & \negate     & \w{The $x$ $y$} \\
+%\w{cat}        & \forward    & \w{carnivore} \\
+%\w{animal}     & \equivalent & \w{a animal} \\
+%\w{animal}     & \reverse    & \w{mouse} \\
+%\end{tabular}
+%\end{center}
+%\vspace{1.0em}
+%
+%% Punt on things
+%We refer the reader to \newcite{key:2014icard-natlog} for a
+%  more comprehensive introduction to the atomic relations (1), and to the
+%  join table between these relations (3).
+
+The notion of \textit{projecting} a relation from a lexical item to
+  a sentence is important to understand.\footnote{
+    For clarity we describe a simplified semantics here; 
+    NaturalLI implments the semantics descibed in 
+    \newcite{key:2014icard-natlog}.
   }
 To illustrate, \textit{cat} \forward\ \textit{animal},
-  and \textit{some cat meows} \forward\ \textit{some animal meows},
+  and \textit{some cat meows} \forward\ \textit{some animal meows}
+  (recall, \forward\ denotes entailment),
   but
   \textit{no cat barks} \nforward\ \textit{no animal barks}.
 Despite differing by the same \textit{lexical} relation,
@@ -67,7 +90,8 @@ We appeal to two important concepts: \textit{monotonicity} -- a
   property of arguments to natural language operators;
   and \textit{polarity} -- a property of tokens.
 From the example above, \w{some} is [upward] monotone in its first
-  argument, and \w{no} is antitone (downward monotone) in its first argument.
+  argument (i.e., \w{cat} or \w{animal}), 
+  and \w{no} is antitone (downward monotone) in its first argument.
 This means that the first argument to \w{some} is allowed to mutate up the
   hypernymy tree, whereas the first argument to \w{no} is allowed to mutate
   down the hypernymy tree.
@@ -77,13 +101,15 @@ This means that the first argument to \w{some} is allowed to mutate up the
   a property of tokens in a sentence determined by the
   operators acting on it.
 All lexical items have \textit{upward} polarity by default;
-  monotone operators preserve polarity,
-  and antitone operators reverse polarity.
+  monotone operators -- like \w{some}, \w{several}, or \w{a few} -- preserve polarity.
+Antitone operators -- like \w{no}, \w{not}, \w{all} in its first argument -- 
+  reverse polarity.
 For example, \w{mice} in \w{\textbf{no} cats eat mice} has downward 
   polarity, whereas \w{mice} in \w{\textbf{no} cats do\textbf{n't} eat mice}
   has upward polarity
   (it is in the scope of two downward monotone operators).
-The polarity of a token therefore completely defines the valid mutations
+The polarity of a token defines how a relation induced by a lexical mutation
+  projects up a sentence, and therefore completely determines the valid mutations
   on that token.
 
 %
@@ -97,8 +123,9 @@ The polarity of a token therefore completely defines the valid mutations
   \resizebox{0.48\textwidth}{!}{\teaserSearch} \\
 \end{center}
 \caption{
-  An illustration of a NaturalLI search.
-  In this case, we are searching from a query (hypothesis)
+  An illustration of a NaturalLI searching for a candidate premise
+  to support the hypothesis at the root of the tree.
+  We are searching from a hypothesis
   \w{no carnivores eat animals}, and find a contradicting
   premise \w{the cat ate a mouse}.
   The edge labels denote Natural Logic inference steps.
@@ -107,12 +134,11 @@ The polarity of a token therefore completely defines the valid mutations
 \end{figure}
 
 % Introduce NaturalLI
-This paper makes use of and extends NaturalLI \cite{key:2014angeli-naturalli}
-  as the means of natural logic inference.
+This paper extends NaturalLI, presented in \newcite{key:2014angeli-naturalli}.
 NaturalLI casts inference as a search problem: given a hypothesis and an arbitrarily
-  large knowledge base of candidate premises, it searches through the space of valid
-  or approximately valid mutations (with associated costs) until a premise is
-  found.
+  large knowledge base of candidate premises, it searches through the space of
+  lexical mutations (e.g., \w{cat} $\rightarrow$ \w{carnivore}), 
+  with associated costs, until a premise is found.
 This allows it to capture both strict natural logic inferences (e.g., over hypernymy
   or operator mutations), as well as likely correct inferences with an associated
   cost (e.g., nearest neighbors in vector space).
@@ -126,8 +152,8 @@ An example search using NaturalLI is given in \reffig{naturalli}.
 The relations along the edges denote relations between the associated sentences
   -- i.e., the projected lexical relations from \refsec{bg-natlog}.
 In practice, NaturalLI generally searches around \num{100000} candidate premises
-  per second, on knowledge bases ranging from 1M premises (e.g., the \textsc{Scitest}
-  corpus used in this word) to 300M premises (the dataset used in the original paper).
+  per second, on knowledge bases ranging from 1M premises (the \textsc{Scitest}
+  corpus used in this work) to 300M premises (the dataset used in the original paper).
 
 %
 % Related Work
