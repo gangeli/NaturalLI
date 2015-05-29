@@ -30,7 +30,7 @@ ax.yaxis.set_ticks_position('left')
 [precisions, recalls] = pr('final_results/ollie.plot');
 plt.plot(recalls, precisions, label="Ollie", linewidth=3.0, linestyle=':', color='red')
 [precisions, recalls] = pr('final_results/our_system_nonominals.plot');
-plt.plot(recalls, precisions, label="Our System - Nominals", linewidth=3.0, linestyle='-', color='green')
+plt.plot(recalls, precisions, label="Our System (without nominals)", linewidth=3.0, linestyle='-', color='green')
 #[precisions, recalls] = pr('final_results/our_system_names_websites.plot');
 #plt.plot(recalls, precisions, label="Our System + Alt. Name + Website")
 

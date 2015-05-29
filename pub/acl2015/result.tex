@@ -51,17 +51,18 @@ For coreference, UW uses the Stanford coreference system
 \begin{center}
 \begin{tabular}{lccc}
 \hline
-\textbf{System}               & \textbf{P}    & \textbf{R}    & \textbf{F$_1$} \\
+\textbf{System}                & \textbf{P}    & \textbf{R}    & \textbf{F$_1$} \\
 \hline
-UW Official                   & \textbf{69.8} & 11.4          & 19.6 \\
+UW Official$^*$                & \textbf{69.8} & 11.4          & 19.6 \\
 \hline
-Ollie                         & 57.4          & 4.8           & 8.9  \\
-$~~$ + Nominal Rels           & 57.6          & 10.4          & 17.5 \\
+Ollie$^\dagger$                & 57.4          & 4.8           & 8.9  \\
+$~~$ + Nominal Rels$^*$        & 57.6          & 10.4          & 17.5 \\
 \hline
-Our System (no nominals)      & 59.6          & 14.1          & 22.7 \\
-$~~$ + Nominal Rels           & 63.6          & 8.6           & 15.2 \\
-$~~$ + Alt. Name              & 56.1          & 18.0          & 27.3 \\
-$~~$ + Alt. Name + Website    & 57.0          & \textbf{18.8} & \textbf{28.3} \\
+Our System                     & ~~~~          & ~~~           & ~~~  \\
+$~~$ - Nominal Rels$^\dagger$  & 64.3          & 8.6           & 15.2 \\
+$~~$ + Nominal Rels$^*$        & 61.9          & 13.9          & 22.7 \\
+$~~$ + Alt. Name               & 57.8          & 17.8          & 27.1 \\
+$~~$ + Alt. Name + Website     & 58.6          & \textbf{18.6} & \textbf{28.3} \\
 \hline
 \end{tabular}
 \end{center}
@@ -75,6 +76,7 @@ The second row is the accuracy of Ollie embedded in our framework,
 Lastly, we report our system, our system with nominal relations removed,
   and our system combined with an alternate names detector and rule-based
   website detector.
+Comparable systems are marked with a dagger$^\dagger$ or  asterisk$^*$.
 %We also run Ollie in the same framework as our open IE system
 %We compare against an official submission to the challenge using
 %  Open IE v4.0 (UW Official), as well as the performance of our system
@@ -105,8 +107,8 @@ If we make use of both of these, our end-to-end accuracy becomes 28.2 F$_1$.
 %  our approach can achieve an end-to-end F$_1$ of 25.7.
 
 % Report Results (Ablation)
-We attempt to isolate variance in scores due to other components in a full
-  KBP system.
+We attempt to remove the variance in scores from the influence of 
+  other components in an end-to-end KBP system.
 We ran the Ollie open IE system \cite{key:2012mausam-ollie} in an identical
   framework to ours, and report accuracy in \reftab{results}.
 Note that when an argument to an Ollie extraction contains a named entity, 
@@ -116,9 +118,8 @@ The low performance of this system can be partially attributed to its inability
 To normalize for this, we report results when the Ollie extractions are
   supplemented with the nominal relations produced by our system
   (Ollie + Nominal Rels in \reftab{results}).
-In the other direction, we can remove the nominal relation extractions from
-  our system.
-Our system outperforms Ollie in both cases.
+Conversly, we can remove the nominal relation extractions from
+  our system; in both cases we outperform Ollie on the task.
 
 \Subsection{pr}{Discussion}
 % PR Curve Figure
@@ -146,21 +147,39 @@ With this in mind, the curves lend some interesting insights.
 Although our system is very high precision on the most confident extractions,
   it has a large dip in precision early in the curve.
 This suggests that the model is extracting multiple instances of a bad
-  relation, which pushes the KBP confidence high.
-This is likely due to a systematic error in the system, likely in the
-  clause splitting.
+  relation.
+Systematic errors in the clause splitter are the likely cause of these errors.
 While the approach of splitting sentences into clauses generalizes better
   to out-of-domain text, it is reasonable that the errors made in the
   clause splitter manifest across a range of sentences more often than
   the fine-grained patterns of Ollie would.
 
 % But, we do well afterwards
-After this dip, however, our system achieves both higher precision
+On the right half of the PR curve, however, our system achieves both higher precision
   and extends to a higher recall than Ollie.
 Furthermore, the curve is relatively smooth near the tail, suggesting
   that indeed we are learning a reasonable estimate of confidence for
   extractions that have only one supporting instance in the text
   -- empirically, 46\% of our extractions.
+
+% Aggregate statistics
+In total, we extract \num{42662862} open IE triples which link to a pair
+  of entities in the corpus (i.e., are candidate KBP extractions),
+  covering \num{1180770} relation types.
+\num{202797} of these relation types appear in more than 10 extraction instances;
+  \num{28782} in more than 100 instances, and \num{4079} in more than 1000 instances.
+\num{308293} relation types appear only once.
+Note that our system
+  over-produces extractions when both a general and specific extraction are
+  warranted; therefore these numbers are an overestimate of the number
+  of semantically meaningful facts.
+
+For comparison, Ollie extracted \num{12274319} triples, covering
+  \num{2873239} relation types.
+\num{1983300} of these appeared only once;
+  \num{69010} appeared in more than 10 instances, \num{7951} in more than 100
+  instances, and \num{870} in more than 1000 instances.
+    
 
 
 
