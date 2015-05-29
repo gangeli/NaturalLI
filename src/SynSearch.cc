@@ -6,8 +6,12 @@
 #include "Utils.h"
 
 // NaturalLI Only Weights
-#define BONUS_COUNT_ALIGNED 0.2881f
-#define PENALTY_ONLY_IN_HYPOTHESIS -0.1374f
+#define COUNT_ALIGNABLE                0.2688f
+#define COUNT_ALIGNED                  0.0678f
+#define COUNT_UNALIGNABLE_CONCLUSION  -0.0531f
+#define COUNT_UNALIGNABLE_PREMISE     -0.0749f
+#define COUNT_INEXACT                 -0.5558f
+#define BIAS                          -0.7858f
 
 // Overlap Only Weights
 //#define BONUS_COUNT_ALIGNED 0.0678f

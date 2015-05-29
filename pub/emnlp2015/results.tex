@@ -138,17 +138,24 @@ The data was then augmented with an additional set of negatives, collected by ta
 This yielded a total of \num{21306} training examples, which was used to train
   a simple logistic regression classifier.
 
+As a simple heuristic for incorporating soft negation, the classifier's overlap
+  score was halved in these cases.
+Additionally, any premise which did not contain the candidate answer to the
+  multiple choice query was discounted by three quarters (if it is a single
+  word answer) and a quarter (if it is a multi-word answer).
+Note that despite these, the system is relatively domain agnostic -- no
+  lexical features or domain-specific reasoning is employed.
+
 %
 % Results
 %
 \Subsubsection{aristo-results}{Experimental Results}
 Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
-We compare the performance of a number of variants of our system.
-\textit{NaturalLI Only} is a run using only NaturalLI inferences (both hard and
-  soft) to decide the truth of the question.
-Note that this already performs as well as prior work published on the dataset,
-  and scales gracefully to a larger supporting corpus.
-
+\textit{NaturalLI} denotes our system, using NaturalLI inferences incorporating
+  the soft classifier.
+%Note that this already performs as well as prior work published on the dataset,
+%  and scales gracefully to a larger supporting corpus.
+%
 We additionally report results for a number of traditional baselines.
 The simplest of these is to rank answers based on the Lucene score returned by
   Solr.
@@ -188,7 +195,7 @@ In fact, on the training set, the classifier can nearly pass the exam with a sco
 \t{\textsc{Knowbot} (held-out)} & \t{45} & \t{--} & \t{--} & \t{--} \\
 \t{\textsc{Knowbot} (oracle)}   & \t{57} & \t{--} & \t{--} & \t{--} \\
 \hline                                                         
-\t{NaturalLI Only}              & \t{45} & \t{  } & \t{55} & \t{ } \\
+\t{NaturalLI}                   & \t{45} & \t{  } & \t{55} & \t{ } \\
 \t{Solr Only}                   & \t{48} & \t{  } & \t{64} & \t{ } \\
 \t{Align Features Only}         & \t{54} & \t{  } & \t{68} & \t{ } \\
 \t{Align + Solr}                & \t{50} & \t{  } & \t{69} & \t{ } \\
@@ -207,7 +214,6 @@ The held-out version used only additional facts from other question's dialogs;
   the oracle version directly made use of human input on the question it was 
   answering.
 The test set did not exist at the time \textsc{Knowbot} was published.
-\todo{get good numbers}
 }
 \end{table}
 %

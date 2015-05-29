@@ -48,7 +48,7 @@ public class EntailmentFeaturizer implements Serializable {
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
     add(FeatureTemplate.KEYWORD_OVERLAP);
-    add(FeatureTemplate.LUCENE_SCORE);
+//    add(FeatureTemplate.LUCENE_SCORE);
 
 
 
@@ -390,7 +390,7 @@ public class EntailmentFeaturizer implements Serializable {
       // MINIMAL GOOD FEATURE SET
       feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNED, perfectMatch);
       feats.incrementCount(NaturalLIClassifier.COUNT_ALIGNABLE, anyOverlap);
-      feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_JOINT, notOverlap);
+      feats.incrementCount(NaturalLIClassifier.COUNT_INEXACT, notOverlap);
       feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_PREMISE, onlyInPremise);
       feats.incrementCount(NaturalLIClassifier.COUNT_UNALIGNABLE_CONCLUSION, onlyInHypothesis);
       // END MINIMAL GOOD FEATURE SET

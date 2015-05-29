@@ -47,7 +47,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
   static final String COUNT_UNALIGNABLE_PREMISE    = "count_unalignable_premise";
   static final String COUNT_UNALIGNABLE_CONCLUSION = "count_unalignable_conclusion";
-  static final String COUNT_UNALIGNABLE_JOINT      = "count_unalignable_joint";
+  static final String COUNT_INEXACT                = "count_inexact";
 
   static final String COUNT_PREMISE    = "count_premise";
   static final String COUNT_CONCLUSkION = "count_conclusion";
