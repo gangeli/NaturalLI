@@ -1,52 +1,63 @@
 \Section{naturalli}{Improving Inference in NaturalLI}
 % Overview paragraph
-We extend NaturalLI in a few key ways to make it more suitable for question
+We extend NaturalLI in a few key ways to improve its coverage for question
   answering tasks over long, complete sentences.
-Unlike the original version, we define a search algorithm over dependency
+We adapt the search algorithm to operate over dependency
   trees, rather than the surface form of the sentence (\refsec{naturalli-trees}).
-We further enrich the class of inferences warranted by Natural Logic beyond
+We further enrich the class of inferences warranted by natural logic beyond
   hypernymy and operator rewording to also encompass meronymy and
   relational entailment (\refsec{naturalli-meronym}).
 Lastly, we handle \textit{deletions} during logical inference more elegantly
   (\refsec{naturalli-forward}).
 
-%
-% Dependency Trees
-%
-\Subsection{naturalli-trees}{Natural Logic over Dependency Trees}
 % Three search operations
-The search algorithm in NaturalLI is parametrized as follows:
+The general search algorithm in NaturalLI is parametrized as follows:
 First, an order is chosen to traverse the tokens in a sentence.
 For example, the original paper traverses tokens left-to-right.
 At each token, one of three operations can be performed:
   these are \textit{deleting} a token
-  -- corresponding to inserting a word in the forward entailment,
+  -- corresponding to inserting a word during natural logic inference,
   \textit{mutating} a token, and \textit{inserting} a token -- again, corresponding
   to deleting a token in the forward entailment.
+For brevity, we will refer to an insertions during inference (deletions during
+  search) as \textit{deletions}, and visa versa insertions.
 
-% Zoom in on what we're changing
-We handle this last operation outside of the search procedure (see \refsec{naturalli-forward}),
-  and turn our attention to the first two.
-Mutating a token in turn remains unchanged, beyond the addition of new inference rules
-  (see \refsec{naturalli-meronym}).
-This leaves us to define the semantics of deleting tokens during the search, and
-  deciding an order in which to traverse the tokens.
+%
+% Dependency Trees
+%
+\Subsection{naturalli-trees}{natural logic over Dependency Trees}
+Operating over dependency trees rather than a token sequence requires reworking
+  (1) the semantics of deleting a token during search, and 
+  (2) the order in which the sentence is traversed.
+
+%% Zoom in on what we're changing
+%We handle this last operation outside of the search procedure (see \refsec{naturalli-forward}),
+%  and turn our attention to the first two.
+%Mutating a token in turn remains unchanged, beyond the addition of new inference rules
+%  (see \refsec{naturalli-meronym}).
+%This leaves us to define the semantics of deleting tokens during the search, and
+%  deciding an order in which to traverse the tokens.
 
 % Talk about deletion
 Recent work by \newcite{key:2015angeli-openie} defined a mapping from Stanford
-  Dependency relations to the associated MacCartney-style relation deleting the
-  dependent subtree would induce.
+  Dependency relations to the associated lexical relation deleting the
+  dependent subtree during inference would induce.
+For instance, deleting an \texit{amod} edge induces \forward\ -- it maintains
+  entailment in an upward polarity context.
 We adapt this mapping to yield the relation induced by \textit{inserting} a
-  given dependency edge (recall, a deletion during search is an insertion during
-  inference); we also convert the mapping to use Universal Dependencies
+  given dependency edge, corresponding to our deletions in search;
+%  (recall, a deletion during search is an insertion during
+%  inference); 
+  we also convert the mapping to use Universal Dependencies
   \cite{key:stanford-ud}.
 This now lends a natural deletion operation: at a given node, the subtree rooted
-  at that node can be deleted to induce the associated Natural Logic relation.
+  at that node can be deleted to induce the associated natural logic relation.
 
 % Example of deletion
-For example, we can infer that \w{all villains have lairs} entails that
-  \textit{all truly notorious villains have lairs} by observing that inserting
-  on an \textit{amod} arc induces the relation \reverse, which in the downward
+For example, we can infer that 
+  \w{all truly notorious villains have lairs} from the premise
+  \w{all villains have lairs} by observing that deleting
+  an \textit{amod} arc induces the relation \reverse, which in the downward
   polarity context of \textit{\tagDown{villains}} projects to \forward\ (entailment):
 
 \begin{center}
@@ -71,7 +82,7 @@ This avoids repeated deletion of nodes, as we do not have to traverse any
   subtree which has been deleted.
 
 % Subtlety about operators
-A subtlety to consider here is the effect of mutating operator on the
+A subtlety to consider here is the effect mutating operator have on the
   polarity of their arguments -- for example, mutating \w{some} to
   \w{all}.
 There are both cases where we must mutate the argument to the operator before
@@ -111,7 +122,7 @@ Therefore, our traversal first visits each operator, then performs a breadth-fir
 \end{center}
 \caption{
 An illustration of monotonicity using different partial orders.
-(a) Monotonicity illustrated over real numbers -- $e^x-1$ is monotone whereas
+(a) Monotonicity illustrated over real numbers: $e^x-1$ is monotone whereas
     $e^{-x}$ is antitone.
 (b) The monotonicity of \w{all} and \w{some} in their first arguments, over
     a domain of denotations.
@@ -121,11 +132,12 @@ An illustration of monotonicity using different partial orders.
 \end{figure*}
 
 % Cute example of partial orders
-Although Natural Logic and the underlying monotonicity calculus has 
-  dealt only with hypernymy, the underlying framework
-  can be applied to any definition of a partial order over lexical items.
-To give a cute example, we can consider a natural logic over integers \cite{key:2014icard-natlog} 
-  -- which have a total, and therefore partial order.
+Although natural logic and the underlying monotonicity calculus has 
+  only been explored in the context of hypernymy, the underlying framework
+  can be applied to any partial order over lexical items.
+To give a simple example, 
+  we can consider a natural logic over integers \cite{key:2014icard-natlog}.
+%  -- which have a total, and therefore partial order.
 If we observe that the numeric operator $e^{-x} : \bR \rightarrow \bR$ is
   antitone, then we can infer that because $2 \geq 1$ (i.e., $2 \reverse 1$)
   we know that $e^{-2} \leq e^{-1}$ (i.e., $e^{-2} \forward e^{-1}$), without
@@ -133,15 +145,16 @@ If we observe that the numeric operator $e^{-x} : \bR \rightarrow \bR$ is
 
 % Translate to language
 In the same way, natural language operators are defined as a mapping from
-  denotations of objects, to truth values.
-Truth values define a trivial partial order (false $\leq$ true).\footnote{
-  Note that this is exactly entailment: if \hbox{$t_1 \leq t_2$} 
+  denotations of objects, to truth values.\footnote{
+  Truth values are a trivial partial order corresponding to entailment:
+  if \hbox{$t_1 \leq t_2$} 
   (i.e., \hbox{$t_1 \forward t_2$}),
   and you know that $t_1$ is true, then $t_2$ must be true.
 }
 The domain of word denotations is then ordered by the subset operator, corresponding
-  to ordering by hypernymy over the words: a hypernym of a word has a denotation
-  that completely subsumes it.
+  to ordering by hypernymy over the words.
+%  a hypernym of a word has a denotation
+%  that completely subsumes it.
 
 % New partial orders
 However, hypernymy is not the only relation we can use to define the ordering over
@@ -179,44 +192,46 @@ Unlike relational entailment and hypernymy, meronymy is is operated on by its ow
   if \w{Hawaii is an island}, we cannot necessarily entail that \w{America
   is an island}.
 We collect a set of operators which are either monotone or antitone with respect
-  to the meronymy hierarchy; these then compose with the usual operators to project
-  lexical relations in the usual fashion.
+  to the meronymy hierarchy (e.g., \w{born in}, \w{visited}); 
+  these then compose with the usual operators (e.g., \w{some}, \w{all}) in a
+  straightforward fashion.
 
 \textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase\cite{key:2008bollacker-freebase}.
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
 As this relation is also based on an underlying partial order, we are able to use a weighting scheme analogous to that used for the hypernymy transitions.
 We also instantiate the inverse, \textit{holonymy} transitions.
 
-% Other orders
-Note that these are not the only two orders that can be incorporated into our
-  framework; they just happen to be two which have lexical resources available
-  and are likely to be useful in real-world entailment tasks.
+%% Other orders
+%Note that these are not the only two orders that can be incorporated into our
+%  framework; they just happen to be two which have lexical resources available
+%  and are likely to be useful in real-world entailment tasks.
 
 %
 % Forward Search
 %
-\Subsection{naturalli-forward}{Bidirectional Search}
+\Subsection{naturalli-forward}{Removing the Insertion Transition}
 % Review Trie
-Deleting tokens in a natural logic inference manifest as inserting tokens
-  during search.
-This poses an inherent problem, as the space of possible words to insert at any
-  given position in a sentence is on the order of the size of the vocabulary.
-In NaturalLI, this was solved by keeping a Trie of possible insertions, and
+%Deleting tokens in a natural logic inference manifest as inserting tokens
+%  during search.
+Inserting words during search poses an inherent problem, 
+  as the space of possible words to insert at any
+  position is on the order of the size of the vocabulary.
+In NaturalLI, this was solved by keeping a trie of possible insertions, and
   using that to prune this space.
 However, this is both computationally slow and adapts awkwardly to a search over
   dependency trees.
 
 % Pre-compute deletion
-Therefore, we instead opt to perform a bidirectional search:
+Therefore, this work instead opts to perform a bidirectional search:
   when constructing the knowledge base, we add not only the original sentence but
-  also all variants of the sentence with subtrees deleted.
+  also all entailments with subtrees deleted.
 For example, a premise of \w{some furry cats have tails} would yield two facts
   for the knowledge base: \w{some furry cats have tails} as well as \w{some cats
   have tails}.
 For this, we use the process described in \newcite{key:2015angeli-openie} to
   generate short entailed sentences from a long utterance using natural logic.
-This then leaves the reverse search to only deal with mutations and inference  
-  insertions, which are relatively easier.
+%This then leaves the reverse search to only deal with mutations and inference  
+%  insertions, which are relatively easier.
 
 % Difficulties
 The additional challenge this introduces, of course, is the additional space required
@@ -239,8 +254,8 @@ When mutating an edge, we XOR the hash of the parent state with the edge we are
   mutating, and again with the mutated edge.
 In this way, each search node need only carry an 8 byte hash, local information
   about the edge currently being considered (8 bytes), global information about the words
-  deleted during search (5 bytes), a 3 byte backpointer, and 8 bytes of
-  operator metadata -- 32 bytes in all.
+  deleted during search (5 bytes), a 3 byte backpointer to recover the
+  inference path, and 8 bytes of operator metadata -- 32 bytes in all.
 This results in an incidental contribution of having made NaturalLI significantly
   faster and more memory efficient.
 

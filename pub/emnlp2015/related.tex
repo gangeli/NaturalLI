@@ -1,0 +1,40 @@
+\Section{related}{Related Work}
+\todo{don't plagiarize the EMNLP2014 paper}
+\todo{put in Aristo papers}
+% -- Extending OpenIE
+% Richard
+\newcite{key:2013chen-completion} and \newcite{key:2013socher-completion}
+  use Neural Tensor Networks to predict unseen relation triples in
+  WordNet and Freebase, following a line of work by
+  \newcite{key:2011bordes-completion} and
+  \newcite{key:2012jenatton-completion}.
+% Universal schemas
+\newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
+  present a related line of work, inferring new relations between
+  Freebase entities via inference over both Freebase and
+  OpenIE relations.
+In contrast, this work runs inference over arbitrary text, without 
+  restricting itself to a particular set of relations, or even entities.
+%This work, however, focuses primarily on common-sense reasoning rather
+%  than inferring relations between named entities.
+
+% -- RTE
+This work is similar in many ways to work on 
+  recognizing textual entailment -- e.g., 
+  \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment}.
+Work by \newcite{key:2013lewis-entailment} is particularly relevant,
+  as they likewise evaluate on the FraCaS suite (Section 1;
+  89\% accuracy with gold trees).
+They approach entailment by constructing a CCG parse of the query,
+  while mapping questions which are paraphrases of each other to the
+  same logical form using distributional relation clustering.
+However, their system is unlikely to scale to either our large
+  database of premises, or our breadth of relations.
+
+% Paraphrase-based Q/A
+\newcite{key:2014fader-openqa} propose a system for question answering
+  based on a sequence of paraphrase rewrites followed by a fuzzy query to
+  a structured knowledge base.
+
+
+
