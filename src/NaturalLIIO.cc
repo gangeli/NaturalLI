@@ -194,7 +194,7 @@ AlignmentSimilarity parseAlignment(string& spec) {
   if (instances.size() == 0) {
     fprintf(stderr, "WARNING: no alignments parsed in spec: %s\n", origSpec);
   }
-  return AlignmentSimilarity(instances);
+  return AlignmentSimilarity(instances, 0);
 }
 
 /**

@@ -1,16 +1,29 @@
 \begin{abstract}
-Simple lexical methods are often surprisingly effective at
-  solving entailment problems.
-However, they are easily thrown off by lexically subtle logical
-  fallacies -- e.g., negation.
-We present an approach for combining logical reasoning with
-  Natural Logic with a broad-coverage but lower-precision
-  lexical classifier, and show that this combination outperforms
-  either system in isolation.
-We evaluate our system in a question answering setting, where
-  a large set of candidate premises can confirm or contradict
-  the truth of a query.
-We validate our system on strict entailments in the FraCaS test suite,
+Natural logic question answering system, such as NaturalLI,
+  can capture a large number of useful inferences; nonetheless,
+  there are many cases that are out of scope for the
+  formalism.
+We propose two contributions to mitigate these cases:
+  we incorporate reasoning about relational entailment
+  (e.g., \w{buy} $\rightarrow$ \w{own}) 
+  and meronymy
+  (e.g., a person born in a city is born the city's country).
+Furthermore, while searching for candidate premises, backoff to
+  a lexical classifier for a soft judgment on whether
+  the candidate is entailed by a known premise.
+This allows us to provide a confidence for every query.
+%Simple lexical methods are often surprisingly effective at
+%  solving entailment problems.
+%However, they are easily thrown off by lexically subtle logical
+%  fallacies -- e.g., negation.
+%We present an approach for combining logical reasoning with
+%  Natural Logic with a broad-coverage but lower-precision
+%  lexical classifier, and show that this combination outperforms
+%  either system in isolation.
+%We evaluate our system in a question answering setting, where
+%  a large set of candidate premises can confirm or contradict
+%  the truth of a query.
+We validate that our system maintains strict entailments on FraCaS,
   and present
   the best published results on the Aristo science exams corpus.
 \end{abstract}

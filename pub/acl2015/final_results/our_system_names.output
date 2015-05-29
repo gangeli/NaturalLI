@@ -1,0 +1,2124 @@
+SF13_ENG_001	per:alternate_names	stanford1	XIN_ENG_20090829.0040	Ramzan Bashardost	XIN_ENG_20090829.0040:1303-1320,XIN_ENG_20090829.0040:2096-2106	XIN_ENG_20090829.0040:2096-2106		0.953
+SF13_ENG_001	per:children	stanford1	NIL
+SF13_ENG_001	per:cities_of_residence	stanford1	NIL
+SF13_ENG_001	per:city_of_birth	stanford1	AFP_ENG_20090817.0019	Kabul	AFP_ENG_20090817.0019:2386-2391,AFP_ENG_20090817.0019:2472-2477	AFP_ENG_20090817.0019:2401-2419	2386-2419	1.000
+SF13_ENG_001	per:city_of_death	stanford1	NIL
+SF13_ENG_001	per:countries_of_residence	stanford1	NIL
+SF13_ENG_001	per:country_of_birth	stanford1	NYT_ENG_20090619.0062	Afghanistan	NYT_ENG_20090619.0062:3778-3789,NYT_ENG_20090619.0062:4592-4603	NYT_ENG_20090619.0062:3791-3801,NYT_ENG_20090619.0062:1729-1739	3778-3801	0.978
+SF13_ENG_001	per:country_of_death	stanford1	NIL
+SF13_ENG_001	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_001	per:origin	stanford1	NIL
+SF13_ENG_001	per:other_family	stanford1	NIL
+SF13_ENG_001	per:parents	stanford1	NIL
+SF13_ENG_001	per:schools_attended	stanford1	NIL
+SF13_ENG_001	per:siblings	stanford1	NIL
+SF13_ENG_001	per:spouse	stanford1	NIL
+SF13_ENG_001	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_001	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_001	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_001	per:age	stanford1	LTW_ENG_20090727.0007	44	LTW_ENG_20090727.0007:3563-3565	LTW_ENG_20090727.0007:3551-3561,LTW_ENG_20090727.0007:4264-4274	3551-3565	1.000
+SF13_ENG_001	per:date_of_birth	stanford1	NIL
+SF13_ENG_001	per:date_of_death	stanford1	NIL
+SF13_ENG_001	per:cause_of_death	stanford1	NIL
+SF13_ENG_001	per:charges	stanford1	NIL
+SF13_ENG_001	per:religion	stanford1	AFP_ENG_20090814.0229	independent	AFP_ENG_20090814.0229:2634-2645	AFP_ENG_20090814.0229:2656-2674	2634-2674	0.998
+SF13_ENG_001	per:title	stanford1	XIN_ENG_20090825.0139	Minister	XIN_ENG_20090825.0139:527-535	XIN_ENG_20090825.0139:536-554	527-554	0.881
+SF13_ENG_001	per:title	stanford1	XIN_ENG_20101030.0049	critic	XIN_ENG_20101030.0049:826-832	XIN_ENG_20101030.0049:833-851	826-851	1.000
+SF13_ENG_002	per:alternate_names	stanford1	NIL
+SF13_ENG_002	per:children	stanford1	NIL
+SF13_ENG_002	per:cities_of_residence	stanford1	NIL
+SF13_ENG_002	per:city_of_birth	stanford1	NIL
+SF13_ENG_002	per:city_of_death	stanford1	NIL
+SF13_ENG_002	per:countries_of_residence	stanford1	NIL
+SF13_ENG_002	per:country_of_birth	stanford1	NIL
+SF13_ENG_002	per:country_of_death	stanford1	NIL
+SF13_ENG_002	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_002	per:origin	stanford1	NIL
+SF13_ENG_002	per:other_family	stanford1	NIL
+SF13_ENG_002	per:parents	stanford1	NIL
+SF13_ENG_002	per:schools_attended	stanford1	NIL
+SF13_ENG_002	per:siblings	stanford1	NIL
+SF13_ENG_002	per:spouse	stanford1	NIL
+SF13_ENG_002	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_002	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_002	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_002	per:age	stanford1	NIL
+SF13_ENG_002	per:date_of_birth	stanford1	NIL
+SF13_ENG_002	per:date_of_death	stanford1	NIL
+SF13_ENG_002	per:cause_of_death	stanford1	NIL
+SF13_ENG_002	per:charges	stanford1	NIL
+SF13_ENG_002	per:religion	stanford1	NIL
+SF13_ENG_002	per:title	stanford1	AFP_ENG_20100707.0510	chief executive	AFP_ENG_20100707.0510:894-909	AFP_ENG_20100707.0510:910-922	894-922	0.953
+SF13_ENG_003	per:alternate_names	stanford1	NIL
+SF13_ENG_003	per:children	stanford1	NIL
+SF13_ENG_003	per:cities_of_residence	stanford1	NIL
+SF13_ENG_003	per:city_of_birth	stanford1	AFP_ENG_20091123.0613	Spencer	AFP_ENG_20091123.0613:2305-2312	AFP_ENG_20091123.0613:2318-2329	2305-2329	1.000
+SF13_ENG_003	per:city_of_death	stanford1	NIL
+SF13_ENG_003	per:countries_of_residence	stanford1	NIL
+SF13_ENG_003	per:country_of_birth	stanford1	NIL
+SF13_ENG_003	per:country_of_death	stanford1	NIL
+SF13_ENG_003	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_003	per:origin	stanford1	NIL
+SF13_ENG_003	per:other_family	stanford1	NIL
+SF13_ENG_003	per:parents	stanford1	NIL
+SF13_ENG_003	per:schools_attended	stanford1	NIL
+SF13_ENG_003	per:siblings	stanford1	NIL
+SF13_ENG_003	per:spouse	stanford1	NIL
+SF13_ENG_003	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_003	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_003	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_003	per:age	stanford1	NIL
+SF13_ENG_003	per:date_of_birth	stanford1	NIL
+SF13_ENG_003	per:date_of_death	stanford1	NIL
+SF13_ENG_003	per:cause_of_death	stanford1	NIL
+SF13_ENG_003	per:charges	stanford1	NIL
+SF13_ENG_003	per:religion	stanford1	NIL
+SF13_ENG_003	per:title	stanford1	AFP_ENG_20100525.0608	chairman	AFP_ENG_20100525.0608:710-718	AFP_ENG_20100525.0608:719-730	710-730	0.953
+SF13_ENG_003	per:title	stanford1	APW_ENG_20091104.0786	Chief Executive	APW_ENG_20091104.0786:918-933	APW_ENG_20091104.0786:934-945	918-945	1.000
+SF13_ENG_003	per:title	stanford1	APW_ENG_20101109.0538	CEO	APW_ENG_20101109.0538:1920-1923	APW_ENG_20101109.0538:1924-1935	1920-1935	1.000
+SF13_ENG_004	per:alternate_names	stanford1	NIL
+SF13_ENG_004	per:children	stanford1	NIL
+SF13_ENG_004	per:cities_of_residence	stanford1	NIL
+SF13_ENG_004	per:city_of_birth	stanford1	NIL
+SF13_ENG_004	per:city_of_death	stanford1	NIL
+SF13_ENG_004	per:countries_of_residence	stanford1	NIL
+SF13_ENG_004	per:country_of_birth	stanford1	NIL
+SF13_ENG_004	per:country_of_death	stanford1	NIL
+SF13_ENG_004	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_004	per:origin	stanford1	NIL
+SF13_ENG_004	per:other_family	stanford1	NIL
+SF13_ENG_004	per:parents	stanford1	NIL
+SF13_ENG_004	per:schools_attended	stanford1	NIL
+SF13_ENG_004	per:siblings	stanford1	NIL
+SF13_ENG_004	per:spouse	stanford1	NIL
+SF13_ENG_004	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_004	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_004	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_004	per:age	stanford1	NIL
+SF13_ENG_004	per:date_of_birth	stanford1	NIL
+SF13_ENG_004	per:date_of_death	stanford1	NIL
+SF13_ENG_004	per:cause_of_death	stanford1	NIL
+SF13_ENG_004	per:charges	stanford1	NIL
+SF13_ENG_004	per:religion	stanford1	NIL
+SF13_ENG_004	per:title	stanford1	AFP_ENG_20100924.0089	chairman	AFP_ENG_20100924.0089:393-401	AFP_ENG_20100924.0089:365-378	365-401	1.000
+SF13_ENG_004	per:title	stanford1	AFP_ENG_20100926.0199	director	AFP_ENG_20100926.0199:1549-1557	AFP_ENG_20100926.0199:1558-1571	1549-1571	0.953
+SF13_ENG_005	per:alternate_names	stanford1	XIN_ENG_20091117.0103	Tahawwur Rana	XIN_ENG_20091117.0103:2794-2807,XIN_ENG_20091117.0103:344-365	XIN_ENG_20091117.0103:965-985,XIN_ENG_20091117.0103:344-365		0.953
+SF13_ENG_005	per:alternate_names	stanford1	XIN_ENG_20091117.0103	Tahawwur Rehman Rana	XIN_ENG_20091117.0103:965-985,XIN_ENG_20091117.0103:344-365	XIN_ENG_20091117.0103:2794-2807,XIN_ENG_20091117.0103:344-365		0.881
+SF13_ENG_005	per:children	stanford1	NIL
+SF13_ENG_005	per:cities_of_residence	stanford1	NIL
+SF13_ENG_005	per:city_of_birth	stanford1	APW_ENG_20091209.1241	Chicago	APW_ENG_20091209.1241:2388-2395	APW_ENG_20091209.1241:2408-2429	2388-2429	1.000
+SF13_ENG_005	per:city_of_death	stanford1	NIL
+SF13_ENG_005	per:countries_of_residence	stanford1	AFP_ENG_20091027.0162	Pakistan	AFP_ENG_20091027.0162:1310-1318,AFP_ENG_20091027.0162:1766-1774	AFP_ENG_20091027.0162:1271-1292	1271-1318	1.000
+SF13_ENG_005	per:country_of_birth	stanford1	NIL
+SF13_ENG_005	per:country_of_death	stanford1	NIL
+SF13_ENG_005	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_005	per:origin	stanford1	NIL
+SF13_ENG_005	per:other_family	stanford1	NIL
+SF13_ENG_005	per:parents	stanford1	NIL
+SF13_ENG_005	per:schools_attended	stanford1	NIL
+SF13_ENG_005	per:siblings	stanford1	NIL
+SF13_ENG_005	per:spouse	stanford1	NIL
+SF13_ENG_005	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_005	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_005	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_005	per:age	stanford1	AFP_ENG_20091027.0106	48	AFP_ENG_20091027.0106:1097-1099	AFP_ENG_20091027.0106:1074-1095	1074-1099	1.000
+SF13_ENG_005	per:date_of_birth	stanford1	NIL
+SF13_ENG_005	per:date_of_death	stanford1	NIL
+SF13_ENG_005	per:cause_of_death	stanford1	NIL
+SF13_ENG_005	per:charges	stanford1	NIL
+SF13_ENG_005	per:religion	stanford1	NIL
+SF13_ENG_005	per:title	stanford1	NIL
+SF13_ENG_006	per:alternate_names	stanford1	NYT_ENG_20090620.0004	Ali Khan	NYT_ENG_20090620.0004:1562-1570,NYT_ENG_20090620.0004:58-72	NYT_ENG_20090620.0004:678-692,NYT_ENG_20090620.0004:58-72		0.953
+SF13_ENG_006	per:children	stanford1	NIL
+SF13_ENG_006	per:cities_of_residence	stanford1	NYT_ENG_20090620.0004	San Anselmo	NYT_ENG_20090620.0004:423-434	NYT_ENG_20090620.0004:150-164,NYT_ENG_20090620.0004:58-72	150-434	0.619
+SF13_ENG_006	per:city_of_birth	stanford1	NIL
+SF13_ENG_006	per:city_of_death	stanford1	NYT_ENG_20090620.0004	San Anselmo	NYT_ENG_20090620.0004:423-434	NYT_ENG_20090620.0004:150-164,NYT_ENG_20090620.0004:58-72	150-434	0.881
+SF13_ENG_006	per:countries_of_residence	stanford1	NIL
+SF13_ENG_006	per:country_of_birth	stanford1	NIL
+SF13_ENG_006	per:country_of_death	stanford1	NIL
+SF13_ENG_006	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_006	per:origin	stanford1	NYT_ENG_20101001.0038	Marin County	NYT_ENG_20101001.0038:2472-2484	NYT_ENG_20101001.0038:2498-2512	2472-2512	1.000
+SF13_ENG_006	per:other_family	stanford1	NIL
+SF13_ENG_006	per:parents	stanford1	NIL
+SF13_ENG_006	per:schools_attended	stanford1	NIL
+SF13_ENG_006	per:siblings	stanford1	NIL
+SF13_ENG_006	per:spouse	stanford1	NIL
+SF13_ENG_006	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_006	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_006	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_006	per:age	stanford1	LTW_ENG_20090620.0093	87	LTW_ENG_20090620.0093:96-98	LTW_ENG_20090620.0093:80-94	80-98	1.000
+SF13_ENG_006	per:date_of_birth	stanford1	NIL
+SF13_ENG_006	per:date_of_death	stanford1	AFP_ENG_20090619.0538	2009-06-19	AFP_ENG_20090619.0538:267-273	AFP_ENG_20090619.0538:176-196	176-273	1.000
+SF13_ENG_006	per:cause_of_death	stanford1	NIL
+SF13_ENG_006	per:charges	stanford1	NIL
+SF13_ENG_006	per:religion	stanford1	NIL
+SF13_ENG_006	per:title	stanford1	LTW_ENG_20090620.0093	Composer	LTW_ENG_20090620.0093:71-79	LTW_ENG_20090620.0093:80-94	71-94	1.000
+SF13_ENG_007	per:alternate_names	stanford1	AFP_ENG_20100310.0137	Mohammed Sayyed Tantawi	AFP_ENG_20100310.0137:564-587	AFP_ENG_20100310.0137:392-414,AFP_ENG_20100310.0137:564-587		1.000
+SF13_ENG_007	per:children	stanford1	NIL
+SF13_ENG_007	per:cities_of_residence	stanford1	NIL
+SF13_ENG_007	per:city_of_birth	stanford1	NIL
+SF13_ENG_007	per:city_of_death	stanford1	NIL
+SF13_ENG_007	per:countries_of_residence	stanford1	NIL
+SF13_ENG_007	per:country_of_birth	stanford1	NIL
+SF13_ENG_007	per:country_of_death	stanford1	AFP_ENG_20100310.0142	Saudi Arabia	AFP_ENG_20100310.0142:3408-3420	AFP_ENG_20100310.0142:3343-3365	3343-3420	1.000
+SF13_ENG_007	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_007	per:origin	stanford1	AFP_ENG_20100310.0561	Al-Azhar	AFP_ENG_20100310.0561:103-111	AFP_ENG_20100310.0561:119-141	103-141	1.000
+SF13_ENG_007	per:other_family	stanford1	NIL
+SF13_ENG_007	per:parents	stanford1	NIL
+SF13_ENG_007	per:schools_attended	stanford1	NIL
+SF13_ENG_007	per:siblings	stanford1	NIL
+SF13_ENG_007	per:spouse	stanford1	NIL
+SF13_ENG_007	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_007	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_007	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_007	per:age	stanford1	APW_ENG_20101224.0037	81	APW_ENG_20101224.0037:1430-1432	APW_ENG_20101224.0037:1406-1428	1406-1432	0.953
+SF13_ENG_007	per:date_of_birth	stanford1	NIL
+SF13_ENG_007	per:date_of_death	stanford1	AFP_ENG_20100310.0461	2010-03-10	AFP_ENG_20100310.0461:275-284	AFP_ENG_20100310.0461:210-232	210-284	1.000
+SF13_ENG_007	per:cause_of_death	stanford1	AFP_ENG_20100310.0137	heart attack	AFP_ENG_20100310.0137:430-442	AFP_ENG_20100310.0137:392-414,AFP_ENG_20100310.0137:564-587	392-442	0.996
+SF13_ENG_007	per:charges	stanford1	NIL
+SF13_ENG_007	per:religion	stanford1	NIL
+SF13_ENG_007	per:title	stanford1	AFP_ENG_20100319.0387	Imam	AFP_ENG_20100319.0387:636-640	AFP_ENG_20100319.0387:641-663	636-663	0.953
+SF13_ENG_008	per:alternate_names	stanford1	NIL
+SF13_ENG_008	per:children	stanford1	NIL
+SF13_ENG_008	per:cities_of_residence	stanford1	NIL
+SF13_ENG_008	per:city_of_death	stanford1	NIL
+SF13_ENG_008	per:countries_of_residence	stanford1	NIL
+SF13_ENG_008	per:country_of_death	stanford1	NIL
+SF13_ENG_008	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_008	per:origin	stanford1	NIL
+SF13_ENG_008	per:other_family	stanford1	NIL
+SF13_ENG_008	per:parents	stanford1	NIL
+SF13_ENG_008	per:schools_attended	stanford1	NIL
+SF13_ENG_008	per:siblings	stanford1	NIL
+SF13_ENG_008	per:spouse	stanford1	NIL
+SF13_ENG_008	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_008	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_008	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_008	per:date_of_death	stanford1	NIL
+SF13_ENG_008	per:cause_of_death	stanford1	AFP_ENG_20090708.0341	natural causes	AFP_ENG_20090708.0341:333-347	AFP_ENG_20090708.0341:214-231,AFP_ENG_20090708.0341:1495-1504	214-347	0.982
+SF13_ENG_008	per:charges	stanford1	NIL
+SF13_ENG_008	per:religion	stanford1	NIL
+SF13_ENG_008	per:title	stanford1	AFP_ENG_20090708.0341	tennis player	AFP_ENG_20090708.0341:200-213	AFP_ENG_20090708.0341:214-231,AFP_ENG_20090708.0341:1495-1504	200-231	0.993
+SF13_ENG_009	per:alternate_names	stanford1	NIL
+SF13_ENG_009	per:children	stanford1	NIL
+SF13_ENG_009	per:cities_of_residence	stanford1	NIL
+SF13_ENG_009	per:city_of_birth	stanford1	NIL
+SF13_ENG_009	per:city_of_death	stanford1	NIL
+SF13_ENG_009	per:countries_of_residence	stanford1	APW_ENG_20101102.0397	Pakistan	APW_ENG_20101102.0397:574-582	APW_ENG_20101102.0397:556-570	556-582	0.881
+SF13_ENG_009	per:country_of_birth	stanford1	NIL
+SF13_ENG_009	per:country_of_death	stanford1	NIL
+SF13_ENG_009	per:employee_or_member_of	stanford1	APW_ENG_20100619.0649	International Amateur Boxing Association	APW_ENG_20100619.0649:449-489	APW_ENG_20100619.0649:409-417,APW_ENG_20100619.0649:237-251	409-489	0.998
+SF13_ENG_009	per:origin	stanford1	NIL
+SF13_ENG_009	per:other_family	stanford1	NIL
+SF13_ENG_009	per:parents	stanford1	NIL
+SF13_ENG_009	per:schools_attended	stanford1	NIL
+SF13_ENG_009	per:siblings	stanford1	NIL
+SF13_ENG_009	per:spouse	stanford1	NIL
+SF13_ENG_009	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_009	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_009	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_009	per:age	stanford1	APW_ENG_20100619.0649	87	APW_ENG_20100619.0649:264-266	APW_ENG_20100619.0649:237-251	237-266	0.881
+SF13_ENG_009	per:date_of_birth	stanford1	NIL
+SF13_ENG_009	per:date_of_death	stanford1	NIL
+SF13_ENG_009	per:cause_of_death	stanford1	APW_ENG_20100619.0649	heart attack	APW_ENG_20100619.0649:349-361	APW_ENG_20100619.0649:330-338,APW_ENG_20100619.0649:237-251	330-361	1.000
+SF13_ENG_009	per:charges	stanford1	NIL
+SF13_ENG_009	per:religion	stanford1	NIL
+SF13_ENG_009	per:title	stanford1	APW_ENG_20100619.0374	president	APW_ENG_20100619.0374:66-75	APW_ENG_20100619.0374:76-90,APW_ENG_20100619.0374:176-190	66-90	0.939
+SF13_ENG_010	per:alternate_names	stanford1	eng-NG-31-102405-10983555	Ronnie Dio	eng-NG-31-102405-10983555:2713-2723,eng-NG-31-102405-10983555:3048-3051	eng-NG-31-102405-10983555:4788-4794,eng-NG-31-102405-10983555:3048-3051		0.999
+SF13_ENG_010	per:alternate_names	stanford1	AFP_ENG_20100517.0732	Ronald James Padavona	AFP_ENG_20100517.0732:775-796	AFP_ENG_20100517.0732:187-203		0.953
+SF13_ENG_010	per:children	stanford1	NIL
+SF13_ENG_010	per:cities_of_residence	stanford1	NIL
+SF13_ENG_010	per:city_of_death	stanford1	NYT_ENG_20100517.0003	Los Angeles	NYT_ENG_20100517.0003:345-356	NYT_ENG_20100517.0003:132-148	132-356	0.870
+SF13_ENG_010	per:countries_of_residence	stanford1	NIL
+SF13_ENG_010	per:country_of_death	stanford1	NIL
+SF13_ENG_010	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_010	per:origin	stanford1	NIL
+SF13_ENG_010	per:other_family	stanford1	NIL
+SF13_ENG_010	per:parents	stanford1	NIL
+SF13_ENG_010	per:schools_attended	stanford1	NIL
+SF13_ENG_010	per:siblings	stanford1	NIL
+SF13_ENG_010	per:spouse	stanford1	NIL
+SF13_ENG_010	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_010	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_010	per:date_of_death	stanford1	NIL
+SF13_ENG_010	per:cause_of_death	stanford1	NIL
+SF13_ENG_010	per:charges	stanford1	NIL
+SF13_ENG_010	per:religion	stanford1	NIL
+SF13_ENG_010	per:title	stanford1	NYT_ENG_20090629.0075	musician	NYT_ENG_20090629.0075:4007-4015	NYT_ENG_20090629.0075:4016-4032	4007-4032	1.000
+SF13_ENG_010	per:title	stanford1	APW_ENG_20100525.0070	singer	APW_ENG_20100525.0070:3815-3821,APW_ENG_20100525.0070:667-673	APW_ENG_20100525.0070:3822-3838	3815-3838	1.000
+SF13_ENG_011	per:alternate_names	stanford1	NYT_ENG_20091010.0123	Anthony D. Marshall	NYT_ENG_20091010.0123:284-303	NYT_ENG_20091010.0123:2957-2973,NYT_ENG_20091010.0123:284-303		1.000
+SF13_ENG_011	per:children	stanford1	NIL
+SF13_ENG_011	per:cities_of_residence	stanford1	NIL
+SF13_ENG_011	per:city_of_birth	stanford1	NIL
+SF13_ENG_011	per:city_of_death	stanford1	NIL
+SF13_ENG_011	per:countries_of_residence	stanford1	NIL
+SF13_ENG_011	per:country_of_birth	stanford1	NIL
+SF13_ENG_011	per:country_of_death	stanford1	NIL
+SF13_ENG_011	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_011	per:origin	stanford1	NIL
+SF13_ENG_011	per:other_family	stanford1	NIL
+SF13_ENG_011	per:parents	stanford1	NYT_ENG_20101229.0061	Brooke Astor	NYT_ENG_20101229.0061:1830-1842	NYT_ENG_20101229.0061:1801-1817	1801-1842	0.813
+SF13_ENG_011	per:schools_attended	stanford1	NIL
+SF13_ENG_011	per:siblings	stanford1	NIL
+SF13_ENG_011	per:spouse	stanford1	NIL
+SF13_ENG_011	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_011	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_011	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_011	per:age	stanford1	NYT_ENG_20091008.0150	85	NYT_ENG_20091008.0150:570-572	NYT_ENG_20091008.0150:549-568	549-572	1.000
+SF13_ENG_011	per:date_of_birth	stanford1	NIL
+SF13_ENG_011	per:date_of_death	stanford1	NIL
+SF13_ENG_011	per:cause_of_death	stanford1	NIL
+SF13_ENG_011	per:charges	stanford1	NIL
+SF13_ENG_011	per:religion	stanford1	NIL
+SF13_ENG_011	per:title	stanford1	APW_ENG_20091220.0088	stockbroker	APW_ENG_20091220.0088:5389-5400	APW_ENG_20091220.0088:5401-5417,APW_ENG_20091220.0088:185-201	5389-5417	1.000
+SF13_ENG_012	per:alternate_names	stanford1	bolt-eng-DF-170-181122-8791532	Adam Yehiye Gadahn	bolt-eng-DF-170-181122-8791532:37871-37889,bolt-eng-DF-170-181122-8791532:15633-15644	bolt-eng-DF-170-181122-8791532:552-563,bolt-eng-DF-170-181122-8791532:15633-15644		1.000
+SF13_ENG_012	per:alternate_names	stanford1	bolt-eng-DF-199-192783-6844041	Adam Yahiye Gadahn	bolt-eng-DF-199-192783-6844041:3941-3959,bolt-eng-DF-199-192783-6844041:1977-1988	bolt-eng-DF-199-192783-6844041:2958-2969,bolt-eng-DF-199-192783-6844041:1977-1988		1.000
+SF13_ENG_012	per:alternate_names	stanford1	eng-NG-31-128483-8351128	Adam Gedahn	eng-NG-31-128483-8351128:20703-20714,eng-NG-31-128483-8351128:158-171	eng-NG-31-128483-8351128:6265-6278,eng-NG-31-128483-8351128:158-171		0.999
+SF13_ENG_012	per:alternate_names	stanford1	eng-NG-31-142407-10044022	Adam Pearlman Gadahn	eng-NG-31-142407-10044022:5284-5304,eng-NG-31-142407-10044022:210-223	eng-NG-31-142407-10044022:5236-5251,eng-NG-31-142407-10044022:210-223		0.881
+SF13_ENG_012	per:children	stanford1	NIL
+SF13_ENG_012	per:cities_of_residence	stanford1	NIL
+SF13_ENG_012	per:city_of_birth	stanford1	NIL
+SF13_ENG_012	per:city_of_death	stanford1	NIL
+SF13_ENG_012	per:countries_of_residence	stanford1	NIL
+SF13_ENG_012	per:country_of_birth	stanford1	NIL
+SF13_ENG_012	per:country_of_death	stanford1	NIL
+SF13_ENG_012	per:employee_or_member_of	stanford1	eng-NG-31-113099-8152799	American al Qaeda	eng-NG-31-113099-8152799:951-968	eng-NG-31-113099-8152799:979-990,eng-NG-31-113099-8152799:3270-3276	951-990	0.993
+SF13_ENG_012	per:employee_or_member_of	stanford1	AFP_ENG_20100105.0002	Al-Qaeda	AFP_ENG_20100105.0002:2199-2207	AFP_ENG_20100105.0002:2215-2226	2199-2226	1.000
+SF13_ENG_012	per:origin	stanford1	NIL
+SF13_ENG_012	per:other_family	stanford1	NIL
+SF13_ENG_012	per:parents	stanford1	eng-NG-31-113099-9052056	Phil Pearlman	eng-NG-31-113099-9052056:1995-2008	eng-NG-31-113099-9052056:1975-1986	1975-2008	0.881
+SF13_ENG_012	per:schools_attended	stanford1	NIL
+SF13_ENG_012	per:siblings	stanford1	NIL
+SF13_ENG_012	per:spouse	stanford1	NIL
+SF13_ENG_012	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_012	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_012	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_012	per:age	stanford1	APW_ENG_20100308.0316	31	APW_ENG_20100308.0316:459-461	APW_ENG_20100308.0316:446-457,APW_ENG_20100308.0316:696-702	446-461	0.881
+SF13_ENG_012	per:date_of_birth	stanford1	NIL
+SF13_ENG_012	per:date_of_death	stanford1	NIL
+SF13_ENG_012	per:cause_of_death	stanford1	NIL
+SF13_ENG_012	per:charges	stanford1	NIL
+SF13_ENG_012	per:religion	stanford1	eng-NG-31-113099-9051515	Jewish	eng-NG-31-113099-9051515:542-548	eng-NG-31-113099-9051515:556-569	542-569	0.953
+SF13_ENG_012	per:title	stanford1	eng-NG-31-126841-8221764	commander	eng-NG-31-126841-8221764:6924-6933	eng-NG-31-126841-8221764:6934-6945	6924-6945	0.982
+SF13_ENG_013	per:alternate_names	stanford1	NIL
+SF13_ENG_013	per:children	stanford1	NIL
+SF13_ENG_013	per:cities_of_residence	stanford1	NIL
+SF13_ENG_013	per:city_of_birth	stanford1	NIL
+SF13_ENG_013	per:city_of_death	stanford1	NIL
+SF13_ENG_013	per:countries_of_residence	stanford1	NIL
+SF13_ENG_013	per:country_of_birth	stanford1	NIL
+SF13_ENG_013	per:country_of_death	stanford1	NIL
+SF13_ENG_013	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_013	per:origin	stanford1	NIL
+SF13_ENG_013	per:other_family	stanford1	NIL
+SF13_ENG_013	per:parents	stanford1	NIL
+SF13_ENG_013	per:schools_attended	stanford1	NIL
+SF13_ENG_013	per:siblings	stanford1	NIL
+SF13_ENG_013	per:spouse	stanford1	NIL
+SF13_ENG_013	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_013	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_013	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_013	per:age	stanford1	NIL
+SF13_ENG_013	per:date_of_birth	stanford1	NIL
+SF13_ENG_013	per:date_of_death	stanford1	NIL
+SF13_ENG_013	per:cause_of_death	stanford1	NIL
+SF13_ENG_013	per:charges	stanford1	NIL
+SF13_ENG_013	per:religion	stanford1	NIL
+SF13_ENG_013	per:title	stanford1	NIL
+SF13_ENG_014	per:alternate_names	stanford1	NIL
+SF13_ENG_014	per:children	stanford1	NIL
+SF13_ENG_014	per:cities_of_residence	stanford1	NIL
+SF13_ENG_014	per:city_of_birth	stanford1	NIL
+SF13_ENG_014	per:city_of_death	stanford1	NIL
+SF13_ENG_014	per:countries_of_residence	stanford1	NIL
+SF13_ENG_014	per:country_of_birth	stanford1	NIL
+SF13_ENG_014	per:country_of_death	stanford1	NIL
+SF13_ENG_014	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_014	per:origin	stanford1	NIL
+SF13_ENG_014	per:other_family	stanford1	NIL
+SF13_ENG_014	per:parents	stanford1	NIL
+SF13_ENG_014	per:schools_attended	stanford1	NIL
+SF13_ENG_014	per:siblings	stanford1	NIL
+SF13_ENG_014	per:spouse	stanford1	NIL
+SF13_ENG_014	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_014	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_014	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_014	per:age	stanford1	NIL
+SF13_ENG_014	per:date_of_birth	stanford1	NIL
+SF13_ENG_014	per:date_of_death	stanford1	NIL
+SF13_ENG_014	per:cause_of_death	stanford1	NIL
+SF13_ENG_014	per:charges	stanford1	NIL
+SF13_ENG_014	per:religion	stanford1	NIL
+SF13_ENG_014	per:title	stanford1	NIL
+SF13_ENG_015	per:alternate_names	stanford1	NIL
+SF13_ENG_015	per:children	stanford1	NIL
+SF13_ENG_015	per:cities_of_residence	stanford1	NIL
+SF13_ENG_015	per:city_of_birth	stanford1	NIL
+SF13_ENG_015	per:city_of_death	stanford1	NIL
+SF13_ENG_015	per:countries_of_residence	stanford1	NIL
+SF13_ENG_015	per:country_of_birth	stanford1	NIL
+SF13_ENG_015	per:country_of_death	stanford1	NIL
+SF13_ENG_015	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_015	per:origin	stanford1	NIL
+SF13_ENG_015	per:other_family	stanford1	NIL
+SF13_ENG_015	per:parents	stanford1	NIL
+SF13_ENG_015	per:schools_attended	stanford1	NIL
+SF13_ENG_015	per:siblings	stanford1	APW_ENG_20100214.0143	Elaine Philip	APW_ENG_20100214.0143:310-323	APW_ENG_20100214.0143:292-299,APW_ENG_20100214.0143:186-201	292-323	1.000
+SF13_ENG_015	per:spouse	stanford1	NIL
+SF13_ENG_015	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_015	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_015	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_015	per:age	stanford1	APW_ENG_20100214.0143	73	APW_ENG_20100214.0143:103-105	APW_ENG_20100214.0143:58-73,APW_ENG_20100214.0143:186-201	58-105	1.000
+SF13_ENG_015	per:date_of_birth	stanford1	NIL
+SF13_ENG_015	per:date_of_death	stanford1	NIL
+SF13_ENG_015	per:cause_of_death	stanford1	NIL
+SF13_ENG_015	per:charges	stanford1	NIL
+SF13_ENG_015	per:religion	stanford1	NIL
+SF13_ENG_015	per:title	stanford1	WPB_ENG_20100222.0055	poet	WPB_ENG_20100222.0055:272-276	WPB_ENG_20100222.0055:277-292	272-292	1.000
+SF13_ENG_016	per:alternate_names	stanford1	NIL
+SF13_ENG_016	per:children	stanford1	NIL
+SF13_ENG_016	per:cities_of_residence	stanford1	NIL
+SF13_ENG_016	per:city_of_death	stanford1	NIL
+SF13_ENG_016	per:countries_of_residence	stanford1	NIL
+SF13_ENG_016	per:country_of_birth	stanford1	NIL
+SF13_ENG_016	per:country_of_death	stanford1	NIL
+SF13_ENG_016	per:employee_or_member_of	stanford1	NYT_ENG_20100720.0143	Texas Council of Teachers of Mathematics	NYT_ENG_20100720.0143:3634-3674	NYT_ENG_20100720.0143:3602-3611	3602-3674	0.902
+SF13_ENG_016	per:origin	stanford1	AFP_ENG_20100525.0119	Skipknot	AFP_ENG_20100525.0119:222-230	AFP_ENG_20100525.0119:236-245	222-245	1.000
+SF13_ENG_016	per:other_family	stanford1	NIL
+SF13_ENG_016	per:parents	stanford1	NIL
+SF13_ENG_016	per:schools_attended	stanford1	NIL
+SF13_ENG_016	per:siblings	stanford1	NIL
+SF13_ENG_016	per:spouse	stanford1	NIL
+SF13_ENG_016	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_016	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_016	per:date_of_death	stanford1	NIL
+SF13_ENG_016	per:cause_of_death	stanford1	NIL
+SF13_ENG_016	per:charges	stanford1	NIL
+SF13_ENG_016	per:religion	stanford1	NIL
+SF13_ENG_016	per:title	stanford1	AFP_ENG_20100525.0119	star	AFP_ENG_20100525.0119:231-235	AFP_ENG_20100525.0119:236-245	231-245	0.953
+SF13_ENG_017	per:alternate_names	stanford1	APW_ENG_20100221.0007	Alexander Meigs Haig	APW_ENG_20100221.0007:3230-3250,APW_ENG_20100221.0007:209-223	APW_ENG_20100221.0007:58-72,APW_ENG_20100221.0007:209-223		0.999
+SF13_ENG_017	per:alternate_names	stanford1	NYT_ENG_20100220.0052	Alexander Meigs Haig Jr.	NYT_ENG_20100220.0052:6331-6355,NYT_ENG_20100220.0052:178-199	NYT_ENG_20100220.0052:6134-6148,NYT_ENG_20100220.0052:178-199		0.993
+SF13_ENG_017	per:alternate_names	stanford1	NYT_ENG_20100220.0052	Alexander M. Haig Jr.	NYT_ENG_20100220.0052:178-199	NYT_ENG_20100220.0052:6134-6148,NYT_ENG_20100220.0052:178-199		0.982
+SF13_ENG_017	per:children	stanford1	NIL
+SF13_ENG_017	per:cities_of_residence	stanford1	NIL
+SF13_ENG_017	per:city_of_death	stanford1	NIL
+SF13_ENG_017	per:countries_of_residence	stanford1	NIL
+SF13_ENG_017	per:country_of_birth	stanford1	NIL
+SF13_ENG_017	per:country_of_death	stanford1	NIL
+SF13_ENG_017	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_017	per:origin	stanford1	NIL
+SF13_ENG_017	per:other_family	stanford1	NIL
+SF13_ENG_017	per:parents	stanford1	NIL
+SF13_ENG_017	per:schools_attended	stanford1	NIL
+SF13_ENG_017	per:siblings	stanford1	NIL
+SF13_ENG_017	per:spouse	stanford1	NIL
+SF13_ENG_017	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_017	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_017	per:date_of_death	stanford1	NIL
+SF13_ENG_017	per:cause_of_death	stanford1	NIL
+SF13_ENG_017	per:charges	stanford1	NIL
+SF13_ENG_017	per:title	stanford1	eng-NG-31-126590-9153678	Gen.	eng-NG-31-126590-9153678:6373-6377,eng-NG-31-126590-9153678:3741-3745	eng-NG-31-126590-9153678:6378-6392	6373-6392	1.000
+SF13_ENG_017	per:title	stanford1	eng-NG-31-142283-10041336	General	eng-NG-31-142283-10041336:17053-17060,eng-NG-31-142283-10041336:2339-2346	eng-NG-31-142283-10041336:17061-17075	17053-17075	1.000
+SF13_ENG_017	per:title	stanford1	bolt-eng-DF-170-181125-9108103	Commander	bolt-eng-DF-170-181125-9108103:134108-134117	bolt-eng-DF-170-181125-9108103:134118-134132	134108-134132	1.000
+SF13_ENG_018	per:alternate_names	stanford1	NYT_ENG_20100712.0143	Harvey Lawrence Pekar	NYT_ENG_20100712.0143:2261-2282,NYT_ENG_20100712.0143:825-830	NYT_ENG_20100712.0143:138-150,NYT_ENG_20100712.0143:825-830		0.982
+SF13_ENG_018	per:children	stanford1	NIL
+SF13_ENG_018	per:cities_of_residence	stanford1	NIL
+SF13_ENG_018	per:city_of_death	stanford1	NYT_ENG_20100905.0022	Cleveland	NYT_ENG_20100905.0022:10168-10177,NYT_ENG_20100905.0022:11607-11616	NYT_ENG_20100905.0022:10153-10165,NYT_ENG_20100905.0022:2001-2006	10153-10177	1.000
+SF13_ENG_018	per:countries_of_residence	stanford1	NIL
+SF13_ENG_018	per:country_of_death	stanford1	NIL
+SF13_ENG_018	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_018	per:origin	stanford1	NIL
+SF13_ENG_018	per:other_family	stanford1	NIL
+SF13_ENG_018	per:parents	stanford1	NIL
+SF13_ENG_018	per:schools_attended	stanford1	NIL
+SF13_ENG_018	per:siblings	stanford1	NIL
+SF13_ENG_018	per:spouse	stanford1	NIL
+SF13_ENG_018	per:stateorprovince_of_death	stanford1	APW_ENG_20100712.0866	Ohio	APW_ENG_20100712.0866:103-107,APW_ENG_20100712.0866:3339-3343	APW_ENG_20100712.0866:76-88,APW_ENG_20100712.0866:937-942	76-107	0.584
+SF13_ENG_018	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_018	per:date_of_death	stanford1	NIL
+SF13_ENG_018	per:cause_of_death	stanford1	NIL
+SF13_ENG_018	per:charges	stanford1	NIL
+SF13_ENG_018	per:religion	stanford1	APW_ENG_20100712.0711	Cult	APW_ENG_20100712.0711:66-70	APW_ENG_20100712.0711:84-89,APW_ENG_20100712.0711:717-722	66-89	0.953
+SF13_ENG_018	per:title	stanford1	APW_ENG_20100712.0726	writer	APW_ENG_20100712.0726:192-198	APW_ENG_20100712.0726:199-211,APW_ENG_20100712.0726:717-722	192-211	0.998
+SF13_ENG_018	per:title	stanford1	NYT_ENG_20100901.0034	graphic artist	NYT_ENG_20100901.0034:3037-3051	NYT_ENG_20100901.0034:3052-3064,NYT_ENG_20100901.0034:3599-3604	3037-3064	1.000
+SF13_ENG_018	per:title	stanford1	NYT_ENG_20100723.0062	creator	NYT_ENG_20100723.0062:1855-1862	NYT_ENG_20100723.0062:1863-1875	1855-1875	1.000
+SF13_ENG_018	per:title	stanford1	NYT_ENG_20100905.0022	nurse	NYT_ENG_20100905.0022:3673-3678	NYT_ENG_20100905.0022:3679-3684,NYT_ENG_20100905.0022:2001-2006	3673-3684	1.000
+SF13_ENG_019	per:alternate_names	stanford1	NIL
+SF13_ENG_019	per:children	stanford1	NIL
+SF13_ENG_019	per:cities_of_residence	stanford1	NIL
+SF13_ENG_019	per:city_of_death	stanford1	NYT_ENG_20101207.0128	Salt Lake City	NYT_ENG_20101207.0128:1477-1491	NYT_ENG_20101207.0128:1453-1461,NYT_ENG_20101207.0128:1423-1436	1453-1491	0.900
+SF13_ENG_019	per:countries_of_residence	stanford1	NIL
+SF13_ENG_019	per:country_of_birth	stanford1	NIL
+SF13_ENG_019	per:country_of_death	stanford1	NIL
+SF13_ENG_019	per:employee_or_member_of	stanford1	NYT_ENG_20101207.0128	Rockies	NYT_ENG_20101207.0128:1405-1412,NYT_ENG_20101207.0128:685-692	NYT_ENG_20101207.0128:1423-1436	1405-1436	1.000
+SF13_ENG_019	per:employee_or_member_of	stanford1	NYT_ENG_20100420.0165	Denver Broncos	NYT_ENG_20100420.0165:2298-2312,NYT_ENG_20100420.0165:5155-5169	NYT_ENG_20100420.0165:2196-2204,NYT_ENG_20100420.0165:175-188	2196-2312	0.542
+SF13_ENG_019	per:origin	stanford1	NYT_ENG_20090604.0130	Rockies	NYT_ENG_20090604.0130:2594-2601,NYT_ENG_20090604.0130:789-796	NYT_ENG_20090604.0130:2612-2625	2594-2625	0.881
+SF13_ENG_019	per:other_family	stanford1	NIL
+SF13_ENG_019	per:parents	stanford1	NIL
+SF13_ENG_019	per:schools_attended	stanford1	NIL
+SF13_ENG_019	per:siblings	stanford1	NIL
+SF13_ENG_019	per:spouse	stanford1	NIL
+SF13_ENG_019	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_019	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_019	per:age	stanford1	AFP_ENG_20100420.0022	48	AFP_ENG_20100420.0022:370-372	AFP_ENG_20100420.0022:357-365,AFP_ENG_20100420.0022:232-245	357-372	0.980
+SF13_ENG_019	per:date_of_death	stanford1	NIL
+SF13_ENG_019	per:cause_of_death	stanford1	AFP_ENG_20100729.0049	natural causes	AFP_ENG_20100729.0049:310-324,AFP_ENG_20100729.0049:627-641	AFP_ENG_20100729.0049:208-221	208-324	0.881
+SF13_ENG_019	per:charges	stanford1	NIL
+SF13_ENG_019	per:religion	stanford1	NIL
+SF13_ENG_019	per:title	stanford1	NYT_ENG_20090604.0130	president	NYT_ENG_20090604.0130:2602-2611	NYT_ENG_20090604.0130:2612-2625	2602-2625	0.999
+SF13_ENG_019	per:title	stanford1	NYT_ENG_20100420.0165	assistant athletic director	NYT_ENG_20100420.0165:5545-5572	NYT_ENG_20100420.0165:5527-5535,NYT_ENG_20100420.0165:175-188	5527-5572	0.962
+SF13_ENG_020	per:alternate_names	stanford1	NIL
+SF13_ENG_020	per:children	stanford1	NIL
+SF13_ENG_020	per:cities_of_residence	stanford1	NIL
+SF13_ENG_020	per:city_of_birth	stanford1	NIL
+SF13_ENG_020	per:city_of_death	stanford1	NIL
+SF13_ENG_020	per:countries_of_residence	stanford1	NIL
+SF13_ENG_020	per:country_of_birth	stanford1	NIL
+SF13_ENG_020	per:country_of_death	stanford1	NIL
+SF13_ENG_020	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_020	per:origin	stanford1	NIL
+SF13_ENG_020	per:other_family	stanford1	NIL
+SF13_ENG_020	per:parents	stanford1	NIL
+SF13_ENG_020	per:schools_attended	stanford1	NIL
+SF13_ENG_020	per:siblings	stanford1	NIL
+SF13_ENG_020	per:spouse	stanford1	NIL
+SF13_ENG_020	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_020	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_020	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_020	per:age	stanford1	NIL
+SF13_ENG_020	per:date_of_birth	stanford1	NIL
+SF13_ENG_020	per:date_of_death	stanford1	NIL
+SF13_ENG_020	per:cause_of_death	stanford1	NIL
+SF13_ENG_020	per:charges	stanford1	NIL
+SF13_ENG_020	per:religion	stanford1	NIL
+SF13_ENG_020	per:title	stanford1	NIL
+SF13_ENG_021	per:alternate_names	stanford1	NIL
+SF13_ENG_021	per:children	stanford1	NIL
+SF13_ENG_021	per:cities_of_residence	stanford1	NIL
+SF13_ENG_021	per:city_of_birth	stanford1	NIL
+SF13_ENG_021	per:city_of_death	stanford1	NIL
+SF13_ENG_021	per:countries_of_residence	stanford1	NIL
+SF13_ENG_021	per:country_of_birth	stanford1	NIL
+SF13_ENG_021	per:country_of_death	stanford1	NIL
+SF13_ENG_021	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_021	per:origin	stanford1	NIL
+SF13_ENG_021	per:other_family	stanford1	NIL
+SF13_ENG_021	per:parents	stanford1	NIL
+SF13_ENG_021	per:schools_attended	stanford1	NIL
+SF13_ENG_021	per:siblings	stanford1	NIL
+SF13_ENG_021	per:spouse	stanford1	NIL
+SF13_ENG_021	per:stateorprovince_of_birth	stanford1	eng-NG-31-102460-11644711	Ill	eng-NG-31-102460-11644711:11488-11491	eng-NG-31-102460-11644711:11503-11518,eng-NG-31-102460-11644711:8527-8542	11488-11518	1.000
+SF13_ENG_021	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_021	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_021	per:age	stanford1	APW_ENG_20101022.0889	43	APW_ENG_20101022.0889:390-392	APW_ENG_20101022.0889:373-388	373-392	0.881
+SF13_ENG_021	per:date_of_birth	stanford1	NIL
+SF13_ENG_021	per:date_of_death	stanford1	NIL
+SF13_ENG_021	per:cause_of_death	stanford1	NIL
+SF13_ENG_021	per:charges	stanford1	NIL
+SF13_ENG_021	per:religion	stanford1	NIL
+SF13_ENG_021	per:title	stanford1	APW_ENG_20100921.0712	Sgt.	APW_ENG_20100921.0712:377-381	APW_ENG_20100921.0712:382-397	377-397	0.881
+SF13_ENG_022	per:alternate_names	stanford1	NIL
+SF13_ENG_022	per:children	stanford1	NIL
+SF13_ENG_022	per:cities_of_residence	stanford1	NIL
+SF13_ENG_022	per:city_of_birth	stanford1	NIL
+SF13_ENG_022	per:city_of_death	stanford1	NIL
+SF13_ENG_022	per:countries_of_residence	stanford1	NIL
+SF13_ENG_022	per:country_of_birth	stanford1	NIL
+SF13_ENG_022	per:country_of_death	stanford1	NIL
+SF13_ENG_022	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_022	per:origin	stanford1	NIL
+SF13_ENG_022	per:other_family	stanford1	NIL
+SF13_ENG_022	per:parents	stanford1	NIL
+SF13_ENG_022	per:schools_attended	stanford1	NIL
+SF13_ENG_022	per:siblings	stanford1	NIL
+SF13_ENG_022	per:spouse	stanford1	NIL
+SF13_ENG_022	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_022	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_022	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_022	per:age	stanford1	AFP_ENG_20100522.0132	37	AFP_ENG_20100522.0132:397-399	AFP_ENG_20100522.0132:375-395	375-399	1.000
+SF13_ENG_022	per:date_of_birth	stanford1	NIL
+SF13_ENG_022	per:date_of_death	stanford1	NIL
+SF13_ENG_022	per:cause_of_death	stanford1	NIL
+SF13_ENG_022	per:charges	stanford1	NIL
+SF13_ENG_022	per:religion	stanford1	NIL
+SF13_ENG_022	per:title	stanford1	NIL
+SF13_ENG_023	per:alternate_names	stanford1	NIL
+SF13_ENG_023	per:children	stanford1	NIL
+SF13_ENG_023	per:cities_of_residence	stanford1	NYT_ENG_20091201.0024	Baltimore	NYT_ENG_20091201.0024:240-249	NYT_ENG_20091201.0024:224-236	224-249	1.000
+SF13_ENG_023	per:city_of_death	stanford1	NIL
+SF13_ENG_023	per:countries_of_residence	stanford1	NIL
+SF13_ENG_023	per:country_of_death	stanford1	NIL
+SF13_ENG_023	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_023	per:origin	stanford1	eng-NG-31-143594-10250753	Baltimore City	eng-NG-31-143594-10250753:677-691	eng-NG-31-143594-10250753:698-710	677-710	1.000
+SF13_ENG_023	per:other_family	stanford1	NIL
+SF13_ENG_023	per:parents	stanford1	NIL
+SF13_ENG_023	per:schools_attended	stanford1	NIL
+SF13_ENG_023	per:siblings	stanford1	NIL
+SF13_ENG_023	per:spouse	stanford1	NIL
+SF13_ENG_023	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_023	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_023	per:date_of_death	stanford1	NIL
+SF13_ENG_023	per:cause_of_death	stanford1	NIL
+SF13_ENG_023	per:charges	stanford1	NIL
+SF13_ENG_023	per:title	stanford1	LTW_ENG_20091204.0009	Mayor	LTW_ENG_20091204.0009:386-391	LTW_ENG_20091204.0009:392-404	386-404	1.000
+SF13_ENG_024	per:alternate_names	stanford1	NIL
+SF13_ENG_024	per:children	stanford1	NIL
+SF13_ENG_024	per:cities_of_residence	stanford1	NIL
+SF13_ENG_024	per:city_of_birth	stanford1	NIL
+SF13_ENG_024	per:city_of_death	stanford1	NIL
+SF13_ENG_024	per:countries_of_residence	stanford1	NIL
+SF13_ENG_024	per:country_of_birth	stanford1	NIL
+SF13_ENG_024	per:country_of_death	stanford1	NIL
+SF13_ENG_024	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_024	per:origin	stanford1	NIL
+SF13_ENG_024	per:other_family	stanford1	NIL
+SF13_ENG_024	per:parents	stanford1	NIL
+SF13_ENG_024	per:schools_attended	stanford1	NIL
+SF13_ENG_024	per:siblings	stanford1	NIL
+SF13_ENG_024	per:spouse	stanford1	NIL
+SF13_ENG_024	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_024	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_024	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_024	per:age	stanford1	NIL
+SF13_ENG_024	per:date_of_birth	stanford1	NIL
+SF13_ENG_024	per:date_of_death	stanford1	NIL
+SF13_ENG_024	per:cause_of_death	stanford1	NIL
+SF13_ENG_024	per:charges	stanford1	NIL
+SF13_ENG_024	per:religion	stanford1	NIL
+SF13_ENG_024	per:title	stanford1	NIL
+SF13_ENG_025	per:alternate_names	stanford1	NIL
+SF13_ENG_025	per:children	stanford1	NIL
+SF13_ENG_025	per:cities_of_residence	stanford1	NIL
+SF13_ENG_025	per:city_of_birth	stanford1	NIL
+SF13_ENG_025	per:city_of_death	stanford1	NIL
+SF13_ENG_025	per:countries_of_residence	stanford1	NIL
+SF13_ENG_025	per:country_of_birth	stanford1	NIL
+SF13_ENG_025	per:country_of_death	stanford1	NIL
+SF13_ENG_025	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_025	per:origin	stanford1	NIL
+SF13_ENG_025	per:other_family	stanford1	NIL
+SF13_ENG_025	per:parents	stanford1	NIL
+SF13_ENG_025	per:schools_attended	stanford1	NIL
+SF13_ENG_025	per:siblings	stanford1	APW_ENG_20100211.0481	Andrew Kissel	APW_ENG_20100211.0481:4307-4320,APW_ENG_20100211.0481:532-544	APW_ENG_20100211.0481:4282-4295,APW_ENG_20100211.0481:532-544	4282-4320	1.000
+SF13_ENG_025	per:siblings	stanford1	APW_ENG_20100211.0481	Robert Kissel	APW_ENG_20100211.0481:4282-4295,APW_ENG_20100211.0481:532-544	APW_ENG_20100211.0481:4307-4320,APW_ENG_20100211.0481:532-544	4282-4320	1.000
+SF13_ENG_025	per:spouse	stanford1	NIL
+SF13_ENG_025	per:stateorprovince_of_birth	stanford1	APW_ENG_20100112.0294	Michigan	APW_ENG_20100112.0294:2611-2619	APW_ENG_20100112.0294:2584-2590,APW_ENG_20100112.0294:451-463	2584-2619	0.999
+SF13_ENG_025	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_025	per:statesorprovinces_of_residence	stanford1	APW_ENG_20100211.0683	Michigan	APW_ENG_20100211.0683:1330-1338	APW_ENG_20100211.0683:1300-1306,APW_ENG_20100211.0683:536-548	1300-1338	0.838
+SF13_ENG_025	per:age	stanford1	AFP_ENG_20100303.0511	45	AFP_ENG_20100303.0511:406-408	AFP_ENG_20100303.0511:392-404	392-408	0.998
+SF13_ENG_025	per:date_of_birth	stanford1	NIL
+SF13_ENG_025	per:date_of_death	stanford1	NIL
+SF13_ENG_025	per:cause_of_death	stanford1	NIL
+SF13_ENG_025	per:charges	stanford1	NIL
+SF13_ENG_025	per:religion	stanford1	NIL
+SF13_ENG_025	per:title	stanford1	eng-NG-31-104877-8883320	writer	eng-NG-31-104877-8883320:9935-9941	eng-NG-31-104877-8883320:9942-9955	9935-9955	0.982
+SF13_ENG_025	per:title	stanford1	eng-NG-31-127078-9185712	investment banker	eng-NG-31-127078-9185712:762-779,eng-NG-31-127078-9185712:2168-2185	eng-NG-31-127078-9185712:742-755,eng-NG-31-127078-9185712:1688-1701	742-779	0.900
+SF13_ENG_026	per:alternate_names	stanford1	XIN_ENG_20100808.0131	Patrick Neal	XIN_ENG_20100808.0131:88-100	XIN_ENG_20100808.0131:204-217,XIN_ENG_20100808.0131:88-100		1.000
+SF13_ENG_026	per:children	stanford1	NIL
+SF13_ENG_026	per:cities_of_residence	stanford1	NIL
+SF13_ENG_026	per:city_of_death	stanford1	NIL
+SF13_ENG_026	per:countries_of_residence	stanford1	NIL
+SF13_ENG_026	per:country_of_death	stanford1	NIL
+SF13_ENG_026	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_026	per:origin	stanford1	AFP_ENG_20100809.0493	US	AFP_ENG_20100809.0493:58-60	AFP_ENG_20100809.0493:69-82,AFP_ENG_20100809.0493:187-200	58-82	0.998
+SF13_ENG_026	per:other_family	stanford1	NIL
+SF13_ENG_026	per:parents	stanford1	NIL
+SF13_ENG_026	per:schools_attended	stanford1	NIL
+SF13_ENG_026	per:siblings	stanford1	NIL
+SF13_ENG_026	per:spouse	stanford1	NIL
+SF13_ENG_026	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_026	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_026	per:date_of_death	stanford1	NIL
+SF13_ENG_026	per:cause_of_death	stanford1	WPB_ENG_20100809.0027	lung cancer	WPB_ENG_20100809.0027:3110-3121	WPB_ENG_20100809.0027:2881-2894	2881-3121	0.938
+SF13_ENG_026	per:charges	stanford1	NIL
+SF13_ENG_026	per:religion	stanford1	NIL
+SF13_ENG_026	per:title	stanford1	AFP_ENG_20100809.0498	actress	AFP_ENG_20100809.0498:61-68,AFP_ENG_20100809.0498:1203-1210	AFP_ENG_20100809.0498:69-82,AFP_ENG_20100809.0498:187-200	61-82	1.000
+SF13_ENG_027	per:alternate_names	stanford1	eng-WL-11-99173-12235965	Abdul Aziz Al Hakim	eng-WL-11-99173-12235965:22434-22453,eng-WL-11-99173-12235965:22533-22552	eng-WL-11-99173-12235965:23299-23318,eng-WL-11-99173-12235965:19777-19796		1.000
+SF13_ENG_027	per:alternate_names	stanford1	eng-WL-11-99173-12235965	Abdul Aziz al - Hakim	eng-WL-11-99173-12235965:21249-21269,eng-WL-11-99173-12235965:22533-22552	eng-WL-11-99173-12235965:19777-19796		0.998
+SF13_ENG_027	per:alternate_names	stanford1	eng-WL-11-99173-12235965	Abdul Aziz	eng-WL-11-99173-12235965:21172-21182,eng-WL-11-99173-12235965:19777-19796	eng-WL-11-99173-12235965:22533-22552		0.998
+SF13_ENG_027	per:alternate_names	stanford1	eng-WL-11-99173-12235966	Abdel Aziz al-Hakim	eng-WL-11-99173-12235966:7066-7085,eng-WL-11-99173-12235966:3456-3475	eng-WL-11-99173-12235966:6337-6356,eng-WL-11-99173-12235966:3456-3475		0.993
+SF13_ENG_027	per:alternate_names	stanford1	eng-WL-11-99173-12235966	Abdul Azis al-Hakim	eng-WL-11-99173-12235966:6337-6356,eng-WL-11-99173-12235966:3456-3475	eng-WL-11-99173-12235966:7066-7085,eng-WL-11-99173-12235966:3456-3475		0.982
+SF13_ENG_027	per:alternate_names	stanford1	AFP_ENG_20090824.0406	Abdel Aziz Hakim	AFP_ENG_20090824.0406:418-434	AFP_ENG_20090824.0406:217-236,AFP_ENG_20090824.0406:418-434		1.000
+SF13_ENG_027	per:children	stanford1	bolt-eng-DF-212-191678-3087590	Ammar al-Hakim	bolt-eng-DF-212-191678-3087590:11676-11690	bolt-eng-DF-212-191678-3087590:11703-11722,bolt-eng-DF-212-191678-3087590:13345-13364	11676-11722	1.000
+SF13_ENG_027	per:cities_of_residence	stanford1	NIL
+SF13_ENG_027	per:city_of_death	stanford1	NIL
+SF13_ENG_027	per:countries_of_residence	stanford1	NIL
+SF13_ENG_027	per:country_of_death	stanford1	eng-WL-11-99173-12235963	Iran	eng-WL-11-99173-12235963:3041-3045,eng-WL-11-99173-12235963:9606-9610	eng-WL-11-99173-12235963:2998-3017	2998-3045	1.000
+SF13_ENG_027	per:employee_or_member_of	stanford1	APW_ENG_20090826.0981	Supreme Council	APW_ENG_20090826.0981:5287-5302,APW_ENG_20090826.0981:4783-4798	APW_ENG_20090826.0981:5241-5251,APW_ENG_20090826.0981:178-197	5241-5302	1.000
+SF13_ENG_027	per:employee_or_member_of	stanford1	bolt-eng-DF-199-192783-6847011	SIIC	bolt-eng-DF-199-192783-6847011:2787-2791	bolt-eng-DF-199-192783-6847011:2799-2818	2787-2818	0.946
+SF13_ENG_027	per:employee_or_member_of	stanford1	XIN_ENG_20090827.0007	Islamic Supreme Council of Iraq	XIN_ENG_20090827.0007:267-298	XIN_ENG_20090827.0007:308-327	267-327	0.881
+SF13_ENG_027	per:employee_or_member_of	stanford1	eng-NG-31-102460-8865466	Sciri	eng-NG-31-102460-8865466:9956-9961,eng-NG-31-102460-8865466:10303-10308	eng-NG-31-102460-8865466:9972-9991	9956-9991	0.881
+SF13_ENG_027	per:origin	stanford1	NIL
+SF13_ENG_027	per:other_family	stanford1	NIL
+SF13_ENG_027	per:parents	stanford1	NIL
+SF13_ENG_027	per:schools_attended	stanford1	NIL
+SF13_ENG_027	per:siblings	stanford1	APW_ENG_20090829.0465	Ayatollah Mohammed Baqir al-Hakim	APW_ENG_20090829.0465:4488-4521	APW_ENG_20090829.0465:4468-4476,APW_ENG_20090829.0465:3881-3900	4468-4521	0.953
+SF13_ENG_027	per:spouse	stanford1	NIL
+SF13_ENG_027	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_027	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_027	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_027	per:age	stanford1	APW_ENG_20090826.0515	59	APW_ENG_20090826.0515:439-441	APW_ENG_20090826.0515:182-201	182-441	0.892
+SF13_ENG_027	per:date_of_death	stanford1	NIL
+SF13_ENG_027	per:cause_of_death	stanford1	APW_ENG_20090826.0478	lung cancer	APW_ENG_20090826.0478:762-773,APW_ENG_20090826.0478:1271-1282	APW_ENG_20090826.0478:743-751,APW_ENG_20090826.0478:182-201	743-773	0.995
+SF13_ENG_027	per:charges	stanford1	NIL
+SF13_ENG_027	per:title	stanford1	AFP_ENG_20090830.0098	politician	AFP_ENG_20090830.0098:2150-2160	AFP_ENG_20090830.0098:2161-2180	2150-2180	1.000
+SF13_ENG_027	per:title	stanford1	APW_ENG_20090826.0708	elder	APW_ENG_20090826.0708:3831-3836	APW_ENG_20090826.0708:3837-3845,APW_ENG_20090826.0708:178-197	3831-3845	1.000
+SF13_ENG_027	per:title	stanford1	APW_ENG_20090827.0324	Ayatollah	APW_ENG_20090827.0324:2567-2576	APW_ENG_20090827.0324:2577-2592,APW_ENG_20090827.0324:287-306	2567-2592	0.881
+SF13_ENG_027	per:title	stanford1	XIN_ENG_20090827.0007	Chairman	XIN_ENG_20090827.0007:299-307	XIN_ENG_20090827.0007:308-327	299-327	1.000
+SF13_ENG_028	per:alternate_names	stanford1	bolt-eng-DF-170-181122-8795314	Billy Mayes	bolt-eng-DF-170-181122-8795314:19538-19549,bolt-eng-DF-170-181122-8795314:170-180	bolt-eng-DF-170-181122-8795314:11353-11363,bolt-eng-DF-170-181122-8795314:170-180		1.000
+SF13_ENG_028	per:alternate_names	stanford1	bolt-eng-DF-170-181122-8795314	William Mays	bolt-eng-DF-170-181122-8795314:3974-3986,bolt-eng-DF-170-181122-8795314:170-180	bolt-eng-DF-170-181122-8795314:6187-6197,bolt-eng-DF-170-181122-8795314:170-180		1.000
+SF13_ENG_028	per:alternate_names	stanford1	NYT_ENG_20091011.0059	Billy Mays III	NYT_ENG_20091011.0059:5147-5161,NYT_ENG_20091011.0059:168-178	NYT_ENG_20091011.0059:168-178		1.000
+SF13_ENG_028	per:alternate_names	stanford1	LTW_ENG_20090629.0058	William D. Mays	LTW_ENG_20090629.0058:2977-2992,LTW_ENG_20090629.0058:1311-1321	LTW_ENG_20090629.0058:2842-2852,LTW_ENG_20090629.0058:1311-1321		0.982
+SF13_ENG_028	per:alternate_names	stanford1	LTW_ENG_20090629.0058	Billy Mays Jr.	LTW_ENG_20090629.0058:4073-4087,LTW_ENG_20090629.0058:1311-1321	LTW_ENG_20090629.0058:1311-1321		0.881
+SF13_ENG_028	per:alternate_names	stanford1	NYT_ENG_20090701.0160	Will Mays	NYT_ENG_20090701.0160:4011-4020,NYT_ENG_20090701.0160:153-163	NYT_ENG_20090701.0160:153-163		0.881
+SF13_ENG_028	per:children	stanford1	NIL
+SF13_ENG_028	per:cities_of_residence	stanford1	NYT_ENG_20090628.0116	Tampa	NYT_ENG_20090628.0116:317-322,NYT_ENG_20090628.0116:893-898	NYT_ENG_20090628.0116:130-140,NYT_ENG_20090628.0116:58-68	130-322	0.807
+SF13_ENG_028	per:city_of_death	stanford1	NYT_ENG_20090628.0116	Tampa	NYT_ENG_20090628.0116:317-322,NYT_ENG_20090628.0116:893-898	NYT_ENG_20090628.0116:130-140,NYT_ENG_20090628.0116:58-68	130-322	0.978
+SF13_ENG_028	per:countries_of_residence	stanford1	NIL
+SF13_ENG_028	per:country_of_birth	stanford1	NIL
+SF13_ENG_028	per:country_of_death	stanford1	NIL
+SF13_ENG_028	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_028	per:origin	stanford1	NIL
+SF13_ENG_028	per:other_family	stanford1	NIL
+SF13_ENG_028	per:parents	stanford1	NIL
+SF13_ENG_028	per:schools_attended	stanford1	NIL
+SF13_ENG_028	per:siblings	stanford1	NIL
+SF13_ENG_028	per:spouse	stanford1	NIL
+SF13_ENG_028	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_028	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_028	per:date_of_death	stanford1	NIL
+SF13_ENG_028	per:cause_of_death	stanford1	NYT_ENG_20091011.0059	heart disease	NYT_ENG_20091011.0059:6860-6873	NYT_ENG_20091011.0059:6847-6851,NYT_ENG_20091011.0059:168-178	6847-6873	0.924
+SF13_ENG_028	per:charges	stanford1	NIL
+SF13_ENG_028	per:religion	stanford1	NIL
+SF13_ENG_028	per:title	stanford1	NYT_ENG_20091011.0059	production assistant	NYT_ENG_20091011.0059:6141-6161	NYT_ENG_20091011.0059:6184-6188,NYT_ENG_20091011.0059:168-178	6141-6188	0.948
+SF13_ENG_028	per:title	stanford1	bolt-eng-DF-170-181122-8795314	king	bolt-eng-DF-170-181122-8795314:5109-5113	bolt-eng-DF-170-181122-8795314:5114-5124,bolt-eng-DF-170-181122-8795314:170-180	5109-5124	0.881
+SF13_ENG_028	per:title	stanford1	NYT_ENG_20090715.0208	star	NYT_ENG_20090715.0208:198-202	NYT_ENG_20090715.0208:203-213	198-213	1.000
+SF13_ENG_029	per:alternate_names	stanford1	WPB_ENG_20100901.0011	Laurent Patrick Fignon	WPB_ENG_20100901.0011:5034-5056,WPB_ENG_20100901.0011:4942-4948	WPB_ENG_20100901.0011:57-71,WPB_ENG_20100901.0011:4942-4948		0.881
+SF13_ENG_029	per:children	stanford1	NIL
+SF13_ENG_029	per:cities_of_residence	stanford1	NIL
+SF13_ENG_029	per:city_of_birth	stanford1	WPB_ENG_20100901.0011	Paris	WPB_ENG_20100901.0011:5069-5074,WPB_ENG_20100901.0011:5371-5376	WPB_ENG_20100901.0011:5034-5056,WPB_ENG_20100901.0011:4942-4948	5034-5074	0.900
+SF13_ENG_029	per:city_of_death	stanford1	NIL
+SF13_ENG_029	per:countries_of_residence	stanford1	APW_ENG_20100724.0444	France	APW_ENG_20100724.0444:6100-6106	APW_ENG_20100724.0444:6082-6096	6082-6106	0.881
+SF13_ENG_029	per:country_of_birth	stanford1	APW_ENG_20100901.0773	France	APW_ENG_20100901.0773:1343-1349	APW_ENG_20100901.0773:1359-1373	1343-1373	1.000
+SF13_ENG_029	per:country_of_death	stanford1	NIL
+SF13_ENG_029	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_029	per:origin	stanford1	NIL
+SF13_ENG_029	per:other_family	stanford1	NIL
+SF13_ENG_029	per:parents	stanford1	NIL
+SF13_ENG_029	per:schools_attended	stanford1	NIL
+SF13_ENG_029	per:siblings	stanford1	NIL
+SF13_ENG_029	per:spouse	stanford1	NIL
+SF13_ENG_029	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_029	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_029	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_029	per:date_of_death	stanford1	NIL
+SF13_ENG_029	per:cause_of_death	stanford1	NIL
+SF13_ENG_029	per:charges	stanford1	NIL
+SF13_ENG_029	per:religion	stanford1	NIL
+SF13_ENG_029	per:title	stanford1	AFP_ENG_20100831.0199	cyclist	AFP_ENG_20100831.0199:178-185	AFP_ENG_20100831.0199:186-200	178-200	1.000
+SF13_ENG_030	per:alternate_names	stanford1	eng-NG-31-107977-8932946	Sparky Anderson Book	eng-NG-31-107977-8932946:391-411,eng-NG-31-107977-8932946:895-910	eng-NG-31-107977-8932946:895-910		1.000
+SF13_ENG_030	per:children	stanford1	NIL
+SF13_ENG_030	per:cities_of_residence	stanford1	NYT_ENG_20101104.0186	Thousand Oaks	NYT_ENG_20101104.0186:381-394	NYT_ENG_20101104.0186:141-156	141-394	0.800
+SF13_ENG_030	per:city_of_death	stanford1	NYT_ENG_20101104.0186	Thousand Oaks	NYT_ENG_20101104.0186:381-394	NYT_ENG_20101104.0186:141-156	141-394	0.858
+SF13_ENG_030	per:countries_of_residence	stanford1	NIL
+SF13_ENG_030	per:country_of_birth	stanford1	NIL
+SF13_ENG_030	per:country_of_death	stanford1	NIL
+SF13_ENG_030	per:employee_or_member_of	stanford1	NYT_ENG_20101104.0142	Caring Athletes Team for Children 's	NYT_ENG_20101104.0142:1360-1395	NYT_ENG_20101104.0142:1422-1430,NYT_ENG_20101104.0142:220-235	1360-1430	0.847
+SF13_ENG_030	per:employee_or_member_of	stanford1	NYT_ENG_20101104.0142	Former Tigers	NYT_ENG_20101104.0142:113-126	NYT_ENG_20101104.0142:135-150,NYT_ENG_20101104.0142:220-235	113-150	1.000
+SF13_ENG_030	per:employee_or_member_of	stanford1	NYT_ENG_20090704.0104	Tigers	NYT_ENG_20090704.0104:4276-4282	NYT_ENG_20090704.0104:4291-4306	4276-4306	1.000
+SF13_ENG_030	per:employee_or_member_of	stanford1	NYT_ENG_20101104.0142	Henry Ford Hospital	NYT_ENG_20101104.0142:1400-1419	NYT_ENG_20101104.0142:1422-1430,NYT_ENG_20101104.0142:220-235	1400-1430	0.900
+SF13_ENG_030	per:origin	stanford1	NIL
+SF13_ENG_030	per:other_family	stanford1	NIL
+SF13_ENG_030	per:parents	stanford1	NIL
+SF13_ENG_030	per:schools_attended	stanford1	NIL
+SF13_ENG_030	per:siblings	stanford1	NIL
+SF13_ENG_030	per:spouse	stanford1	NIL
+SF13_ENG_030	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_030	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_030	per:date_of_death	stanford1	NIL
+SF13_ENG_030	per:cause_of_death	stanford1	APW_ENG_20101104.0749	complications	APW_ENG_20101104.0749:415-428	APW_ENG_20101104.0749:396-404,APW_ENG_20101104.0749:228-243	396-428	0.988
+SF13_ENG_030	per:charges	stanford1	NIL
+SF13_ENG_030	per:religion	stanford1	NIL
+SF13_ENG_030	per:title	stanford1	eng-NG-31-133683-9578026	manager	eng-NG-31-133683-9578026:15535-15542,eng-NG-31-133683-9578026:16199-16206	eng-NG-31-133683-9578026:15543-15558	15535-15558	1.000
+SF13_ENG_030	per:title	stanford1	NYT_ENG_20101105.0038	Capt.	NYT_ENG_20101105.0038:2256-2261	NYT_ENG_20101105.0038:2234-2242,NYT_ENG_20101105.0038:221-236	2234-2261	0.973
+SF13_ENG_030	per:title	stanford1	NYT_ENG_20101104.0186	coach	NYT_ENG_20101104.0186:4062-4067	NYT_ENG_20101104.0186:4047-4055,NYT_ENG_20101104.0186:141-156	4047-4067	0.810
+SF13_ENG_031	per:alternate_names	stanford1	APW_ENG_20101216.0735	William Blake McEdwards	APW_ENG_20101216.0735:4664-4687,APW_ENG_20101216.0735:182-195	APW_ENG_20101216.0735:182-195		1.000
+SF13_ENG_031	per:alternate_names	stanford1	NYT_ENG_20101216.0121	Blake McEdwards	NYT_ENG_20101216.0121:4704-4719,NYT_ENG_20101216.0121:58-71	NYT_ENG_20101216.0121:4617-4630,NYT_ENG_20101216.0121:58-71		0.982
+SF13_ENG_031	per:children	stanford1	NIL
+SF13_ENG_031	per:cities_of_residence	stanford1	NIL
+SF13_ENG_031	per:city_of_death	stanford1	NYT_ENG_20101216.0121	Santa Monica	NYT_ENG_20101216.0121:325-337	NYT_ENG_20101216.0121:135-148,NYT_ENG_20101216.0121:58-71	135-337	1.000
+SF13_ENG_031	per:countries_of_residence	stanford1	NIL
+SF13_ENG_031	per:country_of_birth	stanford1	NIL
+SF13_ENG_031	per:country_of_death	stanford1	NIL
+SF13_ENG_031	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_031	per:origin	stanford1	AFP_ENG_20101228.0422	US	AFP_ENG_20101228.0422:4462-4464,AFP_ENG_20101228.0422:288-290	AFP_ENG_20101228.0422:4474-4487	4462-4487	1.000
+SF13_ENG_031	per:other_family	stanford1	NIL
+SF13_ENG_031	per:parents	stanford1	NIL
+SF13_ENG_031	per:schools_attended	stanford1	NIL
+SF13_ENG_031	per:siblings	stanford1	NIL
+SF13_ENG_031	per:spouse	stanford1	APW_ENG_20101216.0886	Julie Andrews	APW_ENG_20101216.0886:546-559	APW_ENG_20101216.0886:532-537,APW_ENG_20101216.0886:192-205	532-559	0.993
+SF13_ENG_031	per:stateorprovince_of_death	stanford1	APW_ENG_20101216.0695	California	APW_ENG_20101216.0695:164-174	APW_ENG_20101216.0695:142-155	142-174	0.870
+SF13_ENG_031	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_031	per:date_of_death	stanford1	APW_ENG_20101216.0713	2010-12-15	APW_ENG_20101216.0713:446-455	APW_ENG_20101216.0713:398-405,APW_ENG_20101216.0713:191-204	398-455	0.810
+SF13_ENG_031	per:cause_of_death	stanford1	APW_ENG_20101216.0713	complications	APW_ENG_20101216.0713:416-429	APW_ENG_20101216.0713:398-405,APW_ENG_20101216.0713:191-204	398-429	0.999
+SF13_ENG_031	per:charges	stanford1	NIL
+SF13_ENG_031	per:religion	stanford1	NIL
+SF13_ENG_031	per:title	stanford1	AFP_ENG_20101216.0039	director	AFP_ENG_20101216.0039:73-81,AFP_ENG_20101216.0039:3068-3076	AFP_ENG_20101216.0039:82-95,AFP_ENG_20101216.0039:202-215	73-95	1.000
+SF13_ENG_031	per:title	stanford1	APW_ENG_20101216.0803	Actor	APW_ENG_20101216.0803:1299-1304	APW_ENG_20101216.0803:1327-1334,APW_ENG_20101216.0803:192-205	1299-1334	1.000
+SF13_ENG_031	per:title	stanford1	WPB_ENG_20101216.0075	actress	WPB_ENG_20101216.0075:9053-9060	WPB_ENG_20101216.0075:9061-9077,WPB_ENG_20101216.0075:285-298	9053-9077	1.000
+SF13_ENG_031	per:title	stanford1	WPB_ENG_20101216.0075	courier	WPB_ENG_20101216.0075:4854-4861	WPB_ENG_20101216.0075:4807-4814,WPB_ENG_20101216.0075:285-298	4807-4861	0.900
+SF13_ENG_032	per:alternate_names	stanford1	NIL
+SF13_ENG_032	per:children	stanford1	NIL
+SF13_ENG_032	per:cities_of_residence	stanford1	NIL
+SF13_ENG_032	per:city_of_birth	stanford1	NIL
+SF13_ENG_032	per:city_of_death	stanford1	NIL
+SF13_ENG_032	per:countries_of_residence	stanford1	NIL
+SF13_ENG_032	per:country_of_birth	stanford1	NIL
+SF13_ENG_032	per:country_of_death	stanford1	APW_ENG_20101010.0057	South Korea	APW_ENG_20101010.0057:194-205	APW_ENG_20101010.0057:167-181	167-205	1.000
+SF13_ENG_032	per:employee_or_member_of	stanford1	AFP_ENG_20100425.0418	Workers ' Party	AFP_ENG_20100425.0418:3390-3404	AFP_ENG_20100425.0418:3262-3276	3262-3404	1.000
+SF13_ENG_032	per:employee_or_member_of	stanford1	AFP_ENG_20100420.0345	Workers ' Party	AFP_ENG_20100420.0345:663-677	AFP_ENG_20100420.0345:540-545,AFP_ENG_20100420.0345:490-504	540-677	1.000
+SF13_ENG_032	per:origin	stanford1	NIL
+SF13_ENG_032	per:other_family	stanford1	NIL
+SF13_ENG_032	per:parents	stanford1	NIL
+SF13_ENG_032	per:schools_attended	stanford1	APW_ENG_20101010.0278	Moscow University	APW_ENG_20101010.0278:1949-1966	APW_ENG_20101010.0278:1881-1886,APW_ENG_20101010.0278:193-207	1881-1966	0.870
+SF13_ENG_032	per:schools_attended	stanford1	APW_ENG_20101010.0278	Kim Il Sung University	APW_ENG_20101010.0278:1922-1944	APW_ENG_20101010.0278:1881-1886,APW_ENG_20101010.0278:193-207	1881-1944	0.858
+SF13_ENG_032	per:siblings	stanford1	NIL
+SF13_ENG_032	per:spouse	stanford1	NIL
+SF13_ENG_032	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_032	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_032	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_032	per:age	stanford1	AFP_ENG_20100330.0520	87	AFP_ENG_20100330.0520:1334-1336	AFP_ENG_20100330.0520:1327-1332,AFP_ENG_20100330.0520:382-396	1327-1336	1.000
+SF13_ENG_032	per:date_of_birth	stanford1	NIL
+SF13_ENG_032	per:date_of_death	stanford1	NIL
+SF13_ENG_032	per:cause_of_death	stanford1	NYT_ENG_20101021.0007	natural causes	NYT_ENG_20101021.0007:5525-5539	NYT_ENG_20101021.0007:5511-5516,NYT_ENG_20101021.0007:5123-5137	5511-5539	1.000
+SF13_ENG_032	per:charges	stanford1	NIL
+SF13_ENG_032	per:religion	stanford1	NIL
+SF13_ENG_032	per:title	stanford1	AFP_ENG_20100405.0365	secretary	AFP_ENG_20100405.0365:787-796	AFP_ENG_20100405.0365:702-707,AFP_ENG_20100405.0365:359-373	702-796	1.000
+SF13_ENG_032	per:title	stanford1	APW_ENG_20101010.0151	chief architect	APW_ENG_20101010.0151:612-627	APW_ENG_20101010.0151:598-603,APW_ENG_20101010.0151:193-207	598-627	1.000
+SF13_ENG_032	per:title	stanford1	AFP_ENG_20101013.0326	tutor	AFP_ENG_20101013.0326:943-948	AFP_ENG_20101013.0326:924-929,AFP_ENG_20101013.0326:387-401	924-948	0.926
+SF13_ENG_032	per:title	stanford1	AFP_ENG_20100404.0293	architect	AFP_ENG_20100404.0293:1347-1356	AFP_ENG_20100404.0293:1277-1282,AFP_ENG_20100404.0293:364-378	1277-1356	0.858
+SF13_ENG_033	per:alternate_names	stanford1	NYT_ENG_20091110.0018	Vitaly L. Ginzburg	NYT_ENG_20091110.0018:163-181,NYT_ENG_20091110.0018:1404-1412	NYT_ENG_20091110.0018:3318-3344,NYT_ENG_20091110.0018:1404-1412		1.000
+SF13_ENG_033	per:alternate_names	stanford1	NYT_ENG_20091110.0018	Vitaly Lazarevich Ginzburg	NYT_ENG_20091110.0018:3318-3344,NYT_ENG_20091110.0018:1404-1412	NYT_ENG_20091110.0018:163-181,NYT_ENG_20091110.0018:1404-1412		1.000
+SF13_ENG_033	per:children	stanford1	NIL
+SF13_ENG_033	per:cities_of_residence	stanford1	NIL
+SF13_ENG_033	per:city_of_death	stanford1	NIL
+SF13_ENG_033	per:countries_of_residence	stanford1	NIL
+SF13_ENG_033	per:country_of_death	stanford1	NIL
+SF13_ENG_033	per:employee_or_member_of	stanford1	XIN_ENG_20091109.0294	Department of Theoretical Physics	XIN_ENG_20091109.0294:469-502	XIN_ENG_20091109.0294:434-442,XIN_ENG_20091109.0294:875-883	434-502	0.740
+SF13_ENG_033	per:origin	stanford1	NIL
+SF13_ENG_033	per:other_family	stanford1	NIL
+SF13_ENG_033	per:parents	stanford1	NIL
+SF13_ENG_033	per:schools_attended	stanford1	XIN_ENG_20091109.0294	Moscow State University	XIN_ENG_20091109.0294:582-605	XIN_ENG_20091109.0294:558-566,XIN_ENG_20091109.0294:875-883	558-605	0.485
+SF13_ENG_033	per:siblings	stanford1	NIL
+SF13_ENG_033	per:spouse	stanford1	LTW_ENG_20091110.0124	Olga Zamsha	LTW_ENG_20091110.0124:6115-6126	LTW_ENG_20091110.0124:6080-6088,LTW_ENG_20091110.0124:641-649	6080-6126	0.870
+SF13_ENG_033	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_033	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_033	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_033	per:date_of_death	stanford1	NIL
+SF13_ENG_033	per:cause_of_death	stanford1	APW_ENG_20091109.0446	cardiac arrest	APW_ENG_20091109.0446:356-370	APW_ENG_20091109.0446:327-335,APW_ENG_20091109.0446:2517-2525	327-370	1.000
+SF13_ENG_033	per:charges	stanford1	NIL
+SF13_ENG_033	per:title	stanford1	APW_ENG_20091109.0370	physicist	APW_ENG_20091109.0370:78-87,APW_ENG_20091109.0370:233-242	APW_ENG_20091109.0370:88-103,APW_ENG_20091109.0370:714-722	78-103	0.998
+SF13_ENG_033	per:title	stanford1	AFP_ENG_20101005.0117	critic	AFP_ENG_20101005.0117:2995-3001	AFP_ENG_20101005.0117:2856-2871	2856-3001	0.962
+SF13_ENG_034	per:alternate_names	stanford1	NIL
+SF13_ENG_034	per:children	stanford1	NIL
+SF13_ENG_034	per:cities_of_residence	stanford1	NIL
+SF13_ENG_034	per:city_of_birth	stanford1	NYT_ENG_20091117.0047	Brooklyn	NYT_ENG_20091117.0047:2080-2088,NYT_ENG_20091117.0047:2181-2189	NYT_ENG_20091117.0047:2033-2050	2033-2088	0.870
+SF13_ENG_034	per:city_of_death	stanford1	NIL
+SF13_ENG_034	per:countries_of_residence	stanford1	NIL
+SF13_ENG_034	per:country_of_birth	stanford1	NIL
+SF13_ENG_034	per:country_of_death	stanford1	NIL
+SF13_ENG_034	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_034	per:origin	stanford1	NIL
+SF13_ENG_034	per:other_family	stanford1	NIL
+SF13_ENG_034	per:parents	stanford1	NIL
+SF13_ENG_034	per:schools_attended	stanford1	NIL
+SF13_ENG_034	per:siblings	stanford1	NIL
+SF13_ENG_034	per:spouse	stanford1	NIL
+SF13_ENG_034	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_034	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_034	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_034	per:age	stanford1	LTW_ENG_20091119.0064	68	LTW_ENG_20091119.0064:199-201,LTW_ENG_20091119.0064:113-115	LTW_ENG_20091119.0064:184-197,LTW_ENG_20091119.0064:58-71	184-201	0.881
+SF13_ENG_034	per:date_of_birth	stanford1	NYT_ENG_20091117.0047	1941-07-09	NYT_ENG_20091117.0047:2063-2075	NYT_ENG_20091117.0047:2033-2050	2033-2075	0.900
+SF13_ENG_034	per:date_of_death	stanford1	AFP_ENG_20091116.0010	2009-11-16	AFP_ENG_20091116.0010:240-246	AFP_ENG_20091116.0010:218-231	218-246	0.628
+SF13_ENG_034	per:cause_of_death	stanford1	NIL
+SF13_ENG_034	per:charges	stanford1	NIL
+SF13_ENG_034	per:religion	stanford1	NIL
+SF13_ENG_034	per:title	stanford1	NYT_ENG_20100609.0050	horse trainer	NYT_ENG_20100609.0050:3896-3909	NYT_ENG_20100609.0050:3910-3923,NYT_ENG_20100609.0050:152-168	3896-3923	1.000
+SF13_ENG_035	per:alternate_names	stanford1	AFP_ENG_20100411.0575	Lech Kaczynski	AFP_ENG_20100411.0575:549-563,AFP_ENG_20100411.0575:576-591	AFP_ENG_20100411.0575:2059-2068,AFP_ENG_20100411.0575:576-591		1.000
+SF13_ENG_035	per:alternate_names	stanford1	AFP_ENG_20100410.0234	Maria Kaczynski	AFP_ENG_20100410.0234:689-704	AFP_ENG_20100410.0234:661-675,AFP_ENG_20100410.0234:689-704		1.000
+SF13_ENG_035	per:alternate_names	stanford1	AFP_ENG_20100413.0360	Jaroslaw Kaczynski	AFP_ENG_20100413.0360:2201-2219,AFP_ENG_20100413.0360:404-419	AFP_ENG_20100413.0360:268-282,AFP_ENG_20100413.0360:404-419		1.000
+SF13_ENG_035	per:alternate_names	stanford1	AFP_ENG_20100412.0618	Maria Kuczynska	AFP_ENG_20100412.0618:1029-1044,AFP_ENG_20100412.0618:2209-2224	AFP_ENG_20100412.0618:2209-2224		0.953
+SF13_ENG_035	per:children	stanford1	NIL
+SF13_ENG_035	per:cities_of_residence	stanford1	NIL
+SF13_ENG_035	per:city_of_birth	stanford1	NIL
+SF13_ENG_035	per:city_of_death	stanford1	NIL
+SF13_ENG_035	per:countries_of_residence	stanford1	NIL
+SF13_ENG_035	per:country_of_birth	stanford1	NIL
+SF13_ENG_035	per:country_of_death	stanford1	NIL
+SF13_ENG_035	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_035	per:origin	stanford1	NIL
+SF13_ENG_035	per:other_family	stanford1	NIL
+SF13_ENG_035	per:parents	stanford1	NIL
+SF13_ENG_035	per:schools_attended	stanford1	NIL
+SF13_ENG_035	per:siblings	stanford1	XIN_ENG_20100410.0135	Jaroslaw	XIN_ENG_20100410.0135:808-816	XIN_ENG_20100410.0135:788-797,XIN_ENG_20100410.0135:555-570	788-816	1.000
+SF13_ENG_035	per:spouse	stanford1	AFP_ENG_20100412.0364	Kaczynska	AFP_ENG_20100412.0364:1843-1852,AFP_ENG_20100412.0364:410-425	AFP_ENG_20100412.0364:1874-1883,AFP_ENG_20100412.0364:410-425	1843-1883	0.990
+SF13_ENG_035	per:spouse	stanford1	AFP_ENG_20100413.0695	Lech Kaczynski	AFP_ENG_20100413.0695:229-243	AFP_ENG_20100413.0695:251-266	229-266	1.000
+SF13_ENG_035	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_035	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_035	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_035	per:age	stanford1	AFP_ENG_20100412.0618	59	AFP_ENG_20100412.0618:2075-2077	AFP_ENG_20100412.0618:2058-2073,AFP_ENG_20100412.0618:2209-2224	2058-2077	1.000
+SF13_ENG_035	per:date_of_birth	stanford1	NIL
+SF13_ENG_035	per:date_of_death	stanford1	NIL
+SF13_ENG_035	per:cause_of_death	stanford1	NIL
+SF13_ENG_035	per:charges	stanford1	NIL
+SF13_ENG_035	per:religion	stanford1	NIL
+SF13_ENG_035	per:title	stanford1	AFP_ENG_20100413.0569	President	AFP_ENG_20100413.0569:549-558	AFP_ENG_20100413.0569:559-573,AFP_ENG_20100413.0569:1870-1879	549-573	1.000
+SF13_ENG_035	per:title	stanford1	AFP_ENG_20100413.0601	prime minister	AFP_ENG_20100413.0601:859-873	AFP_ENG_20100413.0601:874-892,AFP_ENG_20100413.0601:1263-1272	859-892	1.000
+SF13_ENG_036	per:alternate_names	stanford1	eng-NG-31-127452-9228482	Girjia Prasad Koirala	eng-NG-31-127452-9228482:1610-1631,eng-NG-31-127452-9228482:2257-2278	eng-NG-31-127452-9228482:2257-2278		1.000
+SF13_ENG_036	per:children	stanford1	XIN_ENG_20090604.0130	Sujata Koirala	XIN_ENG_20090604.0130:658-672	XIN_ENG_20090604.0130:729-750,XIN_ENG_20090604.0130:1406-1427	658-750	1.000
+SF13_ENG_036	per:cities_of_residence	stanford1	NIL
+SF13_ENG_036	per:city_of_birth	stanford1	NIL
+SF13_ENG_036	per:city_of_death	stanford1	NIL
+SF13_ENG_036	per:countries_of_residence	stanford1	NIL
+SF13_ENG_036	per:country_of_death	stanford1	NIL
+SF13_ENG_036	per:employee_or_member_of	stanford1	XIN_ENG_20100108.0088	Nepali Congress	XIN_ENG_20100108.0088:495-510	XIN_ENG_20100108.0088:521-542	495-542	0.993
+SF13_ENG_036	per:origin	stanford1	NIL
+SF13_ENG_036	per:other_family	stanford1	NIL
+SF13_ENG_036	per:parents	stanford1	NIL
+SF13_ENG_036	per:schools_attended	stanford1	NIL
+SF13_ENG_036	per:siblings	stanford1	NIL
+SF13_ENG_036	per:spouse	stanford1	NIL
+SF13_ENG_036	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_036	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_036	per:age	stanford1	NIL
+SF13_ENG_036	per:date_of_death	stanford1	AFP_ENG_20100320.0347	2010-03-20	AFP_ENG_20100320.0347:309-317	AFP_ENG_20100320.0347:176-197	176-317	0.881
+SF13_ENG_036	per:cause_of_death	stanford1	NIL
+SF13_ENG_036	per:charges	stanford1	NIL
+SF13_ENG_036	per:title	stanford1	XIN_ENG_20100716.0044	Prime Minister	XIN_ENG_20100716.0044:334-348	XIN_ENG_20100716.0044:349-370	334-370	1.000
+SF13_ENG_036	per:title	stanford1	XIN_ENG_20100123.0038	president	XIN_ENG_20100123.0038:544-553	XIN_ENG_20100123.0038:554-575	544-575	1.000
+SF13_ENG_037	per:alternate_names	stanford1	NIL
+SF13_ENG_037	per:children	stanford1	NIL
+SF13_ENG_037	per:cities_of_residence	stanford1	NIL
+SF13_ENG_037	per:city_of_death	stanford1	WPB_ENG_20100914.0041	Paris	WPB_ENG_20100914.0041:3705-3710	WPB_ENG_20100914.0041:3426-3440	3426-3710	0.881
+SF13_ENG_037	per:countries_of_residence	stanford1	NIL
+SF13_ENG_037	per:country_of_death	stanford1	NIL
+SF13_ENG_037	per:employee_or_member_of	stanford1	NYT_ENG_20100912.0125	Cahiers du Cinema	NYT_ENG_20100912.0125:1071-1088	NYT_ENG_20100912.0125:1014-1021,NYT_ENG_20100912.0125:98-112	1014-1088	0.870
+SF13_ENG_037	per:origin	stanford1	NIL
+SF13_ENG_037	per:other_family	stanford1	NIL
+SF13_ENG_037	per:parents	stanford1	NIL
+SF13_ENG_037	per:schools_attended	stanford1	NIL
+SF13_ENG_037	per:siblings	stanford1	NIL
+SF13_ENG_037	per:spouse	stanford1	NIL
+SF13_ENG_037	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_037	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_037	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_037	per:date_of_death	stanford1	AFP_ENG_20100912.0191	2010-09-12	AFP_ENG_20100912.0191:286-292	AFP_ENG_20100912.0191:209-223,AFP_ENG_20100912.0191:463-470	209-292	1.000
+SF13_ENG_037	per:cause_of_death	stanford1	NIL
+SF13_ENG_037	per:charges	stanford1	NIL
+SF13_ENG_037	per:religion	stanford1	NIL
+SF13_ENG_037	per:title	stanford1	AFP_ENG_20100912.0181	film director	AFP_ENG_20100912.0181:74-87,AFP_ENG_20100912.0181:398-411	AFP_ENG_20100912.0181:88-102,AFP_ENG_20100912.0181:550-557	74-102	0.998
+SF13_ENG_037	per:title	stanford1	APW_ENG_20100912.0283	director	APW_ENG_20100912.0283:184-192,APW_ENG_20100912.0283:607-615	APW_ENG_20100912.0283:193-207,APW_ENG_20100912.0283:3009-3016	184-207	0.998
+SF13_ENG_037	per:title	stanford1	NYT_ENG_20100912.0125	film critic	NYT_ENG_20100912.0125:1034-1045	NYT_ENG_20100912.0125:1014-1021,NYT_ENG_20100912.0125:98-112	1014-1045	0.881
+SF13_ENG_038	per:alternate_names	stanford1	NYT_ENG_20090727.0054	Mercier Philip Cunningham	NYT_ENG_20090727.0054:4493-4518	NYT_ENG_20090727.0054:157-173		1.000
+SF13_ENG_038	per:children	stanford1	NIL
+SF13_ENG_038	per:cities_of_residence	stanford1	LTW_ENG_20090728.0078	Centralia	LTW_ENG_20090728.0078:10154-10163,LTW_ENG_20090728.0078:2288-2297	LTW_ENG_20090728.0078:10135-10150,LTW_ENG_20090728.0078:72-82	10135-10163	1.000
+SF13_ENG_038	per:cities_of_residence	stanford1	LTW_ENG_20090728.0078	New York	LTW_ENG_20090728.0078:331-339,LTW_ENG_20090728.0078:8499-8507	LTW_ENG_20090728.0078:293-303,LTW_ENG_20090728.0078:72-82	293-339	0.793
+SF13_ENG_038	per:cities_of_residence	stanford1	NYT_ENG_20090727.0054	Manhattan	NYT_ENG_20090727.0054:338-347	NYT_ENG_20090727.0054:157-173	157-347	0.619
+SF13_ENG_038	per:city_of_birth	stanford1	NYT_ENG_20090727.0054	Centralia	NYT_ENG_20090727.0054:4550-4559	NYT_ENG_20090727.0054:4493-4518	4493-4559	0.943
+SF13_ENG_038	per:city_of_death	stanford1	NYT_ENG_20090727.0054	Manhattan	NYT_ENG_20090727.0054:338-347	NYT_ENG_20090727.0054:157-173	157-347	0.881
+SF13_ENG_038	per:countries_of_residence	stanford1	NIL
+SF13_ENG_038	per:country_of_birth	stanford1	NIL
+SF13_ENG_038	per:country_of_death	stanford1	NIL
+SF13_ENG_038	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_038	per:origin	stanford1	AFP_ENG_20090728.0634	US	AFP_ENG_20090728.0634:72-74	AFP_ENG_20090728.0634:89-99,AFP_ENG_20090728.0634:379-395	72-99	0.953
+SF13_ENG_038	per:other_family	stanford1	NIL
+SF13_ENG_038	per:parents	stanford1	NIL
+SF13_ENG_038	per:schools_attended	stanford1	NIL
+SF13_ENG_038	per:siblings	stanford1	NIL
+SF13_ENG_038	per:spouse	stanford1	NIL
+SF13_ENG_038	per:stateorprovince_of_birth	stanford1	LTW_ENG_20090728.0078	Wash.	LTW_ENG_20090728.0078:2299-2304	LTW_ENG_20090728.0078:2250-2275	2250-2304	0.943
+SF13_ENG_038	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_038	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_038	per:age	stanford1	XIN_ENG_20090728.0160	90	XIN_ENG_20090728.0160:108-110	XIN_ENG_20090728.0160:83-99,XIN_ENG_20090728.0160:184-200	83-110	1.000
+SF13_ENG_038	per:date_of_birth	stanford1	LTW_ENG_20090728.0078	1919-04-16	LTW_ENG_20090728.0078:2309-2323	LTW_ENG_20090728.0078:2250-2275	2250-2323	0.943
+SF13_ENG_038	per:date_of_death	stanford1	NIL
+SF13_ENG_038	per:cause_of_death	stanford1	NIL
+SF13_ENG_038	per:charges	stanford1	NIL
+SF13_ENG_038	per:religion	stanford1	NIL
+SF13_ENG_038	per:title	stanford1	AFP_ENG_20090727.0252	choreographer	AFP_ENG_20090727.0252:106-119	AFP_ENG_20090727.0252:120-136	106-136	1.000
+SF13_ENG_039	per:alternate_names	stanford1	NIL
+SF13_ENG_039	per:children	stanford1	NIL
+SF13_ENG_039	per:cities_of_residence	stanford1	NIL
+SF13_ENG_039	per:city_of_death	stanford1	NIL
+SF13_ENG_039	per:countries_of_residence	stanford1	NIL
+SF13_ENG_039	per:country_of_death	stanford1	NIL
+SF13_ENG_039	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_039	per:origin	stanford1	NIL
+SF13_ENG_039	per:other_family	stanford1	NIL
+SF13_ENG_039	per:parents	stanford1	NIL
+SF13_ENG_039	per:schools_attended	stanford1	NIL
+SF13_ENG_039	per:siblings	stanford1	NIL
+SF13_ENG_039	per:spouse	stanford1	NIL
+SF13_ENG_039	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_039	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_039	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_039	per:date_of_death	stanford1	NIL
+SF13_ENG_039	per:cause_of_death	stanford1	NIL
+SF13_ENG_039	per:charges	stanford1	NIL
+SF13_ENG_039	per:religion	stanford1	NIL
+SF13_ENG_039	per:title	stanford1	APW_ENG_20090709.1311	TV star	APW_ENG_20090709.1311:2156-2163	APW_ENG_20090709.1311:2164-2174	2156-2174	0.982
+SF13_ENG_040	per:alternate_names	stanford1	NIL
+SF13_ENG_040	per:children	stanford1	NIL
+SF13_ENG_040	per:cities_of_residence	stanford1	NIL
+SF13_ENG_040	per:city_of_death	stanford1	NIL
+SF13_ENG_040	per:countries_of_residence	stanford1	NIL
+SF13_ENG_040	per:country_of_birth	stanford1	NIL
+SF13_ENG_040	per:country_of_death	stanford1	NIL
+SF13_ENG_040	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_040	per:origin	stanford1	NIL
+SF13_ENG_040	per:other_family	stanford1	NIL
+SF13_ENG_040	per:parents	stanford1	NIL
+SF13_ENG_040	per:schools_attended	stanford1	NIL
+SF13_ENG_040	per:siblings	stanford1	NIL
+SF13_ENG_040	per:spouse	stanford1	NIL
+SF13_ENG_040	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_040	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_040	per:date_of_death	stanford1	NIL
+SF13_ENG_040	per:cause_of_death	stanford1	NIL
+SF13_ENG_040	per:charges	stanford1	NIL
+SF13_ENG_040	per:religion	stanford1	NIL
+SF13_ENG_040	per:title	stanford1	APW_ENG_20100419.0116	star	APW_ENG_20100419.0116:4471-4475	APW_ENG_20100419.0116:4476-4490,APW_ENG_20100419.0116:4390-4396	4471-4490	0.993
+SF13_ENG_041	per:alternate_names	stanford1	NIL
+SF13_ENG_041	per:children	stanford1	NIL
+SF13_ENG_041	per:cities_of_residence	stanford1	NIL
+SF13_ENG_041	per:city_of_birth	stanford1	NYT_ENG_20090819.0159	New York City	NYT_ENG_20090819.0159:11079-11092	NYT_ENG_20090819.0159:11045-11066,NYT_ENG_20090819.0159:156-166	11045-11092	0.969
+SF13_ENG_041	per:city_of_death	stanford1	NIL
+SF13_ENG_041	per:countries_of_residence	stanford1	NIL
+SF13_ENG_041	per:country_of_birth	stanford1	NIL
+SF13_ENG_041	per:country_of_death	stanford1	NIL
+SF13_ENG_041	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_041	per:origin	stanford1	NIL
+SF13_ENG_041	per:other_family	stanford1	NIL
+SF13_ENG_041	per:parents	stanford1	NIL
+SF13_ENG_041	per:schools_attended	stanford1	NIL
+SF13_ENG_041	per:siblings	stanford1	NIL
+SF13_ENG_041	per:spouse	stanford1	NIL
+SF13_ENG_041	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_041	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_041	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_041	per:age	stanford1	LTW_ENG_20090820.0155	86	LTW_ENG_20090820.0155:932-934	LTW_ENG_20090820.0155:774-784	774-934	0.986
+SF13_ENG_041	per:date_of_birth	stanford1	APW_ENG_20090819.0913	1922-12-14	APW_ENG_20090819.0913:2011-2024	APW_ENG_20090819.0913:1965-1986,APW_ENG_20090819.0913:176-186	1965-2024	0.984
+SF13_ENG_041	per:date_of_death	stanford1	NIL
+SF13_ENG_041	per:cause_of_death	stanford1	LTW_ENG_20090820.0155	pancreatic cancer	LTW_ENG_20090820.0155:871-888	LTW_ENG_20090820.0155:774-784	774-888	0.996
+SF13_ENG_041	per:charges	stanford1	NIL
+SF13_ENG_041	per:religion	stanford1	NIL
+SF13_ENG_041	per:title	stanford1	AFP_ENG_20090718.0347	producer	AFP_ENG_20090718.0347:1470-1478,AFP_ENG_20090718.0347:1365-1373	AFP_ENG_20090718.0347:1455-1461,AFP_ENG_20090718.0347:1295-1305	1455-1478	0.953
+SF13_ENG_041	per:title	stanford1	LTW_ENG_20090820.0143	Creator	LTW_ENG_20090820.0143:71-78	LTW_ENG_20090820.0143:79-89,LTW_ENG_20090820.0143:662-672	71-89	0.881
+SF13_ENG_041	per:title	stanford1	LTW_ENG_20090718.0110	executive producer	LTW_ENG_20090718.0110:5215-5233	LTW_ENG_20090718.0110:5234-5244	5215-5244	1.000
+SF13_ENG_041	per:title	stanford1	NYT_ENG_20101025.0165	manager	NYT_ENG_20101025.0165:638-645	NYT_ENG_20101025.0165:646-656	638-656	1.000
+SF13_ENG_042	per:alternate_names	stanford1	NIL
+SF13_ENG_042	per:children	stanford1	NIL
+SF13_ENG_042	per:cities_of_residence	stanford1	NIL
+SF13_ENG_042	per:city_of_birth	stanford1	NIL
+SF13_ENG_042	per:city_of_death	stanford1	NIL
+SF13_ENG_042	per:countries_of_residence	stanford1	NIL
+SF13_ENG_042	per:country_of_birth	stanford1	NIL
+SF13_ENG_042	per:country_of_death	stanford1	NIL
+SF13_ENG_042	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_042	per:origin	stanford1	NIL
+SF13_ENG_042	per:other_family	stanford1	NIL
+SF13_ENG_042	per:parents	stanford1	NIL
+SF13_ENG_042	per:schools_attended	stanford1	NIL
+SF13_ENG_042	per:siblings	stanford1	NIL
+SF13_ENG_042	per:spouse	stanford1	NIL
+SF13_ENG_042	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_042	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_042	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_042	per:age	stanford1	AFP_ENG_20090820.0617	62	AFP_ENG_20090820.0617:406-408	AFP_ENG_20090820.0617:394-404	394-408	0.881
+SF13_ENG_042	per:date_of_birth	stanford1	NIL
+SF13_ENG_042	per:date_of_death	stanford1	NIL
+SF13_ENG_042	per:cause_of_death	stanford1	NIL
+SF13_ENG_042	per:charges	stanford1	NIL
+SF13_ENG_042	per:religion	stanford1	NIL
+SF13_ENG_042	per:title	stanford1	APW_ENG_20090821.0659	TV star	APW_ENG_20090821.0659:83-90	APW_ENG_20090821.0659:91-101,APW_ENG_20090821.0659:206-216	83-101	1.000
+SF13_ENG_043	per:alternate_names	stanford1	NIL
+SF13_ENG_043	per:children	stanford1	NIL
+SF13_ENG_043	per:cities_of_residence	stanford1	NIL
+SF13_ENG_043	per:city_of_birth	stanford1	LTW_ENG_20090827.0119	Brooklyn	LTW_ENG_20090827.0119:3701-3709	LTW_ENG_20090827.0119:3649-3673	3649-3709	0.978
+SF13_ENG_043	per:city_of_death	stanford1	NIL
+SF13_ENG_043	per:countries_of_residence	stanford1	NIL
+SF13_ENG_043	per:country_of_birth	stanford1	NIL
+SF13_ENG_043	per:country_of_death	stanford1	NIL
+SF13_ENG_043	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_043	per:origin	stanford1	NIL
+SF13_ENG_043	per:other_family	stanford1	NIL
+SF13_ENG_043	per:parents	stanford1	NIL
+SF13_ENG_043	per:schools_attended	stanford1	NIL
+SF13_ENG_043	per:siblings	stanford1	NIL
+SF13_ENG_043	per:spouse	stanford1	NIL
+SF13_ENG_043	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_043	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_043	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_043	per:age	stanford1	LTW_ENG_20090827.0119	68	LTW_ENG_20090827.0119:100-102	LTW_ENG_20090827.0119:83-98	83-102	1.000
+SF13_ENG_043	per:date_of_birth	stanford1	NYT_ENG_20090827.0014	1940-10-23	NYT_ENG_20090827.0014:2902-2915	NYT_ENG_20090827.0014:2853-2877	2853-2915	0.900
+SF13_ENG_043	per:date_of_death	stanford1	NIL
+SF13_ENG_043	per:cause_of_death	stanford1	APW_ENG_20090826.0873	heart attack	APW_ENG_20090826.0873:430-442	APW_ENG_20090826.0873:410-419,APW_ENG_20090826.0873:58-73	410-442	0.900
+SF13_ENG_043	per:charges	stanford1	NIL
+SF13_ENG_043	per:religion	stanford1	NIL
+SF13_ENG_043	per:title	stanford1	NIL
+SF13_ENG_044	per:alternate_names	stanford1	LTW_ENG_20090827.0109	Dominique Dunne	LTW_ENG_20090827.0109:869-884,LTW_ENG_20090827.0109:190-204	LTW_ENG_20090827.0109:2894-2908,LTW_ENG_20090827.0109:190-204		0.998
+SF13_ENG_044	per:alternate_names	stanford1	APW_ENG_20090826.1147	Dominick -RRB- Dunne	APW_ENG_20090826.1147:9997-10012,APW_ENG_20090826.1147:195-209	APW_ENG_20090826.1147:195-209		0.881
+SF13_ENG_044	per:alternate_names	stanford1	NYT_ENG_20090826.0141	Dominick John Dunne	NYT_ENG_20090826.0141:6231-6250,NYT_ENG_20090826.0141:208-222	NYT_ENG_20090826.0141:208-222		0.881
+SF13_ENG_044	per:children	stanford1	NIL
+SF13_ENG_044	per:cities_of_residence	stanford1	LTW_ENG_20090827.0109	New York	LTW_ENG_20090827.0109:6599-6607	LTW_ENG_20090827.0109:6581-6594,LTW_ENG_20090827.0109:190-204	6581-6607	1.000
+SF13_ENG_044	per:cities_of_residence	stanford1	LTW_ENG_20090827.0109	Portland	LTW_ENG_20090827.0109:6659-6667	LTW_ENG_20090827.0109:6640-6655,LTW_ENG_20090827.0109:190-204	6640-6667	1.000
+SF13_ENG_044	per:cities_of_residence	stanford1	LTW_ENG_20090827.0117	Los Angeles	LTW_ENG_20090827.0117:5982-5993,LTW_ENG_20090827.0117:9626-9637	LTW_ENG_20090827.0117:5967-5972,LTW_ENG_20090827.0117:148-162	5967-5993	0.900
+SF13_ENG_044	per:cities_of_residence	stanford1	NYT_ENG_20090826.0141	Manhattan	NYT_ENG_20090826.0141:449-458,NYT_ENG_20090826.0141:5687-5696	NYT_ENG_20090826.0141:208-222	208-458	0.619
+SF13_ENG_044	per:city_of_birth	stanford1	LTW_ENG_20090827.0109	Hollywood	LTW_ENG_20090827.0109:2396-2405,LTW_ENG_20090827.0109:6019-6028	LTW_ENG_20090827.0109:2379-2384,LTW_ENG_20090827.0109:190-204	2379-2405	0.900
+SF13_ENG_044	per:city_of_death	stanford1	NYT_ENG_20090826.0141	Manhattan	NYT_ENG_20090826.0141:449-458,NYT_ENG_20090826.0141:5687-5696	NYT_ENG_20090826.0141:208-222	208-458	0.881
+SF13_ENG_044	per:countries_of_residence	stanford1	NIL
+SF13_ENG_044	per:country_of_birth	stanford1	NIL
+SF13_ENG_044	per:country_of_death	stanford1	NIL
+SF13_ENG_044	per:employee_or_member_of	stanford1	LTW_ENG_20090827.0109	Vanity Fair	LTW_ENG_20090827.0109:2881-2892,LTW_ENG_20090827.0109:3532-3543	LTW_ENG_20090827.0109:2894-2908,LTW_ENG_20090827.0109:190-204	2881-2908	0.929
+SF13_ENG_044	per:origin	stanford1	NIL
+SF13_ENG_044	per:other_family	stanford1	NIL
+SF13_ENG_044	per:parents	stanford1	NIL
+SF13_ENG_044	per:schools_attended	stanford1	NIL
+SF13_ENG_044	per:siblings	stanford1	NIL
+SF13_ENG_044	per:spouse	stanford1	NIL
+SF13_ENG_044	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_044	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_044	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_044	per:age	stanford1	LTW_ENG_20090827.0117	83	LTW_ENG_20090827.0117:81-83	LTW_ENG_20090827.0117:65-79,LTW_ENG_20090827.0117:148-162	65-83	0.982
+SF13_ENG_044	per:date_of_birth	stanford1	NIL
+SF13_ENG_044	per:date_of_death	stanford1	NIL
+SF13_ENG_044	per:cause_of_death	stanford1	LTW_ENG_20090827.0109	bladder cancer	LTW_ENG_20090827.0109:391-405	LTW_ENG_20090827.0109:190-204	190-405	0.515
+SF13_ENG_044	per:charges	stanford1	NIL
+SF13_ENG_044	per:religion	stanford1	NIL
+SF13_ENG_044	per:title	stanford1	WPB_ENG_20101207.0004	writer	WPB_ENG_20101207.0004:6977-6983,WPB_ENG_20101207.0004:1967-1973	WPB_ENG_20101207.0004:6984-6998	6977-6998	0.953
+SF13_ENG_044	per:title	stanford1	APW_ENG_20090826.1147	Author	APW_ENG_20090826.1147:188-194	APW_ENG_20090826.1147:195-209	188-209	0.881
+SF13_ENG_044	per:title	stanford1	LTW_ENG_20090827.0117	buyer	LTW_ENG_20090827.0117:12383-12388	LTW_ENG_20090827.0117:12344-12349,LTW_ENG_20090827.0117:148-162	12344-12388	0.858
+SF13_ENG_044	per:title	stanford1	LTW_ENG_20090827.0109	actor	LTW_ENG_20090827.0109:2728-2733,LTW_ENG_20090827.0109:6075-6080	LTW_ENG_20090827.0109:2734-2747,LTW_ENG_20090827.0109:190-204	2728-2747	1.000
+SF13_ENG_044	per:title	stanford1	LTW_ENG_20090827.0117	film producer	LTW_ENG_20090827.0117:960-973,LTW_ENG_20090827.0117:7654-7667	LTW_ENG_20090827.0117:933-938,LTW_ENG_20090827.0117:148-162	933-973	0.900
+SF13_ENG_045	per:alternate_names	stanford1	NIL
+SF13_ENG_045	per:children	stanford1	NIL
+SF13_ENG_045	per:cities_of_residence	stanford1	NIL
+SF13_ENG_045	per:city_of_death	stanford1	APW_ENG_20091208.1293	New York	APW_ENG_20091208.1293:1889-1897	APW_ENG_20091208.1293:1871-1880,APW_ENG_20091208.1293:1818-1832	1871-1897	0.978
+SF13_ENG_045	per:countries_of_residence	stanford1	NIL
+SF13_ENG_045	per:country_of_birth	stanford1	NIL
+SF13_ENG_045	per:country_of_death	stanford1	NIL
+SF13_ENG_045	per:employee_or_member_of	stanford1	LTW_ENG_20091007.0013	Royal Caribbean	LTW_ENG_20091007.0013:7845-7860,LTW_ENG_20091007.0013:8376-8391	LTW_ENG_20091007.0013:7871-7885	7845-7885	1.000
+SF13_ENG_045	per:origin	stanford1	NIL
+SF13_ENG_045	per:other_family	stanford1	NIL
+SF13_ENG_045	per:parents	stanford1	NIL
+SF13_ENG_045	per:schools_attended	stanford1	NIL
+SF13_ENG_045	per:siblings	stanford1	NIL
+SF13_ENG_045	per:spouse	stanford1	NIL
+SF13_ENG_045	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_045	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_045	per:date_of_death	stanford1	APW_ENG_20091208.1293	2009-08-28	APW_ENG_20091208.1293:1901-1908	APW_ENG_20091208.1293:1871-1880,APW_ENG_20091208.1293:1818-1832	1871-1908	0.858
+SF13_ENG_045	per:cause_of_death	stanford1	APW_ENG_20100423.1101	drug overdose	APW_ENG_20100423.1101:1001-1014	APW_ENG_20100423.1101:981-990,APW_ENG_20100423.1101:659-673	981-1014	0.900
+SF13_ENG_045	per:charges	stanford1	NIL
+SF13_ENG_045	per:religion	stanford1	NIL
+SF13_ENG_045	per:title	stanford1	APW_ENG_20100122.1279	CEO	APW_ENG_20100122.1279:2208-2211	APW_ENG_20100122.1279:2212-2226	2208-2226	0.881
+SF13_ENG_045	per:title	stanford1	LTW_ENG_20090829.0102	DJ	LTW_ENG_20090829.0102:68-70	LTW_ENG_20090829.0102:71-85,LTW_ENG_20090829.0102:452-466	68-85	1.000
+SF13_ENG_045	per:title	stanford1	LTW_ENG_20091007.0013	president	LTW_ENG_20091007.0013:7861-7870	LTW_ENG_20091007.0013:7871-7885	7861-7885	1.000
+SF13_ENG_046	per:alternate_names	stanford1	NIL
+SF13_ENG_046	per:children	stanford1	NIL
+SF13_ENG_046	per:cities_of_residence	stanford1	NIL
+SF13_ENG_046	per:city_of_death	stanford1	NYT_ENG_20101206.0204	Santa Fe	NYT_ENG_20101206.0204:380-388	NYT_ENG_20101206.0204:135-147	135-388	1.000
+SF13_ENG_046	per:countries_of_residence	stanford1	NIL
+SF13_ENG_046	per:country_of_death	stanford1	NIL
+SF13_ENG_046	per:employee_or_member_of	stanford1	NYT_ENG_20101206.0204	CBS	NYT_ENG_20101206.0204:5385-5388,NYT_ENG_20101206.0204:5039-5042	NYT_ENG_20101206.0204:5345-5353,NYT_ENG_20101206.0204:135-147	5345-5388	1.000
+SF13_ENG_046	per:origin	stanford1	NIL
+SF13_ENG_046	per:other_family	stanford1	NIL
+SF13_ENG_046	per:parents	stanford1	NIL
+SF13_ENG_046	per:schools_attended	stanford1	NIL
+SF13_ENG_046	per:siblings	stanford1	NIL
+SF13_ENG_046	per:spouse	stanford1	NIL
+SF13_ENG_046	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_046	per:stateorprovince_of_death	stanford1	NYT_ENG_20101206.0204	N.M.	NYT_ENG_20101206.0204:390-393	NYT_ENG_20101206.0204:135-147	135-393	1.000
+SF13_ENG_046	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_046	per:date_of_death	stanford1	NIL
+SF13_ENG_046	per:cause_of_death	stanford1	NIL
+SF13_ENG_046	per:charges	stanford1	NIL
+SF13_ENG_046	per:religion	stanford1	NIL
+SF13_ENG_046	per:title	stanford1	AFP_ENG_20101206.0060	announcer	AFP_ENG_20101206.0060:1947-1956	AFP_ENG_20101206.0060:1848-1856,AFP_ENG_20101206.0060:340-352	1848-1956	0.953
+SF13_ENG_047	per:alternate_names	stanford1	AFP_ENG_20100309.0215	Orlando Zapata Tamayo	AFP_ENG_20100309.0215:1366-1387	AFP_ENG_20100309.0215:982-996,AFP_ENG_20100309.0215:1366-1387		0.998
+SF13_ENG_047	per:children	stanford1	NIL
+SF13_ENG_047	per:cities_of_residence	stanford1	NIL
+SF13_ENG_047	per:city_of_birth	stanford1	NIL
+SF13_ENG_047	per:city_of_death	stanford1	NIL
+SF13_ENG_047	per:countries_of_residence	stanford1	NIL
+SF13_ENG_047	per:country_of_birth	stanford1	NIL
+SF13_ENG_047	per:country_of_death	stanford1	NIL
+SF13_ENG_047	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_047	per:origin	stanford1	NIL
+SF13_ENG_047	per:other_family	stanford1	NIL
+SF13_ENG_047	per:parents	stanford1	NIL
+SF13_ENG_047	per:schools_attended	stanford1	NIL
+SF13_ENG_047	per:siblings	stanford1	NIL
+SF13_ENG_047	per:spouse	stanford1	NIL
+SF13_ENG_047	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_047	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_047	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_047	per:age	stanford1	AFP_ENG_20100309.0374	42	AFP_ENG_20100309.0374:1067-1069	AFP_ENG_20100309.0374:1044-1065	1044-1069	0.998
+SF13_ENG_047	per:date_of_birth	stanford1	NIL
+SF13_ENG_047	per:date_of_death	stanford1	AFP_ENG_20100311.0071	2010-06-03	AFP_ENG_20100311.0071:1174-1186	AFP_ENG_20100311.0071:1151-1165	1151-1186	1.000
+SF13_ENG_047	per:cause_of_death	stanford1	APW_ENG_20100310.1187	hunger strike	APW_ENG_20100310.1187:1286-1299,APW_ENG_20100310.1187:957-970	APW_ENG_20100310.1187:1249-1263	1249-1299	1.000
+SF13_ENG_047	per:charges	stanford1	NIL
+SF13_ENG_047	per:religion	stanford1	NIL
+SF13_ENG_047	per:title	stanford1	NIL
+SF13_ENG_048	per:alternate_names	stanford1	NIL
+SF13_ENG_048	per:children	stanford1	APW_ENG_20090804.1223	Robert Gwathmey	APW_ENG_20090804.1223:2297-2312,APW_ENG_20090804.1223:2821-2829	APW_ENG_20090804.1223:2244-2252,APW_ENG_20090804.1223:2821-2829	2244-2312	0.603
+SF13_ENG_048	per:cities_of_residence	stanford1	NYT_ENG_20090804.0124	Los Angeles	NYT_ENG_20090804.0124:9029-9040	NYT_ENG_20090804.0124:9011-9025,NYT_ENG_20090804.0124:1829-1837	9011-9040	1.000
+SF13_ENG_048	per:city_of_birth	stanford1	NIL
+SF13_ENG_048	per:city_of_death	stanford1	APW_ENG_20090804.1096	Manhattan	APW_ENG_20090804.1096:390-399	APW_ENG_20090804.1096:373-381,APW_ENG_20090804.1096:554-562	373-399	0.858
+SF13_ENG_048	per:countries_of_residence	stanford1	NIL
+SF13_ENG_048	per:country_of_birth	stanford1	NIL
+SF13_ENG_048	per:country_of_death	stanford1	NIL
+SF13_ENG_048	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_048	per:origin	stanford1	NIL
+SF13_ENG_048	per:other_family	stanford1	NIL
+SF13_ENG_048	per:parents	stanford1	APW_ENG_20090804.1223	Robert Gwathmey	APW_ENG_20090804.1223:2297-2312,APW_ENG_20090804.1223:2821-2829	APW_ENG_20090804.1223:2244-2252,APW_ENG_20090804.1223:2821-2829	2244-2312	0.770
+SF13_ENG_048	per:schools_attended	stanford1	NIL
+SF13_ENG_048	per:siblings	stanford1	NIL
+SF13_ENG_048	per:spouse	stanford1	NIL
+SF13_ENG_048	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_048	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_048	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_048	per:age	stanford1	APW_ENG_20090804.1096	71	APW_ENG_20090804.1096:97-99	APW_ENG_20090804.1096:68-84,APW_ENG_20090804.1096:554-562	68-99	0.953
+SF13_ENG_048	per:date_of_birth	stanford1	NIL
+SF13_ENG_048	per:date_of_death	stanford1	APW_ENG_20090804.1096	2009-08-03	APW_ENG_20090804.1096:403-409	APW_ENG_20090804.1096:373-381,APW_ENG_20090804.1096:554-562	373-409	0.976
+SF13_ENG_048	per:cause_of_death	stanford1	APW_ENG_20090804.1223	cancer	APW_ENG_20090804.1223:357-363	APW_ENG_20090804.1223:340-348,APW_ENG_20090804.1223:2821-2829	340-363	0.870
+SF13_ENG_048	per:charges	stanford1	NIL
+SF13_ENG_048	per:religion	stanford1	NIL
+SF13_ENG_048	per:title	stanford1	APW_ENG_20090804.1096	Architect	APW_ENG_20090804.1096:58-67	APW_ENG_20090804.1096:68-84,APW_ENG_20090804.1096:554-562	58-84	0.881
+SF13_ENG_048	per:title	stanford1	APW_ENG_20090804.1223	painter	APW_ENG_20090804.1223:2289-2296	APW_ENG_20090804.1223:2297-2312,APW_ENG_20090804.1223:2821-2829	2289-2312	1.000
+SF13_ENG_049	per:alternate_names	stanford1	NYT_ENG_20101016.0101	Benoit B. Mandelbrot	NYT_ENG_20101016.0101:132-152	NYT_ENG_20101016.0101:1878-1888,NYT_ENG_20101016.0101:132-152		1.000
+SF13_ENG_049	per:children	stanford1	NIL
+SF13_ENG_049	per:cities_of_residence	stanford1	NIL
+SF13_ENG_049	per:city_of_death	stanford1	NYT_ENG_20101016.0101	Cambridge	NYT_ENG_20101016.0101:311-320,NYT_ENG_20101016.0101:432-441	NYT_ENG_20101016.0101:132-152	132-320	1.000
+SF13_ENG_049	per:countries_of_residence	stanford1	NIL
+SF13_ENG_049	per:country_of_death	stanford1	NIL
+SF13_ENG_049	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_049	per:origin	stanford1	NIL
+SF13_ENG_049	per:other_family	stanford1	NIL
+SF13_ENG_049	per:parents	stanford1	NIL
+SF13_ENG_049	per:schools_attended	stanford1	NIL
+SF13_ENG_049	per:siblings	stanford1	NIL
+SF13_ENG_049	per:spouse	stanford1	NIL
+SF13_ENG_049	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_049	per:stateorprovince_of_death	stanford1	NYT_ENG_20101016.0101	Mass.	NYT_ENG_20101016.0101:322-326,NYT_ENG_20101016.0101:5617-5622	NYT_ENG_20101016.0101:132-152	132-326	1.000
+SF13_ENG_049	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_049	per:date_of_death	stanford1	NIL
+SF13_ENG_049	per:cause_of_death	stanford1	NIL
+SF13_ENG_049	per:charges	stanford1	NIL
+SF13_ENG_049	per:religion	stanford1	NIL
+SF13_ENG_049	per:title	stanford1	NYT_ENG_20101121.0154	mathematician	NYT_ENG_20101121.0154:1132-1145	NYT_ENG_20101121.0154:1146-1166	1132-1166	1.000
+SF13_ENG_050	per:alternate_names	stanford1	NIL
+SF13_ENG_050	per:children	stanford1	NIL
+SF13_ENG_050	per:cities_of_residence	stanford1	NIL
+SF13_ENG_050	per:city_of_birth	stanford1	NIL
+SF13_ENG_050	per:city_of_death	stanford1	NIL
+SF13_ENG_050	per:countries_of_residence	stanford1	NIL
+SF13_ENG_050	per:country_of_birth	stanford1	NIL
+SF13_ENG_050	per:country_of_death	stanford1	NIL
+SF13_ENG_050	per:employee_or_member_of	stanford1	NIL
+SF13_ENG_050	per:origin	stanford1	NIL
+SF13_ENG_050	per:other_family	stanford1	NIL
+SF13_ENG_050	per:parents	stanford1	NIL
+SF13_ENG_050	per:schools_attended	stanford1	NIL
+SF13_ENG_050	per:siblings	stanford1	NIL
+SF13_ENG_050	per:spouse	stanford1	NIL
+SF13_ENG_050	per:stateorprovince_of_birth	stanford1	NIL
+SF13_ENG_050	per:stateorprovince_of_death	stanford1	NIL
+SF13_ENG_050	per:statesorprovinces_of_residence	stanford1	NIL
+SF13_ENG_050	per:age	stanford1	NIL
+SF13_ENG_050	per:date_of_birth	stanford1	NIL
+SF13_ENG_050	per:date_of_death	stanford1	NIL
+SF13_ENG_050	per:cause_of_death	stanford1	NIL
+SF13_ENG_050	per:charges	stanford1	NIL
+SF13_ENG_050	per:religion	stanford1	NIL
+SF13_ENG_050	per:title	stanford1	AFP_ENG_20100926.0189	dancer	AFP_ENG_20100926.0189:3553-3559	AFP_ENG_20100926.0189:3560-3570	3553-3570	1.000
+SF13_ENG_051	org:alternate_names	stanford1	AFP_ENG_20101126.0436	ECC	AFP_ENG_20101126.0436:521-524,AFP_ENG_20101126.0436:432-462	AFP_ENG_20101126.0436:432-462		1.000
+SF13_ENG_051	org:alternate_names	stanford1	AFP_ENG_20090828.0131	Electoral Complaints Commission	AFP_ENG_20090828.0131:1125-1156	AFP_ENG_20090828.0131:2081-2111,AFP_ENG_20090828.0131:1125-1156		1.000
+SF13_ENG_051	org:alternate_names	stanford1	XIN_ENG_20100415.0134	IEC	XIN_ENG_20100415.0134:1865-1868,XIN_ENG_20100415.0134:277-307	XIN_ENG_20100415.0134:800-830,XIN_ENG_20100415.0134:277-307		0.999
+SF13_ENG_051	org:alternate_names	stanford1	XIN_ENG_20100415.0134	Election Complained Commission	XIN_ENG_20100415.0134:277-307	XIN_ENG_20100415.0134:800-830,XIN_ENG_20100415.0134:277-307		1.000
+SF13_ENG_051	org:alternate_names	stanford1	bolt-eng-DF-212-191667-3071466	Electoral Complaint Commission	bolt-eng-DF-212-191667-3071466:59748-59778	bolt-eng-DF-212-191667-3071466:65943-65973,bolt-eng-DF-212-191667-3071466:59748-59778		1.000
+SF13_ENG_051	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_051	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_051	org:founded_by	stanford1	NIL
+SF13_ENG_051	org:member_of	stanford1	NIL
+SF13_ENG_051	org:members	stanford1	NIL
+SF13_ENG_051	org:parents	stanford1	NIL
+SF13_ENG_051	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_051	org:shareholders	stanford1	NIL
+SF13_ENG_051	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_051	org:subsidiaries	stanford1	NIL
+SF13_ENG_051	org:top_members_employees	stanford1	LTW_ENG_20090828.0093	Mahgul Yamam	LTW_ENG_20090828.0093:5173-5185	LTW_ENG_20090828.0093:5203-5233,LTW_ENG_20090828.0093:2452-2482	5173-5233	0.863
+SF13_ENG_051	org:date_dissolved	stanford1	NIL
+SF13_ENG_051	org:date_founded	stanford1	NIL
+SF13_ENG_051	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_051	org:website	stanford1	NIL
+SF13_ENG_052	org:alternate_names	stanford1	bolt-eng-DF-200-192448-6190628	ETA	bolt-eng-DF-200-192448-6190628:583074-583077,bolt-eng-DF-200-192448-6190628:578224-578227	bolt-eng-DF-200-192448-6190628:597676-597679,bolt-eng-DF-200-192448-6190628:578224-578227		1.000
+SF13_ENG_052	org:alternate_names	stanford1	bolt-eng-DF-200-192448-6190628	IRA	bolt-eng-DF-200-192448-6190628:578215-578218,bolt-eng-DF-200-192448-6190628:578224-578227	bolt-eng-DF-200-192448-6190628:586488-586491,bolt-eng-DF-200-192448-6190628:578224-578227		1.000
+SF13_ENG_052	org:alternate_names	stanford1	bolt-eng-DF-200-192455-6202392	RAF	bolt-eng-DF-200-192455-6202392:51211-51214,bolt-eng-DF-200-192455-6202392:51163-51166	bolt-eng-DF-200-192455-6202392:52716-52719,bolt-eng-DF-200-192455-6202392:51163-51166		0.998
+SF13_ENG_052	org:city_of_headquarters	stanford1	AFP_ENG_20090815.0059	San Sebastian	AFP_ENG_20090815.0059:346-359	AFP_ENG_20090815.0059:339-342,AFP_ENG_20090815.0059:2407-2410	339-359	1.000
+SF13_ENG_052	org:country_of_headquarters	stanford1	bolt-eng-DF-170-181125-9109966	Spain	bolt-eng-DF-170-181125-9109966:4445-4450,bolt-eng-DF-170-181125-9109966:2966-2971	bolt-eng-DF-170-181125-9109966:4438-4441,bolt-eng-DF-170-181125-9109966:108419-108422	4438-4450	1.000
+SF13_ENG_052	org:founded_by	stanford1	NIL
+SF13_ENG_052	org:member_of	stanford1	NIL
+SF13_ENG_052	org:members	stanford1	NIL
+SF13_ENG_052	org:parents	stanford1	AFP_ENG_20100330.0653	Revolutionary Armed Forces of Colombia	AFP_ENG_20100330.0653:1849-1887,AFP_ENG_20100330.0653:1889-1893	AFP_ENG_20100330.0653:1801-1804,AFP_ENG_20100330.0653:2226-2229	1801-1887	1.000
+SF13_ENG_052	org:parents	stanford1	eng-NG-31-127406-9222468	ETA	eng-NG-31-127406-9222468:727-730	eng-NG-31-127406-9222468:607-610,eng-NG-31-127406-9222468:727-730	607-730	0.847
+SF13_ENG_052	org:political_religious_affiliation	stanford1	APW_ENG_20100712.0659	separatist	APW_ENG_20100712.0659:3534-3544	APW_ENG_20100712.0659:3551-3554	3534-3554	1.000
+SF13_ENG_052	org:political_religious_affiliation	stanford1	APW_ENG_20100305.0670	nationalist	APW_ENG_20100305.0670:1040-1051	APW_ENG_20100305.0670:1031-1034,APW_ENG_20100305.0670:1733-1736	1031-1051	1.000
+SF13_ENG_052	org:shareholders	stanford1	NIL
+SF13_ENG_052	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_052	org:subsidiaries	stanford1	NIL
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20091009.0297	Jose Miguel Benaran Ordenana	AFP_ENG_20091009.0297:1324-1352	AFP_ENG_20091009.0297:1313-1316	1313-1352	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20101017.0117	Arnaldo Otegi	AFP_ENG_20101017.0117:191-204,AFP_ENG_20101017.0117:399-404	AFP_ENG_20101017.0117:260-263,AFP_ENG_20101017.0117:2392-2395	191-263	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100416.0363	Anza	AFP_ENG_20100416.0363:673-677	AFP_ENG_20100416.0363:719-722,AFP_ENG_20100416.0363:1227-1230	673-722	0.998
+SF13_ENG_052	org:top_members_employees	stanford1	APW_ENG_20100302.0606	Arturo Cubillas Fontan	APW_ENG_20100302.0606:2185-2207	APW_ENG_20100302.0606:2174-2177,APW_ENG_20100302.0606:2667-2670	2174-2207	0.993
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100217.0265	Faustino Marcos Alvarez	AFP_ENG_20100217.0265:762-785	AFP_ENG_20100217.0265:821-824,AFP_ENG_20100217.0265:1298-1301	762-824	0.991
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100228.0370	Ibon Gogeascoechea Arronategui	AFP_ENG_20100228.0370:348-378	AFP_ENG_20100228.0370:474-477,AFP_ENG_20100228.0370:735-738	348-477	0.953
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20101014.0084	Sagarzazu	AFP_ENG_20101014.0084:606-615	AFP_ENG_20101014.0084:664-667,AFP_ENG_20101014.0084:1068-1071	606-667	0.937
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20090819.0401	Aitzol Etxaburu	AFP_ENG_20090819.0401:774-789	AFP_ENG_20090819.0401:763-766,AFP_ENG_20090819.0401:3049-3052	763-789	0.881
+SF13_ENG_052	org:top_members_employees	stanford1	XIN_ENG_20101201.0276	Ternera	XIN_ENG_20101201.0276:743-750,XIN_ENG_20101201.0276:418-430	XIN_ENG_20101201.0276:789-792,XIN_ENG_20101201.0276:1314-1317	743-792	0.870
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100317.0295	Gorka Landaburu	AFP_ENG_20100317.0295:384-399	AFP_ENG_20100317.0295:457-460,AFP_ENG_20100317.0295:3983-3986	384-460	0.868
+SF13_ENG_052	org:top_members_employees	stanford1	NYT_ENG_20100228.0111	Gogeascoechea	NYT_ENG_20100228.0111:1665-1678	NYT_ENG_20100228.0111:1705-1708,NYT_ENG_20100228.0111:1889-1892	1665-1708	0.846
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100625.0807	Fermin Vila Michelena	AFP_ENG_20100625.0807:837-858	AFP_ENG_20100625.0807:910-913,AFP_ENG_20100625.0807:1468-1471	837-913	0.843
+SF13_ENG_052	org:top_members_employees	stanford1	NYT_ENG_20100906.0083	Mikel Kabikoitz Karrera Sarobe	NYT_ENG_20100906.0083:2167-2197	NYT_ENG_20100906.0083:2232-2235,NYT_ENG_20100906.0083:244-247	2167-2235	0.828
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100928.0246	Franciso Javier Lopez Pena	AFP_ENG_20100928.0246:1780-1806	AFP_ENG_20100928.0246:1770-1773,AFP_ENG_20100928.0246:3455-3458	1770-1806	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20101007.0405	Juan Carlos Besance Zugasti	AFP_ENG_20101007.0405:848-875	AFP_ENG_20101007.0405:836-839,AFP_ENG_20101007.0405:1906-1909	836-875	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	XIN_ENG_20100914.0301	Aitor Elizaran	XIN_ENG_20100914.0301:1581-1595	XIN_ENG_20100914.0301:1626-1629,XIN_ENG_20100914.0301:1890-1893	1581-1629	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	XIN_ENG_20100307.0213	Ibai Beobide	XIN_ENG_20100307.0213:568-580	XIN_ENG_20100307.0213:557-560,XIN_ENG_20100307.0213:834-837	557-580	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100330.0653	Sebastian Etxaniz	AFP_ENG_20100330.0653:706-723	AFP_ENG_20100330.0653:694-697,AFP_ENG_20100330.0653:2226-2229	694-723	1.000
+SF13_ENG_052	org:top_members_employees	stanford1	AFP_ENG_20100309.0677	Velasco	AFP_ENG_20100309.0677:854-861,AFP_ENG_20100309.0677:701-713	AFP_ENG_20100309.0677:923-926	854-926	0.810
+SF13_ENG_052	org:date_dissolved	stanford1	NIL
+SF13_ENG_052	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_052	org:website	stanford1	NIL
+SF13_ENG_053	org:alternate_names	stanford1	eng-NG-31-127416-9222588	USW	eng-NG-31-127416-9222588:1274-1277	eng-NG-31-127416-9222588:1253-1272,eng-NG-31-127416-9222588:1274-1277		1.000
+SF13_ENG_053	org:alternate_names	stanford1	bolt-eng-DF-199-192823-6755206	SEIU	bolt-eng-DF-199-192823-6755206:12210-12214,bolt-eng-DF-199-192823-6755206:10966-10985	bolt-eng-DF-199-192823-6755206:11572-11591,bolt-eng-DF-199-192823-6755206:10966-10985		1.000
+SF13_ENG_053	org:alternate_names	stanford1	bolt-eng-DF-199-192823-6755206	TWU	bolt-eng-DF-199-192823-6755206:12575-12578,bolt-eng-DF-199-192823-6755206:10966-10985	bolt-eng-DF-199-192823-6755206:18479-18502,bolt-eng-DF-199-192823-6755206:10966-10985		1.000
+SF13_ENG_053	org:alternate_names	stanford1	eng-NG-31-142161-10037893	USWA	eng-NG-31-142161-10037893:19326-19330,eng-NG-31-142161-10037893:18747-18778	eng-NG-31-142161-10037893:4343-4390,eng-NG-31-142161-10037893:18747-18778		1.000
+SF13_ENG_053	org:alternate_names	stanford1	eng-NG-31-142471-10046437	United Steelworkers	eng-NG-31-142471-10046437:3395-3414,eng-NG-31-142471-10046437:3704-3707	eng-NG-31-142471-10046437:3019-3039,eng-NG-31-142471-10046437:3704-3707		0.993
+SF13_ENG_053	org:alternate_names	stanford1	APW_ENG_20090615.1046	U.S. Steel	APW_ENG_20090615.1046:1164-1174,APW_ENG_20090615.1046:2009-2028	APW_ENG_20090615.1046:65-73,APW_ENG_20090615.1046:2009-2028		0.982
+SF13_ENG_053	org:alternate_names	stanford1	APW_ENG_20090615.1046	US Steel	APW_ENG_20090615.1046:65-73,APW_ENG_20090615.1046:2009-2028	APW_ENG_20090615.1046:431-441,APW_ENG_20090615.1046:2009-2028		0.982
+SF13_ENG_053	org:alternate_names	stanford1	NYT_ENG_20090911.0110	VEBA	NYT_ENG_20090911.0110:748-752,NYT_ENG_20090911.0110:815-834	NYT_ENG_20090911.0110:2697-2716,NYT_ENG_20090911.0110:815-834		0.953
+SF13_ENG_053	org:alternate_names	stanford1	bolt-eng-DF-199-192823-6755206	Workers United and Transport Workers Union	bolt-eng-DF-199-192823-6755206:12227-12269,bolt-eng-DF-199-192823-6755206:10966-10985	bolt-eng-DF-199-192823-6755206:18115-18138,bolt-eng-DF-199-192823-6755206:10966-10985		0.881
+SF13_ENG_053	org:alternate_names	stanford1	bolt-eng-DF-199-192823-6755206	Transport Workers Union	bolt-eng-DF-199-192823-6755206:18479-18502,bolt-eng-DF-199-192823-6755206:10966-10985	bolt-eng-DF-199-192823-6755206:12227-12269,bolt-eng-DF-199-192823-6755206:10966-10985		0.881
+SF13_ENG_053	org:alternate_names	stanford1	eng-NG-31-142471-10046437	United Steel Workers	eng-NG-31-142471-10046437:3019-3039,eng-NG-31-142471-10046437:3704-3707	eng-NG-31-142471-10046437:3395-3414,eng-NG-31-142471-10046437:3704-3707		0.881
+SF13_ENG_053	org:alternate_names	stanford1	AFP_ENG_20090912.0417	United Steelworkers Union	AFP_ENG_20090912.0417:1657-1682	AFP_ENG_20090912.0417:2085-2104		1.000
+SF13_ENG_053	org:alternate_names	stanford1	XIN_ENG_20090913.0092	U.S. Steelworkers	XIN_ENG_20090913.0092:984-1001,XIN_ENG_20090913.0092:770-789	XIN_ENG_20090913.0092:770-789		1.000
+SF13_ENG_053	org:alternate_names	stanford1	APW_ENG_20100909.0897	Steelworkers	APW_ENG_20100909.0897:1669-1681	APW_ENG_20100909.0897:426-445		1.000
+SF13_ENG_053	org:country_of_headquarters	stanford1	APW_ENG_20101108.0813	Canada	APW_ENG_20101108.0813:287-293	APW_ENG_20101108.0813:264-283	264-293	0.881
+SF13_ENG_053	org:founded_by	stanford1	NIL
+SF13_ENG_053	org:member_of	stanford1	NIL
+SF13_ENG_053	org:members	stanford1	NIL
+SF13_ENG_053	org:parents	stanford1	NIL
+SF13_ENG_053	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_053	org:shareholders	stanford1	NIL
+SF13_ENG_053	org:subsidiaries	stanford1	NIL
+SF13_ENG_053	org:top_members_employees	stanford1	NYT_ENG_20090922.0106	Leo Gerard	NYT_ENG_20090922.0106:1008-1018	NYT_ENG_20090922.0106:1041-1060	1008-1060	1.000
+SF13_ENG_053	org:top_members_employees	stanford1	APW_ENG_20100125.1116	Mark Glyptis	APW_ENG_20100125.1116:445-457	APW_ENG_20100125.1116:472-491,APW_ENG_20100125.1116:2682-2701	445-491	0.872
+SF13_ENG_053	org:top_members_employees	stanford1	WPB_ENG_20100826.0005	Steve Hunt	WPB_ENG_20100826.0005:4670-4680	WPB_ENG_20100826.0005:4700-4719	4670-4719	0.850
+SF13_ENG_053	org:top_members_employees	stanford1	APW_ENG_20100913.0781	Mike Masik	APW_ENG_20100913.0781:1093-1103	APW_ENG_20100913.0781:1157-1177	1093-1177	0.830
+SF13_ENG_053	org:top_members_employees	stanford1	AFP_ENG_20101101.0030	Tim Waters	AFP_ENG_20101101.0030:508-518	AFP_ENG_20101101.0030:582-585	508-585	0.793
+SF13_ENG_053	org:top_members_employees	stanford1	NYT_ENG_20100224.0100	Anthony Fortunato	NYT_ENG_20100224.0100:4273-4290	NYT_ENG_20100224.0100:4323-4353	4273-4353	0.912
+SF13_ENG_053	org:top_members_employees	stanford1	bolt-eng-DF-199-192784-5874551	Palin	bolt-eng-DF-199-192784-5874551:3090-3095,bolt-eng-DF-199-192784-5874551:2659-2670	bolt-eng-DF-199-192784-5874551:3146-3171	3090-3171	0.853
+SF13_ENG_053	org:top_members_employees	stanford1	NYT_ENG_20100118.0173	Tim Tuttle	NYT_ENG_20100118.0173:2214-2224	NYT_ENG_20100118.0173:2275-2294,NYT_ENG_20100118.0173:3260-3279	2214-2294	0.480
+SF13_ENG_053	org:date_dissolved	stanford1	NIL
+SF13_ENG_054	org:alternate_names	stanford1	AFP_ENG_20101221.0453	INBS	AFP_ENG_20101221.0453:296-300,AFP_ENG_20101221.0453:427-460	AFP_ENG_20101221.0453:427-460		1.000
+SF13_ENG_054	org:alternate_names	stanford1	APW_ENG_20100330.0904	Irish National Building Society	APW_ENG_20100330.0904:750-781	APW_ENG_20100330.0904:2845-2878,APW_ENG_20100330.0904:750-781		1.000
+SF13_ENG_054	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_054	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_054	org:founded_by	stanford1	NIL
+SF13_ENG_054	org:member_of	stanford1	NIL
+SF13_ENG_054	org:members	stanford1	NIL
+SF13_ENG_054	org:parents	stanford1	NIL
+SF13_ENG_054	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_054	org:shareholders	stanford1	NIL
+SF13_ENG_054	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_054	org:subsidiaries	stanford1	NIL
+SF13_ENG_054	org:top_members_employees	stanford1	NIL
+SF13_ENG_054	org:date_dissolved	stanford1	NIL
+SF13_ENG_054	org:date_founded	stanford1	NIL
+SF13_ENG_054	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_054	org:website	stanford1	NIL
+SF13_ENG_055	org:alternate_names	stanford1	NIL
+SF13_ENG_055	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_055	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_055	org:founded_by	stanford1	NIL
+SF13_ENG_055	org:member_of	stanford1	NIL
+SF13_ENG_055	org:members	stanford1	NIL
+SF13_ENG_055	org:parents	stanford1	NIL
+SF13_ENG_055	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_055	org:shareholders	stanford1	NIL
+SF13_ENG_055	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_055	org:subsidiaries	stanford1	NIL
+SF13_ENG_055	org:top_members_employees	stanford1	NIL
+SF13_ENG_055	org:date_dissolved	stanford1	NIL
+SF13_ENG_055	org:date_founded	stanford1	NIL
+SF13_ENG_055	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_055	org:website	stanford1	NIL
+SF13_ENG_056	org:alternate_names	stanford1	NIL
+SF13_ENG_056	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_056	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_056	org:founded_by	stanford1	NIL
+SF13_ENG_056	org:member_of	stanford1	NIL
+SF13_ENG_056	org:members	stanford1	NIL
+SF13_ENG_056	org:parents	stanford1	NIL
+SF13_ENG_056	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_056	org:shareholders	stanford1	NIL
+SF13_ENG_056	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_056	org:subsidiaries	stanford1	NIL
+SF13_ENG_056	org:top_members_employees	stanford1	NYT_ENG_20100611.0031	Don Koehler	NYT_ENG_20100611.0031:947-958,NYT_ENG_20100611.0031:5152-5159	NYT_ENG_20100611.0031:986-1011	947-1011	0.671
+SF13_ENG_056	org:top_members_employees	stanford1	APW_ENG_20100611.1151	Armond Morris	APW_ENG_20100611.1151:785-798	APW_ENG_20100611.1151:816-841	785-841	0.480
+SF13_ENG_056	org:date_dissolved	stanford1	NIL
+SF13_ENG_056	org:date_founded	stanford1	NIL
+SF13_ENG_056	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_056	org:website	stanford1	NIL
+SF13_ENG_057	org:alternate_names	stanford1	APW_ENG_20100914.0008	A123 Systems	APW_ENG_20100914.0008:4275-4287	APW_ENG_20100914.0008:790-807,APW_ENG_20100914.0008:4275-4287		1.000
+SF13_ENG_057	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_057	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_057	org:founded_by	stanford1	NIL
+SF13_ENG_057	org:member_of	stanford1	NIL
+SF13_ENG_057	org:members	stanford1	NIL
+SF13_ENG_057	org:parents	stanford1	NIL
+SF13_ENG_057	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_057	org:shareholders	stanford1	NIL
+SF13_ENG_057	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_057	org:subsidiaries	stanford1	NIL
+SF13_ENG_057	org:top_members_employees	stanford1	NIL
+SF13_ENG_057	org:date_dissolved	stanford1	NIL
+SF13_ENG_057	org:date_founded	stanford1	NIL
+SF13_ENG_057	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_057	org:website	stanford1	NIL
+SF13_ENG_058	org:alternate_names	stanford1	NIL
+SF13_ENG_058	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_058	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_058	org:founded_by	stanford1	NIL
+SF13_ENG_058	org:member_of	stanford1	NIL
+SF13_ENG_058	org:members	stanford1	NIL
+SF13_ENG_058	org:parents	stanford1	NIL
+SF13_ENG_058	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_058	org:shareholders	stanford1	NIL
+SF13_ENG_058	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_058	org:subsidiaries	stanford1	NIL
+SF13_ENG_058	org:top_members_employees	stanford1	NIL
+SF13_ENG_058	org:date_dissolved	stanford1	NIL
+SF13_ENG_058	org:date_founded	stanford1	NIL
+SF13_ENG_058	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_058	org:website	stanford1	NIL
+SF13_ENG_059	org:alternate_names	stanford1	APW_ENG_20090611.0434	CML	APW_ENG_20090611.0434:1458-1461,APW_ENG_20090611.0434:852-879	APW_ENG_20090611.0434:852-879		1.000
+SF13_ENG_059	org:alternate_names	stanford1	APW_ENG_20090611.0537	Council of Mortgage Lender	APW_ENG_20090611.0537:1660-1686	APW_ENG_20090611.0537:852-879,APW_ENG_20090611.0537:1660-1686		0.982
+SF13_ENG_059	org:alternate_names	stanford1	eng-NG-31-125822-9072855	Council of Mortgage Lenders News	eng-NG-31-125822-9072855:1911-1943,eng-NG-31-125822-9072855:961-988	eng-NG-31-125822-9072855:961-988		1.000
+SF13_ENG_059	org:alternate_names	stanford1	APW_ENG_20090820.0561	Council of Mortgage Lending	APW_ENG_20090820.0561:2201-2228	APW_ENG_20090820.0561:1254-1281,APW_ENG_20090820.0561:2201-2228		1.000
+SF13_ENG_059	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_059	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_059	org:founded_by	stanford1	NIL
+SF13_ENG_059	org:member_of	stanford1	NIL
+SF13_ENG_059	org:members	stanford1	NIL
+SF13_ENG_059	org:parents	stanford1	NIL
+SF13_ENG_059	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_059	org:shareholders	stanford1	NIL
+SF13_ENG_059	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_059	org:subsidiaries	stanford1	NIL
+SF13_ENG_059	org:top_members_employees	stanford1	NIL
+SF13_ENG_059	org:date_dissolved	stanford1	NIL
+SF13_ENG_059	org:date_founded	stanford1	NIL
+SF13_ENG_059	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_059	org:website	stanford1	NIL
+SF13_ENG_060	org:alternate_names	stanford1	bolt-eng-DF-170-181110-8765220	AAAS	bolt-eng-DF-170-181110-8765220:9997-10001,bolt-eng-DF-170-181110-8765220:2456-2460	bolt-eng-DF-170-181110-8765220:56208-56228		1.000
+SF13_ENG_060	org:alternate_names	stanford1	eng-NG-31-127078-8250107	NSTA	eng-NG-31-127078-8250107:1357-1361,eng-NG-31-127078-8250107:991-1042	eng-NG-31-127078-8250107:3854-3887,eng-NG-31-127078-8250107:991-1042		0.982
+SF13_ENG_060	org:alternate_names	stanford1	bolt-eng-DF-170-181110-8768727	American Association for the Advancement of Science As the world	bolt-eng-DF-170-181110-8768727:23402-23466,bolt-eng-DF-170-181110-8768727:24834-24885	bolt-eng-DF-170-181110-8768727:24834-24885		0.881
+SF13_ENG_060	org:city_of_headquarters	stanford1	AFP_ENG_20100219.0016	San Diego	AFP_ENG_20100219.0016:967-976	AFP_ENG_20100219.0016:912-963	912-976	0.881
+SF13_ENG_060	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_060	org:founded_by	stanford1	NIL
+SF13_ENG_060	org:member_of	stanford1	NIL
+SF13_ENG_060	org:members	stanford1	NIL
+SF13_ENG_060	org:parents	stanford1	NIL
+SF13_ENG_060	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_060	org:shareholders	stanford1	NIL
+SF13_ENG_060	org:stateorprovince_of_headquarters	stanford1	NYT_ENG_20101217.0109	Washington	NYT_ENG_20101217.0109:1526-1536	NYT_ENG_20101217.0109:1471-1522	1471-1536	0.982
+SF13_ENG_060	org:subsidiaries	stanford1	NIL
+SF13_ENG_060	org:top_members_employees	stanford1	eng-NG-31-100442-10796001	John P. Holdren	eng-NG-31-100442-10796001:31881-31896	eng-NG-31-100442-10796001:31915-31966	31881-31966	0.978
+SF13_ENG_060	org:top_members_employees	stanford1	NYT_ENG_20090708.0118	Alan I. Leshner	NYT_ENG_20090708.0118:4406-4421	NYT_ENG_20090708.0118:4446-4497	4406-4497	0.918
+SF13_ENG_060	org:top_members_employees	stanford1	eng-NG-31-142159-10036341	Lars Bromley	eng-NG-31-142159-10036341:11051-11063,eng-NG-31-142159-10036341:3586-3593	eng-NG-31-142159-10036341:11081-11085,eng-NG-31-142159-10036341:934-985	11051-11085	0.872
+SF13_ENG_060	org:top_members_employees	stanford1	AFP_ENG_20100218.0683	Peter Agre	AFP_ENG_20100218.0683:473-483	AFP_ENG_20100218.0683:497-547	473-547	0.852
+SF13_ENG_060	org:date_dissolved	stanford1	NIL
+SF13_ENG_060	org:date_founded	stanford1	NIL
+SF13_ENG_060	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_060	org:website	stanford1	NIL
+SF13_ENG_061	org:alternate_names	stanford1	NYT_ENG_20101011.0160	IHG	NYT_ENG_20101011.0160:2391-2394,NYT_ENG_20101011.0160:2860-2863	NYT_ENG_20101011.0160:675-704,NYT_ENG_20101011.0160:2860-2863		1.000
+SF13_ENG_061	org:alternate_names	stanford1	CNA_ENG_20101019.0014	Intercontinental Hotels Group	CNA_ENG_20101019.0014:420-449	CNA_ENG_20101019.0014:1768-1791		1.000
+SF13_ENG_061	org:alternate_names	stanford1	CNA_ENG_20101019.0014	Intercontinental Hotels	CNA_ENG_20101019.0014:1768-1791	CNA_ENG_20101019.0014:420-449		1.000
+SF13_ENG_061	org:founded_by	stanford1	NIL
+SF13_ENG_061	org:member_of	stanford1	NIL
+SF13_ENG_061	org:members	stanford1	NIL
+SF13_ENG_061	org:parents	stanford1	NIL
+SF13_ENG_061	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_061	org:shareholders	stanford1	NIL
+SF13_ENG_061	org:subsidiaries	stanford1	NIL
+SF13_ENG_061	org:top_members_employees	stanford1	NYT_ENG_20100408.0163	Andrew Cosslett	NYT_ENG_20100408.0163:330-345,NYT_ENG_20100408.0163:1355-1363	NYT_ENG_20100408.0163:370-399	330-399	0.847
+SF13_ENG_061	org:date_dissolved	stanford1	NIL
+SF13_ENG_061	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_062	org:alternate_names	stanford1	NIL
+SF13_ENG_062	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_062	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_062	org:founded_by	stanford1	NIL
+SF13_ENG_062	org:member_of	stanford1	NIL
+SF13_ENG_062	org:members	stanford1	NIL
+SF13_ENG_062	org:parents	stanford1	NIL
+SF13_ENG_062	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_062	org:shareholders	stanford1	NIL
+SF13_ENG_062	org:stateorprovince_of_headquarters	stanford1	NYT_ENG_20090709.0108	Washington	NYT_ENG_20090709.0108:2460-2470	NYT_ENG_20090709.0108:2424-2456	2424-2470	1.000
+SF13_ENG_062	org:subsidiaries	stanford1	NIL
+SF13_ENG_062	org:top_members_employees	stanford1	NYT_ENG_20090709.0108	Andy Kunz	NYT_ENG_20090709.0108:2388-2397	NYT_ENG_20090709.0108:2424-2456	2388-2456	0.998
+SF13_ENG_062	org:date_dissolved	stanford1	NIL
+SF13_ENG_062	org:date_founded	stanford1	NIL
+SF13_ENG_062	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_062	org:website	stanford1	NIL
+SF13_ENG_063	org:alternate_names	stanford1	APW_ENG_20100120.1298	BNSF	APW_ENG_20100120.1298:2126-2130,APW_ENG_20100120.1298:4801-4805	APW_ENG_20100120.1298:355-388,APW_ENG_20100120.1298:4801-4805		1.000
+SF13_ENG_063	org:alternate_names	stanford1	APW_ENG_20100204.1231	Burlington Northern Santa Fe	APW_ENG_20100204.1231:1770-1798	APW_ENG_20100204.1231:369-402,APW_ENG_20100204.1231:1770-1798		1.000
+SF13_ENG_063	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_063	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_063	org:founded_by	stanford1	NIL
+SF13_ENG_063	org:member_of	stanford1	NIL
+SF13_ENG_063	org:members	stanford1	NIL
+SF13_ENG_063	org:parents	stanford1	NIL
+SF13_ENG_063	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_063	org:shareholders	stanford1	NIL
+SF13_ENG_063	org:stateorprovince_of_headquarters	stanford1	APW_ENG_20100127.0022	Texas	APW_ENG_20100127.0022:1889-1894	APW_ENG_20100127.0022:1854-1858,APW_ENG_20100127.0022:2987-3021	1854-1894	0.732
+SF13_ENG_063	org:subsidiaries	stanford1	NIL
+SF13_ENG_063	org:top_members_employees	stanford1	NIL
+SF13_ENG_063	org:date_dissolved	stanford1	NIL
+SF13_ENG_063	org:date_founded	stanford1	NIL
+SF13_ENG_063	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_063	org:website	stanford1	NIL
+SF13_ENG_064	org:alternate_names	stanford1	eng-NG-31-128245-9255432	USIP	eng-NG-31-128245-9255432:6328-6332	eng-NG-31-128245-9255432:2813-2861,eng-NG-31-128245-9255432:6328-6332		1.000
+SF13_ENG_064	org:alternate_names	stanford1	AFP_ENG_20101226.0269	IISS	AFP_ENG_20101226.0269:2448-2452,AFP_ENG_20101226.0269:1609-1657	AFP_ENG_20101226.0269:2342-2386,AFP_ENG_20101226.0269:1609-1657		0.982
+SF13_ENG_064	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_064	org:country_of_headquarters	stanford1	AFP_ENG_20100601.0029	Iraq	AFP_ENG_20100601.0029:1166-1170,AFP_ENG_20100601.0029:1335-1339	AFP_ENG_20100601.0029:1173-1178	1166-1178	0.999
+SF13_ENG_064	org:founded_by	stanford1	NIL
+SF13_ENG_064	org:member_of	stanford1	NIL
+SF13_ENG_064	org:members	stanford1	NIL
+SF13_ENG_064	org:parents	stanford1	NIL
+SF13_ENG_064	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_064	org:shareholders	stanford1	NIL
+SF13_ENG_064	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_064	org:subsidiaries	stanford1	NIL
+SF13_ENG_064	org:top_members_employees	stanford1	NYT_ENG_20091119.0150	Bates Gill	NYT_ENG_20091119.0150:1695-1705	NYT_ENG_20091119.0150:1723-1762	1695-1762	0.988
+SF13_ENG_064	org:top_members_employees	stanford1	XIN_ENG_20100410.0153	Henrik Salander	XIN_ENG_20100410.0153:372-387,XIN_ENG_20100410.0153:134-142	XIN_ENG_20100410.0153:411-459,XIN_ENG_20100410.0153:3449-3454	372-459	0.934
+SF13_ENG_064	org:top_members_employees	stanford1	AFP_ENG_20100601.0026	Sam Perlo-Freeman	AFP_ENG_20100601.0026:773-790	AFP_ENG_20100601.0026:804-809,AFP_ENG_20100601.0026:3767-3772	773-809	0.830
+SF13_ENG_064	org:top_members_employees	stanford1	XIN_ENG_20100609.0223	May-Britt Stumbaum	XIN_ENG_20100609.0223:1727-1745	XIN_ENG_20100609.0223:1755-1760	1727-1760	0.480
+SF13_ENG_064	org:date_dissolved	stanford1	NIL
+SF13_ENG_064	org:date_founded	stanford1	NIL
+SF13_ENG_064	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_064	org:website	stanford1	NIL
+SF13_ENG_065	org:alternate_names	stanford1	NIL
+SF13_ENG_065	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_065	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_065	org:founded_by	stanford1	NIL
+SF13_ENG_065	org:member_of	stanford1	NIL
+SF13_ENG_065	org:members	stanford1	NIL
+SF13_ENG_065	org:parents	stanford1	NIL
+SF13_ENG_065	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_065	org:shareholders	stanford1	NIL
+SF13_ENG_065	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_065	org:subsidiaries	stanford1	NIL
+SF13_ENG_065	org:top_members_employees	stanford1	NIL
+SF13_ENG_065	org:date_dissolved	stanford1	NIL
+SF13_ENG_065	org:date_founded	stanford1	NIL
+SF13_ENG_065	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_065	org:website	stanford1	NIL
+SF13_ENG_066	org:alternate_names	stanford1	eng-NG-31-138596-9810080	NPF	eng-NG-31-138596-9810080:72594-72597	eng-NG-31-138596-9810080:27990-28010,eng-NG-31-138596-9810080:72594-72597		1.000
+SF13_ENG_066	org:alternate_names	stanford1	XIN_ENG_20100916.0153	Nigerian Police Force	XIN_ENG_20100916.0153:179-200,XIN_ENG_20100916.0153:1073-1093	XIN_ENG_20100916.0153:1073-1093		1.000
+SF13_ENG_066	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_066	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_066	org:founded_by	stanford1	NIL
+SF13_ENG_066	org:member_of	stanford1	NIL
+SF13_ENG_066	org:members	stanford1	NIL
+SF13_ENG_066	org:parents	stanford1	NIL
+SF13_ENG_066	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_066	org:shareholders	stanford1	NIL
+SF13_ENG_066	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_066	org:subsidiaries	stanford1	NIL
+SF13_ENG_066	org:top_members_employees	stanford1	NIL
+SF13_ENG_066	org:date_dissolved	stanford1	NIL
+SF13_ENG_066	org:date_founded	stanford1	NIL
+SF13_ENG_066	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_066	org:website	stanford1	NIL
+SF13_ENG_067	org:alternate_names	stanford1	eng-NG-31-137652-8622184	NSF	eng-NG-31-137652-8622184:2693-2696,eng-NG-31-137652-8622184:1651-1676	eng-NG-31-137652-8622184:2920-2947,eng-NG-31-137652-8622184:1651-1676		1.000
+SF13_ENG_067	org:alternate_names	stanford1	eng-NG-31-137652-8622184	The National Science Foundation	eng-NG-31-137652-8622184:327-358,eng-NG-31-137652-8622184:1651-1676	eng-NG-31-137652-8622184:1689-1716,eng-NG-31-137652-8622184:1651-1676		0.953
+SF13_ENG_067	org:alternate_names	stanford1	eng-NG-31-137652-8622184	National Science Foundation	eng-NG-31-137652-8622184:1689-1716,eng-NG-31-137652-8622184:1651-1676	eng-NG-31-137652-8622184:327-358,eng-NG-31-137652-8622184:1651-1676		0.953
+SF13_ENG_067	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_067	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_067	org:founded_by	stanford1	NIL
+SF13_ENG_067	org:member_of	stanford1	NIL
+SF13_ENG_067	org:members	stanford1	NIL
+SF13_ENG_067	org:parents	stanford1	NIL
+SF13_ENG_067	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_067	org:shareholders	stanford1	NIL
+SF13_ENG_067	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_067	org:subsidiaries	stanford1	NIL
+SF13_ENG_067	org:top_members_employees	stanford1	NIL
+SF13_ENG_067	org:date_dissolved	stanford1	NIL
+SF13_ENG_067	org:date_founded	stanford1	NIL
+SF13_ENG_067	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_067	org:website	stanford1	NIL
+SF13_ENG_068	org:alternate_names	stanford1	APW_ENG_20100119.0822	ITA	APW_ENG_20100119.0822:2600-2603,APW_ENG_20100119.0822:2347-2373	APW_ENG_20100119.0822:2347-2373		0.881
+SF13_ENG_068	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_068	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_068	org:founded_by	stanford1	NIL
+SF13_ENG_068	org:member_of	stanford1	NIL
+SF13_ENG_068	org:members	stanford1	NIL
+SF13_ENG_068	org:parents	stanford1	NIL
+SF13_ENG_068	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_068	org:shareholders	stanford1	NIL
+SF13_ENG_068	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_068	org:subsidiaries	stanford1	NIL
+SF13_ENG_068	org:top_members_employees	stanford1	WPB_ENG_20100421.0003	John Overstreet	WPB_ENG_20100421.0003:6534-6549	WPB_ENG_20100421.0003:6598-6624	6534-6624	0.988
+SF13_ENG_068	org:top_members_employees	stanford1	APW_ENG_20100119.0822	Dan Humiston	APW_ENG_20100119.0822:2614-2626	APW_ENG_20100119.0822:2600-2603,APW_ENG_20100119.0822:2347-2373	2600-2626	1.000
+SF13_ENG_068	org:date_dissolved	stanford1	NIL
+SF13_ENG_068	org:date_founded	stanford1	NIL
+SF13_ENG_068	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_068	org:website	stanford1	NIL
+SF13_ENG_069	org:alternate_names	stanford1	eng-NG-31-133410-9530592	IARC	eng-NG-31-133410-9530592:1875-1879	eng-NG-31-133410-9530592:1670-1710,eng-NG-31-133410-9530592:1875-1879		1.000
+SF13_ENG_069	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_069	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_069	org:founded_by	stanford1	NIL
+SF13_ENG_069	org:member_of	stanford1	NIL
+SF13_ENG_069	org:members	stanford1	NIL
+SF13_ENG_069	org:parents	stanford1	NIL
+SF13_ENG_069	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_069	org:shareholders	stanford1	NIL
+SF13_ENG_069	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_069	org:subsidiaries	stanford1	NIL
+SF13_ENG_069	org:top_members_employees	stanford1	APW_ENG_20100517.0926	Christopher Wild	APW_ENG_20100517.0926:4915-4931	APW_ENG_20100517.0926:4945-4949,APW_ENG_20100517.0926:7163-7167	4915-4949	0.944
+SF13_ENG_069	org:top_members_employees	stanford1	eng-NG-31-106361-8895596	Peter Boyle	eng-NG-31-106361-8895596:769-780	eng-NG-31-106361-8895596:794-798	769-798	0.890
+SF13_ENG_069	org:date_dissolved	stanford1	NIL
+SF13_ENG_069	org:date_founded	stanford1	NIL
+SF13_ENG_069	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_069	org:website	stanford1	NIL
+SF13_ENG_070	org:alternate_names	stanford1	NIL
+SF13_ENG_070	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_070	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_070	org:founded_by	stanford1	NIL
+SF13_ENG_070	org:member_of	stanford1	NIL
+SF13_ENG_070	org:members	stanford1	NIL
+SF13_ENG_070	org:parents	stanford1	NIL
+SF13_ENG_070	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_070	org:shareholders	stanford1	NIL
+SF13_ENG_070	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_070	org:subsidiaries	stanford1	NIL
+SF13_ENG_070	org:top_members_employees	stanford1	NIL
+SF13_ENG_070	org:date_dissolved	stanford1	NIL
+SF13_ENG_070	org:date_founded	stanford1	NIL
+SF13_ENG_070	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_070	org:website	stanford1	NIL
+SF13_ENG_071	org:alternate_names	stanford1	AFP_ENG_20100311.0597	SETE	AFP_ENG_20100311.0597:1871-1875,AFP_ENG_20100311.0597:1829-1869	AFP_ENG_20100311.0597:1829-1869		1.000
+SF13_ENG_071	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_071	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_071	org:founded_by	stanford1	NIL
+SF13_ENG_071	org:member_of	stanford1	NIL
+SF13_ENG_071	org:members	stanford1	NIL
+SF13_ENG_071	org:parents	stanford1	NIL
+SF13_ENG_071	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_071	org:shareholders	stanford1	NIL
+SF13_ENG_071	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_071	org:subsidiaries	stanford1	NIL
+SF13_ENG_071	org:top_members_employees	stanford1	AFP_ENG_20100311.0597	George Drakopoulos	AFP_ENG_20100311.0597:1782-1800	AFP_ENG_20100311.0597:1829-1869	1782-1869	0.989
+SF13_ENG_071	org:date_dissolved	stanford1	NIL
+SF13_ENG_071	org:date_founded	stanford1	NIL
+SF13_ENG_071	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_071	org:website	stanford1	NIL
+SF13_ENG_072	org:alternate_names	stanford1	NIL
+SF13_ENG_072	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_072	org:founded_by	stanford1	NIL
+SF13_ENG_072	org:member_of	stanford1	NIL
+SF13_ENG_072	org:members	stanford1	NIL
+SF13_ENG_072	org:parents	stanford1	NIL
+SF13_ENG_072	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_072	org:shareholders	stanford1	NIL
+SF13_ENG_072	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_072	org:subsidiaries	stanford1	NIL
+SF13_ENG_072	org:top_members_employees	stanford1	NIL
+SF13_ENG_072	org:date_dissolved	stanford1	NIL
+SF13_ENG_072	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_073	org:alternate_names	stanford1	NIL
+SF13_ENG_073	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_073	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_073	org:founded_by	stanford1	NIL
+SF13_ENG_073	org:member_of	stanford1	NIL
+SF13_ENG_073	org:members	stanford1	NIL
+SF13_ENG_073	org:parents	stanford1	NIL
+SF13_ENG_073	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_073	org:shareholders	stanford1	NIL
+SF13_ENG_073	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_073	org:subsidiaries	stanford1	NIL
+SF13_ENG_073	org:top_members_employees	stanford1	NIL
+SF13_ENG_073	org:date_dissolved	stanford1	NIL
+SF13_ENG_073	org:date_founded	stanford1	NIL
+SF13_ENG_073	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_073	org:website	stanford1	NIL
+SF13_ENG_074	org:alternate_names	stanford1	NIL
+SF13_ENG_074	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_074	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_074	org:founded_by	stanford1	NIL
+SF13_ENG_074	org:member_of	stanford1	NIL
+SF13_ENG_074	org:members	stanford1	NIL
+SF13_ENG_074	org:parents	stanford1	NIL
+SF13_ENG_074	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_074	org:shareholders	stanford1	NIL
+SF13_ENG_074	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_074	org:subsidiaries	stanford1	NIL
+SF13_ENG_074	org:top_members_employees	stanford1	NIL
+SF13_ENG_074	org:date_dissolved	stanford1	NIL
+SF13_ENG_074	org:date_founded	stanford1	NIL
+SF13_ENG_074	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_074	org:website	stanford1	NIL
+SF13_ENG_075	org:alternate_names	stanford1	APW_ENG_20100611.1296	Champalimaud	APW_ENG_20100611.1296:2048-2060,APW_ENG_20100611.1296:368-391	APW_ENG_20100611.1296:2192-2215,APW_ENG_20100611.1296:368-391		1.000
+SF13_ENG_075	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_075	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_075	org:founded_by	stanford1	NIL
+SF13_ENG_075	org:member_of	stanford1	NIL
+SF13_ENG_075	org:members	stanford1	NIL
+SF13_ENG_075	org:parents	stanford1	NIL
+SF13_ENG_075	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_075	org:shareholders	stanford1	NIL
+SF13_ENG_075	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_075	org:subsidiaries	stanford1	NIL
+SF13_ENG_075	org:top_members_employees	stanford1	NIL
+SF13_ENG_075	org:date_dissolved	stanford1	NIL
+SF13_ENG_075	org:date_founded	stanford1	NIL
+SF13_ENG_075	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_075	org:website	stanford1	NIL
+SF13_ENG_076	org:alternate_names	stanford1	APW_ENG_20091115.0290	SBA	APW_ENG_20091115.0290:792-795,APW_ENG_20091115.0290:371-396	APW_ENG_20091115.0290:371-396		0.982
+SF13_ENG_076	org:city_of_headquarters	stanford1	WPB_ENG_20100414.0029	Basel	WPB_ENG_20100414.0029:3074-3079,WPB_ENG_20100414.0029:3358-3363	WPB_ENG_20100414.0029:3045-3070	3045-3079	1.000
+SF13_ENG_076	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_076	org:founded_by	stanford1	NIL
+SF13_ENG_076	org:member_of	stanford1	NIL
+SF13_ENG_076	org:members	stanford1	NIL
+SF13_ENG_076	org:parents	stanford1	NIL
+SF13_ENG_076	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_076	org:shareholders	stanford1	NIL
+SF13_ENG_076	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_076	org:subsidiaries	stanford1	NIL
+SF13_ENG_076	org:top_members_employees	stanford1	APW_ENG_20101201.0758	Claude-Alain Margelisch	APW_ENG_20101201.0758:429-452	APW_ENG_20101201.0758:465-490	429-490	0.726
+SF13_ENG_076	org:top_members_employees	stanford1	AFP_ENG_20091008.0518	Urs Roth	AFP_ENG_20091008.0518:392-400	AFP_ENG_20091008.0518:425-450	392-450	0.671
+SF13_ENG_076	org:date_dissolved	stanford1	NIL
+SF13_ENG_076	org:date_founded	stanford1	NIL
+SF13_ENG_076	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_076	org:website	stanford1	NIL
+SF13_ENG_077	org:alternate_names	stanford1	eng-NG-31-142890-10109827	NEI	eng-NG-31-142890-10109827:22215-22218,eng-NG-31-142890-10109827:22187-22211	eng-NG-31-142890-10109827:22187-22211		0.998
+SF13_ENG_077	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_077	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_077	org:founded_by	stanford1	NIL
+SF13_ENG_077	org:member_of	stanford1	NIL
+SF13_ENG_077	org:members	stanford1	NIL
+SF13_ENG_077	org:parents	stanford1	NIL
+SF13_ENG_077	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_077	org:shareholders	stanford1	NIL
+SF13_ENG_077	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_077	org:subsidiaries	stanford1	NIL
+SF13_ENG_077	org:top_members_employees	stanford1	NIL
+SF13_ENG_077	org:date_dissolved	stanford1	NIL
+SF13_ENG_077	org:date_founded	stanford1	NIL
+SF13_ENG_077	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_077	org:website	stanford1	NIL
+SF13_ENG_078	org:alternate_names	stanford1	NIL
+SF13_ENG_078	org:city_of_headquarters	stanford1	bolt-eng-DF-170-181122-8807158	Ann Arbor	bolt-eng-DF-170-181122-8807158:3455-3464	bolt-eng-DF-170-181122-8807158:3429-3451	3429-3464	1.000
+SF13_ENG_078	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_078	org:founded_by	stanford1	NIL
+SF13_ENG_078	org:member_of	stanford1	NIL
+SF13_ENG_078	org:members	stanford1	NIL
+SF13_ENG_078	org:parents	stanford1	NIL
+SF13_ENG_078	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_078	org:shareholders	stanford1	NIL
+SF13_ENG_078	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_078	org:subsidiaries	stanford1	NIL
+SF13_ENG_078	org:top_members_employees	stanford1	bolt-eng-DF-170-181109-54811	Richard Thompson	bolt-eng-DF-170-181109-54811:1807-1823	bolt-eng-DF-170-181109-54811:1842-1864	1807-1864	0.953
+SF13_ENG_078	org:date_dissolved	stanford1	NIL
+SF13_ENG_078	org:date_founded	stanford1	NIL
+SF13_ENG_078	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_078	org:website	stanford1	NIL
+SF13_ENG_079	org:alternate_names	stanford1	AFP_ENG_20100322.0248	SIWI	AFP_ENG_20100322.0248:1877-1881,AFP_ENG_20100322.0248:538-577	AFP_ENG_20100322.0248:538-577		0.953
+SF13_ENG_079	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_079	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_079	org:founded_by	stanford1	NIL
+SF13_ENG_079	org:member_of	stanford1	NIL
+SF13_ENG_079	org:members	stanford1	NIL
+SF13_ENG_079	org:parents	stanford1	NIL
+SF13_ENG_079	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_079	org:shareholders	stanford1	NIL
+SF13_ENG_079	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_079	org:subsidiaries	stanford1	NIL
+SF13_ENG_079	org:top_members_employees	stanford1	XIN_ENG_20100906.0261	Anders Berntell	XIN_ENG_20100906.0261:586-601	XIN_ENG_20100906.0261:625-664	586-664	0.964
+SF13_ENG_079	org:top_members_employees	stanford1	XIN_ENG_20100901.0226	Anders Bertil	XIN_ENG_20100901.0226:381-394	XIN_ENG_20100901.0226:422-461	381-461	1.000
+SF13_ENG_079	org:date_dissolved	stanford1	NIL
+SF13_ENG_079	org:date_founded	stanford1	NIL
+SF13_ENG_079	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_079	org:website	stanford1	NIL
+SF13_ENG_080	org:alternate_names	stanford1	XIN_ENG_20100520.0406	IWMI	XIN_ENG_20100520.0406:5706-5710	XIN_ENG_20100520.0406:5664-5704,XIN_ENG_20100520.0406:5706-5710		1.000
+SF13_ENG_080	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_080	org:country_of_headquarters	stanford1	eng-WL-11-99241-9833549	Sri Lanka	eng-WL-11-99241-9833549:376-385	eng-WL-11-99241-9833549:325-365	325-385	0.953
+SF13_ENG_080	org:founded_by	stanford1	NIL
+SF13_ENG_080	org:member_of	stanford1	NIL
+SF13_ENG_080	org:members	stanford1	NIL
+SF13_ENG_080	org:parents	stanford1	NIL
+SF13_ENG_080	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_080	org:shareholders	stanford1	NIL
+SF13_ENG_080	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_080	org:subsidiaries	stanford1	NIL
+SF13_ENG_080	org:top_members_employees	stanford1	eng-NG-31-103069-8870788	Scott	eng-NG-31-103069-8870788:13505-13510	eng-NG-31-103069-8870788:13554-13594	13505-13594	1.000
+SF13_ENG_080	org:top_members_employees	stanford1	bolt-eng-DF-170-181110-8770765	Tushar Shah	bolt-eng-DF-170-181110-8770765:12038-12049	bolt-eng-DF-170-181110-8770765:12063-12103	12038-12103	0.792
+SF13_ENG_080	org:date_dissolved	stanford1	NIL
+SF13_ENG_080	org:date_founded	stanford1	NIL
+SF13_ENG_080	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_080	org:website	stanford1	NIL
+SF13_ENG_081	org:alternate_names	stanford1	WPB_ENG_20100108.0021	WNO	WPB_ENG_20100108.0021:3963-3966,WPB_ENG_20100108.0021:5149-5174	WPB_ENG_20100108.0021:5149-5174		0.993
+SF13_ENG_081	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_081	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_081	org:founded_by	stanford1	NIL
+SF13_ENG_081	org:member_of	stanford1	NIL
+SF13_ENG_081	org:members	stanford1	NIL
+SF13_ENG_081	org:parents	stanford1	NIL
+SF13_ENG_081	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_081	org:shareholders	stanford1	NIL
+SF13_ENG_081	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_081	org:subsidiaries	stanford1	NIL
+SF13_ENG_081	org:top_members_employees	stanford1	APW_ENG_20100222.1033	Domingo	APW_ENG_20100222.1033:720-727,APW_ENG_20100222.1033:186-201	APW_ENG_20100222.1033:791-816	720-816	0.870
+SF13_ENG_081	org:top_members_employees	stanford1	NYT_ENG_20090715.0030	Mark J. Weinstein	NYT_ENG_20090715.0030:1049-1066	NYT_ENG_20090715.0030:1094-1119	1049-1119	0.837
+SF13_ENG_081	org:top_members_employees	stanford1	APW_ENG_20100927.0836	Kenneth Feinberg	APW_ENG_20100927.0836:1600-1616	APW_ENG_20100927.0836:1564-1589	1564-1616	1.000
+SF13_ENG_081	org:date_dissolved	stanford1	NIL
+SF13_ENG_081	org:date_founded	stanford1	NIL
+SF13_ENG_081	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_081	org:website	stanford1	NIL
+SF13_ENG_082	org:alternate_names	stanford1	NIL
+SF13_ENG_082	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_082	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_082	org:founded_by	stanford1	NIL
+SF13_ENG_082	org:member_of	stanford1	NIL
+SF13_ENG_082	org:members	stanford1	NIL
+SF13_ENG_082	org:parents	stanford1	NIL
+SF13_ENG_082	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_082	org:shareholders	stanford1	NIL
+SF13_ENG_082	org:stateorprovince_of_headquarters	stanford1	NYT_ENG_20100119.0106	Washington	NYT_ENG_20100119.0106:2339-2349	NYT_ENG_20100119.0106:2306-2335	2306-2349	0.881
+SF13_ENG_082	org:subsidiaries	stanford1	NIL
+SF13_ENG_082	org:top_members_employees	stanford1	APW_ENG_20101226.0005	Chuck Johnson	APW_ENG_20101226.0005:5137-5150	APW_ENG_20101226.0005:5163-5192	5137-5192	0.998
+SF13_ENG_082	org:top_members_employees	stanford1	NYT_ENG_20100119.0105	Mary F. Robinson	NYT_ENG_20100119.0105:2261-2277	NYT_ENG_20100119.0105:2300-2329	2261-2329	0.987
+SF13_ENG_082	org:date_dissolved	stanford1	NIL
+SF13_ENG_082	org:date_founded	stanford1	NIL
+SF13_ENG_082	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_082	org:website	stanford1	NIL
+SF13_ENG_083	org:alternate_names	stanford1	NIL
+SF13_ENG_083	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_083	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_083	org:founded_by	stanford1	NIL
+SF13_ENG_083	org:member_of	stanford1	NIL
+SF13_ENG_083	org:members	stanford1	NIL
+SF13_ENG_083	org:parents	stanford1	NIL
+SF13_ENG_083	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_083	org:shareholders	stanford1	NIL
+SF13_ENG_083	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_083	org:subsidiaries	stanford1	NIL
+SF13_ENG_083	org:top_members_employees	stanford1	NIL
+SF13_ENG_083	org:date_dissolved	stanford1	NIL
+SF13_ENG_083	org:date_founded	stanford1	NIL
+SF13_ENG_083	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_083	org:website	stanford1	NIL
+SF13_ENG_084	org:alternate_names	stanford1	NIL
+SF13_ENG_084	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_084	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_084	org:founded_by	stanford1	NIL
+SF13_ENG_084	org:member_of	stanford1	NIL
+SF13_ENG_084	org:members	stanford1	NIL
+SF13_ENG_084	org:parents	stanford1	NIL
+SF13_ENG_084	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_084	org:shareholders	stanford1	NIL
+SF13_ENG_084	org:stateorprovince_of_headquarters	stanford1	NYT_ENG_20100615.0147	Washington	NYT_ENG_20100615.0147:1697-1707	NYT_ENG_20100615.0147:1669-1693	1669-1707	0.953
+SF13_ENG_084	org:subsidiaries	stanford1	NIL
+SF13_ENG_084	org:top_members_employees	stanford1	NYT_ENG_20100609.0085	Jason S. Grumet	NYT_ENG_20100609.0085:4435-4450	NYT_ENG_20100609.0085:4473-4497	4435-4497	0.959
+SF13_ENG_084	org:top_members_employees	stanford1	WPB_ENG_20101130.0038	Rivlin	WPB_ENG_20101130.0038:3489-3495,WPB_ENG_20101130.0038:2586-2598	WPB_ENG_20101130.0038:3520-3544	3489-3544	0.870
+SF13_ENG_084	org:date_dissolved	stanford1	NIL
+SF13_ENG_084	org:date_founded	stanford1	NIL
+SF13_ENG_084	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_084	org:website	stanford1	NIL
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20090809.0219	CBRC	XIN_ENG_20090809.0219:1639-1643,XIN_ENG_20090809.0219:2860-2864	XIN_ENG_20090809.0219:572-607,XIN_ENG_20090809.0219:2860-2864		1.000
+SF13_ENG_085	org:alternate_names	stanford1	CNA_ENG_20100628.0014	FSC	CNA_ENG_20100628.0014:616-619,CNA_ENG_20100628.0014:511-546	CNA_ENG_20100628.0014:58-67,CNA_ENG_20100628.0014:511-546		1.000
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20100922.0391	ABC	XIN_ENG_20100922.0391:3153-3156,XIN_ENG_20100922.0391:2689-2693	XIN_ENG_20100922.0391:2689-2693		1.000
+SF13_ENG_085	org:alternate_names	stanford1	CNA_ENG_20100726.0015	Financial Supervisory Commission	CNA_ENG_20100726.0015:1249-1281,CNA_ENG_20100726.0015:179-183	CNA_ENG_20100726.0015:141-177,CNA_ENG_20100726.0015:179-183		0.982
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20101105.0348	BOC	XIN_ENG_20101105.0348:1180-1183,XIN_ENG_20101105.0348:509-513	XIN_ENG_20101105.0348:509-513		0.982
+SF13_ENG_085	org:alternate_names	stanford1	CNA_ENG_20091228.0038	China Securities Regulatory Commission	CNA_ENG_20091228.0038:608-646	CNA_ENG_20091228.0038:1888-1923,CNA_ENG_20091228.0038:608-646		0.953
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20100226.0395	NDRC	XIN_ENG_20100226.0395:2400-2404,XIN_ENG_20100226.0395:2736-2740	XIN_ENG_20100226.0395:2736-2740		0.953
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20101217.0313	Shanghai Branch of Taiwan First Bank	XIN_ENG_20101217.0313:1870-1906,XIN_ENG_20101217.0313:1807-1811	XIN_ENG_20101217.0313:1962-1997,XIN_ENG_20101217.0313:1807-1811		1.000
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20101217.0313	Shanghai Branch of Taiwan Land Bank	XIN_ENG_20101217.0313:1962-1997,XIN_ENG_20101217.0313:1807-1811	XIN_ENG_20101217.0313:1870-1906,XIN_ENG_20101217.0313:1807-1811		1.000
+SF13_ENG_085	org:alternate_names	stanford1	XIN_ENG_20100810.0444	China Banking Research Center	XIN_ENG_20100810.0444:1317-1346,XIN_ENG_20100810.0444:472-507	XIN_ENG_20100810.0444:472-507		1.000
+SF13_ENG_085	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_085	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_085	org:founded_by	stanford1	NIL
+SF13_ENG_085	org:member_of	stanford1	NIL
+SF13_ENG_085	org:members	stanford1	NIL
+SF13_ENG_085	org:parents	stanford1	NIL
+SF13_ENG_085	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_085	org:shareholders	stanford1	NIL
+SF13_ENG_085	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_085	org:subsidiaries	stanford1	NIL
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20100120.0410	Liu Mingkang	XIN_ENG_20100120.0410:764-776	XIN_ENG_20100120.0410:794-829	764-829	1.000
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20100918.0194	Zhu Heliang	XIN_ENG_20100918.0194:3274-3285	XIN_ENG_20100918.0194:3333-3377,XIN_ENG_20100918.0194:3712-3716	3274-3377	0.937
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20100810.0444	Guo Tianyong	XIN_ENG_20100810.0444:1291-1303	XIN_ENG_20100810.0444:1317-1346,XIN_ENG_20100810.0444:472-507	1291-1346	0.921
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20100113.0473	Wang Zhaoxing	XIN_ENG_20100113.0473:1417-1430,XIN_ENG_20100113.0473:189-198	XIN_ENG_20100113.0473:1453-1488	1417-1488	0.881
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20090815.0253	Xiao Yuanqi	XIN_ENG_20090815.0253:605-616	XIN_ENG_20090815.0253:669-704,XIN_ENG_20090815.0253:1620-1624	605-704	0.872
+SF13_ENG_085	org:top_members_employees	stanford1	XIN_ENG_20101217.0384	Liu Mingkang	XIN_ENG_20101217.0384:378-390	XIN_ENG_20101217.0384:408-443,XIN_ENG_20101217.0384:2249-2253	378-443	0.960
+SF13_ENG_085	org:top_members_employees	stanford1	AFP_ENG_20100114.0605	Andrew Sheng	AFP_ENG_20100114.0605:374-386	AFP_ENG_20100114.0605:409-444,AFP_ENG_20100114.0605:887-909	374-444	0.671
+SF13_ENG_085	org:date_dissolved	stanford1	NIL
+SF13_ENG_085	org:date_founded	stanford1	NIL
+SF13_ENG_085	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_085	org:website	stanford1	NIL
+SF13_ENG_086	org:alternate_names	stanford1	WPB_ENG_20100427.0020	State-Owned Asset Supervision and Administration Commission	WPB_ENG_20100427.0020:1919-1978,WPB_ENG_20100427.0020:436-496	WPB_ENG_20100427.0020:436-496		1.000
+SF13_ENG_086	org:alternate_names	stanford1	WPB_ENG_20100427.0020	State-Owned Assets Supervision and Administration Commission	WPB_ENG_20100427.0020:436-496	WPB_ENG_20100427.0020:1919-1978,WPB_ENG_20100427.0020:436-496		1.000
+SF13_ENG_086	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_086	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_086	org:founded_by	stanford1	NIL
+SF13_ENG_086	org:member_of	stanford1	NIL
+SF13_ENG_086	org:members	stanford1	NIL
+SF13_ENG_086	org:parents	stanford1	NIL
+SF13_ENG_086	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_086	org:shareholders	stanford1	NIL
+SF13_ENG_086	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_086	org:subsidiaries	stanford1	NIL
+SF13_ENG_086	org:top_members_employees	stanford1	XIN_ENG_20100522.0232	Li Rongrong	XIN_ENG_20100522.0232:283-294	XIN_ENG_20100522.0232:316-376,XIN_ENG_20100522.0232:378-383	283-376	1.000
+SF13_ENG_086	org:top_members_employees	stanford1	AFP_ENG_20091130.0366	Ji Xiaonan	AFP_ENG_20091130.0366:2676-2686	AFP_ENG_20091130.0366:2725-2785	2676-2785	1.000
+SF13_ENG_086	org:top_members_employees	stanford1	XIN_ENG_20101226.0177	Wang Yong	XIN_ENG_20101226.0177:563-572	XIN_ENG_20101226.0177:590-671	563-671	0.982
+SF13_ENG_086	org:date_dissolved	stanford1	NIL
+SF13_ENG_086	org:date_founded	stanford1	NIL
+SF13_ENG_086	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_086	org:website	stanford1	NIL
+SF13_ENG_087	org:alternate_names	stanford1	XIN_ENG_20090630.0304	ALBA	XIN_ENG_20090630.0304:248-252	XIN_ENG_20090630.0304:1268-1296,XIN_ENG_20090630.0304:248-252		1.000
+SF13_ENG_087	org:alternate_names	stanford1	XIN_ENG_20090630.0304	SICA	XIN_ENG_20090630.0304:1548-1552,XIN_ENG_20090630.0304:248-252	XIN_ENG_20090630.0304:1268-1296,XIN_ENG_20090630.0304:248-252		1.000
+SF13_ENG_087	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_087	org:country_of_headquarters	stanford1	AFP_ENG_20091017.0438	Venezuela	AFP_ENG_20091017.0438:1011-1020,AFP_ENG_20091017.0438:1996-2005	AFP_ENG_20091017.0438:986-990,AFP_ENG_20091017.0438:367-371	986-1020	0.953
+SF13_ENG_087	org:founded_by	stanford1	NIL
+SF13_ENG_087	org:member_of	stanford1	NIL
+SF13_ENG_087	org:members	stanford1	NIL
+SF13_ENG_087	org:parents	stanford1	NIL
+SF13_ENG_087	org:political_religious_affiliation	stanford1	APW_ENG_20091213.0457	leftist	APW_ENG_20091213.0457:299-306	APW_ENG_20091213.0457:307-346	299-346	0.982
+SF13_ENG_087	org:shareholders	stanford1	NIL
+SF13_ENG_087	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_087	org:subsidiaries	stanford1	NIL
+SF13_ENG_087	org:top_members_employees	stanford1	XIN_ENG_20091016.0186	Jose Ramon Machado	XIN_ENG_20091016.0186:919-937	XIN_ENG_20091016.0186:966-970,XIN_ENG_20091016.0186:1014-1018	919-970	0.583
+SF13_ENG_087	org:date_dissolved	stanford1	NIL
+SF13_ENG_087	org:date_founded	stanford1	AFP_ENG_20090625.0002	2004	AFP_ENG_20090625.0002:2678-2682	AFP_ENG_20090625.0002:2658-2662,AFP_ENG_20090625.0002:261-265	2658-2682	0.858
+SF13_ENG_087	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_087	org:website	stanford1	NIL
+SF13_ENG_088	org:alternate_names	stanford1	NIL
+SF13_ENG_088	org:city_of_headquarters	stanford1	WPB_ENG_20101004.0048	Zurich	WPB_ENG_20101004.0048:3412-3418	WPB_ENG_20101004.0048:3392-3408	3392-3418	1.000
+SF13_ENG_088	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_088	org:founded_by	stanford1	NIL
+SF13_ENG_088	org:member_of	stanford1	NIL
+SF13_ENG_088	org:members	stanford1	NIL
+SF13_ENG_088	org:parents	stanford1	NIL
+SF13_ENG_088	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_088	org:shareholders	stanford1	NIL
+SF13_ENG_088	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_088	org:subsidiaries	stanford1	NIL
+SF13_ENG_088	org:top_members_employees	stanford1	NIL
+SF13_ENG_088	org:date_dissolved	stanford1	NIL
+SF13_ENG_088	org:date_founded	stanford1	NIL
+SF13_ENG_088	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_088	org:website	stanford1	NIL
+SF13_ENG_089	org:alternate_names	stanford1	NIL
+SF13_ENG_089	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_089	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_089	org:founded_by	stanford1	NIL
+SF13_ENG_089	org:member_of	stanford1	NIL
+SF13_ENG_089	org:members	stanford1	NIL
+SF13_ENG_089	org:parents	stanford1	NIL
+SF13_ENG_089	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_089	org:shareholders	stanford1	NIL
+SF13_ENG_089	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_089	org:subsidiaries	stanford1	NIL
+SF13_ENG_089	org:top_members_employees	stanford1	APW_ENG_20100128.0434	Anatoly Isaikin	APW_ENG_20100128.0434:432-447	APW_ENG_20100128.0434:457-472	432-472	0.999
+SF13_ENG_089	org:top_members_employees	stanford1	eng-NG-31-142154-8689105	Sergey Chemezov	eng-NG-31-142154-8689105:12699-12714	eng-NG-31-142154-8689105:12736-12751	12699-12751	0.982
+SF13_ENG_089	org:top_members_employees	stanford1	eng-NG-31-142161-10037583	Serguei Ladiguin	eng-NG-31-142161-10037583:868-884	eng-NG-31-142161-10037583:842-857,eng-NG-31-142161-10037583:1997-2012	842-884	1.000
+SF13_ENG_089	org:top_members_employees	stanford1	XIN_ENG_20100526.0295	Valeri Varlamov	XIN_ENG_20100526.0295:1195-1210	XIN_ENG_20100526.0295:1178-1193,XIN_ENG_20100526.0295:1374-1389	1178-1210	0.746
+SF13_ENG_089	org:date_dissolved	stanford1	NIL
+SF13_ENG_089	org:date_founded	stanford1	NIL
+SF13_ENG_089	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_089	org:website	stanford1	NIL
+SF13_ENG_090	org:alternate_names	stanford1	AFP_ENG_20101223.0063	ECO	AFP_ENG_20101223.0063:3775-3778,AFP_ENG_20101223.0063:1865-1898	AFP_ENG_20101223.0063:1865-1898		1.000
+SF13_ENG_090	org:alternate_names	stanford1	XIN_ENG_20101222.0012	ECOTA	XIN_ENG_20101222.0012:1137-1142	XIN_ENG_20101222.0012:907-910,XIN_ENG_20101222.0012:211-244		0.993
+SF13_ENG_090	org:alternate_names	stanford1	XIN_ENG_20101214.0015	AEOI	XIN_ENG_20101214.0015:631-635,XIN_ENG_20101214.0015:357-390	XIN_ENG_20101214.0015:125-128,XIN_ENG_20101214.0015:357-390		0.982
+SF13_ENG_090	org:founded_by	stanford1	NIL
+SF13_ENG_090	org:member_of	stanford1	NIL
+SF13_ENG_090	org:members	stanford1	NIL
+SF13_ENG_090	org:parents	stanford1	NIL
+SF13_ENG_090	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_090	org:shareholders	stanford1	NIL
+SF13_ENG_090	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_090	org:subsidiaries	stanford1	NIL
+SF13_ENG_090	org:top_members_employees	stanford1	NIL
+SF13_ENG_090	org:date_dissolved	stanford1	NIL
+SF13_ENG_090	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_091	org:alternate_names	stanford1	APW_ENG_20090609.0545	Arcandor AG	APW_ENG_20090609.0545:181-192	APW_ENG_20090609.0545:1702-1710,APW_ENG_20090609.0545:1833-1841		0.881
+SF13_ENG_091	org:alternate_names	stanford1	NYT_ENG_20090825.0007	Karstadt	NYT_ENG_20090825.0007:3758-3766,NYT_ENG_20090825.0007:4433-4441	NYT_ENG_20090825.0007:3150-3164,NYT_ENG_20090825.0007:4433-4441		0.881
+SF13_ENG_091	org:alternate_names	stanford1	NYT_ENG_20090825.0007	KarstadtQuelle	NYT_ENG_20090825.0007:3150-3164,NYT_ENG_20090825.0007:4433-4441	NYT_ENG_20090825.0007:3758-3766,NYT_ENG_20090825.0007:4433-4441		0.881
+SF13_ENG_091	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_091	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_091	org:founded_by	stanford1	NIL
+SF13_ENG_091	org:member_of	stanford1	NIL
+SF13_ENG_091	org:members	stanford1	NIL
+SF13_ENG_091	org:parents	stanford1	NIL
+SF13_ENG_091	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_091	org:shareholders	stanford1	NIL
+SF13_ENG_091	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_091	org:subsidiaries	stanford1	NIL
+SF13_ENG_091	org:top_members_employees	stanford1	APW_ENG_20090609.0624	Karl-Gerhard Eick	APW_ENG_20090609.0624:1614-1631	APW_ENG_20090609.0624:1645-1653,APW_ENG_20090609.0624:1776-1784	1614-1653	0.960
+SF13_ENG_091	org:date_dissolved	stanford1	NIL
+SF13_ENG_091	org:date_founded	stanford1	AFP_ENG_20090618.0420	1881	AFP_ENG_20090618.0420:1025-1029	AFP_ENG_20090618.0420:994-1002,AFP_ENG_20090618.0420:1755-1763	994-1029	0.746
+SF13_ENG_091	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_091	org:website	stanford1	NIL
+SF13_ENG_092	org:alternate_names	stanford1	NIL
+SF13_ENG_092	org:founded_by	stanford1	NIL
+SF13_ENG_092	org:member_of	stanford1	NIL
+SF13_ENG_092	org:members	stanford1	NIL
+SF13_ENG_092	org:parents	stanford1	NIL
+SF13_ENG_092	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_092	org:shareholders	stanford1	NIL
+SF13_ENG_092	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_092	org:subsidiaries	stanford1	NIL
+SF13_ENG_092	org:top_members_employees	stanford1	AFP_ENG_20091106.0392	Wolfgang Ley	AFP_ENG_20091106.0392:1616-1628	AFP_ENG_20091106.0392:1601-1607,AFP_ENG_20091106.0392:1639-1645	1601-1628	0.953
+SF13_ENG_092	org:date_dissolved	stanford1	NIL
+SF13_ENG_092	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_093	org:alternate_names	stanford1	NIL
+SF13_ENG_093	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_093	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_093	org:founded_by	stanford1	NIL
+SF13_ENG_093	org:member_of	stanford1	NIL
+SF13_ENG_093	org:members	stanford1	NIL
+SF13_ENG_093	org:parents	stanford1	NIL
+SF13_ENG_093	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_093	org:shareholders	stanford1	NIL
+SF13_ENG_093	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_093	org:subsidiaries	stanford1	NIL
+SF13_ENG_093	org:top_members_employees	stanford1	NIL
+SF13_ENG_093	org:date_dissolved	stanford1	NIL
+SF13_ENG_093	org:date_founded	stanford1	NIL
+SF13_ENG_093	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_093	org:website	stanford1	NIL
+SF13_ENG_094	org:alternate_names	stanford1	NIL
+SF13_ENG_094	org:city_of_headquarters	stanford1	APW_ENG_20091231.0781	Ocean Springs	APW_ENG_20091231.0781:505-518	APW_ENG_20091231.0781:485-501	485-518	1.000
+SF13_ENG_094	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_094	org:founded_by	stanford1	NIL
+SF13_ENG_094	org:member_of	stanford1	NIL
+SF13_ENG_094	org:members	stanford1	NIL
+SF13_ENG_094	org:parents	stanford1	NIL
+SF13_ENG_094	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_094	org:shareholders	stanford1	NIL
+SF13_ENG_094	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_094	org:subsidiaries	stanford1	NIL
+SF13_ENG_094	org:top_members_employees	stanford1	WPB_ENG_20101108.0046	Peter Kant	WPB_ENG_20101108.0046:6086-6096	WPB_ENG_20101108.0046:6126-6142	6086-6142	1.000
+SF13_ENG_094	org:date_dissolved	stanford1	NIL
+SF13_ENG_094	org:date_founded	stanford1	NIL
+SF13_ENG_094	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_094	org:website	stanford1	NIL
+SF13_ENG_095	org:alternate_names	stanford1	NIL
+SF13_ENG_095	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_095	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_095	org:founded_by	stanford1	NIL
+SF13_ENG_095	org:member_of	stanford1	NIL
+SF13_ENG_095	org:members	stanford1	NIL
+SF13_ENG_095	org:parents	stanford1	NIL
+SF13_ENG_095	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_095	org:shareholders	stanford1	NIL
+SF13_ENG_095	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_095	org:subsidiaries	stanford1	NIL
+SF13_ENG_095	org:top_members_employees	stanford1	NIL
+SF13_ENG_095	org:date_dissolved	stanford1	NIL
+SF13_ENG_095	org:date_founded	stanford1	NIL
+SF13_ENG_095	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_095	org:website	stanford1	NIL
+SF13_ENG_096	org:alternate_names	stanford1	APW_ENG_20090603.0015	Freedom Communications Inc.	APW_ENG_20090603.0015:557-584,APW_ENG_20090603.0015:2526-2548	APW_ENG_20090603.0015:2526-2548		0.881
+SF13_ENG_096	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_096	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_096	org:founded_by	stanford1	NIL
+SF13_ENG_096	org:member_of	stanford1	NIL
+SF13_ENG_096	org:members	stanford1	NIL
+SF13_ENG_096	org:parents	stanford1	NIL
+SF13_ENG_096	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_096	org:shareholders	stanford1	NIL
+SF13_ENG_096	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_096	org:subsidiaries	stanford1	NIL
+SF13_ENG_096	org:top_members_employees	stanford1	NIL
+SF13_ENG_096	org:date_dissolved	stanford1	NIL
+SF13_ENG_096	org:date_founded	stanford1	NIL
+SF13_ENG_096	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_096	org:website	stanford1	NIL
+SF13_ENG_097	org:alternate_names	stanford1	APW_ENG_20100121.0714	STX Finland OY	APW_ENG_20100121.0714:1704-1718	APW_ENG_20100121.0714:269-280		0.982
+SF13_ENG_097	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_097	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_097	org:founded_by	stanford1	NIL
+SF13_ENG_097	org:member_of	stanford1	NIL
+SF13_ENG_097	org:members	stanford1	NIL
+SF13_ENG_097	org:parents	stanford1	APW_ENG_20091117.0560	STX Europe Group	APW_ENG_20091117.0560:1345-1361	APW_ENG_20091117.0560:1301-1315	1301-1361	1.000
+SF13_ENG_097	org:parents	stanford1	AFP_ENG_20091027.0700	STX	AFP_ENG_20091027.0700:644-647	AFP_ENG_20091027.0700:590-601	590-647	0.792
+SF13_ENG_097	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_097	org:shareholders	stanford1	NIL
+SF13_ENG_097	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_097	org:subsidiaries	stanford1	NIL
+SF13_ENG_097	org:top_members_employees	stanford1	APW_ENG_20101029.0470	Juha Heikinheimo	APW_ENG_20101029.0470:976-992	APW_ENG_20101029.0470:1015-1026	976-1026	0.882
+SF13_ENG_097	org:date_dissolved	stanford1	NIL
+SF13_ENG_097	org:date_founded	stanford1	NIL
+SF13_ENG_097	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_097	org:website	stanford1	NIL
+SF13_ENG_098	org:alternate_names	stanford1	NYT_ENG_20100224.0190	Millipore	NYT_ENG_20100224.0190:1811-1820,NYT_ENG_20100224.0190:2201-2210	NYT_ENG_20100224.0190:119-134,NYT_ENG_20100224.0190:2201-2210		1.000
+SF13_ENG_098	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_098	org:country_of_headquarters	stanford1	APW_ENG_20100428.0467	U.S.	APW_ENG_20100428.0467:751-755,APW_ENG_20100428.0467:2549-2553	APW_ENG_20100428.0467:728-743	728-755	0.993
+SF13_ENG_098	org:founded_by	stanford1	NIL
+SF13_ENG_098	org:member_of	stanford1	NIL
+SF13_ENG_098	org:members	stanford1	NIL
+SF13_ENG_098	org:parents	stanford1	APW_ENG_20101026.0210	Merck Millipore	APW_ENG_20101026.0210:755-770	APW_ENG_20101026.0210:674-683	674-770	0.881
+SF13_ENG_098	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_098	org:shareholders	stanford1	NIL
+SF13_ENG_098	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_098	org:subsidiaries	stanford1	NIL
+SF13_ENG_098	org:top_members_employees	stanford1	NIL
+SF13_ENG_098	org:date_dissolved	stanford1	NIL
+SF13_ENG_098	org:date_founded	stanford1	NYT_ENG_20100223.0026	1954	NYT_ENG_20100223.0026:2240-2244	NYT_ENG_20100223.0026:2034-2043,NYT_ENG_20100223.0026:3826-3835	2034-2244	0.871
+SF13_ENG_098	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_098	org:website	stanford1	NIL
+SF13_ENG_099	org:alternate_names	stanford1	NIL
+SF13_ENG_099	org:city_of_headquarters	stanford1	APW_ENG_20100428.1161	Paris	APW_ENG_20100428.1161:4047-4052,APW_ENG_20100428.1161:4181-4186	APW_ENG_20100428.1161:4039-4043,APW_ENG_20100428.1161:306-310	4039-4052	0.953
+SF13_ENG_099	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_099	org:founded_by	stanford1	NIL
+SF13_ENG_099	org:member_of	stanford1	NIL
+SF13_ENG_099	org:members	stanford1	NIL
+SF13_ENG_099	org:parents	stanford1	NIL
+SF13_ENG_099	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_099	org:shareholders	stanford1	NIL
+SF13_ENG_099	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_099	org:subsidiaries	stanford1	NIL
+SF13_ENG_099	org:top_members_employees	stanford1	APW_ENG_20101101.0601	Patrick Boissier	APW_ENG_20101101.0601:1247-1263	APW_ENG_20101101.0601:1232-1236,APW_ENG_20101101.0601:360-364	1232-1263	1.000
+SF13_ENG_099	org:date_dissolved	stanford1	NIL
+SF13_ENG_099	org:date_founded	stanford1	NIL
+SF13_ENG_099	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_099	org:website	stanford1	NIL
+SF13_ENG_100	org:alternate_names	stanford1	NIL
+SF13_ENG_100	org:city_of_headquarters	stanford1	NIL
+SF13_ENG_100	org:country_of_headquarters	stanford1	NIL
+SF13_ENG_100	org:founded_by	stanford1	NIL
+SF13_ENG_100	org:member_of	stanford1	NIL
+SF13_ENG_100	org:members	stanford1	NIL
+SF13_ENG_100	org:parents	stanford1	NIL
+SF13_ENG_100	org:political_religious_affiliation	stanford1	NIL
+SF13_ENG_100	org:shareholders	stanford1	NIL
+SF13_ENG_100	org:stateorprovince_of_headquarters	stanford1	NIL
+SF13_ENG_100	org:subsidiaries	stanford1	NIL
+SF13_ENG_100	org:top_members_employees	stanford1	NYT_ENG_20100107.0173	Raj Rajaratnam	NYT_ENG_20100107.0173:225-239	NYT_ENG_20100107.0173:260-273	225-273	1.000
+SF13_ENG_100	org:top_members_employees	stanford1	LTW_ENG_20091106.0144	Zvi Goffer	LTW_ENG_20091106.0144:1866-1876	LTW_ENG_20091106.0144:1924-1937	1866-1937	1.000
+SF13_ENG_100	org:date_dissolved	stanford1	NIL
+SF13_ENG_100	org:date_founded	stanford1	NIL
+SF13_ENG_100	org:number_of_employees_members	stanford1	NIL
+SF13_ENG_100	org:website	stanford1	NIL

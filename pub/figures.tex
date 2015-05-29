@@ -109,9 +109,9 @@
       edge from parent [goodPath] node[above] {$\rotatebox{340}{\negate}$}
     }
     child {
-      node[fact] {\w{No \textbf{cats} \\ eat animals}} 
+      node[fact] {\w{No \textbf{animals} \\ eat animals}} 
       child {
-        node[fact] {\w{No cats \\ eat \textbf{mice}}}
+        node[fact] {\w{No animals \\ eat \textbf{things}}}
           [clockwise from=-50,sibling angle=20]
           child foreach \x in {1,2,3,4} {
             [clockwise from=-55,sibling angle=20]

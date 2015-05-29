@@ -6,8 +6,12 @@
 #include "Utils.h"
 
 // NaturalLI Only Weights
-#define BONUS_COUNT_ALIGNED 0.2881f
-#define PENALTY_ONLY_IN_HYPOTHESIS -0.1374f
+#define COUNT_ALIGNABLE                0.2688f
+#define COUNT_ALIGNED                  0.0678f
+#define COUNT_UNALIGNABLE_CONCLUSION  -0.0531f
+#define COUNT_UNALIGNABLE_PREMISE     -0.0749f
+#define COUNT_INEXACT                 -0.5558f
+#define BIAS                          -0.7858f
 
 // Overlap Only Weights
 //#define BONUS_COUNT_ALIGNED 0.0678f
@@ -987,6 +991,15 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise, const Graph& graph
       }
     }
   }
+          
+  // Count unaligned premises
+  uint8_t unalignedPremiseWords = 0;
+  for (uint8_t premI = 0; premI < premise.length; ++premI) {
+    char premTag = premise.data[premI].posTag;
+    if (premTag != 'n' && premTag != 'v' && premTag != 'j') { continue; }
+    if (alreadyAlignedInPremise[premI]) { continue; }
+    unalignedPremiseWords += 1;
+  }
 
   // Clean up
   free(hypPolarities);
@@ -995,7 +1008,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise, const Graph& graph
   free(alreadyAlignedInHypothesis);
   free(premiseForHypothesis);
   // Return
-  return AlignmentSimilarity(alignments);
+  return AlignmentSimilarity(alignments, unalignedPremiseWords);
 
 }
 
@@ -1023,16 +1036,26 @@ inline bool polarityMatches(const monotonicity& a, const monotonicity& b, const 
 // AlignmentSimilarity::score
 //
 double AlignmentSimilarity::score(const Tree& tree, const bool& initTruth) const {
-  double score = 0.0;
+  double score = this->unalignedPremiseKeywords * COUNT_UNALIGNABLE_PREMISE + BIAS;
   for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
     if (iter->index < tree.length) {
-      // case: check an alignment
+      // Get variables
       monotonicity polarityAtI = tree.polarityAt(SearchNode(tree), iter->index);
-      if (tree.word(iter->index) == iter->target &&
-          polarityMatches(polarityAtI, iter->targetPolarity, initTruth)) {
-        score += BONUS_COUNT_ALIGNED;
+      bool wantDelete = false;
+      if (iter->target == INVALID_WORD) {
+        wantDelete = true;
+      }
+      bool exactMatch = tree.word(iter->index) == iter->target &&
+          polarityMatches(polarityAtI, iter->targetPolarity, initTruth);
+      // Update score
+      if (exactMatch) {
+        // case: exact match
+        score += COUNT_ALIGNED + COUNT_ALIGNABLE;
+      } else if (wantDelete) {
+        // case: unaligned hypothesis
+        score += COUNT_UNALIGNABLE_CONCLUSION;
       } else {
-        score += PENALTY_ONLY_IN_HYPOTHESIS;
+        score += COUNT_ALIGNABLE + COUNT_INEXACT;
       }
     } else {
       // error: an alignment is larger than the tree
@@ -1068,23 +1091,27 @@ double AlignmentSimilarity::updateScore(const double& score,
           return score;  // This should be impossible! We didn't change the word...
         } else {
           if (isDelete) {
-            // broke match via a delete
-            return score - BONUS_COUNT_ALIGNED;
+            // broke exact match via a delete
+            return score - COUNT_ALIGNED     // was exact match, now isn't
+                         - COUNT_ALIGNABLE   // was alignable, now isn't
+                         + COUNT_UNALIGNABLE_PREMISE;  // was alignable in premise, now isn't
           } else {
             // broke match via a mutate
-            return score - BONUS_COUNT_ALIGNED + PENALTY_ONLY_IN_HYPOTHESIS;
+            return score - COUNT_ALIGNED   // was aligned, now isn't
+                         + COUNT_INEXACT;  // but still alignable!
           }
         }
-      } else {
+      } else {  // ! oldMatches
         if (newMatches) {
           if (isDelete) {
             // deleted a word that should have been deleted
-            return score - PENALTY_ONLY_IN_HYPOTHESIS;
+            return score - COUNT_UNALIGNABLE_CONCLUSION;
           } else {
             // mutated a word to the right target
-            return score + BONUS_COUNT_ALIGNED - PENALTY_ONLY_IN_HYPOTHESIS;
+            return score + COUNT_ALIGNED   // was not aligned, now is
+                         - COUNT_INEXACT;  // was inexact, now isn't!
           }
-        } else {
+        } else {  // ! newMatches
           // didn't used to match, and still doesn't.
         }
       }

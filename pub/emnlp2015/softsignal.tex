@@ -1,10 +1,10 @@
-\Section{softsignal}{Soft Signals from Natural Logic}
+\Section{softsignal}{An Entailment Classifier in NaturalLI}
 % Natural Logic doesn't get everything
 There are many cases -- particularly as the length of the premise and the hypothesis grow --
   where despite our improvements NaturalLI will fail to find any supporting
-  premises.
-This can be from a necessity to do complex reasoning (as in the example from the 
-  introduction), or simply complex nonlocal reasoning, as in:
+  premises; for example:
+%This can be from a necessity to do complex reasoning (as in the example from the 
+%  introduction), or simply complex nonlocal reasoning, as in:
 
 % Here's something simple it struggles with
 \entailmentExample
@@ -18,26 +18,27 @@ In addition to implicitly reasoning with multiple premises (a concomitant weak
   $\rightarrow$ \w{Animals get $x$ from food}.
 
 % Why a lexical classifier would do well
-Nonetheless, objectively this is not a difficult case of entailment.
-There are plenty of clues that the two sentences are related, and even a simple
+%Nonetheless, objectively this is not a difficult case of entailment.
+Nonetheless, there are plenty of clues that the two sentences are related, and even a simple
   entailment classifier would get the example correct.
 We build such a simple entailment classifier (\refsec{softsignal-classifier}) built only
-  on dense lexical overlap features, and
-  then show how NaturalLI can be used to provide soft signals informing the classifier.
+  on dense lexical overlap features, and employ it as a backoff inside NaturalLI
+  in case no premises are found during search.
+%  then show how NaturalLI can be used to provide soft signals informing the classifier.
 
-% Why are soft signals valuable
-The transition types in NaturalLI's search are roughly the analogue of complex features
-  used in entailment systems, e.g., for the RTE challenges.
-WordNet features are encoded in the hypernym and antonym edge types; distributional
-  similarity in the nearest neighbors edges; negation scope in the quantifier
-  mutations.
-We argue that our approach has two advantages here: 
-  first, it allows our classifier to implement a clean, unlexicalized set of
-  features while retaining the expressive power of these more powerful features.
-Second, and more importantly, NaturalLI is still allowed to find its own supporting
-  (or negating) premises independent of the classifier.
-The classifier can in this sense be thought of as a ``backoff'' for NaturalLI,
-  offering some answer when NaturalLI could not provide one.
+%% Why are soft signals valuable
+%The transition types in NaturalLI's search are roughly the analogue of complex features
+%  used in entailment systems, e.g., for the RTE challenges.
+%WordNet features are encoded in the hypernym and antonym edge types; distributional
+%  similarity in the nearest neighbors edges; negation scope in the quantifier
+%  mutations.
+%We argue that our approach has two advantages here: 
+%  first, it allows our classifier to implement a clean, unlexicalized set of
+%  features while retaining the expressive power of these more powerful features.
+%Second, and more importantly, NaturalLI is still allowed to find its own supporting
+%  (or negating) premises independent of the classifier.
+%The classifier can in this sense be thought of as a ``backoff'' for NaturalLI,
+%  offering some answer when NaturalLI could not provide one.
 
 
 %
@@ -56,9 +57,10 @@ All five of the core features are based off an alignment of keyphrases between t
 A keyphrase is defined as a span of text which is either
   (1) a possibly empty sequence of adjectives and adverbs followed by a 
       sequence of nouns, and optionally followed by either \w{of} or the possessive
-      marker (\w{'s}), and another noun;
-  (2) a possibly empty sequence of adverbs followed by a verb; or
-  (3) a VBG verb followed by a noun.
+      marker (\w{'s}), and another noun (e.g., \w{sneaky kitten} or \w{pail of water});
+  (2) a possibly empty sequence of adverbs followed by a verb (e.g.,
+      \w{quietly pounce}); or
+  (3) a VBG verb followed by a noun (e.g., \w{flowing water}).
 The verb \w{to be} is never a keyphrase.
 
 \begin{figure*}
@@ -124,7 +126,7 @@ Features are extracted for the number of alignments, the numbers of alignments
   which were not aligned.
 A feature for the Lucene score of the premise given the hypothesis is optionally
   included; we revisit this issue in the evaluation.
-Additional features were not shown to improve performance substantially, and
+Additional features were not shown to substantially improve performance, and
   were therefore dropped for simplicity.
 Features tried included the BLEU score between the phrases, the overlap between
   words in the premise and hypothesis, the overlap between words sharing a 
@@ -134,26 +136,118 @@ Features tried included the BLEU score between the phrases, the overlap between
 %
 % Soft Signals from NaturalLI
 %
-\Subsection{softsignal-keywords}{Soft Signals in NaturalLI}
-% Signal 1: match overlap
-In addition to explicitly confirming or contradicting an entailment, NaturalLI can
-  provide at least two soft signals for the backoff classifier.
-The first of these is providing a better calibrated exact alignment match measure.
-For example, if \w{cat} in the premise aligns to \w{furry cat} in hypothesis,
-  and NaturalLI finds finds that \w{furry} can be deleted during search, the
-  exact match count should go up by one.
-Symmetrically, the inexact match count should go down by one.
+\Subsection{softsignal-keywords}{Classification During Search}
+% Intuition as value function
+We can make use of the classifier we constructed in 
+  \refsec{softsignal-classifier} to score each candidate premise during
+  the search in NaturalLI against a set of known premises.
+This can be thought of as analogous to the value function in game-playing
+  algorithms -- even though an agent cannot play a game of Chess to completion,
+  at some depth it can apply a value function to its leaf states.
 
-% Semantics of a matching keyword
-This already allows us to capture notions of soft matching, distributional similarity
-  (via nearest neighbors edges), etc.
-%However, we should take care to be somewhat careful; to illustrate, 
-However, we should be somewhat cautious; to illustrate, 
-  \naive ly the following two statements share every keyword:
+% Can do this incrementally
+Note that the feature values can be computed incrementally as the search
+  progresses, based on the score of the parent state, and the mutation or
+  deletion being performed.
+For instance, if we are deleting a word which was previously aligned perfectly
+  to the premise, we would subtract the weight for a perfect and imperfect
+  alignment, and add the weight for an unaligned premise keyphrase.
+
+% Soft negation
+Note that in the context of NaturalLI, we can define a more precise notion of
+  overlap, which will be useful for capturing a notion of likely logical
+  negation.
+To illustrate, \naive ly the following two statements share every keyword:
 
 \entailmentExample
 {some cats have tails}
 {no cats have tails}
+
+However, we note that all of the keyword pairs are in opposite polarity contexts.
+We can therefore define a pair of keywords as \textit{matching} if the following two
+  conditions hold: 
+  (1) their lemmatized surface forms match exactly, and 
+  (2) they have the same polarity in the sentence.
+The second constraint encodes a good approximation for negation (see \reftab{operatormono});
+  e.g., \textit{some}
+  and \textit{no} induce the exact opposite polarity on their arguments,
+  and therefore in our example above there is no keyword overlap.
+The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
+  which have the same monotonicity in their subjects but are nonetheless negations
+  of each other.
+Otherwise, any pair of operators which share half their signature are at least
+  compatible with each other (e.g., \w{some} and \w{all}).
+In all, we consider this a good simple approximation at a low cost.
+
+This suggests a natural criterion for likely negation:
+  If the highest classifier score is produced by a candidate premise which
+  would contradict the hypothesis, we have reason to believe that we have
+  found a contradiction.
+To illustrate with our example, NaturalLI would mutate \w{no cats have tails}
+  to \w{the cats have tails}, at which point it has found a candidate premise
+  which contradicts the hypothesis, but which has perfect overlap with the 
+  premise \w{some cats have tails} (of course, in this case it would find the
+  correct premise in the search as well).
+
+
+%This leads naturally into the second soft signal that NaturalLI can convey, when
+%  it believes the hypothesis is false but cannot prove it explicitly.
+%We consider this the case when we get a higher overlap score from a false
+%  candidate premise than we did from any true one.
+%Considering our example from earlier, a search from the hypothesis
+%  \w{no cats have tails} would have an overlap of zero with \w{some cats have tails}.
+%But, as soon as NaturalLI negates the quantifier \w{no}, the polarity of both
+%  \w{cats} and \w{tails} matches and the overlap becomes two.
+%In this way, even if NaturalLI had not found the exact premise, it would have
+%  strong reason to suspect that the hypothesis is wrong on the basis of a
+%  false search state (i.e., candidate premise) having a higher alignment to 
+%  the actual premise than a true search state.
+
+
+
+
+%% How we incorporate it into search
+%Updating the counts of the features in the classifier
+%  is trivial during the search itself.
+%At every transition, we are either mutating a word, or deleting a word.
+%If an aligned word is mutated, the score is updated according to whether it
+%  mutates to the exact aligned word, or mutates away from the exact aligned word.
+%If the transition deleted a word, the score is updated according to whether
+%  the word was 
+%If a search state has a score $s_0$, and 
+%
+%% Segment feature space
+%The feature set in \refsec{softsignals-classifier} can be segmented into two
+%  types of features:
+%  those which are constant throughout NaturalLI's search, and those which 
+%  can change during search.
+%In particular, the number of alignments, the number of keyphrases in the premise
+%  which were not aligned, and the Lucene score of the premise cannot change during
+%  search without recomputing the alignments.
+%In contrast, the number of perfect and imperfect alignments, as well as the number
+%  of unaligned keyphrases in the hypotheses can change during search.
+%The former through mutations, and the latter through deletions.
+%
+%
+%% Signal 1: match overlap
+%In addition to explicitly confirming or contradicting an entailment, NaturalLI can
+%  provide at least two soft signals for the backoff classifier.
+%The first of these is providing a better calibrated exact alignment match measure.
+%For example, if \w{cat} in the premise aligns to \w{furry cat} in hypothesis,
+%  and NaturalLI finds finds that \w{furry} can be deleted during search, the
+%  exact match count should go up by one.
+%Symmetrically, the inexact match count should go down by one.
+%
+%% Semantics of a matching keyword
+%This already allows us to capture notions of soft matching, distributional similarity
+%  (via nearest neighbors edges), etc.
+%%However, we should take care to be somewhat careful; to illustrate, 
+%However, we should be somewhat cautious; to illustrate, 
+%  \naive ly the following two statements share every keyword:
+%
+%\entailmentExample
+%{some cats have tails}
+%{no cats have tails}
 
 \begin{table}
 \begin{center}
@@ -177,39 +271,25 @@ However, we should be somewhat cautious; to illustrate,
 }
 \end{table}
 
-We therefore define a pair of keywords as \textit{matching} if the following two
-  conditions hold: 
-  (1) their lemmatized surface forms match exactly, and 
-  (2) they have the same polarity in the sentence.
-The second constraint encodes a good approximation for negation (see \reftab{operatormono});
-  e.g., \textit{some}
-  and \textit{no} induce the exact opposite polarity on their arguments,
-  and therefore in our example above there is no keyword overlap.
-The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
-  which have the same monotonicity in their subjects but are nonetheless negations
-  of each other.
-Otherwise, any pair of operators which share half their signature are at least
-  compatible with each other (e.g., \w{some} and \w{all}).
-In all, we consider this a good simple approximation at a low cost.
+%We therefore define a pair of keywords as \textit{matching} if the following two
+%  conditions hold: 
+%  (1) their lemmatized surface forms match exactly, and 
+%  (2) they have the same polarity in the sentence.
+%The second constraint encodes a good approximation for negation (see \reftab{operatormono});
+%  e.g., \textit{some}
+%  and \textit{no} induce the exact opposite polarity on their arguments,
+%  and therefore in our example above there is no keyword overlap.
+%The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
+%  which have the same monotonicity in their subjects but are nonetheless negations
+%  of each other.
+%Otherwise, any pair of operators which share half their signature are at least
+%  compatible with each other (e.g., \w{some} and \w{all}).
+%In all, we consider this a good simple approximation at a low cost.
 
-% Signal 2: soft negation
-This leads naturally into the second soft signal that NaturalLI can convey, when
-  it believes the hypothesis is false but cannot prove it explicitly.
-We consider this the case when we get a higher overlap score from a false
-  candidate premise than we did from any true one.
-Considering our example from earlier, a search from the hypothesis
-  \w{no cats have tails} would have an overlap of zero with \w{some cats have tails}.
-But, as soon as NaturalLI negates the quantifier \w{no}, the polarity of both
-  \w{cats} and \w{tails} matches and the overlap becomes two.
-In this way, even if NaturalLI had not found the exact premise, it would have
-  strong reason to suspect that the hypothesis is wrong on the basis of a
-  false search state (i.e., candidate premise) having a higher alignment to 
-  the actual premise than a true search state.
-
-% Implementation
-Both of these signals are incorporated straightforwardly into NaturalLI.
-In addition to the large knowledge base, a query is additionally augmented
-  with a small set of facts which are considered better candidates for
-  a valid premise (e.g., are returned by an IR system).
-A search state then carries around the alignment score to each premise,
-  and updates this score with each transition.
+%% Implementation
+%Both of these signals are incorporated straightforwardly into NaturalLI.
+%In addition to the large knowledge base, a query is additionally augmented
+%  with a small set of facts which are considered better candidates for
+%  a valid premise (e.g., are returned by an IR system).
+%A search state then carries around the alignment score to each premise,
+%  and updates this score with each transition.

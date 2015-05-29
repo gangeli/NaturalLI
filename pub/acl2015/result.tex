@@ -49,25 +49,32 @@ For coreference, UW uses the Stanford coreference system
 
 \begin{table}
 \begin{center}
-\begin{tabular}{l|cc:c}
-\textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
+\begin{tabular}{lccc}
 \hline
-UW Official          & \textbf{69.8} & 11.4 & 19.6 \\
-Ollie                & 57.4 & 4.8   & 8.9  \\
-$~~$ + Nominal Rels  & 56.8 & 12.1  & 19.9 \\
+\textbf{System}               & \textbf{P}    & \textbf{R}    & \textbf{F$_1$} \\
 \hline
-Our System           & 61.0 & 12.7  & 21.1 \\
-$~~$ + Alt. Names    & 56.8 & \textbf{16.6} & \textbf{25.7} \\
+UW Official                   & \textbf{69.8} & 11.4          & 19.6 \\
+\hline
+Ollie                         & 57.4          & 4.8           & 8.9  \\
+$~~$ + Nominal Rels           & 57.6          & 10.4          & 17.5 \\
+\hline
+Our System                    & 59.6          & 14.1          & 22.7 \\
+$~~$ - Nominal Rels           & 63.6          & 8.6           & 15.2 \\
+$~~$ + Alt. Name              & 56.1          & 18.0          & 27.3 \\
+$~~$ + Alt. Name + Website    & 57.0          & \textbf{18.8} & \textbf{28.2} \\
+\hline
 \end{tabular}
 \end{center}
 \caption{\label{tab:results}
 A summary of our results on the end-to-end KBP Slot Filling task.
 UW official is the submission made to the 2013 challenge.
-The second row is the accuracy of Ollie embedded in our framework.
-We also include results for Ollie augmented with the nominal 
-  relations from our system.
-Lastly, we report our system, and our system conjoined with an
-  alternate names component.
+The second row is the accuracy of Ollie embedded in our framework,
+  and of Ollie evaluted with nominal relations from our system.
+%We also include results for Ollie augmented with the nominal 
+%  relations from our system.
+Lastly, we report our system, our system with nominal relations removed,
+  and our system combined with an alternate names detector and rule-based
+  website detector.
 %We also run Ollie in the same framework as our open IE system
 %We compare against an official submission to the challenge using
 %  Open IE v4.0 (UW Official), as well as the performance of our system
@@ -84,11 +91,18 @@ We report our results in \reftab{results}.\footnote{
     system unfairly for extracting a new correct provenance.
   }
 UW Official refers to the official submission in the 2013 challenge;
-  we show a 1.5 F$_1$ improvement (to 21.1 F$_1$) over this submission, 
+  we show a 3.1 F$_1$ improvement (to 22.7 F$_1$) over this submission, 
   evaluated using a comparable approach.
-If we add in alternate name relations extracted from entity linking and
-  coreference -- a common technique not employed by UW Official -- then
-  our approach can achieve an end-to-end F$_1$ of 25.7.
+A common technique in KBP systems but not employed by the official UW
+  submission in 2013 is to add alternate names 
+  based on entity linking and coreference.
+Additionally, websites are often extracted using heuristic name-matching
+  as they are hard to capture with traditional relation extraction 
+  techniques.
+If we make use of both of these, our end-to-end accuracy becomes 28.2 F$_1$.
+%If we add in alternate name relations extracted from entity linking and
+%  coreference -- a common technique not employed by UW Official -- then
+%  our approach can achieve an end-to-end F$_1$ of 25.7.
 
 % Report Results (Ablation)
 We attempt to isolate variance in scores due to other components in a full
@@ -100,9 +114,15 @@ Note that when an argument to an Ollie extraction contains a named entity,
 The low performance of this system can be partially attributed to its inability
   to extract nominal relations.
 To normalize for this, we report results when the Ollie extractions are
-  supplemented with the nominal relations produced by our system.
-The persistent improvement in accuracy suggests that our gains are not
-  entirely from the addition of these relations.
+  supplemented with the nominal relations produced by our system
+  (Ollie + Nominal Rels in \reftab{results}).
+In the other direction, we can remove the nominal relation extractions from
+  our system.
+Our system outperforms Ollie in both cases.
+
+\todo{pr curves}
+%The persistent improvement in accuracy suggests that our gains are not
+%  entirely from the addition of these relations.
 
 %We report two versions of our system: one making use of alternate names
 %  via coref and entity linking, and another using only the relations from
@@ -117,5 +137,5 @@ The persistent improvement in accuracy suggests that our gains are not
 %  other conflating factors in the evaluation.
 
 % Demo
-An anonymous demo of our system available at
-  \url{http://128.12.224.119/openie/}.
+%An anonymous demo of our system available at
+%  \url{http://128.12.224.119/openie/}.
