@@ -30,13 +30,13 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  private static boolean USE_NATURALLI = true;
+  private static boolean USE_NATURALLI = false;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 0.10;
+  private static double ALIGNMENT_WEIGHT = 1.00;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/all_1.cache";
+  private static String NATURALLI_INCACHE = "logs/all_3.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -357,6 +357,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         case COUNT_INEXACT:
         case COUNT_UNALIGNABLE_PREMISE:
         case COUNT_UNALIGNABLE_CONCLUSION:
+        case "bias":
           break;
         default:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
@@ -374,6 +375,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         case COUNT_INEXACT:
         case COUNT_UNALIGNABLE_PREMISE:
         case COUNT_UNALIGNABLE_CONCLUSION:
+        case "bias":
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
           break;
         default:

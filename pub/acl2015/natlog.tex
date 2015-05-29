@@ -268,13 +268,19 @@ Once a set of short entailed sentences is produced, it becomes straightforward
 We employ 6 simple dependency patterns, given in \reftab{patterns},
   which cover the majority of
   atomic relations we are interested in.
+
 % Noun patterns
 When information is available to disambiguate the substructure of compound
   nouns (e.g., named entity segmentation),
   the substructure of compound nouns, we extract additional relations with
   5 dependency and 3 TokensRegex \cite{key:stanford-tokensregex} surface
   form patterns.
-These are given in \reftab{nominal}.
+These are given in \reftab{nominal}; we refer to these as \textit{nominal relations}.
+Note that the constraint of named entity information is by no means
+  required for the system.
+In other applications -- for example, applications in vision -- 
+  the otherwise trivial nominal relations could be quite useful.
+  
 %All six of these capture either of the declarative \ww{be} relation
 %  (e.g., adjective modification) or simple variants of such
 %  (e.g., \ww{Napoleon of France} entails \ww{Napoleon is of France}).

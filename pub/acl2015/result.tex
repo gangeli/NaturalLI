@@ -58,10 +58,10 @@ UW Official                   & \textbf{69.8} & 11.4          & 19.6 \\
 Ollie                         & 57.4          & 4.8           & 8.9  \\
 $~~$ + Nominal Rels           & 57.6          & 10.4          & 17.5 \\
 \hline
-Our System                    & 59.6          & 14.1          & 22.7 \\
-$~~$ - Nominal Rels           & 63.6          & 8.6           & 15.2 \\
+Our System (no nominals)      & 59.6          & 14.1          & 22.7 \\
+$~~$ + Nominal Rels           & 63.6          & 8.6           & 15.2 \\
 $~~$ + Alt. Name              & 56.1          & 18.0          & 27.3 \\
-$~~$ + Alt. Name + Website    & 57.0          & \textbf{18.8} & \textbf{28.2} \\
+$~~$ + Alt. Name + Website    & 57.0          & \textbf{18.8} & \textbf{28.3} \\
 \hline
 \end{tabular}
 \end{center}
@@ -69,7 +69,7 @@ $~~$ + Alt. Name + Website    & 57.0          & \textbf{18.8} & \textbf{28.2} \\
 A summary of our results on the end-to-end KBP Slot Filling task.
 UW official is the submission made to the 2013 challenge.
 The second row is the accuracy of Ollie embedded in our framework,
-  and of Ollie evaluted with nominal relations from our system.
+  and of Ollie evaluated with nominal relations from our system.
 %We also include results for Ollie augmented with the nominal 
 %  relations from our system.
 Lastly, we report our system, our system with nominal relations removed,
@@ -120,7 +120,53 @@ In the other direction, we can remove the nominal relation extractions from
   our system.
 Our system outperforms Ollie in both cases.
 
-\todo{pr curves}
+\Subsection{pr}{Discussion}
+% PR Curve Figure
+\Fig{pr_curve.pdf}{0.4}{pr}{
+A precision/recall curve for Ollie and our system (without nominals).
+For clarity, recall is plotted on a range from 0 to 0.15.
+}
+
+% PR Curve Description
+We plot a precision/recall curve of our extractions in \reffig{pr} in order 
+  to get an informal sense of the calibration of our confidence estimates.
+Since confidences only apply to standard extractions, we plot the curves
+  without including any of the nominal relations.
+The confidence of a KBP extraction in our system is calculated as the sum
+  of the confidences of the open IE extractions that support it.
+So, for instance, if we find (Obama; be bear in; Hawaii) $n$ times with
+  confidences $c_1 \dots c_n$, the confidence of the KBP extraction would be
+  $\sum_{i=0}^n c_i$.
+It is therefore important to note that the curve in \reffig{pr} necessarily
+  conflates the confidences of individual extractions, and the frequency
+  of an extraction.
+
+% Why the dip?
+With this in mind, the curves lend some interesting insights.
+Although our system is very high precision on the most confident extractions,
+  it has a large dip in precision early in the curve.
+This suggests that the model is extracting multiple instances of a bad
+  relation, which pushes the KBP confidence high.
+This is likely due to a systematic error in the system, likely in the
+  clause splitting.
+While the approach of splitting sentences into clauses generalizes better
+  to out-of-domain text, it is reasonable that the errors made in the
+  clause splitter manifest across a range of sentences more often than
+  the fine-grained patterns of Ollie would.
+
+% But, we do well afterwards
+After this dip, however, our system achieves both higher precision
+  and extends to a higher recall than Ollie.
+Furthermore, the curve is relatively smooth near the tail, suggesting
+  that indeed we are learning a reasonable estimate of confidence for
+  extractions that have only one supporting instance in the text
+  -- empirically, 46\% of our extractions.
+
+
+
+
+
+
 %The persistent improvement in accuracy suggests that our gains are not
 %  entirely from the addition of these relations.
 
