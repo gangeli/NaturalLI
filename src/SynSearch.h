@@ -868,11 +868,12 @@ struct alignas(10) alignment_instance {
  */
 class AlignmentSimilarity {
  public:
-  AlignmentSimilarity(const std::vector<alignment_instance>& alignments)
-      : alignments(alignments), NULL_WORD(word(0)) { }
+  AlignmentSimilarity(const std::vector<alignment_instance>& alignments,
+                      const uint8_t& unalignedPremiseKeywords)
+      : alignments(alignments), NULL_WORD(word(0)), unalignedPremiseKeywords(unalignedPremiseKeywords) { }
   
   AlignmentSimilarity(const AlignmentSimilarity& other)
-      : alignments(other.alignments), NULL_WORD(word(0)) { }
+      : alignments(other.alignments), NULL_WORD(word(0)), unalignedPremiseKeywords(other.unalignedPremiseKeywords) { }
 
   double score(const Tree& tree, const bool& initTruth) const;
 
@@ -914,6 +915,7 @@ class AlignmentSimilarity {
 
  private:
   const std::vector<alignment_instance> alignments;
+  const uint8_t unalignedPremiseKeywords;
   const ::word NULL_WORD;
 };
 

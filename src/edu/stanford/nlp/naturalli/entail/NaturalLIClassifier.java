@@ -352,7 +352,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch (entry.getKey()) {
-        case COUNT_ALIGNED:  // this is the one that gets changed most
+        case COUNT_ALIGNED:
+        case COUNT_ALIGNABLE:
+        case COUNT_INEXACT:
+        case COUNT_UNALIGNABLE_PREMISE:
         case COUNT_UNALIGNABLE_CONCLUSION:
           break;
         default:
@@ -367,9 +370,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     for (Map.Entry<String, Double> entry : features.entrySet()) {
       switch(entry.getKey()) {
         case COUNT_ALIGNED:
-        case PERCENT_ALIGNED_PREMISE:
-        case PERCENT_ALIGNED_CONCLUSION:
-        case PERCENT_ALIGNED_JOINT:
+        case COUNT_ALIGNABLE:
+        case COUNT_INEXACT:
+        case COUNT_UNALIGNABLE_PREMISE:
+        case COUNT_UNALIGNABLE_CONCLUSION:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
           break;
         default:
@@ -403,11 +407,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
       double score = scoreBeforeNaturalli(features);
-      double naturalLIScore = 0.0;
+      double naturalLIScore;
       if (USE_NATURALLI) {
         naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : 0.0;
       } else {
-//        double naturalLIScore = scoreAlignmentSimple(features);
+        naturalLIScore = scoreAlignmentSimple(features);
       }
       score += naturalLIScore * ALIGNMENT_WEIGHT;
       assert !Double.isNaN(score);
