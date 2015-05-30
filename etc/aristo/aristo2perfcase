@@ -4,6 +4,7 @@ exec scala "$0" "$@"
 
 // (scala)
 import scala.collection.JavaConversions._
+import scala.collection._
 // (corenlp)
 import edu.stanford.nlp.simple._
 
@@ -11,6 +12,9 @@ import edu.stanford.nlp.simple._
 val Q2 = """(.*)\(A\)(.*)\(B\)(.*)""".r
 val Q3 = """(.*)\(A\)(.*)\(B\)(.*)\(C\)(.*)""".r
 val Q4 = """(.*)\(A\)(.*)\(B\)(.*)\(C\)(.*)\(D\)(.*)""".r
+
+var multiSentencePremises:Int = 0
+var allQuestions:Int = 0
 
 // Grok input file
 for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
@@ -20,12 +24,19 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
   val id = fields(1)
   var question = fields(2).substring(0, fields(2).indexOf("(A)"))
   val correct = fields(3) == fields(4)
-  val statement = new Document(fields(5)).sentences.last.text
+  val doc = new Document(fields(5))
+  val statement = doc.sentences.last.text
+  val premises = doc.sentences
   val focus = fields(6)
 
   // Write the question
   if (fields(4) == "A") {
     println("#Q: " + question)
+    if (premises.size > 1) {
+      multiSentencePremises += 1
+    }
+    System.err.println(premises)
+    allQuestions += 1
   }
   // Write the answer
   println("#A: " + focus)
@@ -43,6 +54,8 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
   // Newline to signify a new example
   println()
 }
+
+System.err.println("" + multiSentencePremises + "/" + allQuestions + " questions have multiple premises")
 
 
 
