@@ -1,40 +1,60 @@
 \Section{related}{Related Work}
-\todo{don't plagiarize the EMNLP2014 paper}
-\todo{put in Aristo papers}
-% -- Extending OpenIE
-% Richard
-\newcite{key:2013chen-completion} and \newcite{key:2013socher-completion}
-  use Neural Tensor Networks to predict unseen relation triples in
-  WordNet and Freebase, following a line of work by
-  \newcite{key:2011bordes-completion} and
-  \newcite{key:2012jenatton-completion}.
-% Universal schemas
-\newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
-  present a related line of work, inferring new relations between
-  Freebase entities via inference over both Freebase and
-  OpenIE relations.
-In contrast, this work runs inference over arbitrary text, without 
-  restricting itself to a particular set of relations, or even entities.
-%This work, however, focuses primarily on common-sense reasoning rather
-%  than inferring relations between named entities.
-
 % -- RTE
 This work is similar in many ways to work on 
   recognizing textual entailment -- e.g., 
-  \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment}.
-Work by \newcite{key:2013lewis-entailment} is particularly relevant,
-  as they likewise evaluate on the FraCaS suite (Section 1;
-  89\% accuracy with gold trees).
-They approach entailment by constructing a CCG parse of the query,
-  while mapping questions which are paraphrases of each other to the
-  same logical form using distributional relation clustering.
-However, their system is unlikely to scale to either our large
-  database of premises, or our breadth of relations.
+  \newcite{key:2010-schoenmackers-horn}, \newcite{key:2011berant-entailment},
+  \newcite{key:2013lewis-entailment}.
+In the RTE task, a single premise and a single hypothesis are given as input,
+  and a system must return a judgment of either \textit{entailment} or
+  \textit{nonentailment} (in later years, \textit{nonentailment} is further
+  split into contradiction and independence).
+These approaches often rely on alignment features, similar to ours, but
+  do not generally scale to large premise sets (i.e., a comprehensive
+  knowledge base).
+The discourse commitments in \newcite{key:2007hickl-rte} can be thought
+  of as similar to the additional entailed facts we add to the
+  knowledge base(\refsec{naturalli-forward}).
 
+% -- Q/A
+Many systems make use of structured knowledge bases for question
+  answering.
+Semantic parsing methods 
+  \cite{key:2005zettlemoyer-semantics,key:2011liang-semantics}
+  make use of knowledge bases like Freebase to find support for a
+  complex question.
+% Richard
+Knowledge base completion approaches like
+\newcite{key:2013chen-completion}, \newcite{key:2011bordes-completion},
+  or \newcite{key:2013riedel-schemas} can be thought of as entailment
+  systems, predicting novel knowledge base entries from the original
+  database.
+%  can be like
+%  use Neural Tensor Networks to predict unseen relation triples in
+%  WordNet and Freebase, following a line of work by
+%  \newcite{key:2011bordes-completion} and
+%  \newcite{key:2012jenatton-completion}.
+%% Universal schemas
+%\newcite{key:2012yao-schemas} and \newcite{key:2013riedel-schemas}
+%  present a related line of work, inferring new relations between
+%  Freebase entities via inference over both Freebase and
+%  OpenIE relations.
+In contrast, this work runs inference over arbitrary text, without 
+  restricting itself to a particular set of relations, or even entities.
 % Paraphrase-based Q/A
-\newcite{key:2014fader-openqa} propose a system for question answering
-  based on a sequence of paraphrase rewrites followed by a fuzzy query to
-  a structured knowledge base.
+Open IE \cite{key:2010wu-openie,key:2012mausam-ollie}
+  QA approaches are closer to operating over plain text, but
+  still requires structured extractions.
+\newcite{key:2014fader-openqa} perform question answering by following
+  fuzzy rewrites over a question to find support in a knowledge base
+  of open IE extractions.
+
+% -- Aristo
+% Dialog
+On the Aristo corpus we evaluate on, \newcite{key:2015hixon-aristo} proposes
+  a dialog system to augment a knowledge graph used for answering the questions.
+This is in a sense an oracle measure, where a human is consulted while answering
+  the question; although, they show that their additional extractions help
+  answer questions other than the one the dialog was collected for.
 
 
 

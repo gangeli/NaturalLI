@@ -1,65 +1,64 @@
 \Section{results}{Evaluation}
-We evaluate our system in two settings:
-  we sanity check that our modifications to NaturalLI have not hindered
-  its ability to capture strict logical entailments on the FraCaS test suite,
-  and then evaluate the system on answering multiple choice science questions
-  from the Aristo dataset.
-
+%We evaluate our system in two settings:
+%  we sanity check that our modifications to NaturalLI have not hindered
+%  its ability to capture strict logical entailments on the FraCaS test suite,
+%  and then evaluate the system on answering multiple choice science questions
+%  from the Aristo dataset.
 %
-% FraCaS
+%%
+%% FraCaS
+%%
+%\Subsection{fracas}{FraCaS}
+%\def\a#1{\textbf{#1}}
+%\begin{table}
+%\begin{center}
+%  \resizebox{0.48\textwidth}{!}{
+%  \begin{tabular}{llcccccccc}
+%    \hline
+%    $\mathsection$ & Category & Count & \multicolumn{2}{c}{Precision} & \multicolumn{2}{c}{Recall} & \multicolumn{3}{c}{Accuracy} \\
+%                   &          &       & \blue{N} & M08          & \blue{N} & M08          & \blue{N}  & M08 & A14 \\
+%    \hline
+%                          % Pme           P07   Rme          R08   Ame         A07  A08
+%    \a{1} & \a{Quantifiers}  & \a{44} & \a{\blue{ }}  & \a{95}  & \a{\blue{   }} & \a{100} & \a{\blue{}} & \a{97} & \a{95} \\
+%    \a{5} & \a{Adjectives}   & \a{15} & \a{\blue{ }}  & \a{71}  & \a{\blue{   }} & \a{83}  & \a{\blue{}} & \a{80} & \a{73} \\
+%    \a{6} & \a{Comparatives} & \a{16} & \a{\blue{ }}  & \a{88}  & \a{\blue{   }} & \a{89}  & \a{\blue{}} & \a{81} & \a{87} \\
+%    \hline                                                                                                                 
+%\multicolumn{2}{l}{\a{Total}}                                                                                              
+%                         & \a{75}     & \a{\blue{ }}  & \a{89}  & \a{\blue{   }}  & \a{94}  & \a{\blue{}} & \a{90} & \a{89} \\
+%    \hline
+%  \end{tabular}
+%  }
+%  \caption{
+%    \label{tab:fracas}
+%    Results on the FraCaS textual entailment suite.
+%    N is this work; M08 is \newcite{key:2008maccartney-natlog};
+%    A14 is the original NaturalLI implementation in
+%      \newcite{key:2014angeli-naturalli}.
+%    Note that these results assume gold parse trees, and
+%      that following prior work this is not a blind test set.
+%  }
+%\end{center}
+%\end{table}
 %
-\Subsection{fracas}{FraCaS}
-\def\a#1{\textbf{#1}}
-\begin{table}
-\begin{center}
-  \resizebox{0.48\textwidth}{!}{
-  \begin{tabular}{llcccccccc}
-    \hline
-    $\mathsection$ & Category & Count & \multicolumn{2}{c}{Precision} & \multicolumn{2}{c}{Recall} & \multicolumn{3}{c}{Accuracy} \\
-                   &          &       & \blue{N} & M08          & \blue{N} & M08          & \blue{N}  & M08 & A14 \\
-    \hline
-                          % Pme           P07   Rme          R08   Ame         A07  A08
-    \a{1} & \a{Quantifiers}  & \a{44} & \a{\blue{ }}  & \a{95}  & \a{\blue{   }} & \a{100} & \a{\blue{}} & \a{97} & \a{95} \\
-    \a{5} & \a{Adjectives}   & \a{15} & \a{\blue{ }}  & \a{71}  & \a{\blue{   }} & \a{83}  & \a{\blue{}} & \a{80} & \a{73} \\
-    \a{6} & \a{Comparatives} & \a{16} & \a{\blue{ }}  & \a{88}  & \a{\blue{   }} & \a{89}  & \a{\blue{}} & \a{81} & \a{87} \\
-    \hline                                                                                                                 
-\multicolumn{2}{l}{\a{Total}}                                                                                              
-                         & \a{75}     & \a{\blue{ }}  & \a{89}  & \a{\blue{   }}  & \a{94}  & \a{\blue{}} & \a{90} & \a{89} \\
-    \hline
-  \end{tabular}
-  }
-  \caption{
-    \label{tab:fracas}
-    Results on the FraCaS textual entailment suite.
-    N is this work; M08 is \newcite{key:2008maccartney-natlog};
-    A14 is the original NaturalLI implementation in
-      \newcite{key:2014angeli-naturalli}.
-    Note that these results assume gold parse trees, and
-      that following prior work this is not a blind test set.
-  }
-\end{center}
-\end{table}
-
-% Intro to FraCaS
-The FraCaS corpus \cite{key:1996cooper-fracas}
-  is a small corpus of entailment problems, aimed at providing a
-  comprehensive test of a system's handling of various
-  entailment patterns.
-We process the corpus following \newcite{key:2007maccartney-natlog} and
-  \newcite{key:2014angeli-naturalli}.
-Results are reported in \reftab{fracas}.
-
-% Qualify results
-The results confirm that moving to dependency trees has not hindered the
-  system's ability to capture valid entailments.
-Although, it should be noted that the evaluation assumes gold dependency
-  trees, and following prior work the test suite is not a blind test
-  set.
+%% Intro to FraCaS
+%The FraCaS corpus \cite{key:1996cooper-fracas}
+%  is a small corpus of entailment problems, aimed at providing a
+%  comprehensive test of a system's handling of various
+%  entailment patterns.
+%We process the corpus following \newcite{key:2007maccartney-natlog} and
+%  \newcite{key:2014angeli-naturalli}.
+%Results are reported in \reftab{fracas}.
+%
+%% Qualify results
+%The results confirm that moving to dependency trees has not hindered the
+%  system's ability to capture valid entailments.
+%Although, it should be noted that the evaluation assumes gold dependency
+%  trees, and following prior work the test suite is not a blind test
+%  set.
 
 %
 % Aristo
 %
-\Subsection{aristo}{Aristo Regents Science Exams}
 % What is Aristo?
 We evaluate our entailment system on the Regents Science Exam portion of
   the Aristo dataset \cite{key:2013clark-aristo,key:2015clark-aristo}.
@@ -83,7 +82,7 @@ In contrast to the common-sense reasoning task in \newcite{key:2014angeli-natura
 This necessitates the adaptations in \refsec{naturalli}, and benefits more from the
   soft signals from \refsec{softsignal}.
 
-\Subsubsection{aristo-data}{Data Processing}
+\Subsection{aristo-data}{Data Processing}
 % Corpora
 We make use of two collections of corpora for our experiments.
 The first of these is the Barron's study guide (\textsc{Barron's}, 
@@ -121,7 +120,7 @@ As discussed in \refsec{aristo-analysis},
 %
 % Mutliple Choice as Entailment
 %
-\Subsubsection{aristo-train}{Training an Entailment Classifier}
+\Subsection{aristo-train}{Training an Entailment Classifier}
 To train a soft entailment classifier, we needed a training set of positive
   and negative entailment instances.
 These were collected on mechanical turk from a set of candidate entailment pairs.
@@ -149,7 +148,7 @@ Note that despite these, the system is relatively domain agnostic -- no
 %
 % Results
 %
-\Subsubsection{aristo-results}{Experimental Results}
+\Subsection{aristo-results}{Experimental Results}
 Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
 \textit{NaturalLI} denotes our system, using NaturalLI inferences incorporating
   the soft classifier.
@@ -220,7 +219,17 @@ The test set did not exist at the time \textsc{Knowbot} was published.
 % END ARISTO NATURALLI ONLY
 %
 
-\Subsubsection{aristo-analysis}{Error Analysis}
+\Subsection{aristo-analysis}{Discussion}
+We analyze some common types of errors made by the system on the training set.
+The most common error can be attributed to the question requiring complex reasoning
+  about multiple premises.
+\num{29} of \num{108} questions in the training set (26\%) contain multiple
+  premises.
+Although there is usually still some signal for which answer is most likely to be correct,
+  these questions are fundamentally out-of-scope for the approach.
+Empirically, we correctly predict \num{XYZ} of these questions, performing somewhat 
+  but not substantially above random chance.
+
 \dome
 \begin{itemize}
 \item Count questions that have multiple premises. We're hosed on these.

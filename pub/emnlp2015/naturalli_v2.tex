@@ -167,7 +167,7 @@ We include two useful additional orderings as motivating examples: relational
 For two verbs $v_1$ and $v_2$, we define $v_1 \leq v_2$ if the first verb
   entails the second.
 This entailment judgment can be gathered from an external resource, such as
-  \textsc{VerbOcean}\cite{key:chklovski2004verbocean}.
+  \textsc{VerbOcean} \cite{key:2004chklovski-verbocean}.
 %In many cases, these entailments are not hypernymy.
 In many cases, a verb $v_1$ may entail a verb $v_2$ even if $v_2$ is not a hypernym of $v_1$.
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
@@ -177,10 +177,11 @@ Note that the usual operators apply to relational entailments -- if
   \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
 Verb entailment information was incorporated using data from \textsc{VerbOcean}.
-\newcite{key:chklovski2004verbocean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
+\newcite{key:2004chklovski-verbocean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 We approximate the \textsc{VerbOcean} relations $\mathit{stronger-than}(v_1,v_2)$ and $\mathit{happens-before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-These \textit{verb entailment} transitions are incorporated using the original weights from \newcite{key:chklovski2004verbocean}, thresholded as indicated in the original paper. 
+These \textit{verb entailment} transitions are incorporated using the original weights from 
+  \newcite{key:2004chklovski-verbocean}, thresholded as indicated in the original paper. 
 
 % Meronymy
 \paragraph{Meronymy}

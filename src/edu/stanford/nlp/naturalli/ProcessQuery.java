@@ -181,8 +181,8 @@ public class ProcessQuery {
       }
     }
     if (newIndex < 0) {
-      warn("Could not perform token mapping");
-      return 0;
+      throw new IllegalArgumentException("Could not perform token mapping");
+//      return 0;
     }
     return newIndex;
   }
