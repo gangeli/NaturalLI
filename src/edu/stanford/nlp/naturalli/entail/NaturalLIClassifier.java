@@ -425,7 +425,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore;
       if (USE_NATURALLI) {
-        naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
+        naturalLIScore = (bestNaturalLIScores != null 
+                          && bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null 
+                          && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) 
+                        ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] 
+                        : Double.NEGATIVE_INFINITY;
       } else {
         naturalLIScore = scoreAlignmentSimple(features);
       }
@@ -447,7 +451,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         }
       }
       // Discount the score if NaturalLI thinks this conclusion is false
-      if (USE_NATURALLI) {
+      if (USE_NATURALLI && bestNaturalLIScores != null) {
         Trilean naturalLIVote = Trilean.fromString(bestNaturalLIScores.hardGuess);
         Trilean naturalLISoftVote = Trilean.fromString(bestNaturalLIScores.softGuess);
         if (naturalLIVote.isFalse()) {

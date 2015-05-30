@@ -115,7 +115,7 @@ public class QRewrite {
   public static SemanticGraph rewriteMods(SemanticGraph tree) {
     // A LOT
     SemgrexMatcher matcher = alotPattern.matcher(tree);
-    while (matcher.find()) {
+    if (matcher.find()) {
       // Get nodes
       IndexedWord verb = matcher.getNode("verb");
       IndexedWord lot = matcher.getNode("lot");
@@ -134,7 +134,7 @@ public class QRewrite {
 
     // N OF [the]
     matcher = nofPattern.matcher(tree);
-    while (matcher.find()) {
+    if (matcher.find()) {
       // Get nodes
       IndexedWord verb = matcher.getNode("verb");
       IndexedWord num = matcher.getNode("num");
@@ -211,7 +211,7 @@ public class QRewrite {
   public static SemanticGraph rewriteTerminalHas(SemanticGraph tree) {
     // Remove terminal has (e.g., "I have more than he has")
     SemgrexMatcher matcher = terminalHasPattern.matcher(tree);
-    while (matcher.find()) {
+    if (matcher.find()) {
       // Get nodes
       IndexedWord root = matcher.getNode("root");
       IndexedWord has = matcher.getNode("has");
