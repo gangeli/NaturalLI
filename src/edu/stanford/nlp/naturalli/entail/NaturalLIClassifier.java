@@ -425,7 +425,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore;
       if (USE_NATURALLI) {
-        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
+        naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
       } else {
         naturalLIScore = scoreAlignmentSimple(features);
       }
