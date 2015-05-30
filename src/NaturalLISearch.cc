@@ -11,7 +11,6 @@ using namespace btree;
  * The entry point for querying the truth of facts already parsed as parse
  * trees.
  */
-/*
 int32_t main(int32_t argc, char *argv[]) {
   init();
 
@@ -38,9 +37,8 @@ int32_t main(int32_t argc, char *argv[]) {
   delete kb;
   return retVal;
 }
-*/
  
-
+/*
 int32_t main(int32_t argc, char *argv[]) {
   Graph *graph = ReadGraph();
 
@@ -70,3 +68,4 @@ int32_t main(int32_t argc, char *argv[]) {
     }
   }
 }
+*/

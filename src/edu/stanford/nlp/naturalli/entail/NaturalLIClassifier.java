@@ -36,7 +36,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static double ALIGNMENT_WEIGHT = 1.00;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/all_3.cache";
+  private static String NATURALLI_INCACHE = "logs/all_4.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -232,6 +232,19 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 //      Writer errWriter = new OutputStreamWriter(System.err);
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
+      Thread t = new Thread() {
+        public void run() {
+          while (true) {
+            try {
+              errWriter.flush();
+              Thread.sleep(100);
+            } catch (IOException | InterruptedException ignored) {
+            }
+          }
+        }
+      };
+      t.setDaemon(true);
+      t.start();
 
       // Create the pipe
       fromNaturalLI = new BufferedReader(new InputStreamReader(searcher.getInputStream()));

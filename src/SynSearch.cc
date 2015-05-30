@@ -6,8 +6,8 @@
 #include "Utils.h"
 
 // NaturalLI Only Weights
-#define COUNT_ALIGNABLE                0.013146559f
 #define COUNT_ALIGNED                  0.084991765f
+#define COUNT_ALIGNABLE                0.013146559f
 #define COUNT_UNALIGNABLE_CONCLUSION   0.000000000f
 #define COUNT_UNALIGNABLE_PREMISE     -0.005076832f
 #define COUNT_INEXACT                 -0.045905108f
