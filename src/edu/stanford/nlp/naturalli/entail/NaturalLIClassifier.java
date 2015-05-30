@@ -30,7 +30,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  private static boolean USE_NATURALLI = false;
+  private static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
   private static double ALIGNMENT_WEIGHT = 1.00;
@@ -411,7 +411,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore;
       if (USE_NATURALLI) {
-        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : 0.0;
+        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : Double.NEGATIVE_INFINITY;
       } else {
         naturalLIScore = scoreAlignmentSimple(features);
       }
@@ -437,11 +437,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         Trilean naturalLIVote = Trilean.fromString(bestNaturalLIScores.hardGuess);
         Trilean naturalLISoftVote = Trilean.fromString(bestNaturalLIScores.softGuess);
         if (naturalLIVote.isFalse()) {
-          prob *= 0.1;
+//          prob *= 0.1;
         } else if (naturalLIVote.isTrue()) {
 //          prob = 0.9 + prob / 10.0;
         } else if (naturalLISoftVote.isFalse()) {
-          prob *= 0.5;
+//          prob *= 0.5;
         } else if (naturalLISoftVote.isTrue()) {
 //          prob = 0.5 + prob / 2.0;
         }

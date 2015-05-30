@@ -36,7 +36,7 @@ We disallow such extractions, passing the burden of finding correct
 % Misc differences
 %Both the UW submission and our system use an entity linker
 %  and a coreference system.
-For entity linking, the UW submission uses of Tom Lin's entity linker
+For entity linking, the UW submission uses Tom Lin's entity linker
   \cite{key:2012lin-el}; our submission uses the Illinois Wikifier 
   \cite{key:2011ratinov-el} without the relational inference component, for
   efficiency.
@@ -49,9 +49,11 @@ For coreference, UW uses the Stanford coreference system
 
 \begin{table}
 \begin{center}
-\begin{tabular}{lccc}
+\begin{tabular}{lrrr}
 \hline
-\textbf{System}                & \textbf{P}    & \textbf{R}    & \textbf{F$_1$} \\
+\textbf{System}                & \multicolumn{1}{c}{\textbf{P}}    
+                               & \multicolumn{1}{c}{\textbf{R}}    
+                               & \multicolumn{1}{c}{\textbf{F$_1$}} \\
 \hline
 UW Official$^*$                & \textbf{69.8} & 11.4          & 19.6 \\
 \hline

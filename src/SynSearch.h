@@ -876,6 +876,8 @@ class AlignmentSimilarity {
       : alignments(other.alignments), NULL_WORD(word(0)), unalignedPremiseKeywords(other.unalignedPremiseKeywords) { }
 
   double score(const Tree& tree, const bool& initTruth) const;
+  
+  void printFeatures(const Tree& tree) const;
 
   inline double score(const Tree& tree) const {
     return score(tree, true);
