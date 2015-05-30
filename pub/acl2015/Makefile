@@ -1,5 +1,6 @@
 gabor_openie.pdf: $(wildcard *.tex) ref.bib Makefile ../figures.tex ../macros.tex std-macros.tex
-	@pdflatex -interaction batchmode gabor_openie
+	python pr_plot.py
+	@pdflatex gabor_openie
 	@bibtex gabor_openie
 	@pdflatex -interaction batchmode gabor_openie
 	@pdflatex -interaction batchmode gabor_openie

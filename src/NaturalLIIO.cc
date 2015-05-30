@@ -392,7 +392,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       confidence(resultIfFalse, &bestPathIfFalse, &bestFeaturesIfFalse);
   // (soft alignments)
   const uint8_t* closestSoftAlignment = &resultIfTrue.closestSoftAlignment;
-  const float* closestSoftAlignmentScores = resultIfTrue.closestSoftAlignmentScores;
+  const float* closestSoftAlignmentScoresIfTrue = resultIfTrue.closestSoftAlignmentScores;
+  const float* closestSoftAlignmentScoresIfFalse = resultIfFalse.closestSoftAlignmentScores;
   const float* closestSoftAlignmentSearchCosts = resultIfTrue.closestSoftAlignmentSearchCosts;
   // (truth)
   const char* hardGuess = "unknown";
@@ -411,8 +412,6 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     *truth = probability(confidenceOfFalse, false);
     bestPath = bestPathIfFalse;
     bestFeatures = bestFeaturesIfFalse;
-    closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
-    closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
     hardGuess = "false";
     softGuess = "false";
   } else {
@@ -452,7 +451,6 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
         fprintf(stderr, "Score if true: %f     Score if false: %f\n", 
                 resultIfTrue.closestSoftAlignmentScore, resultIfFalse.closestSoftAlignmentScore);
         closestSoftAlignment = &resultIfFalse.closestSoftAlignment;
-        closestSoftAlignmentScores = resultIfFalse.closestSoftAlignmentScores;
         closestSoftAlignmentSearchCosts = resultIfFalse.closestSoftAlignmentSearchCosts;
         *truth = 0.5 - sigmoid(resultIfFalse.closestSoftAlignmentScore) / 1000.0 - 1e-5;
         softGuess = "false";
@@ -495,7 +493,8 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
       << ", "
 #if MAX_FUZZY_MATCHES > 0
       << "\"closestSoftAlignment\": " << to_string(*closestSoftAlignment) << ", "
-      << "\"closestSoftAlignmentScores\": " << toJSON(closestSoftAlignmentScores, MAX_FUZZY_MATCHES) << ", "
+      << "\"closestSoftAlignmentScoresIfTrue\": " << toJSON(closestSoftAlignmentScoresIfTrue, MAX_FUZZY_MATCHES) << ", "
+      << "\"closestSoftAlignmentScoresIfFalse\": " << toJSON(closestSoftAlignmentScoresIfFalse, MAX_FUZZY_MATCHES) << ", "
       << "\"closestSoftAlignmentSearchCosts\": " << toJSON(closestSoftAlignmentSearchCosts, MAX_FUZZY_MATCHES) << ", "
 #endif
       << "\"path\": "

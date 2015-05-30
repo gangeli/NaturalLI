@@ -25,6 +25,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
+import static edu.stanford.nlp.util.logging.Redwood.Util.warn;
+
 /**
  * Run the NLP components for pre-processing a query.
  *
@@ -179,7 +181,8 @@ public class ProcessQuery {
       }
     }
     if (newIndex < 0) {
-      throw new IllegalStateException("Could not perform token mapping");
+      throw new IllegalArgumentException("Could not perform token mapping");
+//      return 0;
     }
     return newIndex;
   }

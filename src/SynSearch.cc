@@ -6,12 +6,12 @@
 #include "Utils.h"
 
 // NaturalLI Only Weights
-#define COUNT_ALIGNABLE                0.2688f
-#define COUNT_ALIGNED                  0.0678f
-#define COUNT_UNALIGNABLE_CONCLUSION  -0.0531f
-#define COUNT_UNALIGNABLE_PREMISE     -0.0749f
-#define COUNT_INEXACT                 -0.5558f
-#define BIAS                          -0.7858f
+#define COUNT_ALIGNED                  0.199480866f
+#define COUNT_ALIGNABLE                0.016050293f
+#define COUNT_UNALIGNABLE_CONCLUSION   0.000000000f
+#define COUNT_UNALIGNABLE_PREMISE     -0.098388169f
+#define COUNT_INEXACT                 -0.045905108f
+#define BIAS                          -0.138340300f
 
 // Overlap Only Weights
 //#define BONUS_COUNT_ALIGNED 0.0678f
@@ -998,6 +998,7 @@ AlignmentSimilarity Tree::alignToPremise(const Tree& premise, const Graph& graph
     char premTag = premise.data[premI].posTag;
     if (premTag != 'n' && premTag != 'v' && premTag != 'j') { continue; }
     if (alreadyAlignedInPremise[premI]) { continue; }
+    if (premise.data[premI].word == BE.word) { continue; }
     unalignedPremiseWords += 1;
   }
 
@@ -1063,6 +1064,49 @@ double AlignmentSimilarity::score(const Tree& tree, const bool& initTruth) const
     }
   }
   return score;
+}
+
+
+void AlignmentSimilarity::printFeatures(const Tree& tree) const {
+  uint16_t countAligned = 0;
+  uint16_t countAlignable = 0;
+  uint16_t countUnalignableConclusion = 0;
+  uint16_t countInexact = 0;
+  for (auto iter = alignments.begin(); iter != alignments.end(); ++iter) {
+    if (iter->index < tree.length) {
+      // Get variables
+      monotonicity polarityAtI = tree.polarityAt(SearchNode(tree), iter->index);
+      bool wantDelete = false;
+      if (iter->target == INVALID_WORD) {
+        wantDelete = true;
+      }
+      bool exactMatch = tree.word(iter->index) == iter->target &&
+          polarityMatches(polarityAtI, iter->targetPolarity, true);
+      // Update score
+      if (exactMatch) {
+        // case: exact match
+        countAligned += 1;
+        countAlignable += 1;
+      } else if (wantDelete) {
+        // case: unaligned hypothesis
+        countUnalignableConclusion += 1;
+      } else {
+        countAlignable += 1;
+        countInexact += 1;
+      }
+    } else {
+      // error: an alignment is larger than the tree
+      fprintf(stderr, "WARNING: alignment is larger than premise tree!\n");
+    }
+  }
+  cout << "{ "
+       << "\"count_unalignable_premise\": " << ((uint32_t) this->unalignedPremiseKeywords) << ", "
+       << "\"count_unalignable_conclusion\": " << countUnalignableConclusion << ", "
+       << "\"count_aligned\": " << countAligned << ", "
+       << "\"count_alignable\": " << countAlignable << ", "
+       << "\"count_inexact\": " << countInexact  << ","
+       << "\"bias\": " << "1" << "}\n";
+  fflush(stdout);
 }
   
 //

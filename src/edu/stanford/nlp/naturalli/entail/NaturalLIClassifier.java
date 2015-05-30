@@ -33,10 +33,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 0.10;
+  private static double ALIGNMENT_WEIGHT = 1.00;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/all_1.cache";
+  private static String NATURALLI_INCACHE = "logs/all_4.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -124,7 +124,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     public String bestPremise;
     public boolean success;
     public int closestSoftAlignment;
-    public double[] closestSoftAlignmentScores;
+    public double[] closestSoftAlignmentScoresIfTrue;
+    public double[] closestSoftAlignmentScoresIfFalse;
     public double[] closestSoftAlignmentSearchCosts;
   }
 
@@ -232,6 +233,19 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 //      Writer errWriter = new OutputStreamWriter(System.err);
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
+      Thread t = new Thread() {
+        public void run() {
+          while (true) {
+            try {
+              errWriter.flush();
+              Thread.sleep(100);
+            } catch (IOException | InterruptedException ignored) {
+            }
+          }
+        }
+      };
+      t.setDaemon(true);
+      t.start();
 
       // Create the pipe
       fromNaturalLI = new BufferedReader(new InputStreamReader(searcher.getInputStream()));
@@ -357,6 +371,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         case COUNT_INEXACT:
         case COUNT_UNALIGNABLE_PREMISE:
         case COUNT_UNALIGNABLE_CONCLUSION:
+        case "bias":
           break;
         default:
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
@@ -374,6 +389,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         case COUNT_INEXACT:
         case COUNT_UNALIGNABLE_PREMISE:
         case COUNT_UNALIGNABLE_CONCLUSION:
+        case "bias":
           sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
           break;
         default:
@@ -409,7 +425,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore;
       if (USE_NATURALLI) {
-        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : 0.0;
+        naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
       } else {
         naturalLIScore = scoreAlignmentSimple(features);
       }
@@ -435,11 +451,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         Trilean naturalLIVote = Trilean.fromString(bestNaturalLIScores.hardGuess);
         Trilean naturalLISoftVote = Trilean.fromString(bestNaturalLIScores.softGuess);
         if (naturalLIVote.isFalse()) {
-          prob *= 0.1;
+//          prob *= 0.1;
         } else if (naturalLIVote.isTrue()) {
 //          prob = 0.9 + prob / 10.0;
         } else if (naturalLISoftVote.isFalse()) {
-          prob *= 0.5;
+//          prob *= 0.5;
         } else if (naturalLISoftVote.isTrue()) {
 //          prob = 0.5 + prob / 2.0;
         }
