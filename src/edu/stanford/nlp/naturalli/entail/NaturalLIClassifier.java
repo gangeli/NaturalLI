@@ -124,7 +124,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     public String bestPremise;
     public boolean success;
     public int closestSoftAlignment;
-    public double[] closestSoftAlignmentScores;
+    public double[] closestSoftAlignmentScoresIfTrue;
+    public double[] closestSoftAlignmentScoresIfFalse;
     public double[] closestSoftAlignmentSearchCosts;
   }
 
@@ -424,7 +425,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = scoreBeforeNaturalli(features);
       double naturalLIScore;
       if (USE_NATURALLI) {
-        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScores.length ? bestNaturalLIScores.closestSoftAlignmentScores[i] : Double.NEGATIVE_INFINITY;
+        naturalLIScore = i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
       } else {
         naturalLIScore = scoreAlignmentSimple(features);
       }
