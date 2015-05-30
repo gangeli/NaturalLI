@@ -220,6 +220,16 @@ The test set did not exist at the time \textsc{Knowbot} was published.
 %
 
 \Subsection{aristo-analysis}{Discussion}
+We analyze some common types of errors made by the system on the training set.
+The most common error can be attributed to the question requiring complex reasoning
+  about multiple premises.
+\num{29} of \num{108} questions in the training set (26\%) contain multiple
+  premises.
+Although there is usually still some signal for which answer is most likely to be correct,
+  these questions are fundamentally out-of-scope for the approach.
+Empirically, we correctly predict \num{XYZ} of these questions, performing somewhat 
+  but not substantially above random chance.
+
 \dome
 \begin{itemize}
 \item Count questions that have multiple premises. We're hosed on these.

@@ -35,7 +35,6 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
     if (premises.size > 1) {
       multiSentencePremises += 1
     }
-    System.err.println(premises)
     allQuestions += 1
   }
   // Write the answer
