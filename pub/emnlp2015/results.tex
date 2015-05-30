@@ -230,9 +230,7 @@ Although there is usually still some signal for which answer is most likely to b
 Empirically, we correctly predict \num{XYZ} of these questions, performing somewhat 
   but not substantially above random chance.
 
-\dome
-\begin{itemize}
-\item Count questions that have multiple premises. We're hosed on these.
-\item Classify the remainder of the missed questions during training.
-      There'll only be like 15 of these -- it's a tractable task...
-\end{itemize}
+Other questions are simply not supported by any single sentence in the corpus.
+For example, the question \w{A human offspring can inherit blue eyes.} has
+  no support in the corpus that does not require significant multi-step inferences.
+A remaining chunk of errors is, of course, caused by errors in the soft lexical classifier.
