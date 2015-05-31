@@ -200,12 +200,12 @@ def query(url, query, focus, rows=10):
   # Run query
   f = urlopen(url + '?' + 
       urlencode({'wt': 'json', 'fl': 'title body score', 'q': query.replace(':', '\:'), 'rows': (rows + 3)}))
-  data = json.loads(f.read().decode('utf8'))
+  data = json.loads(f.read().decode('utf8', 'ignore').encode('ascii', 'ignore'))
   # Check for errors
   if not 'response' in data:
     raise Exception('Bad response for query: %s' % query)
   # Filter exact match sentences
-  results = [r for r in data['response']['docs'] if r['body'][0].replace(' ', '') != query.replace(' ', '')][0:rows]
+  results = [r for r in data['response']['docs'] if r['body'][0].encode('ascii', 'ignore').replace(' ', '') != query.replace(' ', '')][0:rows]
   # Create query result
   return QueryResult(
       query, 
@@ -231,7 +231,7 @@ class withProgress:
     self.description = description
   
   def __getitem__(self, k):
-    if k == len(self.iterable) or k % (len(self.iterable) / 100) == 0:
+    if k == len(self.iterable) or len(self.iterable) < 100 or k % (len(self.iterable) / 100) == 0:
       sys.stderr.write("\r%s... %d%%" % (self.description, 100.0 * float(k+1) / float(len(self.iterable))))
       sys.stderr.flush()
     if k == len(self.iterable):

@@ -53,9 +53,9 @@ if __name__ == "__main__":
         print("%d\t%s\t%s\t%s\t%s\t%f" % (
               qI,
               "True" if statement.truth else "False",
-              results[i],
-              statement.text,
-              statement.focus,
+              results[i].decode('utf-8', 'ignore').encode('ascii', 'ignore'),
+              statement.text.decode('utf-8', 'ignore').encode('ascii', 'ignore'),
+              statement.focus.decode('utf-8', 'ignore').encode('ascii', 'ignore'),
               results.scores[i]
              ))
     qI += 1

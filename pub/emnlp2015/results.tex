@@ -149,29 +149,50 @@ Note that despite these, the system is relatively domain agnostic -- no
 % Results
 %
 \Subsection{aristo-results}{Experimental Results}
-Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
-\textit{NaturalLI} denotes our system, using NaturalLI inferences incorporating
-  the soft classifier.
-%Note that this already performs as well as prior work published on the dataset,
-%  and scales gracefully to a larger supporting corpus.
+We present results on the Aristo dataset in \reftab{aristonaturalli},
+  alongside prior work and strong baselines.
+\textsc{Knowbot} is the dialog system presented in 
+  \newcite{key:2015hixon-aristo}.
+We report numbers for two variants of the system:
+  \textit{held-out} is the system's performance when it is not allowed
+  to use the dialog collected for the example it is answering;
+  \textit{oracle} is the full system.
+Note that the \textit{oracle} variant is a human-in-the-loop system.
+
+We additionally present two baseline systems.
+The first is a simple system which uses Solr's IR confidence to rank
+  entailment.
+The max IR score to any premise given a hypothesis is taken
+  as the score for that hypothesis.
+
+Furthermore, an entailment classifier is trained
+  using overlap features, optionally including
+  the Solr score as a feature.
+% TODO(gabor) finish me
+
+%Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
+%\textit{NaturalLI} denotes our system, using NaturalLI inferences incorporating
+%  the soft classifier.
+%%Note that this already performs as well as prior work published on the dataset,
+%%  and scales gracefully to a larger supporting corpus.
+%%
+%We additionally report results for a number of traditional baselines.
+%The simplest of these is to rank answers based on the Lucene score returned by
+%  Solr.
+%This turned out to be a surprisingly strong baseline -- furthermore, as the supporting
+%  corpus size increases, the scores become significantly better calibrated, and
+%  performance improves dramatically.
 %
-We additionally report results for a number of traditional baselines.
-The simplest of these is to rank answers based on the Lucene score returned by
-  Solr.
-This turned out to be a surprisingly strong baseline -- furthermore, as the supporting
-  corpus size increases, the scores become significantly better calibrated, and
-  performance improves dramatically.
-
-Our second baseline uses only the keyword overlap classifier, either with or without
-  the Lucene scores included as a feature.
-Both of these baselines offer a boost over using the Lucene score alone -- although
-  it's interesting to note that the Lucene score actively hurts the classifier's
-  performance if the corpus size is small (i.e, when run on the Barron's corpus).
-
-Lastly, we present results for the combination of NaturalLI with a soft classifier,
-  and show that it outperforms both prior work and the above baselines.
-In fact, on the training set, the classifier can nearly pass the exam with a score
-  of \todo{hopefully 70?}.
+%Our second baseline uses only the keyword overlap classifier, either with or without
+%  the Lucene scores included as a feature.
+%Both of these baselines offer a boost over using the Lucene score alone -- although
+%  it's interesting to note that the Lucene score actively hurts the classifier's
+%  performance if the corpus size is small (i.e, when run on the Barron's corpus).
+%
+%Lastly, we present results for the combination of NaturalLI with a soft classifier,
+%  and show that it outperforms both prior work and the above baselines.
+%In fact, on the training set, the classifier can nearly pass the exam with a score
+%  of \todo{hopefully 70?}.
 
 %
 % ARISTO NATURALLI ONLY
@@ -191,14 +212,15 @@ In fact, on the training set, the classifier can nearly pass the exam with a sco
 \textbf{System} & \multicolumn{2}{c}{\textbf{Barron's}} & \multicolumn{2}{c}{\textbf{\textsc{Scitext}}} \\
  & Train & Test & Train & Test \\
 \hline
-\t{\textsc{Knowbot} (held-out)} & \t{45} & \t{--} & \t{--} & \t{--} \\
-\t{\textsc{Knowbot} (oracle)}   & \t{57} & \t{--} & \t{--} & \t{--} \\
+\t{\textsc{Knowbot} (held-out)} & \t{45}  & \t{--} & \t{--}  & \t{--} \\
+\t{\textsc{Knowbot} (oracle)}   & \b{57}  & \t{--} & \t{--}  & \t{--} \\
 \hline                                                         
-\t{Solr Only}                   & \t{49} & \t{  } & \t{62} & \t{ } \\
-\t{Align Features Only}         & \t{53} & \t{  } & \t{68} & \t{ } \\
-\t{Align + Solr}                & \t{53} & \t{  } & \t{66} & \t{ } \\
-\t{NaturalLI}                   & \t{45?} & \t{  } & \t{59?} & \t{ } \\
-\t{NaturalLI + Solr}            & \b{48} & \b{  } & \b{69} & \b{ } \\
+\t{Solr Only}                   & \t{49}  & \t{  } & \t{62}  & \t{ } \\
+\t{Align Features Only}         & \t{53}  & \t{  } & \t{68}  & \t{ } \\
+\t{Align + Solr}                & \t{53}  & \t{  } & \t{66}  & \t{ } \\
+\hline                                                         
+\t{NaturalLI}                   & \t{46}  & \t{  } & \t{62}  & \t{ } \\
+\t{NaturalLI + Solr}            & \t{47}  & \b{  } & \b{71}  & \b{ } \\
 \hline
 \end{tabular}
 \end{center}
