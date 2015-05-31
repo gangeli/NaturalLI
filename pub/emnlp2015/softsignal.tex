@@ -138,15 +138,25 @@ Features tried included the BLEU score between the phrases, the overlap between
 %
 \Subsection{softsignal-keywords}{Classification During Search}
 % Intuition as value function
-We can make use of the classifier we constructed in 
-  \refsec{softsignal-classifier} to score each candidate premise during
-  the search in NaturalLI against a set of known premises.
+A simplified version of the classifier constructed in 
+  \refsec{softsignals-classifier} can be incorporated directly into
+  NaturalLI's search to give a score for each candidate premise visited.
 This can be thought of as analogous to the value function in game-playing
   algorithms -- even though an agent cannot play a game of Chess to completion,
   at some depth it can apply a value function to its leaf states.
 
+Unlike the keyphrase spans in the classifier from \refsec{softsignals-classifier},
+  keywords are single tokens in NaturalLI -- note that this is not always
+  a single word (e.g., \w{fire truck} is a single token.
+However, this nonetheless limits the number of fuzzy alignments we 
+  are able to make.
+%We can make use of the classifier we constructed in 
+%  \refsec{softsignal-classifier} to score each candidate premise during
+%  the search in NaturalLI against a set of known premises.
+
 % Can do this incrementally
-Note that the feature values can be computed incrementally as the search
+Importantly though, this allows the feature values to be computed 
+  incrementally as the search
   progresses, based on the score of the parent state, and the mutation or
   deletion being performed.
 For instance, if we are deleting a word which was previously aligned perfectly
@@ -154,9 +164,11 @@ For instance, if we are deleting a word which was previously aligned perfectly
   alignment, and add the weight for an unaligned premise keyphrase.
 
 % Soft negation
-Note that in the context of NaturalLI, we can define a more precise notion of
-  overlap, which will be useful for capturing a notion of likely logical
-  negation.
+In addition to finding entailments from candidate premises, NaturalLI also
+  allows us to encode a notion of likely negation.
+%Note that in the context of NaturalLI, we can define a more precise notion of
+%  overlap, which will be useful for capturing a notion of likely logical
+%  negation.
 To illustrate, \naive ly the following two statements share every keyword:
 
 \entailmentExample
@@ -164,30 +176,47 @@ To illustrate, \naive ly the following two statements share every keyword:
 {no cats have tails}
 
 However, we note that all of the keyword pairs are in opposite polarity contexts.
-We can therefore define a pair of keywords as \textit{matching} if the following two
-  conditions hold: 
+We can therefore define a pair of keywords as \textit{matching} in NaturalLI
+  if the following two conditions hold: 
   (1) their lemmatized surface forms match exactly, and 
   (2) they have the same polarity in the sentence.
-The second constraint encodes a good approximation for negation (see \reftab{operatormono});
-  e.g., \textit{some}
-  and \textit{no} induce the exact opposite polarity on their arguments,
-  and therefore in our example above there is no keyword overlap.
-The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
-  which have the same monotonicity in their subjects but are nonetheless negations
-  of each other.
-Otherwise, any pair of operators which share half their signature are at least
-  compatible with each other (e.g., \w{some} and \w{all}).
-In all, we consider this a good simple approximation at a low cost.
+The second constraint encodes a good approximation for negation.
+To illustrate, consider the polarity signatures of common operators:
+
+\begin{center}
+\begin{tabular}{lcc}
+%  \hline
+  \textbf{Operators} & \textbf{Subj. polarity} & \textbf{Obj. polarity} \\
+%  \hline
+  \w{Some, few, etc.}    & $\uparrow$   & $\uparrow$ \\
+  \w{All, every, etc.}     & $\downarrow$ & $\uparrow$ \\
+  \w{Not all, etc.} & $\uparrow$   & $\downarrow$ \\
+  \w{No, not, etc.}      & $\downarrow$ & $\downarrow$ \\
+  \w{Most, many, etc.}    & --           & $\uparrow$ \\
+  %\hline
+\end{tabular}
+\end{center}
+  
+We note that, e.g., \textit{some}
+  and \textit{no} induce the exact opposite polarity on their arguments;
+  similarly \textit{all} and \textit{not all} have opposite polarities.
+%The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
+%  which have the same monotonicity in their subjects but are nonetheless negations
+%  of each other.
+Otherwise, any pair of operators which share half their signature are 
+  nearly always compatible with each other (e.g., \w{some} and \w{all}).
+%In all, we consider this a good simple approximation at a low cost.
 
 This suggests a natural criterion for likely negation:
-  If the highest classifier score is produced by a candidate premise which
-  would contradict the hypothesis, we have reason to believe that we have
-  found a contradiction.
+  If the highest classifier score is produced by a contradictory candidate 
+  premise, we have reason to believe that we 
+  may have found a contradiction.
 To illustrate with our example, NaturalLI would mutate \w{no cats have tails}
-  to \w{the cats have tails}, at which point it has found a candidate premise
-  which contradicts the hypothesis, but which has perfect overlap with the 
-  premise \w{some cats have tails} (of course, in this case it would find the
-  correct premise in the search as well).
+  to \w{the cats have tails}, at which point it has found a 
+  contradictory candidate premise, but which has perfect overlap with the 
+  premise \w{some cats have tails}.
+Even had we not found the exact premise, this would suggest that
+  the hypothesis is likely contradicted.
 
 
 %This leads naturally into the second soft signal that NaturalLI can convey, when
@@ -249,27 +278,16 @@ To illustrate with our example, NaturalLI would mutate \w{no cats have tails}
 %{some cats have tails}
 %{no cats have tails}
 
-\begin{table}
-\begin{center}
-\begin{tabular}{lcc}
-  \hline
-  \textbf{Operator} & \textbf{Subject Mono.} & \textbf{Object Mono.} \\
-  \hline
-  \w{Some}    & $\uparrow$   & $\uparrow$ \\
-  \w{All}     & $\downarrow$ & $\uparrow$ \\
-  \w{Not all} & $\uparrow$   & $\downarrow$ \\
-  \w{No}      & $\downarrow$ & $\downarrow$ \\
-  \w{Most}    & --           & $\uparrow$ \\
-  \hline
-\end{tabular}
-\end{center}
-\caption{\label{tab:operatormono}
-  The five common monotonicity configurations of an operator, and an exemplar
-    of that operator.
-  Operators which are the negation of each other never share a signature, and
-    most often have the exact opposite signature.
-}
-\end{table}
+%\begin{table}
+%\begin{center}
+%\end{center}
+%\caption{\label{tab:operatormono}
+%  The five common monotonicity configurations of an operator, and an exemplar
+%    of that operator.
+%  Operators which are the negation of each other never share a signature, and
+%    most often have the exact opposite signature.
+%}
+%\end{table}
 
 %We therefore define a pair of keywords as \textit{matching} if the following two
 %  conditions hold: 

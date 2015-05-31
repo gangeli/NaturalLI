@@ -164,11 +164,16 @@ The first is a simple system which uses Solr's IR confidence to rank
   entailment.
 The max IR score to any premise given a hypothesis is taken
   as the score for that hypothesis.
-
 Furthermore, an entailment classifier is trained
   using overlap features, optionally including
   the Solr score as a feature.
-% TODO(gabor) finish me
+
+Last, we evaluate NaturalLI with the improvements presented in this paper,
+  as well as as a model which takes a weighted combination of the scores
+  produced by NaturalLI and Solr, tuned on the training set to
+  a weight of 4.85 to NaturalLI.
+This value was fairly robust: values between 4.75 and 5 had no effect on
+  performance; values within 2 dropped by only 1 point.
 
 %Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
 %\textit{NaturalLI} denotes our system, using NaturalLI inferences incorporating
@@ -194,33 +199,34 @@ Furthermore, an entailment classifier is trained
 %In fact, on the training set, the classifier can nearly pass the exam with a score
 %  of \todo{hopefully 70?}.
 
+
 %
-% ARISTO NATURALLI ONLY
+% RESULTS TABLE
 %
 % Some definitions
 \def\t#1{\small{#1}}
 \def\b#1{\t{\textbf{#1}}}
 \def\colspaceS{2.0mm}
 \def\colspaceM{3.0mm}
-\def\colspaceL{4.0mm}
+\def\colspaceL{5.0mm}
 
 % The table
 \begin{table}
 \begin{center}
 \begin{tabular}{l@{\hskip \colspaceL}c@{\hskip \colspaceS}c@{\hskip \colspaceL}c@{\hskip \colspaceS}c}
 \hline
-\textbf{System} & \multicolumn{2}{c}{\textbf{Barron's}} & \multicolumn{2}{c}{\textbf{\textsc{Scitext}}} \\
+\textbf{System} & \multicolumn{2}{l}{\textbf{Barron's}} & \multicolumn{2}{l}{\textbf{\textsc{Scitext}}} \\
  & Train & Test & Train & Test \\
 \hline
 \t{\textsc{Knowbot} (held-out)} & \t{45}  & \t{--} & \t{--}  & \t{--} \\
 \t{\textsc{Knowbot} (oracle)}   & \b{57}  & \t{--} & \t{--}  & \t{--} \\
 \hline                                                         
-\t{Solr Only}                   & \t{49}  & \t{  } & \t{62}  & \t{ } \\
-\t{Align Features Only}         & \t{53}  & \t{  } & \t{68}  & \t{ } \\
-\t{Align + Solr}                & \t{53}  & \t{  } & \t{66}  & \t{ } \\
+\t{Solr Only}                   & \t{49}  & \t{42} & \t{62}  & \t{58} \\
+\t{Align Features Only}         & \t{53}  & \t{52} & \t{68}  & \t{60} \\
+\t{Align + Solr}                & \t{53}  & \t{48} & \t{66}  & \t{64} \\
 \hline                                                         
-\t{NaturalLI}                   & \t{46}  & \t{  } & \t{62}  & \t{ } \\
-\t{NaturalLI + Solr}            & \t{47}  & \b{  } & \b{71}  & \b{ } \\
+\t{NaturalLI}                   & \t{46}  & \t{$>$9k} & \t{62}  & \t{$>$9k} \\
+\t{NaturalLI + Solr}            & \t{47}  & \b{$>$9k} & \b{71}  & \b{$>$9k} \\
 \hline
 \end{tabular}
 \end{center}
@@ -237,11 +243,14 @@ The held-out version used only additional facts from other question's dialogs;
 The test set did not exist at the time \textsc{Knowbot} was published.
 }
 \end{table}
-%
-% END ARISTO NATURALLI ONLY
-%
 
+
+%
+% DISCUSSION
+%
 \Subsection{aristo-analysis}{Discussion}
+
+% Multi-premise sentences
 We analyze some common types of errors made by the system on the training set.
 The most common error can be attributed to the question requiring complex reasoning
   about multiple premises.
@@ -249,10 +258,22 @@ The most common error can be attributed to the question requiring complex reason
   premises.
 Although there is usually still some signal for which answer is most likely to be correct,
   these questions are fundamentally out-of-scope for the approach.
-Empirically, we correctly predict \todo{XYZ} of these questions, performing somewhat 
-  but not substantially above random chance.
+%Empirically, we correctly predict \todo{XYZ} of these questions, performing somewhat 
+%  but not substantially above random chance.
 
+% No premise in corpus
 Other questions are simply not supported by any single sentence in the corpus.
 For example, the question \w{A human offspring can inherit blue eyes.} has
   no support in the corpus that does not require significant multi-step inferences.
-A remaining chunk of errors is, of course, caused by errors in the soft lexical classifier.
+A remaining chunk of errors is, of course, caused by errors during classification.
+
+% Drop from align features to NaturalLI?
+A peculiarity of the results is the drop in accuracy from the alignment
+  features to NaturalLI.
+We hypothesize that this is a result of missing a few alignments that
+  are not trivial from tokens alone -- e.g., aligning \w{freezing water} and
+  \w{water}.
+Empirically, NaturalLI is forced to guess on 33\% more examples than the
+  alignment feature classifier.
+This alone accounts for 6.5 points of accuracy -- on errors which are often
+  easily corrected by any additional signal (in this case, Solr).
