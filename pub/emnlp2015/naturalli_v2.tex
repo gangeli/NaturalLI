@@ -1,13 +1,13 @@
 \Section{naturalli}{Improving Inference in NaturalLI}
 % Overview paragraph
 We extend NaturalLI in a few key ways to improve its coverage for question
-  answering tasks over long, complete sentences.
+  answering tasks over complex sentences.
 We adapt the search algorithm to operate over dependency
   trees, rather than the surface form of the sentence (\refsec{naturalli-trees}).
-We further enrich the class of inferences warranted by natural logic beyond
+We enrich the class of inferences warranted by natural logic beyond
   hypernymy and operator rewording to also encompass meronymy and
   relational entailment (\refsec{naturalli-meronym}).
-Lastly, we handle \textit{deletions} during logical inference more elegantly
+Lastly, we handle token insertions during search more elegantly
   (\refsec{naturalli-forward}).
 
 % Three search operations
@@ -41,9 +41,9 @@ Operating over dependency trees rather than a token sequence requires reworking
 % Talk about deletion
 Recent work by \newcite{key:2015angeli-openie} defined a mapping from Stanford
   Dependency relations to the associated lexical relation deleting the
-  dependent subtree during inference would induce.
-For instance, deleting an \textit{amod} edge induces \forward\ -- it maintains
-  entailment in an upward polarity context.
+  dependent subtree would induce.
+%For instance, deleting an \textit{amod} edge induces \forward\ -- it maintains
+%  entailment in an upward polarity context.
 We adapt this mapping to yield the relation induced by \textit{inserting} a
   given dependency edge, corresponding to our deletions in search;
 %  (recall, a deletion during search is an insertion during
@@ -76,8 +76,7 @@ For example, we can infer that
 
 % Talk about ordering
 This leaves the question of the order to traverse the token in the sentence.
-The natural order, rather than left-to-right, is to perform a breadth-first
-  traversal of the dependency tree.
+The natural order is to perform a breadth-first traversal of the dependency tree.
 This avoids repeated deletion of nodes, as we do not have to traverse any
   subtree which has been deleted.
 
@@ -151,15 +150,11 @@ In the same way, natural language operators are defined as a mapping from
   (i.e., \hbox{$t_1 \forward t_2$}),
   and you know that $t_1$ is true, then $t_2$ must be true.
 }
-The domain of word denotations is then ordered by the subset operator, corresponding
-  to ordering by hypernymy over the words.
-%  a hypernym of a word has a denotation
-%  that completely subsumes it.
-
+%The domain of word denotations is then ordered by the subset operator, corresponding
+%  to ordering by hypernymy over the words.
 % New partial orders
-However, hypernymy is not the only relation we can use to define the ordering over
-  denotations.
-We include two useful additional orderings as motivating examples: relational
+However, hypernymy is not the only useful partial ordering over denotations.
+We include two additional orderings as motivating examples: relational
   entailment and meronymy.
 
 % Relational entailment
@@ -173,35 +168,37 @@ In many cases, a verb $v_1$ may entail a verb $v_2$ even if $v_2$ is not a hyper
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
 Apart from esoteric context-specific cases (e.g., \w{orbit} entails \w{launch} only
   for man-made objects), these relations hold largely independent of context.
-Note that the usual operators apply to relational entailments -- if 
-  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
+%Note that the usual operators apply to relational entailments -- if 
+%  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
-Verb entailment information was incorporated using data from \textsc{VerbOcean}.
-\newcite{key:2004chklovski-verbocean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
+Verb entailment information was incorporated using data from \textsc{VerbOcean}
+ \cite{key:2004chklovski-verbocean}, adapting the confidence weights as costs.
+\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
+%These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
 
 % Meronymy
 \paragraph{Meronymy}
 The most salient use-case for meronymy is with locations.
 For example, if Obama was born in Hawaii, then we know that Obama was born in
   America, because Hawaii is a meronym of (part of) America.
-Unlike relational entailment and hypernymy, meronymy is is operated on by its own
-  set of quantifiers:
+Unlike relational entailment and hypernymy, meronymy is operated on by a
+  distinct set of operators:
   if \w{Hawaii is an island}, we cannot necessarily entail that \w{America
   is an island}.
 We collect a set of operators which are either monotone or antitone with respect
   to the meronymy hierarchy (e.g., \w{born in}, \w{visited}); 
-  these then compose with the usual operators (e.g., \w{some}, \w{all}) in a
-  straightforward fashion.
+  these then compose in the usual way with the conventional 
+  operators (e.g., \w{some}, \w{all}).
 
 We use a set of 81 triggers for meronymy, which were manually labeled as monotonic or antitonic. These triggers consist of dependency paths of length 2 that co-occurred in newswire text with a named entity of type \w{PERSON} and two different named entities of type \w{LOCATION}, such that one location was a meronym of the other.
 
-\textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
+Meronymy transitions are drawn from instances of the relation \texttt{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
-As this relation is also based on an underlying partial order, we are able to use a weighting scheme analogous to that used for the hypernymy transitions.
-We also instantiate the inverse, \textit{holonymy} transitions.
+%As this relation is also based on an underlying partial order, 
+We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
+We also instantiate the inverse, holonymy transitions.
 
 %% Other orders
 %Note that these are not the only two orders that can be incorporated into our
@@ -230,8 +227,8 @@ Therefore, this work instead opts to perform a bidirectional search:
 For example, a premise of \w{some furry cats have tails} would yield two facts
   for the knowledge base: \w{some furry cats have tails} as well as \w{some cats
   have tails}.
-For this, we use the process described in \newcite{key:2015angeli-openie} to
-  generate short entailed sentences from a long utterance using natural logic.
+%For this, we use the process described in \newcite{key:2015angeli-openie} to
+%  generate short entailed sentences from a long utterance using natural logic.
 %This then leaves the reverse search to only deal with mutations and inference  
 %  insertions, which are relatively easier.
 
@@ -254,10 +251,11 @@ When adding an edge, we can simply take the XOR of the hash saved in the
   parent state and the hash of the added edge.
 When mutating an edge, we XOR the hash of the parent state with the edge we are
   mutating, and again with the mutated edge.
-In this way, each search node need only carry an 8 byte hash, local information
-  about the edge currently being considered (8 bytes), global information about the words
-  deleted during search (5 bytes), a 3 byte backpointer to recover the
-  inference path, and 8 bytes of operator metadata -- 32 bytes in all.
-This results in an incidental contribution of having made NaturalLI significantly
-  faster and more memory efficient.
+% Sad to cut -- so much coding time unappreciated :(
+%In this way, each search node need only carry an 8 byte hash, local information
+%  about the edge currently being considered (8 bytes), global information about the words
+%  deleted during search (5 bytes), a 3 byte backpointer to recover the
+%  inference path, and 8 bytes of operator metadata -- 32 bytes in all.
+%This results in an incidental contribution of having made NaturalLI significantly
+%  faster and more memory efficient.
 
