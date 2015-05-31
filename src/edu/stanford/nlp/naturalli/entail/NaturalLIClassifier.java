@@ -27,11 +27,11 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * @author Gabor Angeli
  */
-@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration"})
+@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "SimplifiableConditionalExpression"})
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  public static boolean USE_NATURALLI = true;
+  public static boolean USE_NATURALLI = false;
 
   @Execution.Option(name="naturalli.uselucene", gloss="If true, combine the weight of NaturalLI with lucene according to alignment weight")
   public static boolean USE_LUCENE = true;
@@ -402,23 +402,24 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
 
     // Query NaturalLI
-    NaturalLIResponse bestNaturalLIScores;
-    try {
-      bestNaturalLIScores = queryNaturalLI(premisesText, hypothesisText);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
+    NaturalLIResponse bestNaturalLIScores = null;
+    if (USE_NATURALLI) {
+      try {
+        bestNaturalLIScores = queryNaturalLI(premisesText, hypothesisText);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
     }
 
     // Get global information
-    boolean hardTruth = Trilean.fromString(bestNaturalLIScores.hardGuess).isTrue();
-    boolean hardFalse = Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse();
+    boolean hardTruth = USE_NATURALLI ? Trilean.fromString(bestNaturalLIScores.hardGuess).isTrue() : false;
+    boolean hardFalse = USE_NATURALLI ? Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse() : false;
     Set<Integer> supportingPremises = new HashSet<>();  // A set in case there are ties / duplicates
     if (hardTruth || hardFalse) {
-      Counter<String> bestPremiseTokens = new ClassicCounter<String>(){{
-        for (String token : bestNaturalLIScores.bestPremise.split(" ")) {
-          incrementCount(token.toLowerCase());
-        }
-      }};
+      Counter<String> bestPremiseTokens = new ClassicCounter<>();
+      for (String token : bestNaturalLIScores.bestPremise.split(" ")) {
+        bestPremiseTokens.incrementCount(token.toLowerCase());
+      }
       for (int i = 0; i < premises.size(); ++i) {
         boolean good = true;
         final int index = i;
@@ -477,14 +478,15 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         double negativeVote = (bestNaturalLIScores.closestSoftAlignmentScoresIfFalse != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfFalse.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfFalse[i] : -10.0;
         if (hardTruth && supportingPremises.contains(i)) {
           // no qualifiers -- we know this to be true.
+          log("NaturalLI is sure that: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
         } else {
           if (hardFalse && supportingPremises.contains(i)) {
-            log("contradiction in '" + premises.get(i) + "' -> '" + hypothesisText + "'");
+            log("NaturalLI found a contradiction: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
             prob *= 0.0;
           }
           // Soft discount
           if (!hardTruth && negativeVote > positiveVote && Math.abs(positiveVote - negativeVote) > Math.max(positiveVote, negativeVote) * 0.15) {
-            log("discounting '" + premises.get(i) + "' -> '" + hypothesisText + "'");
+            log("NaturalLI is dubious of: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
             prob *= 0.75;
           }
         }
