@@ -30,7 +30,7 @@ public class MultipleChoiceSolver {
   public static File MODEL = new File("logs/last_suite/0/model.ser.gz");
 
   @Execution.Option(name="data", gloss="The file to evaluate on")
-  public static File DATA_FILE = new File("etc/aristo/eval_test_barrons.tab");
+  public static File DATA_FILE = new File("etc/aristo/eval_test_allcorpora.tab");
 
   private static final DecimalFormat percent = new DecimalFormat("0.000%");
 
@@ -195,8 +195,8 @@ public class MultipleChoiceSolver {
     forceTrack("Running evaluation");
     List<Double> weights = new ArrayList<>();
     List<Double> accuracies = new ArrayList<>();
-    for (double i = 0.00; i < 10.0; i += 0.05) {
-      NaturalLIClassifier.ALIGNMENT_WEIGHT = i;
+    for (double i = 0.00; i < 1.0; i += 0.05) {
+      NaturalLIClassifier.CLASSIFIER_WEIGHT = i;
       double accuracy = accuracy(classifier, dataset);
       log("Accuracy: " + percent.format(accuracy));
       weights.add(i);

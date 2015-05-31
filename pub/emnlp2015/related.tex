@@ -20,14 +20,13 @@ Many systems make use of structured knowledge bases for question
   answering.
 Semantic parsing methods 
   \cite{key:2005zettlemoyer-semantics,key:2011liang-semantics}
-  make use of knowledge bases like Freebase to find support for a
+  use knowledge bases like Freebase to find support for a
   complex question.
 % Richard
-Knowledge base completion approaches like
-\newcite{key:2013chen-completion}, \newcite{key:2011bordes-completion},
-  or \newcite{key:2013riedel-schemas} can be thought of as entailment
-  systems, predicting novel knowledge base entries from the original
-  database.
+Knowledge base completion 
+  (e.g., \newcite{key:2013chen-completion}, \newcite{key:2011bordes-completion},
+  or \newcite{key:2013riedel-schemas}) can be thought of as entailment,
+  predicting novel knowledge base entries from the original database.
 %  can be like
 %  use Neural Tensor Networks to predict unseen relation triples in
 %  WordNet and Freebase, following a line of work by
@@ -38,8 +37,8 @@ Knowledge base completion approaches like
 %  present a related line of work, inferring new relations between
 %  Freebase entities via inference over both Freebase and
 %  OpenIE relations.
-In contrast, this work runs inference over arbitrary text, without 
-  restricting itself to a particular set of relations, or even entities.
+In contrast, this work runs inference over arbitrary text without
+  needing a structured knowledge base.
 % Paraphrase-based Q/A
 Open IE \cite{key:2010wu-openie,key:2012mausam-ollie}
   QA approaches are closer to operating over plain text, but

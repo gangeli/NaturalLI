@@ -32,6 +32,7 @@ public class ClassifierTrainer {
 
   @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
   public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
+//  public File TRAIN_FILE = new File("etc/RTE-3/English_dev.tab");
   @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
   public File TRAIN_CACHE = null;
   @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")

@@ -22,7 +22,7 @@ In addition to implicitly reasoning with multiple premises (a concomitant weak
 Nonetheless, there are plenty of clues that the two sentences are related, and even a simple
   entailment classifier would get the example correct.
 We build such a simple entailment classifier (\refsec{softsignal-classifier}) built only
-  on dense lexical overlap features, and employ it as a backoff inside NaturalLI
+  on dense lexical overlap features, and adapt it as a backoff inside NaturalLI
   in case no premises are found during search.
 %  then show how NaturalLI can be used to provide soft signals informing the classifier.
 
@@ -44,12 +44,12 @@ We build such a simple entailment classifier (\refsec{softsignal-classifier}) bu
 %
 % Soft Signals
 %
-\Subsection{softsignal-classifier}{A Simple Entailment Classifier}
+\Subsection{softsignal-classifier}{A Standalone Entailment Classifier}
 % high-level overview
 Our entailment classifier is designed to be as domain independent as possible,
   and make use of a small a feature set as feasible to maintain good performance.
 In line with this, we define only 5 unlexicalized real valued features, with an 
-  optional sixth feature encoding the score output by Lucene:
+  optional sixth feature encoding the score output by Lucene.
 All five of the core features are based off an alignment of keyphrases between the
   premise and the hypothesis.
 
@@ -62,9 +62,12 @@ A keyphrase is defined as a span of text which is either
       \w{quietly pounce}); or
   (3) a VBG verb followed by a noun (e.g., \w{flowing water}).
 The verb \w{to be} is never a keyphrase.
+We make a distinction between a \textit{keyphrase} and a \textit{keyword} --
+  the latter is a single noun, adjective, or verb.
 
 \begin{figure*}
-\begin{tikzpicture}
+\begin{center}
+\begin{tikzpicture}[scale=0.75, every node/.style={scale=0.75}]
 \tikzset{
   arm angleA/.initial={0},
   arm angleB/.initial={0},
@@ -96,6 +99,7 @@ The verb \w{to be} is never a keyphrase.
   \draw (stove) to (stove2);
 \end{scope}
 \end{tikzpicture}
+\end{center}
 \caption{
 \label{fig:alignment}
 An illustration of an alignment between a premise and a hypothesis. 
@@ -126,35 +130,45 @@ Features are extracted for the number of alignments, the numbers of alignments
   which were not aligned.
 A feature for the Lucene score of the premise given the hypothesis is optionally
   included; we revisit this issue in the evaluation.
-Additional features were not shown to substantially improve performance, and
-  were therefore dropped for simplicity.
-Features tried included the BLEU score between the phrases, the overlap between
-  words in the premise and hypothesis, the overlap between words sharing a 
-  part of speech tag in the premise and hypothesis, and the length difference
-  between the phrases.
+
+% Why simple feature set
+Additional features were not shown to improve performance on the training set.
+In fact, this classifier is a stronger baseline than it may seem: evaluating
+  the system on RTE-3 \cite{key:2007giampiccolo-rte} yielded 63.75\% accuracy --
+  a 2 points above the median submission.
+%Additional features were not shown to substantially improve performance, and
+%  were therefore dropped for simplicity.
+%Features tried included the BLEU score between the phrases, the overlap between
+%  words in the premise and hypothesis, the overlap between words sharing a 
+%  part of speech tag in the premise and hypothesis, and the length difference
+%  between the phrases.
 
 %
 % Soft Signals from NaturalLI
 %
-\Subsection{softsignal-keywords}{Classification During Search}
+\Subsection{softsignal-keywords}{An Evaluation Function for Search}
 % Intuition as value function
-A simplified version of the classifier constructed in 
-  \refsec{softsignals-classifier} can be incorporated directly into
+A version of the classifier constructed in 
+  \refsec{softsignals-classifier}, but over \textit{keywords} rather
+  than keyphrases can be incorporated directly into
   NaturalLI's search to give a score for each candidate premise visited.
-This can be thought of as analogous to the value function in game-playing
-  algorithms -- even though an agent cannot play a game of Chess to completion,
-  at some depth it can apply a value function to its leaf states.
+This can be thought of as analogous to the evaluation function in game-playing
+  algorithms.
+%  -- even though an agent cannot play a game of Chess to completion,
+%  at some depth it can apply an evaluation function to its leaf states.
 
-Unlike the keyphrase spans in the classifier from \refsec{softsignals-classifier},
-  keywords are single tokens in NaturalLI -- note that this is not always
-  a single word (e.g., \w{fire truck} is a single token.
-However, this nonetheless limits the number of fuzzy alignments we 
-  are able to make.
+%Unlike the keyphrase spans in the classifier from \refsec{softsignals-classifier},
+%  keywords are single tokens in NaturalLI -- note that this is not always
+%  a single word (e.g., \w{fire truck} is a single token.
+%However, this nonetheless limits the number of fuzzy alignments we 
+%  are able to make.
 %We can make use of the classifier we constructed in 
 %  \refsec{softsignal-classifier} to score each candidate premise during
 %  the search in NaturalLI against a set of known premises.
 
 % Can do this incrementally
+Note that the lack of longer keyphrases is in general a hinderance to the
+  fuzzy alignments the system can produce.
 Importantly though, this allows the feature values to be computed 
   incrementally as the search
   progresses, based on the score of the parent state, and the mutation or

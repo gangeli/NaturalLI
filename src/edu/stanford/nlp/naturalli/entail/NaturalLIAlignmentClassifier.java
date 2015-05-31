@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import edu.stanford.nlp.classify.LinearClassifier;
 import edu.stanford.nlp.classify.LinearClassifierFactory;
 import edu.stanford.nlp.classify.RVFDataset;
+import edu.stanford.nlp.io.IOUtils;
+import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.ling.RVFDatum;
-import edu.stanford.nlp.naturalli.ProcessPremise;
 import edu.stanford.nlp.naturalli.ProcessQuery;
 import edu.stanford.nlp.naturalli.QRewrite;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
@@ -17,6 +19,7 @@ import edu.stanford.nlp.util.*;
 import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
@@ -29,7 +32,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
  *
  * @author Gabor Angeli
  */
-public class FeaturesFromNaturalLI {
+public class NaturalLIAlignmentClassifier implements EntailmentClassifier {
   private static final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> {
     Properties props = new Properties() {{
       setProperty("annotators", "tokenize,ssplit,pos,ing,lemma,depparse,natlog,qrewrite");
@@ -43,16 +46,87 @@ public class FeaturesFromNaturalLI {
     return new StanfordCoreNLP(props, false);
   });
 
-  private static final File cache = new File("logs/naturalli_alignments.cache");
+  private final LinearClassifier<Boolean, String> impl;
+
+  private Pair<BufferedReader, OutputStreamWriter> naturalli;
+
+  public NaturalLIAlignmentClassifier(LinearClassifier<Boolean, String> impl) {
+    this.impl = impl;
+    final Writer errWriter = new OutputStreamWriter(System.err);
+    Thread t = new Thread() {
+      public void run() {
+        while (true) {
+          try {
+            errWriter.flush();
+            Thread.sleep(100);
+          } catch (IOException | InterruptedException ignored) {
+          }
+        }
+      }
+    };
+    t.setDaemon(true);
+    t.start();
+    try {
+      this.naturalli = mkNaturalli(errWriter);
+    } catch (IOException e) {
+      throw new RuntimeIOException(e);
+    }
+  }
+
+  private static final File cache = new File("logs/naturalli_alignments+lucene.cache");
+
+  @Override
+  public Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    return Trilean.from(truthScore(premise, hypothesis, focus, luceneScore) > 0.5);
+  }
+
+  @Override
+  public double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+    try {
+      naturalli.second.write(toParseTree(premise.text()));
+      naturalli.second.write("\n");
+      naturalli.second.write(toParseTree(hypothesis.text()));
+      naturalli.second.write("\n");
+      naturalli.second.flush();
+      String json = naturalli.first.readLine();
+      Features feats = new Gson().fromJson(json, Features.class);
+      double score =
+          0.084991765 * feats.count_aligned +
+              0.013146559   * feats.count_alignable +
+              -0.005076832 * feats.count_unalignable_premise +
+              -0.045905108 * feats.count_inexact +
+               -0.429377982;
+      return 1.0 / (1.0 + Math.exp(-score));
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  @Override
+  public Object serialize() {
+    return impl;
+  }
+
+  @SuppressWarnings("unchecked")
+  public static NaturalLIAlignmentClassifier deserialize(Object model) {
+    return new NaturalLIAlignmentClassifier((LinearClassifier<Boolean, String>) model);
+  }
 //  private static final File cache = new File("tmp/foo");
 
-  private static class Features {
+
+
+
+
+
+
+  public static class Features {
     public double count_unalignable_premise;
     public double count_unalignable_conclusion;
     public double count_aligned;
     public double count_alignable;
     public double count_inexact;
     public double bias;
+    public double lucene = 0.0;
   }
 
   private static class Datum {
@@ -86,6 +160,7 @@ public class FeaturesFromNaturalLI {
         setCount(NaturalLIClassifier.COUNT_ALIGNABLE, d.features.count_alignable);
         setCount(NaturalLIClassifier.COUNT_ALIGNED, d.features.count_aligned);
         setCount(NaturalLIClassifier.COUNT_INEXACT, d.features.count_inexact);
+        setCount("lucene", d.features.lucene);
         setCount("bias", d.features.bias);
       }},
       d.truth);
@@ -101,10 +176,29 @@ public class FeaturesFromNaturalLI {
     }
     log("Majority: " + df.format(Counters.max(dataset.numDatumsPerLabel()) / dataset.size()));
     log("Training accuracy: " + classifier.evaluateAccuracy(dataset));
+    IOUtils.writeObjectToFile(classifier, "models/aristo/naturalli_overlap_lucene.ser.gz");
   }
 
-  private static Pair<BufferedReader, OutputStreamWriter> mkNaturalli(Writer errWriter) throws IOException {
-    ProcessBuilder searcherBuilder = new ProcessBuilder("src/naturalli_search");  // TODO awful
+  public static Pair<BufferedReader, OutputStreamWriter> mkNaturalli() throws IOException {
+    final Writer errWriter = new OutputStreamWriter(System.err);
+    Thread t = new Thread() {
+      public void run() {
+        while (true) {
+          try {
+            errWriter.flush();
+            Thread.sleep(100);
+          } catch (IOException | InterruptedException ignored) {
+          }
+        }
+      }
+    };
+    t.setDaemon(true);
+    t.start();
+    return mkNaturalli(errWriter);
+  }
+
+  public static Pair<BufferedReader, OutputStreamWriter> mkNaturalli(Writer errWriter) throws IOException {
+    ProcessBuilder searcherBuilder = new ProcessBuilder("src/naturalli_featurize");
     final Process searcher = searcherBuilder.start();
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
@@ -161,7 +255,7 @@ public class FeaturesFromNaturalLI {
     FileWriter w = new FileWriter(cache);
     AtomicInteger i = new AtomicInteger(0);
     trainData.forEach(pair -> {
-      if (pair.premise.words().size() < 40 && pair.conclusion.words().size() < 40) {
+      if (pair.premise.words().size() < 40 && pair.conclusion.words().size() < 40 && pair.luceneScore.isPresent()) {
 
       try {
         toNaturalli.dereference().get().write(toParseTree(pair.premise.text()));
@@ -171,6 +265,7 @@ public class FeaturesFromNaturalLI {
         toNaturalli.dereference().get().flush();
         String json = fromNaturalli.dereference().get().readLine();
         Features feats = gson.fromJson(json, Features.class);
+        feats.lucene = pair.luceneScore.get();
         Datum d = new Datum();
         d.truth = pair.truth.toBoolean(false);
         d.premise = pair.premise.text();

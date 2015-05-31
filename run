@@ -27,7 +27,6 @@ def classifier =
     -("train.file", "etc/aristo/turk_90_trainset.tab")
     -("train.cache.do", "true")
     -("train.debugdoc", "/dev/null")
-    -("test.file", "etc/aristo/turk_90_trainset.tab")
     -("log.file", touch("redwood.log"))
    )
 

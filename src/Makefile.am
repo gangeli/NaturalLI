@@ -3,7 +3,7 @@ root_dir := "${current_dir}/.."
 etc := "${root_dir}/etc"
 
 SUBDIRS = fnv knheap
-bin_PROGRAMS=hash_tree write_kb naturalli_search naturalli
+bin_PROGRAMS=hash_tree write_kb naturalli_search naturalli_featurize naturalli
 EXTRA_DIST =  edu
 
 clean-local:
@@ -109,13 +109,22 @@ naturalli_search_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
 													 GZip.h Models.h FactDB.h JavaBridge.h \
                  					 btree.h btree_container.h btree_map.h btree_set.h \
 									         NaturalLISearch.cc
+naturalli_featurize_SOURCES = GZip.cc Models.cc FactDB.cc Types.cc \
+													 		NaturalLIIO.cc Utils.cc Graph.cc SynSearch.cc \
+                 					 		SynSearchSingleThreaded.cc JavaBridge.cc \
+                 					 		NaturalLIIO.h Graph.h Utils.h Types.h  SynSearch.h \
+													 		GZip.h Models.h FactDB.h JavaBridge.h \
+                 					 		btree.h btree_container.h btree_map.h btree_set.h \
+									         		NaturalLIFeaturize.cc
 naturalli_DEPENDENCIES =	naturalli_preprocess.jar
 
 
 naturalli_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 naturalli_search_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
+naturalli_featurize_CXXFLAGS=-std=c++0x -pthread ${OPENMP_CFLAGS}
 naturalli_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_search_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
+naturalli_featurize_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
 if DEBUG
 #  note[gabor]: electric fence crashes before the graph gets allocated
@@ -124,12 +133,15 @@ if DEBUG
 if HAVE_TCMALLOC
   naturalli_LDADD += -ltcmalloc -lprofiler
   naturalli_search_LDADD += -ltcmalloc -lprofiler
+  naturalli_featurize_LDADD += -ltcmalloc -lprofiler
 endif # end HAVE_TCMALLOC
 if IS_GCC
   naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_search_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
+  naturalli_featurize_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_LDADD += -lgcov
   naturalli_search_LDADD += -lgcov
+  naturalli_featurize_LDADD += -lgcov
 endif # end IS_GCC
 else  # case: !DEBUG
 endif # end DEBUG

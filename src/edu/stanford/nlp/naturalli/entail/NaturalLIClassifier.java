@@ -31,16 +31,17 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  public static boolean USE_NATURALLI = false;
+  public static boolean USE_NATURALLI = true;
 
   @Execution.Option(name="naturalli.uselucene", gloss="If true, combine the weight of NaturalLI with lucene according to alignment weight")
   public static boolean USE_LUCENE = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  public static double ALIGNMENT_WEIGHT = 4.875;
+  public static double SOLR_WEIGHT = 1.0 / 6.0;
+  public static double CLASSIFIER_WEIGHT = 1.0 / 24.0;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/all_4.cache";
+  private static String NATURALLI_INCACHE = "logs/test_all.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -171,6 +172,15 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private BufferedReader fromNaturalLI;
   private OutputStreamWriter toNaturalLI;
   private final Counter<String> weights;
+  private Lazy<Pair<BufferedReader, OutputStreamWriter>> naturalliFeaturizer
+      = Lazy.of(() -> {
+    try {
+      return NaturalLIAlignmentClassifier.mkNaturalli();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  });
+
 
   private final Lazy<StanfordCoreNLP> pipeline = Lazy.of(() -> ProcessPremise.constructPipeline("parse") );
 
@@ -365,6 +375,45 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   }
 
 
+  private double scoreNaturalLIAlignment(String premise, String hypothesis, double luceneScore) {
+    if (premise.split(" ").length > 40) { return -10.0; }
+    if (hypothesis.split(" ").length > 40) { return -10.0; }
+    try {
+      naturalliFeaturizer.get().second.write(toParseTree(premise));
+      naturalliFeaturizer.get().second.write("\n");
+      naturalliFeaturizer.get().second.write(toParseTree(hypothesis));
+      naturalliFeaturizer.get().second.write("\n");
+      naturalliFeaturizer.get().second.flush();
+      String json = naturalliFeaturizer.get().first.readLine();
+      NaturalLIAlignmentClassifier.Features feats = new Gson().fromJson(json, NaturalLIAlignmentClassifier.Features.class);
+
+      // Without Lucene
+//      double score =
+//          0.084991765 * feats.count_aligned +
+//          0.013146559 * feats.count_alignable +
+//          -0.005076832 * feats.count_unalignable_premise +
+//          -0.045905108 * feats.count_inexact +
+//          -0.429377982 * 1.0; // bias
+
+      // With Lucene
+      double score =
+           0.064100294 * feats.count_aligned +
+          -0.017299152 * feats.count_alignable +
+          -0.002919037 * feats.count_unalignable_premise +
+           0.027728549 * feats.count_inexact +
+           1.379894356  * luceneScore +
+          -0.876624670 * 1.0; // bias
+
+
+      return score;
+    } catch (IllegalArgumentException e) {
+      return -10.0;
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+
 
   private double scoreBeforeNaturalli(Counter<String> features) {
     double sum = 0.0;
@@ -448,11 +497,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = 0.0;
       if (USE_NATURALLI) {
         if (USE_LUCENE) {
-          score += luceneScore.orElse(Double.NaN);
+          score += luceneScore.orElse(Double.NaN) * SOLR_WEIGHT;
         }
         double naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
-        score += naturalLIScore * ALIGNMENT_WEIGHT;
+        score += naturalLIScore;
+
+        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
+        score += CLASSIFIER_WEIGHT * scoreAlignmentSimple(features);
+
       } else {
+//        score = scoreNaturalLIAlignment(premise.text(), hypothesis.text(), luceneScore.get());
         Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
         score = scoreAlignmentSimple(features);
       }
