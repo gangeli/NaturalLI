@@ -30,13 +30,16 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class NaturalLIClassifier implements EntailmentClassifier {
 
   @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  private static boolean USE_NATURALLI = true;
+  public static boolean USE_NATURALLI = true;
+
+  @Execution.Option(name="naturalli.uselucene", gloss="If true, combine the weight of NaturalLI with lucen according to alignment weight")
+  public static boolean USE_LUCENE = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  private static double ALIGNMENT_WEIGHT = 1.00;
+  public static double ALIGNMENT_WEIGHT = 4.875;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/all_3.cache";
+  private static String NATURALLI_INCACHE = "logs/all_4.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -383,18 +386,7 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   private double scoreAlignmentSimple(Counter<String> features) {
     double sum = 0.0;
     for (Map.Entry<String, Double> entry : features.entrySet()) {
-      switch(entry.getKey()) {
-        case COUNT_ALIGNED:
-        case COUNT_ALIGNABLE:
-        case COUNT_INEXACT:
-        case COUNT_UNALIGNABLE_PREMISE:
-        case COUNT_UNALIGNABLE_CONCLUSION:
-        case "bias":
-          sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
-          break;
-        default:
-          // do nothing
-      }
+      sum += weights.getCount(entry.getKey()) * features.getCount(entry.getKey());
     }
     return sum;
   }
@@ -420,16 +412,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       // Featurize the pair
       Sentence premise = premises.get(i);
       Optional<Double> luceneScore = luceneScores.isPresent() ? Optional.of(luceneScores.get().get(i)) : Optional.empty();
-      Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
       // Get the raw score
-      double score = scoreBeforeNaturalli(features);
-      double naturalLIScore;
+      double score = 0.0;
       if (USE_NATURALLI) {
-        naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : Double.NEGATIVE_INFINITY;
+        score += luceneScore.orElse(Double.NaN);
+        double naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
+        score += naturalLIScore * ALIGNMENT_WEIGHT;
       } else {
-        naturalLIScore = scoreAlignmentSimple(features);
+        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
+        score = scoreAlignmentSimple(features);
       }
-      score += naturalLIScore * ALIGNMENT_WEIGHT;
       assert !Double.isNaN(score);
       assert Double.isFinite(score);
       // Computer the probability

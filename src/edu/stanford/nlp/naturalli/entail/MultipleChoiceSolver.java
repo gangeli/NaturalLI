@@ -4,6 +4,7 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 import java.io.BufferedReader;
@@ -167,11 +168,42 @@ public class MultipleChoiceSolver {
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     RedwoodConfiguration.current().capture(System.err).apply();
+    RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
     Execution.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
+
+
+
+    double accuracy = accuracy(classifier, dataset);
+    log("Accuracy: " + percent.format(accuracy));
+
+    /*
     forceTrack("Running evaluation");
-    log("Accuracy: " + percent.format(accuracy(classifier, dataset)));
+    List<Double> weights = new ArrayList<>();
+    List<Double> accuracies = new ArrayList<>();
+    for (double i = 0.00; i < 10.0; i += 0.05) {
+      NaturalLIClassifier.ALIGNMENT_WEIGHT = i;
+      double accuracy = accuracy(classifier, dataset);
+      log("Accuracy: " + percent.format(accuracy));
+      weights.add(i);
+      accuracies.add(accuracy);
+    }
     endTrack("Running evaluation");
+
+    DecimalFormat df = new DecimalFormat("0.0000");
+    double max = Double.NEGATIVE_INFINITY;
+    double argmax = Double.NaN;
+    for (int i = 0; i < weights.size(); ++i) {
+      log(df.format(weights.get(i)) + "\t" + percent.format(accuracies.get(i)));
+      if (accuracies.get(i) > max) {
+        max = accuracies.get(i);
+        argmax = weights.get(i);
+      }
+    }
+    log("Best alignment @ " + argmax + " with score " + max);
+    */
+
+
   }
 }
