@@ -4,6 +4,7 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Pair;
+import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
 
 import java.io.BufferedReader;
@@ -26,7 +27,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class MultipleChoiceSolver {
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
-  public static File MODEL = new File("models/aristo/overlap_only.ser.gz");
+  public static File MODEL = new File("logs/last_suite/2/model.ser.gz");
 
   @Execution.Option(name="data", gloss="The file to evaluate on")
   public static File DATA_FILE = new File("etc/aristo/eval_train_allcorpora.tab");
@@ -70,6 +71,8 @@ public class MultipleChoiceSolver {
 
   public static class TestState {
     public int numRandomGuesses = 0;
+    public int numAmbiguousGuesses = 0;
+    public int numLuckyGuesses = 0;
   }
 
   private static List<MultipleChoiceQuestion> readDataset(File dataFile) throws IOException {
@@ -106,6 +109,7 @@ public class MultipleChoiceSolver {
     int argmax = -1;
     double max = Double.NEGATIVE_INFINITY;
     double min = Double.POSITIVE_INFINITY;
+    List<Double> scores = new ArrayList<>();
     for (int qI = 0; qI < question.size(); ++qI) {
       Pair<Sentence, Double> support = classifier.bestScore(
           question.premises.get(qI),
@@ -114,6 +118,7 @@ public class MultipleChoiceSolver {
           Optional.of(question.luceneScores.get(qI))
       );
       double score = support.second;
+      scores.add(score);
 
       log(new DecimalFormat("0.0000").format(score) + ": " + question.hypotheses.get(qI) + "  (because '" + support.first + ")");
 
@@ -130,11 +135,18 @@ public class MultipleChoiceSolver {
     if (argmax == -1) {
       throw new IllegalStateException("No predictions for question: " + question);
     }
-    if (Math.abs(max - min) < 1e-10) {
-      if (testState.isPresent()) {
+    if (testState.isPresent()) {
+      final double maxScore = max;
+      if (scores.stream().filter(x -> Math.abs(x - maxScore) < 1e-5).count() > 1) {
+        if (question.answer == argmax) {
+          testState.get().numLuckyGuesses += 1;
+        }
+        testState.get().numAmbiguousGuesses += 1;
+      }
+      if (Math.abs(max - min) < 1e-10) {
+        err("All hypotheses have the same score!");
         testState.get().numRandomGuesses += 1;
       }
-      err("All hypotheses have the same score!");
     }
 
     endTrack(question.hypotheses.get(question.answer));
@@ -160,6 +172,8 @@ public class MultipleChoiceSolver {
     }
     endTrack("Missed questions");
     log("Random guesses: " + state.numRandomGuesses + "  (" + percent.format(((double) state.numRandomGuesses) / ((double) questions.size())) + ")");
+    log("Guesses:        " + state.numAmbiguousGuesses + "  (" + percent.format(((double) state.numAmbiguousGuesses) / ((double) questions.size())) + ")");
+    log("Lucky Guesses:  " + state.numLuckyGuesses + "  (" + percent.format(((double) state.numLuckyGuesses) / ((double) questions.size())) + ")");
 
     return ((double) correct) / ((double) questions.size());
   }
@@ -167,11 +181,42 @@ public class MultipleChoiceSolver {
 
   public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     RedwoodConfiguration.current().capture(System.err).apply();
+    RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
     Execution.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
+
+
+
+    double accuracy = accuracy(classifier, dataset);
+    log("Accuracy: " + percent.format(accuracy));
+
+    /*
     forceTrack("Running evaluation");
-    log("Accuracy: " + percent.format(accuracy(classifier, dataset)));
+    List<Double> weights = new ArrayList<>();
+    List<Double> accuracies = new ArrayList<>();
+    for (double i = 0.00; i < 10.0; i += 0.05) {
+      NaturalLIClassifier.ALIGNMENT_WEIGHT = i;
+      double accuracy = accuracy(classifier, dataset);
+      log("Accuracy: " + percent.format(accuracy));
+      weights.add(i);
+      accuracies.add(accuracy);
+    }
     endTrack("Running evaluation");
+
+    DecimalFormat df = new DecimalFormat("0.0000");
+    double max = Double.NEGATIVE_INFINITY;
+    double argmax = Double.NaN;
+    for (int i = 0; i < weights.size(); ++i) {
+      log(df.format(weights.get(i)) + "\t" + percent.format(accuracies.get(i)));
+      if (accuracies.get(i) > max) {
+        max = accuracies.get(i);
+        argmax = weights.get(i);
+      }
+    }
+    log("Best alignment @ " + argmax + " with score " + max);
+    */
+
+
   }
 }

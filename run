@@ -3,14 +3,14 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
-val c = guessClassOrElse("org.goobs.naturalli.Client")
-val conf = guessConfOrElse("src/org/goobs/naturalli/conf/base.conf")
+val LOG_DIR = "logs/last_suite/"
 
-println("running " + c)
-val program:List[String] = ("java"
+using(LOG_DIR)
+
+// A utility for creating a Java instance
+def program(c:String):Task = ("java"
   -('cp, cp)
-//	-"Xrunhprof:cpu=samples,depth=25"
-	-"Xmx6G"
+	-"Xmx5G"
 	-"Xss32m"
   -"XX:MaxPermSize=256M"
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
@@ -19,11 +19,89 @@ val program:List[String] = ("java"
 	->c
 ).toList
 
-println("using(" + conf + ")")
-using(conf)
+// The classifier trainer
+def classifier = 
+  (program("edu.stanford.nlp.naturalli.entail.ClassifierTrainer")
+    -('classifier, "NATURALLI")
+    -('naturalli_search, "src/naturalli_search")
+    -("train.file", "etc/aristo/turk_90_trainset.tab")
+    -("train.cache.do", "true")
+    -("train.debugdoc", "/dev/null")
+    -("test.file", "etc/aristo/turk_90_trainset.tab")
+    -("log.file", touch("redwood.log"))
+   )
 
-submit(program
+// The multiple choice evaluator
+def multchoice = 
+  (program("edu.stanford.nlp.naturalli.entail.MultipleChoiceSolver")
+    -("naturalli.weight", "4.875")
+    -("log.file", touch("redwood.log"))
+    )
+
+
+//
+// Clear the log directory
+// TODO why doesn't this work?
+//
+//if (new java.io.File(LOG_DIR).exists) {
+//  submit("rm" -'r ->LOG_DIR)
+//}
+
+//
+// Train the classifiers
+//
+submit(classifier
+  -('features, 
+      "KEYWORD_OVERLAP LUCENE_SCORE" &
+      "KEYWORD_OVERLAP" &
+      "LUCENE_SCORE")
+  -('model, touch("model.ser.gz"))
 )
+
+//
+// Run the models (train; all corpora)
+//
+parallel(3) submit(multchoice
+  -("naturalli.incache", "logs/all_4.cache")
+  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -('model, 
+      (LOG_DIR + "/0/model.ser.gz") &
+      (LOG_DIR + "/1/model.ser.gz") &
+      (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "false")
+)
+parallel(2) submit(multchoice
+  -("naturalli.incache", "logs/all_4.cache")
+  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -('model, (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "true")
+  -("naturalli.uselucene", "true" & "false")
+)
+
+//
+// Run the models (train; barrons)
+//
+parallel(3) submit(multchoice
+  -("naturalli.incache", "logs/barrons_4.cache")
+  -('data, "etc/aristo/eval_train_barrons.tab")
+  -('model, 
+      (LOG_DIR + "/0/model.ser.gz") &
+      (LOG_DIR + "/1/model.ser.gz") &
+      (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "false")
+)
+parallel(2) submit(multchoice
+  -("naturalli.incache", "logs/barrons_4.cache")
+  -('data, "etc/aristo/eval_train_barrons.tab")
+  -('model, (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "true")
+  -("naturalli.uselucene", "true" & "false")
+)
+
+//
+// Dump Results
+//
+submit("logs/print_last_suite.sh")
 
 
 def cp:String = {
@@ -31,65 +109,19 @@ def cp:String = {
     System.getenv("JAVANLP_HOME") + "/projects/core/classes",
     System.getenv("JAVANLP_HOME") + "/projects/core/lib/joda-time.jar",
     System.getenv("JAVANLP_HOME") + "/projects/core/lib/jollyday-0.4.7.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/protobuf.jar",
     System.getenv("JAVANLP_HOME") + "/projects/more/classes",
     System.getenv("JAVANLP_HOME") + "/projects/more/lib/BerkeleyParser.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/classes",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
-    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
-    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar"
+    "/home/gabor/staging/stanford-corenlp-models-current.jar",
+    "/home/gabor/staging/openie_models.jar"
+//    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
   ).mkString(":")
-  val SCALA = List(
-      System.getenv("SCALA_HOME") + "/lib/scala-library.jar",
-      System.getenv("SCALA_HOME") + "/lib/config-1.2.0.jar",
-      System.getenv("SCALA_HOME") + "/lib/scala-xml_2.11-1.0.1.jar"
-    ).mkString(":")
   val CUSTOM = List(
-      "lib/corenlp-scala.jar",
-      "lib/trove.jar",
-      "lib/jaws.jar",
-      "lib/scripts/sim-1.0.jar",
-      "lib/protobuf.jar"
+      "lib/gson-2.3.1.jar",
+      "lib/jaws.jar"
     ).mkString(":")
-  List("src/naturalli_client.jar", "test/src/test_client.jar", JAVANLP, SCALA, CUSTOM).mkString(":")
-}
-
-def guessClassOrElse(default:String):String = {
-  def tryLoad(clazz:String):Option[String] = {
-    try {
-      Class.forName(clazz); Some(clazz)
-    } catch {
-      case (e:ClassNotFoundException) => None
-    }
-  }
-  (args.foldLeft( None.asInstanceOf[Option[String]] ){ case (soFar:Option[String], arg:String) =>
-    soFar.orElse(tryLoad(arg))
-      .orElse(tryLoad("org" + arg))
-      .orElse(tryLoad("org.goobs." + arg))
-      .orElse(tryLoad("org.goobs.naturalli." + arg))
-      .orElse(tryLoad("org.goobs.naturalli.scripts." + arg))
-  }).getOrElse(default)
-}
-
-def guessConfOrElse(default:String):String = {
-  def tryLoad(path:String):Option[String] = {
-    try {
-      val candidate = new java.io.File(path)
-      if (candidate.exists) Some(path) else None
-    } catch {
-      case (e:java.io.IOException) => None
-    }
-  }
-  (args.foldLeft( None.asInstanceOf[Option[String]] ){ case (soFar:Option[String], arg:String) =>
-    soFar.orElse(tryLoad(arg))
-      .orElse(tryLoad("conf/" + arg))
-      .orElse(tryLoad("naturalli/conf/" + arg))
-      .orElse(tryLoad("goobs/naturalli/conf/" + arg))
-      .orElse(tryLoad("org/goobs/naturalli/conf/" + arg))
-      .orElse(tryLoad("src/org/goobs/naturalli/conf/" + arg))
-      .orElse(tryLoad("naturalli/conf/" + arg))
-      .orElse(tryLoad("goobs/naturalli/conf/" + arg))
-      .orElse(tryLoad("org/goobs/naturalli/conf/" + arg))
-      .orElse(tryLoad("src/org/goobs/naturalli/conf/" + arg))
-  }).getOrElse(default)
+  List("src/naturalli_preprocess.jar", JAVANLP, CUSTOM).mkString(":")
 }

@@ -20,12 +20,12 @@ At each token, one of three operations can be performed:
   \textit{mutating} a token, and \textit{inserting} a token -- again, corresponding
   to deleting a token in the forward entailment.
 For brevity, we will refer to an insertions during inference (deletions during
-  search) as \textit{deletions}, and visa versa insertions.
+  search) as \textit{deletions}, and vice versa for insertions.
 
 %
 % Dependency Trees
 %
-\Subsection{naturalli-trees}{natural logic over Dependency Trees}
+\Subsection{naturalli-trees}{Natural logic over Dependency Trees}
 Operating over dependency trees rather than a token sequence requires reworking
   (1) the semantics of deleting a token during search, and 
   (2) the order in which the sentence is traversed.
@@ -85,7 +85,7 @@ This avoids repeated deletion of nodes, as we do not have to traverse any
 A subtlety to consider here is the effect mutating operator have on the
   polarity of their arguments -- for example, mutating \w{some} to
   \w{all}.
-There are both cases where we must mutate the argument to the operator before
+There are cases where we must mutate the argument to the operator before
   the operator itself, as well as cases where we must mutate the operator
   before its arguments.
 Consider, for instance:
@@ -179,9 +179,8 @@ Note that the usual operators apply to relational entailments -- if
 Verb entailment information was incorporated using data from \textsc{VerbOcean}.
 \newcite{key:2004chklovski-verbocean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-We approximate the \textsc{VerbOcean} relations $\mathit{stronger-than}(v_1,v_2)$ and $\mathit{happens-before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-These \textit{verb entailment} transitions are incorporated using the original weights from 
-  \newcite{key:2004chklovski-verbocean}, thresholded as indicated in the original paper. 
+We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
+These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
 
 % Meronymy
 \paragraph{Meronymy}
@@ -197,7 +196,9 @@ We collect a set of operators which are either monotone or antitone with respect
   these then compose with the usual operators (e.g., \w{some}, \w{all}) in a
   straightforward fashion.
 
-\textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase\cite{key:2008bollacker-freebase}.
+We use a set of 81 triggers for meronymy, which were manually labelled as monotonic or antitonic. These triggers consist of dependency paths of length 2 that co-occurred in newswire text with a named entity of type \w{PERSON} and two different named entities of type \w{LOCATION}, such that one location was a meronym of the other.
+
+\textit{Meronymy} transitions are drawn from instances of the relation \texttt{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
 As this relation is also based on an underlying partial order, we are able to use a weighting scheme analogous to that used for the hypernymy transitions.
 We also instantiate the inverse, \textit{holonymy} transitions.
@@ -240,7 +241,7 @@ The additional challenge this introduces, of course, is the additional space req
 To mitigate this, we hash every fact into a 64 bit integer, and store only the hashed 
   value in the knowledge base.
 We construct this hash function such that it operates over a bag of edges in the
-  dependency tree -- in particular, the XOR of hash of each dependency edge in
+  dependency tree -- in particular, the XOR of the hash of each dependency edge in
   the tree.
 This has two key properties: it allows us to be invariant to the word order of
   of the sentence, and more importantly it allows us to run our search directly

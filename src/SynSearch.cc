@@ -13,7 +13,7 @@
 //#define COUNT_UNALIGNABLE_PREMISE     -0.098388169f
 //#define COUNT_INEXACT                 -0.045905108f
 //#define BIAS                           0.138340300f
-//
+
 // (big unbalanced dataset)
 #define COUNT_ALIGNED                  0.084991765f
 #define COUNT_ALIGNABLE                0.013146559f
