@@ -1,14 +1,15 @@
 \Section{intro}{Introduction}
 %-> QA is a rich and useful task for NLP.
 Question answering is an important task in NLP, however it becomes
-  increasingly difficult as the domain of questions becomes more broad.
+  increasingly difficult as the domain diverges from the lexical resources
+  we have (e.g., Freebase).
 %-> It's appealing to develop systems which work across many domains,
 %   and don't rely on structured KBs or domain-specific resources
 %   like NER taggers.
-In these cases structured resource like Freebase, and even core NLP tasks
-  like named entity tagging become less useful.
-In contrast, insights from textual entailment become increasingly applicable --
-  a question answering task can be thought of as an entailment task from a
+%In these cases structured resource like Freebase, and even core NLP tasks
+%  like named entity tagging become less useful.
+In these cases, insights from textual entailment become increasingly applicable --
+  question answering task be viewed as an entailment task from a
   very large premise set.
 % Thesis sentence
 We present an approach for answering $4^\textrm{th}$ grade science exam questions
@@ -16,12 +17,14 @@ We present an approach for answering $4^\textrm{th}$ grade science exam question
   coherent framework.
 
 % -> OK, let's try formal reasoning
-A natural approach to textual entailment -- inherent in the name itself -- is to
-  treat it as a logical entailment problem.
-While such approaches are often high-precision, in many cases a formal proof
-  is difficult or impossible, and therefore not found by the system.
-For example, consider the following hypothesis (H) for the question
-  \w{which part of a plant produces the seeds?}, and its supporting premise (P):
+A natural approach to textual entailment
+  %-- inherent in the name itself -- 
+  is to treat it as a logical entailment problem.
+While this is high-precision, in many cases a formal proof
+  is difficult or impossible.
+For example, consider the following hypothesis (H) 
+  and its supporting premise (P)
+  for the question \w{which part of a plant produces the seeds?}:
 
 % Example: hard for logic, easy for lexical
 \entailmentExample
@@ -37,8 +40,7 @@ In fact, such a bag-of-words entailment model has been shown to be surprisingly
 %-> But, lexical methods are easy to fool.
 On the other hand, such methods are also notorious for ignoring even trivial 
   cases of nonentailment that are easy for natural logic, e.g., recognizing negation.
-For example, we can correctly label the following example
-  as contradiction, despite near perfect lexical overlap:
+For example:
 
 % Example: hard for lexical, easy for logic.
 \entailmentExample
@@ -50,24 +52,26 @@ We present a method to leverage the benefits of both methods.
 Natural logic -- a proof theory over the syntax of natural language --
   offers a framework for logical inference which is already
   familiar to lexical methods.
-That is, as an inference system searches closer to a valid premise,
+As an inference system searches closer to a valid premise,
   the candidates it explores will generally become more lexically similar
   to that premise.
 
 % Contributions
 We therefore extend a natural logic inference engine in two key ways:
   we handle relational entailment 
-  and meronymy, increasing the total number of inferences that can be handled
-  (the \textit{distance} the system can search).
-We further implement an \textit{evaluation function} which can be quickly
-  evaluated at each candidate premise
-  and returns a confidence for
-  whether the premise is entailed by a fact in the knowledge base.
+  and meronymy, increasing the total number of inferences that can be made.
+%  (the \textit{distance} the system can search).
+We further implement an \textit{evaluation function} which quickly
+  provide an estimate for how likely a candidate premise is to be supported
+  by the knowledge base, without running the full search.
+%  evaluated at each candidate premise and returns a confidence for
+%  whether the premise is entailed by a fact in the knowledge base.
 % Full example
-For example, our hypothesis \w{a flower produces the seeds} can find
+For example, a hypothesis \w{a flower produces the seeds} can yield
   a candidate premise \w{a flower grows seeds}, because \w{grow}
   entails \w{produce}.
-This can then more easily match a known premise, \w{seeds grow inside a flower},
+This can then more easily match a known premise 
+  (e.g., \w{seeds grow inside a flower}) 
   despite still not matching exactly.
 
 % Contributions
@@ -78,8 +82,8 @@ We present the following contributions:
     dependency trees;
 (2) we augment NaturalLI with an evaluation function to provide an estimate of entailment
     for any query; and 
-(3) we present the best
-    published numbers on the Aristo fourth grade science questions corpus.
+(3) we run our system over the Aristo science questions corpus,
+    achieving the best published numbers.
 
 
 %
