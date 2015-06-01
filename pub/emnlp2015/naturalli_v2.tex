@@ -81,9 +81,9 @@ This avoids repeated deletion of nodes, as we do not have to traverse any
   subtree which has been deleted.
 
 % Subtlety about operators
-A subtlety to consider here is the effect mutating an operator has on the
-  polarity of its arguments -- for example, mutating \w{some} to
-  \w{all}.
+An admittedly rare but interesting subtlety is the effect mutating an 
+  operator has on the
+  polarity of its arguments -- for example, mutating \w{some} to \w{all}.
 There are cases where we must mutate the argument to the operator before
   the operator itself, as well as cases where we must mutate the operator
   before its arguments.
@@ -115,8 +115,8 @@ Therefore, our traversal first visits each operator, then performs a breadth-fir
 %\begin{tabular}{ccc}
 \begin{tabular}{ll}
 %\includegraphics[scale=0.27]{../img/monotonicity_math.pdf} &
-(a) & \includegraphics[scale=0.27]{../img/monotonicity_lex_all.pdf} \\
-(b) &\includegraphics[scale=0.27]{../img/monotonicity_lex_meronymy.pdf}\\
+(a) & \raisebox{-.5\height}{\includegraphics[scale=0.27]{../img/monotonicity_lex_all.pdf}} \\
+(b) & \raisebox{-.5\height}{\includegraphics[scale=0.27]{../img/monotonicity_lex_meronymy.pdf}} \\
 %(a) & (b) & (c)
 \end{tabular}
 \end{center}
