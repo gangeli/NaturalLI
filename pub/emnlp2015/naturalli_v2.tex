@@ -3,7 +3,7 @@
 We extend NaturalLI in a few key ways to improve its coverage for question
   answering tasks over complex sentences.
 We adapt the search algorithm to operate over dependency
-  trees, rather than the surface form of the sentence (\refsec{naturalli-trees}).
+  trees rather than the surface forms (\refsec{naturalli-trees}).
 We enrich the class of inferences warranted by natural logic beyond
   hypernymy and operator rewording to also encompass meronymy and
   relational entailment (\refsec{naturalli-meronym}).
@@ -76,9 +76,9 @@ For example, we can infer that
 
 % Talk about ordering
 This leaves the question of the order to traverse the token in the sentence.
-The natural order is to perform a breadth-first traversal of the dependency tree.
-This avoids repeated deletion of nodes, as we do not have to traverse any
-  subtree which has been deleted.
+The natural order is a breadth-first traversal of the dependency tree.
+This avoids repeated deletion of nodes, as we do not have to traverse a
+  deleted subtree.
 
 % Subtlety about operators
 An admittedly rare but interesting subtlety is the effect mutating an 
@@ -93,7 +93,7 @@ Consider, for instance:
 {All felines have a tail}
 {Some cats have a tail}
 
-\noindent where we must first mutate \w{cat} to \w{feline}, contrasted with:
+\noindent where we must first mutate \w{cat} to \w{feline}, versus:
 
 \entailmentExample
 {All cats have a tail}
@@ -134,7 +134,7 @@ An illustration of monotonicity using different partial orders.
 % Cute example of partial orders
 Although natural logic and the underlying monotonicity calculus has 
   only been explored in the context of hypernymy, the underlying framework
-  can be applied to any partial order over lexical items.
+  can be applied to any partial order.% over lexical items.
 %To give a simple example, 
 %  we can consider a natural logic over integers \cite{key:2014icard-natlog}.
 %  -- which have a total, and therefore partial order.
@@ -164,18 +164,20 @@ We include two additional orderings as motivating examples: relational
 For two verbs $v_1$ and $v_2$, we define $v_1 \leq v_2$ if the first verb
   entails the second.
 %This entailment judgment can be gathered from an external resource, such as
-  \textsc{VerbOcean} \cite{key:2004chklovski-verbocean}.
+%  \textsc{VerbOcean} \cite{key:2004chklovski-verbocean}.
 %In many cases, these entailments are not hypernymy.
 In many cases, a verb $v_1$ may entail a verb $v_2$ even if $v_2$ is not a hypernym of $v_1$.
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
-Apart from esoteric context-specific cases (e.g., \w{orbit} entails \w{launch} only
-  for man-made objects), these relations hold largely independent of context.
+Apart from context-specific cases (e.g., \w{orbit} entails \w{launch} only
+  for man-made objects), these hold largely independent of context.
 %Note that the usual operators apply to relational entailments -- if 
 %  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
-Verb entailment information was incorporated using data from \textsc{VerbOcean}
- \cite{key:2004chklovski-verbocean}, adapting the confidence weights as costs.
-\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of verbs as candidate participants in a set of relations.
+This information was incorporated using data from \textsc{VerbOcean}
+ \cite{key:2004chklovski-verbocean}, adapting the confidence weights 
+ as transition costs.
+\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
+  verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 %These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
