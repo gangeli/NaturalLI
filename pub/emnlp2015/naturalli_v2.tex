@@ -187,14 +187,22 @@ Unlike relational entailment and hypernymy, meronymy is operated on by a
   distinct set of operators:
   if \w{Hawaii is an island}, we cannot necessarily entail that \w{America
   is an island}.
-We collect a set of operators which are either monotone or antitone with respect
+
+%We collect a set of operators which are either monotone or antitone with respect
+%  to the meronymy hierarchy (e.g., \w{born in}, \w{visited}); 
+%  these then compose in the usual way with the conventional 
+%  operators (e.g., \w{some}, \w{all}).
+
+We collect a set of 81 operators, which are manually labeled as monotonic or antitonic with respect
   to the meronymy hierarchy (e.g., \w{born in}, \w{visited}); 
   these then compose in the usual way with the conventional 
   operators (e.g., \w{some}, \w{all}).
+These operators consist of dependency paths of length 2 
+that co-occurred in newswire text with a named entity of type 
+\w{PERSON} and two different named entities of type \w{LOCATION}, 
+such that one location was a meronym of the other.
 
-We use a set of 81 triggers for meronymy, which were manually labeled as monotonic or antitonic. These triggers consist of dependency paths of length 2 that co-occurred in newswire text with a named entity of type \w{PERSON} and two different named entities of type \w{LOCATION}, such that one location was a meronym of the other.
-
-Meronymy transitions are drawn from instances of the relation \texttt{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
+Meronymy transitions are drawn from instances of the relation \w{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
 %As this relation is also based on an underlying partial order, 
 We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
