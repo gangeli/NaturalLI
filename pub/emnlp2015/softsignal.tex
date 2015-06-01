@@ -50,7 +50,7 @@ Our entailment classifier is designed to be as domain independent as possible,
   and make use of a small a feature set as feasible to maintain good performance.
 In line with this, we define only 5 unlexicalized real valued features, with an 
   optional sixth feature encoding the score output by Lucene.
-All five of the core features are based off an alignment of keyphrases between the
+All five of the core features are based on an alignment of keyphrases between the
   premise and the hypothesis.
 
 % Define a keyphrase
@@ -135,7 +135,8 @@ A feature for the Lucene score of the premise given the hypothesis is optionally
 Additional features were not shown to improve performance on the training set.
 In fact, this classifier is a stronger baseline than it may seem: evaluating
   the system on RTE-3 \cite{key:2007giampiccolo-rte} yielded 63.75\% accuracy --
-  a 2 points above the median submission.
+%  a 
+2 points above the median submission.
 %Additional features were not shown to substantially improve performance, and
 %  were therefore dropped for simplicity.
 %Features tried included the BLEU score between the phrases, the overlap between
@@ -167,7 +168,7 @@ This can be thought of as analogous to the evaluation function in game-playing
 %  the search in NaturalLI against a set of known premises.
 
 % Can do this incrementally
-Note that the lack of longer keyphrases is in general a hinderance to the
+Note that the lack of longer keyphrases is in general a hindrance to the
   fuzzy alignments the system can produce.
 Importantly though, this allows the feature values to be computed 
   incrementally as the search

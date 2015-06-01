@@ -81,8 +81,8 @@ This avoids repeated deletion of nodes, as we do not have to traverse any
   subtree which has been deleted.
 
 % Subtlety about operators
-A subtlety to consider here is the effect mutating operator have on the
-  polarity of their arguments -- for example, mutating \w{some} to
+A subtlety to consider here is the effect mutating an operator has on the
+  polarity of its arguments -- for example, mutating \w{some} to
   \w{all}.
 There are cases where we must mutate the argument to the operator before
   the operator itself, as well as cases where we must mutate the operator
@@ -198,7 +198,7 @@ Meronymy transitions are drawn from instances of the relation \texttt{location-c
 This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
 %As this relation is also based on an underlying partial order, 
 We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
-We also instantiate the inverse, holonymy transitions.
+%We also instantiate the inverse, holonymy transitions.
 
 %% Other orders
 %Note that these are not the only two orders that can be incorporated into our
