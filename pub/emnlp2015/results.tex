@@ -127,7 +127,7 @@ Although certainly many of the facts require complex reasoning
 Unlike FraCaS or the RTE challenges, however, the task does not have explicit
   premises to run inference from, but rather must infer the truth of the
   hypothesis from a large collection of supporting text.
-Howeer in contrast to the common-sense reasoning task in \newcite{key:2014angeli-naturalli},
+However in contrast to the common-sense reasoning task in \newcite{key:2014angeli-naturalli},
   the queries in the Aristo dataset are relatively longer, complete sentences.
 This necessitates the adaptations in \refsec{naturalli}, 
   and benefits more from the
@@ -150,9 +150,11 @@ This corpus consists of \num{1316278} supporting sentences,
 Since we lose all document context when searching over the corpus with NaturalLI,
   we first pre-process the corpus to resolve high-precision cases of
   pronominal coreference, via a set of simple high-precision sieves.
-The corpus is then filtered for non-ascii characters (yielding \num{945956} sentences),
-  and exact duplicate sentences are removed.
-This results in a total of \num{822748} facts in the supporting corpus.
+%The corpus is then filtered for non-ascii characters (yielding \num{945956} sentences),
+  %and exact duplicate sentences are removed.
+%This results in a total of \num{822748} facts in the supporting corpus.
+Filtering to remove duplicate sentences and sentences containing
+    non-ASCII characters yields a total of \num{822748} facts in the supporting corpus.
 
 % Lucene
 These sentences were then indexed using Solr.
