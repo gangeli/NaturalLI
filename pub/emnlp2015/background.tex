@@ -33,7 +33,7 @@ Each mutation in the proof follows three steps:
 \begin{enumerate}
 \setlength\itemsep{-0.25em}
 \item An atomic lexical relation is induced by either inserting, deleting
-      or mutating a token in the sentence. 
+      or mutating a span in the sentence. 
       For example, in \reffig{naturalli},
       mutating \w{The} to \w{No} induces the \negate\ relation;
       mutating \w{cat} to \w{carnivore} induces the \forward\ relation.
@@ -42,7 +42,7 @@ Each mutation in the proof follows three steps:
 
 \item This lexical relation between words is projected up to yield a relation between
       sentences, based on the polarity of the token (defined below).
-      For instance, \w{The cat eats animals} \forward\ \w{the carnivores eat animals}.
+      For instance, \w{The cat eats animals} \forward\ \w{some carnivores eat animals}.
       We explain this in more details below.
 
 \item These sentence level relations are \textit{joined} together to produce a
@@ -108,6 +108,7 @@ For example, \w{mice} in \w{\textbf{no} cats eat mice} has downward
   polarity, whereas \w{mice} in \w{\textbf{no} cats do\textbf{n't} eat mice}
   has upward polarity
   (it is in the scope of two downward monotone operators).
+
 %The polarity of a token defines how a relation induced by a lexical mutation
 %  projects up a sentence, and therefore completely determines the valid mutations
 %  on that token.
@@ -134,14 +135,15 @@ For example, \w{mice} in \w{\textbf{no} cats eat mice} has downward
 \end{figure}
 
 % Introduce NaturalLI
-This paper extends NaturalLI, presented in \newcite{key:2014angeli-naturalli}.
+We build our extensions within the framework of NaturalLI, introduced
+  by \newcite{key:2014angeli-naturalli}.
 NaturalLI casts inference as a search problem: given a hypothesis and an arbitrarily
   large knowledge base of candidate premises, it searches through the space of
   lexical mutations (e.g., \w{cat} $\rightarrow$ \w{carnivore}), 
   with associated costs, until a premise is found.
-This allows it to capture both strict natural logic inferences (e.g., over hypernymy
-  or operator mutations), as well as likely correct inferences with an associated
-  cost (e.g., nearest neighbors in vector space).
+%This allows it to capture both strict natural logic inferences (e.g., over hypernymy
+%  or operator mutations), as well as likely correct inferences with an associated
+%  cost (e.g., nearest neighbors in vector space).
 
 An example search using NaturalLI is given in \reffig{naturalli}.
 The relations along the edges denote relations between the associated sentences

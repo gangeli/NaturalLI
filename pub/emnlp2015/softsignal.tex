@@ -50,7 +50,8 @@ We build such a classifier and adapt it as an evaluation function
 % high-level overview
 Our entailment classifier is designed to be as domain independent as possible;
   therefore we define only 5 unlexicalized real-valued features, with an 
-  optional sixth feature encoding the score output by Lucene.
+  optional sixth feature encoding the score output by the Solr
+  information extraction system (in turn built upon Lucene).
 % Why simple feature set
 Additional features were not shown to improve performance on the training set.
 In fact, this classifier is a stronger baseline than it may seem: evaluating
@@ -140,7 +141,7 @@ Features are extracted for the number of alignments, the numbers of alignments
   which match perfectly and do not match perfectly, 
   and the number of keyphrases in the premise and hypothesis
   which were not aligned.
-A feature for the Solr (i.e., Lucene) score of the premise given the hypothesis is optionally
+A feature for the Solr score of the premise given the hypothesis is optionally
   included; we revisit this issue in the evaluation.
 
 %
@@ -178,7 +179,7 @@ For instance, if we are deleting a word which was previously aligned perfectly
   alignment, and add the weight for an unaligned premise keyphrase.
 
 % Soft negation
-In addition to finding entailments from candidate premises, NaturalLI also
+In addition to finding entailments from candidate premises, our system also
   allows us to encode a notion of likely negation.
 %Note that in the context of NaturalLI, we can define a more precise notion of
 %  overlap, which will be useful for capturing a notion of likely logical
