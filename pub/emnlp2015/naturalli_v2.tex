@@ -18,7 +18,7 @@ At each token, one of three operations can be performed:
   these are \textit{deleting} a token
   -- corresponding to inserting a word during natural logic inference,
   \textit{mutating} a token, and \textit{inserting} a token -- again, corresponding
-  to deleting a token in the forward entailment.
+  to deleting a token in resulting proof derivation.
 For brevity, we will refer to an insertions during inference (deletions during
   search) as \textit{deletions}, and vice versa for insertions.
 
@@ -233,7 +233,7 @@ For example, a premise of \w{some furry cats have tails} would yield two facts
 %  insertions, which are relatively easier.
 
 % Difficulties
-The additional challenge this introduces, of course, is the additional space required
+The new challenge this introduces, of course, is the additional space required
   to store the new facts.
 To mitigate this, we hash every fact into a 64 bit integer, and store only the hashed 
   value in the knowledge base.
