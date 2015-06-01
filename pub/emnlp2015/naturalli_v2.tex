@@ -134,24 +134,25 @@ An illustration of monotonicity using different partial orders.
 Although natural logic and the underlying monotonicity calculus has 
   only been explored in the context of hypernymy, the underlying framework
   can be applied to any partial order over lexical items.
-To give a simple example, 
-  we can consider a natural logic over integers \cite{key:2014icard-natlog}.
+%To give a simple example, 
+%  we can consider a natural logic over integers \cite{key:2014icard-natlog}.
 %  -- which have a total, and therefore partial order.
-If we observe that the numeric operator $e^{-x} : \bR \rightarrow \bR$ is
-  antitone, then we can infer that because $2 \geq 1$ (i.e., $2 \reverse 1$)
-  we know that $e^{-2} \leq e^{-1}$ (i.e., $e^{-2} \forward e^{-1}$), without
-  ever evaluating the operator $e^{-x}$ explicitly.
+%If we observe that the numeric operator $e^{-x} : \bR \rightarrow \bR$ is
+%  antitone, then we can infer that because $2 \geq 1$ (i.e., $2 \reverse 1$)
+%  we know that $e^{-2} \leq e^{-1}$ (i.e., $e^{-2} \forward e^{-1}$), without
+%  ever evaluating the operator $e^{-x}$ explicitly.
 
 % Translate to language
-In the same way, natural language operators are defined as a mapping from
+%In the same way, natural language operators are defined as a mapping from
+Natural language operators can be defined as a mapping from
   denotations of objects, to truth values.\footnote{
   Truth values are a trivial partial order corresponding to entailment:
   if \hbox{$t_1 \leq t_2$} 
   (i.e., \hbox{$t_1 \forward t_2$}),
   and you know that $t_1$ is true, then $t_2$ must be true.
 }
-%The domain of word denotations is then ordered by the subset operator, corresponding
-%  to ordering by hypernymy over the words.
+The domain of word denotations is then ordered by the subset operator, corresponding
+  to ordering by hypernymy over the words.
 % New partial orders
 However, hypernymy is not the only useful partial ordering over denotations.
 We include two additional orderings as motivating examples: relational
@@ -161,7 +162,7 @@ We include two additional orderings as motivating examples: relational
 \paragraph{Relational Entailment}
 For two verbs $v_1$ and $v_2$, we define $v_1 \leq v_2$ if the first verb
   entails the second.
-This entailment judgment can be gathered from an external resource, such as
+%This entailment judgment can be gathered from an external resource, such as
   \textsc{VerbOcean} \cite{key:2004chklovski-verbocean}.
 %In many cases, these entailments are not hypernymy.
 In many cases, a verb $v_1$ may entail a verb $v_2$ even if $v_2$ is not a hypernym of $v_1$.
