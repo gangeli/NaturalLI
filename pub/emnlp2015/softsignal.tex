@@ -14,16 +14,18 @@ There are many cases -- particularly as the length of the premise and the hypoth
 % Why does it struggle -- and why it should
 In addition to implicitly reasoning with multiple premises (a concomitant weak
   point of natural logic), a correct interpretation of the sentence requires
-  fairly nontrivial global reasoning: \w{Food serves mainly for $x$}
+  fairly nontrivial nonlocal reasoning: \w{Food serves mainly for $x$}
   $\rightarrow$ \w{Animals get $x$ from food}.
 
 % Why a lexical classifier would do well
 %Nonetheless, objectively this is not a difficult case of entailment.
 Nonetheless, there are plenty of clues that the two sentences are related, and even a simple
   entailment classifier would get the example correct.
-We build such a simple entailment classifier (\refsec{softsignal-classifier}) built only
-  on dense lexical overlap features, and adapt it as a backoff inside NaturalLI
-  in case no premises are found during search.
+We build such a classifier and adapt it as an evaluation function
+  inside NaturalLI in case no premises are found during search.
+%  (\refsec{softsignal-classifier}) built only
+%  on dense lexical overlap features, and adapt it as a backoff inside NaturalLI
+%  in case no premises are found during search.
 %  then show how NaturalLI can be used to provide soft signals informing the classifier.
 
 %% Why are soft signals valuable
@@ -46,13 +48,24 @@ We build such a simple entailment classifier (\refsec{softsignal-classifier}) bu
 %
 \Subsection{softsignal-classifier}{A Standalone Entailment Classifier}
 % high-level overview
-Our entailment classifier is designed to be as domain independent as possible,
-  and make use of a small a feature set as feasible to maintain good performance.
-In line with this, we define only 5 unlexicalized real valued features, with an 
+Our entailment classifier is designed to be as domain independent as possible;
+  therefore we define only 5 unlexicalized real valued features, with an 
   optional sixth feature encoding the score output by Lucene.
+% Why simple feature set
+Additional features were not shown to improve performance on the training set.
+In fact, this classifier is a stronger baseline than it may seem: evaluating
+  the system on RTE-3 \cite{key:2007giampiccolo-rte} yielded \textbf{63.75}\% accuracy --
+  2 points above the median submission.
+%Additional features were not shown to substantially improve performance, and
+%  were therefore dropped for simplicity.
+%Features tried included the BLEU score between the phrases, the overlap between
+%  words in the premise and hypothesis, the overlap between words sharing a 
+%  part of speech tag in the premise and hypothesis, and the length difference
+%  between the phrases.
+
+
 All five of the core features are based off an alignment of keyphrases between the
   premise and the hypothesis.
-
 % Define a keyphrase
 A keyphrase is defined as a span of text which is either
   (1) a possibly empty sequence of adjectives and adverbs followed by a 
@@ -60,7 +73,7 @@ A keyphrase is defined as a span of text which is either
       marker (\w{'s}), and another noun (e.g., \w{sneaky kitten} or \w{pail of water});
   (2) a possibly empty sequence of adverbs followed by a verb (e.g.,
       \w{quietly pounce}); or
-  (3) a VBG verb followed by a noun (e.g., \w{flowing water}).
+  (3) a gerund followed by a noun (e.g., \w{flowing water}).
 The verb \w{to be} is never a keyphrase.
 We make a distinction between a \textit{keyphrase} and a \textit{keyword} --
   the latter is a single noun, adjective, or verb.
@@ -123,25 +136,13 @@ This forces any keyphrase pair which is ``sandwiched'' between aligned pairs to 
 An example alignment is given in \reffig{alignment}.
 
 % Features
-The classifier features are then statistics on this generated alignment.
+%The classifier features are then statistics on this generated alignment.
 Features are extracted for the number of alignments, the numbers of alignments
   which match perfectly and do not match perfectly, 
   and the number of keyphrases in the premise and hypothesis
   which were not aligned.
-A feature for the Lucene score of the premise given the hypothesis is optionally
+A feature for the Solr (i.e., Lucene) score of the premise given the hypothesis is optionally
   included; we revisit this issue in the evaluation.
-
-% Why simple feature set
-Additional features were not shown to improve performance on the training set.
-In fact, this classifier is a stronger baseline than it may seem: evaluating
-  the system on RTE-3 \cite{key:2007giampiccolo-rte} yielded 63.75\% accuracy --
-  a 2 points above the median submission.
-%Additional features were not shown to substantially improve performance, and
-%  were therefore dropped for simplicity.
-%Features tried included the BLEU score between the phrases, the overlap between
-%  words in the premise and hypothesis, the overlap between words sharing a 
-%  part of speech tag in the premise and hypothesis, and the length difference
-%  between the phrases.
 
 %
 % Soft Signals from NaturalLI
@@ -149,7 +150,7 @@ In fact, this classifier is a stronger baseline than it may seem: evaluating
 \Subsection{softsignal-keywords}{An Evaluation Function for Search}
 % Intuition as value function
 A version of the classifier constructed in 
-  \refsec{softsignals-classifier}, but over \textit{keywords} rather
+  \refsec{softsignal-classifier}, but over \textit{keywords} rather
   than keyphrases can be incorporated directly into
   NaturalLI's search to give a score for each candidate premise visited.
 This can be thought of as analogous to the evaluation function in game-playing
@@ -167,11 +168,11 @@ This can be thought of as analogous to the evaluation function in game-playing
 %  the search in NaturalLI against a set of known premises.
 
 % Can do this incrementally
-Note that the lack of longer keyphrases is in general a hinderance to the
+Using keywords rather than keyphrases is in general a hinderance to the
   fuzzy alignments the system can produce.
 Importantly though, this allows the feature values to be computed 
   incrementally as the search
-  progresses, based on the score of the parent state, and the mutation or
+  progresses, based on the score of the parent state and the mutation or
   deletion being performed.
 For instance, if we are deleting a word which was previously aligned perfectly
   to the premise, we would subtract the weight for a perfect and imperfect
@@ -183,11 +184,13 @@ In addition to finding entailments from candidate premises, NaturalLI also
 %Note that in the context of NaturalLI, we can define a more precise notion of
 %  overlap, which will be useful for capturing a notion of likely logical
 %  negation.
-To illustrate, \naive ly the following two statements share every keyword:
+We can consider the following two statements \naive ly sharing every keyword.
+Each token marked with its polarity:
+%To illustrate, \naive ly the following two statements share every keyword:
 
 \entailmentExample
-{some cats have tails}
-{no cats have tails}
+{\tagUp{some} \tagUp{cats} \tagUp{have} \tagUp{tails}}
+{\tagUp{no} \tagDown{cats} \tagDown{have} \tagDown{tails}}
 
 However, we note that all of the keyword pairs are in opposite polarity contexts.
 We can therefore define a pair of keywords as \textit{matching} in NaturalLI
@@ -217,7 +220,7 @@ We note that, e.g., \textit{some}
 %The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
 %  which have the same monotonicity in their subjects but are nonetheless negations
 %  of each other.
-Otherwise, any pair of operators which share half their signature are 
+Otherwise, pairs of operators which share half their signature are 
   nearly always compatible with each other (e.g., \w{some} and \w{all}).
 %In all, we consider this a good simple approximation at a low cost.
 
@@ -227,7 +230,7 @@ This suggests a natural criterion for likely negation:
   may have found a contradiction.
 To illustrate with our example, NaturalLI would mutate \w{no cats have tails}
   to \w{the cats have tails}, at which point it has found a 
-  contradictory candidate premise, but which has perfect overlap with the 
+  contradictory candidate premise which has perfect overlap with the 
   premise \w{some cats have tails}.
 Even had we not found the exact premise, this would suggest that
   the hypothesis is likely contradicted.

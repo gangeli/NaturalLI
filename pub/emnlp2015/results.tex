@@ -15,23 +15,23 @@
 \begin{table}
 \begin{center}
 \begin{tabular}{l@{\hskip \colspaceL}c@{\hskip \colspaceS}c@{\hskip \colspaceL}c@{\hskip \colspaceS}c}
-\hline
+\toprule
 \textbf{System} & \multicolumn{2}{l}{\textbf{Barron's}} & \multicolumn{2}{l}{\textbf{\textsc{Scitext}}} \\
  & Train & Test & Train & Test \\     %barrons              %all
-\hline                            %train    %test      %train    %test
+\toprule                          %train    %test      %train    %test
 \t{\textsc{Knowbot} (held-out)} & \t{45}  & \t{--}   & \t{--}  & \t{--} \\
 \t{\textsc{Knowbot} (oracle)}   & \t{57}  & \t{--}   & \t{--}  & \t{--} \\
-\hline                                                           
+\midrule                                                           
 \t{Solr Only}                   & \t{49}  & \t{42}   & \t{62}  & \t{58} \\
 \t{Classifier}                  & \t{53}  & \t{52}   & \t{68}  & \t{60} \\
 \t{$~~$ + Solr}                 & \t{53}  & \t{48}   & \t{66}  & \t{64} \\
-\hline                                                           
+\midrule                                                           
 \t{Evaluation Function}         & \t{52}  & \b{54}   & \t{61}  & \t{63} \\
 \t{$~~$ + Solr}                 & \t{50}  & \t{45}   & \t{62}  & \t{58} \\
 \m{NaturalLI}                   & \m{52}  & \m{51}   & \m{65}  & \m{61} \\
 \m{$~~$ + Solr}                 & \c{55}  & \m{49}   & \m{73}  & \m{61} \\
 \m{$~~$ + Solr + Classifier}    & \c{55}  & \m{49}   & \c{74}  & \c{67} \\
-\hline
+\bottomrule
 \end{tabular}
 \end{center}
 % The caption
