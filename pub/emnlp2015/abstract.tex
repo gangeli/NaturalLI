@@ -1,4 +1,7 @@
 \begin{abstract}
+
+
+We tackle the task of 
 Natural logic question answering systems, such as NaturalLI,
   can capture a large number of useful inferences; nonetheless,
   there are many cases that are out of scope for the
@@ -12,10 +15,15 @@ Furthermore, we incorporate an \textit{evaluation function}
   while searching over candidate premises that captures
   a soft judgment for whether that premise is supported
   by the knowledge base.
+This allows us to provide a confidence for every query.
+We present
+  the best published results on the Aristo science exams corpus.
+
+
+
 %while searching for candidate premises, backoff to
 %  a lexical classifier for a soft judgment on whether
 %  the candidate is entailed by a known premise.
-This allows us to provide a confidence for every query.
 %Simple lexical methods are often surprisingly effective at
 %  solving entailment problems.
 %However, they are easily thrown off by lexically subtle logical
@@ -28,6 +36,4 @@ This allows us to provide a confidence for every query.
 %  a large set of candidate premises can confirm or contradict
 %  the truth of a query.
 %We validate that our system maintains strict entailments on FraCaS,
-We present
-  the best published results on the Aristo science exams corpus.
 \end{abstract}

@@ -1,100 +1,189 @@
 \Section{intro}{Introduction}
-% Tradeoff between logic and lexical methods
-A central challenge for textual entailment is finding an optimal trade-off between
-  \textit{high-precision} logical reasoning, and \textit{broad coverage}
-  lexical methods.
-For example, consider the following hypothesis (H) and associated supporting premise (P):
+%-> QA is a rich and useful task for NLP.
+Question answering is an important task in NLP, however it becomes
+  increasingly difficult as the domain diverges from the lexical resources
+  we have (e.g., Freebase).
+%-> It's appealing to develop systems which work across many domains,
+%   and don't rely on structured KBs or domain-specific resources
+%   like NER taggers.
+%In these cases structured resource like Freebase, and even core NLP tasks
+%  like named entity tagging become less useful.
+In these cases, insights from textual entailment become increasingly applicable --
+  question answering task be viewed as an entailment task from a
+  very large premise set.
+% Thesis sentence
+We present an approach for answering $4^\textrm{th}$ grade science exam questions
+  which combines logical reasoning and broad-coverage lexical methods in a
+  coherent framework.
+
+% -> OK, let's try formal reasoning
+A natural approach to textual entailment
+  %-- inherent in the name itself -- 
+  is to treat it as a logical entailment problem.
+While this is high-precision, in many cases a formal proof
+  is difficult or impossible.
+For example, consider the following hypothesis (H) 
+  and its supporting premise (P)
+  for the question \w{which part of a plant produces the seeds?}:
 
 % Example: hard for logic, easy for lexical
 \entailmentExample
 {Ovaries are the female part of the flower, which produces eggs that are needed for making seeds.}
 {A flower produces the seeds.}
 
-% Explain example; lexical methods often good.
-To prove the hypothesis from the premise in a satisfactory way, you would need
-  to traverse a large number of nontrivial inference steps.
+%-> But, this is easy for lexical methods
 In contrast, even a simple lexical overlap classifier could correctly predict
   the entailment.
 In fact, such a bag-of-words entailment model has been shown to be surprisingly
   effective on the Recognizing Textual Entailment (RTE) challenges 
   \cite{key:2009maccartney-thesis}.
-
-% Why we want logic anyways
+%-> But, lexical methods are easy to fool.
 On the other hand, such methods are also notorious for ignoring even trivial 
   cases of nonentailment that are easy for natural logic, e.g., recognizing negation.
-For example, we can correctly label the following example
-  as contradiction, despite near perfect lexical overlap:
-%For example, the following pair has a near perfect lexical overlap, but in fact defines
-%  an explicit contradiction:
+For example:
 
 % Example: hard for lexical, easy for logic.
 \entailmentExample
 {Eating candy for dinner is an example of a poor health habit.}
 {Eating candy is an example of a good health habit.}
 
-%% Switch focus to IR / QA
-%In many cases -- most prominently, question answering (QA) -- our task is not to predict
-%  an entailment between a single pair of sentences, but rather to find any
-%  supporting sentence for a query in a large corpus of text.
-%Information retrieval approaches can be viewed as the question answering analogue 
-%  of lexical overlap classifiers for entailment.
-%From the other side, systems like OQA \cite{key:2014fader-openqa} or
-%  NaturalLI \cite{key:2014angeli-naturalli} use a soft logical inference to
-%  find explicit support for the query in the text.
+% Why natural logic
+We present a method to leverage the benefits of both methods.
+Natural logic -- a proof theory over the syntax of natural language --
+  offers a framework for logical inference which is already
+  familiar to lexical methods.
+As an inference system searches closer to a valid premise,
+  the candidates it explores will generally become more lexically similar
+  to that premise.
 
-% Our Goal
-This paper addresses this problem from both directions, implemented within the
-  framework of NaturalLI \cite{key:2014angeli-naturalli}.
-We extend natural logic to handle relational entailment 
-  and meronymy, increasing the total number of inferences that can be handled.
-For cases that remain out of scope, we train a classifier to predict 
-  entailment.
-This is then applied to all candidate premises considered by 
-  NaturalLI, allowing us to return a score for the 
-  whether any of these candidate premises are entailed by
-  a fact in the knowledge base.
-%  most likely premise to
-%  align to anything which entails the query.
-For instance, although the known premise \w{the cat ate a mouse} 
-  and a hypothesis \w{animals are not eaten by carnivores} 
-  have very little lexical overlap, NaturalLI
-  will find the candidate (negated) premise \w{mice are eaten by cats},
-  which is easy to classify as entailed from the known premise.
-  
-%  of a query given a premise returned from an information 
-%  retrieval (IR) system.
-%We additionally present improvements to NaturalLI to accommodate
-%  longer sentences and more complex entailments.
-%We then answer a query by running both systems, allowing NaturalLI to either
-%  (1) answer the question on its own; (2) veto the judgment of the lexical
-%  classifier, or (3) provide soft evidence for the truth or falsehood of the
-%  query based on the results from IR.
-
-%% Natural Logic
-%NaturalLI makes use of natural logic \cite{key:1986benthem-natlog,key:1991valencia-natlog}
-%  to infer the truth of a query from an arbitrary set of plain-text premises.
-%Natural logic is a logical formalism which captures a range of common logical
-%  inferences within the syntax of natural language itself;
-%  that is, without appealing to a synthetic logical syntax and proof system.
-%This is a natural choice for our task, as it allows the two halves of our system
-%  to speak the same language in a sense -- both systems use the same underlying
-%  corpus, and can represent soft entailments using the same features.
-%%In much the same vein as \newcite{key:2008maccartney-natlog} and
-%%  \newcite{key:2009maccartney-natlog}, this allows us to 
+% Contributions
+We therefore extend a natural logic inference engine in two key ways:
+  we handle relational entailment 
+  and meronymy, increasing the total number of inferences that can be made.
+%  (the \textit{distance} the system can search).
+We further implement an \textit{evaluation function} which quickly
+  provide an estimate for how likely a candidate premise is to be supported
+  by the knowledge base, without running the full search.
+%  evaluated at each candidate premise and returns a confidence for
+%  whether the premise is entailed by a fact in the knowledge base.
+% Full example
+For example, a hypothesis \w{a flower produces the seeds} can yield
+  a candidate premise \w{a flower grows seeds}, because \w{grow}
+  entails \w{produce}.
+This can then more easily match a known premise 
+  (e.g., \w{seeds grow inside a flower}) 
+  despite still not matching exactly.
 
 % Contributions
 We present the following contributions:
 (1) we extend the classes of inferences NaturalLI can perform on real-world 
     sentences by
-   incorporating relational entailment and meronymy, and by operating over 
-   dependency trees;
+    incorporating relational entailment and meronymy, and by operating over 
+    dependency trees;
 (2) we augment NaturalLI with an evaluation function to provide an estimate of entailment
-  for any query;
-and 
-%  can be used to correct difficult entailment decisions
-%  made by a lexical classifier; and
-(3) we present the best
-    published numbers on the Aristo fourth grade science questions corpus.
-%  consisting of fourth grade science questions.
+    for any query; and 
+(3) we run our system over the Aristo science questions corpus,
+    achieving the best published numbers.
+
+
+%
+%
+%% Tradeoff between logic and lexical methods
+%A central challenge for textual entailment is finding an optimal trade-off between
+%  \textit{high-precision} logical reasoning, and \textit{broad coverage}
+%  lexical methods.
+%For example, consider the following hypothesis (H) and associated supporting premise (P):
+%
+%% Example: hard for logic, easy for lexical
+%\entailmentExample
+%{Ovaries are the female part of the flower, which produces eggs that are needed for making seeds.}
+%{A flower produces the seeds.}
+%
+%% Explain example; lexical methods often good.
+%To prove the hypothesis from the premise in a satisfactory way, you would need
+%  to traverse a large number of nontrivial inference steps.
+%In contrast, even a simple lexical overlap classifier could correctly predict
+%  the entailment.
+%In fact, such a bag-of-words entailment model has been shown to be surprisingly
+%  effective on the Recognizing Textual Entailment (RTE) challenges 
+%  \cite{key:2009maccartney-thesis}.
+%
+%% Why we want logic anyways
+%On the other hand, such methods are also notorious for ignoring even trivial 
+%  cases of nonentailment that are easy for natural logic, e.g., recognizing negation.
+%For example, we can correctly label the following example
+%  as contradiction, despite near perfect lexical overlap:
+%%For example, the following pair has a near perfect lexical overlap, but in fact defines
+%%  an explicit contradiction:
+%
+%% Example: hard for lexical, easy for logic.
+%\entailmentExample
+%{Eating candy for dinner is an example of a poor health habit.}
+%{Eating candy is an example of a good health habit.}
+%
+%%% Switch focus to IR / QA
+%%In many cases -- most prominently, question answering (QA) -- our task is not to predict
+%%  an entailment between a single pair of sentences, but rather to find any
+%%  supporting sentence for a query in a large corpus of text.
+%%Information retrieval approaches can be viewed as the question answering analogue 
+%%  of lexical overlap classifiers for entailment.
+%%From the other side, systems like OQA \cite{key:2014fader-openqa} or
+%%  NaturalLI \cite{key:2014angeli-naturalli} use a soft logical inference to
+%%  find explicit support for the query in the text.
+%
+%% Our Goal
+%This paper addresses this problem from both directions, implemented within the
+%  framework of NaturalLI \cite{key:2014angeli-naturalli}.
+%We extend natural logic to handle relational entailment 
+%  and meronymy, increasing the total number of inferences that can be handled.
+%For cases that remain out of scope, we train a classifier to predict 
+%  entailment.
+%This is then applied to all candidate premises considered by 
+%  NaturalLI, allowing us to return a score for the 
+%  whether any of these candidate premises are entailed by
+%  a fact in the knowledge base.
+%%  most likely premise to
+%%  align to anything which entails the query.
+%For instance, although the known premise \w{the cat ate a mouse} 
+%  and a hypothesis \w{animals are not eaten by carnivores} 
+%  have very little lexical overlap, NaturalLI
+%  will find the candidate (negated) premise \w{mice are eaten by cats},
+%  which is easy to classify as entailed from the known premise.
+%  
+%%  of a query given a premise returned from an information 
+%%  retrieval (IR) system.
+%%We additionally present improvements to NaturalLI to accommodate
+%%  longer sentences and more complex entailments.
+%%We then answer a query by running both systems, allowing NaturalLI to either
+%%  (1) answer the question on its own; (2) veto the judgment of the lexical
+%%  classifier, or (3) provide soft evidence for the truth or falsehood of the
+%%  query based on the results from IR.
+%
+%%% Natural Logic
+%%NaturalLI makes use of natural logic \cite{key:1986benthem-natlog,key:1991valencia-natlog}
+%%  to infer the truth of a query from an arbitrary set of plain-text premises.
+%%Natural logic is a logical formalism which captures a range of common logical
+%%  inferences within the syntax of natural language itself;
+%%  that is, without appealing to a synthetic logical syntax and proof system.
+%%This is a natural choice for our task, as it allows the two halves of our system
+%%  to speak the same language in a sense -- both systems use the same underlying
+%%  corpus, and can represent soft entailments using the same features.
+%%%In much the same vein as \newcite{key:2008maccartney-natlog} and
+%%%  \newcite{key:2009maccartney-natlog}, this allows us to 
+%
+%% Contributions
+%We present the following contributions:
+%(1) we extend the classes of inferences NaturalLI can perform on real-world 
+%    sentences by
+%   incorporating relational entailment and meronymy, and by operating over 
+%   dependency trees;
+%(2) we augment NaturalLI with an evaluation function to provide an estimate of entailment
+%  for any query;
+%and 
+%%  can be used to correct difficult entailment decisions
+%%  made by a lexical classifier; and
+%(3) we present the best
+%    published numbers on the Aristo fourth grade science questions corpus.
+%%  consisting of fourth grade science questions.
 
 
