@@ -16,11 +16,11 @@ First, an order is chosen to traverse the tokens in a sentence.
 For example, the original paper traverses tokens left-to-right.
 At each token, one of three operations can be performed:
   these are \textit{deleting} a token
-  -- corresponding to inserting a word during natural logic inference,
-  \textit{mutating} a token, and \textit{inserting} a token -- again, corresponding
-  to deleting a token in resulting proof derivation.
-For brevity, we will refer to an insertions during inference (deletions during
-  search) as \textit{deletions}, and vice versa for insertions.
+  (corresponding to inserting a word during natural logic inference),
+  \textit{mutating} a token, and \textit{inserting} a token (again, corresponding
+  to deleting a token in the resulting proof derivation.)
+For brevity, we will refer to insertions during inference (deletions during
+  search) as \textit{deletions}, and vice versa for \textit{insertions}.
 
 %
 % Dependency Trees
@@ -75,7 +75,7 @@ For example, we can infer that
 \end{center}
 
 % Talk about ordering
-This leaves the question of the order to traverse the token in the sentence.
+This leaves the question of the order in which to traverse the tokens in the sentence.
 The natural order is a breadth-first traversal of the dependency tree.
 This avoids repeated deletion of nodes, as we do not have to traverse a
   deleted subtree.
