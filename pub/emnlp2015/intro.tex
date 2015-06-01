@@ -1,15 +1,17 @@
 \Section{intro}{Introduction}
 %-> QA is a rich and useful task for NLP.
-Question answering is an important task in NLP, however it becomes
-  increasingly difficult as the domain diverges from the lexical resources
-  we have (e.g., Freebase).
+%Question answering is an important task in NLP, however it becomes
+Question answering is an important task in NLP, which becomes
+%increasingly difficult as the domain diverges from the lexical resources
+  %we have (e.g., Freebase).
+increasingly difficult as the domain diverges from that of existing lexical resources.
 %-> It's appealing to develop systems which work across many domains,
 %   and don't rely on structured KBs or domain-specific resources
 %   like NER taggers.
 %In these cases structured resource like Freebase, and even core NLP tasks
 %  like named entity tagging become less useful.
 In these cases, insights from textual entailment become increasingly applicable --
-  question answering task be viewed as an entailment task from a
+  question answering can be viewed as an entailment task from a
   very large premise set.
 % Thesis sentence
 We present an approach for answering $4^\textrm{th}$ grade science exam questions
@@ -24,7 +26,7 @@ While this is high-precision, in many cases a formal proof
   is difficult or impossible.
 For example, consider the following hypothesis (H) 
   and its supporting premise (P)
-  for the question \w{which part of a plant produces the seeds?}:
+  for the question \w{Which part of a plant produces the seeds?}:
 
 % Example: hard for logic, easy for lexical
 \entailmentExample
@@ -48,7 +50,7 @@ For example:
 {Eating candy is an example of a good health habit.}
 
 % Why natural logic
-We present a method to leverage the benefits of both methods.
+We present an approach to leverage the benefits of both methods.
 Natural logic -- a proof theory over the syntax of natural language --
   offers a framework for logical inference which is already
   familiar to lexical methods.
@@ -62,7 +64,7 @@ We therefore extend a natural logic inference engine in two key ways:
   and meronymy, increasing the total number of inferences that can be made.
 %  (the \textit{distance} the system can search).
 We further implement an \textit{evaluation function} which quickly
-  provide an estimate for how likely a candidate premise is to be supported
+  provides an estimate for how likely a candidate premise is to be supported
   by the knowledge base, without running the full search.
 %  evaluated at each candidate premise and returns a confidence for
 %  whether the premise is entailed by a fact in the knowledge base.
