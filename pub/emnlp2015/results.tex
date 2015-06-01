@@ -67,24 +67,29 @@ We evaluate our entailment system on the Regents Science Exam portion of
 The dataset consists of a collection of multiple-choice science questions
   from the New York Regents 4$^{\textrm{th}}$ Grade Science Exams
   \cite{key:NYSED}.
-We treat this as an question answering task -- given a supporting corpus,
-  find evidence for the truth of a particular answer.
+Each multiple choice option is translated to a candidate hypotheses.
+A large corpus of text is given as a knowledge base;
+  the task is to find support in this knowledge base for the hypothesis.
 
 % Why do we use it?
 Our system is in many ways well-suited to the dataset.
 Although certainly many of the facts require complex reasoning
-  (see \refsec{aristo-analysis}), the majority of questions can be
-  answered from a single premise -- allowing Natural Logic to be used
-  as the inference formalism.
+  (see \refsec{aristo-analysis}), the majority can be
+  answered from a single premise.
+%  -- allowing Natural Logic to be used
+%  as the inference formalism.
 Unlike FraCaS or the RTE challenges, however, the task does not have explicit
   premises to run inference from, but rather must infer the truth of the
   hypothesis from a large collection of supporting text.
-Unlike the common-sense reasoning task in \newcite{key:2014angeli-naturalli}
-  though,
-  the queries in the Aristo dataset are relatively longer, complete sentences.
-This necessitates the adaptations in \refsec{naturalli}, 
-  and benefits more from the
-  soft signals defined in \refsec{softsignal}.
+This makes NaturalLI a good candidate for an approach.
+However, the queries in the Aristo dataset are relatively longer, complete
+  sentences than the common sense reasoning task in
+  \newcite{key:2014angeli-naturalli}, necessitating the 
+  improvements in \refsecs{naturalli}{softsignal}.
+%Unlike the common-sense reasoning task in \newcite{key:2014angeli-naturalli}
+%  though,
+%  the queries in the Aristo dataset are relatively longer, complete sentences.
+%This necessitates the 
 
 \Subsection{aristo-data}{Data Processing}
 % Corpora
@@ -127,19 +132,19 @@ In cases where the question contained multiple sentences, only the last sentence
 % Mutliple Choice as Entailment
 %
 \Subsection{aristo-train}{Training an Entailment Classifier}
-To train a soft entailment classifier, we needed a training set of positive
+To train a soft entailment classifier, we needed a set of positive
   and negative entailment instances.
-These were collected on Mechanical Turk from a set of candidate entailment pairs.
+These were collected on Mechanical Turk. % from a set of candidate entailment pairs.
 In particular, for each true hypothesis in the training set and for each sentence
-  in the Barron's study guide, we found the top 8 results from Lucene and considered
+  in the Barron's study guide, we found the top 8 results from Solr and considered
   these to be candidate entailments.
 These were then shown to Turkers, who decided whether the premise entailed the
   hypothesis, the hypothesis entailed the premise, both, or neither.
 %Note that each pair was shown to only one Turker, lowering the cost of
 %  data collection, but consequently resulting in a somewhat noisy dataset.
-The data was then augmented with an additional set of negatives, collected by taking
-  the top 10 Lucene results for each negative hypothesis in the training set.
-This yielded a total of \num{21306} training examples.
+The data was augmented with additional negatives, collected by taking
+  the top 10 Solr results for each false hypothesis in the training set.
+This yielded a total of \num{21306} examples.
 %which was used to train a simple logistic regression classifier.
 
 The scores returned from NaturalLI incorporate negation in two ways:
@@ -261,16 +266,16 @@ Anecdotally, both parameters are fairly robust.
 %%  and scales gracefully to a larger supporting corpus.
 %%
 %We additionally report results for a number of traditional baselines.
-%The simplest of these is to rank answers based on the Lucene score returned by
+%The simplest of these is to rank answers based on the Solr score returned by
 %  Solr.
 %This turned out to be a surprisingly strong baseline -- furthermore, as the supporting
 %  corpus size increases, the scores become significantly better calibrated, and
 %  performance improves dramatically.
 %
 %Our second baseline uses only the keyword overlap classifier, either with or without
-%  the Lucene scores included as a feature.
-%Both of these baselines offer a boost over using the Lucene score alone -- although
-%  it's interesting to note that the Lucene score actively hurts the classifier's
+%  the Solr scores included as a feature.
+%Both of these baselines offer a boost over using the Solr score alone -- although
+%  it's interesting to note that the Solr score actively hurts the classifier's
 %  performance if the corpus size is small (i.e, when run on the Barron's corpus).
 %
 %Lastly, we present results for the combination of NaturalLI with a soft classifier,
