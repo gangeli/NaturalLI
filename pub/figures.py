@@ -70,7 +70,7 @@ def monotonicity_lex_meronymy(path):
   xlabel('Denotation of word $x$')
   xlim(-1.0, 13.0)
   xticks([0, 3, 6, 9, 12],
-         ['$x=$ Hilo', 'Hawai\'i', 'Hawaii', 'USA', 'North America'])
+         ['$x=$ Hilo', 'Big Island', 'Hawaii', 'USA', 'North America'])
   ylabel('Truth Value of Sentence')
   ylim(-0.1, 1.7)
   yticks([0, 1], ['False', 'True'])
