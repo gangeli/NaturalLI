@@ -37,11 +37,11 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   public static boolean USE_LUCENE = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  public static double SOLR_WEIGHT = 1.0 / 6.0;
-  public static double CLASSIFIER_WEIGHT = 1.0 / 24.0;
+  public static double ALIGNMENT_WEIGHT = 6.0;
+  public static double CLASSIFIER_WEIGHT = 1.0 / 4.0;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
-  private static String NATURALLI_INCACHE = "logs/test_all.cache";
+  private static String NATURALLI_INCACHE = "logs/train_all.cache";
 
   @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
@@ -497,10 +497,10 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       double score = 0.0;
       if (USE_NATURALLI) {
         if (USE_LUCENE) {
-          score += luceneScore.orElse(Double.NaN) * SOLR_WEIGHT;
+          score += luceneScore.orElse(Double.NaN);
         }
         double naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
-        score += naturalLIScore;
+        score += naturalLIScore * ALIGNMENT_WEIGHT;
 
         Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
         score += CLASSIFIER_WEIGHT * scoreAlignmentSimple(features);

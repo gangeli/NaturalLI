@@ -233,8 +233,8 @@ We report numbers for two variants of the system:
 %Note that the \textit{oracle} variant is a human-in-the-loop system.
 
 % Baselines
-We additionally present three baseline systems.
-The first is a simple system which uses Solr's IR confidence to rank
+We additionally present three baselines.
+The first simply uses Solr's IR confidence to rank
   entailment (\textit{Solr Only} in \reftab{aristonaturalli}).
 The max IR score of any premise given a hypothesis is taken
   as the score for that hypothesis.
@@ -295,6 +295,10 @@ The most common error can be attributed to the question requiring complex reason
   about multiple premises.
 \num{29} of \num{108} questions in the training set (26\%) contain multiple
   premises.
+Some of these cases can be recovered from 
+  (e.g., \w{This happens because the smooth road has less friction.}), 
+  while others are trivially out of scope for our method 
+  (e.g., \w{The volume of water most likely decreased.}).
 Although there is usually still some signal for which answer is most likely to be correct,
   these questions are fundamentally out-of-scope for the approach.
 %Empirically, we correctly predict \todo{XYZ} of these questions, performing somewhat 
@@ -307,7 +311,7 @@ For example, the question \w{A human offspring can inherit blue eyes} has
 Another class of errors which deserves mention are cases where a system produces
   the same score for multiple answers.
 This occurs fairly frequently in the standalone classifier 
-  (7\% of examples; 4\% loss from random guesses),
+  (7\% of examples in training; 4\% loss from random guesses),
   and especially often in NaturalLI (11\%; 6\% loss from random guesses).
 This offers some insight into why incorporating other models -- even with
   low weight -- can offer significant boosts in the performance
@@ -315,7 +319,14 @@ This offers some insight into why incorporating other models -- even with
 %Empirically, NaturalLI is forced to guess on 33\% more examples than the
 %  alignment feature classifier.
 %This alone accounts for 6.5 points of accuracy -- on errors which are often
-A remaining chunk of errors is, of course, caused by errors during classification.
+
+A remaining chunk of errors are of course classification errors.
+For example, \w{Water freezing is an example of a gas changing to a solid}
+  is marked as the best hypothesis, supported incorrectly by 
+  \w{An ice cube is an example of matter that changes from a solid to a liquid to a gas},
+  which after mutating \w{water} to \w{ice cube} matches every keyword in the
+  hypothesis.
+  
 
 %% Drop from align features to NaturalLI?
 %A peculiarity of the results is the drop in accuracy from the alignment

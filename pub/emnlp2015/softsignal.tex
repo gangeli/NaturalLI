@@ -200,6 +200,7 @@ We can therefore define a pair of keywords as \textit{matching} in NaturalLI
 The second constraint encodes a good approximation for negation.
 To illustrate, consider the polarity signatures of common operators:
 
+\vspace{-0.75em}
 \begin{center}
 \begin{tabular}{lcc}
 %  \hline
@@ -214,17 +215,18 @@ To illustrate, consider the polarity signatures of common operators:
 \end{tabular}
 \end{center}
   
-We note that, e.g., \textit{some}
-  and \textit{no} induce the exact opposite polarity on their arguments;
-  similarly \textit{all} and \textit{not all} have opposite polarities.
+We note that most contradictory operators (e.g., \textit{some}/\textit{no};
+  \textit{all}/\textit{not all}) induce the exact opposite polarity on 
+  their arguments.
+%  similarly \textit{all} and \textit{not all} have opposite polarities.
 %The conspicuous counterexamples to this is the operator pairs \w{all} and \w{no},
 %  which have the same monotonicity in their subjects but are nonetheless negations
 %  of each other.
 Otherwise, pairs of operators which share half their signature are 
-  nearly always compatible with each other (e.g., \w{some} and \w{all}).
+  usually compatible with each other (e.g., \w{some} and \w{all}).
 %In all, we consider this a good simple approximation at a low cost.
 
-This suggests a natural criterion for likely negation:
+This suggests a criterion for likely negation:
   If the highest classifier score is produced by a contradictory candidate 
   premise, we have reason to believe that we 
   may have found a contradiction.
@@ -232,8 +234,8 @@ To illustrate with our example, NaturalLI would mutate \w{no cats have tails}
   to \w{the cats have tails}, at which point it has found a 
   contradictory candidate premise which has perfect overlap with the 
   premise \w{some cats have tails}.
-Even had we not found the exact premise, this would suggest that
-  the hypothesis is likely contradicted.
+Even had we not found the exact premise, this suggests that
+  the hypothesis is likely false.
 
 
 %This leads naturally into the second soft signal that NaturalLI can convey, when

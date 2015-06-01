@@ -1,7 +1,7 @@
 \Section{intro}{Introduction}
 %-> QA is a rich and useful task for NLP.
 %Question answering is an important task in NLP, however it becomes
-Question answering is an important task in NLP, which becomes
+Question answering is an important task in NLP, but becomes
 %increasingly difficult as the domain diverges from the lexical resources
   %we have (e.g., Freebase).
 increasingly difficult as the domain diverges from that of existing lexical resources.
@@ -10,13 +10,18 @@ increasingly difficult as the domain diverges from that of existing lexical reso
 %   like NER taggers.
 %In these cases structured resource like Freebase, and even core NLP tasks
 %  like named entity tagging become less useful.
-In these cases, insights from textual entailment become increasingly applicable --
-  question answering can be viewed as an entailment task from a
-  very large premise set.
+
+In these cases, viewing question answering as textual entailment over a
+  very large premise set can offer a means of generalizing reliably over
+  these open domains.
+%  from textual entailment become increasingly applicable  --
+%  question answering can be viewed as an entailment task from a
+%  very large premise set.
 % Thesis sentence
 We present an approach for answering $4^\textrm{th}$ grade science exam questions
-  which combines logical reasoning and broad-coverage lexical methods in a
-  coherent framework.
+  using textual entailment methods which combines logical reasoning 
+  and broad-coverage lexical methods in a coherent framework based around
+  natural logic.
 
 % -> OK, let's try formal reasoning
 A natural approach to textual entailment
@@ -25,10 +30,9 @@ A natural approach to textual entailment
 %While this is high-precision, in many cases a formal proof
 %  is difficult or impossible.
 However, this high-precision approach is not feasible in cases
-    where a formal proof is difficult or impossible, such as
-    in the following example.
+    where a formal proof is difficult or impossible.
 %For example, consider the following hypothesis (H) 
-Consider the following hypothesis (H) 
+For example, consider the following hypothesis (H) 
   and its supporting premise (P)
   for the question \w{Which part of a plant produces the seeds?}:
 

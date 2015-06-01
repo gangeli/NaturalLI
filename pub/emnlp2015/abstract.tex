@@ -1,21 +1,26 @@
 \begin{abstract}
-Broad domain question answering often benefits from signals from
-  both shallow lexical methods and formal logical
-  reasoning.
+Broad domain question answering is often difficult in the absence of
+  structured knowledge bases, and can benefit from
+  shallow lexical methods (broad coverage) or logical
+  reasoning (high precision).
+%  from signals from
+%  both shallow lexical methods and formal logical
+%  reasoning.
 We propose an approach for incorporating both of these signals in
-  a unified framework based around natural logic.
-We extend the breadth of inferences warranted by natural
+  a unified framework based on natural logic.
+We extend the breadth of inferences afforded by natural
   logic to include relational entailment
   (e.g., \w{buy} $\rightarrow$ \w{own}) 
   and meronymy
   (e.g., a person born in a city is born the city's country).
-Furthermore, we incorporate an \textit{evaluation function}
-  while searching over candidate premises to capture
+Furthermore, we train a model to evaluate candidate premises
+%  while searching over candidate premises to capture
+  and provide
   a soft judgment for whether that premise is supported
   by the knowledge base.
 We evaluate our approach on answering
   multiple choice science questions, achieving the best published
-  numbers on the dataset.
+  results on the dataset.
 
 %Natural logic question answering systems, such as NaturalLI,
 %  can capture a large number of useful inferences; nonetheless,

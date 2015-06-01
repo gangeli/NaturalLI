@@ -30,7 +30,7 @@ public class MultipleChoiceSolver {
   public static File MODEL = new File("logs/last_suite/0/model.ser.gz");
 
   @Execution.Option(name="data", gloss="The file to evaluate on")
-  public static File DATA_FILE = new File("etc/aristo/eval_test_allcorpora.tab");
+  public static File DATA_FILE = new File("etc/aristo/eval_train_allcorpora.tab");
 
   private static final DecimalFormat percent = new DecimalFormat("0.000%");
 
