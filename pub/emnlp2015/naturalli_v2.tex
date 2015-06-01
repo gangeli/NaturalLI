@@ -256,6 +256,7 @@ When mutating an edge, we XOR the hash of the parent state with the edge we are
 %  about the edge currently being considered (8 bytes), global information about the words
 %  deleted during search (5 bytes), a 3 byte backpointer to recover the
 %  inference path, and 8 bytes of operator metadata -- 32 bytes in all.
-%This results in an incidental contribution of having made NaturalLI significantly
-%  faster and more memory efficient.
+This results in an incidental contribution of having made NaturalLI significantly
+  faster and more memory efficient -- e.g., each search state can fit into
+  only 32 bytes.
 
