@@ -299,15 +299,11 @@ Some of these cases can be recovered from
   (e.g., \w{This happens because the smooth road has less friction.}), 
   while others are trivially out of scope for our method 
   (e.g., \w{The volume of water most likely decreased.}).
-Although there is usually still some signal for which answer is most likely to be correct,
-  these questions are fundamentally out-of-scope for the approach.
+%Although there is usually still some signal for which answer is most likely to be correct,
+%  these questions are fundamentally out-of-scope for the approach.
 %Empirically, we correctly predict \todo{XYZ} of these questions, performing somewhat 
 %  but not substantially above random chance.
 
-% Other errors
-Other questions are simply not supported by any single sentence in the corpus.
-For example, the question \w{A human offspring can inherit blue eyes} has
-  no support in the corpus that does not require significant multi-step inferences.
 Another class of errors which deserves mention are cases where a system produces
   the same score for multiple answers.
 This occurs fairly frequently in the standalone classifier 
@@ -316,9 +312,18 @@ This occurs fairly frequently in the standalone classifier
 This offers some insight into why incorporating other models -- even with
   low weight -- can offer significant boosts in the performance
   of NaturalLI.
+Both this and the previous class could be further mitigated
+  by having a notion of a \textit{process}; e.g., as in
+  \newcite{key:2014berant-bioprocess}.
 %Empirically, NaturalLI is forced to guess on 33\% more examples than the
 %  alignment feature classifier.
 %This alone accounts for 6.5 points of accuracy -- on errors which are often
+
+
+% Other errors
+Other questions are simply not supported by any single sentence in the corpus.
+For example, \w{A human offspring can inherit blue eyes} has
+  no support in the corpus that does not require significant multi-step inferences.
 
 A remaining chunk of errors are of course classification errors.
 For example, \w{Water freezing is an example of a gas changing to a solid}
