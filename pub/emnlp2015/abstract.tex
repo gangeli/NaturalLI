@@ -1,23 +1,38 @@
 \begin{abstract}
-
-
-We tackle the task of 
-Natural logic question answering systems, such as NaturalLI,
-  can capture a large number of useful inferences; nonetheless,
-  there are many cases that are out of scope for the
-  formalism.
-We propose two contributions to mitigate these cases:
-  we incorporate reasoning about relational entailment
+Broad domain question answering often benefits from signals from
+  both shallow lexical methods and formal logical
+  reasoning.
+We propose an approach for incorporating both of these signals in
+  a unified framework based around natural logic.
+We extend the breadth of inferences warranted by natural
+  logic to include relational entailment
   (e.g., \w{buy} $\rightarrow$ \w{own}) 
   and meronymy
   (e.g., a person born in a city is born the city's country).
 Furthermore, we incorporate an \textit{evaluation function}
-  while searching over candidate premises that captures
+  while searching over candidate premises to capture
   a soft judgment for whether that premise is supported
   by the knowledge base.
-This allows us to provide a confidence for every query.
-We present
-  the best published results on the Aristo science exams corpus.
+We evaluate our approach on answering
+  multiple choice science questions, achieving the best published
+  numbers on the dataset.
+
+%Natural logic question answering systems, such as NaturalLI,
+%  can capture a large number of useful inferences; nonetheless,
+%  there are many cases that are out of scope for the
+%  formalism.
+%We propose two contributions to mitigate these cases:
+%  we incorporate reasoning about relational entailment
+%  (e.g., \w{buy} $\rightarrow$ \w{own}) 
+%  and meronymy
+%  (e.g., a person born in a city is born the city's country).
+%Furthermore, we incorporate an \textit{evaluation function}
+%  while searching over candidate premises that captures
+%  a soft judgment for whether that premise is supported
+%  by the knowledge base.
+%This allows us to provide a confidence for every query.
+%We present
+%  the best published results on the Aristo science exams corpus.
 
 
 
