@@ -22,9 +22,13 @@ We present an approach for answering $4^\textrm{th}$ grade science exam question
 A natural approach to textual entailment
   %-- inherent in the name itself -- 
   is to treat it as a logical entailment problem.
-While this is high-precision, in many cases a formal proof
-  is difficult or impossible.
-For example, consider the following hypothesis (H) 
+%While this is high-precision, in many cases a formal proof
+%  is difficult or impossible.
+However, this high-precision approach is not feasible in cases
+    where a formal proof is difficult or impossible, such as
+    in the following example.
+%For example, consider the following hypothesis (H) 
+Consider the following hypothesis (H) 
   and its supporting premise (P)
   for the question \w{Which part of a plant produces the seeds?}:
 
@@ -60,8 +64,13 @@ As an inference system searches closer to a valid premise,
 
 % Contributions
 We therefore extend a natural logic inference engine in two key ways:
+%  we handle relational entailment 
+%  and meronymy, increasing the total number of inferences that can be made.
   we handle relational entailment 
   and meronymy, increasing the total number of inferences that can be made.
+  For example, a hypothesis \w{a flower produces the seeds} can yield
+  a candidate premise \w{a flower grows seeds}, because \w{grow}
+  entails \w{produce}.
 %  (the \textit{distance} the system can search).
 We further implement an \textit{evaluation function} which quickly
   provides an estimate for how likely a candidate premise is to be supported
@@ -69,9 +78,9 @@ We further implement an \textit{evaluation function} which quickly
 %  evaluated at each candidate premise and returns a confidence for
 %  whether the premise is entailed by a fact in the knowledge base.
 % Full example
-For example, a hypothesis \w{a flower produces the seeds} can yield
-  a candidate premise \w{a flower grows seeds}, because \w{grow}
-  entails \w{produce}.
+%For example, a hypothesis \w{a flower produces the seeds} can yield
+%  a candidate premise \w{a flower grows seeds}, because \w{grow}
+%  entails \w{produce}.
 This can then more easily match a known premise 
   (e.g., \w{seeds grow inside a flower}) 
   despite still not matching exactly.
