@@ -1,0 +1,266 @@
+%%%%%%%%%%%%%%%%%%%
+% RELATION EXTRACTION
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Relation Extraction}
+  \hh{Input}:  Sentences containing (\subj{entity}, \obj{slot value}). \\
+  \hh{Output}: \rel{Relation} between \subj{entity} and \obj{slot value}.
+  \pause
+  \vspace{1cm}
+
+  \hh{Consider two approaches:} \begin{itemize}
+    \item \h{Supervised:} Trivial as a supervised classifier. \\
+      Training data: \{(sentence, relation)\}. \\
+      \textit{But}$\dots$ \pause this training data is expensive to produce.
+    \pause
+    \vspace{0.5cm}
+  
+    \item \h{Distantly Supervised:} Artificially produce ``supervised'' data. \\
+      Training data: \{(\subj{entity}, relation, \obj{slot value})\}. \\
+      \textit{But}$\dots$ \pause this training data is much more noisy.
+  \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CONTRIBUTIONS
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{EMNLP 2014: Combine Benefits of Both}
+\begin{center}
+  \hh{Adding carefully selected supervision improves
+      distantly supervised relation extraction.}
+\end{center}
+\pause
+
+\begin{itemize}
+  \itemsep1em
+  \item Sampling by Jensen-Shannon Divergence is best selection criteron.
+  \pause
+  \item Initializing MIML-RE with a supervised classifier is important.
+  \pause
+  \item In fact, a supervised classifier does surprisingly well on its own.
+\end{itemize}
+
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% ACTIVE LEARNING
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Active Learning}
+\hh{Old problem:}  Supervision is expensive,
+  but very useful. \\
+\vspace{0.25cm}
+\hh{Old solution:} Active learning! \\
+\pause
+\begin{itemize}
+  \item Select a subset of latent $z$ to annotate.
+  \item Fix these labels during training.
+  \pause
+  \item Bonus: this creates a supervised training set.
+  \begin{itemize}
+    \item We initialize from a supervised classifier on this training set.
+  \end{itemize}
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Some Statistics}
+\begin{itemize}
+  \item 1,208,524 latent $z$ which we could annotate.
+  \item \$0.13 per annotation.
+  \item \textcolor{red}{\$160,000} to annotate everything.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{New spin:} Have to get it right the first time.
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% SELECTION CRITERIA
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Example Selection Criteria}
+\begin{enumerate}
+  \item Train $k$ MIML-RE models on $k$ subsets of the data. \\
+    \vspace{0.1cm}
+    \begin{tabular}{ccccc}
+      \scalebox{0.2}{\mimlPlate} &
+      \scalebox{0.2}{\mimlPlate} &
+      \scalebox{0.2}{\mimlPlate} &
+      \scalebox{0.2}{\mimlPlate} &
+      \scalebox{0.2}{\mimlPlate}
+    \end{tabular}
+  \pause
+
+  \item For each latent $z$, each trained model $c$ predicts a multinomial $P_c(z)$.
+  \pause
+
+  \item Calculate Jensen-Shannon divergence:
+        $\frac{1}{k} \sum_{c = 1}^k \textrm{KL}(p_c(z) || p_{mean}(z))$.
+  \pause
+  
+  \item We have measure of \textit{disagreement} for each $z$.
+\end{enumerate}
+\pause
+
+\hh{Three selection criteria}
+\begin{itemize}
+  \item Sample uniformly (\textit{uniform}).
+  \pause
+  \item Take $z$ with highest disagreement (\textit{highJS}).
+  \pause
+  \item \textbf{Sample $z$ with highest disagreement (\textit{sampleJS})}.
+\end{itemize}
+\end{frame}
+
+\makeatletter
+    \def\rowcolor{\noalign{\ifnum0=`}\fi\bmr@rowcolor}
+    \newcommand<>{\bmr@rowcolor}{%
+        \alt#1%
+            {\global\let\CT@do@color\CT@@do@color\@ifnextchar[\CT@rowa\CT@rowb}% 
+            {\ifnum0=`{\fi}\@gooble@rowcolor}% 
+    }
+
+    \newcommand{\@gooble@rowcolor}[2][]{\@gooble@rowcolor@}
+    \newcommand{\@gooble@rowcolor@}[1][]{\@gooble@rowcolor@@}
+    \newcommand{\@gooble@rowcolor@@}[1][]{\ignorespaces}
+    \makeatother
+
+
+%%%%%%%%%%%%%%%%%%%
+% CRITERIA GRAPH
+%%%%%%%%%%%%%%%%%%%
+%\begin{frame}{Example Selection Criteria}
+%  \begin{center}
+%    \begin{tikzpicture}
+%    \begin{axis}[
+%      ymin=0,ymax=10000,enlargelimits=false,
+%      xlabel={JS Disagreement},
+%      ylabel={\# Examples}
+%      ]
+%    \addplot
+%    	[const plot,fill=blue,draw=black] 
+%    coordinates
+%    {
+%      (0.1,9345)
+%      (0.2,2932)
+%      (0.3,413)
+%      (0.4,463)
+%      (0.5,210)
+%      (0.6,96)
+%      (0.7,25)
+%      (0.8,21)
+%      (0.9,20)
+%      (1,10)} 
+%    	\closedcycle;
+%    \end{axis}
+%    \end{tikzpicture}
+%  \end{center}
+%  \pause
+%
+%  \begin{textblock*}{6cm}(4.5cm,3.0cm)
+%    \textcolor<1-1>{white}{$\leftarrow$ Mostly easy examples}
+%  \end{textblock*}
+%  \pause
+%
+%  \begin{textblock*}{6cm}(5.5cm,6.5cm)
+%    \textcolor<1-2>{white}{Potentially \\ Non-representative examples $\downarrow$}
+%  \end{textblock*}
+%\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CRITERIA EXAMPLES
+%%%%%%%%%%%%%%%%%%%
+\definecolor{LRed}{rgb}{1,.8,.8}
+\begin{frame}{Example Selection Criteria}
+\vspace{-1cm}
+\begin{center}
+\begin{tabular}{lccc}
+  & \multicolumn{3}{c}{\hh{Committee Member Judgments}} \\
+  &&&\\
+  & \scalebox{0.2}{\mimlPlate} &
+    \scalebox{0.2}{\mimlPlate} &
+    \scalebox{0.2}{\mimlPlate} \\
+  \textbf{Sentence} & \textbf{Member A} & \textbf{Member B} & \textbf{Member C} \\
+  \rowcolor<2-2>{LRed}
+  \w{\subj{Obama} was born in \obj{Hawaii}} & \rel{born} & \rel{born} & \rel{no relation} \\
+  \rowcolor<4-4>{LRed}
+  \w{\subj{Obama} grew up in  \obj{Hawaii}} & \rel{born} & \rel{lived in} & \rel{born} \\
+  \rowcolor<3-3>{LRed}
+  \w{\subj{Obama} Bear visits \obj{Hawaii}} & \rel{no relation} & \rel{born} & \rel{employee of} \\
+  \rowcolor<2-2>{LRed}
+  \w{\obj{President} \subj{Obama} $\dots$}          & \rel{title} & \rel{title} & \rel{title} \\
+  \rowcolor<3-4>{LRed}
+  \w{\subj{Obama} employed \obj{president} $\dots$} & \rel{employee of} & \rel{title} & \rel{employee of} \\
+\end{tabular}
+\end{center}
+\pause
+
+\hh{Uniform}: Often annotates easy sentences. \\
+\pause
+\hh{High JS (disagreement)}: More likely to annotate ``rare'' sentences. \\
+\pause
+\hh{Sample JS (disagreement)}: Mix of hard and representative sentences. \\
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%
+% RESULTS: CRITERIA IMPORTANT (KBP)
+%%%%%%%%%%%%%%%%%%%
+\def\g#1{\textcolor{gray}{#1}}
+\begin{frame}[noframenumbering]{SampleJS performs best on TAC-KBP challenge.}
+\hh{TAC-KBP 2013 Slot Filling Challenge:}
+\begin{itemize}
+  \item End-to-end task -- includes IR + consistency.
+  \pause
+\item \textbf{Precision:} facts LDC evaluators judged as correct. \\
+      \textbf{Recall:} facts other teams (including LDC annotators) also found.
+\end{itemize}
+\pause
+\vspace{0.25cm}
+
+\begin{center}
+  \begin{tabular}{lccc}
+    \textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
+    \hline
+    No active learning                 & \g{38.0} & \g{30.5} & 33.8 \pause \\
+    \hline
+    Sample uniformly                   & \g{34.4}              & \g{35.0}          & 34.7 \pause \\
+    Highest JS disagreement            & \g{46.2} & \g{30.8}          & 37.0 \pause \\
+    Sample JS disagreement             & \g{39.4}              & \g{36.2}          & 37.7 \\
+  \end{tabular}
+\end{center}
+\pause
+\begin{itemize}
+  \item 2014 TAC-KBP Slot Filling Challenge: 27.6 $\rightarrow$ 32.0 F$_1$.
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% RESULTS: SUPERVISED
+%%%%%%%%%%%%%%%%%%%
+\def\grey#1{\textcolor{gray}{#1}}
+\begin{frame}{A supervised classifier performs surprisingly well.}
+\hh{TAC-KBP 2013 Slot Filling Challenge:}
+\begin{itemize}
+  \item End-to-end task -- includes IR + consistency.
+\item \textbf{Precision:} facts LDC evaluators judged as correct. \\
+      \textbf{Recall:} facts other teams (including LDC annotators) also found.
+\end{itemize}
+\vspace{0.25cm}
+
+\begin{center}
+  \begin{tabular}{lccc}
+    \textbf{System} & \textbf{P} & \textbf{R} & \textbf{F$_1$} \\
+    \hline
+    MIML-RE (baseline)       & 38.0          & 30.5          & 33.8 \pause \\
+    \textbf{Supervised from SampleJS}      & 33.5          & 35.0 & 34.2 \pause \\
+    \hline
+    \grey{MIML-RE Supervised init.} & \grey{35.1}   & \grey{35.6}   & \grey{35.5} \\
+    \grey{SampleJS}          & \grey{39.4}   & \grey{36.2}   & \grey{37.7} \\
+  \end{tabular}
+\end{center}
+\pause
+
+\begin{itemize}
+  \item A bit circular: Need MIML-RE to get supervised examples.
+\end{itemize}
+\end{frame}

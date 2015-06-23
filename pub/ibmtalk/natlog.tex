@@ -1,0 +1,341 @@
+%%%%%%%%%%%%%%%%%%% 
+% SEGUE
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Wasn't there some talk of logic?}
+\begin{center}
+\includegraphics[height=5cm]{../img/dory.jpg}
+\end{center}
+\end{frame}
+
+\begin{frame}{I was promised there would be logic.}
+\begin{center}
+\includegraphics[height=5cm]{../img/office-space.jpg}
+\end{center}
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%% 
+% RECALL
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Recall...}
+\hh{Problem 2:} We'd like to be aware of logical subtleties:
+\begin{center}
+  \w{All young rabbits drink milk} \\ 
+  $\centernot \implies$ \w{All rabbits drink milk}
+\end{center}
+
+\hh{Step 2:} Shorten each clause:
+\begin{itemize}
+  \item[]
+      \begin{dependency}[text only label, label style={above}]
+        \begin{deptext}[column sep=-0.05cm]
+          she \& Born \& in \& a \& small \& town \\
+        \end{deptext}
+        \depedge[edge unit distance=1.25ex]{2}{6}{prep\_in}
+        \depedge[edge unit distance=1.0ex]{6}{5}{amod}
+        \depedge[edge unit distance=1.4ex]{6}{4}{det}
+        \depedge[edge unit distance=2.0ex, edge style={blue!60!black,thick}]{2}{1}{\darkblue{nsubj}}
+      \end{dependency}
+  \item[] $\implies$ \w{She born in a small town}
+  \item[] $\implies$ \w{She born in small town}
+  \item[] $\implies$ \w{She born in town}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% Natural Logic
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Natural Logic}
+\begin{center}
+\hh{If I mutate a sentence in this way, do I preserve its truth?}
+\end{center}
+\vspace{1em}
+\pause
+
+\hh{Braindead for humans, but not computers}
+\begin{itemize}
+  \item \w{All young rabbits drink milk}
+        $\centernot \implies$ \w{All rabbits drink milk} \\
+        \w{Some young rabbits drink milk}
+        $\implies$ \w{Some rabbits drink milk} \\
+  \pause
+  \item \w{Enemies give fake praise}
+        $\centernot \implies$ \w{Enemies give praise} \\
+        \w{Friends give frequent praise}
+        $\implies$ \w{Friends give praise} \\
+\end{itemize}
+\vspace{1em}
+\pause
+
+\hh{Hard even for first order logic}
+\begin{itemize}
+  \item \w{Most cats eat mice}
+        $\implies$ \w{Most cats eat rodents} \\
+  \item \w{All students who know a foreign language learned it at university} \\
+        $\implies$ \w{They learned it at school.}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% NATLOG AS SYLLOGISMS
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Natural Logic as Syllogisms}
+\begin{center}
+  \hh{s/Natural Logic/Syllogistic Reasoning/g} \\
+  \vspace{0.25cm}
+  \begin{tabular}{lp{4cm}}
+    &Some cat ate a mouse \\
+    & \darkgray{\textit{(all mice are rodents)}} \\
+    $\therefore$& \true{Some cat ate a \textbf{rodent}} \\
+  \end{tabular}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% POLARITY
+%%%%%%%%%%%%%%%%%%%
+\def\catFelineVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=light] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=dark] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{cat} $\subseteq$ \w{feline}};
+  \end{tikzpicture}
+}
+
+\def\felineAnimalVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=dark] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=light] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{feline} $\subseteq$ \w{animal}};
+  \end{tikzpicture}
+}
+
+\def\header{
+  \hh{Treat hypernymy as a \textit{partial order}.}
+  \begin{center}
+%    \catFelineVenn \felineAnimalVenn 
+%    \hspace{0.5cm}
+%    \raisebox{1cm}[0pt][0pt]{
+%      \includegraphics[height=1.0cm]{../../img/rArrow.jpg}
+%    }
+%    \hspace{0.5cm}
+    \scalebox{0.75}{\lattice}
+  \end{center}
+}
+\def\blurb{
+  \hh{\textit{Polarity} is the direction a lexical item can move in the ordering.} \\
+}
+\def\title{Natural Logic and Polarity}
+
+\begin{frame}{\title}
+  \header
+  \pause
+  \blurb
+  \begin{center}
+    \monoHeader
+      \node[black]{animal};
+      \node[black]{feline};
+      \node[punktchain,color=blue]{cat};
+      \node[black]{house cat};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+
+\def\title{An Example Inference}
+\def\all{\monoUp{}{\textbf{All$_{\downarrow \uparrow}$}}{}{}}
+\def\cats{\monoDown{house cats}{cats}{felines}{carnivores}}
+\def\eat{\monoUp{slurp}{eat}{consume}{}}
+\def\mice{\monoUp{fieldmice}{mice}{rodents}{placentals}}
+
+\begin{frame}{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Polarity}} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Inference is reversible.}}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \cats \hspace{0.25cm} \eat \mice
+\end{center}
+\end{frame}
+
+\def\tmpHeader{
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{\textcolor{white}{Inference is reversible.}}
+\vspace{0.5cm}
+}
+
+\def\houseCats{\monoDown{kitties}{\darkgreen{house cats}}{cats}{felines}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \eat \mice
+\end{center}
+\end{frame}
+\def\houseCats{\monoDown{kitties}{house cats}{cats}{felines}}
+
+\def\consume{\monoUp{eat}{\darkgreen{consume}}{}{}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \mice
+\end{center}
+\end{frame}
+\def\consume{\monoUp{eat}{consume}{}{}}
+
+\def\fieldmice{\monoUp{pine vole}{\darkred{fieldmice}}{mice}{rodents}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \fieldmice
+\end{center}
+\end{frame}
+\def\fieldmice{\monoUp{pine vole}{fieldmice}{mice}{rodents}}
+
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \mice
+\end{center}
+\end{frame}
+
+\def\rodents{\monoUp{mice}{\darkgreen{rodents}}{placentals}{mammals}}
+\begin{frame}[noframenumbering]{\title}
+\tmpHeader
+\begin{center}
+  \all \hspace{0.25cm} \houseCats \hspace{0.25cm} \consume \rodents
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% DELETION
+%%%%%%%%%%%%%%%%%%%
+\def\some{\monoUp{}{\textbf{Some$_{\uparrow \uparrow}$}}{}{}}
+\def\rabbits{\monoUp{Peter}{\footnotesize{young rabbits}}{rabbits}{mammals}}
+\def\drink{\monoUp{slurp}{drink}{consume}{}}
+\def\milk{\monoUp{Lucerne}{milk}{liquid}{something}}
+
+\begin{frame}[noframenumbering]{Solved Our Problem 2}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \some \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoUp{\footnotesize{young rabbits}}{\darkgreen{rabbits}}{mammals}{animals}}
+\begin{frame}[noframenumbering]{Solved Our Problem 2}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \some \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoDown{Peter}{\footnotesize{young rabbits}}{rabbits}{mammals}}
+\begin{frame}[noframenumbering]{Solved Our Problem 2}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoDown{\footnotesize{young rabbits}}{\darkred{rabbits}}{mammals}{animals}}
+\begin{frame}[noframenumbering]{Solved Our Problem 2}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}

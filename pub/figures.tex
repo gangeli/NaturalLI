@@ -857,9 +857,87 @@
 \end{tikzpicture}
 }
 
+
+
 %
 % -----
-% Alignment Section
+% MIML-RE Figures
 % -----
 %
 
+\def\mimlStyles{
+  \tikzstyle{var}=[circle,thick,draw=black!75,fill=black!0,minimum size=10mm]
+  \tikzstyle{ovar}=[circle,thick,draw=black!75,fill=gray!20,minimum size=10mm]
+}
+
+\newcommand\dsPlate{
+\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
+                    semithick]
+  \mimlStyles
+  \node[ovar]  (y)      []                     {$y$};
+  \node[ovar] (x)      [below =of y]          {$x$};
+  
+  \path (x) edge (y);
+\end{tikzpicture}
+}
+
+\newcommand\miPlate{
+\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
+                    semithick]
+  \mimlStyles
+  \node[ovar] (y)      []                        {$y$};
+  
+  \node[var]  (zTwo)      [below =of y]          {$z_2$};
+  \node[ovar] (xTwo)      [below =of zTwo]       {$x_2$};
+
+  \node[var]  (zOne)      [left =of zTwo]        {$z_1$};
+  \node[ovar] (xOne)      [left =of xTwo]        {$x_1$};
+  
+  \node[var]  (zThree)    [right =of zTwo]       {$z_3$};
+  \node[ovar] (xThree)    [right =of xTwo]       {$x_3$};
+  
+  \path (xOne) edge (zOne)
+        (xTwo) edge (zTwo)
+        (xThree) edge (zThree)
+        (zOne) edge (y)
+        (zTwo) edge (y)
+        (zThree) edge (y);
+\end{tikzpicture}
+}
+
+\newcommand\mimlPlate{
+\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
+                    semithick]
+  \mimlStyles
+  \node[ovar] (yOne)                          {$y_1$};
+  \node[ovar] (yTwo)   [right =of yOne]       {$y_2$};
+  \node[]     (yDots)  [right =of yTwo]       {$\dots$};
+  \node[ovar] (yNMin)  [right =of yDots]      {$y_{n-1}$};
+  \node[ovar] (yN)     [right =of yNMin]      {$y_n$};
+  
+  \node[var]  (zTwo)      [below =of yDots]   {$z_2$};
+  \node[ovar] (xTwo)      [below =of zTwo]    {$x_2$};
+
+  \node[var]  (zOne)      [left =of zTwo]     {$z_1$};
+  \node[ovar] (xOne)      [left =of xTwo]     {$x_1$};
+  
+  \node[var]  (zThree)    [right =of zTwo]    {$z_3$};
+  \node[ovar] (xThree)    [right =of xTwo]    {$x_3$};
+  
+  \path (xOne) edge (zOne)
+        (xTwo) edge (zTwo)
+        (xThree) edge (zThree)
+        (zOne) edge (yOne)
+               edge (yTwo)
+               edge (yNMin)
+               edge (yN)
+        (zTwo) edge (yOne)
+               edge (yTwo)
+               edge (yNMin)
+               edge (yN)
+        (zThree) edge (yOne)
+                 edge (yTwo)
+                 edge (yNMin)
+                 edge (yN);
+\end{tikzpicture}
+}

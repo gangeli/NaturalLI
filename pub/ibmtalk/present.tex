@@ -1,0 +1,84 @@
+\documentclass[hyperref,xcolor=table]{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating,siunitx}
+\usepackage{multirow,hhline,arydshln,array,color,stmaryrd,pifont,transparent,centernot}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{mathptmx}           % replacement for obsolete \usepackage{times}
+\usepackage[scaled=.90]{helvet} % replacement for obsolete \usepackage{times}
+\usepackage{courier}            % replacement for obsolete \usepackage{times}
+
+\usepackage{../tikz-dependency,pifont}
+\usepackage{tikz}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
+\definecolor{darkred}{rgb}{0.5, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.4, 0.0}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.5}
+
+% set up Beamer style with Stanford colors and logo
+% logo is available at http://nlp.stanford.edu/local/nlp-logos/nlp-logo.pdf
+\useinnertheme{rounded}
+\useoutertheme{infolines}
+\usecolortheme{beaver}
+\setbeamercolor{block title}{fg=white,bg=darkred!75!black}
+\setbeamercolor{block body}{parent=normal text,bg=black!5!bg}
+\setbeamercolor{item projected}{bg=darkred}
+\logo{\includegraphics[height=1cm]{../img/nlp-logo.pdf}}
+
+% title page information
+\title{Learning Knowledge From Text}
+\subtitle{}
+\author{\textcolor{darkblue}{Gabor Angeli}}
+\date{June 24, 2015}
+\institute[Stanford]{Stanford University}
+
+\input ../macros.tex
+\input ../figures.tex
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+\input motivation.tex
+\input mimlre.tex
+\input active.tex
+\input openie.tex
+\input natlog.tex
+
+
+%%%%%%%%%%%%%%%%%%% 
+% CONCLUSION
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Conclusion}
+\hh{Distant supervision with multiple instance multiple label learning}
+  (Surdeanu, Tibshirani, Nallapati, Manning; EMNLP 2012) \\
+\vspace{1em}
+\pause
+\hh{Partially annotating data improves distantly supervised learning}
+  (Angeli, Tibshirani, Wu, Manning; EMNLP 2014) \\
+\vspace{1em}
+\pause
+\hh{High-precision open-domain relations by treating relation extraction
+    as inference}
+  (Angeli, Premkumar, Manning; ACL 2015) \\
+\vspace{1em}
+\pause
+\hh{Natural logic captures common logical inferences directly 
+    over text}
+  (MacCartney; Thesis 2009)
+  (Angeli, Manning; EMNLP 2014) 
+\vspace{2em}
+\pause
+
+\begin{center}
+\hh{Thanks!}
+\end{center}
+\end{frame}
+
+\end{document}
+
+
+
