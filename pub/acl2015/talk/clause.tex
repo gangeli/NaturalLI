@@ -1,0 +1,392 @@
+%%%%%%%%%%%%%%%%%%%
+% CHALLENGE: TOO MUCH CONTEXT
+%%%%%%%%%%%%%%%%%%%
+\def\title{A New Approach To Open IE}
+\begin{frame}{\title}
+\hh{Challenge: Long Sentences}
+\begin{itemize}
+  \item Split long sentences into short, entailed clauses.
+\end{itemize}
+\vspace{0.5em}
+\pause
+
+\hh{Challenge: Lost Context}
+\begin{itemize}
+  \item Shorten these clauses only when logically valid.
+\end{itemize}
+\vspace{0.5em}
+\pause
+
+\hh{Challenge: Too Much Context}
+\begin{itemize}
+  \item Shorten these clauses as much as possible.
+\end{itemize}
+\vspace{0.5em}
+\pause
+
+\hh{No Longer A Challenge}
+\begin{itemize}
+  \item Segment these short clauses into triples.
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CLAUSE SPLITTING
+%%%%%%%%%%%%%%%%%%%
+\def\treeBlank{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.5ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeEdge{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.5ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeSubj{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& \darkred{she} \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.25ex, edge style={blue!60!black,thick}]{8}{7}{\darkblue{nsubj}}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeObj{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& \darkred{the} \&
+        \darkred{midnight} \& \darkred{train} \& \darkred{going} \& 
+        \darkred{anywhere} \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex, edge style={blue!60!black,thick}]{8}{11}{\darkblue{dobj}}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeParent{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& \darkred{took} \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\title{Split Sentences Into Clauses}
+\begin{frame}{\title}
+\begin{tabular}{ll}
+\hh{Input:}  & Long sentence. \\
+             & \w{Born in a small town, she took the midnight train going anywhere.} \\
+\hh{Output:} & Short clauses. \\
+             & \w{she Born in a small town.}
+\end{tabular}
+
+\begin{center}
+  \only<1>{\treeBlank}
+  \only<2>{\hspace{-0.45em}\treeEdge}
+  \only<3>{\hspace{-0.9em}\treeSubj}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CLAUSE SEARCH
+%%%%%%%%%%%%%%%%%%%
+\def\title{Clause Classifier}
+\begin{frame}{\title}
+\begin{center}
+  \only<1>{\treeEdge}
+  \only<2>{\treeEdge}
+  \only<3>{\treeSubj}
+  \only<4>{\treeObj}
+  \only<5>{\treeParent}
+\end{center}
+
+\begin{tabular}{ll}
+\hh{Input:}  & Dependency arc. \\
+\hh{Output:} & \textit{Action} to take.  \\
+\end{tabular}
+\pause
+
+\begin{itemize}
+  \item \textbf{Yield} (\w{Born in a small town}) \pause
+  \item \textbf{Yield (Subject Controller)} (\w{she Born in a small town}) \pause
+  \item \textbf{Yield (Object Controller)} (\w{Born in a small town the midnight train $\dots$}) \pause
+  \item \textbf{Yield (Parent Subject)} (\w{took Born in a small town})
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% ACTION EXAMPLES
+%%%%%%%%%%%%%%%%%%%
+
+% YIELD
+\def\title{Clause Classifier: Yield}
+\begin{frame}{\title}
+\hh{Yield:} Take the dependent of an arc as an independent clause.
+
+\begin{center}
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Dentists \& suggest \& that \& \darkgreen{you} \& \darkgreen{should} \& 
+      \darkgreen{brush} \& \darkgreen{your} \& \darkgreen{teeth} \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=2.5ex, edge style={darkred!60!black,thick,densely dotted}]{2}{6}{\textbf{\darkred{ccomp}}}
+    \depedge[edge unit distance=1.75ex]{2}{1}{nsubj}
+    \depedge[edge unit distance=2.25ex]{6}{3}{mark}
+    \depedge[edge unit distance=2.25ex]{6}{4}{nsubj}
+    \depedge[edge unit distance=2.25ex]{6}{5}{aux}
+    \depedge[edge unit distance=2.25ex]{6}{8}{dobj}
+    \depedge[edge unit distance=1.5ex]{8}{7}{nmod:poss}
+  \end{dependency}
+
+  $\implies$ \w{you should brush your teeth.}
+\end{center}
+\end{frame}
+
+% SUBJECT CONTROLLER
+\def\title{Clause Classifier: Yield (Subject Controller)}
+\begin{frame}[noframenumbering]{\title}
+\hh{Yield (Subject Controller):}
+  Take the dependent of an arc as an independent clause, interpreting the subject
+  of the governor as the subject of the dependent clause.
+
+\begin{center}
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      \darkgreen{Born} \& \darkgreen{in} \& \darkgreen{Hawaii} \& , \& \darkgreen{Obama} \& 
+      is \& a \& US \& citizen \&[-1ex] .\\
+    \end{deptext}
+    \depedge[edge unit distance=1.50ex, edge style={darkred!60!black,thick,densely dotted}]{9}{1}{\textbf{\darkred{vmod}}}
+    \depedge[edge unit distance=2.25ex, edge style={blue!60!black,thick}]{9}{5}{\darkblue{nsubj}}
+    \depedge[edge unit distance=2.25ex]{9}{6}{cop}
+    \depedge[edge unit distance=2.25ex]{9}{7}{det}
+    \depedge[edge unit distance=2.25ex]{9}{8}{amod}
+    \depedge[edge unit distance=2.25ex]{1}{3}{nmod:in}
+  \end{dependency}
+
+  $\implies$ \w{Obama born in Hawaii.}
+\end{center}
+\end{frame}
+
+% OBJECT CONTROLLER
+\def\title{Clause Classifier: Yield (Object Controller)}
+\begin{frame}[noframenumbering]{\title}
+\hh{Yield (Object Controller):}
+  Take the dependent of an arc as an independent clause, interpreting the object
+  of the governor as the subject of the dependent clause.
+
+\begin{center}
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      I \& persuaded \& \darkgreen{Fred} \& to \& \darkgreen{leave} \& 
+      \darkgreen{the} \& \darkgreen{room} \&[-1ex] .\\
+    \end{deptext}
+    \depedge[edge unit distance=2.00ex, edge style={darkred!60!black,thick,densely dotted}]{2}{5}{\textbf{\darkred{xcomp}}}
+    \depedge[edge unit distance=2.25ex, edge style={blue!60!black,thick}]{2}{3}{\darkblue{dobj}}
+    \depedge[edge unit distance=2.25ex]{2}{1}{nsubj}
+    \depedge[edge unit distance=2.25ex]{5}{4}{mark}
+    \depedge[edge unit distance=2.50ex]{5}{7}{dobj}
+    \depedge[edge unit distance=2.25ex]{7}{6}{det}
+  \end{dependency}
+
+  $\implies$ \w{Fred leave the room.}
+\end{center}
+\end{frame}
+
+% PARENT CONTROLLER
+\def\title{Clause Classifier: Yield (Parent Subject)}
+\begin{frame}[noframenumbering]{\title}
+\hh{Yield (Parent Subject):}
+  Interpret the parent node as the subject of the dependent clause.
+
+\begin{center}
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      \darkgreen{Obama} \&[-1ex] , \& \darkgreen{our} \& \darkgreen{44th} \& 
+      \darkgreen{president} \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=2.00ex, edge style={darkred!60!black,thick,densely dotted}]{1}{5}{\textbf{\darkred{appos}}}
+    \depedge[edge unit distance=2.25ex]{4}{2}{nmod:poss}
+    \depedge[edge unit distance=2.25ex]{4}{3}{amod}
+  \end{dependency}
+
+  $\implies$ \w{Obama is our 44th president.}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CLAUSE SEARCHING
+%%%%%%%%%%%%%%%%%%%
+\def\treeOne{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex, edge style={darkred!60!black,thick,densely dotted}]{1}{5}{\darkred{nmod:in}}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeTwo{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex, edge style={darkred!60!black,thick,densely dotted}]{8}{7}{\darkred{nsubj}}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeThree{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex, edge style={darkred!60!black,thick,densely dotted}]{8}{11}{\darkred{dobj}}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+
+
+\def\title{A Search Problem}
+\begin{frame}{\title}
+\hh{Breadth First Search:}
+\begin{center}
+  \only<1>{\treeBlank}
+  \only<2>{\treeSubj}
+  \only<3>{\treeThree}
+  \only<4>{\treeOne}
+  \only<5>{\treeTwo}
+\end{center}
+
+\hh{Decision:}
+\only<2>{\textbf{Edge}: vmod     \hspace{1em} \textbf{Action}: Yield (subject controller)}
+\only<3>{\textbf{Edge}: nsubj    \hspace{1em} \textbf{Action}: Stop}
+\only<4>{\textbf{Edge}: dobj     \hspace{1em} \textbf{Action}: Stop}
+\only<5>{\textbf{Edge}: nmod:in  \hspace{1em} \textbf{Action}: Stop}
+\\
+\vspace{1em}
+
+\hh{Resulting Clauses:}
+\begin{itemize}
+  \item[] \w{Born in a small town, she took the midnight train going anywhere}
+  \item[] \onslide<3->{\w{she Born in a small town}}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% TRAINING DATA
+%%%%%%%%%%%%%%%%%%%
+\def\title{Classifier Training}
+\begin{frame}{\title}
+\hh{Training Data Generation}
+\begin{enumerate}
+  \item Take \num{66880} sentences (newswire, newsgroups, Wikipedia).
+  \pause
+  \item Apply \textit{distant supervision} to label relations in sentence. \\
+        (e.g., if \w{Obama} and \w{Hawaii} occur in a sentence, assume there is
+        a relation between them)
+  \pause
+  \item \darkgreen{Positive Labels}: A sequence of actions which yields a known relation. \\
+        \darkred{Negative Labels}: All other sequences of actions.
+\end{enumerate}
+\hspace{0.5em}
+\pause
+
+\hh{Features:}
+\begin{itemize}
+  \item Edge label; incoming edge label.
+  \item Neighbors of governor; neighbors of dependent; number of neighbors.
+  \item Existence of subject/object edges at governor; dependent.
+  \item POS tag of governor; dependent.
+\end{itemize}
+\end{frame}
+
+
+
+

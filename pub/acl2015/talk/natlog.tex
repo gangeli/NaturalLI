@@ -1,0 +1,319 @@
+%%%%%%%%%%%%%%%%%%%
+% CHALLENGE: SHORTEN CLAUSES
+%%%%%%%%%%%%%%%%%%%
+\def\title{A New Approach To Open IE}
+\begin{frame}{\title}
+\hh{Challenge: Long Sentences}
+\begin{itemize}
+  \item[\checkmark] Split long sentences into short, entailed clauses.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Lost Context}
+\begin{itemize}
+  \item Shorten these clauses only when logically valid.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Too Much Context}
+\begin{itemize}
+  \item Shorten these clauses as much as possible.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{No Longer A Challenge}
+\begin{itemize}
+  \item Segment these short clauses into triples.
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% MAXIMALLY SHORTEN CLAUSES
+%%%%%%%%%%%%%%%%%%%
+\def\title{Maximally Shorten Clauses}
+\begin{frame}{\title}
+\only<1>{\hh{Some strange, nuanced function:}}
+\only<2>{\hh{An entailment function:}}
+\only<3>{\hh{A \darkblue{natural logic} entailment function:}} \\
+\vspace{1em}
+
+\begin{tabular}{lcl}
+  \w{Heinz Fischer \textbf{of Austria}}      & $\implies$ & \w{Heinz Fischer} \\
+  \w{\textbf{United States president} Obama} & $\implies$ & \w{Obama} \\
+  \w{All \textbf{young} rabbits drink milk}  & \darkred{$\centernot \implies$} & \w{All rabbits drink milk} \\
+  \w{Some \textbf{young} rabbits drink milk} & $\implies$ & \w{Some rabbits drink milk} \\
+  \w{Enemies give \textbf{fake} praise}      & \darkred{$\centernot \implies$} & \w{Enemies give praise} \\
+  \w{Friends give \textbf{true} praise}      & $\implies$ & \w{Friends give praise} \\
+\end{tabular}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% NATURAL LOGIC
+%%%%%%%%%%%%%%%%%%%
+\def\title{Natural Logic}
+\begin{frame}{\title}
+\begin{center}
+\hh{If I mutate a sentence in this way, do I preserve its truth?}
+\end{center}
+\vspace{1em}
+\pause
+
+\hh{Braindead for humans, but not computers}
+\begin{itemize}
+  \item \w{All young rabbits drink milk}
+        $\centernot \implies$ \w{All rabbits drink milk} \\
+        \w{Some young rabbits drink milk}
+        $\implies$ \w{Some rabbits drink milk} \\
+  \pause
+  \item \w{Enemies give fake praise}
+        $\centernot \implies$ \w{Enemies give praise} \\
+        \w{Friends give frequent praise}
+        $\implies$ \w{Friends give praise} \\
+\end{itemize}
+\vspace{1em}
+\pause
+
+\hh{Hard even for first order logic}
+\begin{itemize}
+  \item \w{Most cats eat mice}
+        $\implies$ \w{Most cats eat rodents} \\
+  \item \w{All students who know a foreign language learned it at university} \\
+        $\implies$ \w{They learned it at school.}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% POLARITY
+%%%%%%%%%%%%%%%%%%%
+\def\all{\monoUp{}{\textbf{All$_{\downarrow \uparrow}$}}{}{}}
+\def\cats{\monoDown{house cats}{cats}{felines}{carnivores}}
+\def\eat{\monoUp{slurp}{eat}{consume}{}}
+\def\mice{\monoUp{fieldmice}{mice}{rodents}{placentals}}
+\def\catFelineVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=light] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=dark] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{cat} $\subseteq$ \w{feline}};
+  \end{tikzpicture}
+}
+
+\def\felineAnimalVenn{
+  \begin{tikzpicture}
+    \def\vennA{(-0.1,-0.1) circle (0.2)}
+    \def\vennB{(-0.0,-0.0) circle (0.5)}
+
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=dark] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=light] \vennA;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {\w{feline} $\subseteq$ \w{animal}};
+  \end{tikzpicture}
+}
+
+\def\header{
+  \hh{Treat hypernymy as a \textit{partial order}.}
+  \begin{center}
+%    \catFelineVenn \felineAnimalVenn 
+%    \hspace{0.5cm}
+%    \raisebox{1cm}[0pt][0pt]{
+%      \includegraphics[height=1.0cm]{../../img/rArrow.jpg}
+%    }
+%    \hspace{0.5cm}
+    \scalebox{0.75}{\lattice}
+  \end{center}
+}
+\def\blurb{
+  \hh{\textit{Polarity} is the direction a lexical item can move in the ordering.} \\
+}
+\def\title{Natural Logic and Polarity}
+
+\begin{frame}{\title}
+  \header
+  \pause
+  \blurb
+  \begin{center}
+    \monoHeader
+      \node[black]{animal};
+      \node[black]{feline};
+      \node[punktchain,color=blue]{cat};
+      \node[black]{house cat};
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoUp{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{feline}{animal}{living thing}{thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{cat}{feline}{animal}{living thing}
+  \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \header
+  \blurb
+  \begin{center}
+    \monoDown{house cat}{cat}{feline}{animal}
+  \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% NATURAL LOGIC FOR DELETIONS
+%%%%%%%%%%%%%%%%%%%
+\def\title{Natural Logic For Deletions}
+\def\some{\monoUp{}{\textbf{Some$_{\uparrow \uparrow}$}}{}{}}
+\def\rabbits{\monoUp{Peter}{\footnotesize{young rabbits}}{rabbits}{mammals}}
+\def\drink{\monoUp{slurp}{drink}{consume}{}}
+\def\milk{\monoUp{Lucerne}{milk}{liquid}{something}}
+
+\begin{frame}[noframenumbering]{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \some \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoUp{\footnotesize{young rabbits}}{\darkgreen{rabbits}}{mammals}{animals}}
+\begin{frame}[noframenumbering]{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \some \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoDown{Peter}{\footnotesize{young rabbits}}{rabbits}{mammals}}
+\begin{frame}[noframenumbering]{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+\def\rabbits{\monoDown{\footnotesize{young rabbits}}{\darkred{rabbits}}{mammals}{animals}}
+\begin{frame}[noframenumbering]{\title}
+\hh{Quantifiers determines the \textit{polarity} ($\uparrow$ or $\downarrow$) of words.} \\
+\vspace{0.25cm}
+\hh{Mutations must respect \textit{polarity}.} \\
+\vspace{0.25cm}
+\hh{Polarity determines valid deletions.}
+\vspace{0.5cm}
+\begin{center}
+  \all \hspace{0.25cm} \rabbits \hspace{0.25cm} \drink \milk
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CHALLENGE: SOLVED
+%%%%%%%%%%%%%%%%%%%
+\def\title{A New Approach To Open IE}
+\begin{frame}{\title}
+\hh{Challenge: Long Sentences}
+\begin{itemize}
+  \item[\checkmark] Split long sentences into short, entailed clauses.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Lost Context}
+\begin{itemize}
+  \item[\checkmark] Shorten these clauses only when logically valid.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Too Much Context}
+\begin{itemize}
+  \item[\checkmark] Shorten these clauses as much as possible.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{No Longer A Challenge}
+\begin{itemize}
+  \item Segment these short clauses into triples.
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% CHALLENGE: SOLVED
+%%%%%%%%%%%%%%%%%%%
+\def\title{No Longer A Challenge}
+\begin{frame}{\title}
+\begin{center}
+\begin{tabular}{lcl}
+  \w{Heinz Fischer visited US} & $\implies$ & 
+    (\subj{Heinz Fischer}; \rel{visited}; \obj{US}) \\\pause
+  \w{Obama born in Hawaii} & $\implies$ & 
+    (\subj{Obama}; \rel{born in}; \obj{Hawaii}) \\\pause
+  \w{Cats are cute} & $\implies$ & 
+    (\subj{Cats}; \rel{are}; \obj{cute}) \\\pause
+  \w{Cats are sitting next to dogs} & $\implies$ & 
+    (\subj{Cats}; \rel{are sitting next to}; \obj{dogs}) \\\pause
+    & $\dots$ & 
+\end{tabular}
+\vspace{2em}
+
+\hh{6 dependency patterns (+ 8 nominal patterns)}
+\end{center}
+\end{frame}

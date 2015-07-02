@@ -7,7 +7,7 @@
 \usepackage[scaled=.90]{helvet} % replacement for obsolete \usepackage{times}
 \usepackage{courier}            % replacement for obsolete \usepackage{times}
 
-\usepackage{../tikz-dependency,pifont}
+\usepackage{../../tikz-dependency,pifont}
 \usepackage{tikz}
 \usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
 \usetikzlibrary{patterns}
@@ -15,6 +15,9 @@
 \definecolor{darkred}{rgb}{0.5, 0.0, 0.0}
 \definecolor{darkgreen}{rgb}{0.0, 0.4, 0.0}
 \definecolor{darkblue}{rgb}{0.0, 0.0, 0.5}
+\newcommand\darkblue[1]{\textcolor{darkblue}{#1}}
+\newcommand\darkred[1]{\textcolor{darkred}{#1}}
+\newcommand\darkgreen[1]{\textcolor{darkgreen}{#1}}
 
 % set up Beamer style with Stanford colors and logo
 % logo is available at http://nlp.stanford.edu/local/nlp-logos/nlp-logo.pdf
@@ -27,53 +30,53 @@
 \logo{\includegraphics[height=1cm]{../img/nlp-logo.pdf}}
 
 % title page information
-\title{Learning Knowledge From Text}
+\title{Leveraging Linguistic Structure for Open Domain Information Extraction}
 \subtitle{}
-\author{\textcolor{darkblue}{Gabor Angeli}, Julie Tibshirani,
-        Mihai Surdeanu, Ramesh Nallapati, Jean Wu, Melvin Premkumar,
-        Chris Manning}
-\date{June 24, 2015}
+\author{\darkblue{Gabor Angeli}, Melvin Johnson Premkumar, Chris Manning}
+\date{July 27, 2015}
 \institute[Stanford]{Stanford University}
 
-\input ../macros.tex
-\input ../figures.tex
+\input ../../macros.tex
+\renewcommand\w[1]{\textcolor{darkgreen}{\textit{#1}}}
+\input ../../figures.tex
 
 \begin{document}
-\begin{frame}
+\begin{frame}[noframenumbering]
   \titlepage
 \end{frame}
 
-
 \input motivation.tex
-\input mimlre.tex
-\input active.tex
-\input openie.tex
+\input clause.tex
 \input natlog.tex
+\input evaluation.tex
 
-
-%%%%%%%%%%%%%%%%%%% 
+%%%%%%%%%%%%%%%%%%%
 % CONCLUSION
 %%%%%%%%%%%%%%%%%%%
-\begin{frame}{Conclusion}
-\hh{Distant supervision with multiple instance multiple label learning}
-  (Surdeanu, Tibshirani, Nallapati, Manning; EMNLP 2012) \\
-\vspace{1em}
-\pause
-\hh{Partially annotating data improves distantly supervised learning}
-  (Angeli, Tibshirani, Wu, Manning; EMNLP 2014) \\
-\vspace{1em}
-\pause
-\hh{High-precision open-domain relations by treating relation extraction
-    as inference}
-  (Angeli, Premkumar, Manning; ACL 2015) \\
-\vspace{1em}
-\pause
-\hh{Natural logic captures common logical inferences directly 
-    over text}
-  (MacCartney; Thesis 2009)
-  (Angeli, Manning; EMNLP 2014) 
-\vspace{2em}
-\pause
+\def\title{Conclusion}
+\begin{frame}{\title}
+\hh{Challenge: Long Sentences}
+\begin{itemize}
+  \item[\checkmark] Split long sentences into short, entailed clauses.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Lost Context}
+\begin{itemize}
+  \item[\checkmark] Shorten these clauses only when logically valid.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{Challenge: Too Much Context}
+\begin{itemize}
+  \item[\checkmark] Shorten these clauses as much as possible.
+\end{itemize}
+\vspace{0.5em}
+
+\hh{No Longer A Challenge}
+\begin{itemize}
+  \item[\checkmark] Segment these short clauses into triples.
+\end{itemize}
 
 \begin{center}
 \hh{Thanks!}
