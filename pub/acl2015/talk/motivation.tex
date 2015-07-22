@@ -32,7 +32,7 @@
 %%%%%%%%%%%%%%%%%%%
 % K-WAY CLASSIFICATION
 %%%%%%%%%%%%%%%%%%%
-\def\title{Relation Extraction}
+\def\title{Information [Relation] Extraction}
 \begin{frame}{\title}
 \hh{Input}:  Sentences containing (\subj{subject}, \obj{object}). \\
 \hh{Output}: \rel{Relation} between \subj{subject} and \obj{object}. \\
@@ -79,12 +79,14 @@
 %%%%%%%%%%%%%%%%%%%
 % OPEN IE
 %%%%%%%%%%%%%%%%%%%
-\def\title{Open Information Extraction}
+\def\title{\textbf{Open} Information Extraction}
 \begin{frame}{\title}
 \begin{center}
-  \hh{Extract \textit{arbitrary} relations over \textit{arbitrary} entities} \\
+  \hh{More to life than a fixed relation schema} \\
+  \vspace{0.5em}
+  \includegraphics[height=3cm]{../../img/bartwindow.png} \\
 \end{center}
-\vspace{1em}
+\vspace{0.5em}
 \pause
 
 (\subj{Chris}, \rel{taught at}, \obj{Carnegie Mellon}) \\
@@ -96,13 +98,41 @@
 (\subj{young rabbits}, \rel{drink}, \obj{milk}) \\
 (\subj{Heinz Fischer}, \rel{visits}, \obj{United States}) \\
 \vspace{1em}
+%\pause
+%
+%\hh{Open IE is not new}
+%\begin{itemize}
+%  \item UW: TextRunner, ReVerb, Ollie, OpenIE 4, ImplIE
+%  \item CMU: NELL
+%\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% PRIOR WORK
+%%%%%%%%%%%%%%%%%%%
+\def\title{Prior Work}
+\begin{frame}{\title}
+
+\hh{OpenIE (UW)}
+\begin{itemize}
+  \item TextRunner, ReVerb, Ollie, OpenIE 4, ImplIE.
+  \item Learn surface and/or dependency patters for triples.
+\end{itemize}
+\begin{center}
+  \includegraphics[width=8cm]{../../img/openie-facts.png} \\
+\end{center}
 \pause
 
-\hh{Open IE is not new}
+\hh{NELL (CMU)}
 \begin{itemize}
-  \item UW: TextRunner, ReVerb, Ollie, OpenIE 4, ImplIE
-  \item CMU: NELL
+  \item Bootstrapping an ontology from a small number of seed examples.
 \end{itemize}
+\begin{center}
+  \includegraphics[width=8cm]{../../img/nell-facts.png} \\
+\end{center}
+\pause
+
+\hh{Useful for matrix factorization, MLNs, QA, etc.}
 \end{frame}
 
 

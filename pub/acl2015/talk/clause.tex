@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%
 % CHALLENGE: TOO MUCH CONTEXT
 %%%%%%%%%%%%%%%%%%%
-\def\title{A New Approach To Open IE}
+\def\title{Approach Open IE As \textit{Entailment}}
 \begin{frame}{\title}
 \hh{Challenge: Long Sentences}
 \begin{itemize}
-  \item Split long sentences into short, entailed clauses.
+  \item Yield short, entailed clauses from sentences.
 \end{itemize}
 \vspace{0.5em}
 \pause
@@ -24,7 +24,7 @@
 \vspace{0.5em}
 \pause
 
-\hh{No Longer A Challenge}
+\hh{\textit{No Longer A Challenge}}
 \begin{itemize}
   \item Segment these short clauses into triples.
 \end{itemize}
@@ -43,7 +43,7 @@
     \depedge[edge unit distance=1.5ex]{5}{4}{amod}
     \depedge[edge unit distance=2.25ex]{5}{3}{det}
     \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
-    \depedge[edge unit distance=2.5ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
     \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
     \depedge[edge unit distance=1.5ex]{11}{10}{nn}
     \depedge[edge unit distance=1.9ex]{11}{9}{det}
@@ -62,7 +62,7 @@
     \depedge[edge unit distance=1.5ex]{5}{4}{amod}
     \depedge[edge unit distance=2.25ex]{5}{3}{det}
     \depedge[edge unit distance=1.4ex, edge style={darkred!60!black,thick,densely dotted}]{8}{1}{\textbf{\darkred{vmod}}}
-    \depedge[edge unit distance=2.5ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
     \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
     \depedge[edge unit distance=1.5ex]{11}{10}{nn}
     \depedge[edge unit distance=1.9ex]{11}{9}{det}
@@ -129,7 +129,7 @@
   \end{dependency}
 }
 
-\def\title{Split Sentences Into Clauses}
+\def\title{Yield clauses}
 \begin{frame}{\title}
 \begin{tabular}{ll}
 \hh{Input:}  & Long sentence. \\
@@ -140,8 +140,8 @@
 
 \begin{center}
   \only<1>{\treeBlank}
-  \only<2>{\hspace{-0.45em}\treeEdge}
-  \only<3>{\hspace{-0.9em}\treeSubj}
+  \only<2>{\hspace{-1ex}\treeEdge}
+  \only<3>{\hspace{-1.5ex}\treeSubj}
 \end{center}
 \end{frame}
 
@@ -151,11 +151,11 @@
 \def\title{Clause Classifier}
 \begin{frame}{\title}
 \begin{center}
-  \only<1>{\treeEdge}
-  \only<2>{\treeEdge}
-  \only<3>{\treeSubj}
-  \only<4>{\treeObj}
-  \only<5>{\treeParent}
+  \only<1>{\treeBlank}
+  \only<2>{\hspace{-1.0ex}\treeEdge}
+  \only<3>{\hspace{-1.5ex}\treeSubj}
+  \only<4>{\hspace{-2.0ex}\treeObj}
+  \only<5>{\hspace{-2.5ex}\treeParent}
 \end{center}
 
 \begin{tabular}{ll}
@@ -338,10 +338,10 @@
 \hh{Breadth First Search:}
 \begin{center}
   \only<1>{\treeBlank}
-  \only<2>{\treeSubj}
-  \only<3>{\treeThree}
-  \only<4>{\treeOne}
-  \only<5>{\treeTwo}
+  \only<2>{\hspace{-1.0ex}\treeSubj}
+  \only<3>{\hspace{-1.5ex}\treeTwo}
+  \only<4>{\hspace{-2.0ex}\treeThree}
+  \only<5>{\hspace{-2.5ex}\treeOne}
 \end{center}
 
 \hh{Decision:}
@@ -352,7 +352,7 @@
 \\
 \vspace{1em}
 
-\hh{Resulting Clauses:}
+\hh{Yielded Clauses:}
 \begin{itemize}
   \item[] \w{Born in a small town, she took the midnight train going anywhere}
   \item[] \onslide<3->{\w{she Born in a small town}}

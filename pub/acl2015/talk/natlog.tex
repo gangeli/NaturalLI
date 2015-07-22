@@ -1,11 +1,11 @@
 %%%%%%%%%%%%%%%%%%%
 % CHALLENGE: SHORTEN CLAUSES
 %%%%%%%%%%%%%%%%%%%
-\def\title{A New Approach To Open IE}
+\def\title{Approach Open IE As \textit{Entailment}}
 \begin{frame}{\title}
 \hh{Challenge: Long Sentences}
 \begin{itemize}
-  \item[\checkmark] Split long sentences into short, entailed clauses.
+  \item[\checkmark] Yield short, entailed clauses from sentences.
 \end{itemize}
 \vspace{0.5em}
 
@@ -32,9 +32,9 @@
 %%%%%%%%%%%%%%%%%%%
 \def\title{Maximally Shorten Clauses}
 \begin{frame}{\title}
-\only<1>{\hh{Some strange, nuanced function:}}
-\only<2>{\hh{An entailment function:}}
-\only<3>{\hh{A \darkblue{natural logic} entailment function:}} \\
+\only<1>{\hh{\strut Some strange, nuanced function:}}
+\only<2>{\hh{\strut An entailment function:}}
+\only<3>{\hh{\strut A \darkblue{natural logic} entailment function:}} \\
 \vspace{1em}
 
 \begin{tabular}{lcl}
@@ -128,7 +128,7 @@
 }
 
 \def\header{
-  \hh{Treat hypernymy as a \textit{partial order}.}
+  \hh{Order phrases into a \textit{partial order}.}
   \begin{center}
 %    \catFelineVenn \felineAnimalVenn 
 %    \hspace{0.5cm}
@@ -209,7 +209,7 @@
 %%%%%%%%%%%%%%%%%%%
 % NATURAL LOGIC FOR DELETIONS
 %%%%%%%%%%%%%%%%%%%
-\def\title{Natural Logic For Deletions}
+\def\title{Natural Logic For Clause Shortening}
 \def\some{\monoUp{}{\textbf{Some$_{\uparrow \uparrow}$}}{}{}}
 \def\rabbits{\monoUp{Peter}{\footnotesize{young rabbits}}{rabbits}{mammals}}
 \def\drink{\monoUp{slurp}{drink}{consume}{}}
@@ -269,11 +269,11 @@
 %%%%%%%%%%%%%%%%%%%
 % CHALLENGE: SOLVED
 %%%%%%%%%%%%%%%%%%%
-\def\title{A New Approach To Open IE}
+\def\title{Approach Open IE As \textit{Entailment}}
 \begin{frame}{\title}
 \hh{Challenge: Long Sentences}
 \begin{itemize}
-  \item[\checkmark] Split long sentences into short, entailed clauses.
+  \item[\checkmark] Yield short, entailed clauses from sentences.
 \end{itemize}
 \vspace{0.5em}
 
@@ -316,4 +316,31 @@
 
 \hh{6 dependency patterns (+ 8 nominal patterns)}
 \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% DO WE NEED TRIPLES
+%%%%%%%%%%%%%%%%%%%
+\def\title{Useful Without Triples}
+\begin{frame}{\title}
+\hh{Simple, short sentences are themselves useful}
+\begin{itemize}
+\item $\dots$ for relation extraction (Miwa et al. 2010).
+\item $\dots$ for textual entailment (Hickl and Bensley, 2007).
+\item $\dots$ for summarization (Siddharthan et al. 2004).
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{Two use-cases:}
+\begin{center}
+\begin{tabular}{cc}
+\textbf{Triples for Logical Reasoning} & \textbf{Text for Surface Reasoning} \\
+& \\
+\includegraphics[width=2cm]{../../img/database.png} & 
+  \includegraphics[width=2cm]{../../img/books.png}
+\end{tabular}
+\end{center}
+
+
 \end{frame}

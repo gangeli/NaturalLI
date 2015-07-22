@@ -30,9 +30,9 @@
 \logo{\includegraphics[height=1cm]{../img/nlp-logo.pdf}}
 
 % title page information
-\title{Leveraging Linguistic Structure for Open Domain Information Extraction}
+\title[Linguistics for Open IE]{Leveraging Linguistic Structure for Open Domain Information Extraction}
 \subtitle{}
-\author{\darkblue{Gabor Angeli}, Melvin Johnson Premkumar, Chris Manning}
+\author[Angeli, Premkumar, Manning]{\darkblue{Gabor Angeli}, Melvin Johnson Premkumar, Chris Manning}
 \date{July 27, 2015}
 \institute[Stanford]{Stanford University}
 
@@ -45,42 +45,28 @@
   \titlepage
 \end{frame}
 
-\input motivation.tex
-\input clause.tex
-\input natlog.tex
+%\input motivation.tex
+%\input clause.tex
+%\input natlog.tex
 \input evaluation.tex
 
 %%%%%%%%%%%%%%%%%%%
 % CONCLUSION
 %%%%%%%%%%%%%%%%%%%
-\def\title{Conclusion}
+\def\title{Takeaways}
 \begin{frame}{\title}
-\hh{Challenge: Long Sentences}
-\begin{itemize}
-  \item[\checkmark] Split long sentences into short, entailed clauses.
-\end{itemize}
-\vspace{0.5em}
+\hh{Open IE is a sentence simplification task.} \\
+\vspace{1cm}
+\hh{Sentence simplification is an entailment task.} \\
+\vspace{1cm}
+\hh{Put burden on Open IE, not downstream tasks.} \\
+\vspace{1cm}
+\hh{Released in Stanford CoreNLP}. \\
+\vspace{0.25cm}
+\footnotesize{\texttt{annotators = tokenize,ssplit,pos,lemma,parse,\textbf{natlog,openie}}}
+\footnotesize{\texttt{Collection<RelationTriple> triples}} \\
+\footnotesize{\hspace{1cm}\texttt{= sentence.get(RelationTriplesAnnotation.class)}}
 
-\hh{Challenge: Lost Context}
-\begin{itemize}
-  \item[\checkmark] Shorten these clauses only when logically valid.
-\end{itemize}
-\vspace{0.5em}
-
-\hh{Challenge: Too Much Context}
-\begin{itemize}
-  \item[\checkmark] Shorten these clauses as much as possible.
-\end{itemize}
-\vspace{0.5em}
-
-\hh{No Longer A Challenge}
-\begin{itemize}
-  \item[\checkmark] Segment these short clauses into triples.
-\end{itemize}
-
-\begin{center}
-\hh{Thanks!}
-\end{center}
 \end{frame}
 
 \end{document}
