@@ -1,6 +1,7 @@
 acomp	reverse_entailment	
 advcl	reverse_entailment	
 advmod	reverse_entailment	
+acl	reverse_entailment	
 agent	independence	
 purpcl	reverse_entailment	deprecated into advmod
 amod	reverse_entailment	
@@ -11,6 +12,8 @@ cc	reverse_entailment	match dep_conj
 ccomp	independence	interesting project here... "he said x" -> "x"?
 conj	reverse_entailment	match dep_cc
 cop	independence	
+compound	independence	
+name	independence	
 csubj	independence	don't drop subjects.
 csubjpass	independence	as above
 dep	reverse_entailment	
