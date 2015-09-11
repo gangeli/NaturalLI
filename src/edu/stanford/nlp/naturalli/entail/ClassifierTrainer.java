@@ -51,7 +51,7 @@ public class ClassifierTrainer {
   public int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
   private static enum Regularizer {L1, L2}
   @Execution.Option(name="train.regularizer", gloss="The type of regularization to use (e.g., L1, L2)")
-  public Regularizer TRAIN_REGULARIZER = Regularizer.L2;
+  public Regularizer TRAIN_REGULARIZER = Regularizer.L1;
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
   public double TRAIN_SIGMA = 1.00;
 

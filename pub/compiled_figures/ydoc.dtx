@@ -1,0 +1,2899 @@
+% \iffalse
+%<*driver>
+\begingroup
+\def\latexfmt{LaTeX2e}
+\ifx\latexfmt\fmtname
+\long\def\skip#1\NeedsTeXFormat{\endgroup\NeedsTeXFormat}
+\expandafter\skip
+\else
+\endgroup
+\let\NeedsTeXFormat\end
+\fi
+%</driver>
+% \fi
+%
+% \iffalse
+%<*ydocstrip.tex>
+% \fi
+%
+% \iffalse
+%    \begin{macrocode}
+\expandafter\ifx\csname ydocstripversion\endcsname\relax\else
+    \endinput
+\fi
+
+\chardef\ydocstripversion=1
+
+\input docstrip
+
+
+\def\checkOption<#1{%
+  \ifcase
+    \ifx*#10\else \ifx/#11\else
+    \ifx+#12\else \ifx-#13\else
+    \ifx<#14\else
+    \ifx=#15\else
+    \ifx!#16\else
+    10\fi\fi\fi\fi\fi\fi\fi\relax
+  \expandafter\starOption\or
+  \expandafter\slashOption\or
+  \expandafter\plusOption\or
+  \expandafter\minusOption\or
+  \expandafter\verbOption\or
+  \expandafter\varOption\or
+  \expandafter\valueOption\else
+  \expandafter\doOption\fi
+  #1}
+
+\def\varOption =#1#2>#3\endLine{{%
+    \ifx*#1\relax
+        \edef\varStop{\perCent<=/#2>}%
+        \global\expandafter\let\csname ydocstrip@var@#2\endcsname\empty%
+        \expandafter\def\csname ydocstrip@var@#2\endcsname##1{}%
+        \loop
+            \ifeof\inFile
+                \errmessage{Source file ended while reading a multi-line variable content!}%
+            \fi
+            \read\inFile to \inLine
+        \if 1\ifx\inLine\varStop 0\fi 1% if not inLine==varStop
+            \expandafter\xdef\csname ydocstrip@var@#2\endcsname{\csname ydocstrip@var@#2\endcsname^^J\inLine}%
+            \maybeMsg{.}%
+        \repeat
+    \else
+    \ifx/#1\relax
+        \errmessage{Error in expression: spurious '<=/#2>'}%
+    \else
+    \ifx+#1\relax
+        \expandafter\ifx\csname ydocstrip@var@#2\endcsname\relax
+            \expandafter\xdef\csname ydocstrip@var@#2\endcsname{#3}%
+        \else
+            \expandafter\xdef\csname ydocstrip@var@#2\endcsname{\csname ydocstrip@var@#2\endcsname^^J#3}%
+        \fi
+    \else
+        \expandafter\gdef\csname ydocstrip@var@#1#2\endcsname{#3}%
+    \fi
+    \fi
+    \fi
+}}
+
+
+\def\valueOption !#1>#2\endLine{%
+    \begingroup
+    \expandafter\let\expandafter\var\csname ydocstrip@var@#1\endcsname
+    \ifx\var\relax
+        \errmessage{Used variable '#1' was never defined!}%
+    \else
+    \ifx\var\empty\else
+        \def\do##1##2##3{%
+            \StreamPut##1{\csname ydocstrip@var@#1\endcsname}%
+        }%
+        \activefiles
+    \fi
+    \fi
+    \endgroup
+}
+%    \end{macrocode}
+% \fi
+% \iffalse
+%</ydocstrip.tex>
+% \fi
+%
+% \iffalse
+%<*ydoc.ins>
+% \fi
+% \iffalse COPYRIGHT
+%%
+%% Copyright (c) 2010-2011 by Martin Scharrer <martin@scharrer-online.de>
+%% WWW: http://latex.scharrer-online.de/
+%%
+%% This work may be distributed and/or modified under the
+%% conditions of the LaTeX Project Public License, either version 1.3
+%% of this license or (at your option) any later version.
+%% The latest version of this license is in
+%%   http://www.latex-project.org/lppl.txt
+%% and version 1.3 or later is part of all distributions of LaTeX
+%% version 2005/12/01 or later.
+%%
+%% This work has the LPPL maintenance status `maintained'.
+%%
+%% The Current Maintainer of this work is Martin Scharrer.
+%%
+%% This work consists of the files ydoc.dtx and ydoc.ins
+%% and the derived file ydoc.cls, ydoc.sty, ydoc-code.sty,
+%% ydoc-expl.sty and ydoc-desc.sty.
+%%
+% \fi
+%
+% \iffalse
+\input ydocstrip
+
+\preamble
+\endpreamble
+
+\keepsilent
+\askforoverwritefalse
+
+\generate{%
+  \file{ydocstrip.tex}{\from{ydoc.dtx}{ydocstrip.tex}}%
+  \file{ydocincl.tex} {\from{ydoc.dtx}{ydocincl.tex}}%
+  \file{ydoc.ins}     {\from{ydoc.dtx}{ydoc.ins}}%
+  \file{ydoc.cls}     {\from{ydoc.dtx}{ydoc.cls}}%
+  \file{ydoc.sty}     {\from{ydoc.dtx}{ydoc.sty}}%
+  \file{ydoc.cfg}     {\from{ydoc.dtx}{ydoc.cfg}}%
+  \file{ydoc-code.sty}{\from{ydoc.dtx}{ydoc-code.sty}}%
+  \file{ydoc-desc.sty}{\from{ydoc.dtx}{ydoc-desc.sty}}%
+  \file{ydoc-expl.sty}{\from{ydoc.dtx}{ydoc-expl.sty}}%
+  \file{ydoc-doc.sty} {\from{ydoc.dtx}{ydoc-doc.sty}}%
+}
+
+\begingroup
+\obeyspaces
+\Msg{*************************************************************}%
+\Msg{*                                                           *}%
+\Msg{* To finish the installation you have to move the following *}%
+\Msg{* file into a directory searched by TeX:                    *}%
+\Msg{*                                                           *}%
+\Msg{*     ydoc.cls                                              *}%
+\Msg{*     ydoc.sty                                              *}%
+\Msg{*     ydoc-code.sty                                         *}%
+\Msg{*     ydoc-desc.sty                                         *}%
+\Msg{*     ydoc-expl.sty                                         *}%
+\Msg{*     ydoc-doc.sty                                          *}%
+\Msg{*     ydocstrip.tex                                         *}%
+\Msg{*     ydocincl.tex                                          *}%
+\Msg{*                                                           *}%
+\Msg{* To produce the documentation run the file ydoc.dtx        *}%
+\Msg{* through LaTeX.                                            *}%
+\Msg{*                                                           *}%
+\Msg{* Happy TeXing!                                             *}%
+\Msg{*                                                           *}%
+\Msg{*************************************************************}%
+\endgroup%
+
+\endbatchfile
+% vim: ft=tex
+% \fi
+% \iffalse
+%</ydoc.ins>
+% \fi
+%
+% \iffalse
+%<*driver>
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesFile{ydoc.dtx}[%
+%<=*DATE>
+    2012/05/03
+%<=/DATE>
+%<=*VERSION>
+    v0.6alpha
+%<=/VERSION>
+    DTX file of ydoc]
+
+\message{^^JRun this DTX file using 'tex' to extract all files!^^J}
+\documentclass{ydoc}
+
+\newdimen\tempskip
+
+\def\tablecaption{%
+  \tempskip=\abovecaptionskip
+  \abovecaptionskip=\belowcaptionskip
+  \belowcaptionskip=\tempskip
+  \caption
+}
+
+%\OnlyDescription
+\begin{document}
+  \DocInput{ydoc.dtx}
+  \PrintChanges
+  \PrintIndex
+\end{document}
+%</driver>
+% \fi
+%
+% \CheckSum{0}
+%
+% \CharacterTable
+%  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+%   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+%   Digits        \0\1\2\3\4\5\6\7\8\9
+%   Exclamation   \!     Double quote  \"     Hash (number) \#
+%   Dollar        \$     Percent       \%     Ampersand     \&
+%   Acute accent  \'     Left paren    \(     Right paren   \)
+%   Asterisk      \*     Plus          \+     Comma         \,
+%   Minus         \-     Point         \.     Solidus       \/
+%   Colon         \:     Semicolon     \;     Less than     \<
+%   Equals        \=     Greater than  \>     Question mark \?
+%   Commercial at \@     Left bracket  \[     Backslash     \\
+%   Right bracket \]     Circumflex    \^     Underscore    \_
+%   Grave accent  \`     Left brace    \{     Vertical bar  \|
+%   Right brace   \}     Tilde         \~}
+%
+%
+% \changes{v0.1alpha}{2010/04/10}{First released alpha version}
+%
+% \DoNotIndex{\newcommand,\newenvironment}
+%
+% \GetFileInfoSVN{ydoc.dtx}
+%
+% \title{The \textsf{\textbf{ydoc}} Class and Packages}
+% \author{Martin Scharrer}
+% \repository{https://bitbucket.org/martin_scharrer/ydoc/}
+% \email{martin@scharrer.de}
+% \makeatletter
+% \date{Version \expandafter\@gobble\fileversion\\[0.5ex]\filedate}
+% \makeatother
+%
+% \maketitle
+%
+% \ifpdf
+% \hypersetup{%
+%   pdfauthor   = {Martin Scharrer <martin@scharrer-online.de>},
+%   pdftitle    = {The ydoc package, \fileversion, \filedate},
+%   pdfsubject  = {Documentation of LaTeX package ydoc.},
+%   pdfkeywords = {ydoc, documentation, LaTeX}
+% }%
+% \fi
+%
+%
+% \begin{abstract}
+% {\color{red}\bfseries This package bundle is currently under development.
+% All functionality, settings and macro as well as file names can change in later versions and may be incomplete!
+% It is not ready yet to be used for other packages.
+% }
+%
+% The \pkg{ydoc} class and packages provide macros to document the functionality and implementation of \LaTeX{} classes and packages.
+% It is similar to the \pkg{ltxdoc} class with the \pkg{doc} package, but uses more modern features/packages by default
+% (e.g.\ \pkg{xcolor}, \pkg{hyperref}, \pkg{listings}). However, some of the features like code indexing is not yet included.
+% \end{abstract}
+%
+% \section{Introduction}
+% The \pkg{ydoc} packages allow the documentation of \LaTeX\ packages and classes.
+% The name stands for ``\emph{Y}et another \emph{Doc}umentation Package'' and is a pun on
+% the fact that there are several documentation packages written by package developers
+% to document their own packages. All these packages didn't suited the author and therefore he,
+% take a guess, wrote his own documentation package.
+% It (will) support(s) all macros and environments (but not necessary with full/identical features) provided by the \pkg{doc}
+% package to allow the fast adaption of existing |.dtx| files.
+%
+% This documentation uses the \pkg{ydoc} packages itself and therefore also acts as a live example.
+%
+% \subsection{\pkg{ydoc} Files}
+% The \pkg{ydoc} bundle consists (at the moment, subject to change) of the \cls{ydoc} class and the packages \pkg{ydoc}, \pkg{ydoc-code},
+% \pkg{ydoc-desc}, \pkg{ydoc-expl} and \pkg{ydoc-doc}. The \cls{ydoc} class and package allow the user the freedom to use the functionality with other classes if wanted.
+% The class will load the package. The \pkg{ydoc} package loads the packages \pkg{ydoc-code}, \pkg{ydoc-desc}, \pkg{ydoc-expl} and \pkg{ydoc-doc}, which
+% provide the functionality to document \LaTeX\ code implementation, describe the user-level macro, include live code examples and provide replacements for the
+% macros of the \pkg{doc} package, respectively.
+% This packages can be loaded on their own in other kind of \LaTeX\ documents if required.
+%
+% \subsection{Similar Packages}
+% Other documentation related classes and packages are \pkg{ltxdoc}, \pkg{doc}, \pkg{dox}, \pkg{xdoc}, \pkg{gmdoc}, \pkg{pauldoc}, \pkg{hypdoc},
+% \pkg{codedoc}, \pkg{nicetext} and \pkg{tkz-doc}.
+%
+%
+% \section{Usage}
+% (section incomplete)
+%
+% \subsection{Code Documentation Environments}
+%
+% \begin{DescribeEnv}{macro}{<macro>}[<\# of args>]!\optional!{<arg~1~description>}!\ldots!{<arg~$n$~description>}
+%  \MacroArgs<macro documentation>\\
+%  \begin{DescribeEnv}{macrocode}
+%     \MacroArgs<macro code>
+%  \end{DescribeEnv}\\
+%  \ldots
+% \end{DescribeEnv}
+% The implementation of macros can be documented using this environment. The actual \meta{macro code} must be placed in a \env{macrocode} environment.
+% Longer macro definition can be split using multiple \env{macrocode} environments with interleaved documentation texts.
+%
+% The \pkg{ydoc} definition of the \env{macro} environment has an additional feature compare to \pkg{doc}. The arguments of the macro (|#1|, |#2|, \ldots) can be
+% documented in a vertical list. The environment has an optional argument to declare the \meta{number of arguments} the macro implementation has.
+% The descriptions of this macro arguments are read from the next arguments of the environment. If the \meta{number of arguments} is not given or zero (or less)
+% no further arguments are read by the \env{macro} environment.
+%
+% \begin{DescribeEnv}{macrocode}
+%     \MacroArgs<macro code>
+% \end{DescribeEnv}
+% This environment wraps around any \TeX\ code and types it verbatim. The environment end is read verbatim as well and must be written on a separate
+% line beginning with a percent followed by exactly four spaces: `\verb*+%    \end{macrocode}+'.
+%
+% \begin{DescribeEnv}{environment}{<name>}[<\# of args>]!\optional!{<arg~1~description>}!\ldots!{<arg~$n$~description>}
+%  \MacroArgs<environment documentation>\\
+%  \begin{DescribeEnv}{macrocode}
+%     \MacroArgs<macro code>
+%  \end{DescribeEnv}\\
+%  \ldots
+% \end{DescribeEnv}
+% This environment provides the same functionality as the \env{macro} environment above, but for environments instead.
+%
+%
+% \subsection{Description Macros and Environments}
+%
+% \DescribeMacro\DescribeMacro<\textbackslash macro><macro arguments>
+% The \cs{DescribeMacro} is used to describe macros included their arguments.
+% It takes the to be described \meta{\textbackslash macro} as first argument (can also be enclosed in |{ }|).
+% The macro name can include `|@|'. Any number of \meta{macro arguments} (in a broad sense, see Table~\ref{tab:macroargs}) following it
+% are formatted as arguments of this macro.
+% Any following non-argument token (normal text, macro, etc.)\ will make \cs{DescribeMacro} stop collecting arguments.
+% For example, if a \TeX\ group should be started using |{ }| direct after \cs{DescribeMacro} a |\relax| (or a similar macro) should be inserted
+% between them, otherwise the group will be taken as mandatory argument of the described macro.
+%
+% Multiple \cs{DescribeMacro} in a row will automatically stacked inside one framed box. If this is not wanted simply separate them with |\relax|
+% or any other macro or token. See also the \env{DescribeMacros} environment below.
+%
+% \subsubsection*{Examples:}
+% \par\noindent |\DescribeMacro\mymacro*[<optional>]{<meta text>}| will result in\\
+% \mbox{\Macro\mymacro*[<optional>]{<meta text>}} (inside a framed box).
+% \par\medskip\noindent The above syntax description of \cs{DescribeMacro} itself was typeset with\\
+% |\DescribeMacro\DescribeMacro<\textbackslash macro><macro arguments>|.
+% \par\medskip\noindent Special macros with have a partner macro as end marker can be typeset like this:\\
+% |\DescribeMacro\csname<text>\AlsoMacro\endcsname|, which will result in\\
+% \mbox{\Macro\csname<text>\AlsoMacro\endcsname}.
+%
+% \DescribeMacro\Macro<\textbackslash macro><macro arguments>
+% This macro is like an in-text version of \cs{DescribeMacro}.
+% The macro description stays as part of the surrounding text and is not placed inside a framed box.
+% The description can be broken between lines. This can be avoided by placing it inside a |\mbox{}|.
+% \cs{Macro} is equivalent to \cs{MacroArgs}\cs{AlsoMacro}.
+%
+% \DescribeMacro\MacroArgs<macro arguments>
+% This macro formats the \meta{macro arguments} the same way as \cs{DescribeMacro} and \cs{Macro} but without a macro name.
+% Like \cs{Macro} the description is placed in-text.
+%
+% \DescribeMacro\AlsoMacro<\textbackslash macro><further macro arguments>
+% This macro can only be used inside the \meta{macro arguments} of the above macros and typesets an additional macro as part
+% of the syntax of the described macro. The additional macro is normally an end- or other marker of some kind. Further macro arguments may
+% follow. Macros which are not part of the syntax but normal arguments should be written as
+% |<\textbackslash name>| (yielding \MacroArgs<\textbackslash name>) instead.
+% The `\verb+|+' character is an abbreviation of \Macro\AlsoMacro, but only at places where this can appear.
+%
+% \subsubsection*{Examples:}
+% |\Macro\@for<\textbackslash var> ':=' <list> \AlsoMacro\do {<code>}|\\
+%  \Macro\@for<\textbackslash var> ':=' <list> \AlsoMacro\do {<code>}
+%  \par\medskip\noindent
+% |\Macro\pgfkeys{<key1>'='<value1>','<key2>'/.code='{<code>}}|\\
+%  \Macro\pgfkeys{<key1>'='<value1>','<key2>'/.code='{<code>}}\\
+%
+% \DescribeMacro\MakeShortMacroArgs*{<char>}
+% This macro is similar to \Macro\MakeShortVerb from the \pkg{shortvrb} package.
+% It can be used to globally define one character to act like \Macro\MacroArgs till the same character is discovered again.
+% Special characters must be escaped with an backslash for the definition.
+% One additional benefit beside the shorter size is that the argument list is automatically terminated.
+% For example |\MakeShortMacroArgs{\"}| will make `|"<arg>{<arg>}"|' act like `|\MacroArgs<arg>{<arg>}\relax|'.
+% One side-effect is that should the argument list be terminated, e.g. by an unknown element or macro, then the rest of the
+% text till the end-character is typeset as normal, but inside a group.
+%
+% The starred version will define the character equal to \Macro\Macro instead.
+%
+% \DescribeMacro\DeleteShortMacroArgs{<char>}
+% Globally removes the special meaning from \meta{char} given to him by \Macro\MakeShortMacroArgs.
+%
+% Note that special characters like |`| are
+% best defined |\AtBeginDocument| and deleted again |\AtEndDocument| to avoid issues if they are written to the |aux| file by some package.
+%
+% \begin{DescribeEnv}{DescribeMacros}
+%   \Macro\Macro<\textbackslash name><arguments>\\
+%   \Macro\Macro<\textbackslash name><arguments>\\
+%   \ldots
+% \end{DescribeEnv}
+% This environment can be used to place multiple macro description into the same framed box.
+% The macros are described using \cs{Macro}, which has a slightly different definition than outside of this environment, to place the
+% description into a |\hbox|. The environment stacks these |\hbox|es in a |\vbox|. The macros can also be placed freely using anything
+% which produces a |\hbox|, e.g.\ |\hbox{\Macro\A ~~~ \Macro\B}| or using
+% a |tabular| (see also \env{DescribeMacrosTab}).
+%
+% \DescribeEnv[<tabular content>]{DescribeMacrosTab}{<tabular column definition>}
+% This is a special version of the \env{DescribeMacros} environment which adds a tabular environment around the content.
+% This is useful if a large set of small macros should be desribed at once. Placing them all below each other would result in a very bad page layout.
+% The environment has one argument which is passed to \env{tabular} as the column definition. A `|@{}|' is added before and after to remove any margins.
+%
+%
+% \begin{DescribeEnv}{DescribeEnv}{<name>}<arguments>
+%   \MacroArgs<body content>\relax\space |\\|\\
+%   \MacroArgs<more body content>
+% \end{DescribeEnv}
+% \vspace{-\beforedescskip}
+% \DescribeMacro\DescribeEnv[<body content>]{<name>}<arguments>
+% The \env{DescribeEnv} can be used to describe environments in the same way the \cs{DescribeMacro} macro describes macros.
+% Supported \meta{arguments} are shown in Table~\ref{tab:macroargs}.
+% Potential \meta{body content} can be placed between the begin and end of the environment description to explain the user what kind of material
+% should be placed inside it.
+% The environment also exists in macro form as \cs{DescribeEnv}, which allows to provide small \meta{body content} as an optional argument.
+% Please note that for this optional argument a \cs{MacroArgs} is automatically inserted, but not for the \cs{DescribeEnv} environment content.
+%
+% The body content is placed into a indented |\hbox{}| stacked inside a |\vbox{}| also holding the environment begin and end line.
+% The |\\| macro is redefined to create a new indented |\hbox| acting as new code line.
+% Therefore this environment is similar to a one-column \env{tabular}: all macros placed into a line are only valid up to the next line end.
+%
+% \begin{table}
+% \tablecaption{Supported `arguments' for \cs{DescribeMacro}/\cs{DescribeEnv}/\cs{MacroArgs}.}\label{tab:macroargs}
+% \begin{tabular}{llll}
+%  \toprule
+%   Description                &  Syntax       &  Result              & Macro$^{a}$ \\
+%  \midrule
+%   Meta text                  &  |<text>|     & \MacroArgs<text>     & \Macro\meta{<text>} \\
+%   Mandatory Argument         &  |{args}|     & \MacroArgs{args}     & \\
+%   ---, with meta text        &  |{<text>}|   & \MacroArgs{<text>}   & \Macro\marg{<text>} \\
+%   Optional Argument          &  |[args]|     & \MacroArgs[args]     & \\
+%   ---, with meta text        &  |[<text>]|   & \MacroArgs[<text>]   & \Macro\oarg{<text>} \\
+%   Picture Argument           &  |(args)|     & \MacroArgs(args)     & \\
+%   ---, with meta text        &  |(<text>)|   & \MacroArgs(<text>)   & \Macro\parg{<text>} \\
+%   Beamer Overlay Argument    &  |<<args>>|   & \MacroArgs<<args>>   \\
+%   ---, with meta text        &  |<< <text> >>| & \MacroArgs<<<text> >>   & \Macro\aarg{<text>} \\
+%   Star                       &  |*|          & \MacroArgs*          \\
+%  \midrule
+%   Verbatim content           &  |'$&^%_#$\'| & \MacroArgs'$&^%_#$\' \\
+%   ---, produce |'| char      &  |''|         & \MacroArgs''         \\
+%   Insert any \TeX\ code      &  |!\fbox{T}!| & \MacroArgs!\fbox{T}! \\
+%   Unbreakable Space          &  |~|          & \\
+%   Space (explicit macro)     &  |\space|     & \\
+%  \midrule
+%   Second macro (e.g.\ endmarker) &  |\AlsoMacro\macro| & \MacroArgs\AlsoMacro\macro \\
+%   \hfill short version:        &  \verb+|\macro+     & \MacroArgs|\macro \\
+%  \bottomrule
+%   \multicolumn{4}{l}{{\Large\strut}$^{a}$) As alternative to be used inside normal text.} \\
+%   \multicolumn{4}{l}{Note that `|args|' can itself be further macro arguments except true verbatim.}
+% \end{tabular}
+% \end{table}
+%
+% \DescribeMacro\DescribeLength<\textbackslash name>{<default value>}
+% This macro can be used to describe \LaTeX\ lengths also known as dimensions. Multiple \cs{DescribeLength} macros in a row will automatically be grouped.
+%
+% \subsection{Format Macros}
+% \begin{DescribeMacrosTab}{ll}
+%     \Macro\cs{<macro name>}    & \Macro\env{<environment name>} \\
+%     \Macro\pkg{<package name>} & \Macro\cls{<class name>}       \\
+% \end{DescribeMacrosTab}
+% This macros can be used to format names of macros, environments, packages and classes, respectively.
+% At the moment they simply use |\texttt|.
+%
+% \DescribeMacros\hbox{\Macro\bslash~~~~\Macro\percent~~~~\Macro\braceleft~~~~\Macro\braceright}\endDescribeMacros
+% This macros define expandable backslash (\texttt{\bslash}$_{12}$), percent char (\texttt{\percent}$_{12}$),
+% and left (\texttt{\braceleft}$_{12}$) and right (\texttt{\braceright}$_{12}$) braces with catcode 12 (other), respectively.
+% They should only be used with text-typer font when used in text, because other fonts might not have the
+% correct characters. The macros must be protected when used in a moving argument.
+%
+% \DescribeMacrosTab{@{}ll@{}}
+%     \Macro\meta{<meta text>}     &
+%     \Macro\marg{<argument text>} \\
+%     \Macro\oarg{<argument text>} &
+%     \Macro\parg{<argument text>} \\
+%     \Macro\aarg{<argument text>} &
+%     \Macro\sarg                  \\
+% \endDescribeMacrosTab
+% This macros allow to typeset meta text and mandatory, optional, picture and beamer overlay arguments as well as a star symbol.
+% They are used internally by \cs{MacroArgs} and friends. See Table~\ref{tab:macroargs} for examples.
+%
+% \DescribeMacrosTab{ll}
+%     \Macro\metastyle &
+%     \Macro\margstyle \\
+%     \Macro\oargstyle &
+%     \Macro\pargstyle \\
+%     \Macro\aargstyle &
+%     \Macro\sargstyle \\
+% \endDescribeMacrosTab
+% This macros are used to define the style in which the corresponding macros above are being formatted.
+% They are used like \MacroArgs '{'<\textbackslash stylemacro>{<material>}'}' to allow the styles to
+% use macros like |\ttfamily| or |\texttt|\marg{material}. By default the optional argument and the also optional star are
+% printed in the color `|optional|' which is a 65\% gray.
+%
+% \subsection{Settings}
+% The following macro and dimensions can be redefined by the user to adjust the layout of the package documentation.
+%
+% \DescribeLength\descindent    {-20pt}
+% \DescribeLength\beforedescskip{~12pt plus 4pt minus 4pt}
+% \DescribeLength\afterdescskip {~~6pt plus 2pt minus 2pt}
+% These length define the indention and vertical distances before and after a \cs{Describe\ldots} macro or environment, respectively.
+%
+% \DescribeLength\descsep       {1em in \texttt{tt} font = 10.5pt}
+% This macro defines the space on the left and right side between the description text and the framed box.
+%
+% \subsection{Macros and Environments to include LaTeX Code Examples}
+% \DescribeEnv{example}
+% \DescribeEnv{examplecode}
+%
+% (to be written)
+%
+% \StopEventually{}
+%
+% \clearpage
+% \section{Implementation}
+%
+% \iffalse
+%<*ydoc.cls>
+% \fi
+% \subsection{Class File}
+%
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesClass{ydoc}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2011/08/11 develop
+%</DRIVER>
+    ydoc class: document LaTeX class and packages]
+%    \end{macrocode}
+%
+% At the moment simply load \cls{article} class with \opt{a4paper} option
+% and load the \pkg{ydoc} package.
+%    \begin{macrocode}
+\PassOptionsToClass{a4paper}{article}
+\DeclareOption*{\expandafter\PassOptionsToClass\expandafter{\CurrentOption}{article}}
+\ProcessOptions\relax
+\LoadClass{article}
+\RequirePackage{ydoc}
+%    \end{macrocode}
+% \iffalse
+%</ydoc.cls>
+% \fi
+%
+% \iffalse
+%<*ydoc.sty>
+% \fi
+% \subsection{Package File}
+%
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ydoc}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2011/08/11 develop
+%</DRIVER>
+    ydoc package: document LaTeX class and packages]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{svn-prov}[2010/04/03]
+\RequirePackage{ydoc-code}
+\RequirePackage{ydoc-expl}
+\RequirePackage{ydoc-desc}
+\RequirePackage{ydoc-doc}
+
+\RequirePackage{newverbs}
+\MakeSpecialShortVerb{\qverb}{\"}
+\AtBeginDocument{\catcode`\^^A=14\relax}
+
+\input{ydoc.cfg}
+%    \end{macrocode}
+% \iffalse
+%</ydoc.sty>
+% \fi
+%
+% \iffalse
+%<*ydoc.cfg>
+% \fi
+% \subsection{Config File}
+%    \begin{macrocode}
+%% Please delete the following line on manual changes:
+\ProvidesFile{ydoc.cfg}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+   2011/08/11 develop
+%</DRIVER>
+   Default config file for ydoc]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\usepackage[T1]{fontenc}
+\IfFileExists{fourier.sty}{%
+    \usepackage{fourier}
+}{}
+%    \end{macrocode}
+%
+% Use 'lmodern' only for the 'tt' font if fourier is installed.
+%    \begin{macrocode}
+\IfFileExists{lmodern.sty}{
+    \IfFileExists{fourier.sty}{
+        \renewcommand{\ttdefault}{lmtt}
+    }{
+        \usepackage{lmodern}
+    }
+}{}
+%    \end{macrocode}
+%
+%
+%    \begin{macrocode}
+\urlstyle{sf}
+%    \end{macrocode}
+%
+% Use micro-typesetting if pdftex is used:
+%    \begin{macrocode}
+\usepackage{ifpdf}
+\ifpdf
+\usepackage{microtype}
+\fi
+%    \end{macrocode}
+%    \begin{macrocode}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{multicol}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{hyperref}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\reversemarginpar
+%    \end{macrocode}
+%
+% \iffalse
+%</ydoc.cfg>
+% \fi
+%
+% \iffalse
+%<*ydoc-code.sty>
+% \fi
+% \subsection{Macros and Environments to document Implementations}
+%
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ydoc-code}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2011/08/11 develop
+%</DRIVER>
+    ydoc package to document macro code]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{hyperref}
+\hypersetup{colorlinks=true,pdfborder=0 0 0,pdfborderstyle={}}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\IfFileExists{needspace.sty}{%
+    \RequirePackage{needspace}
+}{%
+    \def\Needspace{\@ifstar\@gobble\@gobble}
+}
+%    \end{macrocode}
+%
+% \subsubsection{Color and style definitions}
+%    \begin{macrocode}
+\RequirePackage{xcolor}
+\definecolor{macroimpl}{rgb}{0.0,0.0,0.4}
+%    \end{macrocode}
+%
+% \subsubsection{General Macros}
+%
+% \begin{macro}{\ydocwrite}
+%    \begin{macrocode}
+\@ifundefined{ydocwrite}{%
+  \newwrite\ydocwrite
+}{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ydocfname}
+%    \begin{macrocode}
+\@ifundefined{ydocfname}{%
+  \def\ydocfname{\jobname.cod}%
+}{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ydoc@catcodes}
+%    \begin{macrocode}
+\def\ydoc@catcodes{%
+  \let\do\@makeother
+  \dospecials
+  \catcode`\\=\active
+  \catcode`\^^M=\active
+  \catcode`\ =\active
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Handling Macrocode}
+% \begin{environment}{macrocode}
+%    \begin{macrocode}
+\def\macrocode{%
+  \par\noindent
+  \begingroup
+  \ydoc@catcodes
+  \macro@code
+}
+\def\endmacrocode{}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{macro}{\macro@code}[1]{verbatim macro code}
+%    \begin{macrocode}
+\begingroup
+\endlinechar\m@ne
+\@firstofone{%
+\catcode`\|=0\relax
+\catcode`\(=1\relax
+\catcode`\)=2\relax
+\catcode`\*=14\relax
+\catcode`\{=12\relax
+\catcode`\}=12\relax
+\catcode`\ =12\relax
+\catcode`\%=12\relax
+\catcode`\\=\active
+\catcode`\^^M=\active
+\catcode`\ =\active
+}*
+|gdef|macro@code#1^^M%    \end{macrocode}(*
+|endgroup|expandafter|macro@@code|expandafter(|ydoc@removeline#1|noexpand|lastlinemacro)*
+)*
+|gdef|ydoc@removeline#1^^M(|noexpand|firstlinemacro)*
+|gdef|ydoc@defspecialmacros(*
+|def^^M(|noexpand|newlinemacro)*
+|def (|noexpand|spacemacro)*
+|def\(|noexpand|bslashmacro)*
+)*
+|gdef|ydoc@defrevspecialmacros(*
+|def|newlinemacro(|noexpand^^M)*
+|def|spacemacro(|noexpand )*
+|def|bslashmacro(|noexpand\)*
+)*
+|endgroup
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macro@@code}[1]{verbatim macro code}
+%    \begin{macrocode}
+\def\macro@@code#1{%
+  {\ydoc@defspecialmacros
+  \xdef\themacrocode{#1}}%
+  \PrintMacroCode
+  \end{macrocode}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\linenumberbox}
+%    \begin{macrocode}
+\def\newlinemacro{\\\null}
+\def\spacemacro{\ }
+\def\bslashmacro{\char92}
+\def\lastlinemacro{}
+\def\firstlinemacro{\linenumberbox}
+\def\newlinemacro{\\\linenumberbox}
+\newcounter{linenumber}
+\def\linenumberbox{%
+  \hbox to 1.25em{}%
+  \llap{%
+    \stepcounter{linenumber}%
+    {\footnotesize\color{gray}\thelinenumber~}%
+  }%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintMacroCode}
+%    \begin{macrocode}
+\def\PrintMacroCode{%
+  \begingroup
+  \ttfamily
+  \noindent\themacrocode
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintMacroCode}
+%    \begin{macrocode}
+\RequirePackage{listings}
+%    \end{macrocode}
+%    \begin{macrocode}
+\def\PrintMacroCode{%
+  \begingroup
+  \let\firstlinemacro\empty
+  \let\lastlinemacro\empty
+  \def\newlinemacro{^^J}%
+  \let\bslashmacro\bslash
+  \let\spacemacro\space
+  \immediate\openout\ydocwrite=\ydocfname\relax
+  \immediate\write\ydocwrite{\themacrocode}%
+  \immediate\closeout\ydocwrite
+  \@nameuse{ydoc@countbslashes}%
+  \ydoclistingssettings
+  \let\input\@input
+  \lstinputlisting{\ydocfname}%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\lstdefinestyle{ydoccode}{%
+    language=[latex]tex,basicstyle=\ttfamily,
+    numbers=left,numberstyle=\tiny\color{gray},firstnumber=last,
+    breaklines,prebreak={\mbox{\tiny$\swarrow$}},
+    commentstyle=\color{black!60},
+}%
+%    \end{macrocode}
+%
+% \begin{macro}{\ydoclistingssettings}
+%    \begin{macrocode}
+\def\ydoclistingssettings{%
+    \lstset{style=ydoccode}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macro@impl@args}[1]{number of macro arguments}
+%    \begin{macrocode}
+\def\macro@impl@args[#1]{%
+  \begingroup
+  \parindent=10pt\relax
+  \let\macro@impl@argcnt\@tempcnta
+  \let\macro@impl@curarg\@tempcntb
+  \macro@impl@argcnt=#1\relax
+  \macro@impl@curarg=0\relax
+  \ifnum\macro@impl@curarg<\macro@impl@argcnt\relax
+    \expandafter\macro@impl@arg
+  \else
+    \expandafter\macro@impl@endargs
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macro@impl@endargs}
+%    \begin{macrocode}
+\def\macro@impl@endargs{%
+  \endgroup
+  \unskip\par\noindent\ignorespaces
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macro@impl@argline}[2]{argument number}{argument description}
+%    \begin{macrocode}
+\def\macro@impl@argline#1#2{%
+  \par{\texttt{\##1}:~#2\strut}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macro@impl@arg}[1]{argument description}
+%    \begin{macrocode}
+\def\macro@impl@arg#1{%
+  \advance\macro@impl@curarg by\@ne\relax
+  \macro@impl@argline{\the\macro@impl@curarg}{#1}%
+  \ifnum\macro@impl@curarg<\macro@impl@argcnt\relax
+    \expandafter\macro@impl@arg
+  \else
+    \expandafter\macro@impl@endargs
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{environment}{macro}[1]{implemented macro}
+%    \begin{macrocode}
+\def\macro#1{%
+  \PrintMacroImpl{#1}%
+  \@ifnextchar[%]
+    {\macro@impl@args}%
+    {}%
+}
+\def\endmacro{}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{environment}{key}[2]{key family}{key name}
+%    \begin{macrocode}
+\def\key#1#2{%
+  \PrintMacroImpl{KV@#1@#2}%
+  \@ifnextchar[%]
+    {\macro@impl@args}%
+    {}%
+}
+\def\endkey{}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{environment}{environment}[1]{environment name}
+%    \begin{macrocode}
+\def\environment#1{%
+  \PrintEnvImplName{#1}%
+  \@ifnextchar[%]
+    {\macro@impl@args}%
+    {}%
+}
+\def\endenvironment{}
+%    \end{macrocode}
+% \end{environment}
+%
+%
+% \begin{environment}{style}[1]{style name}
+%    \begin{macrocode}
+\def\style#1{%
+  \PrintStyleImplName{#1}%
+  \@ifnextchar[%]
+    {\macro@impl@args}%
+    {}%
+}
+\def\endstyle{}
+\def\PrintStyleImplName{\PrintEnvImplName}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{macro}{\PrintMacroImpl}[1]{macro (token)}
+%    \begin{macrocode}
+\def\PrintMacroImpl#1{%
+  \par\bigskip\noindent
+  \Needspace*{3\baselineskip}%
+  \hbox{%
+    \edef\name{\expandafter\@gobble\string#1}%
+    \global\@namedef{href@impl@\name}{}%
+    \immediate\write\@mainaux{%
+      \global\noexpand\@namedef{href@impl@\name}{}%
+    }%
+    \raisebox{4ex}[4ex]{\hypertarget{impl:\name}{}}%
+    \hspace*{\descindent}\fbox{%
+      \hspace*{\descsep}%
+      \@ifundefined{href@desc@\name}{}{\hyperlink{desc:\name}}%
+      {\PrintMacroImplName{#1}}%
+      \hspace*{\descsep}%
+    }%
+  }%
+  \par\medskip\noindent
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintMacroImplName}[1]{macro (token)}
+%    \begin{macrocode}
+\def\PrintMacroImplName#1{%
+  \implstyle{\string#1\strut}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintEnvImplName}[1]{environment name}
+% test
+%    \begin{macrocode}
+\def\PrintEnvImplName#1{%
+  \par\bigskip\noindent
+  \hbox{\hspace*{\descindent}\fbox{{\implstyle{#1}}}}%
+  \par\medskip
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\implstyle}
+%    \begin{macrocode}
+\def\implstyle{\ttfamily\bfseries\color{macroimpl}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\bslash}
+% Defines an expandable backslash with catcode 12: `\texttt{\bslash}$_{12}$'.
+% The |\@firstofone| trick is used to read the |\gdef\bslash| code before changing the catcode.
+%    \begin{macrocode}
+{%
+\@firstofone{%
+  \catcode`\\=12
+  \gdef\bslash
+}{\}
+}%}
+%    \end{macrocode}
+% \end{macro}
+% \iffalse
+%</ydoc-code.sty>
+% \fi
+%
+% \iffalse
+%<*ydoc-doc.sty>
+% \fi
+% \subsection{Provide \pkg{doc} macros}
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ydoc-doc}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2099/01/01 develop
+%</DRIVER>
+    ydoc package to provide 'doc' macros]
+%    \end{macrocode}
+%
+% \begin{macro}{\ydoc@countbslashes}
+% Reads the macro code into a temp box. The backslashes are defined to increase a counter.
+%    \begin{macrocode}
+\newcount\ydoc@bslashcnt
+\def\ydoc@countbslashes{%
+  \begingroup
+    \let\firstlinemacro\empty
+    \let\lastlinemacro\empty
+    \let\newlinemacro\empty
+    \let\spacemacro\empty
+    \def\bslashmacro{\global\advance\ydoc@bslashcnt by\@ne}%
+    \setbox\@tempboxa\hbox{\themacrocode}%
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CheckSum}
+%    \begin{macrocode}
+\def\CheckSum#1{%
+  \gdef\ydoc@checksum{#1}%
+}
+\let\ydoc@checksum\m@ne
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\AlsoImplementation}
+% \begin{macro}{\OnlyDescription}
+% \begin{macro}{\StopEventually}
+% \begin{macro}{\Finale}
+% The first two macros modify the \cs{StopEventually} macro which either
+% stores its argument in \cs{Final} or executes it itself.
+%    \begin{macrocode}
+\def\AlsoImplementation{%
+  \gdef\StopEventually##1{%
+    \@bsphack
+    \gdef\Finale{##1\ydoc@checkchecksum}%
+    \@esphack
+  }%
+}
+\AlsoImplementation
+\def\OnlyDescription{%
+  \@bsphack
+  \long\gdef\StopEventually##1{##1\endinput}%
+  \@esphack
+}
+\let\Finale\relax
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\MakePercentComment}
+% \begin{macro}{\MakePercentIgnore}
+%    \begin{macrocode}
+\def\MakePercentIgnore{\catcode`\%9\relax}
+\def\MakePercentComment{\catcode`\%14\relax}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\DocInput}
+%    \begin{macrocode}
+\def\DocInput#1{\MakePercentIgnore\input{#1}\MakePercentComment}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CharacterTable}
+%    \begin{macrocode}
+\providecommand*\CharacterTable{%
+    \begingroup
+    \CharTableChanges
+    \@CharacterTable
+}
+\def\@CharacterTable#1{%
+    \def\ydoc@used@CharacterTable{#1}%
+    \@onelevel@sanitize\ydoc@used@CharacterTable
+    \ifx\ydoc@used@CharacterTable\ydoc@correct@CharacterTable
+           \typeout{***************************}%
+           \typeout{* Character table correct *}%
+           \typeout{***************************}%
+    \else
+         \PackageError{ydoc}{Character table corrupted}
+                           {\the\wrong@table}
+         \show\ydoc@used@CharacterTable
+         \show\ydoc@correct@CharacterTable
+    \fi
+    \endgroup
+}
+\newhelp\wrong@table{Some of the ASCII characters are corrupted.^^J
+            I now \string\show\space you both tables for comparison.}
+\newcommand*\CharTableChanges{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ydoc@correct@CharacterTable}
+%    \begin{macrocode}
+\def\ydoc@correct@CharacterTable
+  {Upper-case    \A\B\C\D\E\F\G\H\I\J\K\L\M\N\O\P\Q\R\S\T\U\V\W\X\Y\Z
+   Lower-case    \a\b\c\d\e\f\g\h\i\j\k\l\m\n\o\p\q\r\s\t\u\v\w\x\y\z
+   Digits        \0\1\2\3\4\5\6\7\8\9
+   Exclamation   \!     Double quote  \"     Hash (number) \#
+   Dollar        \$     Percent       \%     Ampersand     \&
+   Acute accent  \'     Left paren    \(     Right paren   \)
+   Asterisk      \*     Plus          \+     Comma         \,
+   Minus         \-     Point         \.     Solidus       \/
+   Colon         \:     Semicolon     \;     Less than     \<
+   Equals        \=     Greater than  \>     Question mark \?
+   Commercial at \@     Left bracket  \[     Backslash     \\
+   Right bracket \]     Circumflex    \^     Underscore    \_
+   Grave accent  \`     Left brace    \{     Vertical bar  \|
+   Right brace   \}     Tilde         \~}
+\@onelevel@sanitize\ydoc@correct@CharacterTable
+%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DoNotIndex}
+%    \begin{macrocode}
+\providecommand*\DoNotIndex[1]{%
+  \PackageWarning{ydoc}{Ignoring DoNotIndex - not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\changes}
+%    \begin{macrocode}
+\providecommand*\changes[3]{%
+  \PackageWarning{ydoc}{Ignoring changes - not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\RecordChanges}
+%    \begin{macrocode}
+\providecommand*\RecordChanges{%
+  \PackageWarning{ydoc}{List of changes not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintChanges}
+%    \begin{macrocode}
+\providecommand*\PrintChanges{%
+  \PackageWarning{ydoc}{List of changes not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintIndex}
+%    \begin{macrocode}
+\providecommand*\PrintIndex{%
+  \PackageWarning{ydoc}{Code index not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\CodelineIndex}
+%    \begin{macrocode}
+\providecommand*\CodelineIndex{%
+  \PackageWarning{ydoc}{Code line index not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\EnableCrossrefs}
+%    \begin{macrocode}
+\providecommand*\EnableCrossrefs{%
+  \PackageWarning{ydoc}{Cross references not implemented yet!}{}{}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\GetFileInfo}
+% Current implementation taken from \pkg{doc} package.
+%    \begin{macrocode}
+\providecommand*\GetFileInfo[1]{%
+  \def\filename{#1}%
+  \def\@tempb##1 ##2 ##3\relax##4\relax{%
+    \def\filedate{##1}%
+    \def\fileversion{##2}%
+    \def\fileinfo{##3}}%
+  \edef\@tempa{\csname ver@#1\endcsname}%
+  \expandafter\@tempb\@tempa\relax? ? \relax\relax
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ydoc@checkchecksum}
+%    \begin{macrocode}
+\def\ydoc@checkchecksum{%
+  \ifnum\ydoc@checksum=\m@ne
+    \message{^^J}%
+    \message{**********************^^J}%
+    \message{* No checksum found! *^^J}%
+    \message{**********************^^J}%
+    \GenericWarning{No checksum found}{Correct checksum is \the\ydoc@bslashcnt^^J}{}{}%
+  \else
+  \ifnum\ydoc@checksum=\z@
+    \message{^^J}%
+    \message{*********************^^J}%
+    \message{* Checksum disabled *^^J}%
+    \message{*********************^^J}%
+    \GenericWarning{Checksum disabled}{Correct checksum is \the\ydoc@bslashcnt^^J}{}{}%
+  \else
+  \ifnum\ydoc@checksum=\ydoc@bslashcnt
+    \message{^^J}%
+    \message{*******************^^J}%
+    \message{* Checksum passed *^^J}%
+    \message{*******************^^J}%
+  \else
+    \message{^^J}%
+    \message{****************************^^J}%
+    \message{* Checksum wrong (\ydoc@checksum<>\the\ydoc@bslashcnt) ^^J}%
+    \message{****************************^^J}%
+    \GenericError{Checksum wrong}{Correct checksum is \the\ydoc@bslashcnt^^J}{}{}%
+  \fi
+  \fi
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\RequirePackage{shortvrb}
+\AtBeginDocument{\MakeShortVerb{\|}}
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{url}
+
+\def\package{\def\@package}
+\package{\jobname}
+
+\def\bundle{\def\@bundle}
+\let\@bundle\@empty
+
+
+\def\ctanlocation{\def\@ctanlocation##1}
+\ctanlocation{http://www.ctan.org/pkg/#1}
+
+\date{Version \fileversion\space -- \filedate}
+
+\def\@homepage{%
+    \begingroup
+    \edef\@tempa{%
+        \endgroup
+        CTAN:
+        \noexpand\url
+        {\@ctanlocation{\ifx\@bundle\@empty\@package\else\@bundle\fi}}%
+    }%
+    \@tempa
+}
+
+\let\@repository\@empty
+\protected\def\repository{\urldef\@repository\url}
+\protected\def\homepage{\urldef\@homepage\url}
+\protected\def\email{\hyper@normalise\email@}
+\def\email@#1{\def\@plainemail{#1}\def\@email{\hyper@linkurl{\Hurl{#1}}{mailto:#1}}}
+
+\let\@email\empty
+
+\let\@plainemail\empty
+\title{The \texorpdfstring{\pkgtitle{\@package}}{\@package} Package}
+\def\@bundlesubtitle{Part of the \texorpdfstring{\pkgtitle{\@bundle}}{\@bundle} bundle}
+
+\protected\def\pkgtitle#1{%
+    \texorpdfstring{\textsf{#1}}{#1}%
+}
+
+
+
+\def\@maketitle{%
+    \newpage
+    \null\vskip 2em
+    \begin{center}%
+        \let\footnote\thanks
+        {\LARGE \@title \par }\vskip 1.5em%
+        \ifx\@bundle\@empty\else
+        {\large \@bundlesubtitle \par }\vskip 1.5em%
+        \fi
+        {\large \lineskip .5em%
+        \begin{tabular}[t]{c}%
+            \@author
+        \end{tabular}%
+        \par}%
+        \ifx\@plainemail\empty\else
+            {\large \lineskip .5em%
+            \begin{tabular}[t]{c}%
+                \@email
+            \end{tabular}%
+            \par}%
+        \fi
+        \vskip 1em
+        {\large \lineskip .5em%
+        \begin{tabular}[t]{c}%
+            \@homepage
+        \end{tabular}%
+        \par}%
+        \vskip 1em
+        \ifx\@repository\@empty\else
+            {\large \lineskip .5em%
+            \begin{tabular}[t]{c}%
+                VC: \@repository
+            \end{tabular}%
+            \par}%
+        \fi
+        \vskip 1em
+        {\large \@date }%
+    \end{center}%
+    \par\vskip 1.5em
+    \aftergroup\ydocpdfsettings
+}
+
+\ifpdf
+\def\ydocpdfsettings{%
+    \hypersetup{%
+        pdfauthor   = {\@author\space<\@plainemail>},
+        pdftitle    = {\@title},
+        pdfsubject  = {Documentation of LaTeX package \@package},
+        pdfkeywords = {\@package, LaTeX, TeX}
+    }%
+}
+\else
+\let\ydocpdfsettings\empty
+\fi
+
+\let\orig@maketitle\maketitle
+\def\maketitle{%
+    \ydocpdfsettings
+    \orig@maketitle
+    \let\orig@maketitle\relax
+}
+%    \end{macrocode}
+% \iffalse
+%</ydoc-doc.sty>
+% \fi
+%
+% \iffalse
+%<*ydoc-desc.sty>
+% \fi
+% \subsection{Description Macros and Environments}
+%
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ydoc-desc}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2099/01/01 develop
+%</DRIVER>
+    ydoc package to describe macros, environments, options etc.]
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\IfFileExists{needspace.sty}{%
+    \RequirePackage{needspace}
+}{%
+    \def\Needspace{\@ifstar\@gobble\@gobble}
+}
+%    \end{macrocode}
+%
+% The short verbatim code is required for the similar macros provided here.
+%    \begin{macrocode}
+\RequirePackage{shortvrb}
+%    \end{macrocode}
+%
+% The \pkg{etoolbox} package is used mainly for |\newrobustcmd|.
+%    \begin{macrocode}
+\RequirePackage{etoolbox}
+%    \end{macrocode}
+%
+% \subsubsection{Color and style definitions}
+%    \begin{macrocode}
+\RequirePackage{xcolor}
+%    \end{macrocode}
+% Define special no-op `none' color which does not change the color.
+% This is not yet tested and may break output files, but seems to work fine with PDF.
+%    \begin{macrocode}
+\expandafter\def\csname\string\color@none\endcsname{%
+    \xcolor@ {}{}{}{}
+}
+%    \end{macrocode}
+%    \begin{macrocode}
+\definecolor{macrodesc}{rgb}{0,0.2,0.6}
+\definecolor{keydesc}{rgb}{0,0.4,0.9}
+\definecolor{macroimpl}{rgb}{0,0.1,0.3}
+\definecolor{meta}{rgb}{0,0.25,0.75}
+\definecolor{scriptcolor}{rgb}{0.2,0.6,0.2}
+\definecolor{optioncolor}{rgb}{0.3.0.2,0}
+\colorlet{optional}{black!65!white}
+\colorlet{metaoptional}{optional!50!meta}
+\providecolor{urlcolor}{named}{blue}
+\providecolor{linkcolor}{named}{blue}
+\providecolor{filecolor}{named}{blue}
+\providecolor{citecolor}{named}{blue}
+\providecolor{anchorcolor}{named}{blue}
+\providecolor{menucolor}{named}{blue}
+\providecolor{runcolor}{named}{blue}
+
+%    \end{macrocode}
+%
+%    \begin{macrocode}
+\RequirePackage{hyperref}
+\hypersetup{%
+    colorlinks=true,
+    pdfborder=0 0 0,
+    pdfborderstyle={},
+    urlcolor=urlcolor,
+    linkcolor=linkcolor,
+    filecolor=filecolor,
+    citecolor=citecolor,
+    anchorcolor=anchorcolor,
+    menucolor=menucolor,
+    runcolor=runcolor,
+}
+
+%    \end{macrocode}
+%
+% \subsubsection{Text Formatting Macros}
+%
+% \begin{macro}{\meta}
+% Prints \meta{meta text}.
+%    \begin{macrocode}
+\newrobustcmd*\meta[1]{%
+  {\metastyle{%
+  \ensuremath\langle
+    #1\/%
+  \ensuremath\rangle
+  }}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\marg}
+% Sets style and adds braces.
+% The text is formatted as separate set of macro arguments.
+%    \begin{macrocode}
+\newrobustcmd*{\marg}[1]{%
+  {\margstyle{%
+    {\ttfamily\braceleft}%
+    \meta{#1}%
+    {\ttfamily\braceright}%
+  }}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\oarg}
+% Sets style and adds brackets.
+% The text is formatted as separate set of macro arguments.
+%    \begin{macrocode}
+\newrobustcmd*{\oarg}[1]{%
+  {\oargstyle{%
+    {\ttfamily[}%
+    \meta{#1}%
+    {\ttfamily]}%
+  }}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\parg}
+% Sets style and adds parentheses.
+%    \begin{macrocode}
+\newrobustcmd*{\parg}[1]{%
+  {\pargstyle{%
+    {\ttfamily(}%
+    \meta{#1}%
+    {\ttfamily)}%
+  }}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\aarg}
+% Sets style and adds angles.
+%    \begin{macrocode}
+\newrobustcmd*{\aarg}[1]{%
+  {\aargstyle{%
+    {\ttfamily<}%
+    \meta{#1}%
+    {\ttfamily>}%
+  }}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\sarg}
+% Prints star with given style.
+%    \begin{macrocode}
+\newrobustcmd*{\sarg}{{\sargstyle{*}}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\pkg}
+% \begin{macro}{\cls}
+% \begin{macro}{\lib}
+% \begin{macro}{\env}
+% \begin{macro}{\opt}
+% \begin{macro}{\file}
+%    \begin{macrocode}
+\newrobustcmd*\pkg[1]{{\pkgstyle{#1}}}
+\newrobustcmd*\cls[1]{{\clsstyle{#1}}}
+\newrobustcmd*\lib[1]{{\libstyle{#1}}}
+\newrobustcmd*\env[1]{{\envstyle{#1}}}
+
+\newrobustcmd*\opt{\@ifstar\ys@opt\y@opt}
+\def\y@opt#1{{\optstyle{#1}}}
+\def\ys@opt#1{{\optstyle{#1}}\optpar{#1}}
+\newrobustcmd*\optpar[1]{\marginpar{\hbox to \marginparwidth{\hss\y@opt{#1}}}}
+
+\newrobustcmd*\file[1]{{\filestyle{#1}}}
+\newcommand*\pkgstyle[1]{\texttt{\textcolor{pkg}{#1}}}
+\newcommand*\clsstyle[1]{\texttt{\textcolor{cls}{#1}}}
+\newcommand*\libstyle[1]{\texttt{\textcolor{lib}{#1}}}
+\newcommand*\envstyle[1]{\texttt{\textcolor{env}{#1}}}
+\newcommand*\optstyle[1]{\textsf{\textcolor{opt}{#1}}}
+\newcommand*\filestyle[1]{\texttt{\textcolor{file}{#1}}}
+\colorlet{cls}{none}
+\colorlet{lib}{none}
+\colorlet{env}{none}
+\colorlet{file}{none}
+\colorlet{pkg}{none}
+\definecolor{opt}{rgb}{0.5,0.16666,0}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\cs}
+% \begin{macro}{\cmd}
+%    \begin{macrocode}
+\newrobustcmd*\cs[1]{\texttt{\textbackslash #1}}
+\newrobustcmd*\cmd[1]{\texttt{{\escapechar=92\string#1}}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\Key}
+%    \begin{macrocode}
+\newrobustcmd*\Key[1]{\PrintKeyName{#1}\MacroArgs}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Text Formatting Styles}
+%
+% \begin{macro}{\macrodescstyle}
+% Style of described macro names.
+%    \begin{macrocode}
+\def\macrodescstyle{\ttfamily\bfseries\color{macrodesc}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macrodescstyle}
+% Style of described macro names.
+%    \begin{macrocode}
+\def\keydescstyle{\ttfamily\bfseries\color{keydesc}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\macroargsstyle}
+% Default style for macro arguments (e.g.\ \cs{MacroArgs}).
+%    \begin{macrocode}
+\def\macroargsstyle{\ttfamily}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\envcodestyle}
+% Default style for code body content in described environments.
+%    \begin{macrocode}
+\def\envcodestyle{\ttfamily}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\verbstyle}
+% Style for verbatim text inside macro argument list.
+%    \begin{macrocode}
+\def\verbstyle{\verbatim@font}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\metastyle}
+% Meta text style. Because \cs{macroargsstyle} might be also active a |\normalfont| reset
+% the font.
+%    \begin{macrocode}
+\def\metastyle{\normalfont\itshape\color{meta}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\margstyle}
+% Style for \cs{marg}.
+%    \begin{macrocode}
+\def\margstyle{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\Optional}
+% \begin{macro}{\optional}
+% \begin{macro}{\optionalstyle}
+%    \begin{macrocode}
+\protected\def\Optional{\optionalon\optional}
+\def\optionalstyle{\blendcolors*{!60!white}\color{black!75}}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\optionalon}
+% \begin{macro}{\optionaloff}
+%    \begin{macrocode}
+\def\optionalon{\protected\def\optional{\optionalstyle}}
+\def\optionaloff{\let\optional\relax}
+\optionalon
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\oargstyle}
+% Style for \cs{oarg}. A special color is set to show the `optional' status.
+%    \begin{macrocode}
+\def\oargstyle{\optional}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\pargstyle}
+% Style for \cs{parg}.
+%    \begin{macrocode}
+\def\pargstyle{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\aargstyle}
+% Style for \cs{aarg}.
+%    \begin{macrocode}
+\def\aargstyle{}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\sargstyle}
+% Style for \cs{sarg}. A special color is set to show the `optional' status.
+%    \begin{macrocode}
+\def\sargstyle{\ttfamily\color{optional}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Dimension Registers}
+%
+% \begin{macro}{\descindent}
+%    \begin{macrocode}
+\newdimen\descindent
+\descindent=-\parindent
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\beforedescskip}
+%    \begin{macrocode}
+\newdimen\beforedescskip
+\beforedescskip=\bigskipamount
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\afterdescskip}
+%    \begin{macrocode}
+\newdimen\afterdescskip
+\afterdescskip=\medskipamount
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\descsep}
+% Set to |1em| in |tt| font.
+%    \begin{macrocode}
+\newdimen\descsep
+\begingroup
+\ttfamily
+\global\descsep=1em\relax
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsubsection{Macro Argument Reading Mechanism}
+%
+% \begin{macro}{\read@Macro@arg}
+% Reads next token and calls second macro.
+%    \begin{macrocode}
+\def\read@Macro@arg{%
+  \futurelet\@let@token\handle@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\AlsoMacro}
+% Reads argument while |@| is a letter,
+% prints the macro name and reads further arguments.
+%    \begin{macrocode}
+\newcommand*\AlsoMacro{%
+  \begingroup\makeatletter
+  \AlsoMacro@
+}
+\def\AlsoMacro@#1{%
+  \endgroup
+%<*DEBUG>
+   %\typeout{DEBUG: Macro: \string#1}%
+%</DEBUG>
+  \PrintMacroName{#1}%
+  \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\ydoc@short@AlsoMacro}
+% Makes |&| an alias for |\AlsoMacro|.
+%    \begin{macrocode}
+\begingroup
+\catcode`\|\active
+\gdef\ydoc@short@AlsoMacro{%
+  \catcode`\|\active
+  \let|\AlsoMacro
+}
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\ydoc@macrocatcodes}
+% Sets the catcodes inside for |read@Macro@arg| material.
+%    \begin{macrocode}
+\def\ydoc@macrocatcodes{%
+  \ydoc@short@AlsoMacro
+  \@makeother\'%
+  \@makeother\!%
+  \@makeother\[%
+  \@makeother\]%
+  \@makeother\(%
+  \@makeother\)%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\handle@Macro@arg}
+% Checks if next token is the begin of a valid macro argument and calls
+% the appropriate read macro or the end macro otherwise.
+%    \begin{macrocode}
+\def\handle@Macro@arg{%
+  \expandafter\let\expandafter\handler\csname handle@Macro@token@\meaning\@let@token\endcsname
+  \ifx\handler\relax
+    \def\handler{\ifhmode\unskip\fi\end@Macro@args}%
+%<*DEBUG>
+ %  \typeout{DEBUG: Stopped at: \expandafter\meaning\csname @let@token\endcsname}%
+ %  \typeout{}%
+ %\else
+ %\expandafter\ifx\csname @let@token\endcsname\AlsoMacro
+ %  \typeout{DEBUG: TOKEN: \string\AlsoMacro}%
+ %\else
+ %  \typeout{DEBUG: TOKEN: \expandafter\meaning\csname @let@token\endcsname}%
+ %\fi
+%</DEBUG>
+  \fi
+  \handler
+}
+\def\define@Macro@handler{%
+    \begingroup
+    \ydoc@macrocatcodes
+    \define@Macro@handler@
+}
+\def\define@Macro@handler@#1{%
+    \endgroup
+    \@namedef{handle@Macro@token@\meaning#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\end@Macro@args}
+% Closes box as calls hook. Might be locally redefined by some
+% macros calling \cs{read@Macro@arg}.
+%    \begin{macrocode}
+\def\end@Macro@args{%
+  \y@egroup
+  \after@Macro@args
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\after@Macro@args}
+% Hook to add additional commands in certain situations.
+%    \begin{macrocode}
+\def\after@Macro@args{%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection*{Macro argument reading macros}
+% This macros read the macro arguments and call the appropriate format macros.
+%
+% \begin{macro}{\read@Macro@marg}
+%    \begin{macrocode}
+\define@Macro@handler{\bgroup}{%
+    \begingroup
+        \afterassignment\read@Macro@marg@
+        \let\@let@token=%
+}
+\def\read@Macro@marg@{%
+        \bgroup
+        \margstyle{}%
+        \let\end@Macro@args\empty%
+        {\ttfamily\braceleft}%
+        \aftergroup\read@Macro@marg@@
+        \read@Macro@arg
+}
+\def\read@Macro@marg@@{%
+        {\ttfamily\braceright}%
+    \endgroup
+    \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@oarg}
+%    \begin{macrocode}
+\define@Macro@handler{[}[{%
+    \begingroup
+        \let\read@Macro@oarg@end\read@Macro@oarg@@end
+        \let\end@Macro@args\read@Macro@oarg@end
+        \oargstyle{}%
+        {\ttfamily[}%]
+        \read@Macro@arg
+}
+\define@Macro@handler{]}{%
+    \read@Macro@oarg@end
+}
+\def\read@Macro@oarg@@end#1]{%
+        #1%
+        {\ttfamily]}%
+    \endgroup
+    \read@Macro@arg
+}
+\def\read@Macro@oarg@end{\end@Macro@args}
+\let\read@Macro@aarg@end\read@Macro@oarg@end
+\let\read@Macro@parg@end\read@Macro@oarg@end
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@parg}
+%    \begin{macrocode}
+\define@Macro@handler{(}({%
+    \begingroup
+        \let\read@Macro@parg@end\read@Macro@parg@@end
+        \let\end@Macro@args\read@Macro@parg@end
+        \pargstyle{}%
+        {\ttfamily(}%)
+        \read@Macro@arg
+}
+\define@Macro@handler{)}{%
+    \read@Macro@parg@end
+}
+\def\read@Macro@parg@@end#1){%
+        #1%
+        {\ttfamily)}%
+    \endgroup
+    \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@aarg}
+%    \begin{macrocode}
+\def\read@Macro@aarg<{%
+    \begingroup
+        \let\read@Macro@aarg@end\read@Macro@aarg@@end
+        \let\end@Macro@args\read@Macro@aarg@end
+        \aargstyle{}%
+        {\ttfamily<}%
+        \read@Macro@arg
+}
+\define@Macro@handler{>}{%
+    \read@Macro@aarg@end
+}
+\def\read@Macro@aarg@@end#1>>{%
+        #1%
+        {\ttfamily>}%
+    \endgroup
+    \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@angle}
+%    \begin{macrocode}
+\define@Macro@handler{<}<{%
+  \futurelet\@let@token\read@Macro@angle@
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@angle@}
+%    \begin{macrocode}
+\def\read@Macro@angle@{%
+  \ifx\@let@token<%
+    \expandafter\read@Macro@aarg
+  \else
+    \expandafter\read@Macro@meta
+  \fi
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@meta}
+%    \begin{macrocode}
+\def\read@Macro@meta#1>{%
+  \meta{#1}\read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@sarg}
+%    \begin{macrocode}
+\define@Macro@handler**{%
+  \sarg\read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% Allows `|=|' to be used directly without switching to verbatim
+% mode. This is especially useful for keys.
+%    \begin{macrocode}
+\define@Macro@handler{=}={%
+  =\read@Macro@arg
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\read@Macro@verb}
+% Sets up verbatim mode calls second macro.
+%    \begin{macrocode}
+\define@Macro@handler{'}'{%
+  \begingroup
+  \let\do\@makeother
+  \dospecials
+  \@noligs
+  \@makeother\'%
+  \obeyspaces
+  \read@Macro@verb@
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@verb@}
+% Closes verbatim mode and formats text.
+% If |#1| is empty (|''|) than a single |'| is printed.
+%    \begin{macrocode}
+\begingroup
+\@makeother\'%
+\gdef\read@Macro@verb@#1'{%
+  \endgroup
+  \ifx\relax#1\relax
+    {\verbstyle{\string'}}%
+  \else
+    {%
+     \frenchspacing
+     \@noligs\verbstyle{#1}}%
+  \fi
+  \read@Macro@arg
+}
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@cmds}
+% Simply executes given code.
+%    \begin{macrocode}
+\define@Macro@handler!!#1!{%
+  #1\relax
+  \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@rmspace}
+% Removes space. The |\@firstofone| is used to preserve the space in the macro definition.
+%    \begin{macrocode}
+\define@Macro@handler{\@sptoken} {%
+  \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\read@Macro@addtoken}
+% Takes token over from input to output `stream'. This is used for |\space| and |~|.
+%    \begin{macrocode}
+\define@Macro@handler{~}#1{%
+  #1\read@Macro@arg
+}
+\AtBeginDocument{%
+\define@Macro@handler{~}#1{%
+  #1\read@Macro@arg
+}
+}
+\define@Macro@handler{\space}#1{%
+  #1\read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection{Description Macros}
+% \subsubsection*{For Macros}
+%
+% \begin{macro}{\DescribeMacro}
+%    \begin{macrocode}
+\@ifundefined{DescribeMacro}{}{%
+  \PackageInfo{ydoc-desc}{Redefining \string\DescribeMacro}{}%
+}
+%    \end{macrocode}
+% A \cs{DescribeMacro} places itself in a \env{DescribeMacros} environment.
+% Multiple \cs{DescribeMacro} macros will stack themselves inside this environment.
+% For this to work \cs{DescribeMacros} is locally defined to |\y@egroup| to close the
+% |\hbox| from the previous \cs{DescribeMacro}.
+%    \begin{macrocode}
+\def\DescribeMacro{%
+  \DescribeMacros
+  \let\DescribeMacros\y@egroup
+  \optionalon
+  \def\after@Macro@args{\endDescribeMacros}%
+  \begingroup\makeatletter
+  \Describe@Macro
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeScript}
+%    \begin{macrocode}
+\def\DescribeScript#1{%
+  \DescribeMacros
+  \let\DescribeMacros\y@egroup
+  \optionalon
+  \def\after@Macro@args{\endDescribeMacros}%
+  \hbox\y@bgroup
+  \texttt{#1}%
+  \ydoc@macrocatcodes
+  \macroargsstyle
+  \read@Macro@arg~%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeKey}
+%    \begin{macrocode}
+\def\DescribeKey{%
+  \DescribeKeys
+  \let\DescribeKeys\y@egroup
+  \optionalon
+  \def\after@Macro@args{\endDescribeKeys}%
+  \begingroup\makeatletter
+  \Describe@Macro
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\Describe@Macro}
+%    \begin{macrocode}
+\def\Describe@Macro#1{%
+  \endgroup
+  \edef\name{\expandafter\@gobble\string#1}%
+  \global\@namedef{href@desc@\name}{}%
+  \immediate\write\@mainaux{%
+    \global\noexpand\@namedef{href@desc@\name}{}%
+  }%
+  \hbox\y@bgroup
+  \@ifundefined{href@impl@\name}{}{\hyperlink{impl:\name}}%
+  {%
+  \hbox{\vbox to 0pt{\vss\hbox{\raisebox{4ex}{\hypertarget{desc:\name}{}}}}%
+  \PrintMacroName{#1}}%
+  }%
+  \ydoc@macrocatcodes
+  \macroargsstyle
+  \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\MakeShortMacroArgs}
+% Defines the given character as short version for |\MacroArgs|.
+% It is first define to be a short verbatim character to take
+% advantage of the house-keeping (save \& restore of the original
+% catcode and definition) of |shortvrb|.
+%
+% The starred version define the character to act like |\Macro| instead.
+%    \begin{macrocode}
+\newcommand*\MakeShortMacroArgs{%
+  \@ifstar
+    {\@MakeShortMacroArgs\Macro}%
+    {\@MakeShortMacroArgs\MacroArgs}%
+}
+\def\@MakeShortMacroArgs#1#2{%
+  \MakeShortVerb{#2}
+  \catcode`#2\active
+  \begingroup
+  \catcode`\~\active
+  \lccode`\~`#2\relax
+  \lowercase{\endgroup\gdef~{\bgroup\let~\egroup#1}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DeleteShortMacroArgs}
+%    \begin{macrocode}
+\newcommand*\DeleteShortMacroArgs[1]{%
+  \DeleteShortVerb{#1}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\Macro}
+% Simply uses the two macros below.
+%    \begin{macrocode}
+\newcommand*\Macro{\MacroArgs\AlsoMacro}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\@Macro}
+% Alternative definition of \cs{Macro} inside \env{DescribeMacros} environments.
+%    \begin{macrocode}
+\def\@Macro{%
+  \begingroup\makeatletter
+  \Describe@Macro
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%    \begin{macrocode}
+\define@Macro@handler\AlsoMacro{}
+\define@Macro@handler\DescribeMacro{}
+\define@Macro@handler\DescribeKey{}
+\define@Macro@handler\DescribeScript{}
+%    \end{macrocode}
+%
+% \begin{macro}{\MacroArgs}
+% Uses the normal macro argument reading mechanism from \cs{DescribeMacro}.
+% Instead of a box a simple group is added.
+%    \begin{macrocode}
+\newcommand*\MacroArgs{%
+  \begingroup
+  \def\end@Macro@args{\endgroup\xspace}%
+  \ydoc@macrocatcodes
+  \macroargsstyle
+%<*DEBUG>
+   %\typeout{}%
+   %\typeout{DEBUG: Start MacroArgs}%
+%</DEBUG>
+  \read@Macro@arg
+}
+\RequirePackage{xspace}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeMacros}
+%    \begin{macrocode}
+\def\DescribeMacros{%
+  \begingroup
+  \let\Macro\@Macro
+  \parindent=0pt\relax
+  \setbox\descbox\vbox\y@bgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\endDescribeMacros}
+%    \begin{macrocode}
+\def\endDescribeMacros{%
+  \y@egroup
+  \PrintMacros
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeKeys}
+%    \begin{macrocode}
+\def\DescribeKeys{%
+  \begingroup
+  \let\PrintMacroName\PrintKeyName
+  \let\Key\@Macro
+  \parindent=0pt\relax
+  \setbox\descbox\vbox\y@bgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\endDescribeKeys}
+%    \begin{macrocode}
+\def\endDescribeKeys{%
+  \y@egroup
+  \PrintKeys
+  \endgroup
+}
+\def\PrintKeys{\PrintMacros}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeMacrosTabcolsep}
+%    \begin{macrocode}
+\def\DescribeMacrosTabcolsep{\tabcolsep}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeMacrosTab}
+%    \begin{macrocode}
+\def\DescribeMacrosTab{%
+  \DescribeMacros
+  \hbox\y@bgroup
+  \tabcolsep=\DescribeMacrosTabcolsep\relax
+  \DescribeMacrosTab@
+}
+\def\DescribeMacrosTab@#1{\tabular{@{}#1@{}}}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\endDescribeMacrosTab}
+%    \begin{macrocode}
+\def\endDescribeMacrosTab{%
+  \endtabular\y@egroup
+  \endDescribeMacros
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection*{For Lengths}
+%
+% \begin{macro}{\DescribeLength}
+%    \begin{macrocode}
+\newcommand*\DescribeLength{%
+  \begingroup
+  \let\DescribeLength\Describe@Length
+  \setbox\descbox\hbox\y@bgroup
+    \tabular{@{}l@{\hspace{2em}}l@{}}%
+    \Describe@Length
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\Describe@Length}
+%    \begin{macrocode}
+\newcommand*\Describe@Length[2]{%
+  \PrintLengthName{#1}&
+  (Default: {\macroargsstyle#2\unskip})%
+  \@ifnextchar\DescribeLength
+    {\\}%
+    {%
+      \endtabular
+      \y@egroup
+      \PrintLength
+      \endgroup
+    }%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \subsubsection*{For Environments}
+%
+% \begin{macro}{\DescribeEnv}
+%    \begin{macrocode}
+\@ifundefined{DescribeEnv}{}{%
+  \PackageInfo{ydoc-desc}{Redefining \string\DescribeEnv}{}%
+}
+\let\DescribeEnv\relax
+%    \end{macrocode}
+%    \begin{macrocode}
+\newcommand*\DescribeEnv[2][]{%
+  \begingroup
+  \def\DescribeEnv@name{#2}%
+  \let\\\DescribeEnv@newline
+%    \end{macrocode}
+%
+% Sets after-macro-arguments hook.
+% First checks if the environment or macro version was used.
+% The environment starts a new line only if the next token isn't |\end|,
+% which is taken as end of the environment.
+%    \begin{macrocode}
+  \ifx\@currenvir\DescribeEnv@string
+    \def\after@Macro@args{%
+      \let\after@Macro@args\empty
+      \setbox\@tempboxa\hbox\y@bgroup
+      \@ifnextchar\end{}%
+        {\DescribeEnv@newline}%
+      #1%
+    }%
+%    \end{macrocode}
+% The macro version adds the optional argument as content line if given.
+%    \begin{macrocode}
+  \else
+    \ifx\relax#1\relax
+      \def\after@Macro@args{%
+        \y@bgroup
+        \endDescribeEnv
+      }%
+    \else
+      \def\after@Macro@args{%
+        \setbox\@tempboxa\hbox\y@bgroup
+        \DescribeEnv@newline\MacroArgs#1%
+        \endDescribeEnv
+      }%
+    \fi
+  \fi
+%    \end{macrocode}
+% Start |\vbox| and adds first line.
+%    \begin{macrocode}
+  \setbox\descbox\vbox\y@bgroup
+  \envcodestyle
+  \let\PrintEnv\PrintSubEnv
+  \hbox\y@bgroup
+  \PrintEnvName{\begin}{\DescribeEnv@name}%
+  \ydoc@macrocatcodes
+  \macroargsstyle
+  \read@Macro@arg
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeEnv@newline}
+% Closes existing and starts a new horizontal box representing a indented line.
+% The optional argument allows to add extra space between lines like the normal |\\|.
+% Negative values are not supported.
+%    \begin{macrocode}
+\newcommand*\DescribeEnv@newline[1][0pt]{%
+  \strut\y@egroup
+  {\vskip#1}%
+  \hbox\y@bgroup\strut
+  \hspace*{\descsep}%
+  \ignorespaces
+}%
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\DescribeEnv@string}
+% Holds the environment name for comparison.
+%    \begin{macrocode}
+\def\DescribeEnv@string{DescribeEnv}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\descbox}
+% Save box to store description content.
+%    \begin{macrocode}
+\newbox\descbox
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\endDescribeEnv}
+%    \begin{macrocode}
+\def\endDescribeEnv{%
+  \y@egroup
+  \begingroup
+  \setbox\@tempboxa\lastbox
+  \ifcase0%
+    \ifdim\wd\@tempboxa>\descsep1\fi
+    \ifdim\ht\@tempboxa>\ht\strutbox1\fi
+    \ifdim\dp\@tempboxa>\dp\strutbox1\fi
+  \else
+    \box\@tempboxa
+  \fi
+  \endgroup
+  \hbox\y@bgroup
+    \PrintEnvName{\end}{\DescribeEnv@name}
+  \y@egroup
+  \y@egroup
+  \PrintEnv
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsubsection{Print Macros}
+%
+% \begin{macro}{\PrintMacroName}
+% Formats macro name. The backslash is forced to |tt| font.
+%    \begin{macrocode}
+\def\PrintMacroName#1{%
+  {\macrodescstyle{\strut
+   \texttt{\char92}%
+   \escapechar\m@ne
+   \string#1\strut}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintKeyName}
+% Formats macro name. The backslash is forced to |tt| font.
+%    \begin{macrocode}
+\def\PrintKeyName#1{%
+  {\keydescstyle{\strut
+   #1\strut}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintLengthName}
+% Formats length register name.
+%    \begin{macrocode}
+\let\PrintLengthName\PrintMacroName
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \begin{macro}{\PrintEnvName}
+% |#1| = `|\begin|' or `|\end|', |#2| = env name.
+%    \begin{macrocode}
+\def\PrintEnvName#1#2{%
+  \strut
+  \string#1\braceleft
+  {\macrodescstyle#2\strut}%
+  \braceright
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintMacros}
+% Prints macros described using \cs{DescribeMacros}.
+% The actual content was stored inside \cs{descbox}.
+% If it is wider than the line width it is centered.
+%    \begin{macrocode}
+\def\PrintMacros{%
+  \par\vspace\beforedescskip
+  \begingroup
+  \sbox\@tempboxa{\descframe{\usebox{\descbox}}}%
+  \Needspace*{\dimexpr\ht\@tempboxa+3\baselineskip\relax}%
+  \par\noindent
+  \ifdim\wd\@tempboxa>\dimexpr\linewidth-2\descindent\relax
+    \makebox[\linewidth][c]{\usebox\@tempboxa}%
+  \else
+    \hspace*{\descindent}%
+    \usebox\@tempboxa
+  \fi
+  \endgroup
+  \par
+  \vspace\afterdescskip
+  \par\noindent
+}
+\def\descframe#1{%
+    \fbox{\hspace*{\descsep}#1\hspace*{\descsep}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintLength}
+% Prints lengths registers described using one or multiple \cs{DescribeLength}.
+%    \begin{macrocode}
+\let\PrintLength\PrintMacros
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintEnv}
+% Prints \env{DescribeEnv} environments.
+% The actual content was stored inside \cs{descbox}.
+%    \begin{macrocode}
+\let\PrintEnv\PrintMacros
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintSubEnv}
+% Prints sub environments, i.e.\ \env{DescribeEnv} environments
+% inside the body of another \env{DescribeEnv}.
+% The actual content was stored inside \cs{descbox}.
+%    \begin{macrocode}
+\def\PrintSubEnv{%
+  \hbox{\hbox{\usebox{\descbox}}}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+%
+% \subsubsection{Special Character Macros}
+%
+% \begin{macro}{\bslash}
+% Defines an expandable backslash with catcode 12: `\texttt{\bslash}$_{12}$'.
+% The |\@firstofone| trick is used to read the |\gdef\bslash| code before changing the catcode.
+%    \begin{macrocode}
+{%
+\@firstofone{%
+  \catcode`\\=12
+  \gdef\bslash
+}{\}
+}%}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\percent}
+% Defines an expandable percent character with catcode 12: `\percent$_{12}$'.
+%    \begin{macrocode}
+\begingroup
+\catcode`\%=12
+\gdef\percent{%}
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\braceleft}
+% \begin{macro}{\braceright}
+% Defines expandable left and right braces with catcode 12: `\texttt{\braceleft}$_{12}$' `\texttt{\braceright}$_{12}$'.
+%    \begin{macrocode}
+\begingroup
+\catcode`\<=1
+\catcode`\>=2
+\catcode`\{=12
+\catcode`\}=12
+\gdef\braceleft <{>
+\gdef\braceright<}>
+\endgroup
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \subsubsection{Other Macros}
+%
+% \begin{macro}{\y@bgroup}
+% \begin{macro}{\y@egroup}
+% These macros are used to begin and end |\vbox|/|\hbox|-es.
+%    \begin{macrocode}
+\def\y@bgroup{\bgroup\color@setgroup}
+\def\y@egroup{\color@endgroup\egroup}
+%    \end{macrocode}
+% \end{macro}
+% \end{macro}
+%
+% \begin{macro}{\codeline}
+%    \begin{macrocode}
+\newcommand*{\codeline}[1][c]{%
+    \codelinebefore
+    \hbox to \hsize\bgroup
+    \ifx i#1\hspace*{\leftmargin}\else
+        \ifx l#1\else\hss\fi
+    \fi
+    \let\xspace\relax
+    \hbox\bgroup
+    \aftergroup\codeline@end
+    \aftergroup#1%
+    \afterassignment\MacroArgs
+    \let\@let@token=%
+}
+\def\codeline@end#1{%
+    \ifx r#1\else\hss\fi
+    \egroup
+    \codelineafter
+}
+\newcommand*\codelinebefore{\par\smallskip\noindent}
+\newcommand*\codelineafter {\par\smallskip\noindent}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{environment}{codequote}
+%    \begin{macrocode}
+\newenvironment{codequote}{%
+    \def\\{\newline\relax\MacroArgs}%
+    \par\smallskip\bgroup\leftskip=\leftmargin\rightskip=\rightmargin\noindent\MacroArgs}
+    {\par\egroup\smallskip\noindent\ignorespacesafterend}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{environment}{macroquote}
+%    \begin{macrocode}
+\newenvironment{macroquote}{%
+    \def\\{\newline\relax\Macro}%
+    \par\smallskip\bgroup\leftskip=\leftmargin\rightskip=\rightmargin\noindent\Macro}
+    {\par\egroup\smallskip\noindent\ignorespacesafterend}
+%    \end{macrocode}
+% \end{environment}
+% \iffalse
+%</ydoc-desc.sty>
+% \fi
+%
+% \iffalse
+%<*ydoc-expl.sty>
+% \fi
+% \subsection{Include Code Examples}
+%
+%    \begin{macrocode}
+\NeedsTeXFormat{LaTeX2e}[1999/12/01]
+\ProvidesPackage{ydoc-expl}[%
+%<!DATE>
+%<!VERSION>
+%<*DRIVER>
+    2011/08/11 develop
+%</DRIVER>
+    ydoc package to insert live examples of LaTeX code]
+%    \end{macrocode}
+%
+% \iffalse
+%<*dontinclude>
+%    \begin{macrocode}
+\newcounter{example}
+\def\examplename{Example}
+\newenvironment{example}[1]{%
+  \par\bigskip\noindent
+  \centerline{\examplename~\refstepcounter{example}\theexample: #1}%
+  \smallskip
+  \hrule
+  \smallskip
+}{%
+  \smallskip
+  \hrule
+  \par\bigskip
+}
+%    \end{macrocode}
+%
+% \begin{macro}{\PrintExample}
+%    \begin{macrocode}
+\def\PrintExample{%
+  \usebox\examplecodebox
+  \hfill
+  \usebox\exampleresultbox
+}
+%    \end{macrocode}
+% \end{macro}
+%</dontinclude>
+% \fi
+%
+%    \begin{macrocode}
+\RequirePackage{listings}
+\lst@RequireAspects{writefile}
+\def\ydoc@exafile{\jobname.exa}
+%    \end{macrocode}
+%
+% \begin{style}{examplecode}
+%    \begin{macrocode}
+\lstdefinestyle{examplecode}{%
+    language=[latex]tex,
+    basicstyle=\ttfamily,
+    columns=fullflexible,
+    numbers=left,
+    firstnumber=1,
+    numberstyle=\tiny\color{gray}\sffamily,
+    numbersep=5pt,
+    breaklines,prebreak={\mbox{\tiny$\swarrow$}},
+    commentstyle=\color{black!60},
+}%
+%    \end{macrocode}
+% \end{style}
+%
+% \begin{style}{exampleresult}
+%    \begin{macrocode}
+\lstdefinestyle{exampleresult}{%
+    firstnumber=1,
+    gobble=0,
+    basicstyle=\ttfamily,
+    columns=fullflexible,
+    commentstyle=\color{black!60},
+}
+%    \end{macrocode}
+% \end{style}
+%
+% \begin{style}{exampleextract}
+%    \begin{macrocode}
+\lstdefinestyle{exampleextract}{gobble=4}%
+%    \end{macrocode}
+% \end{style}
+%
+%    \begin{macrocode}
+\newbox\examplecodebox
+\newbox\exampleresultbox
+%    \end{macrocode}
+%
+% \begin{macro}{\BoxExample}
+%    \begin{macrocode}
+\def\BoxExample{%
+  \setbox\examplecodebox\hbox{\color@setgroup
+    \lstinputlisting[style=examplecode,style=thisexampleprint]%
+    {\ydoc@exafile}%
+  \unskip\color@endgroup}%
+  \setbox\exampleresultbox\hbox{\color@setgroup
+    \lstset{style=exampleresult}%
+    \@@input\ydoc@exafile\relax
+  \unskip\color@endgroup}%
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{macro}{\PrintExample}
+%    \begin{macrocode}
+%<*DISABLED>
+\RequirePackage{showexpl}
+\def\PrintExample{%
+  \begingroup
+  \lstset{style=examplecode}%
+  \MakePercentComment
+  \LTXinputExample[varwidth]{\ydoc@exafile}%
+  \endgroup
+}
+%</DISABLED>
+%    \end{macrocode}
+% \end{macro}
+%
+%
+%
+% \begin{macro}{\PrintExample}
+%    \begin{macrocode}
+\def\PrintExample{%
+  \begingroup
+  \BoxExample
+  \@tempdima=\textwidth
+  \advance\@tempdima by -\wd\examplecodebox\relax
+  \advance\@tempdima by -\wd\exampleresultbox\relax
+  \advance\@tempdima by -15pt\relax
+  \ifdim\@tempdima>\bigskipamount
+    \hbox to \textwidth{%
+     \null\hss
+     \minipage[c]{\wd\exampleresultbox}\fbox{\usebox\exampleresultbox}\endminipage
+     \hfill\hfill\hskip\bigskipamount\hskip15pt\hfill\hfill
+     \minipage[c]{\wd\examplecodebox}\usebox\examplecodebox\endminipage
+     \hss\null
+     }%
+  \else
+    \vbox{%
+        \centerline{\fbox{\usebox\exampleresultbox}}%
+        \vspace{\bigskipamount}%
+        \centerline{\usebox\examplecodebox}%
+    }%
+  \fi
+  \endgroup
+}
+%    \end{macrocode}
+% \end{macro}
+%
+% \begin{environment}{examplecode}
+%    \begin{macrocode}
+\lstnewenvironment{examplecode}[1][]{%
+  \lstdefinestyle{thisexampleprint}{#1}%
+  \setbox\@tempboxa\hbox\bgroup
+  \lstset{style=exampleextract,#1}%
+  \lst@BeginWriteFile{\ydoc@exafile}%
+}
+{%
+  \lst@EndWriteFile
+  \egroup
+  \begingroup
+  \MakePercentComment
+  \catcode`\^^M=5\relax
+  \PrintExample
+  \endgroup
+}
+%    \end{macrocode}
+% \end{environment}
+%
+%    \begin{macrocode}
+\RequirePackage{float}
+%    \end{macrocode}
+%
+% \begin{environment}{example}
+%    \begin{macrocode}
+\floatstyle{plain}
+\newfloat{example}{tbhp}{loe}
+\floatname{example}{\examplename}
+\def\examplename{Example}
+%    \end{macrocode}
+% \end{environment}
+%
+% \begin{environment}{exampletable}
+%    \begin{macrocode}
+\newenvironment{exampletable}{%
+  \floatstyle{plaintop}%
+  \restylefloat{example}%
+  \example
+}{\endexample}
+%    \end{macrocode}
+% \end{environment}
+% \iffalse
+%</ydoc-expl.sty>
+% \fi
+%
+% \iffalse
+%<*ydocincl.tex>
+% \fi
+%
+%    \begin{macrocode}
+\expandafter\ifx\csname ydocinclversion\endcsname\relax\else
+    \endinput
+\fi
+
+\chardef\ydocinclversion=1
+
+\newread\inFile
+\newread\subFile
+\newwrite\outFile
+\newif\ifContinue
+\newlinechar=`^^J
+
+\def\makeOther#1{\catcode`#1=12\relax}
+
+\let\inLine\relax
+\let\lastLine\relax
+
+\def\includefiles#1#2{%
+    \begingroup
+    \immediate\openin\inFile#1\relax
+    \immediate\openout\outFile#2\relax
+    \makeOther\@%
+    \makeOther\ \makeOther\\\makeOther\$%
+    \makeOther\#\makeOther\^\makeOther\^^K%
+    \makeOther\_\makeOther\^^A\makeOther\%%
+    \makeOther\~\makeOther\{\makeOther\}\makeOther\&%
+    \endlinechar-1\relax
+    \Continuetrue
+    \loop
+      \let\lastLine\inLine
+      \read\inFile to\inLine
+      \ifeof\inFile
+        \Continuefalse
+      \else
+        \expandafter\checkLine\inLine\empty\empty\empty\endLine
+      \fi
+      \ifContinue
+    \repeat
+    \immediate\closein\inFile
+    \immediate\closeout\outFile
+    \endgroup
+    \end
+}
+
+\def\copyline{%
+    \immediate\write\outFile{\inLine}%
+}
+
+\chardef\percentcharnum=`\%
+
+\begingroup
+\makeOther\%\makeOther\@\relax
+\gdef\SubFileOptionString{%<@}\relax
+\gdef\CommentChar{%}\relax
+\catcode`\|=0
+\makeOther\ \makeOther\\|relax
+|gdef|IfFalseString{% \iffalse}|relax
+|gdef|FiString{% \fi}|relax
+|endgroup
+
+\def\checkLine#1#2#3#4\endLine{%
+    \def\firstthree{#1#2#3}%
+    \ifx\firstthree\SubFileOptionString
+        \readSubFile#4\endLine
+    \else
+        \copyline
+    \fi
+}
+
+\def\readSubFile#1>#2\endLine{%
+    \immediate\openin\subFile=#1\relax
+    \ifeof\subFile
+        % File not found
+    \else
+        \message{^^JIncluding subfile '#1'^^J}%
+        \immediate\write\outFile{\CommentChar<*#1>}%
+        \ifx\lastLine\IfFalseString
+            \immediate\write\outFile{\FiString}%
+        \fi
+        \copySubFile
+        \ifx\lastLine\IfFalseString
+            \immediate\write\outFile{\IfFalseString}%
+        \fi
+        \immediate\write\outFile{\CommentChar</#1>}%
+    \fi
+    \immediate\closein\subFile
+}
+
+\def\copySubFile{%
+    \read\subFile to\subLine
+    \ifeof\subFile\else
+        \immediate\write\outFile{\subLine}%
+        \expandafter\copySubFile
+    \fi
+}
+%    \end{macrocode}
+%
+% \iffalse
+%</ydocincl.tex>
+% \fi
+%
+% \Finale
+% \endinput
