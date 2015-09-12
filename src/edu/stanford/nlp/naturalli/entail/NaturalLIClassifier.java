@@ -502,12 +502,12 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         double naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
         score += naturalLIScore * ALIGNMENT_WEIGHT;
 
-        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
+        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Collections.EMPTY_SET, Optional.empty());
         score += CLASSIFIER_WEIGHT * scoreAlignmentSimple(features);
 
       } else {
 //        score = scoreNaturalLIAlignment(premise.text(), hypothesis.text(), luceneScore.get());
-        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty());
+        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Collections.EMPTY_SET, Optional.empty());
         score = scoreAlignmentSimple(features);
       }
       assert !Double.isNaN(score);

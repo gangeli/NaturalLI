@@ -14,10 +14,7 @@ import edu.stanford.nlp.util.Trilean;
 
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,7 +62,7 @@ public class DistantEntailmentClassifier implements EntailmentClassifier {
   public Trilean classify(DistantEntailmentPair ex) {
     boolean atLeastOnce = false;
     for (EntailmentPair z : ex.latentFactors()) {
-      Trilean zPred = pZGivenX.classOf(new RVFDatum<>(featurizer.featurize(z, Optional.<DebugDocument>empty())));
+      Trilean zPred = pZGivenX.classOf(new RVFDatum<>(featurizer.featurize(z, Collections.EMPTY_SET, Optional.<DebugDocument>empty())));
       if (zPred.isTrue()) {
         atLeastOnce = true;
       }
@@ -76,7 +73,7 @@ public class DistantEntailmentClassifier implements EntailmentClassifier {
   public double truthScore(DistantEntailmentPair ex) {
     double maxScore = 0.0f;
     for (EntailmentPair z : ex.latentFactors()) {
-      double zScore = pZGivenX.scoresOf(new RVFDatum<>(featurizer.featurize(z, Optional.<DebugDocument>empty()))).getCount(Trilean.TRUE);
+      double zScore = pZGivenX.scoresOf(new RVFDatum<>(featurizer.featurize(z, Collections.EMPTY_SET, Optional.<DebugDocument>empty()))).getCount(Trilean.TRUE);
       maxScore = Math.max(zScore, maxScore);
     }
     return maxScore;
@@ -105,7 +102,7 @@ public class DistantEntailmentClassifier implements EntailmentClassifier {
 
       List<RVFDatum<Trilean, String>> datums = new ArrayList<>(zFactors.size());
       for (EntailmentPair ex : zFactors) {
-        datums.add(new RVFDatum<>(trainer.featurizer.featurize(ex, Optional.empty()), datum.truth));
+        datums.add(new RVFDatum<>(trainer.featurizer.featurize(ex, Collections.EMPTY_SET, Optional.empty()), datum.truth));
       }
 
       if (datum.truth.isFalse() || datum.truth.isUnknown()) {

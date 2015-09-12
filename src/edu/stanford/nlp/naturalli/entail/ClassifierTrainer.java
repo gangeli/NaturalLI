@@ -49,7 +49,7 @@ public class ClassifierTrainer {
 
   @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
   public int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
-  private static enum Regularizer {L1, L2}
+  private enum Regularizer {L1, L2}
   @Execution.Option(name="train.regularizer", gloss="The type of regularization to use (e.g., L1, L2)")
   public Regularizer TRAIN_REGULARIZER = Regularizer.L1;
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
@@ -63,6 +63,9 @@ public class ClassifierTrainer {
   public boolean TEST_CACHE_DO = true;
   @Execution.Option(name="test.errors", gloss="A file to dump errors made by the classifier to")
   public String TEST_ERRORS = null;
+
+  @Execution.Option(name="vocab.threshold", gloss="The minimum number of times to see a word for it to be included in the vocab")
+  public int VOCAB_THRESHOLD = 0;
 
   @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("tmp/model.ser.gz");
@@ -250,6 +253,8 @@ public class ClassifierTrainer {
     log("training data:   " + trainer.TRAIN_FILE);
     log("training count:  " + trainer.TRAIN_COUNT);
     log("evaluation data: " + trainer.TEST_FILE);
+    log("vocab threshold: " + trainer.VOCAB_THRESHOLD);
+    log("regularizer:     " + trainer.TRAIN_REGULARIZER + " @ " + trainer.TRAIN_SIGMA);
     log("using features:  " + StringUtils.join(featurizer.FEATURE_TEMPLATES, ", "));
     log("                  (" + (featurizer.FEATURES_NOLEX ? "unlexicalized only" : "lexicalized") + ")");
     endTrack("Options");
@@ -276,6 +281,8 @@ public class ClassifierTrainer {
       default:
         throw new IllegalStateException("Classifier is not implemented: " + trainer.CLASSIFIER);
     }
+
+    System.exit(0);
   }
 
 }

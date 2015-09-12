@@ -538,10 +538,12 @@ public class EntailmentFeaturizer implements Serializable {
    * Featurize a given entailment pair.
    *
    * @param ex The example to featurize.
+   * @param vocabulary A set of valid vocabulary entries. Note that this is over lemmas, not words!
+   * @param debugDocument A document to dump debug features to
    *
    * @return A Counter containing the real-valued features for this example.
    */
-  public Counter<String> featurize(EntailmentPair ex, Optional<DebugDocument> debugDocument) {
+  public Counter<String> featurize(EntailmentPair ex, Set<String> vocabulary, Optional<DebugDocument> debugDocument) {
     ClassicCounter<String> feats = new ClassicCounter<>();
     feats.incrementCount("bias");
 
@@ -597,12 +599,20 @@ public class EntailmentFeaturizer implements Serializable {
       feats.incrementCount("conclusion_length:" + ex.conclusion.length());
     }
 
+    // Compute lemmas
+    List<String> premiseLemmas = ex.premise.lemmas().stream().map(
+        x -> (vocabulary.isEmpty() || vocabulary.contains(x)) ? x : "--UNK--"
+    ).collect(Collectors.toList());
+    List<String> conclusionLemmas = ex.conclusion.lemmas().stream().map(
+        x -> (vocabulary.isEmpty() || vocabulary.contains(x)) ? x : "--UNK--"
+    ).collect(Collectors.toList());
+
     // Unigram entailments
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_UNIGRAM)) {
       for (int pI = 0; pI < ex.premise.length(); ++pI) {
         for (int cI = 0; cI < ex.conclusion.length(); ++cI) {
           if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0)) {
-            feats.incrementCount("lemma_entail:" + ex.premise.lemma(pI) + "_->_" + ex.conclusion.lemma(cI));
+            feats.incrementCount("lemma_entail:" + premiseLemmas.get(pI) + "_->_" + conclusionLemmas.get(cI));
           }
         }
       }
@@ -611,11 +621,11 @@ public class EntailmentFeaturizer implements Serializable {
     // Bigram entailments
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_BIGRAM)) {
       for (int pI = 0; pI <= ex.premise.length(); ++pI) {
-        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
-        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        String lastPremise = (pI == 0 ? "^" : premiseLemmas.get(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : premiseLemmas.get(pI));
         for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
-          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
-          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          String lastConclusion = (cI == 0 ? "^" : conclusionLemmas.get(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : conclusionLemmas.get(cI));
           if ((pI == ex.premise.length() && cI == ex.conclusion.length()) ||
               (pI < ex.premise.length() && cI < ex.conclusion.length() &&
                   ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0))) {
@@ -628,11 +638,11 @@ public class EntailmentFeaturizer implements Serializable {
     //
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_BOTH_GRAM)) {
       for (int pI = 0; pI <= ex.premise.length(); ++pI) {
-        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
-        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        String lastPremise = (pI == 0 ? "^" : premiseLemmas.get(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : premiseLemmas.get(pI));
         for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
-          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
-          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          String lastConclusion = (cI == 0 ? "^" : conclusionLemmas.get(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : conclusionLemmas.get(cI));
           feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + conclusion);
           feats.incrementCount("lemma_entail:" + premise + "_->_" + lastConclusion + "_" + conclusion);
         }
@@ -642,13 +652,13 @@ public class EntailmentFeaturizer implements Serializable {
     // Trigram entailments
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_TRIGRAM)) {
       for (int pI = 0; pI <= ex.premise.length(); ++pI) {
-        String lastLastPremise = (pI < 2 ? "^" : ex.premise.lemma(pI - 2));
-        String lastPremise = (pI == 0 ? "^" : ex.premise.lemma(pI - 1));
-        String premise = (pI == ex.premise.length() ? "$" : ex.premise.lemma(pI));
+        String lastLastPremise = (pI < 2 ? "^" : premiseLemmas.get(pI - 2));
+        String lastPremise = (pI == 0 ? "^" : premiseLemmas.get(pI - 1));
+        String premise = (pI == ex.premise.length() ? "$" : premiseLemmas.get(pI));
         for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
-          String lastLastConclusion = (cI < 2 ? "^" : ex.conclusion.lemma(cI - 2));
-          String lastConclusion = (cI == 0 ? "^" : ex.conclusion.lemma(cI - 1));
-          String conclusion = (cI == ex.conclusion.length() ? "$" : ex.conclusion.lemma(cI));
+          String lastLastConclusion = (cI < 2 ? "^" : conclusionLemmas.get(cI - 2));
+          String lastConclusion = (cI == 0 ? "^" : conclusionLemmas.get(cI - 1));
+          String conclusion = (cI == ex.conclusion.length() ? "$" : conclusionLemmas.get(cI));
           if ((pI == ex.premise.length() && cI == ex.conclusion.length()) ||
               (pI < ex.premise.length() && cI < ex.conclusion.length() &&
                   ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0))) {
@@ -663,10 +673,10 @@ public class EntailmentFeaturizer implements Serializable {
       for (int i = 0; i < ex.conclusion.length(); ++i) {
         String elem = "^_";
         if (i > 0) {
-          elem = ex.conclusion.lemma(i - 1) + "_";
+          elem = conclusionLemmas.get(i - 1) + "_";
         }
-        elem += ex.conclusion.lemma(i);
-        feats.incrementCount("conclusion_unigram:" + ex.conclusion.lemma(i));
+        elem += conclusionLemmas.get(i);
+        feats.incrementCount("conclusion_unigram:" + conclusionLemmas.get(i));
         feats.incrementCount("conclusion_bigram:" + elem);
       }
     }
@@ -693,13 +703,17 @@ public class EntailmentFeaturizer implements Serializable {
    *
    * @throws java.io.IOException Thrown from the underlying write method to the cache.
    */
-  public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data, OutputStream cacheStream, Optional<DebugDocument> debugDocument, boolean parallel) throws IOException {
+  public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data,
+                                                   Set<String> vocabulary,
+                                                   OutputStream cacheStream,
+                                                   Optional<DebugDocument> debugDocument,
+                                                   boolean parallel) throws IOException {
     GeneralDataset<Trilean, String> dataset = new RVFDataset<>();
     final AtomicInteger i = new AtomicInteger(0);
     long startTime = System.currentTimeMillis();
     (parallel ? data.parallel() : data).forEach(ex -> {
       if (ex != null) {
-        Counter<String> featurized = featurize(ex, debugDocument);
+        Counter<String> featurized = featurize(ex, vocabulary, debugDocument);
         if (i.incrementAndGet() % 1000 == 0) {
           log("[" + Redwood.formatTimeDifference(System.currentTimeMillis() - startTime) + "] featurized " + (i.get() / 1000) + "k examples");
         }
@@ -718,10 +732,11 @@ public class EntailmentFeaturizer implements Serializable {
   }
 
 
-  /** @see edu.stanford.nlp.naturalli.entail.EntailmentFeaturizer#featurize(Stream, OutputStream, Optional, boolean) */
+  /** @see edu.stanford.nlp.naturalli.entail.EntailmentFeaturizer#featurize(Stream, Set, OutputStream, Optional, boolean) */
+  @SuppressWarnings("unchecked")
   public GeneralDataset<Trilean, String> featurize(Stream<EntailmentPair> data) {
     try {
-      return featurize(data, null, Optional.empty(), false);
+      return featurize(data, Collections.EMPTY_SET, null, Optional.empty(), false);
     } catch (IOException e) {
       throw new RuntimeIOException("(should be impossible!!!)", e);
     }

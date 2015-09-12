@@ -7,6 +7,7 @@ import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.ling.RVFDatum;
 import edu.stanford.nlp.simple.Sentence;
+import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.*;
@@ -30,21 +31,23 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
   public final Classifier<Trilean, String> impl;
   public final EntailmentFeaturizer featurizer;
+  public final Set<String> vocabulary;
 
 
-  SimpleEntailmentClassifier(EntailmentFeaturizer featurizer, Classifier<Trilean, String> impl) {
+  SimpleEntailmentClassifier(EntailmentFeaturizer featurizer, Set<String> vocabulary, Classifier<Trilean, String> impl) {
     this.impl = impl;
+    this.vocabulary = vocabulary;
     this.featurizer = featurizer;
   }
 
   @Override
   public Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
-    return impl.classOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty())));
+    return impl.classOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), vocabulary, Optional.empty())));
   }
 
   @Override
   public double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
-    Counter<Trilean> scores = impl.scoresOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Optional.empty())));
+    Counter<Trilean> scores = impl.scoresOf(new RVFDatum<>(featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), vocabulary, Optional.empty())));
     Counters.logNormalizeInPlace(scores);
     Counters.expInPlace(scores);
     return scores.getCount(Trilean.TRUE);
@@ -52,7 +55,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
   @Override
   public Object serialize() {
-    return Pair.makePair(featurizer, impl);
+    return Triple.makeTriple(featurizer, vocabulary, impl);
   }
 
   /**
@@ -68,24 +71,38 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
     File tmp = File.createTempFile("cache", ".ser.gz");
     tmp.deleteOnExit();
 
-    // Read the test data
-    forceTrack("Reading test data");
-    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
-    GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData.stream(), trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
-    if (trainer.TEST_CACHE != null) { IOUtils.cp(tmp, trainer.TEST_CACHE); }
-    endTrack("Reading test data");
-
     Pointer<GeneralDataset<Trilean, String>> trainDataset = new Pointer<>();
 
     // Train a model
     SimpleEntailmentClassifier classifier = trainer.trainOrLoad(() -> {
       Classifier<Trilean, String> impl;
+      Set<String> vocab = new HashSet<>();
       try {
         DebugDocument debugDocument = new DebugDocument(trainer.TRAIN_DEBUGDOC);
+
+        // Create the vocabulary
+        if (trainer.VOCAB_THRESHOLD > 1) {
+          Counter<String> words = new ClassicCounter<>();
+          Stream<EntailmentPair> vocabData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
+          vocabData.forEach(pair -> {
+            for (String word : pair.premise.lemmas()) {
+              words.incrementCount(word);
+            }
+            for (String word : pair.conclusion.lemmas()) {
+              words.incrementCount(word);
+            }
+          });
+          for (Map.Entry<String, Double> entry : words.entrySet()) {
+            if (entry.getValue() >= trainer.VOCAB_THRESHOLD) {
+              vocab.add(entry.getKey());
+            }
+          }
+        }
+
         // Create the datasets
         forceTrack("Reading training data");
         Stream<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
-        trainDataset.set(trainer.featurizer.featurize(trainData, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
+        trainDataset.set(trainer.featurizer.featurize(trainData, vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
         if (trainer.TRAIN_CACHE != null) {
           IOUtils.cp(tmp, trainer.TRAIN_CACHE);
         }
@@ -111,8 +128,16 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         throw new RuntimeIOException(e);
       }
       // (return the classifier)
-      return new SimpleEntailmentClassifier(trainer.featurizer, impl);
+      return new SimpleEntailmentClassifier(trainer.featurizer, vocab, impl);
     });
+
+    // Read the test data
+    Set<String> vocab = classifier.vocabulary;
+    forceTrack("Reading test data");
+    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
+    GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData.stream(), vocab, trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
+    if (trainer.TEST_CACHE != null) { IOUtils.cp(tmp, trainer.TEST_CACHE); }
+    endTrack("Reading test data");
 
     // Evaluating
     forceTrack("Evaluating the classifier");
@@ -146,7 +171,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         PrintWriter errWriter = new PrintWriter(trainer.TEST_ERRORS);
         errWriter.println("Guess_Truth\tGold_Truth\tPremise\tHypothesis");
         for (EntailmentPair ex : testData) {
-          Trilean guess = classifier.impl.classOf(new RVFDatum<>(trainer.featurizer.featurize(ex, Optional.empty())));
+          Trilean guess = classifier.impl.classOf(new RVFDatum<>(trainer.featurizer.featurize(ex, vocab, Optional.empty())));
           if (!guess.equals(ex.truth)) {
             errWriter.println(guess + "\t" + ex.truth + "\t" + ex.premise.text() + "\t" + ex.conclusion.text());
           }
@@ -180,8 +205,8 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
   @SuppressWarnings("unchecked")
   public static SimpleEntailmentClassifier deserialize(Object model) {
-    Pair<EntailmentFeaturizer, Classifier<Trilean, String>> data = (Pair) model;
-    return new SimpleEntailmentClassifier(data.first, data.second);
+    Triple<EntailmentFeaturizer, Set<String>, Classifier<Trilean, String>> data = (Triple) model;
+    return new SimpleEntailmentClassifier(data.first, data.second, data.third);
   }
 
 }
