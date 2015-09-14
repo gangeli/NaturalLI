@@ -611,7 +611,8 @@ public class EntailmentFeaturizer implements Serializable {
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_UNIGRAM)) {
       for (int pI = 0; pI < ex.premise.length(); ++pI) {
         for (int cI = 0; cI < ex.conclusion.length(); ++cI) {
-          if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0)) {
+          if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0) &&
+              !premiseLemmas.get(pI).equals(conclusionLemmas.get(cI))) {
             feats.incrementCount("lemma_entail:" + premiseLemmas.get(pI) + "_->_" + conclusionLemmas.get(cI));
           }
         }
@@ -643,8 +644,12 @@ public class EntailmentFeaturizer implements Serializable {
         for (int cI = 0; cI <= ex.conclusion.length(); ++cI) {
           String lastConclusion = (cI == 0 ? "^" : conclusionLemmas.get(cI - 1));
           String conclusion = (cI == ex.conclusion.length() ? "$" : conclusionLemmas.get(cI));
-          feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + conclusion);
-          feats.incrementCount("lemma_entail:" + premise + "_->_" + lastConclusion + "_" + conclusion);
+          if (lastPremise.equalsIgnoreCase(conclusion) || premise.equalsIgnoreCase(conclusion)) {
+            feats.incrementCount("lemma_entail:" + lastPremise + "_" + premise + "_->_" + conclusion);
+          }
+          if (premise.equalsIgnoreCase(lastConclusion) || premise.equalsIgnoreCase(conclusion)) {
+            feats.incrementCount("lemma_entail:" + premise + "_->_" + lastConclusion + "_" + conclusion);
+          }
         }
       }
     }
