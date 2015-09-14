@@ -4,11 +4,12 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 import Qry._
 
 val SNLI_TRAIN = "etc/snli/snli_1.0rc3_train.tab"
-val SNLI_TEST = "etc/snli/snli_1.0rc3_dev.tab"
+val SNLI_DEV   = "etc/snli/snli_1.0rc3_dev.tab"
+val SNLI_TEST  = "etc/snli/snli_1.0rc3_test.tab"
 
 val SICK_TRAIN = "etc/sick/sick_train.tab"
 val SICK_SNLI_TRAIN = "etc/sick/sick+snli_train.tab"
-val SICK_TEST = "etc/sick/sick_dev.tab"
+val SICK_TEST = "etc/sick/sick_test.tab"
 
 val RTE_TRAIN = "etc/RTE-3/English_dev.tab"
 val RTE_SNLI_TRAIN = "etc/sick/rte+snli_train.tab"
@@ -21,9 +22,7 @@ val RTE_TEST = "etc/RTE-3/English_dev.tab"
 def program(memoryMB:Int):List[String] = ("java"
   -('cp, cp)
 //	-"Xrunhprof:cpu=samples,depth=25"
-	-("Xmx" + memoryMB + "M")
-	-"Xss32m"
-  -"XX:MaxPermSize=256M"
+	-("mx" + memoryMB + "M")
   -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
 	-'server
   -'ea
@@ -34,6 +33,31 @@ def program(memoryMB:Int):List[String] = ("java"
 ).toList
 
 using("runs/")
+
+parallel(9) submit(program(40000)
+  -("train.file", SNLI_TRAIN)
+  -("train.cache.do", "false")
+  -("test.file", SNLI_DEV)
+  -("test.cache.do", "false")
+
+  -("train.count", "1000000")
+  -("train.regularizer", "l1")
+  -("train.sigma", "1.0" & "0.1" & "0.01")
+  
+  -("vocab.threshold", "1" & "2" & "3")
+
+  -("model", touch("model.ser.gz"))
+  -("features", 
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" &
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  ENTAIL_BOTH_GRAM  CONCLUSION_NGRAM ]"""
+  )
+  -("features.nolex", "false")
+
+  -("parallel", "false")
+  -("threads",  "1")
+  
+  -("log.file", touch("redwood.log"))
+)
 
 
 ////
@@ -74,27 +98,27 @@ using("runs/")
 //  -("log.file", touch("redwood.log"))
 //)
 
+////
+//// Try out other features
+////
+//parallel(2) submit(program(32000)
+//  -("train.file", SNLI_TRAIN)
+//  -("train.cache.do", "false")
+//  -("test.file", SNLI_TEST)
+//  -("test.cache.do", "false")
 //
-// Try out other features
-//
-parallel(2) submit(program(32000)
-  -("train.file", SNLI_TRAIN)
-  -("train.cache.do", "false")
-  -("test.file", SNLI_TEST)
-  -("test.cache.do", "false")
-
-  -("train.count", "1000000")
-  -("model", touch("model.ser.gz"))
-  -("features", 
-//      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_BOTH_GRAM ]""" &
-//      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ]""" &
-//      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ENTAIL_BOTH_GRAM ]""" &
-      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]"""
-      )
-  -("features.nolex", "false")
-  -("parallel", "false")
-  -("log.file", touch("redwood.log"))
-)
+//  -("train.count", "1000000")
+//  -("model", touch("model.ser.gz"))
+//  -("features", 
+////      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_BOTH_GRAM ]""" &
+////      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ]""" &
+////      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ENTAIL_TRIGRAM ENTAIL_BOTH_GRAM ]""" &
+//      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]"""
+//      )
+//  -("features.nolex", "false")
+//  -("parallel", "false")
+//  -("log.file", touch("redwood.log"))
+//)
 
 ////
 //// Run ablation studies with keyword features

@@ -82,14 +82,17 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
         // Create the vocabulary
         if (trainer.VOCAB_THRESHOLD > 1) {
+          forceTrack("Counting vocabulary");
           Counter<String> words = new ClassicCounter<>();
           Stream<EntailmentPair> vocabData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
           vocabData.forEach(pair -> {
-            for (String word : pair.premise.lemmas()) {
-              words.incrementCount(word);
-            }
-            for (String word : pair.conclusion.lemmas()) {
-              words.incrementCount(word);
+            if (pair != null) {
+              for (String word : pair.premise.lemmas()) {
+                words.incrementCount(word);
+              }
+              for (String word : pair.conclusion.lemmas()) {
+                words.incrementCount(word);
+              }
             }
           });
           for (Map.Entry<String, Double> entry : words.entrySet()) {
@@ -97,6 +100,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
               vocab.add(entry.getKey());
             }
           }
+          endTrack("Counting vocabulary");
         }
 
         // Create the datasets
