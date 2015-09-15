@@ -34,7 +34,7 @@ def program(memoryMB:Int):List[String] = ("java"
 
 using("runs/")
 
-parallel(9) submit(program(40000)
+parallel(16) submit(program(40000)
   -("train.file", SNLI_TRAIN)
   -("train.cache.do", "false")
   -("test.file", SNLI_DEV)
@@ -42,14 +42,13 @@ parallel(9) submit(program(40000)
 
   -("train.count", "1000000")
   -("train.regularizer", "l1")
-  -("train.sigma", "1.0" & "0.1" & "0.01")
+  -("train.sigma", "2.0" & "1.0" & "0.75" & "0.5")
   
   -("vocab.threshold", "1" & "2" & "3")
 
   -("model", touch("model.ser.gz"))
   -("features", 
-      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM ]""" &
-      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  ENTAIL_BOTH_GRAM  CONCLUSION_NGRAM ]"""
+      """[ BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  ENTAIL_BOTH_GRAM  KEYWORD_OVERLAP  DEPTREE_ROOT_STRUCTURE  ENTAIL_DEPTREE ]"""
   )
   -("features.nolex", "false")
 
