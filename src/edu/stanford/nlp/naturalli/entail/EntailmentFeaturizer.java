@@ -644,9 +644,12 @@ public class EntailmentFeaturizer implements Serializable {
     if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_UNIGRAM)) {
       for (int pI = 0; pI < ex.premise.length(); ++pI) {
         for (int cI = 0; cI < ex.conclusion.length(); ++cI) {
-          if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0) &&
-              !premiseLemmas.get(pI).equals(conclusionLemmas.get(cI))) {
-            feats.incrementCount("lemma_entail:" + premiseLemmas.get(pI) + "_->_" + conclusionLemmas.get(cI));
+          if (ex.premise.posTag(pI).charAt(0) == ex.conclusion.posTag(cI).charAt(0)) {
+            if (premiseLemmas.get(pI).equalsIgnoreCase(conclusionLemmas.get(cI))) {
+              feats.incrementCount("lemma_overlap:" + premiseLemmas.get(pI).toLowerCase());
+            } else {
+              feats.incrementCount("lemma_entail:" + premiseLemmas.get(pI) + "_->_" + conclusionLemmas.get(cI));
+            }
           }
         }
       }
