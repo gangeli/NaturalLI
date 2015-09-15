@@ -97,7 +97,11 @@ public class EntailmentFeaturizer implements Serializable {
           break;
         }
       }
-      this.root = s.lemma(root);
+      if (root == -1) {
+        this.root = s.lemma(s.length() - 1);
+      } else {
+        this.root = s.lemma(root);
+      }
       // Get incoming edges
       Map<String, String> children = new HashMap<>();
       for (int i = 0; i < s.length(); ++i) {
