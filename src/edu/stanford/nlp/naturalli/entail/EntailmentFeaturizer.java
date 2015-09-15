@@ -41,7 +41,7 @@ public class EntailmentFeaturizer implements Serializable {
     KEYWORD_OVERLAP, KEYWORD_STATISTICS, KEYWORD_DISFLUENCIES,
     LUCENE_SCORE,
     ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_TRIGRAM, ENTAIL_BOTH_GRAM, ENTAIL_KEYWORD,
-    CONCLUSION_NGRAM,
+    CONCLUSION_NGRAM, DEPTREE_ROOT_STRUCTURE, ENTAIL_DEPTREE,
   }
 
 
@@ -79,6 +79,35 @@ public class EntailmentFeaturizer implements Serializable {
 
   @Execution.Option(name="features.keyword.buckets", gloss="The number of buckets to use for keyword overlap statistics")
   public int FEATURES_KEYWORD_BUCKETS = 10;
+
+  /**
+   * A data structure to store a single level of a dependency tree.
+   * So, a word and its outgoing dependents.
+   */
+  private static class TreeFragment {
+    public final String root;
+    public final Map<String, String> children;
+
+    public TreeFragment(Sentence s){
+      // Find the root
+      int root = -1;
+      for (int i = 0; i < s.length(); ++i) {
+        if (s.governor(i).orElse(Integer.MAX_VALUE) == -1) {
+          root = i;
+          break;
+        }
+      }
+      this.root = s.lemma(root);
+      // Get incoming edges
+      Map<String, String> children = new HashMap<>();
+      for (int i = 0; i < s.length(); ++i) {
+        if (s.governor(i).orElse(Integer.MAX_VALUE) == root) {
+          children.put(s.incomingDependencyLabel(i).get(), s.lemma(i));
+        }
+      }
+      this.children = Collections.unmodifiableMap(children);
+    }
+  }
 
   public EntailmentFeaturizer(String[] args) {
     Execution.fillOptions(this, args);
@@ -694,6 +723,31 @@ public class EntailmentFeaturizer implements Serializable {
         hasFeature(FeatureTemplate.KEYWORD_STATISTICS) ||
         hasFeature(FeatureTemplate.KEYWORD_DISFLUENCIES)) {
       feats.addAll(keywordFeatures(ex, debugDocument));
+    }
+
+    // Dependency Tree Root Structure
+    if (hasFeature(FeatureTemplate.DEPTREE_ROOT_STRUCTURE) ||
+        hasFeature(FeatureTemplate.ENTAIL_DEPTREE)) {
+      TreeFragment premiseRoot    = new TreeFragment(ex.premise);
+      TreeFragment conclusionRoot = new TreeFragment(ex.premise);
+      if (hasFeature(FeatureTemplate.DEPTREE_ROOT_STRUCTURE)) {
+        // (root structure matches)
+        if (premiseRoot.root.equalsIgnoreCase(conclusionRoot.root)) {
+          feats.incrementCount("deptree_root_matches");
+        }
+        if (premiseRoot.children.keySet().equals(conclusionRoot.children.keySet())) {
+          feats.incrementCount("deptree_structure_matches");
+          if (premiseRoot.root.equalsIgnoreCase(conclusionRoot.root)) {
+            feats.incrementCount("deptree_root_structure_matches");
+          }
+        }
+      }
+      if (!FEATURES_NOLEX && hasFeature(FeatureTemplate.ENTAIL_DEPTREE)) {
+        // (root entailments)
+        if (!FEATURES_NOLEX) {
+          feats.incrementCount(premiseRoot.toString().replace(" ", "_") + "_->_" + conclusionRoot.toString().replace(" ", "_"));
+        }
+      }
     }
 
     assert Counters.isFinite(feats);
