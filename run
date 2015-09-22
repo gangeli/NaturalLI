@@ -46,36 +46,37 @@ def multchoice =
 //  submit("rm" -'r ->LOG_DIR)
 //}
 
-////
-//// Train the classifiers
-////
-//submit(classifier
-//  -('features, 
-//      "KEYWORD_OVERLAP LUCENE_SCORE" &
-//      "KEYWORD_OVERLAP" &
-//      "LUCENE_SCORE")
-//  -('model, touch("model.ser.gz"))
-//)
 //
-////
-//// Run the models (train; all corpora)
-////
-//parallel(3) submit(multchoice
-//  -("naturalli.incache", "logs/all_4.cache")
-//  -('data, "etc/aristo/eval_train_allcorpora.tab")
-//  -('model, 
-//      (LOG_DIR + "/0/model.ser.gz") &
-//      (LOG_DIR + "/1/model.ser.gz") &
-//      (LOG_DIR + "/2/model.ser.gz"))
-//  -("naturalli.use", "false")
-//)
-//parallel(2) submit(multchoice
-//  -("naturalli.incache", "logs/all_4.cache")
-//  -('data, "etc/aristo/eval_train_allcorpora.tab")
-//  -('model, (LOG_DIR + "/2/model.ser.gz"))
-//  -("naturalli.use", "true")
-//  -("naturalli.uselucene", "true" & "false")
-//)
+// Train the classifiers
+//
+submit(classifier
+  -('features, 
+      "KEYWORD_OVERLAP LUCENE_SCORE" &
+      "KEYWORD_OVERLAP" &
+      "LUCENE_SCORE")
+  -('model, touch("model.ser.gz"))
+)
+
+//
+// Run the models (train; all corpora)
+//
+parallel(3) submit(multchoice
+  -("naturalli.incache", "logs/all.cache")
+  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -('model, 
+      (LOG_DIR + "/0/model.ser.gz") &
+      (LOG_DIR + "/1/model.ser.gz") &
+      (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "false")
+)
+parallel(2) submit(multchoice
+  -("naturalli.incache", "logs/all.cache")
+  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -('model, (LOG_DIR + "/2/model.ser.gz"))
+  -("naturalli.use", "true")
+  -("naturalli.uselucene", "true" & "false")
+)
+
 //
 ////
 //// Run the models (train; barrons)
@@ -100,15 +101,16 @@ def multchoice =
 //
 // Run the models (test; all corpora)
 //
-parallel(3) submit(multchoice
-  -("naturalli.incache", "logs/test_all_4.cache")
-  -('data, "etc/aristo/eval_test_allcorpora.tab")
-  -('model, 
-      (LOG_DIR + "/0/model.ser.gz") &
-      (LOG_DIR + "/1/model.ser.gz") &
-      (LOG_DIR + "/2/model.ser.gz"))
-  -("naturalli.use", "false")
-)
+
+//parallel(3) submit(multchoice
+//  -("naturalli.incache", "logs/test_all_4.cache")
+//  -('data, "etc/aristo/eval_test_allcorpora.tab")
+//  -('model, 
+//      (LOG_DIR + "/0/model.ser.gz") &
+//      (LOG_DIR + "/1/model.ser.gz") &
+//      (LOG_DIR + "/2/model.ser.gz"))
+//  -("naturalli.use", "false")
+//)
 //parallel(2) submit(multchoice
 //  -("naturalli.incache", "logs/test_all_4.cache")
 //  -('data, "etc/aristo/eval_test_allcorpora.tab")
@@ -120,15 +122,17 @@ parallel(3) submit(multchoice
 //
 // Run the models (test; barrons)
 //
-parallel(3) submit(multchoice
-  -("naturalli.incache", "logs/test_barrons_4.cache")
-  -('data, "etc/aristo/eval_test_barrons.tab")
-  -('model, 
-      (LOG_DIR + "/0/model.ser.gz") &
-      (LOG_DIR + "/1/model.ser.gz") &
-      (LOG_DIR + "/2/model.ser.gz"))
-  -("naturalli.use", "false")
-)
+
+//parallel(3) submit(multchoice
+//  -("naturalli.incache", "logs/test_barrons_4.cache")
+//  -('data, "etc/aristo/eval_test_barrons.tab")
+//  -('model, 
+//      (LOG_DIR + "/0/model.ser.gz") &
+//      (LOG_DIR + "/1/model.ser.gz") &
+//      (LOG_DIR + "/2/model.ser.gz"))
+//  -("naturalli.use", "false")
+//)
+
 //parallel(2) submit(multchoice
 //  -("naturalli.incache", "logs/test_barrons_4.cache")
 //  -('data, "etc/aristo/eval_test_barrons.tab")

@@ -729,11 +729,12 @@ public class EntailmentFeaturizer implements Serializable {
       feats.addAll(keywordFeatures(ex, debugDocument));
     }
 
+
     // Dependency Tree Root Structure
     if (hasFeature(FeatureTemplate.DEPTREE_ROOT_STRUCTURE) ||
         hasFeature(FeatureTemplate.ENTAIL_DEPTREE)) {
       TreeFragment premiseRoot    = new TreeFragment(ex.premise);
-      TreeFragment conclusionRoot = new TreeFragment(ex.premise);
+      TreeFragment conclusionRoot = new TreeFragment(ex.conclusion);
       if (hasFeature(FeatureTemplate.DEPTREE_ROOT_STRUCTURE)) {
         // (root structure matches)
         if (premiseRoot.root.equalsIgnoreCase(conclusionRoot.root)) {
