@@ -1,0 +1,102 @@
+#!/bin/bash
+exec scala "$0" "$@"
+!#
+
+//
+// This script converts between the Monarch TSV file sent by Peter Clark to
+// a perfcase file used by NaturalLI.
+//
+// Usage:
+//   ./monarch2perfcase <INPUT_TSV> <train|dev|test>
+//
+//
+
+// (scala)
+import scala.collection.JavaConversions._
+import scala.collection._
+// (corenlp)
+import edu.stanford.nlp.simple._
+
+// Regexes for a sentence with 2, 3, or 4 options
+val Q2 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*""".r
+val Q3 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*\(C\)(.*?)\.?\s*""".r
+val Q4 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*\(C\)(.*?)\.?\s*\(D\)(.*?)\.?\s*""".r
+
+var multiSentencePremises:Int = 0
+var allQuestions:Int = 0
+
+// Grok input file
+for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
+  // Parse the line
+  val fields = line.split("\t");
+  val id = fields(0)
+  var (question, options) = fields(9) match {
+    case Q4(question, a, b, c, d) => (question.trim(), List(a.trim(),b.trim(),c.trim(),d.trim()))
+    case Q3(question, a, b, c) => (question.trim(), List(a.trim(),b.trim(),c.trim()))
+    case Q2(question, a, b) => (question.trim(), List(a.trim(),b.trim()))
+  }
+  val answer = options(fields(3).trim() match {
+    case "A" => 0
+    case "B" => 1
+    case "C" => 2
+    case "D" => 3
+  })
+  val premises = new Document(fields(13)).sentences
+  val statementTemplate = fields(14)
+  val isTest = fields(11) match {
+    case "0" => false
+    case "NULL" => true
+    case "1" => true
+  }
+  val isDev = fields(12) match {
+    case "0" => false
+    case "NULL" => false
+    case "1" => true
+  }
+  if (isDev && !isTest) {
+    throw new IllegalStateException("Dev that's not test?")
+  }
+
+  // Determine if we should be printing this example
+  val doPrint = args(1).toLowerCase match {
+    case "train" => !isDev && !isTest
+    case "dev"   => isDev && isTest
+    case "test"   => !isDev && isTest
+  }
+  
+  // Print the example
+  if (doPrint) {
+    // Write the question
+    println("#Q: " + question)
+    if (premises.size > 1) {
+      multiSentencePremises += 1
+    }
+    allQuestions += 1
+
+    // Loop over possible answers
+    for (focus <- options) {
+      val statement = statementTemplate.replace("BLANK_", focus);
+      val correct = (focus == answer)
+      // Write the answer
+      println("#A: " + focus)
+      for (premise <- premises) {
+        println(premise)
+      }
+      if (correct) {
+        print("TRUE: ")
+      } else {
+        print("FALSE: ")
+      }
+      // Write the statement
+      if (statement == "FAIL") {
+        println (question + " " + focus)
+      } else {
+        println(statement)
+      }
+      // Newline to signify a new example
+      println()
+    }
+  }
+}
+
+System.err.println("" + multiSentencePremises + "/" + allQuestions + " questions have multiple premises")
