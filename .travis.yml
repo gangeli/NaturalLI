@@ -4,12 +4,14 @@ compiler:
 #  - clang
   - gcc
 
+jdk:
+  - oraclejdk8
+
+
 addons:
   apt:
-    sources:
-      - openjdk-r
     packages:
-      - openjdk-8-jdk
+#      - openjdk-7-jdk
       - ant
 
 before_install: 
