@@ -364,7 +364,16 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     }
 
     // Write the query
-    toNaturalLI.write(toParseTree(hypothesis));
+    String hypothesisTree = toParseTree(hypothesis);
+    if (hypothesisTree.split("\n").length > 30) {
+      int endIndex = 30;
+      if (hypothesis.contains(",")) {
+        endIndex = Math.min(endIndex, hypothesis.indexOf(","));
+      }
+      toNaturalLI.write(toParseTree(hypothesis.substring(0, endIndex)));
+    } else {
+      toNaturalLI.write(toParseTree(hypothesis));
+    }
 
     // Start the search
     toNaturalLI.write("\n\n");

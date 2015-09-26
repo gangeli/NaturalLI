@@ -347,11 +347,11 @@ string executeQuery(const vector<Tree*> premises, const btree_set<uint64_t> *kb,
     factsInserted += 1;
     // align the tree
     if (doAlignments && alignments.size() < MAX_FUZZY_MATCHES) {
-      fprintf(stderr, "ALIGNING %s\n", toString(*premise, *graph).c_str());
+//      fprintf(stderr, "ALIGNING %s\n", toString(*premise, *graph).c_str());
       AlignmentSimilarity alignment = query->alignToPremise(*premise, *graph);
-      alignment.debugPrint(*query, *graph);  // debug print the alignment
-      fprintf(stderr, "  score (if true):  %f\n", alignment.score(*query, true));
-      fprintf(stderr, "  score (if false): %f\n", alignment.score(*query, false));
+//      alignment.debugPrint(*query, *graph);  // debug print the alignment
+//      fprintf(stderr, "  score (if true):  %f\n", alignment.score(*query, true));
+//      fprintf(stderr, "  score (if false): %f\n", alignment.score(*query, false));
       alignments.push_back(alignment);
     }
   }

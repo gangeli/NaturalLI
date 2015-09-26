@@ -139,10 +139,15 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
       }
       // Write the statement
       def resolveCoref(statement:String):String = {
-        if (canonicalMention != null) {
+        val rtn:String = (if (canonicalMention != null) {
           statement.replaceAll("It ", canonicalMention + " ")
         } else {
           statement
+        }).trim
+        if (!rtn.endsWith(".")) {
+          rtn + " ."
+        } else {
+          rtn
         }
       }
       if (statement == "FAIL" || statement.trim == "*** generation failure ***") {
