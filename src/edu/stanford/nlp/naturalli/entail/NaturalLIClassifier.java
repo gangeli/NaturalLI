@@ -220,6 +220,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
         String line;
         while ( (line = reader.readLine()) != null) {
           NaturalLIPair entry = gson.fromJson(line, NaturalLIPair.class);
+          assert entry.query != null;
+          assert entry.response != null;
           naturalliCache.put(entry.query, entry.response);
         }
       }

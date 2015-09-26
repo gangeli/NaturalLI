@@ -541,7 +541,7 @@ TEST_F(TreeTest, HashRepeatable) {
 TEST_F(TreeTest, HashValueNoOperators) {
   // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(16605809463908668005lu, tree->hash());
+  EXPECT_EQ(16317803388194108945lu, tree->hash());
 #else
   EXPECT_EQ(4371864790233797722lu, tree->hash());
 #endif
@@ -553,7 +553,7 @@ TEST_F(TreeTest, HashValueNoOperators) {
 TEST_F(TreeTest, HashValueOperators) {
   // note[gabor]: If these change, it means you've invalidated your KB!
 #if TWO_PASS_HASH!=0
-  EXPECT_EQ(1171885542138732619lu, opTree->hash());
+  EXPECT_EQ(1709707256873123992lu, opTree->hash());
 #else
   EXPECT_EQ(5965632721169780864lu, opTree->hash());
 #endif
@@ -985,17 +985,17 @@ class AlignmentSimilarityTest : public ::testing::Test {
     vector<alignment_instance> v;
     v.emplace_back(1, FUZZY.word, MONOTONE_DOWN);
     v.emplace_back(2, DOG.word, MONOTONE_DOWN);
-    hard = new AlignmentSimilarity(v);
+    hard = new AlignmentSimilarity(v, 0);
     
     vector<alignment_instance> w;
     w.emplace_back(1, FURRY.word, MONOTONE_DOWN);
     w.emplace_back(2, CAT.word, MONOTONE_DOWN);
-    easy = new AlignmentSimilarity(w);
+    easy = new AlignmentSimilarity(w, 0);
     
     vector<alignment_instance> x;
     x.emplace_back(1, FURRY.word, MONOTONE_UP);
     x.emplace_back(2, CAT.word, MONOTONE_UP);
-    monoMismatch = new AlignmentSimilarity(x);
+    monoMismatch = new AlignmentSimilarity(x, 0);
   }
   
   virtual void TearDown() {
@@ -1557,7 +1557,7 @@ TEST_F(SynSearchTest, LemursToCatsSoftAlignSoftWeights) {
   vector<alignment_instance> v;
   v.emplace_back(0, POTTO.word, MONOTONE_UP);
   vector<AlignmentSimilarity> alignments;
-  alignments.emplace_back(v);
+  alignments.emplace_back(v, 0);
   // (run the search)
   syn_search_response response = SynSearch(cyclicGraph, &factdb, 
       animalsHaveTails, costs, true, opts, alignments);
