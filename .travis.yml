@@ -11,7 +11,7 @@ jdk:
 addons:
   apt:
     packages:
-#      - openjdk-7-jdk
+      - openjdk-7-jdk
       - ant
 
 before_install: 
