@@ -181,8 +181,8 @@ public class ProcessQuery {
       }
     }
     if (newIndex < 0) {
-//      throw new IllegalArgumentException("Could not perform token mapping");
-      return 0;
+      throw new IllegalArgumentException("Could not perform token mapping");
+//      return 0;
     }
     return newIndex;
   }
@@ -316,6 +316,10 @@ public class ProcessQuery {
       readableDump.set("<too short>\t0\troot\t0\n\n");
       return "0\t0\troot\t0\n\n";
     }
+    if (tree.getRoots().size() == 0) {
+      throw new IllegalArgumentException("Tree has no roots!");
+    }
+
     // Find location triggers
     @SuppressWarnings("unchecked")
     Set<IndexedWord> meronymTargets = doMeronym ? meronymTargets(tree) : (Set<IndexedWord>) Collections.EMPTY_SET;
@@ -367,7 +371,6 @@ public class ProcessQuery {
           if (accountedFor.get(k)) {
             add = false;
           }
-          accountedFor.set(k);
           if (!operator.isPresent()) {
             operator = Optional.ofNullable(sentence.get(k).get(NaturalLogicAnnotations.OperatorAnnotation.class));
           }
@@ -386,6 +389,9 @@ public class ProcessQuery {
         }
         // Add the token
         if (add) {
+          for (int k = start; k < end; ++k) {
+            accountedFor.set(k);
+          }
           // Find the word sense of the word
           int sense = doSense ? computeSense(wordAsInt, gloss, sentence, words, start, end) : 0;
           // Add
@@ -430,6 +436,7 @@ public class ProcessQuery {
     // Dump String
     StringBuilder production = new StringBuilder();
     StringBuilder debug = new StringBuilder();
+    boolean hasRoot = false;
     for (int i = 0; i < conllTokenByStartIndex.size(); ++i) {
       Token token = conllTokenByStartIndex.get(i);
       Pair<Integer, String> incomingEdge = governors.get(i);
@@ -437,6 +444,7 @@ public class ProcessQuery {
       production.append(token.word);
       debug.append(i + 1).append("\t").append(token.gloss);//.append("\t").append(token.word);
       StringBuilder b = new StringBuilder();
+      if (incomingEdge.first < 0) { hasRoot = true; }
       b.append("\t").append(incomingEdge.first + 1)
           .append("\t").append(incomingEdge.second);
       // Word sense
@@ -489,6 +497,13 @@ public class ProcessQuery {
       production.append(b.toString());
       debug.append(b.toString());
     }
+
+    // Sanity check
+    if (!hasRoot) {
+      throw new IllegalArgumentException("Tree has no root: " + tree);
+    }
+
+
     readableDump.set(debug.toString());
     return production.toString();
   }

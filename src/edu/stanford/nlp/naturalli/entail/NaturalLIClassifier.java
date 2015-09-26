@@ -243,8 +243,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
 
       });
       // Gobble naturalli.stderr to real stderr
-      Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
-//      Writer errWriter = new OutputStreamWriter(System.err);
+//      Writer errWriter = new BufferedWriter(new FileWriter(new File("/dev/null")));
+      Writer errWriter = new OutputStreamWriter(System.err);
       StreamGobbler errGobbler = new StreamGobbler(searcher.getErrorStream(), errWriter);
       errGobbler.start();
       Thread t = new Thread() {
@@ -260,6 +260,14 @@ public class NaturalLIClassifier implements EntailmentClassifier {
       };
       t.setDaemon(true);
       t.start();
+      // (make sure we flush stderr on exit)
+      Runtime.getRuntime().addShutdownHook(new Thread() {
+        @Override public void run() {
+          try {
+            errWriter.close();
+          } catch (IOException ignored) { }
+        }
+      });
 
       // Create the pipe
       fromNaturalLI = new BufferedReader(new InputStreamReader(searcher.getInputStream()));
