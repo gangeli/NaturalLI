@@ -4,19 +4,13 @@
 set -e
 set -o xtrace
 
-export MAXMEM_GB=6
-export SCALA_HOME=${SCALA_HOME-/home/gabor/programs/scala}
-echo "Scala at: $SCALA_HOME"
+ln -s /home/gabor/lib/stanford-corenlp-models-current.jar .
+ln -s /home/gabor/lib/stanford-corenlp-caseless-models-current.jar .
+ln -s /home/gabor/lib/stanford-corenlp-3.5.2.jar stanford-corenlp.jar
 
 configure() {
   local SFM=${SEARCH_FULL_MEMORY:-"1"}
   ./configure \
-    --with-scala=$SCALA_HOME \
-    --with-java=/usr/lib/jvm/java-8-oracle \
-    --with-corenlp=$HOME/stanford-corenlp.jar \
-    --with-corenlp-models=$HOME/stanford-corenlp-models-current.jar \
-    --with-corenlp-caseless-models=$HOME/stanford-corenlp-caseless-models-current.jar \
-    --with-naturalli-models=$HOME/naturalli-models.jar \
     --enable-debug SEARCH_FULL_MEMORY=$SFM $@
   make clean
 }
