@@ -126,15 +126,15 @@ naturalli_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_search_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_featurize_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
+if HAVE_TCMALLOC
+  naturalli_LDADD += -ltcmalloc
+  naturalli_search_LDADD += -ltcmalloc
+  naturalli_featurize_LDADD += -ltcmalloc
+endif # end HAVE_TCMALLOC
 if DEBUG
 #  note[gabor]: electric fence crashes before the graph gets allocated
 #  naturalli_LDADD += -L../lib -lefence
 #  naturalli_search_LDADD += -L../lib -lefence
-if HAVE_TCMALLOC
-  naturalli_LDADD += -ltcmalloc -lprofiler
-  naturalli_search_LDADD += -ltcmalloc -lprofiler
-  naturalli_featurize_LDADD += -ltcmalloc -lprofiler
-endif # end HAVE_TCMALLOC
 if IS_GCC
   naturalli_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all
   naturalli_search_CXXFLAGS += -fprofile-arcs -ftest-coverage -fPIC -fstack-protector-all

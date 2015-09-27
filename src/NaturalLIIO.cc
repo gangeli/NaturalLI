@@ -210,9 +210,9 @@ bool to_bool(std::string str) {
 
 /** The regex for a key@specifier=value triple */
 regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)",
-                    std::regex_constants::extended);
+                    std::regex_constants::egrep);
 /** The regex for a key=value pair */
-regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
 
 
 //

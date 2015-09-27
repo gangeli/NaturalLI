@@ -138,15 +138,15 @@ TEST_F(UtilsTest, FastATOIPeculiarities) {
 // Apparently the Regex library isn't so mature yet.
 //
 TEST(RegexTest, RelevantRegexesCompile) {
-  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
-  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::egrep);
+  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
 }
 
 //
 // Regex for Set Value
 //
 TEST(RegexTest, SetValueMatches) {
-  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::extended);
+  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::egrep);
   smatch result;
   ASSERT_TRUE(regex_search(string("toSet @ key = 1.0"), result, regexSetValue));
   ASSERT_EQ(4, result.size());
@@ -162,7 +162,7 @@ TEST(RegexTest, SetValueMatches) {
 // Regex for Set Flag
 //
 TEST(RegexTest, SetFlagMatches) {
-  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::extended);
+  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
   smatch result;
   ASSERT_TRUE(regex_search(string("key = 1.0"), result, regexSetFlag));
   ASSERT_EQ(3, result.size());

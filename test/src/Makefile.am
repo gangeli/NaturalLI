@@ -44,13 +44,11 @@ naturalli_itest_LDADD =  ${OBJS}
 if HAVE_TCMALLOC
   naturalli_test_LDADD += -ltcmalloc
   naturalli_itest_LDADD += -ltcmalloc
+endif
 if DEBUG
-  naturalli_test_LDADD += -lprofiler
-  naturalli_itest_LDADD += -lprofiler
 if IS_GCC
   naturalli_test_CXXFLAGS = -fprofile-arcs -ftest-coverage -fPIC
   naturalli_itest_LDADD += -lgcov
-endif
 endif
 endif
 
