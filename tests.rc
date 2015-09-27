@@ -67,7 +67,8 @@ do_test_c() {
   set -e
   set -o xtrace
   echo "-- C++ TESTS --"
-  test/src/naturalli_test
+  test/src/naturalli_test --gtest_output=xml:test/naturalli_test.xml
+  test/src/naturalli_itest --gtest_output=xml:test/naturalli_itest.xml
 }
 
 do_test_java() {
@@ -141,17 +142,5 @@ do_test_cases() {
   set -o xtrace
   echo "-- TEST CASES --"
   test/run_testcases.sh
-}
-
-
-do_report() {
-  set -e
-  set -o xtrace
-  echo "-- TEST AND REPORT --"
-  configure
-  make all check TESTS_ENVIRONMENT=true 
-  test/src/naturalli_test --gtest_output=xml:test/naturalli_test.xml
-  test/src/naturalli_itest --gtest_output=xml:test/naturalli_itest.xml
-  make java_test
 }
 
