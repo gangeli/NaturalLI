@@ -47,13 +47,16 @@ echo "$DISTRO"
 
 if [ "$DISTRO" == "Ubuntu" ]; then
   echo "Installing dependencies..."
-  yellow "(this will need sudo access...)"
+  yellow "(this will need sudo access)"
+  yellow "(also, please read what the script is doing)"
   set -o xtrace
-  sleep 3
+  sleep 5
   # Essential dependencies
   sudo apt-get install libtool build-essential autoconf
   # Needed by various secondary scripts
-  sudo apt-get install pv doxygen gcovr ant
+  sudo apt-get install pv doxygen ant
+  # We need gcovr 3, and Ubuntu only installs gcovr 2
+  sudo pip install gcovr
   set +o xtrace
 else
   yellow ""
