@@ -23,24 +23,24 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
  */
 public interface EntailmentClassifier {
 
-  public Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore);
+  Trilean classify(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore);
 
-  public double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore);
+  double truthScore(Sentence premise, Sentence hypothesis, Optional<String> focus, Optional<Double> luceneScore);
 
-  public Object serialize();
+  Object serialize();
 
 
-  public default Trilean classify(String premise, String hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+  default Trilean classify(String premise, String hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
     return classify(new Sentence(premise), new Sentence(hypothesis), focus, luceneScore);
   }
 
-  public default double truthScore(String premise, String hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
+  default double truthScore(String premise, String hypothesis, Optional<String> focus, Optional<Double> luceneScore) {
     return truthScore(new Sentence(premise), new Sentence(hypothesis), focus, luceneScore);
   }
 
-  public default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
-                                                  Optional<String> focus, Optional<List<Double>> luceneScores,
-                                                  Function<Integer, Double> decay) {
+  default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
+                                           Optional<String> focus, Optional<List<Double>> luceneScores,
+                                           Function<Integer, Double> decay) {
     double max = Double.NEGATIVE_INFINITY;
     Sentence argmax = null;
     Sentence hypothesisSentence = new Sentence(hypothesis);
@@ -67,14 +67,14 @@ public interface EntailmentClassifier {
     return Pair.makePair(argmax, max);
   }
 
-  public default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
-                                                  Optional<String> focus, Optional<List<Double>> luceneScores) {
+  default Pair<Sentence, Double> bestScore(List<String> premises, String hypothesis,
+                                           Optional<String> focus, Optional<List<Double>> luceneScores) {
     return bestScore(premises, hypothesis, focus, luceneScores, i -> 1.0);
   }
 
-  public default Pair<Sentence, Double> aveScore(List<String> premises, String hypothesis,
-                                                 Optional<String> focus, Optional<List<Double>> luceneScores,
-                                                 Function<Integer, Double> decay) {
+  default Pair<Sentence, Double> aveScore(List<String> premises, String hypothesis,
+                                          Optional<String> focus, Optional<List<Double>> luceneScores,
+                                          Function<Integer, Double> decay) {
     double sum = 0.0;
     double max = Double.NEGATIVE_INFINITY;
     Sentence argmax = null;
@@ -107,11 +107,11 @@ public interface EntailmentClassifier {
 
 
 
-  public default void save(File file) throws IOException {
+  default void save(File file) throws IOException {
     IOUtils.writeObjectToFile(Pair.makePair(this.getClass(), serialize()), file);
   }
 
-  public static EntailmentClassifier load(File file) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+  static EntailmentClassifier load(File file) throws IOException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     Pair<Class<? extends EntailmentClassifier>, Object> spec = IOUtils.readObjectFromFile(file);
     log("loading a classifier of type " + spec.first.getSimpleName());
     Method loader = spec.first.getMethod("deserialize", Object.class);
@@ -119,7 +119,7 @@ public interface EntailmentClassifier {
   }
 
 
-  public static EntailmentClassifier loadNoErrors(File file) {
+  static EntailmentClassifier loadNoErrors(File file) {
     try {
       return load(file);
     } catch (IOException e) {

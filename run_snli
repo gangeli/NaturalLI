@@ -42,9 +42,9 @@ parallel(16) submit(program(40000)
 
   -("train.count", "1000000")
   -("train.regularizer", "l1")
-  -("train.sigma", "2.0" & "1.0" & "0.75" & "0.5")
+  -("train.sigma", "1.45")
   
-  -("vocab.threshold", "1" & "2" & "3")
+  -("vocab.threshold", "0")
 
   -("model", touch("model.ser.gz"))
   -("features", 

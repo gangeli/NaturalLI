@@ -2,6 +2,8 @@ NaturalLI
 ===========
 **Natural [Language|Logic] Inference**
 
+[![Build status](http://goobs.org/TeamCity/app/rest/builds/buildType:NaturalLI_CTests/statusIcon "Build status")](http://goobs.org/TeamCity/viewType.html?buildTypeId=NaturalLI_CTests&guest=1)
+
 NaturalLI is a Natural Logic reasoning engine aimed at fast inference
 from a large database of known facts.
 The project's primary goal is to infer whether arbitrary common-sense
