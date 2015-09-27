@@ -4,9 +4,15 @@
 set -e
 set -o xtrace
 
-ln -s /home/gabor/lib/stanford-corenlp-models-current.jar .
-ln -s /home/gabor/lib/stanford-corenlp-caseless-models-current.jar .
-ln -s /home/gabor/lib/stanford-corenlp-3.5.2.jar stanford-corenlp.jar
+if [ ! -e stanford-corenlp-models-current.jar ]; then
+  wget http://nlp.stanford.edu/software/stanford-corenlp-models-current.jar
+fi
+if [ ! -e stanford-corenlp-caseless-models-current.jar ]; then
+  wget http://nlp.stanford.edu/software/stanford-corenlp-caseless-models-current.jar
+fi
+if [ ! -e stanford-corenlp.jar ]; then
+  wget http://central.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.5.2/stanford-corenlp-3.5.2.jar
+fi
 
 configure() {
   local SFM=${SEARCH_FULL_MEMORY:-"1"}
