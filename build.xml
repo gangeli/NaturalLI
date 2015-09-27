@@ -17,6 +17,9 @@
       <fileset dir="${basedir}/lib/test">
         <include name="*.jar"/>
       </fileset>
+      <fileset dir="${basedir}/lib/corenlp">
+        <include name="*.jar"/>
+      </fileset>
       <!-- CoreNLP components (via environment) -->
       <pathelement path="${env.CORENLP_JAR}"/>
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
