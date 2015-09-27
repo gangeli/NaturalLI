@@ -2,7 +2,6 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.*;
 import edu.stanford.nlp.io.IOUtils;
-import edu.stanford.nlp.optimization.OWLQNMinimizer;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.*;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
@@ -213,7 +212,8 @@ public class ClassifierTrainer {
     LinearClassifierFactory<Trilean, String> factory = new LinearClassifierFactory<>();
     switch (TRAIN_REGULARIZER) {
       case L1:
-        factory.setMinimizerCreator(() -> new OWLQNMinimizer(TRAIN_SIGMA).shutUp());
+        factory.setMinimizerCreator(() -> 
+            new MetaClass("edu.stanford.nlp.optimization.OWLQNMinimizer").createInstance(TRAIN_SIGMA));
         break;
       case L2:
         factory.setSigma(TRAIN_SIGMA);
