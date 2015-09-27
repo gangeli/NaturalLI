@@ -44,7 +44,9 @@ do_build() {
   echo "-- MAKE --"
   configure
   make all
-  make -C test/src all
+  make -C test/src/gtest gtest_main.lo lib/libgtest.la
+  make -C test/src all naturalli_test
+  make -C test/src all naturalli_itest
   make src/naturalli_preprocess.jar
 }
 

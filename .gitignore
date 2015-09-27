@@ -31,6 +31,7 @@ src/fnv/longlong.h
 src/hash_tree
 src/write_kb
 src/naturalli
+src/naturalli_featurize
 src/naturalli_search
 test/src/naturalli_test
 test/src/naturalli_itest
@@ -51,6 +52,7 @@ classes/**
 build/**
 test/build
 *.jar
+*.class
 
 .idea/*
 
@@ -106,6 +108,8 @@ missing
 depcomp
 autom4te.cache
 stamp-h1
+compile
+test-driver
 
 # Tags
 TAGS
