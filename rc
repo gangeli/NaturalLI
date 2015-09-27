@@ -81,7 +81,6 @@ function edgeType2String() {
   echo ""
   echo "void populateEdgeTypeMap() {"
 
-  dependency2index["prep_toward"] = DEP_PREP_TOWARD;
   cat etc/edgeTypes.tab | sort | uniq |\
     awk -F'\t' '{ print "  edgeType2Index[\"" tolower($2) "\"] = " $1 ";" }'
 

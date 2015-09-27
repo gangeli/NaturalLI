@@ -7,24 +7,20 @@
   
   <target name="classpath" description="Sets the classpath">
     <path id="classpath">
+      <!-- Program sources -->
+      <pathelement path="${basedir}/src/naturalli_preprocess.jar"/>
+      <pathelement path="${basedir}/test/src/naturalli_preprocess_test.jar" />
+      <!-- Program libs -->
       <fileset dir="${basedir}/lib">
         <include name="*.jar"/>
       </fileset>
       <fileset dir="${basedir}/lib/test">
         <include name="*.jar"/>
       </fileset>
-      <pathelement path="${basedir}/src/naturalli_preprocess.jar"/>
-      <pathelement path="test/src/test_preprocess.jar" />
-      <!-- JavaNLP -->
-      <fileset dir="${env.JAVANLP_HOME}/projects/core/lib">
-        <include name="*.jar"/>
-      </fileset>
       <!-- CoreNLP components (via environment) -->
       <pathelement path="${env.CORENLP_JAR}"/>
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
       <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
-      <!-- NaturalLI components (via environment) -->
-      <pathelement path="${env.NATURALLI_MODELS}"/>
     </path>
   </target>
   
@@ -33,7 +29,6 @@
     <echo message="CoreNLP:                 ${env.CORENLP_JAR}"/>
     <echo message="CoreNLP models:          ${env.CORENLP_MODELS_JAR}"/>
     <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
-    <echo message="NaturalLI models:        ${env.NATURALLI_MODELS}"/>
     
     <junit fork="true" maxmemory="4g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>

@@ -11,7 +11,7 @@ if [ ! -e stanford-corenlp-caseless-models-current.jar ]; then
   wget http://nlp.stanford.edu/software/stanford-corenlp-caseless-models-current.jar
 fi
 if [ ! -e stanford-corenlp.jar ]; then
-  wget http://central.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.5.2/stanford-corenlp-3.5.2.jar
+  wget http://central.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.5.3/stanford-corenlp-3.5.3.jar
 fi
 
 configure() {
@@ -22,9 +22,9 @@ configure() {
 }
 
 echo "-- CLEAN --"
-rm -f etc/.have_models
-rm -f etc/.pp_affinity
-rm -f etc/.mk_graph
+#rm -f etc/.have_models
+#rm -f etc/.pp_affinity
+#rm -f etc/.mk_graph
 ./autogen.sh
 
 echo "-- MAKE --"
@@ -89,17 +89,6 @@ test/src/naturalli_test
 #
 #echo "-- TEST CASES --"
 #test/run_testcases.sh
-#
-#echo "-- DIST TEST CASES --"
-#configure
-#make dist
-#tar xfz `find . -name "naturalli-2.*.tar.gz"`
-#cd `find . -type d -name "naturalli-2.*"`
-#configure
-#make check
-#test/run_testcases.sh
-#cd ..
-#rm -r `find . -type d -name "naturalli-2.*"`
 #
 #echo "-- TEST AND REPORT --"
 #configure

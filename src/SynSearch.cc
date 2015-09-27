@@ -5,6 +5,9 @@
 #include "SynSearch.h"
 #include "Utils.h"
 
+/**
+ * Set the alignment weights
+ */
 // NaturalLI Only Weights
 // (small balanced dataset)
 //#define COUNT_ALIGNED                  0.199480866f
@@ -29,6 +32,7 @@
 // Overlap+Lucene Only Weights
 //#define BONUS_COUNT_ALIGNED 0.0186f
 //#define PENALTY_ONLY_IN_HYPOTHESIS -0.4685f
+
 
 #define min(a, b) (a < b ? a : b)
 #define max(a, b) (a < b ? b : a)

@@ -50,7 +50,10 @@ if [ "$DISTRO" == "Ubuntu" ]; then
   yellow "(this will need sudo access...)"
   set -o xtrace
   sleep 3
-  sudo apt-get install pv libtool build-essential autoconf doxygen ant
+  # Essential dependencies
+  sudo apt-get install libtool build-essential autoconf
+  # Needed by various secondary scripts
+  sudo apt-get install pv doxygen gcovr ant
   set +o xtrace
 else
   yellow ""
@@ -69,6 +72,7 @@ ensureCmd automake
 ensureCmd pv
 ensureCmd make
 ensureCmd doxygen
+ensureCmd gcovr
 ensureCmd ant
 ensureCmd wget
 
