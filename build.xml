@@ -4,6 +4,17 @@
   <property name="tests.path"      value="${basedir}/test/src" />
   <property name="lib.path"        value="${basedir}/lib" />
   <property environment="env"/>
+
+  <!-- Set the CoreNLP classpath either from the environment, or to a default -->
+  <condition property="corenlp" value="${env.CORENLP_JAR}" else="stanford-corenlp.jar">
+    <isset property="env.CORENLP_JAR" />
+  </condition>
+  <condition property="corenlp_models" value="${env.CORENLP_MODELS_JAR}" else="stanford-corenlp-models-current.jar">
+    <isset property="env.CORENLP_MODELS_JAR" />
+  </condition>
+  <condition property="corenlp_caseless_models" value="${env.CORENLP_CASELESS_MODELS_JAR}" else="stanford-corenlp-caseless-models-current.jar">
+    <isset property="env.CORENLP_CASELESS_MODELS_JAR" />
+  </condition>
   
   <target name="classpath" description="Sets the classpath">
     <path id="classpath">
@@ -21,20 +32,17 @@
         <include name="*.jar"/>
       </fileset>
       <!-- CoreNLP components (via environment) -->
-      <pathelement path="${env.CORENLP_JAR}"/>
-      <pathelement path="${env.CORENLP_MODELS_JAR}"/>
-      <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
-      <pathelement path="stanford-corenlp.jar"/>
-      <pathelement path="stanford-corenlp-models-current.jar"/>
-      <pathelement path="stanford-corenlp-caseless-models-current.jar"/>
+      <pathelement path="${corenlp}"/>
+      <pathelement path="${corenlp_models}"/>
+      <pathelement path="${corenlp_caseless_models}"/>
     </path>
   </target>
   
   <target name="test" depends="classpath"
           description="Run core unit tests">
-    <echo message="CoreNLP:                 ${env.CORENLP_JAR}"/>
-    <echo message="CoreNLP models:          ${env.CORENLP_MODELS_JAR}"/>
-    <echo message="CoreNLP caseless models: ${env.CORENLP_CASELESS_MODELS_JAR}"/>
+    <echo message="CoreNLP:                 ${corenlp}"/>
+    <echo message="CoreNLP models:          ${corenlp_models}"/>
+    <echo message="CoreNLP caseless models: ${corenlp_caseless_models}"/>
     
     <junit fork="true" maxmemory="4g" printsummary="on" outputtoformatters="false" forkmode="perBatch" haltonfailure="true">
       <classpath refid="classpath"/>
