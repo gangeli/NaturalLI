@@ -51,7 +51,7 @@
     <war destfile="${source.path}/naturalli.war"
          webxml="${source.path}/edu/stanford/nlp/naturalli/demo/WEB-INF/naturalli.xml">
       <lib dir="${source.path}/">
-        <include name="naturalli_client.jar"/>
+        <include name="naturalli_preprocess.jar"/>
       </lib>
       <lib dir="${lib.path}/demo">
         <include name="*.jar"/>

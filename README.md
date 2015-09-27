@@ -44,25 +44,32 @@ Clang should already be at a new enough version as of Ubuntu 14.04 and onwards.
 The following is a list of options that can be passed into the configure script,
 and a description of each.
 
-  - 
+  - `--enable-debug`: Enables code coverage and assertions.
+  
+  - `--with-java`: The root of the Java runtime to use. This should be Java 8+,
+     and must include both `java` and `javac` (i.e., not just a JRE).
+  
+  - `--with-corenlp`: The location of CoreNLP -- generally, a Jar file.
+    This must be CoreNLP Version 3.5.3 or newer.
+
+  - `--with-corenlp-models`: The location of the CoreNLP models jar.
+
+  - `--with-corenlp-caseless-models`: The location of the CoreNLP caseless 
+    models jar.
 
 
 In addition, a number of environment variables are relevant for the configure
 script.
 These are listed below:
 
-  - `JDK_HOME`: The root of the Java runtime to use. This should be Java 8+,
-     and must include both `java` and `javac` (i.e., not just a JRE).
-
-  - `CORENLP`: The location of CoreNLP -- generally, a Jar file.
-    This must be CoreNLP Version 3.5.3 or newer.
-
-  - `CORENLP_MODELS`: The location of the CoreNLP models jar.
-
-  - `CORENLP_CASELESS_MODELS`: The location of the CoreNLP caseless models jar.
-
   - `CXX`: The C compiler to use. Both `g++` (4.8+; 4.9+ highly recommended) 
      and `clang++` (3.5+) should compile.
+
+  - `MAX_FACT_LENGTH`: The maximum number of tokens a fact can be. This has to be
+    less than 255.
+
+  - `MAX_QUERY_LENGTH`: The maximum length of a query. Note that memory during
+    search scales linearly with this value. Default is 39.
 
 
 

@@ -22,7 +22,7 @@ configure() {
   set -o xtrace
   local SFM=${SEARCH_FULL_MEMORY:-"1"}
   ./configure \
-    --enable-debug SEARCH_FULL_MEMORY=$SFM CXX="g++-4.9" $@
+    --enable-debug SEARCH_FULL_MEMORY=$SFM CXX='clang++' $@
   make clean
 }
 
@@ -43,11 +43,16 @@ do_build() {
   set -o xtrace
   echo "-- MAKE --"
   configure
+  # main sources
   make all
+  # gtest
   make -C test/src/gtest gtest_main.lo lib/libgtest.la
+  # C++ tests
   make -C test/src all naturalli_test
   make -C test/src all naturalli_itest
+  # Java tests
   make src/naturalli_preprocess.jar
+  make test/src/naturalli_preprocess_test.jar
 }
 
 do_document() {
