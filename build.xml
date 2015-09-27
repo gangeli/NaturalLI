@@ -24,6 +24,9 @@
       <pathelement path="${env.CORENLP_JAR}"/>
       <pathelement path="${env.CORENLP_MODELS_JAR}"/>
       <pathelement path="${env.CORENLP_CASELESS_MODELS_JAR}"/>
+      <pathelement path="stanford-corenlp.jar"/>
+      <pathelement path="stanford-corenlp-models-current.jar"/>
+      <pathelement path="stanford-corenlp-caseless-models-current.jar"/>
     </path>
   </target>
   

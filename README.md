@@ -66,10 +66,33 @@ These are listed below:
      and `clang++` (3.5+) should compile.
 
   - `MAX_FACT_LENGTH`: The maximum number of tokens a fact can be. This has to be
-    less than 255.
+     less than 255.
 
   - `MAX_QUERY_LENGTH`: The maximum length of a query. Note that memory during
-    search scales linearly with this value. Default is 39.
+     search scales linearly with this value. Default is 39.
+     Default value has nice cache-alignment properties.
+  
+  - `MAX_QUANTIFIER_COUNT`: The maximum number of quantifiers in a sentence.
+     Note that search memory and search runtime scales linearly with this.
+     Default is 6. Default value has nice cache-alignment properties.
+  
+  - `SERVER_PORT`: The port to serve the server from. Default is 1337.
+  
+  - `SEARCH_TIMEOUT`: The maximum number of ticks to search for.
+     Default is 1000000.
+  
+  - `SEARCH_CYCLE_MEMORY`: The depth to backtrack during seach looking for cycles.
+     Lower values cause search to run faster, but nodes to be repeated more often.
+     Default is 3.
+
+  - `SEARCH_CYCLE_FULL_MEMORY`: Check all the way back to the start node for cycles.
+    Default is false (0).
+  
+  - `MAX_FUZZY_MATCHES`: The number of premises to consider from the explicit premise
+     set for fuzzy alignment matches. Default is 0.
+
+  - `MAX_BRANCHOUT`: The maximum branching factor of the graph search. This is to
+     prevent runaway nodes from taking too much time. Default is 100.
 
 
 

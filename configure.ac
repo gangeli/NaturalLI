@@ -28,7 +28,6 @@ if test "x$javac_found" != "xyes"; then
   AC_MSG_ERROR([could not find javac compiler])
 fi
 AC_DEFINE_UNQUOTED(JDK_HOME, "${JDK_HOME:=${JAVA_HOME}}", [The location of the JDK])
-AM_CONDITIONAL(SCALA_2_11, `${SCALA_HOME}/bin/scalac -version | grep "2.11"`)
 
 
 # (ant)
@@ -168,7 +167,7 @@ AC_DEFINE_UNQUOTED(SERVER_PORT,  ${SERVER_PORT:=1337},  [The port to run the ser
 
 AC_DEFINE_UNQUOTED(SEARCH_TIMEOUT,      ${SEARCH_TIMEOUT:=100000},  [The maximum number of elements to pop off the queue for a search (if no such value is provided in the query)])
 AC_DEFINE_UNQUOTED(MIN_FACT_COUNT,      ${MIN_FACT_COUNT:=1},  [The minimum number of times we should see a fact before we add it to the fact database])
-AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=0},  [If true, pass each dependency arc through the fnv hash before XOR-ing it.])
+AC_DEFINE_UNQUOTED(TWO_PASS_HASH,       ${TWO_PASS_HASH:=1},  [If true, pass each dependency arc through the fnv hash before XOR-ing it.])
 AC_DEFINE_UNQUOTED(SEARCH_CYCLE_MEMORY, ${SEARCH_CYCLE_MEMORY:=3},  [The depth to go back checking for cycles in the search])
 AC_DEFINE_UNQUOTED(SEARCH_FULL_MEMORY,  ${SEARCH_FULL_MEMORY:=0},  [If true, keep a full history of search nodes seen. If true, SEARCH_CYCLE_MEMORY becomes irrelevant.])
 
