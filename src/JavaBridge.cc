@@ -48,9 +48,9 @@ JavaBridge::JavaBridge() {
     snprintf(senseFile, 255, "-DSENSE_FILE=%s", SENSE_FILE);
     // (classpath)
     char classpath[1024];
-    snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s:%s", 
+    snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s", 
         thisDir.c_str(), thisDir.c_str(), thisDir.c_str(),
-        CORENLP, CORENLP_MODELS, NATURALLI_MODELS);
+        CORENLP, CORENLP_MODELS);
 
     // Start program
     dup2(pipeIn[0], STDIN_FILENO);
