@@ -70,5 +70,18 @@ ensureCmd pv
 ensureCmd make
 ensureCmd doxygen
 ensureCmd ant
+ensureCmd wget
+
+
+echo "Downloading CoreNLP + models..."
+if [ ! -e stanford-corenlp-models-current.jar ]; then
+  wget http://nlp.stanford.edu/software/stanford-corenlp-models-current.jar
+fi
+if [ ! -e stanford-corenlp-caseless-models-current.jar ]; then
+  wget http://nlp.stanford.edu/software/stanford-corenlp-caseless-models-current.jar
+fi
+if [ ! -e stanford-corenlp.jar ]; then
+  wget http://central.maven.org/maven2/edu/stanford/nlp/stanford-corenlp/3.5.2/stanford-corenlp-3.5.2.jar
+fi
 
 green "Everyting is OK!"

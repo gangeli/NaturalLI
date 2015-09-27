@@ -2,10 +2,9 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.GeneralDataset;
 import edu.stanford.nlp.classify.RVFDataset;
-import edu.stanford.nlp.entail.BleuMeasurer;
+import edu.stanford.nlp.naturalli.entail.BleuMeasurer;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.io.RuntimeIOException;
-import edu.stanford.nlp.kbp.common.CollectionUtils;
 import edu.stanford.nlp.ling.RVFDatum;
 import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.ClassicCounter;
@@ -586,7 +585,9 @@ public class EntailmentFeaturizer implements Serializable {
 
     // Lemma overlap
     if (hasFeature(FeatureTemplate.OVERLAP)) {
-      int intersect = CollectionUtils.intersect(new HashSet<>(ex.premise.lemmas()), new HashSet<>(ex.conclusion.lemmas())).size();
+      Set<String> onlyPremiseLemmas = new HashSet<>(ex.premise.lemmas());
+      onlyPremiseLemmas.removeAll(ex.conclusion.lemmas());
+      int intersect = ex.premise.lemmas().size() - onlyPremiseLemmas.size();
       feats.incrementCount("lemma_overlap", intersect);
       feats.incrementCount("lemma_overlap_percent", ((double) intersect) / ((double) Math.min(ex.premise.length(), ex.conclusion.length())));
     }
@@ -608,10 +609,13 @@ public class EntailmentFeaturizer implements Serializable {
         Set<String> conclusionVerbs = new HashSet<>();
         for (int i = 0; i < ex.conclusion.length(); ++i) {
           if (ex.conclusion.posTag(i).charAt(0) == pos) {
-            premiseVerbs.add(ex.conclusion.lemma(i));
+            conclusionVerbs.add(ex.conclusion.lemma(i));
           }
         }
-        Set<String> intersectVerbs = CollectionUtils.intersect(premiseVerbs, conclusionVerbs);
+        Set<String> onlyPremiseVerbs = new HashSet<>(premiseVerbs);
+        onlyPremiseVerbs.removeAll(conclusionVerbs);
+        Set<String> intersectVerbs = new HashSet<>();
+        intersectVerbs.removeAll(onlyPremiseVerbs);
         feats.incrementCount("" + pos + "_overlap_percent", ((double) intersectVerbs.size() / ((double) Math.min(ex.premise.length(), ex.conclusion.length()))));
         feats.incrementCount("" + pos + "_overlap: " + intersectVerbs.size());
       }
@@ -619,10 +623,10 @@ public class EntailmentFeaturizer implements Serializable {
 
     // BLEU score
     if (hasFeature(FeatureTemplate.BLEU)) {
-      feats.incrementCount("BLEU-1", bleu(1, ex.premise.lemmas(), ex.premise.lemmas()));
-      feats.incrementCount("BLEU-2", bleu(2, ex.premise.lemmas(), ex.premise.lemmas()));
-      feats.incrementCount("BLEU-3", bleu(3, ex.premise.lemmas(), ex.premise.lemmas()));
-      feats.incrementCount("BLEU-4", bleu(4, ex.premise.lemmas(), ex.premise.lemmas()));
+      feats.incrementCount("BLEU-1", bleu(1, ex.premise.lemmas(), ex.conclusion.lemmas()));
+      feats.incrementCount("BLEU-2", bleu(2, ex.premise.lemmas(), ex.conclusion.lemmas()));
+      feats.incrementCount("BLEU-3", bleu(3, ex.premise.lemmas(), ex.conclusion.lemmas()));
+      feats.incrementCount("BLEU-4", bleu(4, ex.premise.lemmas(), ex.conclusion.lemmas()));
     }
 
     // Length differences
