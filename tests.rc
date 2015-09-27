@@ -62,13 +62,25 @@ do_document() {
   doxygen doxygen.conf
 }
 
-
 do_test_c() {
   set -e
   set -o xtrace
+  # Run the tests
   echo "-- C++ TESTS --"
   test/src/naturalli_test --gtest_output=xml:test/naturalli_test.xml
   test/src/naturalli_itest --gtest_output=xml:test/naturalli_itest.xml
+  # Compute the coverage
+  echo "-- COVERAGE --"
+  cd src/
+  rm -f naturalli_server-Messages.pb.gcda
+  rm -f naturalli_server-Messages.pb.gcno
+  rm -f naturalli_server-Messages.pb.h.gcno
+  rm -f naturalli_server-Messages.pb.h.gcda
+  gcovr -r . --xml -o coverage.xml
+  if [ "`gcovr --version | grep 'gcovr 3'`" != "" ]; then 
+    gcovr -r . --html --html-details -o /var/www/html/naturalli/coverage/index.html
+  fi
+  cd ..
 }
 
 do_test_java() {
@@ -120,21 +132,6 @@ do_test_variants() {
   echo "(back to default)"
   configure  # reconfigure to default
   make all
-}
-
-do_coverage() {
-  set -e
-  set -o xtrace
-  echo "-- COVERAGE --"
-  make check
-  cd src/
-  rm -f naturalli_server-Messages.pb.gcda
-  rm -f naturalli_server-Messages.pb.gcno
-  rm -f naturalli_server-Messages.pb.h.gcno
-  rm -f naturalli_server-Messages.pb.h.gcda
-  /usr/bin/gcovr -r . --html --html-details -o /var/www/html/naturalli/coverage/index.html
-  /usr/bin/gcovr -r . --xml -o coverage.xml
-  cd ..
 }
 
 do_test_cases() {
