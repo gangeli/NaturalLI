@@ -31,35 +31,28 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="lib" level="project" />
-    <orderEntry type="library" name="scripts" level="project" />
-    <orderEntry type="library" name="javanlp-core" level="project" />
-    <orderEntry type="library" name="javanlp-more" level="project" />
-    <orderEntry type="library" name="javanlp-research" level="project" />
-    <orderEntry type="library" name="scala-compiler" level="project" />
-    <orderEntry type="library" name="demo" level="project" />
-    <orderEntry type="library" name="scala-sdk" level="project" />
-    <orderEntry type="module-library" scope="RUNTIME">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/staging/stanford-corenlp-models-current.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library" scope="RUNTIME">
-      <library>
-        <CLASSES>
-          <root url="jar://$USER_HOME$/staging/stanford-srparser-models-current.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$USER_HOME$/staging/openie_models.jar!/" />
+          <root url="jar://$MODULE_DIR$/stanford-corenlp.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/stanford-corenlp-models-current.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" scope="RUNTIME">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/stanford-corenlp-caseless-models-current.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
