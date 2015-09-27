@@ -22,7 +22,6 @@ configure() {
 }
 
 echo "-- CLEAN --"
-git clean -f
 rm -f etc/.have_models
 rm -f etc/.pp_affinity
 rm -f etc/.mk_graph
