@@ -21,9 +21,11 @@
       <excludeFolder url="file://$MODULE_DIR$/etc" />
       <excludeFolder url="file://$MODULE_DIR$/m4" />
       <excludeFolder url="file://$MODULE_DIR$/pub" />
+      <excludeFolder url="file://$MODULE_DIR$/runs" />
       <excludeFolder url="file://$MODULE_DIR$/src/.deps" />
       <excludeFolder url="file://$MODULE_DIR$/src/.libs" />
       <excludeFolder url="file://$MODULE_DIR$/src/fnv" />
+      <excludeFolder url="file://$MODULE_DIR$/src/knheap" />
       <excludeFolder url="file://$MODULE_DIR$/test/src/.deps" />
       <excludeFolder url="file://$MODULE_DIR$/test/src/.libs" />
       <excludeFolder url="file://$MODULE_DIR$/test/src/gtest" />

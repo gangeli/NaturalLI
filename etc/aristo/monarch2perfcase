@@ -127,17 +127,7 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
     for (focus <- options) {
       val statement = statementTemplate.replace("BLANK_", focus);
       val correct = (focus == answer)
-      // Write the answer
-      println("#A: " + focus)
-      for (premise <- premises) {
-        println(premise)
-      }
-      if (correct) {
-        print("TRUE: ")
-      } else {
-        print("FALSE: ")
-      }
-      // Write the statement
+      // A utility to try to resolve coreference
       def resolveCoref(statement:String):String = {
         val rtn:String = (if (canonicalMention != null) {
           statement.replaceAll("It ", canonicalMention + " ")
@@ -150,6 +140,17 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
           rtn
         }
       }
+      // Write the answer
+      println("#A: " + resolveCoref(focus))
+      for (premise <- premises) {
+        println(premise)
+      }
+      if (correct) {
+        print("TRUE: ")
+      } else {
+        print("FALSE: ")
+      }
+      // Write the statement
       if (statement == "FAIL" || statement.trim == "*** generation failure ***") {
         if (focus.startsWith("It")) {
           println(resolveCoref(focus))

@@ -25,6 +25,8 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * A simple entailment classifier, based around a single classifier for each sentence pair.
  *
+ * TODO(gabor) align test data on demand!
+ *
  * @author Gabor Angeli
  */
 public class SimpleEntailmentClassifier implements EntailmentClassifier {
@@ -73,6 +75,11 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
     Pointer<GeneralDataset<Trilean, String>> trainDataset = new Pointer<>();
 
+    // Read the test data
+    forceTrack("Reading test data");
+    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
+    endTrack("Reading test data");
+
     // Train a model
     SimpleEntailmentClassifier classifier = trainer.trainOrLoad(() -> {
       Classifier<Trilean, String> impl;
@@ -105,8 +112,14 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
         // Create the datasets
         forceTrack("Reading training data");
-        Stream<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT);
-        trainDataset.set(trainer.featurizer.featurize(trainData, vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
+        List<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT).collect(Collectors.toList());
+        // Optionally align the data
+        if (!trainer.featurizer.FEATURES_NOLEX &&
+            ( trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_UNIGRAM) ||
+                trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_PHRASE) ) ) {
+          EntailmentPair.align(trainer.TRAIN_ALIGN_MINCOUNT, trainer.TRAIN_ALIGN_MAXLENGTH, trainData, testData);
+        }
+        trainDataset.set(trainer.featurizer.featurize(trainData.stream(), vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
         if (trainer.TRAIN_CACHE != null) {
           IOUtils.cp(tmp, trainer.TRAIN_CACHE);
         }
@@ -135,13 +148,10 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
       return new SimpleEntailmentClassifier(trainer.featurizer, vocab, impl);
     });
 
-    // Read the test data
+    // Create the test dataset object
     Set<String> vocab = classifier.vocabulary;
-    forceTrack("Reading test data");
-    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
     GeneralDataset<Trilean, String> testDataset = trainer.featurizer.featurize(testData.stream(), vocab, trainer.TEST_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.empty(), trainer.PARALLEL);
     if (trainer.TEST_CACHE != null) { IOUtils.cp(tmp, trainer.TEST_CACHE); }
-    endTrack("Reading test data");
 
     // Evaluating
     forceTrack("Evaluating the classifier");

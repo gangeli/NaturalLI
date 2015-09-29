@@ -2,7 +2,6 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.classify.GeneralDataset;
 import edu.stanford.nlp.classify.RVFDataset;
-import edu.stanford.nlp.naturalli.entail.BleuMeasurer;
 import edu.stanford.nlp.ie.machinereading.structure.Span;
 import edu.stanford.nlp.io.RuntimeIOException;
 import edu.stanford.nlp.ling.RVFDatum;
@@ -11,6 +10,7 @@ import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
 import edu.stanford.nlp.util.logging.Redwood;
@@ -41,6 +41,7 @@ public class EntailmentFeaturizer implements Serializable {
     LUCENE_SCORE,
     ENTAIL_UNIGRAM, ENTAIL_BIGRAM, ENTAIL_TRIGRAM, ENTAIL_BOTH_GRAM, ENTAIL_KEYWORD,
     CONCLUSION_NGRAM, DEPTREE_ROOT_STRUCTURE, ENTAIL_DEPTREE,
+    MT_UNIGRAM, MT_PHRASE,
   }
 
 
@@ -369,7 +370,7 @@ public class EntailmentFeaturizer implements Serializable {
    * Bloody generics. Make sure the string form of the enum also gets picked up.
    */
   @SuppressWarnings("SuspiciousMethodCalls")
-  private boolean hasFeature(Object feat) {
+  public boolean hasFeature(Object feat) {
     return
         FEATURE_TEMPLATES.contains(feat) ||
         FEATURE_TEMPLATES.contains(feat.toString()) ||
@@ -755,6 +756,29 @@ public class EntailmentFeaturizer implements Serializable {
         // (root entailments)
         if (!FEATURES_NOLEX) {
           feats.incrementCount(premiseRoot.toString().replace(" ", "_") + "_->_" + conclusionRoot.toString().replace(" ", "_"));
+        }
+      }
+    }
+
+
+    // MT features
+    if (!FEATURES_NOLEX) {
+      // Simple IBM alignments
+      if (hasFeature(FeatureTemplate.MT_UNIGRAM)) {
+        for (int conclusionI = 0; conclusionI < ex.conclusion.length(); ++conclusionI) {
+          int premiseI = ex.conclusionToPremiseAlignment[conclusionI];
+          if (premiseI < 0) {
+            feats.incrementCount("mt_unaligned_conclusion_" + ex.conclusion.lemma(conclusionI));
+          } else {
+            feats.incrementCount("mt_unigram__" + ex.premise.lemma(premiseI) + "_->_" + ex.conclusion.lemma(conclusionI));
+          }
+        }
+      }
+
+      // Phrase table alignments
+      if (hasFeature(FeatureTemplate.MT_PHRASE)) {
+        for (Pair<String, String> phrasePair : ex.phraseTable) {
+          feats.incrementCount("mt_phrase__" + phrasePair.first.replace(" ", "_") + "_->_" + phrasePair.second.replace(" ", "_"));
         }
       }
     }

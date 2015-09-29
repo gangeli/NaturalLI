@@ -54,6 +54,11 @@ public class ClassifierTrainer {
   @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
   public double TRAIN_SIGMA = 1.00;
 
+  @Execution.Option(name="train.align.mincount", gloss="The minimum number of times to see an alignment to consider it valid")
+  public int TRAIN_ALIGN_MINCOUNT = 0;
+  @Execution.Option(name="train.align.maxlength", gloss="The maximum length of an aligned phrase")
+  public int TRAIN_ALIGN_MAXLENGTH = 3;
+
   @Execution.Option(name="test.file", gloss="The file to use for testing the classifier")
   public File TEST_FILE = TRAIN_FILE;
   @Execution.Option(name="test.cache", gloss="A cache of the test annotations")
