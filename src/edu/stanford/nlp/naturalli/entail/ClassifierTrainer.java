@@ -39,7 +39,7 @@ public class ClassifierTrainer {
   @Execution.Option(name="train.count", gloss="The number of training examples to use.")
   public int TRAIN_COUNT = -1;
   @Execution.Option(name="train.debugdoc", gloss="A LaTeX document with debugging information about training")
-  public File TRAIN_DEBUGDOC = new File("tmp/train_debug.tex");
+  public File TRAIN_DEBUGDOC = new File("/dev/null");
 
   @Execution.Option(name="train.distsup.iters", gloss="The number of iterations to run EM for")
   public int TRAIN_DISTSUP_ITERS = 0;
