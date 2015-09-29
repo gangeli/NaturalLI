@@ -117,7 +117,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         if (!trainer.featurizer.FEATURES_NOLEX &&
             ( trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_UNIGRAM) ||
                 trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_PHRASE) ) ) {
-          EntailmentPair.align(trainer.TRAIN_ALIGN_MINCOUNT, trainer.TRAIN_ALIGN_MAXLENGTH, trainData, testData);
+          EntailmentPair.align(trainer.TRAIN_ALIGN_MAXLENGTH, trainer.TRAIN_ALIGN_MINCOUNT, trainData, testData);
         }
         trainDataset.set(trainer.featurizer.featurize(trainData.stream(), vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.ofNullable(debugDocument), trainer.PARALLEL));
         if (trainer.TRAIN_CACHE != null) {
