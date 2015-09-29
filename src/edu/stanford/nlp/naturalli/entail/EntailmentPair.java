@@ -279,18 +279,21 @@ class EntailmentPair {
               IOUtils.getBufferedReaderFromClasspathOrFileSystem("edu/stanford/nlp/naturalli/entail/berkeley_aligner.conf")
             )
             .replace("TRAIN_DIR", trainDir.getPath())
+            .replace("TEST_DIR", trainDir.getPath())
             .replace("EXEC_DIR", outputDir.getPath()),
           configFile.getPath(),
           "UTF-8");
-      log("wrote config file");
+      log("wrote config file: " + configFile.getPath());
 
       // Prepare the data
       PrintWriter premises = new PrintWriter(new File(trainDir.getPath() + File.separator + "corpus.premise"));
       PrintWriter conclusions = new PrintWriter(new File(trainDir.getPath() + File.separator + "corpus.conclusion"));
+      PrintWriter dummyAlignments = new PrintWriter(new File(trainDir.getPath() + File.separator + "corpus.align"));
       for (List<EntailmentPair> alignmentSuite : dataset) {
         for (EntailmentPair entailPair : alignmentSuite) {
           premises.println(StringUtils.join(entailPair.premise.lemmas(), " "));
           conclusions.println(StringUtils.join(entailPair.conclusion.lemmas(), " "));
+          dummyAlignments.println();
         }
       }
       premises.close();
