@@ -298,6 +298,7 @@ class EntailmentPair {
       }
       premises.close();
       conclusions.close();
+      dummyAlignments.close();
       log("wrote datasets");
       endTrack("Setting up Berkeley Aligner");
 
