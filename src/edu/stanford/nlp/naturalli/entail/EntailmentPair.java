@@ -22,6 +22,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static edu.stanford.nlp.util.logging.Redwood.Util.endTrack;
+import static edu.stanford.nlp.util.logging.Redwood.Util.forceTrack;
+import static edu.stanford.nlp.util.logging.Redwood.Util.log;
+
 /**
  * A candidate entailment pair. This corresponds to an un-featurized datum.
  */
@@ -64,6 +68,7 @@ class EntailmentPair {
    *
    * @return A collection of Span pairs for every pair of spans to add to the phrase table.
    */
+  @SuppressWarnings("UnnecessaryLabelOnContinueStatement")
   private List<Pair<Span, Span>> candidatePhraseSpans(int maxLength) {
     // Compute the premise -> conclusion alignments
     List<Set<Integer>> premiseToConclusionAlignment = new ArrayList<>(premise.length());
@@ -91,6 +96,10 @@ class EntailmentPair {
             min = conclusionToPremiseAlignment[i] < min ? conclusionToPremiseAlignment[i] : min;
             max = conclusionToPremiseAlignment[i] >= max ? conclusionToPremiseAlignment[i] + 1 : max;
           }
+        }
+        if (min < 0 || max > conclusionToPremiseAlignment.length ||
+            min >= conclusionToPremiseAlignment.length || max <= 0) {
+          continue NEXT_SPAN;
         }
 
         // Check candidate span viability
@@ -238,13 +247,17 @@ class EntailmentPair {
   @SafeVarargs
   public static void align(int maxPhraseLength, int minPhraseCount, List<EntailmentPair>... dataset) {
     try {
+      forceTrack("Setting up Berkeley Aligner");
       // Set up the filesystem
       File outputDir = File.createTempFile("berkeleyaligner_output", ".dir");
       outputDir.delete();
+      log("output to " + outputDir.getPath());
       File trainDir = File.createTempFile("berkeleyaligner_train", ".dir");
       trainDir.delete();
       trainDir.mkdir();
+      log("training dir: " + outputDir.getPath());
       File configFile = File.createTempFile("berkeleyaligner", ".config");
+      log("config file: " + outputDir.getPath());
       // Make sure we clean up
       configFile.deleteOnExit();
       Runtime.getRuntime().addShutdownHook(new Thread() {
@@ -269,6 +282,7 @@ class EntailmentPair {
             .replace("EXEC_DIR", outputDir.getPath()),
           configFile.getPath(),
           "UTF-8");
+      log("wrote config file");
 
       // Prepare the data
       PrintWriter premises = new PrintWriter(new File(trainDir.getPath() + File.separator + "corpus.premise"));
@@ -281,7 +295,10 @@ class EntailmentPair {
       }
       premises.close();
       conclusions.close();
+      log("wrote datasets");
+      endTrack("Setting up Berkeley Aligner");
 
+      forceTrack("Running aligner");
       // Run the aligner
       // With apologies to everyone's better sensibilities...
       String[] args = new String[]{ "++" + configFile.getPath() };
@@ -294,9 +311,10 @@ class EntailmentPair {
       //noinspection RedundantArrayCreation
       fig.exec.Execution.init(args, new Object[]{main, data, EMWordAligner.class, Evaluator.class, TreeWalkModel.class});
       main.run();
+      log("aligner finished");
 
       // Read the results
-      String[] alignments = IOUtils.slurpFile(outputDir.getPath() + File.separator + "training.align").split("\n");
+      String[] alignments = IOUtils.slurpFile(outputDir.getPath() + File.separator + "test.align").split("\n");
       int alignI = 0;
       for (List<EntailmentPair> alignmentSuite : dataset) {
         for (EntailmentPair entailPair : alignmentSuite) {
@@ -311,8 +329,11 @@ class EntailmentPair {
           alignI += 1;
         }
       }
+      log("read the results");
+      forceTrack("Running aligner");
 
       // Construct the candidate phrase table
+      forceTrack("Constructing phrase table");
       Counter<Pair<String, String>> jointCounts = new ClassicCounter<>();
       Counter<String> premiseCounts = new ClassicCounter<>();
       Counter<String> conclusionCounts = new ClassicCounter<>();
@@ -326,8 +347,10 @@ class EntailmentPair {
           }
         }
       }
+      endTrack("Constructing phrase table");
 
       // Score the phrase table
+      forceTrack("Scoring phrases");
       Counter<Pair<String, String>> phraseScores = new ClassicCounter<>();
       for (Pair<String, String> candidatePhrase : jointCounts.keySet()) {
         if (jointCounts.getCount(candidatePhrase) >= minPhraseCount) {
@@ -340,13 +363,16 @@ class EntailmentPair {
           }
         }
       }
+      endTrack("Scoring phrases");
 
       // Prune the alignments
+      forceTrack("Pruning phrases");
       for (List<EntailmentPair> alignmentSuite : dataset) {
         for (EntailmentPair entailPair : alignmentSuite) {
           entailPair.prunePhraseTable(phraseScores.keySet());
         }
       }
+      endTrack("Pruning phrases");
 
 
     } catch (IOException e) {
