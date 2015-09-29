@@ -142,7 +142,11 @@ public class ClassifierTrainer {
             luceneScore = Optional.of(Double.parseDouble(fields[5]));
           }
           // Add the pair
-          return datumFactory.apply(Quintuple.makeQuadruple(truth, premise, conclusion, focus, luceneScore));
+          if (premise == null || premise.length() == 0 || conclusion == null || conclusion.length() == 0) {
+            return null;
+          } else {
+            return datumFactory.apply(Quintuple.makeQuadruple(truth, premise, conclusion, focus, luceneScore));
+          }
         } catch (IOException e) {
           throw new RuntimeException(e);
         }
