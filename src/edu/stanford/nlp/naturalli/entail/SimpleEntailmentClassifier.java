@@ -85,7 +85,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
       Classifier<Trilean, String> impl;
       Set<String> vocab = new HashSet<>();
       try {
-        DebugDocument debugDocument = new DebugDocument(trainer.TRAIN_DEBUGDOC);
+        DebugDocument debugDocument = trainer.TRAIN_DEBUGDOC.getPath().equals("/dev/null") ? null : new DebugDocument(trainer.TRAIN_DEBUGDOC);
 
         // Create the vocabulary
         if (trainer.VOCAB_THRESHOLD > 1) {
@@ -119,7 +119,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
                 trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_PHRASE) ) ) {
           EntailmentPair.align(trainer.TRAIN_ALIGN_MINCOUNT, trainer.TRAIN_ALIGN_MAXLENGTH, trainData, testData);
         }
-        trainDataset.set(trainer.featurizer.featurize(trainData.stream(), vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.of(debugDocument), trainer.PARALLEL));
+        trainDataset.set(trainer.featurizer.featurize(trainData.stream(), vocab, trainer.TRAIN_CACHE == null ? null : new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(tmp))), Optional.ofNullable(debugDocument), trainer.PARALLEL));
         if (trainer.TRAIN_CACHE != null) {
           IOUtils.cp(tmp, trainer.TRAIN_CACHE);
         }
@@ -139,7 +139,9 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
         endTrack("Top weights");
         // (debug document)
         forceTrack("Writing debug document");
-        debugDocument.write();
+        if (debugDocument != null) {
+          debugDocument.write();
+        }
         endTrack("Writing debug document");
       } catch (IOException e) {
         throw new RuntimeIOException(e);
