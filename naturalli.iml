@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="JAVA_MODULE" version="4">
+  <component name="FacetManager">
+    <facet type="protobuf" name="Protobuf Facet">
+      <configuration>
+        <option name="COMPILER_OUTPUT_SOURCE_DIRECTORY" value="$MODULE_DIR$/src" />
+      </configuration>
+    </facet>
+  </component>
   <component name="NewModuleRootManager" inherit-compiler-output="false">
     <output url="file://$MODULE_DIR$/build" />
     <output-test url="file://$MODULE_DIR$/test/build" />

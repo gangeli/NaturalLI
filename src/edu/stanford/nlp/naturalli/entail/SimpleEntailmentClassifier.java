@@ -77,7 +77,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
     // Read the test data
     forceTrack("Reading test data");
-    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).collect(Collectors.toList());
+    List<EntailmentPair> testData = trainer.readFlatDataset(trainer.TEST_FILE, trainer.TEST_CACHE, -1).filter( x -> x != null ).collect(Collectors.toList());
     endTrack("Reading test data");
 
     // Train a model
@@ -112,7 +112,7 @@ public class SimpleEntailmentClassifier implements EntailmentClassifier {
 
         // Create the datasets
         forceTrack("Reading training data");
-        List<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT).collect(Collectors.toList());
+        List<EntailmentPair> trainData = trainer.readFlatDataset(trainer.TRAIN_FILE, trainer.TRAIN_CACHE, trainer.TRAIN_COUNT).filter( x -> x != null ).collect(Collectors.toList());
         // Optionally align the data
         if (!trainer.featurizer.FEATURES_NOLEX &&
             ( trainer.featurizer.hasFeature(EntailmentFeaturizer.FeatureTemplate.MT_UNIGRAM) ||
