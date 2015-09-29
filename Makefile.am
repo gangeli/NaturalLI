@@ -50,7 +50,7 @@ clean-local:
 LIB=${realpath lib}
 JAVANLP=${CORENLP}:${CORENLP_MODELS}:${CORENLP_CASELESS_MODELS}
 # ((export classpath))
-export CP=${JAVANLP}:${LIB}/jaws.jar:${LIB}/gson-2.3.1.jar:${LIB}/demo/joda-time.jar:${LIB}/demo/javamail-1.4.5.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar:${LIB}/scripts/sim-1.0.jar
+export CP=${JAVANLP}:${LIB}/jaws.jar:${LIB}/gson-2.3.1.jar:${LIB}/berkeleyaligner.jar:${LIB}/demo/joda-time.jar:${LIB}/demo/javamail-1.4.5.jar:${LIB}/demo/servlet-api.jar:${LIB}/scripts/lucene-core-4.7.0.jar:${LIB}/scripts/lucene-analyzers-common-4.7.0.jar:${LIB}/scripts/sim-1.0.jar
 export TEST_CP=${CP}:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.jar
 
 # (some tasks)
