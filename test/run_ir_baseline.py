@@ -34,7 +34,7 @@ def parseargs():
   parser.add_argument('--stopwords', metavar='stopwords',
                       help='A stop word file with stop words to ignore.')
   parser.add_argument('file', metavar='files', nargs='+',
-                      help='The test files to run on.')
+                      help='The test files to run on, in the NaturalLI perfcase format.')
   
   return parser.parse_args()
 
@@ -219,7 +219,7 @@ if __name__ == "__main__":
   for exampleFile in opts.file:
     examples.extend(readData(exampleFile))
 
-  # Process he examples
+  # Process the examples
   numCorrect = 0
   numTotal = float(len(examples))
   for example in withProgress(examples, 'Running queries'):
