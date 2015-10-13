@@ -6,7 +6,7 @@
   <property environment="env"/>
 
   <!-- Set the CoreNLP classpath either from the environment, or to a default -->
-  <condition property="corenlp" value="${env.CORENLP_JAR}" else="stanford-corenlp.jar">
+  <condition property="corenlp" value="${env.CORENLP_JAR}" else="stanford-corenlp-3.5.3.jar">
     <isset property="env.CORENLP_JAR" />
   </condition>
   <condition property="corenlp_models" value="${env.CORENLP_MODELS_JAR}" else="stanford-corenlp-models-current.jar">
