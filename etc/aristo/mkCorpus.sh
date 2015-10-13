@@ -76,7 +76,8 @@ cat corpora/aristo.unicode.nouniq.tab |\
     > corpora/aristo.ascii.nouniq.tab
 
 cat corpora/aristo.ascii.nouniq.tab |\
-  sort -u -t'	' -k2 \
+  sort -u -t'	' -k2 |
+  nl -s '-' \
     > aristo.tab
 
 # Clean up the backup

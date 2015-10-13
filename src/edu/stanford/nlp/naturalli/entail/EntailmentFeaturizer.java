@@ -48,34 +48,39 @@ public class EntailmentFeaturizer implements Serializable {
   @Execution.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
     add(FeatureTemplate.KEYWORD_OVERLAP);
-//    add(FeatureTemplate.LUCENE_SCORE);
+    add(FeatureTemplate.LUCENE_SCORE);
 
-
-
-//    add(FeatureTemplate.LUCENE_SCORE);
+    /*
     // standard unlexicalized features
-//    add(FeatureTemplate.BLEU);
-//    add(FeatureTemplate.OVERLAP);
-//    add(FeatureTemplate.POS_OVERLAP);
-//    add(FeatureTemplate.LENGTH_DIFF);
+    add(FeatureTemplate.BLEU);
+    add(FeatureTemplate.OVERLAP);
+    add(FeatureTemplate.POS_OVERLAP);
+    add(FeatureTemplate.LENGTH_DIFF);
 
     // keyword unlexicalized features
-//    add(FeatureTemplate.KEYWORD_DISFLUENCIES);  // TODO(gabor) implement me better
-//    add(FeatureTemplate.KEYWORD_STATISTICS);
+    add(FeatureTemplate.KEYWORD_DISFLUENCIES);  // TODO(gabor) implement me better
+    add(FeatureTemplate.KEYWORD_STATISTICS);
 
     // standard lexicalized features
-//    add(FeatureTemplate.ENTAIL_UNIGRAM);
-//    add(FeatureTemplate.ENTAIL_BIGRAM);
-//    add(FeatureTemplate.CONCLUSION_NGRAM);
+    add(FeatureTemplate.ENTAIL_UNIGRAM);
+    add(FeatureTemplate.ENTAIL_BIGRAM);
+    add(FeatureTemplate.CONCLUSION_NGRAM);
 
     // keyword lexicalized features
-//    add(FeatureTemplate.ENTAIL_KEYWORD);
+    add(FeatureTemplate.ENTAIL_KEYWORD);
 
-    // lucene score
+    // Dependency features
+    add(FeatureTemplate.DEPTREE_ROOT_STRUCTURE);
+    add(FeatureTemplate.ENTAIL_DEPTREE);
+
+    // MT features
+    add(FeatureTemplate.MT_UNIGRAM);
+    add(FeatureTemplate.MT_PHRASE);
+    */
   }};
 
   @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
-  public boolean FEATURES_NOLEX = true;
+  public boolean FEATURES_NOLEX = false;
 
   @Execution.Option(name="features.keyword.buckets", gloss="The number of buckets to use for keyword overlap statistics")
   public int FEATURES_KEYWORD_BUCKETS = 10;

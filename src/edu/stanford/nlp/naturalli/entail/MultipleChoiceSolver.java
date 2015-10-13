@@ -183,6 +183,7 @@ public class MultipleChoiceSolver {
     RedwoodConfiguration.current().capture(System.err).apply();
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
     Execution.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
+    forceTrack("main");
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
 
@@ -218,5 +219,6 @@ public class MultipleChoiceSolver {
     */
 
 
+    endTrack("main");
   }
 }

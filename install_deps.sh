@@ -57,6 +57,8 @@ if [ "$DISTRO" == "Ubuntu" ]; then
   sudo apt-get install pv doxygen ant
   # We need gcovr 3, and Ubuntu only installs gcovr 2
   sudo pip install gcovr
+  # Needed for creating the training set
+  sudo pip install python-levenshtein
   set +o xtrace
 else
   yellow ""

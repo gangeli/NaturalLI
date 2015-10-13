@@ -11,6 +11,9 @@ import math
 sys.path.append(os.path.dirname(os.path.realpath(__file__)) + '/../../lib/')
 from naturalli import *
 
+# pip install python-levenshtein
+from Levenshtein import distance
+
 """
   A class encapsulating a HIT done by a worker.
 """
@@ -165,20 +168,34 @@ def process(f, count, negativesForPremise, solrURL, workerStats, filteredWorkers
       
         # Get Solr scores
         # (forward)
-        forwardResults = query(solrURL, conclusion, '', 20)
+        forwardResults = query(solrURL, conclusion, '', 100)
         forwardScore = 0.0
         for i in range(len(forwardResults)):
           if premise.replace(' ', '') == forwardResults[i].replace(' ', ''):
             forwardScore = forwardResults.scoresRelative[i]
         if forwardScore == 0.0:
+          minDistance = 99999;
+          for i in range(len(forwardResults)):
+            dist = distance(str(premise), str(forwardResults[i]))
+            if dist < minDistance:
+              minDistance = dist
+              forwardScore = forwardResults.scoresRelative[i]
+        if forwardScore == 0.0:
           raise Exception('Could not find premise "%s" in query "%s"' % (
             premise, conclusion))
         # (backward)
-        backwardResults = query(solrURL, conclusion, '', 20)
+        backwardResults = query(solrURL, conclusion, '', 100)
         backwardScore = 0.0
         for i in range(len(backwardResults)):
           if premise.replace(' ', '') == backwardResults[i].replace(' ', ''):
             backwardScore = backwardResults.scoresRelative[i]
+        if backwardScore == 0.0:
+          minDistance = 99999;
+          for i in range(len(backwardResults)):
+            dist = distance(str(premise), str(backwardResults[i]))
+            if dist < minDistance:
+              minDistance = dist
+              backwardScore = backwardResults.scoresRelative[i]
         if backwardScore == 0.0:
           raise Exception('Could not find premise "%s" in query "%s"' % (
             premise, conclusion))
