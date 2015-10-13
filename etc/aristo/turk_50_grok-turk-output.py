@@ -172,14 +172,14 @@ def process(f, count, negativesForPremise, solrURL, workerStats, filteredWorkers
         forwardScore = 0.0
         for i in range(len(forwardResults)):
           if premise.replace(' ', '') == forwardResults[i].replace(' ', ''):
-            forwardScore = forwardResults.scoresRelative[i]
+            forwardScore = forwardResults.scores[i]
         if forwardScore == 0.0:
           minDistance = 99999;
           for i in range(len(forwardResults)):
             dist = distance(str(premise), str(forwardResults[i]))
             if dist < minDistance:
               minDistance = dist
-              forwardScore = forwardResults.scoresRelative[i]
+              forwardScore = forwardResults.scores[i]
         if forwardScore == 0.0:
           raise Exception('Could not find premise "%s" in query "%s"' % (
             premise, conclusion))
@@ -188,14 +188,14 @@ def process(f, count, negativesForPremise, solrURL, workerStats, filteredWorkers
         backwardScore = 0.0
         for i in range(len(backwardResults)):
           if premise.replace(' ', '') == backwardResults[i].replace(' ', ''):
-            backwardScore = backwardResults.scoresRelative[i]
+            backwardScore = backwardResults.scores[i]
         if backwardScore == 0.0:
           minDistance = 99999;
           for i in range(len(backwardResults)):
             dist = distance(str(premise), str(backwardResults[i]))
             if dist < minDistance:
               minDistance = dist
-              backwardScore = backwardResults.scoresRelative[i]
+              backwardScore = backwardResults.scores[i]
         if backwardScore == 0.0:
           raise Exception('Could not find premise "%s" in query "%s"' % (
             premise, conclusion))
