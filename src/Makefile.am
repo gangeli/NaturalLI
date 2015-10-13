@@ -126,6 +126,14 @@ naturalli_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_search_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 naturalli_featurize_LDADD=-Lfnv -lfnv32 -lfnv64 -Lknheap -lknheap
 
+# How do we install the data as well?
+# 
+# naturallidir = $(prefix)/etc
+# naturalli_DATA = ../etc/vocab.tab.gz \
+#                   ../etc/graph.tab.gz \
+#                   ../etc/sense.tab.gz \
+#                   ../etc/privative.tab.gz
+
 if HAVE_TCMALLOC
   naturalli_LDADD += -ltcmalloc
   naturalli_search_LDADD += -ltcmalloc

@@ -64,7 +64,7 @@ AC_SUBST([GTEST_LIBS])
 AC_SUBST(CORENLP)
 CORENLP="`pwd`/stanford-corenlp-3.5.3.jar"
 AC_ARG_WITH([corenlp],
-  [AS_HELP_STRING([--with-corenlp=/path/to/jar/file],[The path to the CoreNLP jar file])],
+  [AS_HELP_STRING([--with-corenlp=/path/to/jar/file],[The path to the CoreNLP jar file. Must be absolute!])],
   [CORENLP="$with_corenlp"],
   [AC_MSG_NOTICE([a custom location for CoreNLP can be specified using --with-corenlp])]
 )
@@ -74,7 +74,7 @@ AC_DEFINE_UNQUOTED(CORENLP, "${CORENLP}", [The location of CoreNLP])
 AC_SUBST(CORENLP_MODELS)
 CORENLP_MODELS="`pwd`/stanford-corenlp-models-current.jar"
 AC_ARG_WITH([corenlp-models],
-  [AS_HELP_STRING([--with-corenlp-models=/path/to/jar/file],[The path to the CoreNLP models jar file])],
+  [AS_HELP_STRING([--with-corenlp-models=/path/to/jar/file],[The path to the CoreNLP models jar file. Must be absolute!])],
   [CORENLP_MODELS="$with_corenlp_models"],
   [AC_MSG_NOTICE([a custom location for the CoreNLP models can be specified using --with-corenlp-models])]
 )
@@ -84,7 +84,7 @@ AC_DEFINE_UNQUOTED(CORENLP_MODELS, "${CORENLP_MODELS}", [The location of CoreNLP
 AC_SUBST(CORENLP_CASELESS_MODELS)
 CORENLP_CASELESS_MODELS="`pwd`/stanford-corenlp-caseless-models-current.jar"
 AC_ARG_WITH([corenlp-caseless-models],
-  [AS_HELP_STRING([--with-corenlp-caseless-models=/path/to/jar/file],[The path to the CoreNLP caseless models jar file])],
+  [AS_HELP_STRING([--with-corenlp-caseless-models=/path/to/jar/file],[The path to the CoreNLP caseless models jar file. Must be absolute!])],
   [CORENLP_CASELESS_MODELS="$with_corenlp_caseless_models"],
   [AC_MSG_NOTICE([a custom location for the CoreNLP caseless models can be specified using --with-corenlp-caseless-models])]
 )

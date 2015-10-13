@@ -20,10 +20,13 @@ Installation
 #### Quick Start
 On Ubuntu, the program can be built (including all dependencies) with:
 
-    ./install_deps.sh
-    ./autogen.sh
-    ./configure
-    make
+```bash
+./install_deps.sh  # optional; read this before running it!
+./autogen.sh
+./configure
+make
+make install  # optional; make sure to set --prefix appropriately
+```
 
 #### Compiler Versions
 
@@ -52,12 +55,15 @@ and a description of each.
      and must include both `java` and `javac` (i.e., not just a JRE).
   
   - `--with-corenlp`: The location of CoreNLP -- generally, a Jar file.
-    This must be CoreNLP Version 3.5.3 or newer.
+                      This must be CoreNLP Version 3.5.3 or newer.
+                      *Must be an absolute path!*
 
   - `--with-corenlp-models`: The location of the CoreNLP models jar.
+                             *Must be an absolute path!*
 
   - `--with-corenlp-caseless-models`: The location of the CoreNLP caseless 
-    models jar.
+                                       models jar.
+                                       *Must be an absolute path!*
 
 
 In addition, a number of environment variables are relevant for the configure
@@ -98,3 +104,65 @@ These are listed below:
 
 
 
+Usage
+-----
+
+#### Command Line Inference
+The NaturalLI interface takes as input lines from standard in, and outputs
+JSON output to standard out (with debugging information on stderr).
+You can therefore run the program simply by running:
+
+```bash
+src/naturalli
+```
+
+You can then enter premise/hypothesis pairs as a series of sentences,
+one per line. All but the last sentence are treated as a premise; the last
+sentence is treated as the hypothesis.
+A double-newline (i.e., a blank line) marks the end of an example.
+You can also mark hypotheses as True or False; this will cause the program
+to exit with a nonzero error code if some of the hypothesis are not
+what they are annotated as.
+The error code corresponds to the number of failed examples.
+
+For example:
+
+```
+# This is a comment
+All cats have tails
+Some cats have tails
+
+# This is a new example
+# The "True: " prepended to the hypothesis denotes that we expect
+# this fact to be true given the premises
+Some cats have tails
+An irrelevant premise
+True: Some animals have tails
+
+```
+
+A useful side-effect of this framework is the ability to pipe in test files,
+and get as output annotated json.
+For example, the test cases for the program can be run with:
+
+```bash
+cat test/data/testcase_wordnet.examples | src/naturalli
+```
+
+
+#### Internet Inference
+In addition to the command line interface, you can also talk to the program
+via a websocket.
+By default, NaturalLI listens on port 1337; the communication protocol
+is exactly the same as the command line interface.
+For example:
+
+```
+$ telnet localhost 1337
+Trying 127.0.0.1...
+Connected to localhost (127.0.0.1).
+Escape character is '^]'.
+all cats have tails
+some cats have tails
+
+```
