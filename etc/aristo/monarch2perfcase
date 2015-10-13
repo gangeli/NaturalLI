@@ -19,6 +19,10 @@ import edu.stanford.nlp.simple._
 import edu.stanford.nlp.ling.IndexedWord
 import edu.stanford.nlp.semgraph.semgrex._
 
+// ----------------------------------------------------------------------------
+// STATIC PATTERNS
+// ----------------------------------------------------------------------------
+
 // Semgrex patterns
 val SEMGREX_PATTERNS_WHAT_HOW = List(
   (false, SemgrexPattern.compile("{} >/.obj/    ( {}=target ?>amod {}=adj )")),
@@ -39,6 +43,75 @@ val Q2 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*""".r
 val Q3 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*\(C\)(.*?)\.?\s*""".r
 val Q4 = """(.*)\(A\)(.*?)\.?\s*\(B\)(.*?)\.?\s*\(C\)(.*?)\.?\s*\(D\)(.*?)\.?\s*""".r
 
+
+// ----------------------------------------------------------------------------
+// UTILITY FUNCTIONS
+// ----------------------------------------------------------------------------
+
+/**
+ * Get the canonical mention in the question sentence, that is the
+ * likely target of a pronoun like 'it'.
+ */
+def getCorefTarget(question:String):String = {
+  val questionSentence = new Sentence(question)
+  val questionTree = questionSentence.dependencyGraph
+  var canonicalMention:String = null
+  val patterns = questionSentence.word(0).toLowerCase match {
+    case "what" => SEMGREX_PATTERNS_WHAT_HOW
+    case "how"  => SEMGREX_PATTERNS_WHAT_HOW
+    case _      => SEMGREX_PATTERNS_OTHER
+  }
+
+  for ((takeFirst, pattern) <- patterns) {
+    if (canonicalMention == null) {
+      val m:SemgrexMatcher = pattern.matcher(questionTree);
+      var argBest:IndexedWord = null
+      var argBestAdj:IndexedWord = null
+      var best:Int = if (takeFirst) 99999 else -1
+      while (m.find()) {
+        val target = m.getNode("target")
+        if (target.word.toLowerCase != "which") {
+          if ((takeFirst && target.index() < best) ||
+              (!takeFirst && target.index() > best)) {
+            best = target.index()
+            argBest = target
+            argBestAdj = m.getNode("adj")
+          }
+        }
+      }
+      if (argBest != null) {
+        canonicalMention = (if (argBestAdj != null) argBestAdj.word + " " else "") + argBest.word
+      }
+    }
+  }
+
+  return canonicalMention
+}
+      
+
+/**
+ * Resolve coreference, given a statement and a canonical mention
+ */
+def resolveCoref(statement:Sentence, canonicalMention:String):String = {
+  // (resolve coref)
+  val rtn:String = (if (canonicalMention != null) {
+    statement.toString.replaceAll("It ", canonicalMention + " ")
+  } else {
+    statement.toString
+  }).trim
+  // (fix punctuation)
+  if (!rtn.endsWith(".")) {
+    rtn + " ."
+  } else {
+    rtn
+  }
+}
+
+
+// ----------------------------------------------------------------------------
+// MAIN LOOP
+// ----------------------------------------------------------------------------
+
 var multiSentencePremises:Int = 0
 var allQuestions:Int = 0
 
@@ -48,9 +121,9 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
   val fields = line.split("\t");
   val id = fields(0)
   var (question, options) = fields(9) match {
-    case Q4(question, a, b, c, d) => (question.trim(), List(a.trim(),b.trim(),c.trim(),d.trim()))
-    case Q3(question, a, b, c) => (question.trim(), List(a.trim(),b.trim(),c.trim()))
-    case Q2(question, a, b) => (question.trim(), List(a.trim(),b.trim()))
+    case Q4(question, a, b, c, d) => (question.trim(), List(a.trim(),b.trim(),c.trim(),d.trim()).map(x => new Sentence(x)))
+    case Q3(question, a, b, c) => (question.trim(), List(a.trim(),b.trim(),c.trim()).map(x => new Sentence(x)))
+    case Q2(question, a, b) => (question.trim(), List(a.trim(),b.trim()).map(x => new Sentence(x)))
   }
   val answer = options(fields(3).trim() match {
     case "A" => 0
@@ -83,87 +156,80 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
   
   // Print the example
   if (doPrint) {
-    // Write the question
+
+    // 1. Write the question
     println("#Q: " + question)
     if (premises.size > 1) {
       multiSentencePremises += 1
     }
     allQuestions += 1
 
-    // Get coref target
-    val questionSentence = new Sentence(question)
-    val questionTree = questionSentence.dependencyGraph
-    var canonicalMention:String = null
-    val patterns = questionSentence.word(0).toLowerCase match {
-      case "what" => SEMGREX_PATTERNS_WHAT_HOW
-      case "how"  => SEMGREX_PATTERNS_WHAT_HOW
-      case _      => SEMGREX_PATTERNS_OTHER
+    // 2. Get the canonical mention
+    val canonicalMention:String = getCorefTarget(question);
+
+    // 3. Compute the statements
+    val statements:List[String] = options.map{ (option:Sentence) => 
+      val statement = statementTemplate.replace("BLANK_", option.toString);
+      if (statement == "FAIL" || statement.trim == "*** generation failure ***") {
+        if (option.lemma(0) == "It") {
+          resolveCoref(option, canonicalMention)
+        } else {
+          question.replace("?", "") + " " + resolveCoref(option, canonicalMention)
+        }
+      } else {
+        resolveCoref(new Sentence(statement), canonicalMention)
+      }
     }
-    for ((takeFirst, pattern) <- patterns) {
-      if (canonicalMention == null) {
-        val m:SemgrexMatcher = pattern.matcher(questionTree);
-        var argBest:IndexedWord = null
-        var argBestAdj:IndexedWord = null
-        var best:Int = if (takeFirst) 99999 else -1
-        while (m.find()) {
-          val target = m.getNode("target")
-          if (target.word.toLowerCase != "which") {
-            if ((takeFirst && target.index() < best) ||
-                (!takeFirst && target.index() > best)) {
-              best = target.index()
-              argBest = target
-              argBestAdj = m.getNode("adj")
-            }
-          }
+    
+    // 4. Compute the focus
+    val commonFocusLemmas:Set[String] = options.foldLeft(options(0).lemmas.toSet){ case (soFar:Set[String], option:Sentence) => soFar & option.lemmas.toSet }
+    val focuses:List[String] = options.map{ (option:Sentence) => 
+      // (remove uninformative words)
+      val candidate:String = (for (i <- (0 until option.length)) yield {
+        if (commonFocusLemmas(option.lemma(i)) && 
+          (option.posTag(i).startsWith("N") || option.posTag(i).startsWith("V") ||
+           option.posTag(i).startsWith("P")) 
+            ) {
+          None
+        } else if (option.lemma(i).equalsIgnoreCase("be") ||
+                   option.posTag(i).equals("DT") ) {
+          None
+        } else {
+          Some(option.word(i))
         }
-        if (argBest != null) {
-          canonicalMention = (if (argBestAdj != null) argBestAdj.word + " " else "") + argBest.word
-        }
+      }).filter(_.isDefined).map(_.get).mkString(" ")
+      // (make sure focus is nonempty)
+      if (candidate == "") {
+        option.toString
+      } else {
+        candidate
       }
     }
 
 
     // Loop over possible answers
-    for (focus <- options) {
-      val statement = statementTemplate.replace("BLANK_", focus);
-      val correct = (focus == answer)
-      // A utility to try to resolve coreference
-      def resolveCoref(statement:String):String = {
-        val rtn:String = (if (canonicalMention != null) {
-          statement.replaceAll("It ", canonicalMention + " ")
-        } else {
-          statement
-        }).trim
-        if (!rtn.endsWith(".")) {
-          rtn + " ."
-        } else {
-          rtn
-        }
-      }
-      // Write the answer
-      println("#A: " + resolveCoref(focus))
+    for (((option, statement), focus) <- options.zip(statements).zip(focuses)) {
+      // Print the lines
+      // (focus)
+      val correct = (option == answer)
+      println("#A: " + focus)
+      // (premises)
       for (premise <- premises) {
         println(premise)
       }
+      // (query)
       if (correct) {
         print("TRUE: ")
       } else {
         print("FALSE: ")
       }
-      // Write the statement
-      if (statement == "FAIL" || statement.trim == "*** generation failure ***") {
-        if (focus.startsWith("It")) {
-          println(resolveCoref(focus))
-        } else {
-          println(question.replace("?", "") + " " + resolveCoref(focus))
-        }
-      } else {
-        println(resolveCoref(statement))
-      }
-      // Newline to signify a new example
+      println(statement)
+      // (new example newline)
       println()
     }
   }
 }
 
 System.err.println("" + multiSentencePremises + "/" + allQuestions + " questions have multiple premises")
+        
+

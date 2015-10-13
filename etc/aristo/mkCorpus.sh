@@ -81,8 +81,10 @@ cat "$MYDIR/corpora/aristo.unicode.nouniq.tab" |\
   perl -pe 's/[^[:ascii:]]//g' \
     > "$MYDIR/corpora/aristo.ascii.nouniq.tab"
 
+<<<<<<< HEAD
 cat "$MYDIR/corpora/aristo.ascii.nouniq.tab" |\
-  sort -u -t'	' -k2 \
+  sort -u -t'	' -k2 | \
+  nl -s '-' \
     > "$MYDIR/corpora/aristo.tab"
 
 # Clean up the backup

@@ -87,7 +87,7 @@ class QueryResult:
     self.focus = focus
     self.numHits = numHits
     self.results = results
-    self.results = [r['body'][0] for r in results]
+    self.results = [r['text'][0] for r in results]
     self.scoresRelative = [float(r['score'] / maxScore) for r in results]
     self.scores = [float(r['score']) for r in results]
 
@@ -101,13 +101,20 @@ class QueryResult:
     return 'QueryResult(' + str(self.numHits) + ', ' + self.results[0] + ')'
 
   def topScore(self):
-    return self.scores[0]
+    if len(self.scores) > 0:
+      return self.scores[0]
+    else:
+      return 0.0
   
   def averageScore(self):
     sumV = 0.0
     for score in self.scores:
       sumV += score
-    return sumV / float(len(self.scores))
+    if len(self.scores) == 0:
+      return sumV
+    else:
+      return sumV / float(len(self.scores))
+
 
 """
   Read the data from a file, formatted like the other test files.
@@ -199,13 +206,13 @@ def readClassifierData(inStream):
 def query(url, query, focus, rows=10):
   # Run query
   f = urlopen(url + '?' + 
-      urlencode({'wt': 'json', 'fl': 'title body score', 'q': query.replace(':', '\:'), 'rows': (rows + 3)}))
+      urlencode({'wt': 'json', 'fl': 'id text score', 'q': query.replace(':', '\:'), 'rows': (rows + 3)}))
   data = json.loads(f.read().decode('utf8', 'ignore').encode('ascii', 'ignore'))
   # Check for errors
   if not 'response' in data:
     raise Exception('Bad response for query: %s' % query)
   # Filter exact match sentences
-  results = [r for r in data['response']['docs'] if r['body'][0].encode('ascii', 'ignore').replace(' ', '') != query.replace(' ', '')][0:rows]
+  results = [r for r in data['response']['docs'] if r['text'][0].encode('ascii', 'ignore').replace(' ', '') != query.replace(' ', '')][0:rows]
   # Create query result
   return QueryResult(
       query, 
