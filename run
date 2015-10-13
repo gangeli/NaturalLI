@@ -62,7 +62,8 @@ submit(classifier
 //
 parallel(3) submit(multchoice
   -("naturalli.incache", "logs/all.cache")
-  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -("naturalli.outcache", touch("out.cache"))
+  -('data, "etc/aristo/eval_monarch_train_allcorpora.tab")
   -('model, 
       (LOG_DIR + "/0/model.ser.gz") &
       (LOG_DIR + "/1/model.ser.gz") &
@@ -71,7 +72,8 @@ parallel(3) submit(multchoice
 )
 parallel(2) submit(multchoice
   -("naturalli.incache", "logs/all.cache")
-  -('data, "etc/aristo/eval_train_allcorpora.tab")
+  -("naturalli.outcache", touch("out.cache"))
+  -('data, "etc/aristo/eval_monarch_train_allcorpora.tab")
   -('model, (LOG_DIR + "/2/model.ser.gz"))
   -("naturalli.use", "true")
   -("naturalli.uselucene", "true" & "false")
@@ -158,9 +160,9 @@ def cp:String = {
     System.getenv("JAVANLP_HOME") + "/projects/research/classes",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
-    "/home/gabor/staging/stanford-corenlp-models-current.jar",
-    "/home/gabor/staging/openie_models.jar"
-//    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
+//    "/home/gabor/staging/stanford-corenlp-models-current.jar",
+//    "/home/gabor/staging/openie_models.jar"
+    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar"
   ).mkString(":")
   val CUSTOM = List(
       "lib/gson-2.3.1.jar",

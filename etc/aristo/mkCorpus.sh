@@ -1,19 +1,23 @@
 #!/bin/bash
 #
 
+set -o nounset
 set -o errexit
+set -o xtrace
 
-if [ -d corpora ]; then
-  mkdir corpora
+MYDIR=$( cd "$( dirname "$TASK_FILE" )" && pwd )
+
+if [ ! -d "$MYDIR/corpora" ]; then
+  mkdir "$MYDIR/corpora"
 fi
 
-if [ -e corpora/aristo.tab ]; then
-  mv corpora/aristo.tab corpora/aristo.tab.bak
+if [ -e "$MYDIR/corpora/aristo.tab" ]; then
+  mv "$MYDIR/corpora/aristo.tab" "$MYDIR/corpora/aristo.tab.bak"
 fi
-touch corpora/aristo.tab
+touch "$MYDIR/corpora/aristo.tab"
 
-export CLASSPATH="$CLASSPATH:/home/gabor/workspace/naturalli/src/naturalli_preprocess.jar"
-export CLASSPATH="$CLASSPATH:/home/gabor/staging/stanford-srparser-models-current.jar"
+export CLASSPATH="$CLASSPATH:$HOME/workspace/naturalli/src/naturalli_preprocess.jar"
+export CLASSPATH="$CLASSPATH:/u/nlp/data/StanfordCoreNLPModels/stanford-srparser-models-current.jar"
 
 function generalRead() {
   cat $1 |\
@@ -26,28 +30,28 @@ function generalRead() {
     sed -r -e 's/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\t/\1.00\t/g' |\
     sed -r -e 's/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\t/\1.00\t/g' |\
     sed -r -e 's/^([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)\t/\1.00\t/g' |\
-    java -mx4g edu.stanford.nlp.naturalli.ExpandCoreference
+    java -mx20g edu.stanford.nlp.naturalli.ExpandCoreference
 }
 
 # Resolve coreference + grok the files
 echo "barrons-sentences.txt"
-generalRead rawcorpora/barrons-sentences.txt |\
+generalRead "$MYDIR/rawcorpora/barrons-sentences.txt" |\
   awk -F'\t' '{ print "barrons-" $1 "\t" $2 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 
 echo "ck12-biology-sentences.txt"
-generalRead rawcorpora/ck12-biology-sentences.txt |\
+generalRead "$MYDIR/rawcorpora/ck12-biology-sentences.txt" |\
   awk -F'\t' '{ print "c12k_biology-" $1 "\t" $2 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 
 echo "CurrentWebCorpus-allSources-v1.txt"
-generalRead rawcorpora/CurrentWebCorpus-allSources-v1.txt |\
+generalRead "rawcorpora/CurrentWebCorpus-allSources-v1.txt" |\
   awk -F'\t' '{ print "currentweb-" NR "\t" $1 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 
 echo "dictionary-sentences.txt"
 TMP=`mktemp`
-cat rawcorpora/dictionary-sentences.txt |\
+cat "$MYDIR/rawcorpora/dictionary-sentences.txt" |\
   sed -r \
     -e 's/<term>([^<]+)<\/term>/\1/g' \
     -e 's/<.*:/ is/g' \
@@ -55,33 +59,35 @@ cat rawcorpora/dictionary-sentences.txt |\
 echo "Dictionary written to $TMP"
 generalRead "$TMP" |\
   awk -F'\t' '{ print "dictionary-" $1 "\t" $2 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 rm "$TMP"
 
 echo "simplewiki-science-sentences.txt"
-generalRead rawcorpora/simplewiki-science-sentences.txt |\
+generalRead "$MYDIR/rawcorpora/simplewiki-science-sentences.txt" |\
   awk -F'\t' '{ print "simplewiki_science-" $1 "\t" $2 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 
 echo "simplewiki-barrons-sentences.txt"
-generalRead rawcorpora/simplewiki-barrons-sentences.txt |\
+generalRead "$MYDIR/rawcorpora/simplewiki-barrons-sentences.txt" |\
   awk -F'\t' '{ print "simplewiki_barrons-" $1 "\t" $2 }' \
-  >> corpora/aristo.tab
+  >> "$MYDIR/corpora/aristo.tab"
 
 # Clean up the corpus
-mv corpora/aristo.tab corpora/aristo.unicode.nouniq.tab
+cat "$MYDIR/corpora/aristo.tab" |\
+  egrep -v '.{1000}.*' \
+    > "$MYDIR/corpora/aristo.unicode.nouniq.tab"
 
-cat corpora/aristo.unicode.nouniq.tab |\
+cat "$MYDIR/corpora/aristo.unicode.nouniq.tab" |\
   perl -pe 's/[^[:ascii:]]//g' \
-    > corpora/aristo.ascii.nouniq.tab
+    > "$MYDIR/corpora/aristo.ascii.nouniq.tab"
 
-cat corpora/aristo.ascii.nouniq.tab |\
+cat "$MYDIR/corpora/aristo.ascii.nouniq.tab" |\
   sort -u -t'	' -k2 \
-    > aristo.tab
+    > "$MYDIR/corpora/aristo.tab"
 
 # Clean up the backup
-if [ -e corpora/aristo.tab.bak ]; then
-  rm -f corpora/aristo.tab.bak
+if [ -e "$MYDIR/corpora/aristo.tab.bak" ]; then
+  rm -f "$MYDIR/corpora/aristo.tab.bak"
 fi
 
 

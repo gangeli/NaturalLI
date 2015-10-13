@@ -334,7 +334,7 @@ class EntailmentPair {
         }
       }
       log("read the results");
-      forceTrack("Running aligner");
+      endTrack("Running aligner");
 
       // Construct the candidate phrase table
       forceTrack("Constructing phrase table");
@@ -357,7 +357,11 @@ class EntailmentPair {
       forceTrack("Scoring phrases");
       Counter<Pair<String, String>> phraseScores = new ClassicCounter<>();
       for (Pair<String, String> candidatePhrase : jointCounts.keySet()) {
-        if (jointCounts.getCount(candidatePhrase) >= minPhraseCount) {
+        int minCount = minPhraseCount;
+        if (minCount <= 0) {
+          minCount = candidatePhrase.first.split(" ").length;
+        }
+        if (jointCounts.getCount(candidatePhrase) >= minCount) {
           double cAB = Math.log(jointCounts.getCount(candidatePhrase));
           double cA = Math.log(premiseCounts.getCount(candidatePhrase));
           double cB = Math.log(conclusionCounts.getCount(candidatePhrase));

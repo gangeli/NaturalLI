@@ -35,7 +35,7 @@ number	independence
 parataxis	independence	or, reverse?
 pcomp	independence	though, not so in collapsed dependencies
 pobj	independence	must delete whole preposition
-case	reverse_entailment
+case	independence
 nmod:poss	forward_entailment	professors are smart -> Berkeley's professors are smart
 possessive	independence	see dep_poss
 preconj	independence	forbidden to see this

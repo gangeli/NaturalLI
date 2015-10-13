@@ -27,7 +27,7 @@ This is made with the script:
 
 and will produce files -- roughly 300 MB in total:
 
-  * `corpora/aristo.tab`: The uniq'd, ascii version of the corpus.
+  * `corpora/aristo.tab`: The uniqd, ascii version of the corpus.
   * `corpora/aristo.ascii.nouniq.tab`: The ascii version of the corpus, including
     duplicates.
   * `corpora/aristo.unicode.nouniq.tab`: The original version of the corpus, including
@@ -60,7 +60,7 @@ The following was used to create the Turk CSV, and then the training data from
 that.
 All of these should be run from the project root.
 Also, note that the pre-turk pipeline is basically guaranteed to not work unless
-you're me running on one of my machines.
+you are me running on one of my machines.
 
   1. __pipeline_preturk.sh__: This runs the requisite queries from the input 
      sentences, and generates the turk CSV. The CSV is generated into
