@@ -33,7 +33,7 @@
     <orderEntry type="module-library">
       <library>
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/stanford-corenlp.jar!/" />
+          <root url="jar://$MODULE_DIR$/stanford-corenlp-3.5.3.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
