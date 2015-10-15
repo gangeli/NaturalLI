@@ -81,7 +81,6 @@ public class ProcessPremise {
       setProperty("depparse.extradependencies", "ref_only_collapsed");
       setProperty("tokenize.class", "PTBTokenizer");
       setProperty("tokenize.language", "en");
-      setProperty("natlog.doPolarity", "false");
     }};
     return new StanfordCoreNLP(props, false);
   }
