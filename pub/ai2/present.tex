@@ -1,0 +1,81 @@
+\documentclass[hyperref,xcolor=table]{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating,siunitx}
+\usepackage{multirow,hhline,arydshln,array,color,stmaryrd,pifont,transparent,centernot}
+\usepackage[absolute,overlay]{textpos}
+\usepackage{mathptmx}           % replacement for obsolete \usepackage{times}
+\usepackage[scaled=.90]{helvet} % replacement for obsolete \usepackage{times}
+\usepackage{courier}            % replacement for obsolete \usepackage{times}
+
+\usepackage{../tikz-dependency,pifont}
+\usepackage{tikz}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{patterns}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
+\definecolor{darkred}{rgb}{0.5, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.4, 0.0}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.5}
+
+% set up Beamer style with Stanford colors and logo
+% logo is available at http://nlp.stanford.edu/local/nlp-logos/nlp-logo.pdf
+\useinnertheme{rounded}
+\useoutertheme{infolines}
+\usecolortheme{beaver}
+\setbeamercolor{block title}{fg=white,bg=darkred!75!black}
+\setbeamercolor{block body}{parent=normal text,bg=black!5!bg}
+\setbeamercolor{item projected}{bg=darkred}
+\logo{\includegraphics[height=1cm]{../img/nlp-logo.pdf}}
+
+% title page information
+\title{Open Domain Inference with Natural Logic}
+\subtitle{}
+\author{\textcolor{darkblue}{Gabor Angeli}, Melvin Premkumar, Neha Nayak, Chris Manning}
+\date{October 19, 2015}
+\institute[Stanford]{Stanford University}
+
+\input macros.tex
+\input ../figures.tex
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+
+\input motivation.tex
+\input natlog.tex
+\input naturalli.tex
+\input openie.tex
+
+
+%%%%%%%%%%%%%%%%%%% 
+% CONCLUSION
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Conclusion}
+\hh{Natural logic is$\dots$}
+\begin{itemize}
+\item $\dots$ efficient for inference.
+\item $\dots$ expressive for common phenomena.
+\item $\dots$ able to operate without semantic parsing.
+\end{itemize}
+\vspace{2ex}
+
+\hh{It's useful for}
+\begin{enumerate}
+\item Common sense reasoning.
+\item Open Information Extraction.
+\item $\dots$ Your application?
+\end{enumerate}
+\vspace{2ex}
+
+\begin{center}
+\hh{Thanks!}
+\end{center}
+\end{frame}
+
+\input extras.tex
+
+\end{document}
+
+
+

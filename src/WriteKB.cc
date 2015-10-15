@@ -14,7 +14,7 @@ using namespace std;
  */
 int32_t main( int32_t argc, char *argv[] ) {
   if (argc < 2) {
-    fprintf(stderr, "usage: mk_kb filename\n");
+    fprintf(stderr, "usage: write_kb filename\n");
     exit(1);
   }
 

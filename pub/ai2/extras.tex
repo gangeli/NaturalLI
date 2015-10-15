@@ -1,0 +1,259 @@
+%%%%%%%%%%%%%%%%%%% 
+% CONTRIBUTION: COLLAPSED INFERENCE STATES
+%%%%%%%%%%%%%%%%%%%
+\def\joinTable#1{
+  \begin{tabular}{|c||c|c|c|c|c|c|c|}
+    \hline
+    $\bowtie$ & $\equivalent$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ & $\independent$ \\
+    \hline
+    $\equivalent$ & $\equivalent$ & $\forward$ & $\reverse$ & $\negate$ & $\alternate$ & $\cover$ & $\independent$ \\
+    $\forward$ & $\forward$ & $\forward$ & $\independent$ & $\alternate$ & $\alternate$ & $\independent$ & $\independent$ \\
+    $\reverse$ & $\reverse$ & $\independent$ & $\reverse$ & $\cover$ & $\independent$ & $\cover$ & $\independent$  \\
+    $\negate$ & $\negate$ & $\cover$ & $\alternate$ & $\equivalent$ & $\reverse$ & $\forward$ & $\independent$  \\
+    $\alternate$ & $\alternate$ & $\independent$ & $\alternate$ & \textcolor<#1-#1>{darkred}{$\forward$} & $\independent$ & $\forward$ & $\independent$  \\
+    $\cover$ & $\cover$ & $\cover$ & $\independent$ & $\reverse$ & $\reverse$ & $\independent$ & $\independent$  \\
+    $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ & $\independent$ \\
+    \hline
+	\end{tabular}
+}
+
+\def\title{Contribution: Simple Transitivity}
+\begin{frame}[noframenumbering]{\title}
+
+  \hh{Taken for granted:} $A \Rightarrow B$ and $B \Rightarrow C$ then $A \Rightarrow C$. \\
+  \vspace{0.5cm}
+  \pause
+  \hh{More complicated in (prior work on) Natural Logic:}
+  \begin{itemize}
+    \item 
+      \w{nocturnal} $\xrightarrow{\alternate}$ \w{diurnal}, \hspace{0.5cm}
+      \w{all} $\xrightarrow{\negate}$ \w{not all} \\
+      $\therefore$  \hspace{0.1cm}
+      \w{all bats are nocturnal} $\xrightarrow{?}$ \w{not all bats are diurnal}
+  \end{itemize}
+  \pause
+
+  \begin{center}
+    \joinTable{4}
+  \end{center}
+  \pause
+  \pause
+
+  \begin{textblock*}{2cm}(5.5cm,5.5cm)
+    \only<5>{\scalebox{10.0}{\darkred{\xmark}}}
+  \end{textblock*}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \hh{Natural Logic Analog of Transitivity:} \\
+  \begin{center}
+  \begin{tabular}{rll}
+    \textbf{State} & \textbf{Fact} & \textbf{Mutation} \\
+    $\Rightarrow$ &
+            \w{all bats are nocturnal},  \hspace{0.5cm} \pause &
+            (\w{nocturnal} $\xrightarrow{\alternate}$ \w{diurnal})
+            \pause \\
+    $\Rightarrow \lnot$ &
+      \w{all bats are diurnal},  \hspace{0.5cm} \pause &
+            (\w{all} $\xrightarrow{\negate}$ \w{not all})
+            \pause \\
+    $\Rightarrow$ &
+            \w{not all bats are diurnal} &
+  \end{tabular}
+  \end{center}
+  \pause
+
+  \begin{itemize}
+    \item Complex \textit{join table} can be reduced to tracking a simple
+          binary distinction.
+  \end{itemize}
+\end{frame}
+
+
+
+
+%%%%%%%%%%%%%%%%%%%
+% CLAUSE SEARCHING
+%%%%%%%%%%%%%%%%%%%
+\def\treeOne{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex, edge style={darkred!60!black,thick,densely dotted}]{1}{5}{\darkred{nmod:in}}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeTwo{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex, edge style={darkred!60!black,thick,densely dotted}]{8}{7}{\darkred{nsubj}}
+    \depedge[edge unit distance=2.25ex]{8}{11}{dobj}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+\def\treeThree{
+  \begin{dependency}[text only label, label style={above}]
+    \begin{deptext}[column sep=-0.00cm]
+      Born \& in \& a \& small \& town \&[-1ex] , \& she \& took \& the \&
+        midnight \& train \& going \& anywhere \&[-1ex] . \\
+    \end{deptext}
+    \depedge[edge unit distance=1.75ex]{1}{5}{nmod:in}
+    \depedge[edge unit distance=1.5ex]{5}{4}{amod}
+    \depedge[edge unit distance=2.25ex]{5}{3}{det}
+    \depedge[edge unit distance=1.4ex]{8}{1}{vmod}
+    \depedge[edge unit distance=2.25ex]{8}{7}{nsubj}
+    \depedge[edge unit distance=2.25ex, edge style={darkred!60!black,thick,densely dotted}]{8}{11}{\darkred{dobj}}
+    \depedge[edge unit distance=1.5ex]{11}{10}{nn}
+    \depedge[edge unit distance=1.9ex]{11}{9}{det}
+    \depedge[edge unit distance=1.5ex]{11}{12}{vmod}
+    \depedge[edge unit distance=1.5ex]{12}{13}{dobj}
+  \end{dependency}
+}
+
+
+
+\def\title{A Search Problem}
+\begin{frame}[noframenumbering]{\title}
+\hh{Breadth First Search:}
+\begin{center}
+  \only<1>{\treeBlank}
+  \only<2>{\hspace{-1.0ex}\treeEdge}
+  \only<3>{\hspace{-1.5ex}\treeEdge}
+  \only<4>{\hspace{-2.0ex}\treeTwo}
+  \only<5>{\hspace{-2.5ex}\treeThree}
+  \only<6>{\hspace{-3.0ex}\treeOne}
+\end{center}
+
+\hh{Decision:}
+\only<2>{\textbf{Edge}: vmod     \hspace{1em} \textbf{Action}: Yield (subject controller)}
+\only<3>{\hspace{-0.7ex}\textbf{Edge}: vmod     \hspace{1em} \textbf{Action}: Yield (subject controller)}
+\only<4>{\hspace{-1.35ex}\textbf{Edge}: nsubj    \hspace{1em} \textbf{Action}: Stop}
+\only<5>{\hspace{-2.0ex}\textbf{Edge}: dobj     \hspace{1em} \textbf{Action}: Stop}
+\only<6>{\hspace{-2.75ex}\textbf{Edge}: nmod:in  \hspace{1em} \textbf{Action}: Stop}
+\\
+\vspace{1em}
+
+\hh{Yielded Clauses:}
+\begin{itemize}
+  \item[] \w{Born in a small town, she took the midnight train going anywhere}
+  \item[] \onslide<3->{\w{she Born in a small town}}
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% FraCaS INTRO
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}[noframenumbering]{Experiments}
+\hh{FraCaS Textual Entailment Suite:}
+\begin{itemize}
+  \item Used in MacCartney and Manning (2007; 2008).
+  \item RTE-style problems: is the hypothesis entailed from the premise? \\
+    \vspace{0.1cm}
+    P: At least three commissioners spend a lot of time at home. \\
+    H: \true{At least three commissioners spend time at home.} \\
+    \vspace{0.1cm}
+    P: At most ten commissioners spend a lot of time at home. \\
+    H: \false{At most ten commissioners spend time at home.}
+    \vspace{0.1cm}
+  \item 9 focused sections; 3 in scope for this work.
+\end{itemize}
+\vspace{0.5cm}
+\pause
+
+\hh{\textbf{Not} a blind test set!}
+\begin{itemize}
+  \item ``Can we make deep inferences without knowing the premise \textit{a priori}?''
+\end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%% 
+% FraCaS RESULTS
+%%%%%%%%%%%%%%%%%%%
+\def\a#1{#1}
+\def\b#1{\textbf{#1}}
+\begin{frame}[noframenumbering]{FraCaS Results}
+
+\hh{Systems}
+\begin{itemize}
+\item[] \textbf{M07}: MacCartney and Manning (2007)
+\item[] \textbf{M08}: MacCartney and Manning (2008)
+  \begin{itemize}
+    \item \textit{Classify} entailment after aligning premise and hypothesis.
+  \end{itemize}
+\item[] \darkblue{\textbf{N}: NaturalLI (this work)}
+  \begin{itemize}
+    \item \textit{Search} blindly from hypothesis for the premise.
+  \end{itemize}
+\end{itemize}
+\pause
+
+\begin{center}
+  \begin{tabular}{llccc}
+    \hline
+    $\mathsection$ & Category & \multicolumn{3}{c}{Accuracy} \\
+                   &          & M07 & M08 & \darkblue{N}  \\
+    \hline
+                          % Pme           P07   Rme          R08   Ame         A07  A08
+    \a{1} & \a{Quantifiers}  & \a{84} & \a{97} & \a{\darkblue{95}}  \\
+    \a{5} & \a{Adjectives}   & \a{60} & \a{80} & \a{\darkblue{73}}  \\
+    \a{6} & \a{Comparatives} & \a{69} & \a{81} & \a{\darkblue{87}}  \pause \\
+    \hline
+    \multicolumn{2}{l}{\b{Applicable (1,5,6)}}
+                         & \b{76} & \b{90} & \b{\darkblue{89}} \\
+    \hline
+  \end{tabular}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% TRAINING DATA
+%%%%%%%%%%%%%%%%%%%
+\def\title{Classifier Training}
+\begin{frame}[noframenumbering]{\title}
+\hh{Training data generation (ACL 2015)}
+\begin{enumerate}
+  \item Take \num{66880} sentences (newswire, newsgroups, Wikipedia).
+  \item Run exhaustive search.
+  \item \darkgreen{Positive Labels}: A sequence of actions which yields a known relation. \\
+        \darkred{Negative Labels}: All other sequences of actions.
+\end{enumerate}
+\hspace{0.5em}
+\pause
+
+\hh{Training data generation (covertly updated)}
+\begin{enumerate}
+  \item Use traces from Penn Treebank.
+\end{enumerate}
+\hspace{0.5em}
+\pause
+
+\hh{Features:}
+\begin{itemize}
+  \item Edge label; incoming edge label.
+  \item Neighbors of governor; neighbors of dependent; number of neighbors.
+  \item Existence of subject/object edges at governor; dependent.
+  \item POS tag of governor; dependent.
+\end{itemize}
+\end{frame}

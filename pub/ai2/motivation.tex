@@ -1,0 +1,110 @@
+%%%%%%%%%%%%%%%%%%%
+% MACHINE READING REQUIRES LOGIC
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{Machine reading requires logic}
+
+\hh{Textual entailment}
+\begin{itemize}
+\item \w{All cats have tails} $\implies$ \w{Some cats have tails}.
+\item \w{A soccer game with multiple males playing} $\implies$ \w{Some men are playing a sport}.
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{Sentiment analysis}
+\begin{itemize}
+\item \w{That movie was \textbf{not} the best.}
+\item \w{Some parts were slow} / \w{The whole movie was slow.}
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{Relation extraction}
+\begin{itemize}
+\item \w{Some people think that Obama was born in Kenya.}
+\item \w{Barack Obama was \textbf{not} born in Kenya.}
+\end{itemize}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%
+% INTRACTABLE
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{First order logic is \textbf{intractable}}
+\begin{center}
+  \includegraphics[height=2cm]{../img/overheating.jpg}
+\end{center}
+
+\hh{Theorem Provers}
+\begin{itemize}
+  \item Propositional logic is already NP-complete!
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{Markov Logic Networks}
+\begin{itemize}
+  \item Grounding 3,800 rules takes 7 hours (Alchemy).
+  \pause
+  \item Add Chris R\'{e} $+$ decades of DB research: 106 seconds.
+  \item $\dots$ but relation extraction over 1M sentences needs 500GB memory.
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{We want to run inference over 300M premises}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%
+% UNEXPRESSIVE
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{First order logic is \textbf{unexpressive}}
+\begin{center}
+  \includegraphics[height=2cm]{../img/pokerface.png}
+\end{center}
+
+\hh{\textit{Some people think that Obama was born in Kenya.}}
+\begin{itemize}
+\item Second order logic: 
+      $\exists x \exists P \left[ P = \textrm{born} \land \textbf{\textrm{think}(x, P)} \land P(\textrm{Obama}, \textrm{Kenya}) \right]$
+\pause
+\item But, can still infer: \w{Some people think that Obama is from Kenya.}
+\end{itemize}
+\vspace{1ex}
+\pause
+
+
+\hh{\textit{Most students who learned a foreign language learned it at a university}}
+\begin{itemize}
+\item \w{Most} is not a first-order quantifier.
+\item Scoping ambiguities everywhere!
+\pause
+\item But, can still infer: \w{Most students learned it at a school.}
+\end{itemize}
+
+\end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%
+% HARD TO PARSE
+%%%%%%%%%%%%%%%%%%%
+\begin{frame}{First order logic is \textbf{an unnatural language}}
+
+\hh{Top professors hired for semantic parsing:}
+\begin{itemize}
+\item[\checkmark] Luke Zettlemoyer
+\item[\checkmark] Percy Liang
+\item[\checkmark] Yoav Artzi
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\begin{center}
+  \includegraphics[height=4cm]{../img/math.jpg}
+\end{center}
+\end{frame}
+
+
