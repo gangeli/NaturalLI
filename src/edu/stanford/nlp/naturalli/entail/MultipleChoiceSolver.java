@@ -188,36 +188,38 @@ public class MultipleChoiceSolver {
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);
 
 
+    boolean TUNE_LUCENE_SCORE = false;
 
-    double accuracy = accuracy(classifier, dataset);
-    log("Accuracy: " + percent.format(accuracy));
-
-    /*
-    forceTrack("Running evaluation");
-    List<Double> weights = new ArrayList<>();
-    List<Double> accuracies = new ArrayList<>();
-    for (double i = 0.00; i < 1.0; i += 0.05) {
-      NaturalLIClassifier.CLASSIFIER_WEIGHT = i;
+    if (!TUNE_LUCENE_SCORE) {
+      // This is the regular main() method.
       double accuracy = accuracy(classifier, dataset);
       log("Accuracy: " + percent.format(accuracy));
-      weights.add(i);
-      accuracies.add(accuracy);
-    }
-    endTrack("Running evaluation");
-
-    DecimalFormat df = new DecimalFormat("0.0000");
-    double max = Double.NEGATIVE_INFINITY;
-    double argmax = Double.NaN;
-    for (int i = 0; i < weights.size(); ++i) {
-      log(df.format(weights.get(i)) + "\t" + percent.format(accuracies.get(i)));
-      if (accuracies.get(i) > max) {
-        max = accuracies.get(i);
-        argmax = weights.get(i);
+    } else {
+      // This is a hacky bit of code to tune the best mixing ratio for Lucene to NaturalLI
+      forceTrack("Running evaluation");
+      List<Double> weights = new ArrayList<>();
+      List<Double> accuracies = new ArrayList<>();
+      for (double i = 0.00; i < 1.0; i += 0.05) {
+        NaturalLIClassifier.CLASSIFIER_WEIGHT = i;
+        double accuracy = accuracy(classifier, dataset);
+        log("Accuracy: " + percent.format(accuracy));
+        weights.add(i);
+        accuracies.add(accuracy);
       }
-    }
-    log("Best alignment @ " + argmax + " with score " + max);
-    */
+      endTrack("Running evaluation");
 
+      DecimalFormat df = new DecimalFormat("0.0000");
+      double max = Double.NEGATIVE_INFINITY;
+      double argmax = Double.NaN;
+      for (int i = 0; i < weights.size(); ++i) {
+        log(df.format(weights.get(i)) + "\t" + percent.format(accuracies.get(i)));
+        if (accuracies.get(i) > max) {
+          max = accuracies.get(i);
+          argmax = weights.get(i);
+        }
+      }
+      log("Best alignment @ " + argmax + " with score " + max);
+    }
 
     endTrack("main");
   }

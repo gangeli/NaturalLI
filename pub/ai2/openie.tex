@@ -1,4 +1,35 @@
 %%%%%%%%%%%%%%%%%%%
+% MOTIVATION
+%%%%%%%%%%%%%%%%%%%
+\def\title{A Different Sort of Question Answering}
+\begin{frame}{\title}
+\begin{center}
+  \includegraphics[width=7cm]{../img/google-chris-manning-origin.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+\vspace{-1cm}
+\begin{center}
+  \includegraphics[width=10.5cm]{../img/chris-freebase.png}
+\end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+\begin{center}
+  \begin{tabular}{l}
+  \includegraphics[width=12cm]{../img/chris-website-header.png} \\
+  \includegraphics[width=9cm]{../img/chris-bio.png}
+  \end{tabular}
+\end{center}
+\end{frame}
+\begin{frame}[noframenumbering]{\title}
+\begin{center}
+  \fbox{\includegraphics[width=7cm]{../img/google-chris-manning-origin-answer.png}}
+\end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
 % K-WAY CLASSIFICATION
 %%%%%%%%%%%%%%%%%%%
 \def\title{Information [Relation] Extraction}
@@ -20,40 +51,10 @@
 \end{center}
 \end{frame}
 
-
-%%%%%%%%%%%%%%%%%%%
-% OPEN IE
-%%%%%%%%%%%%%%%%%%%
-\def\title{Open Information Extraction}
-\begin{frame}{\title}
-\begin{center}
-  \hh{More to life than a fixed relation schema} \\
-  \vspace{0.5em}
-  \includegraphics[height=3cm]{../img/bartwindow.png} \\
-\end{center}
-\vspace{0.5em}
-\pause
-
-(\subj{Chris}, \rel{taught at}, \obj{Carnegie Mellon}) \\
-(\subj{Chris}, \rel{taught at}, \obj{University of Sydney}) \\
-(\subj{his research}, \rel{is on}, \obj{A broad range of statistical natural language topics})
-\pause
-
-(\subj{Obama}, \rel{was born in}, \obj{Hawaii}) \\
-(\subj{young rabbits}, \rel{drink}, \obj{milk}) \\
-(\subj{Heinz Fischer}, \rel{visits}, \obj{United States}) \\
-\vspace{1em}
-\end{frame}
-
 %%%%%%%%%%%%%%%%%%%
 % OPEN DOMAIN REL MOTIVATION
 %%%%%%%%%%%%%%%%%%%
-\def\title{What is OpenIE good for?}
-\begin{frame}{\title}
-\begin{center}
-  \includegraphics[width=7cm]{../img/google-chris-manning-origin.png}
-\end{center}
-\end{frame}
+\def\title{What about...}
 \begin{frame}{\title}
 \begin{center}
   \includegraphics[width=7cm]{../img/google-chris-manning-taught.png}
@@ -73,6 +74,37 @@
 \begin{center}
   \includegraphics[height=7cm]{../img/chris-coursera-research.png} \\
 \end{center}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%
+% OPEN IE
+%%%%%%%%%%%%%%%%%%%
+\def\title{\textbf{Open} Information Extraction}
+\begin{frame}{\title}
+\begin{center}
+  \hh{More to life than a fixed relation schema} \\
+  \vspace{0.5em}
+  \includegraphics[height=3cm]{../img/bartwindow.png} \\
+\end{center}
+\vspace{0.5em}
+\pause
+
+(\subj{Chris}, \rel{taught at}, \obj{Carnegie Mellon}) \\
+(\subj{Chris}, \rel{taught at}, \obj{University of Sydney}) \\
+(\subj{his research}, \rel{is on}, \obj{A broad range of statistical natural language topics})
+\pause
+
+(\subj{Obama}, \rel{was born in}, \obj{Hawaii}) \\
+(\subj{young rabbits}, \rel{drink}, \obj{milk}) \\
+(\subj{Heinz Fischer}, \rel{visits}, \obj{United States}) \\
+\vspace{1em}
+%\pause
+%
+%\hh{Open IE is not new}
+%\begin{itemize}
+%  \item UW: TextRunner, ReVerb, Ollie, OpenIE 4, ImplIE
+%  \item CMU: NELL
+%\end{itemize}
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%
@@ -98,9 +130,10 @@
 \begin{center}
   \includegraphics[width=8cm]{../img/nell-facts.png} \\
 \end{center}
+\pause
 
+\hh{Useful for matrix factorization, MLNs, QA, etc.}
 \end{frame}
-
 
 %%%%%%%%%%%%%%%%%%%
 % CHALLENGE: LONG SENTENCES
@@ -499,8 +532,8 @@ How do you evaluate open domain triples?
 \pause
 \vspace{1em}
 
-\hh{Comparison:} \textit{Open Information Extraction to KBP Relations in 3 Hours}.
-  (Soderland et. al)
+\hh{Comparison:} \textit{Open Information Extraction to KBP Relations in 3 Hours}
+  (Soderland et. al 2013).
 
 \begin{center}
 \includegraphics[scale=0.20]{../img/uw-openie.png} \\
