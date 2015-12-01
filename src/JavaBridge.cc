@@ -51,6 +51,7 @@ JavaBridge::JavaBridge() {
     snprintf(classpath, 1024, "%s/naturalli_preprocess.jar:%s/jaws.jar:%s/../lib/jaws.jar:%s:%s", 
         thisDir.c_str(), thisDir.c_str(), thisDir.c_str(),
         CORENLP, CORENLP_MODELS);
+    printf("%s\n", classpath);
 
     // Start program
     dup2(pipeIn[0], STDIN_FILENO);

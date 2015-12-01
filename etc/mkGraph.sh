@@ -128,7 +128,7 @@ PRIVATIVE_WORDS=`echo "^(" \
      "proposed" \
      ")	[0-9]+" | sed -e 's/| /|/g'`
 
-cat "$DIR/$GRAPH_DATA/edge_*.txt" |\
+cat "$DIR/$GRAPH_DATA/"edge_*.txt |\
   sed -e 's/_/ /g' |\
   awk -F'	' '{ print $1 "\t" $2 }' |\
   egrep "$PRIVATIVE_WORDS" |\

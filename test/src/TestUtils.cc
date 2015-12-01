@@ -1,7 +1,7 @@
 #include <limits.h>
 #include <bitset>
 #include <ctime>
-#include <regex>
+#include <regex.h>
 
 #include "gtest/gtest.h"
 
@@ -138,36 +138,75 @@ TEST_F(UtilsTest, FastATOIPeculiarities) {
 // Apparently the Regex library isn't so mature yet.
 //
 TEST(RegexTest, RelevantRegexesCompile) {
-  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::egrep);
-  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
+  regex_t r;
+  EXPECT_EQ(0, regcomp(&r, "([^ ]+) *@ *([^ ]+) *= *([^ ]+)", REG_EXTENDED));
+  EXPECT_EQ(0, regcomp(&r, "([^ ]+) *= *([^ ]+) *", REG_EXTENDED));
+}
+
+
+
+string regexGroup(const regmatch_t& pmatch, const string& source) {
+  uint32_t start = pmatch.rm_so;
+  uint32_t end   = pmatch.rm_eo;
+  char group[end - start + 1];
+  memcpy(group, source.c_str() + start, end - start);
+  group[end - start] = 0;
+  return string(group);
 }
 
 //
-// Regex for Set Value
+// Regex Set Value
 //
-TEST(RegexTest, SetValueMatches) {
-  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::egrep);
-  smatch result;
-  ASSERT_TRUE(regex_search(string("toSet @ key = 1.0"), result, regexSetValue));
-  ASSERT_EQ(4, result.size());
-  string toSet = result[1].str();
-  EXPECT_EQ("toSet", toSet);
-  string key = result[2].str();
-  EXPECT_EQ("key", key);
-  float value = atof(result[3].str().c_str());
-  EXPECT_EQ(1.0, value);
+TEST(RegexTest, RelevantRegexesSetValue) {
+  regex_t r;
+  string source = string("toSet @ key = 1.0");
+  regmatch_t pmatch[4];
+  EXPECT_EQ(0, regcomp(&r, "([^ ]+) *@ *([^ ]+) *= *([^ ]+)", REG_EXTENDED));
+  ASSERT_EQ(0, regexec(&r, source.c_str(), 4, pmatch, 0));
+  ASSERT_EQ("toSet", regexGroup(pmatch[1], source));
+  ASSERT_EQ("key", regexGroup(pmatch[2], source));
+  ASSERT_EQ("1.0", regexGroup(pmatch[3], source));
 }
 
 //
-// Regex for Set Flag
+// Regex Set Flag
 //
-TEST(RegexTest, SetFlagMatches) {
-  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
-  smatch result;
-  ASSERT_TRUE(regex_search(string("key = 1.0"), result, regexSetFlag));
-  ASSERT_EQ(3, result.size());
-  string key = result[1].str();
-  EXPECT_EQ("key", key);
-  float value = atof(result[2].str().c_str());
-  EXPECT_EQ(1.0, value);
+TEST(RegexTest, RelevantRegexesSetFlag) {
+  regex_t r;
+  string source = string("key = 1.0");
+  regmatch_t pmatch[4];
+  EXPECT_EQ(0, regcomp(&r, "([^ ]+) *= *([^ ]+) *", REG_EXTENDED));
+  ASSERT_EQ(0, regexec(&r, source.c_str(), 4, pmatch, 0));
+  ASSERT_EQ("key", regexGroup(pmatch[1], source));
+  ASSERT_EQ("1.0", regexGroup(pmatch[2], source));
 }
+
+////
+//// Regex for Set Value
+////
+//TEST(RegexTest, SetValueMatches) {
+//  regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)", std::regex_constants::egrep);
+//  smatch result;
+//  ASSERT_TRUE(regex_search(string("toSet @ key = 1.0"), result, regexSetValue));
+//  ASSERT_EQ(4, result.size());
+//  string toSet = result[1].str();
+//  EXPECT_EQ("toSet", toSet);
+//  string key = result[2].str();
+//  EXPECT_EQ("key", key);
+//  float value = atof(result[3].str().c_str());
+//  EXPECT_EQ(1.0, value);
+//}
+//
+////
+//// Regex for Set Flag
+////
+//TEST(RegexTest, SetFlagMatches) {
+//  regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
+//  smatch result;
+//  ASSERT_TRUE(regex_search(string("key = 1.0"), result, regexSetFlag));
+//  ASSERT_EQ(3, result.size());
+//  string key = result[1].str();
+//  EXPECT_EQ("key", key);
+//  float value = atof(result[2].str().c_str());
+//  EXPECT_EQ(1.0, value);
+//}

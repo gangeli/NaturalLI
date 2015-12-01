@@ -37,8 +37,8 @@ public class NaturalLIClassifier implements EntailmentClassifier {
   public static boolean USE_LUCENE = true;
 
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  public static double ALIGNMENT_WEIGHT = 6.0;
-  public static double CLASSIFIER_WEIGHT = 1.0 / 4.0;
+  public static double ALIGNMENT_WEIGHT = 0.5;
+  public static double CLASSIFIER_WEIGHT = 0.5;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
   private static String NATURALLI_INCACHE = "logs/train_all.cache";

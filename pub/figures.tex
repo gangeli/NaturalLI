@@ -1,4 +1,5 @@
 
+
 %
 % -----
 % The full Finite State Automata over inference states
@@ -710,28 +711,28 @@
 
 \def\exampleStepOne{\exampleTree{ROOT \\ $~$}
                                 {No carnivores eat animals}
-                                {\textbf{The} carnivores eat animals}
-                                {No \textbf{cats} eat animals}}
+                                {\darkblue{The} carnivores eat animals}
+                                {No \darkblue{animals} eat animals}}
 \def\exampleStepTwo{\exampleTree{No carnivores eat animals}
                                 {The carnivores eat animals}
-                                {The \textbf{feline} eats animals}
-                                {\textbf{All} carnivores eat animals}}
+                                {The \darkblue{feline} eats animals}
+                                {\darkblue{All} carnivores eat animals}}
 \def\exampleStepThree{\exampleTree{The carnivores eat animals}
                                   {The feline eats animals}
-                                  {The \textbf{cat} eats animals}
-                                  {The cat eats \textbf{chordate}}}
+                                  {The \darkblue{cat} eats animals}
+                                  {The cat eats \darkblue{chordate}}}
 \def\exampleStepFour{\exampleTree{The feline eats animals}
                                  {The cat eats animals}
-                                 {The cat eats \textbf{chordates}}
-                                 {The \textbf{kitty} eats animals}}
+                                 {The cat eats \darkblue{chordates}}
+                                 {The \darkblue{kitty} eats animals}}
 \def\exampleStepFive{\exampleTree{The cat eats animals}
                                  {The cat eats chordates}
-                                 {The cat eats \textbf{mice}}
-                                 {The cat eats \textbf{dogs}}}
+                                 {The cat eats \darkblue{mice}}
+                                 {The cat eats \darkblue{dogs}}}
 \def\exampleStepSix{\exampleTreeEnd{The cat eats chordates}
                                    {The cat eats mice}
-                                   {The cat ate \textbf{a} mouse}
-                                   {The \textbf{kitty} eats mice}}
+                                   {The cat ate \darkblue{a} mouse}
+                                   {The \darkblue{kitty} eats mice}}
 \def\exampleStepEnd{
   \setstyles
   \begin{tikzpicture}[grow=down, sloped]
@@ -857,90 +858,6 @@
 \end{tikzpicture}
 }
 
-
-
-%
-% -----
-% MIML-RE Figures
-% -----
-%
-
-\def\mimlStyles{
-  \tikzstyle{var}=[circle,thick,draw=black!75,fill=black!0,minimum size=10mm]
-  \tikzstyle{ovar}=[circle,thick,draw=black!75,fill=gray!20,minimum size=10mm]
-}
-
-\newcommand\dsPlate{
-\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
-                    semithick]
-  \mimlStyles
-  \node[ovar]  (y)      []                     {$y$};
-  \node[ovar] (x)      [below =of y]          {$x$};
-  
-  \path (x) edge (y);
-\end{tikzpicture}
-}
-
-\newcommand\miPlate{
-\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
-                    semithick]
-  \mimlStyles
-  \node[ovar] (y)      []                        {$y$};
-  
-  \node[var]  (zTwo)      [below =of y]          {$z_2$};
-  \node[ovar] (xTwo)      [below =of zTwo]       {$x_2$};
-
-  \node[var]  (zOne)      [left =of zTwo]        {$z_1$};
-  \node[ovar] (xOne)      [left =of xTwo]        {$x_1$};
-  
-  \node[var]  (zThree)    [right =of zTwo]       {$z_3$};
-  \node[ovar] (xThree)    [right =of xTwo]       {$x_3$};
-  
-  \path (xOne) edge (zOne)
-        (xTwo) edge (zTwo)
-        (xThree) edge (zThree)
-        (zOne) edge (y)
-        (zTwo) edge (y)
-        (zThree) edge (y);
-\end{tikzpicture}
-}
-
-\newcommand\mimlPlate{
-\begin{tikzpicture}[->,>=stealth,shorten >=1pt,auto,node distance=1.5cm and 0.75cm,
-                    semithick]
-  \mimlStyles
-  \node[ovar] (yOne)                          {$y_1$};
-  \node[ovar] (yTwo)   [right =of yOne]       {$y_2$};
-  \node[]     (yDots)  [right =of yTwo]       {$\dots$};
-  \node[ovar] (yNMin)  [right =of yDots]      {$y_{n-1}$};
-  \node[ovar] (yN)     [right =of yNMin]      {$y_n$};
-  
-  \node[var]  (zTwo)      [below =of yDots]   {$z_2$};
-  \node[ovar] (xTwo)      [below =of zTwo]    {$x_2$};
-
-  \node[var]  (zOne)      [left =of zTwo]     {$z_1$};
-  \node[ovar] (xOne)      [left =of xTwo]     {$x_1$};
-  
-  \node[var]  (zThree)    [right =of zTwo]    {$z_3$};
-  \node[ovar] (xThree)    [right =of xTwo]    {$x_3$};
-  
-  \path (xOne) edge (zOne)
-        (xTwo) edge (zTwo)
-        (xThree) edge (zThree)
-        (zOne) edge (yOne)
-               edge (yTwo)
-               edge (yNMin)
-               edge (yN)
-        (zTwo) edge (yOne)
-               edge (yTwo)
-               edge (yNMin)
-               edge (yN)
-        (zThree) edge (yOne)
-                 edge (yTwo)
-                 edge (yNMin)
-                 edge (yN);
-\end{tikzpicture}
-}
 
 
 %

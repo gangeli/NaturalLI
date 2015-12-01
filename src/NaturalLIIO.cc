@@ -16,7 +16,7 @@
 #include <sys/types.h>
 #include <sys/resource.h>
 #include <signal.h>
-#include <regex>
+#include <regex.h>
 #include <thread>
 #include <unistd.h>
 
@@ -208,12 +208,18 @@ bool to_bool(std::string str) {
   return b;
 }
 
-/** The regex for a key@specifier=value triple */
-regex regexSetValue("([^ ]+) *@ *([^ ]+) *= *([^ ]+)",
-                    std::regex_constants::egrep);
-/** The regex for a key=value pair */
-regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
 
+//
+// Get the gloss of a regex group matched against a string.
+//
+string regexGroup(const regmatch_t& pmatch, const string& source) {
+  uint32_t start = pmatch.rm_so;
+  uint32_t end   = pmatch.rm_eo;
+  char group[end - start + 1];
+  memcpy(group, source.c_str() + start, end - start);
+  group[end - start] = 0;
+  return string(group);
+}
 
 //
 // parseMetadata()
@@ -221,18 +227,32 @@ regex regexSetFlag("([^ ]+) *= *([^ ]+) *", std::regex_constants::egrep);
 bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
                    vector<AlignmentSimilarity>* alignments,
                    syn_search_options *opts) {
+  // Compile the regexes
+  regex_t regexSetValue;
+  if (regcomp(&regexSetValue, "([^ ]+) *@ *([^ ]+) *= *([^ ]+)", REG_EXTENDED)) {
+    fprintf(stderr, "Could not compile regex set_value");
+    exit(1);
+  }
+  regex_t regexSetFlag;
+  if (regcomp(&regexSetFlag, "([^ ]+) *= *([^ ]+) *", REG_EXTENDED)) {
+    fprintf(stderr, "Could not compile regex set_flag");
+    exit(1);
+  }
+  regmatch_t pmatch[4];
+
+  // Error checks
   assert(rawLine[0] != '\0');
   assert(rawLine[0] == '%');
+
+  // Run regex
   string line(&(rawLine[1]));
-  smatch result;
-  if (regex_search(line, result, regexSetValue)) {
-    if (result.size() != 4) {
-      return false;
-    }
-    string toSet = result[1].str();
-    string key = result[2].str();
-    string value = result[3].str();
-    uint32_t ivalue = atoi(result[3].str().c_str());
+  if (!regexec(&regexSetValue, line.c_str(), 4, pmatch, 0)) {
+    string toSet = regexGroup(pmatch[1], line);
+    string key = regexGroup(pmatch[2], line);
+    string value = regexGroup(pmatch[3], line);
+
+
+    uint32_t ivalue = atoi(value.c_str());
     if (toSet == "mutationLexicalCost") {
       (*costs)->mutationLexicalCost[indexEdgeType(key)] = atof(value.c_str());
     } else if (toSet == "insertionLexicalCost") {
@@ -243,12 +263,16 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
       (*costs)->transitionCostFromFalse[indexNatlogRelation(key)] = atof(value.c_str());
     } else {
       fprintf(stderr, "Unknown key: '%s'\n", toSet.c_str());
+      regfree(&regexSetValue);
+      regfree(&regexSetFlag);
       return false;
     }
+    regfree(&regexSetValue);
+    regfree(&regexSetFlag);
     return true;
-  } else if (regex_search(line, result, regexSetFlag)) {
-    string toSet = result[1].str();
-    string value = result[2].str();
+  } else if (!regexec(&regexSetFlag, line.c_str(), 3, pmatch, 0)) {
+    string toSet = regexGroup(pmatch[1], line);
+    string value = regexGroup(pmatch[2], line);
     if (toSet == "maxTicks") {
       opts->maxTicks = atof(value.c_str());
       fprintf(stderr, "set maxTicks to %u\n", opts->maxTicks);
@@ -284,12 +308,18 @@ bool parseMetadata(const char *rawLine, SynSearchCosts **costs,
       }
     } else {
       fprintf(stderr, "Unknown flag: '%s'\n", toSet.c_str());
+      regfree(&regexSetValue);
+      regfree(&regexSetFlag);
       return false;
     }
+    regfree(&regexSetValue);
+    regfree(&regexSetFlag);
     return true;
   }
   fprintf(stderr, "WARNING line NOT parsed as a directive: '%s'\n",
           line.c_str());
+  regfree(&regexSetValue);
+  regfree(&regexSetFlag);
   return false; // By default, no metadata
 }
 

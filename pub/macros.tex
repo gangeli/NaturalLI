@@ -17,9 +17,6 @@
 \newcommand\sys[1]{\textsc{#1}}
 \newcommand\w[1]{\textit{\darkgreen{#1}}}
 \newcommand\ww[1]{\textit{#1}}
-\newcommand\true[1]{\darkgreen{\textit{#1}}}
-\newcommand\false[1]{\darkred{\textit{#1}}}
-\newcommand\unknown[1]{\orange{\textit{#1}}}
 \newcommand{\indentitem}{\setlength\itemindent{25pt}}
 
 \newcommand\denote[1]{\ensuremath{\llbracket#1\rrbracket}}
@@ -54,6 +51,10 @@
 \newcommand{\noop}{\textcolor{white}{NOOP}}
 \newcommand{\noopTab}{\begin{tabular}{c} \textcolor{white}{NOOP} \\ \textcolor{white}{NOOP} \end{tabular}}
 
+\newcommand\true[1]{\darkgreen{\checkmark\textit{#1}}}
+\newcommand\false[1]{\darkred{\xmark$~\,$\textit{#1}}}
+\newcommand\unknown[1]{?\orange{\textit{#1}}}
+
 \newcommand{\verticalcenter}[1]{\begingroup
 \setbox0=\hbox{#1}%
 \parbox{\wd0}{\box0}\endgroup}
@@ -78,11 +79,10 @@
 % KBP Specific
 % An entity
 \def\ent#1{\text{\small{\textsc{#1}}}}
-% A phrase
-\def\w#1{\textit{#1}}
 
 % An extraction, e.g., "Obama born_in Hawaii"
 \newcommand\extr[3]{\mbox{\ent{#1}\ $~$\rel{#2}\ $~$\ent{#3}}}
+\newcommand\triple[3]{(\mbox{\ent{#1}; $~$\rel{#2}; $~$\ent{#3}})}
 % A clause in a logical form, e.g., "born_in(Obama, Hawaii)"
 \newcommand\clause[3]{\mbox{\rel{#2}\ensuremath{(#1, #3)}}}
 
@@ -109,3 +109,11 @@
 \end{tabular}
 \vspace{2mm}
 }
+
+\tikzset{
+    invisible/.style={opacity=0},
+    visible on/.style={alt=#1{}{invisible}},
+    alt/.code args={<#1>#2#3}{%
+      \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+    },
+  }
