@@ -27,18 +27,15 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * @author Gabor Angeli
  */
-@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "SimplifiableConditionalExpression"})
+@SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "SimplifiableConditionalExpression", "unchecked"})
 public class NaturalLIClassifier implements EntailmentClassifier {
 
-  @Execution.Option(name="naturalli.use", gloss="If true, incorporate input from NaturalLI")
-  public static boolean USE_NATURALLI = true;
-
-  @Execution.Option(name="naturalli.uselucene", gloss="If true, combine the weight of NaturalLI with lucene according to alignment weight")
-  public static boolean USE_LUCENE = true;
-
   @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
-  public static double ALIGNMENT_WEIGHT = 0.5;
-  public static double CLASSIFIER_WEIGHT = 0.5;
+  public static double NATURALLI_WEIGHT = 0.0;
+  @Execution.Option(name="classifier.weight", gloss="The weight to incorporate the Java classifier with")
+  public static double CLASSIFIER_WEIGHT = 0.0;
+  @Execution.Option(name="lucene.weight", gloss="The weight to incorporate Lucene scores with")
+  public static double LUCENE_WEIGHT = 0.0;
 
   @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
   private static String NATURALLI_INCACHE = "logs/train_all.cache";
@@ -468,72 +465,119 @@ public class NaturalLIClassifier implements EntailmentClassifier {
     int argmax = -1;
     Sentence hypothesis = new Sentence(hypothesisText);
     List<Sentence> premises = premisesText.stream().map(Sentence::new).collect(Collectors.toList());
+    Set<Integer> supportingPremises = new HashSet<>();  // A set in case there are ties / duplicates
 
+    //
     // Query NaturalLI
-    NaturalLIResponse bestNaturalLIScores = null;
-    if (USE_NATURALLI) {
+    //
+    double[] naturalliComponent = new double[premises.size()];
+    boolean[] naturalliDubious = new boolean[premises.size()];
+    if (NATURALLI_WEIGHT > 0.0) {
       try {
-        bestNaturalLIScores = queryNaturalLI(premisesText, hypothesisText);
+        NaturalLIResponse bestNaturalLIScores = queryNaturalLI(premisesText, hypothesisText);
+
+        // Case: hard NaturalLI judgment
+        boolean hardTrue = Trilean.fromString(bestNaturalLIScores.hardGuess).isTrue();
+        boolean hardFalse = Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse();
+        if (hardTrue || hardFalse) {
+          Counter<String> bestPremiseTokens = new ClassicCounter<>();
+          for (String token : bestNaturalLIScores.bestPremise.split(" ")) {
+            bestPremiseTokens.incrementCount(token.toLowerCase());
+          }
+          for (int i = 0; i < premises.size(); ++i) {
+            boolean good = true;
+            final int index = i;
+            Counter<String> premiseTokens = new ClassicCounter<String>() {{
+              for (String token : premises.get(index).lemmas()) {
+                incrementCount(token.toLowerCase());
+              }
+            }};
+            for (String token : bestPremiseTokens.keySet()) {
+              if (bestPremiseTokens.getCount(token) > premiseTokens.getCount(token)) {
+                good = false;
+              }
+            }
+            if (good) {
+              supportingPremises.add(i);
+            }
+          }
+
+          // RETURN the hard assignment
+          log("HARD JUDGMENT on premise: " + bestNaturalLIScores.bestPremise);
+          if (supportingPremises.isEmpty()) {
+            return Pair.makePair(premises.get(0), hardTrue ? 1.0 : (hardFalse ? 0.0 : 0.5));
+          } else {
+            return Pair.makePair(premises.get(supportingPremises.iterator().next()), hardTrue ? 1.0 : (hardFalse ? 0.0 : 0.5));
+          }
+        }
+
+        // Case: Get NaturalLI soft score
+        Trilean softJudgment = Trilean.fromString(bestNaturalLIScores.softGuess);
+        for (int i = 0; i < naturalliComponent.length; ++i) {
+          if (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) {
+            naturalliComponent[i] = bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i];
+          } else {
+            naturalliComponent[i] = 0.0;
+          }
+        }
+
+        // Check if NaturalLI thinks this is dubious
+        for (int i = 0; i < naturalliDubious.length; ++i) {
+          double positiveVote = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
+          double negativeVote = (bestNaturalLIScores.closestSoftAlignmentScoresIfFalse != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfFalse.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfFalse[i] : -10.0;
+          // Soft discount
+          if (!hardTrue && negativeVote > positiveVote && Math.abs(positiveVote - negativeVote) > Math.max(positiveVote, negativeVote) * 0.15) {
+            log("NaturalLI is dubious of: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
+            naturalliDubious[i] = true;
+          }
+        }
+
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
     }
 
-    // Get global information
-    boolean hardTruth = USE_NATURALLI ? Trilean.fromString(bestNaturalLIScores.hardGuess).isTrue() : false;
-    boolean hardFalse = USE_NATURALLI ? Trilean.fromString(bestNaturalLIScores.hardGuess).isFalse() : false;
-    Set<Integer> supportingPremises = new HashSet<>();  // A set in case there are ties / duplicates
-    if (hardTruth || hardFalse) {
-      Counter<String> bestPremiseTokens = new ClassicCounter<>();
-      for (String token : bestNaturalLIScores.bestPremise.split(" ")) {
-        bestPremiseTokens.incrementCount(token.toLowerCase());
+    //
+    // Query Lucene
+    //
+    double[] luceneComponent = new double[premises.size()];
+    if (LUCENE_WEIGHT > 0.0) {
+      for (int i = 0; i < luceneComponent.length; ++i) {
+        luceneComponent[i] = luceneScores.isPresent() ? luceneScores.get().get(i) : 0.0;
       }
-      for (int i = 0; i < premises.size(); ++i) {
-        boolean good = true;
-        final int index = i;
-        Counter<String> premiseTokens = new ClassicCounter<String>() {{
-          for (String token : premises.get(index).lemmas()) {
-              incrementCount(token.toLowerCase());
-          }
-        }};
-        for (String token : bestPremiseTokens.keySet()) {
-          if (bestPremiseTokens.getCount(token) > premiseTokens.getCount(token)) {
-            good = false;
-          }
-        }
-        if (good) {
-          supportingPremises.add(i);
-        }
-      }
-      log("Best premise from KB: " + bestNaturalLIScores.bestPremise);
     }
 
-    for (int i = 0; i < premises.size(); ++i) {
-      // Featurize the pair
-      Sentence premise = premises.get(i);
-      Optional<Double> luceneScore = luceneScores.isPresent() ? Optional.of(luceneScores.get().get(i)) : Optional.empty();
-      // Get the raw score
-      double score = 0.0;
-      if (USE_NATURALLI) {
-        if (USE_LUCENE) {
-          score += luceneScore.orElse(Double.NaN);
-        }
-        double naturalLIScore = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
-        score += naturalLIScore * ALIGNMENT_WEIGHT;
-
-        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Collections.EMPTY_SET, Optional.empty());
-        score += CLASSIFIER_WEIGHT * scoreAlignmentSimple(features);
-
-      } else {
-//        score = scoreNaturalLIAlignment(premise.text(), hypothesis.text(), luceneScore.get());
-        Counter<String> features = featurizer.featurize(new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, luceneScore), Collections.EMPTY_SET, Optional.empty());
-        score = scoreAlignmentSimple(features);
+    //
+    // Query the Classifier
+    //
+    double[] classifierComponent = new double[premises.size()];
+    if (CLASSIFIER_WEIGHT > 0.0) {
+      for (int i = 0; i < classifierComponent.length; ++i) {
+        Sentence premise = premises.get(i);
+        double luceneScore = luceneComponent[i];
+        Counter<String> features = featurizer.featurize(
+            new EntailmentPair(Trilean.UNKNOWN, premise, hypothesis, focus, Optional.of(luceneScore)),
+            Collections.EMPTY_SET,
+            Optional.empty());
+        classifierComponent[i] = scoreAlignmentSimple(features);
       }
-      assert !Double.isNaN(score);
-      assert Double.isFinite(score);
-      // Computer the probability
+    }
+
+    //
+    // Combine the scores
+    //
+    for (int i = 0; i < premises.size(); ++i) {
+      // Get variables
+      Sentence premise = premises.get(i);
+
+      // Compute the raw score
+      double score =
+              NATURALLI_WEIGHT * naturalliComponent[i] +
+              CLASSIFIER_WEIGHT * classifierComponent[i] +
+              LUCENE_WEIGHT * luceneComponent[i];
       double prob = 1.0 / (1.0 + Math.exp(-score));
-      // Discount the score if the focus is not present
+
+      // Discount the score if the focus is not in this premise
       if (focus.isPresent()) {
         if (focus.get().contains(" ")) {
           if (!premise.text().toLowerCase().replaceAll("\\s+", " ").contains(focus.get().toLowerCase().replaceAll("\\s+", " "))) {
@@ -545,33 +589,21 @@ public class NaturalLIClassifier implements EntailmentClassifier {
           }
         }
       }
-      // Discount the score if NaturalLI thinks this conclusion is false
-      if (USE_NATURALLI) {
-        double positiveVote = (bestNaturalLIScores.closestSoftAlignmentScoresIfTrue != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfTrue.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfTrue[i] : -10.0;
-        double negativeVote = (bestNaturalLIScores.closestSoftAlignmentScoresIfFalse != null && i < bestNaturalLIScores.closestSoftAlignmentScoresIfFalse.length) ? bestNaturalLIScores.closestSoftAlignmentScoresIfFalse[i] : -10.0;
-        if (hardTruth && supportingPremises.contains(i)) {
-          // no qualifiers -- we know this to be true.
-          log("NaturalLI is sure that: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
-        } else {
-          if (hardFalse && supportingPremises.contains(i)) {
-            log("NaturalLI found a contradiction: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
-            prob *= 0.0;
-          }
-          // Soft discount
-          if (!hardTruth && negativeVote > positiveVote && Math.abs(positiveVote - negativeVote) > Math.max(positiveVote, negativeVote) * 0.15) {
-            log("NaturalLI is dubious of: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
-            prob *= 0.75;
-          }
-        }
+
+      // Discount the score if NaturalLI is dubious of the premise
+      if (naturalliDubious[i]) {
+        log("NaturalLI is dubious of: '" + premises.get(i) + "' -> '" + hypothesisText + "'");
+        prob *= 0.75;
       }
 
-      // Take the argmax
+      // Update the score
       if (prob > max) {
-        max = prob;
         argmax = i;
+        max = prob;
       }
     }
 
+    // RETURN
     return Pair.makePair(premises.get(argmax), max);
   }
 
