@@ -1,0 +1,92 @@
+#!/bin/bash
+exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$@"
+!#
+import Qry._
+
+//
+// Train the classifiers
+//
+//submit(classifier
+//  -('features, "LUCENE_SCORE KEYWORD_OVERLAP")
+//  -('model, "logs/monarch_both.ser.gz")
+//)
+
+
+using("tmp/validation/")
+
+//
+// Run the models (train; all corpora)
+//
+submit(multchoice
+  -("naturalli.incache", "logs/monarch_train.cache")
+  -("naturalli.outcache", "logs/out.cache")
+  -('data, "etc/aristo/eval_monarch_train_allcorpora.tab")
+  -('model, "logs/model.both.ser.gz")
+  -('features, "LUCENE_SCORE KEYWORD_OVERLAP")
+  -("naturalli.weight",  "1.0")
+  -("classifier.weight", "0.00")
+  -("lucene.weight",  "0.042")
+  -("log.file",  touch("redwood.log"))
+)
+
+
+
+def range(start:Double, end:Double, increment:Double = 1.0):ArgumentValue = {
+  if (start + increment > end) {
+    ArgumentValue(start.toString)
+  } else {
+    range(start + increment, end, increment) & start
+  }
+}
+
+// A utility for creating a Java instance
+def program(c:String):Task = ("java"
+  -('cp, cp)
+	-"Xmx5G"
+	-"Xss32m"
+  -"XX:MaxPermSize=256M"
+  -"Dwordnet.database.dir=etc/WordNet-3.1/dict"
+	-'server
+  -'ea
+	->c
+).toList
+
+// The classifier trainer
+def classifier = 
+  (program("edu.stanford.nlp.naturalli.entail.ClassifierTrainer")
+    -('classifier, "NATURALLI")
+    -('naturalli_search, "src/naturalli_search")
+    -("train.file", "etc/aristo/turk_90_trainset.tab")
+    -("train.cache.do", "true")
+    -("train.debugdoc", "/dev/null")
+    -("log.file", "logs/classifier.log")
+   )
+
+// The multiple choice evaluator
+def multchoice = 
+  (program("edu.stanford.nlp.naturalli.entail.MultipleChoiceSolver")
+    -("log.file", "logs/solver.log")
+    )
+
+
+def cp:String = {
+  val JAVANLP = List(
+    System.getenv("JAVANLP_HOME") + "/projects/core/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/joda-time.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/jollyday-0.4.7.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/protobuf.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/slf4j-api.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/core/lib/slf4j-simple.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/more/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/research/classes",
+    System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
+    System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
+    "/home/gabor/staging/stanford-corenlp-models-current.jar"
+  ).mkString(":")
+  val CUSTOM = List(
+      "lib/gson-2.3.1.jar",
+      "lib/jaws.jar",
+      "lib/berkeleyaligner.jar"
+    ).mkString(":")
+  List("src/naturalli_preprocess.jar", JAVANLP, CUSTOM).mkString(":")
+}

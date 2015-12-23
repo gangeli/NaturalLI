@@ -19,7 +19,7 @@ naturalli_preprocess.jar: $(wildcard edu/stanford/nlp/naturalli/*.java) $(wildca
 	@echo "Compiling (${JDK_HOME}/bin/javac)..."
 	CLASSPATH="" ${JDK_HOME}/bin/javac -Xlint:unchecked -d . -cp ${TEST_CP} `find . -name "*.java"`
 	@echo "Making Jar..."
-	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar -C . .
+	${JDK_HOME}/bin/jar cf naturalli_preprocess.jar `find . -name "*.class"`
 	bash -c 'for file in `find . -name "*.class"`; do rm -f $$file; done'
 
 ../etc/.have_models:
