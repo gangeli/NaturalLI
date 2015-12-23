@@ -1,5 +1,5 @@
-naturalli.pdf: $(wildcard *.tex) ref.bib Makefile ../figures.tex ../macros.tex std-macros.tex ../figures.py
-	cd .. && python figures.py
+naturalli.pdf: $(wildcard *.tex) ref.bib Makefile ../figures.tex ../macros.tex std-macros.tex
+#	cd .. && python figures.py
 	@pdflatex naturalli
 	@bibtex naturalli
 	@pdflatex naturalli
