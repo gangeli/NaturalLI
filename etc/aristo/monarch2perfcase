@@ -175,6 +175,7 @@ for (line <- scala.io.Source.fromFile(args(0)).getLines.toList.tail) {
           resolveCoref(option, canonicalMention)
         } else {
           question.replace("?", "") + " " + resolveCoref(option, canonicalMention)
+//          resolveCoref(option, canonicalMention)
         }
       } else {
         resolveCoref(new Sentence(statement), canonicalMention)
