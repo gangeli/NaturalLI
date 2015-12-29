@@ -1,7 +1,7 @@
 \begin{abstract}
 Broad domain question answering is often difficult in the absence of
   structured knowledge bases, and can benefit from
-  shallow lexical methods (broad coverage) or logical
+  shallow lexical methods (broad coverage) and logical
   reasoning (high precision).
 %  from signals from
 %  both shallow lexical methods and formal logical
@@ -13,11 +13,13 @@ We extend the breadth of inferences afforded by natural
   (e.g., \w{buy} $\rightarrow$ \w{own}) 
   and meronymy
   (e.g., a person born in a city is born the city's country).
-Furthermore, we train a model to evaluate candidate premises
-%  while searching over candidate premises to capture
-  and provide
-  a soft judgment for whether that premise is supported
-  by the knowledge base.
+Furthermore, we train an \textit{evaluation function} -- akin
+  to gameplaying -- to evaluate the expected truth of
+  candidate premises on the fly.
+%%  while searching over candidate premises to capture
+%  to provide
+%  a soft judgment for whether that premise is supported
+%  by the knowledge base.
 We evaluate our approach on answering
   multiple choice science questions, achieving the best published
   results on the dataset.

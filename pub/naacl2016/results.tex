@@ -68,7 +68,7 @@ The dataset consists of a collection of multiple-choice science questions
   from the New York Regents 4$^{\textrm{th}}$ Grade Science Exams
   \cite{key:NYSED}.
 Each multiple choice option is translated to a candidate hypotheses.
-A large corpus of text is given as a knowledge base;
+A large corpus is given as a knowledge base;
   the task is to find support in this knowledge base for the hypothesis.
 
 % Why do we use it?
@@ -81,11 +81,11 @@ Although certainly many of the facts require complex reasoning
 Unlike FraCaS or the RTE challenges, however, the task does not have explicit
   premises to run inference from, but rather must infer the truth of the
   hypothesis from a large collection of supporting text.
-This makes NaturalLI a good candidate for an approach.
-However, the queries in the Aristo dataset are relatively longer, complete
-  sentences than the common sense reasoning task in
-  \newcite{key:2014angeli-naturalli}, necessitating the 
-  improvements in \refsecs{naturalli}{softsignal}.
+%This makes NaturalLI a good candidate for an approach.
+%However, the queries in the Aristo dataset are relatively longer, complete
+%  sentences than the common sense reasoning task in
+%  \newcite{key:2014angeli-naturalli}, necessitating the 
+%  improvements in \refsecs{naturalli}{softsignal}.
 %Unlike the common-sense reasoning task in \newcite{key:2014angeli-naturalli}
 %  though,
 %  the queries in the Aristo dataset are relatively longer, complete sentences.
@@ -112,7 +112,7 @@ Since we lose all document context when searching over the corpus with NaturalLI
   %and exact duplicate sentences are removed.
 %This results in a total of \num{822748} facts in the supporting corpus.
 Filtering to remove duplicate sentences and sentences containing
-    non-ASCII characters yields a total of \num{822748} facts in the supporting corpus.
+    non-ASCII characters yields a total of \num{822748} facts in the corpus.
 
 % Lucene
 These sentences were then indexed using Solr.
@@ -160,7 +160,7 @@ For all systems, any premise which did not contain the candidate answer to the
 
 
 % Some definitions
-\def\t#1{\small{#1}}
+\def\t#1{\footnotesize{#1}}
 \def\b#1{\t{\textbf{#1}}}
 \def\m#1{\t{\textcolor{darkblue}{#1}}}
 \def\c#1{\b{\textcolor{darkblue}{#1}}}
@@ -172,12 +172,13 @@ For all systems, any premise which did not contain the candidate answer to the
 % RESULTS TABLE
 %
 % The table
+\def\arraystretch{0.85}
 \begin{table}
 \begin{center}
 \begin{tabular}{l@{\hskip \colspaceL}c@{\hskip \colspaceS}c@{\hskip \colspaceL}c@{\hskip \colspaceS}c}
 \toprule
-\textbf{System} & \multicolumn{2}{l}{\textbf{Barron's}} & \multicolumn{2}{l}{\textbf{\textsc{Scitext}}} \\
- & Train & Test & Train & Test \\     %barrons              %all
+\textbf{\t{System}} & \multicolumn{2}{l}{\textbf{\t{Barron's}}} & \multicolumn{2}{l}{\textbf{\textsc{\t{Scitext}}}} \\
+ & \t{Train} & \t{Test} & \t{Train} & \t{Test} \\     %barrons              %all
 \toprule                          %train    %test      %train    %test
 \t{\textsc{Knowbot} (held-out)} & \t{45}  & \t{--}   & \t{--}  & \t{--} \\
 \t{\textsc{Knowbot} (oracle)}   & \t{57}  & \t{--}   & \t{--}  & \t{--} \\
@@ -197,16 +198,17 @@ For all systems, any premise which did not contain the candidate answer to the
 % The caption
 \caption{
 \label{tab:aristonaturalli}
-Accuracy of various systems on the Aristo science questions dataset.
-Results are reported using only the Barron's study guide as the supporting
-  text, and using all of \textsc{Scitext}.
-\textsc{Knowbot} is the dialog system presented in \newcite{key:2015hixon-aristo}.
+Accuracy on the Aristo science questions dataset.
+Results are reported using only the Barron's study guide or \textsc{Scitext}
+  as the supporting
+\textsc{Knowbot} is the dialog system presented in Hixon et. al (2015). % caption doesn't like \cite
 The held-out version uses additional facts from other question's dialogs;
   the oracle version made use of human input on the question it was 
   answering.
 The test set did not exist at the time \textsc{Knowbot} was published.
 }
 \end{table}
+\nocite{key:2015hixon-aristo}  % for the inline reference above
 
 %
 % Results
@@ -256,6 +258,16 @@ We additionally tune weights for a
 %  produced by NaturalLI and Solr, tuned on the training set to
 %  a weight of 6.0 to NaturalLI.
 Empirically, both parameters were observed to be fairly robust.
+
+To demonstrate the system's robustness on a larger dataset, we additionally
+  evaluate on a test set of 250 5$^\textrm{th}$ grade science exams.
+These are substantially more difficult as they contain a far larger number
+  of questions that require an understanding of a more complex process.
+Nonetheless, the trend illustrated in \reftab{aristonaturalli} holds:
+  the standalone classifier scores 43.6\%; 
+  Solr alone obtains a score of 46.8\%.
+NaturalLI alone scores 46.4\%, which rises to 48.0\% when combined with
+  Solr to break ties (at the same ratio of 24:1 for NaturalLI).
 
 
 %Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
@@ -325,7 +337,7 @@ Other questions are simply not supported by any single sentence in the corpus.
 For example, \w{A human offspring can inherit blue eyes} has
   no support in the corpus that does not require significant multi-step inferences.
 
-A remaining chunk of errors are of course classification errors.
+A remaining chunk of errors are simply classification errors.
 For example, \w{Water freezing is an example of a gas changing to a solid}
   is marked as the best hypothesis, supported incorrectly by 
   \w{An ice cube is an example of matter that changes from a solid to a liquid to a gas},

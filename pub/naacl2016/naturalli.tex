@@ -1,7 +1,8 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,letterpaper]{article}
+
 % -- IMPORTS --
 % (stylsheet)
-\usepackage{acl2015}
+\usepackage{naaclhlt2016}
 % (general libraries)
 \usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating,color}
 \usepackage{enumitem,multirow,hhline,stmaryrd,bussproofs,mathtools,siunitx,arydshln}
@@ -24,24 +25,25 @@
 \hyphenation{Open-IE}
 \hyphenation{Verb-Ocean}
 
+%\naaclfinalcopy % Uncomment this line for the final submission
+\def\naaclpaperid{73}
+
 % -- PAPER --
 % (metadata)
 \title{Natural Logic Entailment for Question Answering}
 \author{ 
-%\today\ \currenttime \\
-%\note{not proofread -- flow only}
-%Gabor Angeli \\
-%  Stanford University \\
-%  Stanford, CA 94305 \\
-%\And
-%Neha Nayak \\
-%  Stanford University \\
-%  Stanford, CA 94305 \\
-%\And
-%Christopher D. Manning \\
-%  Stanford University \\
-%  Stanford, CA 94305 \\
-%\hspace{-23em}{\tt \{angeli, nayakne, manning\}@cs.stanford.edu}
+Gabor Angeli \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+\And
+Neha Nayak \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+\And
+Christopher D. Manning \\
+  Stanford University \\
+  Stanford, CA 94305 \\
+\hspace{-23em}{\tt \{angeli, nayakne, manning\}@cs.stanford.edu}
 }
 \date{}
 
@@ -58,11 +60,10 @@
 \input related.tex
 \input results.tex
 \input conclude.tex
-%\input outline.tex
 \newpage
 
 %(bibliography)
-\bibliographystyle{acl}
+\bibliographystyle{naaclhlt2016}
 \bibliography{ref}
 
 \end{document}

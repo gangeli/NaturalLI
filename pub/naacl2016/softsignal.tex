@@ -19,7 +19,7 @@ In addition to requiring reasoning with multiple implicit premises (a concomitan
 
 % Why a lexical classifier would do well
 %Nonetheless, objectively this is not a difficult case of entailment.
-Nonetheless, there are plenty of clues that the two sentences are related, and even a simple
+Nonetheless, there enough lexical clues in the sentence that even a simple
   entailment classifier would get the example correct.
 We build such a classifier and adapt it as an evaluation function
   inside NaturalLI in case no premises are found during search.
@@ -53,7 +53,7 @@ Our entailment classifier is designed to be as domain independent as possible;
   optional sixth feature encoding the score output by the Solr
   information extraction system (in turn built upon Lucene).
 % Why simple feature set
-Additional features were not shown to improve performance on the training set.
+%Additional features were not shown to improve performance on the training set.
 In fact, this classifier is a stronger baseline than it may seem: evaluating
   the system on RTE-3 \cite{key:2007giampiccolo-rte} yielded \textbf{63.75}\% accuracy --
   2 points above the median submission.
@@ -154,7 +154,7 @@ A version of the classifier constructed in
   than keyphrases can be incorporated directly into
   NaturalLI's search to give a score for each candidate premise visited.
 This can be thought of as analogous to the evaluation function in game-playing
-  algorithms.
+  search.
 %  -- even though an agent cannot play a game of Chess to completion,
 %  at some depth it can apply an evaluation function to its leaf states.
 

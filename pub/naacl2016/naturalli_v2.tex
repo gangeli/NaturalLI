@@ -1,7 +1,8 @@
 \Section{naturalli}{Improving Inference in NaturalLI}
 % Overview paragraph
-We extend NaturalLI in a few key ways to improve its coverage for question
-  answering tasks over complex sentences.
+We extend NaturalLI in a few theoretical ways to improve its 
+  coverage.
+%  for question answering tasks over complex sentences.
 We adapt the search algorithm to operate over dependency
   trees rather than the surface forms (\refsec{naturalli-trees}).
 We enrich the class of inferences warranted by natural logic beyond
@@ -15,12 +16,12 @@ The general search algorithm in NaturalLI is parametrized as follows:
 First, an order is chosen to traverse the tokens in a sentence.
 For example, the original paper traverses tokens left-to-right.
 At each token, one of three operations can be performed:
-  these are \textit{deleting} a token
-  (corresponding to inserting a word during natural logic inference),
-  \textit{mutating} a token, and \textit{inserting} a token (again, corresponding
-  to deleting a token in the resulting proof derivation.)
-For brevity, we will refer to insertions during inference (deletions during
-  search) as \textit{deletions}, and vice versa for \textit{insertions}.
+  \textit{deleting} a token
+  (corresponding to inserting a word in the proof derivation),
+  \textit{mutating} a token, and \textit{inserting} a token (corresponding
+  to deleting a token in the proof derivation).
+%We will refer to insertions in the \textit{proof derivation} (deletions during
+%  search) as \textit{deletions}, and vice versa for \textit{insertions}.
 
 %
 % Dependency Trees
@@ -73,17 +74,21 @@ For example, we can infer that
   \depedge[edge unit distance=1.25ex]{5}{6}{dobj}
 \end{dependency}
 \end{center}
+\vspace{-2mm}
 
 % Talk about ordering
-This leaves the question of the order in which to traverse the tokens in the sentence.
-The natural order is a breadth-first traversal of the dependency tree.
-This avoids repeated deletion of nodes, as we do not have to traverse a
-  deleted subtree.
+%This leaves the question of the order in which to traverse the tokens in the sentence.
+%The natural order is a breadth-first traversal of the dependency tree.
+%This avoids repeated deletion of nodes, as we do not have to traverse a
+%  deleted subtree.
 
 % Subtlety about operators
-An admittedly rare but interesting subtlety is the effect mutating an 
-  operator has on the
-  polarity of its arguments -- for example, mutating \w{some} to \w{all}.
+An admittedly rare but interesting subtlety in the order
+  we chose to traverse the tokens in the sentence
+  is the effect mutating an operator has on the
+  polarity of its arguments.
+For example, mutating \w{some} to \w{all}
+  changes the polarity of its first argument.
 There are cases where we must mutate the argument to the operator before
   the operator itself, as well as cases where we must mutate the operator
   before its arguments.
@@ -146,14 +151,14 @@ Although natural logic and the underlying monotonicity calculus has
 % Translate to language
 %In the same way, natural language operators are defined as a mapping from
 Natural language operators can be defined as a mapping from
-  denotations of objects, to truth values.\footnote{
+  denotations of objects to truth values.
+The domain of word denotations is then ordered by the subset operator, corresponding
+  to ordering by hypernymy over the words.\footnote{
   Truth values are a trivial partial order corresponding to entailment:
   if \hbox{$t_1 \leq t_2$} 
   (i.e., \hbox{$t_1 \forward t_2$}),
   and you know that $t_1$ is true, then $t_2$ must be true.
 }
-The domain of word denotations is then ordered by the subset operator, corresponding
-  to ordering by hypernymy over the words.
 % New partial orders
 However, hypernymy is not the only useful partial ordering over denotations.
 We include two additional orderings as motivating examples: relational
@@ -176,8 +181,8 @@ Apart from context-specific cases (e.g., \w{orbit} entails \w{launch} only
 This information was incorporated using data from \textsc{VerbOcean}
  \cite{key:2004chklovski-verbocean}, adapting the confidence weights 
  as transition costs.
-\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
-  verbs as candidate participants in a set of relations.
+%\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
+%  verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
 %These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
@@ -197,20 +202,24 @@ Unlike relational entailment and hypernymy, meronymy is operated on by a
 %  these then compose in the usual way with the conventional 
 %  operators (e.g., \w{some}, \w{all}).
 
-We collect a set of 81 operators, which are manually labeled as monotonic or antitonic with respect
-  to the meronymy hierarchy (e.g., \w{born in}, \w{visited}); 
-  these then compose in the usual way with the conventional 
-  operators (e.g., \w{some}, \w{all}).
+We semi-automatically collect a set of 81 operators
+  (e.g., \w{born in}, \w{visited})
+  which then compose in the usual way with the
+  conventional operators (e.g., \w{some}, \w{all}).
 These operators consist of dependency paths of length 2 
 that co-occurred in newswire text with a named entity of type 
 \w{PERSON} and two different named entities of type \w{LOCATION}, 
 such that one location was a meronym of the other.
+All other operators are considered nonmonotone with
+  respect to the meronym hierarchy.
 
-Meronymy transitions are drawn from instances of the relation \w{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
-This relation exists between entities of type \textit{location} in Freebase, where one location exists completely within the boundaries of the other location.
-%As this relation is also based on an underlying partial order, 
-We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
-%We also instantiate the inverse, holonymy transitions.
+%The meronymy hierarchy is built
+%  from instances of the relation \w{location-contains} in Freebase \cite{key:2008bollacker-freebase}.
+%This relation exists between entities of type \textit{location} in Freebase, where one 
+%  location exists completely within the boundaries of the other location.
+%%As this relation is also based on an underlying partial order, 
+%We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
+%%We also instantiate the inverse, holonymy transitions.
 
 %% Other orders
 %Note that these are not the only two orders that can be incorporated into our
@@ -229,7 +238,7 @@ Inserting words during search poses an inherent problem,
   position is on the order of the size of the vocabulary.
 In NaturalLI, this was solved by keeping a trie of possible insertions, and
   using that to prune this space.
-However, this is both computationally slow and adapts awkwardly to a search over
+This is both computationally slow and adapts awkwardly to a search over
   dependency trees.
 
 % Pre-compute deletion
@@ -250,8 +259,9 @@ The new challenge this introduces, of course, is the additional space required
 To mitigate this, we hash every fact into a 64 bit integer, and store only the hashed 
   value in the knowledge base.
 We construct this hash function such that it operates over a bag of edges in the
-  dependency tree -- in particular, the XOR of the hash of each dependency edge in
-  the tree.
+  dependency tree.
+%  -- in particular, the XOR of the hash of each dependency edge in
+%  the tree.
 This has two key properties: it allows us to be invariant to the word order of
   of the sentence, and more importantly it allows us to run our search directly
   over modifications to this hash function.
