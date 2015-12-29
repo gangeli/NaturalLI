@@ -45,6 +45,6 @@ ROOTDIR="$MYDIR/../.."
 "$MYDIR/turk_10_run-queries.py" \
     --host jonsson.stanford.edu \
     --collection aristo \
-    "$ROOTDIR/test/data/perfcase_monarch_dev.examples" \
-      > "$ROOTDIR/etc/aristo/eval_monarch_dev_allcorpora.tab"
+    "$ROOTDIR/test/data/perfcase_monarch_test.examples" \
+      > "$ROOTDIR/etc/aristo/eval_monarch_test_allcorpora.tab"
 
