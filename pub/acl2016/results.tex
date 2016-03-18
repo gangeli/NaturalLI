@@ -199,6 +199,7 @@ For all systems, any premise which did not contain the candidate answer to the
 \caption{
 \label{tab:aristonaturalli}
 Accuracy on the Aristo science questions dataset.
+All NaturalLI runs include the evaluation function.
 Results are reported using only the Barron's study guide or \textsc{Scitext}
   as the supporting
 \textsc{Knowbot} is the dialog system presented in Hixon et. al (2015). % caption doesn't like \cite
@@ -216,10 +217,13 @@ The test set did not exist at the time \textsc{Knowbot} was published.
 \Subsection{aristo-results}{Experimental Results}
 We present results on the Aristo dataset in \reftab{aristonaturalli},
   alongside prior work and strong baselines.
+In all cases, NaturalLI is run with the evaluation function enabled;
+  the limited size of the text corpus and the complexity of the questions
+  would cause the basic NaturalLI system to perform poorly.
 The test set for this corpus consists of only 68 examples,
   and therefore both perceived large differences in model scores 
   and the apparent best system should be interpreted cautiously.
-We propose that NaturalLI consistently achieves the best training accuracy,
+NaturalLI consistently achieves the best training accuracy,
   and is more stable between configurations on the test set.
 For instance,
   it may be consistently discarding lexically similar but actually contradictory
@@ -264,10 +268,25 @@ To demonstrate the system's robustness on a larger dataset, we additionally
 These are substantially more difficult as they contain a far larger number
   of questions that require an understanding of a more complex process.
 Nonetheless, the trend illustrated in \reftab{aristonaturalli} holds:
-  the standalone classifier scores 43.6\%; 
-  Solr alone obtains a score of 46.8\%.
-NaturalLI alone scores 46.4\%, which rises to 48.0\% when combined with
-  Solr to break ties (at the same ratio of 24:1 for NaturalLI).
+
+\begin{table}
+\begin{center}
+\begin{tabular}{lc}
+\toprule
+\textbf{System} & \textbf{Test Accuracy} \\
+Solr Only  & 46.8 \\
+Classifier & 43.6 \\
+\midrule
+NaturalLI & 46.4 \\
+$~~$ + Solr & \textbf{48.0} \\
+\bottomrule
+\end{tabular}
+\end{center}
+\caption{\label{tab:big-dataset}
+Results of our baselines and NaturalLI on a larger dataset of 250 examples.
+All NaturalLI runs include the evaluation function.
+}
+\end{table}
 
 
 %Results on the Aristo dataset are reported in \reftab{aristonaturalli}.
@@ -311,8 +330,8 @@ Some of these cases can be recovered from
   (e.g., \w{This happens because the smooth road has less friction.}), 
   while others are trivially out of scope for our method 
   (e.g., \w{The volume of water most likely decreased.}).
-%Although there is usually still some signal for which answer is most likely to be correct,
-%  these questions are fundamentally out-of-scope for the approach.
+Although there is usually still some signal for which answer is most likely to be correct,
+  these questions are fundamentally out-of-scope for the approach.
 %Empirically, we correctly predict \todo{XYZ} of these questions, performing somewhat 
 %  but not substantially above random chance.
 
