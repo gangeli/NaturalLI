@@ -30,17 +30,17 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 @SuppressWarnings({"FieldCanBeLocal", "UnusedDeclaration", "SimplifiableConditionalExpression", "unchecked"})
 public class NaturalLIClassifier implements EntailmentClassifier {
 
-  @Execution.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
+  @ArgumentParser.Option(name="naturalli.weight", gloss="The weight to incorporate NaturalLI with")
   public static double NATURALLI_WEIGHT = 0.0;
-  @Execution.Option(name="classifier.weight", gloss="The weight to incorporate the Java classifier with")
+  @ArgumentParser.Option(name="classifier.weight", gloss="The weight to incorporate the Java classifier with")
   public static double CLASSIFIER_WEIGHT = 0.0;
-  @Execution.Option(name="lucene.weight", gloss="The weight to incorporate Lucene scores with")
+  @ArgumentParser.Option(name="lucene.weight", gloss="The weight to incorporate Lucene scores with")
   public static double LUCENE_WEIGHT = 0.0;
 
-  @Execution.Option(name="naturalli.incache", gloss="The cache to read from")
+  @ArgumentParser.Option(name="naturalli.incache", gloss="The cache to read from")
   private static String NATURALLI_INCACHE = "logs/train_all.cache";
 
-  @Execution.Option(name="naturalli.outcache", gloss="The cache to write from")
+  @ArgumentParser.Option(name="naturalli.outcache", gloss="The cache to write from")
   private static String NATURALLI_OUTCACHE = "tmp/naturalli.cacheout";
 
   static final String COUNT_ALIGNED      = "count_aligned";

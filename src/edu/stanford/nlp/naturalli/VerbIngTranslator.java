@@ -1,5 +1,6 @@
 package edu.stanford.nlp.naturalli;
 
+import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -52,12 +53,12 @@ public class VerbIngTranslator extends SentenceAnnotator {
   }
 
   @Override
-  public Set<Requirement> requirementsSatisfied() {
+  public Set<Class<? extends CoreAnnotation>> requirementsSatisfied() {
     return Collections.EMPTY_SET;
   }
 
   @Override
-  public Set<Requirement> requires() {
+  public Set<Class<? extends CoreAnnotation>> requires() {
     return Collections.EMPTY_SET;
   }
 }

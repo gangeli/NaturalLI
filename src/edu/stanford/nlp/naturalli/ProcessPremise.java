@@ -1,5 +1,6 @@
 package edu.stanford.nlp.naturalli;
 
+import edu.stanford.nlp.ling.CoreAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.SentenceAnnotator;
@@ -64,9 +65,9 @@ public class ProcessPremise {
     @Override
     protected void doOneFailedSentence(Annotation annotation, CoreMap sentence) { }
     @Override
-    public Set<Requirement> requirementsSatisfied() { return Collections.EMPTY_SET; }
+    public Set<Class<? extends CoreAnnotation>> requirementsSatisfied() { return Collections.EMPTY_SET; }
     @Override
-    public Set<Requirement> requires() { return Collections.EMPTY_SET; }
+    public Set<Class<? extends CoreAnnotation>> requires() { return Collections.EMPTY_SET; }
   }
 
   public static StanfordCoreNLP constructPipeline() {

@@ -1,5 +1,6 @@
 package edu.stanford.nlp.naturalli.entail;
 
+import com.sun.mail.iap.Argument;
 import edu.stanford.nlp.classify.*;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
@@ -23,60 +24,60 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public class ClassifierTrainer {
 
   enum ClassifierType{ SIMPLE, DISTANT, NATURALLI }
-  @Execution.Option(name="classifier", gloss="The type of classifier to train")
+  @ArgumentParser.Option(name="classifier", gloss="The type of classifier to train")
   public ClassifierType CLASSIFIER = ClassifierType.NATURALLI;
 
-  @Execution.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
+  @ArgumentParser.Option(name="naturalli_search", gloss="The path to the naturalli_search executable")
   public String NATURALLI_SEARCH = "src/naturalli_search";
 
-  @Execution.Option(name="train.file", gloss="The file to use for training the classifier")
+  @ArgumentParser.Option(name="train.file", gloss="The file to use for training the classifier")
   public File TRAIN_FILE = new File("etc/aristo/turk_90_trainset.tab");
 //  public File TRAIN_FILE = new File("etc/RTE-3/English_dev.tab");
-  @Execution.Option(name="train.cache", gloss="A cache of the training annotations")
+  @ArgumentParser.Option(name="train.cache", gloss="A cache of the training annotations")
   public File TRAIN_CACHE = null;
-  @Execution.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
+  @ArgumentParser.Option(name="train.cache.do", gloss="If false, do not cache the training annotations")
   public boolean TRAIN_CACHE_DO = true;
-  @Execution.Option(name="train.count", gloss="The number of training examples to use.")
+  @ArgumentParser.Option(name="train.count", gloss="The number of training examples to use.")
   public int TRAIN_COUNT = -1;
-  @Execution.Option(name="train.debugdoc", gloss="A LaTeX document with debugging information about training")
+  @ArgumentParser.Option(name="train.debugdoc", gloss="A LaTeX document with debugging information about training")
   public File TRAIN_DEBUGDOC = new File("/dev/null");
 
-  @Execution.Option(name="train.distsup.iters", gloss="The number of iterations to run EM for")
+  @ArgumentParser.Option(name="train.distsup.iters", gloss="The number of iterations to run EM for")
   public int TRAIN_DISTSUP_ITERS = 0;
-  @Execution.Option(name="train.distsup.sample_count", gloss="The number of iterations to run EM for")
+  @ArgumentParser.Option(name="train.distsup.sample_count", gloss="The number of iterations to run EM for")
   public int TRAIN_DISTSUP_SAMPLE_COUNT = 1000;
 
-  @Execution.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
+  @ArgumentParser.Option(name="train.feature_count_threshold", gloss="The minimum number of times we have to see a feature before considering it.")
   public int TRAIN_FEATURE_COUNT_THRESHOLD = 0;
   private enum Regularizer {L1, L2}
-  @Execution.Option(name="train.regularizer", gloss="The type of regularization to use (e.g., L1, L2)")
+  @ArgumentParser.Option(name="train.regularizer", gloss="The type of regularization to use (e.g., L1, L2)")
   public Regularizer TRAIN_REGULARIZER = Regularizer.L1;
-  @Execution.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
+  @ArgumentParser.Option(name="train.sigma", gloss="The regularization constant sigma for the classifier")
   public double TRAIN_SIGMA = 1.00;
 
-  @Execution.Option(name="train.align.mincount", gloss="The minimum number of times to see an alignment to consider it valid")
+  @ArgumentParser.Option(name="train.align.mincount", gloss="The minimum number of times to see an alignment to consider it valid")
   public int TRAIN_ALIGN_MINCOUNT = 0;
-  @Execution.Option(name="train.align.maxlength", gloss="The maximum length of an aligned phrase")
+  @ArgumentParser.Option(name="train.align.maxlength", gloss="The maximum length of an aligned phrase")
   public int TRAIN_ALIGN_MAXLENGTH = 3;
 
-  @Execution.Option(name="test.file", gloss="The file to use for testing the classifier")
+  @ArgumentParser.Option(name="test.file", gloss="The file to use for testing the classifier")
   public File TEST_FILE = TRAIN_FILE;
-  @Execution.Option(name="test.cache", gloss="A cache of the test annotations")
+  @ArgumentParser.Option(name="test.cache", gloss="A cache of the test annotations")
   public File TEST_CACHE = null;
-  @Execution.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
+  @ArgumentParser.Option(name="test.cache.do", gloss="If false, do not cache the test annotations")
   public boolean TEST_CACHE_DO = true;
-  @Execution.Option(name="test.errors", gloss="A file to dump errors made by the classifier to")
+  @ArgumentParser.Option(name="test.errors", gloss="A file to dump errors made by the classifier to")
   public String TEST_ERRORS = null;
 
-  @Execution.Option(name="vocab.threshold", gloss="The minimum number of times to see a word for it to be included in the vocab")
+  @ArgumentParser.Option(name="vocab.threshold", gloss="The minimum number of times to see a word for it to be included in the vocab")
   public int VOCAB_THRESHOLD = 0;
 
-  @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
+  @ArgumentParser.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("tmp/model.ser.gz");
-  @Execution.Option(name="retrain", gloss="If true, force the retraining of the classifier")
+  @ArgumentParser.Option(name="retrain", gloss="If true, force the retraining of the classifier")
   public boolean RETRAIN = true;
 
-  @Execution.Option(name="parallel", gloss="If true, run the featurizer in parallel")
+  @ArgumentParser.Option(name="parallel", gloss="If true, run the featurizer in parallel")
   public boolean PARALLEL = false;
 
   public final EntailmentFeaturizer featurizer;
@@ -255,7 +256,7 @@ public class ClassifierTrainer {
     // Set up some useful objects
     EntailmentFeaturizer featurizer = new EntailmentFeaturizer(args);
     ClassifierTrainer trainer = new ClassifierTrainer(featurizer);
-    Execution.fillOptions(new Object[]{trainer, featurizer}, args);
+    ArgumentParser.fillOptions(new Object[]{trainer, featurizer}, args);
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
 
     forceTrack("Options");

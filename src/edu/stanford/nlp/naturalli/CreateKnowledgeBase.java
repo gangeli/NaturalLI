@@ -5,7 +5,7 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.util.CoreMap;
-import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.ArgumentParser;
 import edu.stanford.nlp.util.StreamGobbler;
 import edu.stanford.nlp.util.logging.Redwood;
 
@@ -28,10 +28,10 @@ import java.util.Properties;
  */
 public class CreateKnowledgeBase {
 
-  @Execution.Option(name="hash_tree", gloss="The executable path for hash_tree")
+  @ArgumentParser.Option(name="hash_tree", gloss="The executable path for hash_tree")
   private static String hashTreeExe = "src/hash_tree";
 
-  @Execution.Option(name="corpus", gloss="The stream (or file) to read the corpus from")
+  @ArgumentParser.Option(name="corpus", gloss="The stream (or file) to read the corpus from")
   private static InputStream corpus = System.in;
 
   private static BufferedReader hasherOut;
@@ -81,7 +81,7 @@ public class CreateKnowledgeBase {
    * @throws IOException
    */
   public static void main(String[] args) throws IOException {
-    Execution.fillOptions(CreateKnowledgeBase.class, args);
+    ArgumentParser.fillOptions(CreateKnowledgeBase.class, args);
     long startTime = System.currentTimeMillis();
 
     // Create a StanfordCoreNLP pipeline

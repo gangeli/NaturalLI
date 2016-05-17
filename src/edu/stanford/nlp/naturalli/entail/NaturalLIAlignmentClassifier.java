@@ -227,7 +227,7 @@ public class NaturalLIAlignmentClassifier implements EntailmentClassifier {
 
     EntailmentFeaturizer featurizer = new EntailmentFeaturizer(args);
     ClassifierTrainer trainer = new ClassifierTrainer(featurizer);
-    Execution.fillOptions(new Object[]{trainer, featurizer}, args);
+    ArgumentParser.fillOptions(new Object[]{trainer, featurizer}, args);
 
 
     final Writer errWriter = new OutputStreamWriter(System.err);

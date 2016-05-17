@@ -5,7 +5,7 @@ import edu.smu.tspell.wordnet.SynsetType;
 import edu.smu.tspell.wordnet.WordNetDatabase;
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.semgraph.semgrex.SemgrexPattern;
-import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.ArgumentParser;
 import edu.stanford.nlp.util.Interner;
 import edu.stanford.nlp.util.Lazy;
 import edu.stanford.nlp.util.Pair;
@@ -24,13 +24,13 @@ import java.util.function.Function;
  */
 public class StaticResources {
 
-  @Execution.Option(name="vocab_file", gloss="The location of the vocabulary file")
+  @ArgumentParser.Option(name="vocab_file", gloss="The location of the vocabulary file")
   private static String vocabFile = System.getenv("VOCAB_FILE") == null ? "etc/vocab.tab.gz" : System.getenv("VOCAB_FILE");
 
-  @Execution.Option(name="sense_file", gloss="The location of the sense mapping file")
+  @ArgumentParser.Option(name="sense_file", gloss="The location of the sense mapping file")
   private static String senseFile = System.getenv("VOCAB_FILE") == null ? "etc/sense.tab.gz" : System.getenv("SENSE_FILE");
 
-  @Execution.Option(name="wordnet_file", gloss="The location of the WordNet synset mapping file")
+  @ArgumentParser.Option(name="wordnet_file", gloss="The location of the WordNet synset mapping file")
   private static String wordnetFile = System.getenv("WORDNET_FILE") == null ? "etc/wordnet.tab.gz" : System.getenv("WORDNET_FILE");
 
   private static Lazy<Map<String, Integer>> PHRASE_INDEXER = Lazy.of( () ->new HashMap<String, Integer>() {{

@@ -2,7 +2,7 @@ package edu.stanford.nlp.naturalli;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
-import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.ArgumentParser;
 import edu.stanford.nlp.util.StreamGobbler;
 import edu.stanford.nlp.util.logging.Redwood;
 
@@ -20,22 +20,22 @@ import java.util.Set;
 @SuppressWarnings("FieldCanBeLocal")
 public class HashCorpus {
 
-  @Execution.Option(name="hash_tree.exe", gloss="The location of the hash_tree utility")
+  @ArgumentParser.Option(name="hash_tree.exe", gloss="The location of the hash_tree utility")
   private static String hashTreeExe = "/home/gabor/workspace/naturalli/src/hash_tree";
 
-  @Execution.Option(name="in", gloss="Input to read from")
+  @ArgumentParser.Option(name="in", gloss="Input to read from")
   private static InputStream in = System.in;
-  @Execution.Option(name="err", gloss="Output to debug to")
+  @ArgumentParser.Option(name="err", gloss="Output to debug to")
   private static PrintStream err = System.err;
 
-  @Execution.Option(name="mod", gloss="The number of parallel jobs")
+  @ArgumentParser.Option(name="mod", gloss="The number of parallel jobs")
   private static int mod = 1;
-  @Execution.Option(name="offset", gloss="The index of this job, in [0, mod)")
+  @ArgumentParser.Option(name="offset", gloss="The index of this job, in [0, mod)")
   private static int offset = 0;
 
-  @Execution.Option(name="out.hashes", gloss="The file to write the hashed facts to", required=true)
+  @ArgumentParser.Option(name="out.hashes", gloss="The file to write the hashed facts to", required=true)
   private static PrintStream hashOutput = null;
-  @Execution.Option(name="out.sentences", gloss="The file to write the indexed sentences to", required=true)
+  @ArgumentParser.Option(name="out.sentences", gloss="The file to write the indexed sentences to", required=true)
   private static PrintStream sentenceOutput = null;
 
   private static BufferedReader hasherOut;
@@ -84,7 +84,7 @@ public class HashCorpus {
   }
 
   public static void main(String[] args) throws IOException {
-    Execution.fillOptions(new Class[]{HashCorpus.class, StaticResources.class}, args);
+    ArgumentParser.fillOptions(new Class[]{HashCorpus.class, StaticResources.class}, args);
 
     StanfordCoreNLP pipeline = ProcessPremise.constructPipeline("depparse");
 

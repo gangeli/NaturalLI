@@ -2,7 +2,7 @@ package edu.stanford.nlp.naturalli.entail;
 
 import edu.stanford.nlp.io.IOUtils;
 import edu.stanford.nlp.simple.Sentence;
-import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.ArgumentParser;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.logging.RedwoodConfiguration;
@@ -26,10 +26,10 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  * @author Gabor Angeli
  */
 public class MultipleChoiceSolver {
-  @Execution.Option(name="model", gloss="The file to load/save the model to/from.")
+  @ArgumentParser.Option(name="model", gloss="The file to load/save the model to/from.")
   public static File MODEL = new File("logs/last_suite/0/model.ser.gz");
 
-  @Execution.Option(name="data", gloss="The file to evaluate on")
+  @ArgumentParser.Option(name="data", gloss="The file to evaluate on")
   public static File DATA_FILE = new File("etc/aristo/eval_train_allcorpora.tab");
 
   private static final DecimalFormat percent = new DecimalFormat("0.000%");
@@ -182,7 +182,7 @@ public class MultipleChoiceSolver {
   public static void main(String[] args) throws IOException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
     RedwoodConfiguration.current().capture(System.err).apply();
     RedwoodConfiguration.apply(StringUtils.argsToProperties(args));
-    Execution.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
+    ArgumentParser.fillOptions(new Class[]{NaturalLIClassifier.class, MultipleChoiceSolver.class}, args);
     forceTrack("main");
     EntailmentClassifier classifier = EntailmentClassifier.load(MODEL);
     List<MultipleChoiceQuestion> dataset = readDataset(DATA_FILE);

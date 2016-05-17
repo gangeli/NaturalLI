@@ -3,9 +3,9 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
-val SNLI_TRAIN = "etc/snli/snli_1.0rc3_train.tab"
-val SNLI_DEV   = "etc/snli/snli_1.0rc3_dev.tab"
-val SNLI_TEST  = "etc/snli/snli_1.0rc3_test.tab"
+val SNLI_TRAIN = "etc/snli/snli_train.tab"
+val SNLI_DEV   = "etc/snli/snli_dev.tab"
+val SNLI_TEST  = "etc/snli/snli_test.tab"
 
 val SICK_TRAIN = "etc/sick/sick_train.tab"
 val SICK_SNLI_TRAIN = "etc/sick/sick+snli_train.tab"
@@ -34,7 +34,7 @@ def program(memoryMB:Int):List[String] = ("java"
 
 using("runs/")
 
-parallel(13) submit(program(50000)
+submit(program(24000)
   -("train.file", SNLI_TRAIN)
   -("train.cache.do", "false")
   -("test.file", SNLI_DEV)
@@ -42,30 +42,32 @@ parallel(13) submit(program(50000)
 
   -("train.count", "1000000")
   -("train.regularizer", "l1")
-  -("train.sigma", "0.5" & "0.6" & "0.7" & "0.8" & "0.9" & 
-                   "1.0" & "1.1" & "1.2" & "1.3" & "1.4" &
-                   "1.5" & "1.6" & "1.7" & "1.8" & "1.9" & "2.0"
-                   )
+  -("train.sigma", "1.5" )
   -("train.align.maxlength", "4")
   -("train.align.mincount",  "0")
   
   -("vocab.threshold", "0")
 
   -("model", touch("model.ser.gz"))
+//  -("features",   // all the features implemented
+//      """[ 
+//           BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  
+//           ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  ENTAIL_BOTH_GRAM  
+//           KEYWORD_OVERLAP  
+//           DEPTREE_ROOT_STRUCTURE  ENTAIL_DEPTREE 
+//           MT_UNIGRAM  MT_PHRASE
+//         ]"""
+//  )
   -("features", 
       """[ 
-           BLEU  LENGTH_DIFF  OVERLAP  POS_OVERLAP  
+           BLEU  OVERLAP  POS_OVERLAP  
            ENTAIL_UNIGRAM  ENTAIL_BIGRAM  CONCLUSION_NGRAM  ENTAIL_BOTH_GRAM  
-           KEYWORD_OVERLAP  
-           DEPTREE_ROOT_STRUCTURE  ENTAIL_DEPTREE 
-           MT_UNIGRAM  MT_PHRASE
          ]"""
-
   )
   -("features.nolex", "false")
 
-  -("parallel", "false")
-  -("threads",  "1")
+  -("parallel", "true")
+//  -("threads",  "1")
   
   -("log.file", touch("redwood.log"))
 )
@@ -193,8 +195,9 @@ def cp:String = {
   val JAVANLP = List(
     System.getenv("JAVANLP_HOME") + "/projects/core/classes",
     System.getenv("JAVANLP_HOME") + "/projects/more/classes",
-    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
-    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar"
+    "stanford-corenlp-models-current.jar"
+//    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-models-current.jar",
+//    "/u/nlp/data/StanfordCoreNLPModels/stanford-corenlp-caseless-models-current.jar"
   ).mkString(":")
   val CUSTOM = List(
       "lib/corenlp-scala.jar",

@@ -9,7 +9,7 @@ import edu.stanford.nlp.simple.Sentence;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
-import edu.stanford.nlp.util.Execution;
+import edu.stanford.nlp.util.ArgumentParser;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.Trilean;
@@ -45,7 +45,7 @@ public class EntailmentFeaturizer implements Serializable {
   }
 
 
-  @Execution.Option(name="features", gloss="The feature templates to use during training")
+  @ArgumentParser.Option(name="features", gloss="The feature templates to use during training")
   public Set<FeatureTemplate> FEATURE_TEMPLATES = new HashSet<FeatureTemplate>(){{
     add(FeatureTemplate.KEYWORD_OVERLAP);
     add(FeatureTemplate.LUCENE_SCORE);
@@ -79,10 +79,10 @@ public class EntailmentFeaturizer implements Serializable {
     */
   }};
 
-  @Execution.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
+  @ArgumentParser.Option(name="features.nolex", gloss="If true, prohibit all lexical features")
   public boolean FEATURES_NOLEX = false;
 
-  @Execution.Option(name="features.keyword.buckets", gloss="The number of buckets to use for keyword overlap statistics")
+  @ArgumentParser.Option(name="features.keyword.buckets", gloss="The number of buckets to use for keyword overlap statistics")
   public int FEATURES_KEYWORD_BUCKETS = 10;
 
   /**
@@ -119,12 +119,12 @@ public class EntailmentFeaturizer implements Serializable {
   }
 
   public EntailmentFeaturizer(String[] args) {
-    Execution.fillOptions(this, args);
+    ArgumentParser.fillOptions(this, args);
   }
 
   @SuppressWarnings("UnusedDeclaration")
   public EntailmentFeaturizer(Properties props) {
-    Execution.fillOptions(this, props);
+    ArgumentParser.fillOptions(this, props);
   }
 
   static Set<KeywordPair> align(EntailmentPair ex, Optional<DebugDocument> debugDocument, boolean manyToMany) {
