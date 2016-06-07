@@ -936,17 +936,17 @@ class AlignmentSimilarity {
 #ifdef __GNUG__
 struct syn_path_data {
 #else
-struct alignas(24) syn_path_data {
+struct alignas(24) syn_path_data {  // 192 bits total
 #endif
-  uint64_t    factHash:64,                            // 8 bytes
+  uint64_t    factHash:64,                     // 64  // 8 bytes
               currentWord:VOCABULARY_ENTROPY,  // 24  // vv           vv
               currentSense:SENSE_ENTROPY,      // 5
               deleteMask:MAX_QUERY_LENGTH,     // 39
-              backpointer:25;
+              backpointer:28;                  // 28
   word        governor:VOCABULARY_ENTROPY;     // 24
-  uint8_t     index:6;
-  bool        truth:1,
-              allQuantifiersSeen:1;                   // ^^ + 16 bytes ^^
+  uint8_t     index:6;                         // 6
+  bool        truth:1,                         // 1
+              allQuantifiersSeen:1;            // 1   // ^^ + 16 bytes ^^
 
   bool operator==(const syn_path_data& rhs) const {
     return factHash == rhs.factHash &&
