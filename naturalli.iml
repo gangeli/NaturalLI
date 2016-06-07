@@ -67,5 +67,10 @@
         <SOURCES />
       </library>
     </orderEntry>
+<<<<<<< HEAD:naturalli.iml
+=======
+    <orderEntry type="library" name="demo" level="project" />
+    <orderEntry type="library" name="scala-sdk" level="project" />
+>>>>>>> master:client.iml
   </component>
 </module>
