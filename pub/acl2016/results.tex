@@ -107,9 +107,12 @@ This corpus consists of \num{1316278} supporting sentences,
 % Pre-processing
 Since we lose all document context when searching over the corpus with NaturalLI,
   we first pre-process the corpus to resolve high-precision cases of
-  pronominal coreference, via a set of simple high-precision sieves.
+  pronominal coreference, via a set of very simple high-precision sieves.
+This finds the most recent candidate antecedent (NP or named entity)
+  which, in order of preference, matches either the pronoun's animacy, 
+  gender, and number.
 %The corpus is then filtered for non-ascii characters (yielding \num{945956} sentences),
-  %and exact duplicate sentences are removed.
+%  and exact duplicate sentences are removed.
 %This results in a total of \num{822748} facts in the supporting corpus.
 Filtering to remove duplicate sentences and sentences containing
     non-ASCII characters yields a total of \num{822748} facts in the corpus.
@@ -124,8 +127,9 @@ On the query side, questions were converted to answers using the same methodolog
   \newcite{key:2015hixon-aristo}.
 In cases where the question contained multiple sentences, only the last sentence
   was considered.
-%As discussed in \refsec{aristo-analysis}, 
-%  this renders these multi-sentence questions effectively out of scope for the model.
+As discussed in \refsec{aristo-analysis}, 
+  we do not attempt reasoning over multiple sentences, and the last sentence is
+  likely the most informative sentence in a longer passage.
 
 %
 % Mutliple Choice as Entailment
@@ -139,8 +143,8 @@ In particular, for each true hypothesis in the training set and for each sentenc
   these to be candidate entailments.
 These were then shown to Turkers, who decided whether the premise entailed the
   hypothesis, the hypothesis entailed the premise, both, or neither.
-%Note that each pair was shown to only one Turker, lowering the cost of
-%  data collection, but consequently resulting in a somewhat noisy dataset.
+Note that each pair was shown to only one Turker, lowering the cost of
+  data collection, but consequently resulting in a somewhat noisy dataset.
 The data was augmented with additional negatives, collected by taking
   the top 10 Solr results for each false hypothesis in the training set.
 This yielded a total of \num{21306} examples.
@@ -236,7 +240,7 @@ We report numbers for two variants of the system:
   \textit{held-out} is the system's performance when it is not allowed
   to use the dialog collected from humans for the example it is answering;
   \textit{oracle} is the full system.
-%Note that the \textit{oracle} variant is a human-in-the-loop system.
+Note that the \textit{oracle} variant is a human-in-the-loop system.
 
 % Baselines
 We additionally present three baselines.
@@ -254,7 +258,7 @@ We also report performance of the evaluation function in NaturalLI
 % Evaluate NaturalLI
 Last, we evaluate NaturalLI with the improvements presented in this paper
   (\textit{NaturalLI} in \reftab{aristonaturalli}).
-We additionally tune weights for a 
+We additionally tune weights on our training set for a 
   simple model combination with
   (1) Solr (with weight 6:1 for NaturalLI) and 
   (2) the standalone classifier (with weight 24:1 for NaturalLI).
@@ -264,16 +268,29 @@ We additionally tune weights for a
 Empirically, both parameters were observed to be fairly robust.
 
 To demonstrate the system's robustness on a larger dataset, we additionally
-  evaluate on a test set of 250 5$^\textrm{th}$ grade science exams.
+  evaluate on a test set of 250 additional science exam questions, with an
+  associated 500 example training set (and 249 example development set).
 These are substantially more difficult as they contain a far larger number
   of questions that require an understanding of a more complex process.
-Nonetheless, the trend illustrated in \reftab{aristonaturalli} holds:
+Nonetheless, the trend illustrated in \reftab{aristonaturalli} holds
+  for this larger set, given in \reftab{big-dataset}.
+Note that with a web-scale corpus, accuracy of an IR-based
+  system can be pushed up to 51.4\%; a PMI-based solver, in turn,
+  achieves an accuracy
+  of 54.8\% -- admittedly higher than our best 
+  system \cite{key:2016clark-aristo}.\footnote{
+    Results from personal correspondence with the authors.
+  }
+An interesting avenue of future work would be to run NaturalLI
+  over such a large web-scale corpus, and to incorporate PMI-based
+  statistics into the evaluation function.
 
-\begin{table}[!ht]
+\begin{table}[t]
 \begin{center}
 \begin{tabular}{lc}
 \toprule
 \textbf{System} & \textbf{Test Accuracy} \\
+\midrule
 Solr Only  & 46.8 \\
 Classifier & 43.6 \\
 \midrule
@@ -365,7 +382,7 @@ For example, \w{Water freezing is an example of a gas changing to a solid}
   
 
 %% Drop from align features to NaturalLI?
-%A peculiarity of the results is the drop in accuracy from the alignment
+%A peculiarity of the results is the drop in accuracy from adding the alignment
 %  features to NaturalLI.
 %We hypothesize that this is a result of missing a few alignments that
 %  are not trivial from tokens alone -- e.g., aligning \w{freezing water} and

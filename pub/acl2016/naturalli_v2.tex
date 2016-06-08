@@ -175,17 +175,22 @@ In many cases, a verb $v_1$ may entail a verb $v_2$ even if $v_2$ is not a hyper
 For example, to \w{sell} something (hopefully) entails \w{own}ing that thing.
 Apart from context-specific cases (e.g., \w{orbit} entails \w{launch} only
   for man-made objects), these hold largely independent of context.
-%Note that the usual operators apply to relational entailments -- if 
-%  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
+Note that the usual operators apply to relational entailments -- if 
+  \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
 This information was incorporated using data from \textsc{VerbOcean}
  \cite{key:2004chklovski-verbocean}, adapting the confidence weights 
  as transition costs.
-%\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
-%  verbs as candidate participants in a set of relations.
+\textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
+  verbs as candidate participants in a set of relations.
 %We approximate the \textsc{VerbOcean} relations $\mathit{stronger \mhyphen than}(v_1,v_2)$ and $\mathit{happens \mhyphen before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-We approximate the \textsc{VerbOcean} relations $\mathit{stronger\text{-}than}(v_1,v_2)$ and $\mathit{happens\text{-}before}(v_2,v_1)$ to indicate that $v_1$ entails $v_2$.
-%These verb entailment transitions are incorporated using costs derived from the original weights from \newcite{key:chklovski2004verbocean}, after thresholding as indicated in the original paper. 
+We approximate the \textsc{VerbOcean} relations 
+  $\mathit{stronger\text{-}than}(v_1,v_2)$ (e.g., to kill is stronger than to
+  wound) and 
+  $\mathit{happens\text{-}before}(v_2,v_1)$ (e.g., buying happens before owning)
+  to indicate that $v_1$ entails $v_2$.
+These verb entailment transitions are incorporated using costs derived from the 
+  original weights from \newcite{key:chklovski2004verbocean}.
 
 % Meronymy
 \paragraph{Meronymy}
@@ -221,10 +226,10 @@ All other operators are considered nonmonotone with
 %We are able to use a weighting scheme analogous to that used for the hypernymy transitions.
 %%We also instantiate the inverse, holonymy transitions.
 
-%% Other orders
-%Note that these are not the only two orders that can be incorporated into our
-%  framework; they just happen to be two which have lexical resources available
-%  and are likely to be useful in real-world entailment tasks.
+% Other orders
+Note that these are not the only two orders that can be incorporated into our
+  framework; they just happen to be two which have lexical resources available
+  and are likely to be useful in real-world entailment tasks.
 
 %
 % Forward Search
@@ -248,10 +253,10 @@ Therefore, this work instead opts to perform a bidirectional search:
 For example, a premise of \w{some furry cats have tails} would yield two facts
   for the knowledge base: \w{some furry cats have tails} as well as \w{some cats
   have tails}.
-%For this, we use the process described in \newcite{key:2015angeli-openie} to
-%  generate short entailed sentences from a long utterance using natural logic.
-%This then leaves the reverse search to only deal with mutations and inference  
-%  insertions, which are relatively easier.
+For this, we use the process described in \newcite{key:2015angeli-openie} to
+  generate short entailed sentences from a long utterance using natural logic.
+This then leaves the reverse search to only deal with mutations and inference  
+  insertions, which are relatively easier.
 
 % Difficulties
 The new challenge this introduces, of course, is the additional space required
@@ -274,11 +279,14 @@ When adding an edge, we can simply take the XOR of the hash saved in the
 When mutating an edge, we XOR the hash of the parent state with the edge we are
   mutating, and again with the mutated edge.
 % Sad to cut -- so much coding time unappreciated :(
-%In this way, each search node need only carry an 8 byte hash, local information
-%  about the edge currently being considered (8 bytes), global information about the words
-%  deleted during search (5 bytes), a 3 byte backpointer to recover the
-%  inference path, and 8 bytes of operator metadata -- 32 bytes in all.
-This results in an incidental contribution of having made NaturalLI significantly
-  faster and more memory efficient -- e.g., each search state can fit into
-  only 32 bytes.
+In this way, each search node need only carry an 8 byte hash, local information
+  about the edge currently being considered (8 bytes), global information about the words
+  deleted during search (5 bytes), a 3 byte backpointer to recover the
+  inference path, and 8 bytes of operator metadata -- 32 bytes in all, amounting
+  to exactly half a cache line on our machines.
+This careful attention to data structures and memory layout turn out to have a
+  large impact on runtime efficiency.
+%This results in an incidental contribution of having made NaturalLI significantly
+%  faster and more memory efficient -- e.g., each search state can fit into
+%  only 32 bytes.
 
