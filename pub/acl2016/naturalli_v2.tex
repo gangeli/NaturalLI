@@ -1,6 +1,6 @@
 \Section{naturalli}{Improving Inference in NaturalLI}
 % Overview paragraph
-We extend NaturalLI in a few theoretical ways to improve its 
+We extend NaturalLI in three ways to improve its 
   coverage.
 %  for question answering tasks over complex sentences.
 We adapt the search algorithm to operate over dependency
@@ -40,9 +40,9 @@ Operating over dependency trees rather than a token sequence requires reworking
 %  deciding an order in which to traverse the tokens.
 
 % Talk about deletion
-Recent work by \newcite{key:2015angeli-openie} defined a mapping from Stanford
+We recently defined a mapping from Stanford
   Dependency relations to the associated lexical relation deleting the
-  dependent subtree would induce.
+  dependent subtree would induce \cite{key:2015angeli-openie}.
 %For instance, deleting an \textit{amod} edge induces \forward\ -- it maintains
 %  entailment in an upward polarity context.
 We adapt this mapping to yield the relation induced by \textit{inserting} a
@@ -179,7 +179,7 @@ Note that the usual operators apply to relational entailments -- if
   \w{all cactus owners live in Arizona} then \w{all cactus sellers live in Arizona}.
 
 This information was incorporated using data from \textsc{VerbOcean}
- \cite{key:2004chklovski-verbocean}, adapting the confidence weights 
+ \cite{key:chklovski2004verbocean}, adapting the confidence weights 
  as transition costs.
 \textsc{VerbOcean} uses lexicosyntactic patterns to score pairs of 
   verbs as candidate participants in a set of relations.
@@ -286,6 +286,7 @@ In this way, each search node need only carry an 8 byte hash, local information
   to exactly half a cache line on our machines.
 This careful attention to data structures and memory layout turn out to have a
   large impact on runtime efficiency.
+More details are given in \newcite{key:2016angeli-thesis}.
 %This results in an incidental contribution of having made NaturalLI significantly
 %  faster and more memory efficient -- e.g., each search state can fit into
 %  only 32 bytes.
