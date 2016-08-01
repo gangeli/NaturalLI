@@ -1,0 +1,76 @@
+
+%%%%%%%%%%%%%%%%%%% 
+% Lexical + Logic
+%%%%%%%%%%%%%%%%%%% 
+\def\title{Old Problem: Logic + ML often at odds}
+\begin{frame}{\title}
+\begin{center}
+\only{\includegraphics[height=4cm]{../img/spy.png}}
+\end{center}
+\end{frame}
+
+
+\begin{frame}[noframenumbering]{\title}
+\hh{ML gives us practical, generalizable systems:}
+\begin{itemize}
+\item[P:] \textit{Ovaries are the female part of the flower, which produces eggs that are needed for making seeds.}
+\item[H:] \textit{A flower produces the seeds.}
+\end{itemize}
+\vspace{2ex}
+\hh{...But struggles with logical subtleties}
+\begin{itemize}
+\item[P:] \textit{Eating candy for dinner is an example of a poor health habit.}
+\item[H:] \textit{Eating candy is an example of a good health habit.}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}[noframenumbering]{Make ML more first-order-logic-like}
+\hh{Markov Logic Networks}
+\begin{itemize}
+\item \cite{key:2006richardson-mln}
+\item \cite{key:2011niu-tuffy}
+\end{itemize}
+\vspace{2ex}
+\hh{Probabilistic Soft Logic}
+\begin{itemize}
+\item \cite{key:2012kimmig-psl}
+\item \cite{key:2014beltagy-psl}
+\end{itemize}
+\vspace{2ex}
+\hh{Deep Learning + Logic}
+\begin{itemize}
+\item \cite{key:2015rocktaschen-logic}
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Find logics that are better for ML}
+\begin{center}
+  \hh{Natural Logic!}
+\end{center}
+\footnotetext<.->{\cite{key:1991valencia-natlog,key:2008maccartney-natlog,key:2014icard-natlog}}
+\pause
+
+\hh{Logic over natural language}
+\begin{itemize}
+\item \textit{Instantaneous} and \textit{perfect} semantic parsing!
+\item Plays nice with lexical methods
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{Tractable}
+\begin{itemize}
+\item Polynomial time entailment checking \cite{key:2008maccartney-natlog}.
+\end{itemize}
+\vspace{1ex}
+\pause
+
+\hh{Expressive (for common inferences)}
+\begin{itemize}
+\item Second-order phenomena; \w{most}; quantifier scoping
+\pause
+\item No free lunch: shallow quantification; single-premise only
+\end{itemize}
+\end{frame}

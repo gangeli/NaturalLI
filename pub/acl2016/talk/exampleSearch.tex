@@ -1,0 +1,100 @@
+\def\no{\monoUpR{}{\textbf{No$_{\downarrow \downarrow}$}}{}{}}
+\def\carnivores{\monoDownR{felines}{carnivores}{animal}{organism}}
+\def\eat{\monoDownR{slurp}{eat}{consume}{}}
+\def\animals{\monoDownR{chordate}{animals}{organism}{living thing}}
+
+\providecommand*{\exstrut}{\rule[1cm]{0pt}{2cm}}
+\providecommand\nodeOnly[2]{
+  \begin{center}
+    \begin{tabular}{ >{\centering\arraybackslash} m{2.5cm}  >{\centering\arraybackslash} m{9.5cm}}
+      \h{Truth maintained:} & #1 \\
+                            & \\[2ex]
+      \h{Current Node:}     & \scalebox{0.75}{ \mbox{\exstrut #2} } \\[3ex]
+    \end{tabular}
+  \end{center}
+}
+      
+\providecommand\tableOnly[3]{
+  \begin{tabular}{p{0.45\textwidth}p{0.15\textwidth}p{0.25\textwidth}}
+    \multicolumn{1}{c}{\textbf{Edge}} & \multicolumn{1}{c}{\textbf{Instance}} & \multicolumn{1}{c}{\textbf{Template}} \\
+    #1 & #2 & #3
+  \end{tabular}
+}
+
+\providecommand\exampleSearch[6]{
+  \begin{tabular}{c|c}
+    \h{Current Node} & \h{Graph} \\
+      & \\
+      #1 & \multirow{3}{*}{
+          \scalebox{0.48}{#3}
+        } \\
+      & \\
+      \scalebox{0.5}{#2} & \\
+    \hline
+    \multicolumn{2}{c}{} \\
+    \multicolumn{2}{p{\textwidth}}{
+      \begin{tabular}{p{0.25\textwidth}p{0.20\textwidth}p{0.4\textwidth}}
+        \multicolumn{1}{c}{\textbf{Template}} & \multicolumn{1}{c}{\textbf{Instance}} & \multicolumn{1}{c}{\textbf{Edge}} \\
+        #4 & #5 & #6
+      \end{tabular}
+    }
+  \end{tabular}
+}
+
+\def\stepOne{
+  \def\wordthe{\monoUpR{\textbf{All$_{\downarrow \uparrow}$}}{\darkgreen{\textbf{The$_{\uparrow \uparrow}$}}}{}{}}
+  \def\carnivores{\monoUpR{felines}{carnivores}{animal}{organism}}
+  \def\eat{\monoUpR{slurp}{eat}{consume}{}}
+  \def\animals{\monoUpR{chordate}{animals}{organism}{living thing}}
+}
+\def\stepTwo{
+  \def\wordthe{\monoUpR{\textbf{All$_{\downarrow \uparrow}$}}{\textbf{The$_{\uparrow \uparrow}$}}{}{}}
+  \def\feline{\monoUpR{cats}{\darkgreen{\textbf{felines}}}{carnivores}{animals}}
+}
+\def\stepThree{
+  \def\cat{\monoUpR{kitties}{\darkgreen{\textbf{cats}}}{felines}{carnivores}}
+}
+\def\stepFour{
+  \def\cat{\monoUpR{kitties}{cats}{felines}{carnivores}}
+  \def\chordates{\monoUpR{mice}{\darkgreen{\textbf{chordates}}}{animals}{organisms}}
+}
+\def\stepFive{
+  \def\chordates{\monoDownR{mice}{chordates}{animals}{organisms}}
+  \def\mice{\monoUpR{fieldmice}{\darkgreen{\textbf{mice}}}{chordates}{animals}}
+}
+\def\stepSix{
+  \def\cat{\monoUpR{kitty}{cat}{feline}{carnivore}}
+  \def\mice{\monoUpR{fieldmouse}{mouse}{chordate}{animal}}
+  \def\eat{\monoUpR{slurped}{ate}{consumed}{}}
+  \def\worda{\monoUpR{\textbf{All$_{\downarrow \uparrow}$}}{\darkgreen{\textbf{a$_{\uparrow \uparrow}$}}}{}{}}
+}
+
+
+%%%%%%%%%%%%%%%%%% 
+% AS SEARCH
+%%%%%%%%%%%%%%%%%%
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepOne \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepTwo \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepThree \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepFour \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepFive \end{center}
+\end{frame}
+
+\begin{frame}[noframenumbering]{\title}
+  \begin{center} \exampleStepSix \end{center}
+\end{frame}
+

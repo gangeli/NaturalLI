@@ -22,7 +22,7 @@
     \node[state]           (alternate)  [right=of forward]          {\alternate};
 
     % (paths)
-    \path[<->] (equivalent) edge              node {\negate}             (negate);
+    \path[->]  (equivalent) edge              node {\negate}             (negate);
     \path[->]  (negate)     edge [bend right] node {\forward}            (cover)
                             edge [bend left]  node {\alternate}          (reverse)
                             edge [bend left]  node {\reverse}            (alternate)
@@ -45,12 +45,12 @@
 % A Finite State Automata for the collapsed inference states
 % -----
 %
-\newcommand\collapsedFSA{
+\newcommand\collapsedFSAImpl[3]{
   \begin{tikzpicture}[shorten >=1pt,node distance=2.0cm,auto,semithick,inner sep=2pt,bend angle=30,
     % (styles)
-    every state/.style={draw=red!100,very thick,fill=red!10},
-    accepting/.style={draw=blue!50,very thick,fill=blue!10},
-    initial/.style={draw=green!90,very thick,fill=green!10}
+    every state/.style={draw=red!100,very thick,fill=red!#1},
+    accepting/.style={draw=blue!50,very thick,fill=blue!#3},
+    initial/.style={draw=green!90,very thick,fill=green!#2}
     ]
 
     % (states)
@@ -71,16 +71,21 @@
   \end{tikzpicture}
 }
 
+\newcommand\collapsedFSA{\collapsedFSAImpl{10}{10}{10}}
+\newcommand\collapsedFSARed{\collapsedFSAImpl{50}{10}{10}}
+\newcommand\collapsedFSAGreen{\collapsedFSAImpl{10}{50}{10}}
+\newcommand\collapsedFSABlue{\collapsedFSAImpl{10}{10}{50}}
+
 %
 % -----
 % A Teaser Search Path
 % -----
 %
 \newcommand\teaserSearch{
-  \tikzstyle{level 1}=[level distance=1.5cm, sibling distance=3.5cm]
-  \tikzstyle{level 2}=[level distance=1.5cm, sibling distance=2cm]
-  \tikzstyle{level 3}=[level distance=1.5cm, sibling distance=2cm]
-  \tikzstyle{level 4}=[level distance=1.5cm, sibling distance=2cm]
+  \tikzstyle{level 1}=[level distance=2.0cm, sibling distance=3.5cm]
+  \tikzstyle{level 2}=[level distance=2.0cm, sibling distance=2cm]
+  \tikzstyle{level 3}=[level distance=2.0cm, sibling distance=2cm]
+  \tikzstyle{level 4}=[level distance=2.0cm, sibling distance=2cm]
   \tikzstyle{fact} = [text width=7em, text centered]
   \tikzstyle{sink} = [text width=7em, text centered, 
                       rectangle, draw]
@@ -118,7 +123,7 @@
             [clockwise from=-55,sibling angle=20]
 %            child foreach \x in {1,2,3,4} {}
           }
-        edge from parent node[above,shift={(-1 ex,0 ex)}] {$\rotatebox{-56}{\reverse}$}
+        edge from parent node[above,shift={(-1 ex,0 ex)}] {$\rotatebox{-63}{\reverse}$}
       }
       child {
         node[fact] {$\dots$}
@@ -510,8 +515,8 @@
 
 \newcommand\alternateVenn{
   \begin{tikzpicture}
-    \def\vennA{(-0.4,0.4) circle (0.5)}
-    \def\vennB{(0.4,-0.4) circle (0.5)}
+    \def\vennA{(0.4,-0.4) circle (0.5)}
+    \def\vennB{(-0.4,0.4) circle (0.5)}
     
     \draw \vennB node [below] {};
     \draw \vennA node [above] {};
@@ -551,6 +556,31 @@
     \relName{cover}
   \end{tikzpicture}
 }
+
+\newcommand\independentVenn{
+  \begin{tikzpicture}
+    \def\vennA{(0.25,-0.25) circle (0.5)}
+    \def\vennB{(-0.25,0.25) circle (0.5)}
+    
+    \draw \vennB node [below] {};
+    \draw \vennA node [above] {};
+    \begin{scope}
+      \fill[fill=dark] \vennB;
+    \end{scope}
+    \begin{scope}
+      \fill[fill=light] \vennA;
+    \end{scope}
+    \begin{scope}
+      \clip \vennA;
+      \fill[pattern=north west lines, pattern color=dark] \vennB;
+    \end{scope}
+    
+    \frameVenn
+    \draw (0, -1.3) node {$\varphi \independent \psi$};
+    \relName{independence}
+  \end{tikzpicture}
+}
+
 
 
 %

@@ -1,0 +1,75 @@
+\documentclass[hyperref,xcolor=table]{beamer}
+\usepackage{beamerthemesplit}
+\usepackage{graphicx}
+\usepackage{mathptmx}           % replacement for obsolete \usepackage{times}
+\usepackage[scaled=1.0]{helvet} % replacement for obsolete \usepackage{times}
+\usepackage{courier}            % replacement for obsolete \usepackage{times}
+\usepackage[normalem]{ulem}
+
+
+
+\usepackage{tikz}
+\usepackage{tikz-dependency,pifont}
+\usetikzlibrary{shapes.arrows,chains,positioning,automata,trees,calc}
+\usetikzlibrary{patterns,matrix}
+\usetikzlibrary{decorations.pathmorphing,decorations.markings}
+\usepackage{times,latexsym,amsfonts,amssymb,amsmath,graphicx,url,bbm,rotating,siunitx}
+\usepackage{multirow,hhline,arydshln,array,stmaryrd,pifont,color,centernot,fitch,datetime}
+\usepackage[absolute,overlay]{textpos}
+\definecolor{darkred}{rgb}{0.5, 0.0, 0.0}
+\definecolor{darkgreen}{rgb}{0.0, 0.4, 0.0}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.5}
+\definecolor{orange}{rgb}{0.767, 0.450, 0.0}
+\definecolor{verylightgray}{rgb}{0.9, 0.9, 0.9}
+
+% set up Beamer style with Stanford colors and logo
+% logo is available at http://nlp.stanford.edu/local/nlp-logos/nlp-logo.pdf
+\useinnertheme{rounded}
+\useoutertheme{infolines}
+\usecolortheme{beaver}
+\setbeamercolor{block title}{fg=white,bg=darkred!75!black}
+\setbeamercolor{block body}{parent=normal text,bg=black!5!bg}
+\setbeamercolor{item projected}{bg=darkred}
+\setbeamertemplate{enumerate items}[default]
+\logo{\includegraphics[height=1cm]{../img/nlp-logo.pdf}}
+\renewcommand{\footnoterule}{}
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+
+% title page information
+\title[Learning Knowledge From Text]{Learning Open Domain Knowledge from Text}
+\subtitle{}
+\author{Gabor Angeli}
+\date{March 2, 2016}
+\institute[Stanford]{Stanford University}
+
+\input macros.tex
+\input ../std-macros.tex
+\input figures.tex
+
+\begin{document}
+
+
+\input intro.tex
+\input naturalli.tex
+\input science.tex
+
+%
+% References
+%
+\newcommand{\backupbegin}{
+   \newcounter{framenumberappendix}
+   \setcounter{framenumberappendix}{\value{framenumber}}
+}
+\newcommand{\backupend}{
+   \addtocounter{framenumberappendix}{-\value{framenumber}}
+   \addtocounter{framenumber}{\value{framenumberappendix}} 
+}
+\backupbegin
+\begin{frame}[allowframebreaks]
+    \frametitle{References}
+    \bibliographystyle{apalike}
+    {\small \bibliography{ref}}
+\end{frame}
+\backupend
+
+\end{document}

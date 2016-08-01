@@ -1,0 +1,83 @@
+\newcommand\exampleTreeLargeImpl[6]{
+  \tikzstyle{factwide} = [text width=12em, text centered, line width=2pt]
+  \tikzstyle{boxfactwide} = [text width=12em, text centered, line width=2pt,
+                             rectangle, draw=black, line width=1pt]
+  \setstyles
+  \tikzstyle{level 1}=[level distance=2.0cm]
+  \tikzstyle{level 2}=[level distance=2.0cm, sibling distance=5.0cm]
+  \begin{tikzpicture}[grow=down, sloped]
+    \node[factwide] {\w{\gray{#1}}}
+    child {
+      node[boxfactwide] {\w{#2?}}
+        child {
+          node[#5] {\w{#3}} 
+          edge from parent [#6] node[above] {}
+        }
+        child {
+          node[factwide] {\w{#4}} 
+        }
+        child {
+          node[factwide] {$\dots$}
+        }
+    };
+  \end{tikzpicture}
+}
+\newcommand\exampleTreeLarge[4]{\exampleTreeLargeImpl{#1}{#2}{#3}{#4}{fact}{strongPath}}
+\newcommand\exampleTreeLargeLost[4]{\exampleTreeLargeImpl{#1}{#2}{#3}{#4}{fact}{}}
+
+
+
+\def\title{An Example Search}
+\begin{frame}[t]{\title}
+\vspace{-5ex}
+\begin{center}
+\exampleTreeLargeLost{ROOT \\ $~$}
+                     {Rain and snow are types of precipitation}
+                     {Rain and snow are \darkblue{forms} of precipitation}
+                     {\darkblue{Heavy rain} and snow are types of precipitation}
+\end{center}
+\end{frame}
+
+\begin{frame}[t]{\title}
+\vspace{-5ex}
+\begin{center}
+\exampleTreeLarge{ROOT \\ $~$}
+                 {Rain and snow are types of precipitation}
+                 {Rain and snow are \darkblue{forms} of precipitation}
+                 {\darkblue{Heavy rain} and snow are types of precipitation}
+\end{center}
+\end{frame}
+
+\begin{frame}[t,noframenumbering]{\title}
+\vspace{-5ex}
+\begin{center}
+\exampleTreeLargeLost{Rain and snow are types of precipitation}
+                 {\textcolor<3->{darkblue}{\textbf<3->{Rain}}
+                  and snow are 
+                  \textcolor<3->{darkblue}{\textbf<3->{forms}} 
+                  of 
+                  \textcolor<3->{darkblue}{\textbf<3->{precipitation}}}
+                 {Rain and snow are forms of \darkblue{weather}}
+                 {\darkblue{Heavy rain} and snow are forms of precipitation}
+\pause
+\vspace{2ex}
+  \begin{tikzpicture}[grow=down, sloped]
+    \tikzstyle{fact} = [text width=12em, text centered,
+                        rectangle, draw=blue]
+    \node(db) at (0, 0) {\includegraphics[height=1.75cm]{../img/database.png}};
+    \node[fact](main) at (0, 0) {
+      \w{
+        \textcolor<3->{darkblue}{\textbf<3->{Forms}} 
+        of 
+        \textcolor<3->{darkblue}{\textbf<3->{precipitation}}
+        include 
+        \textcolor<3->{darkblue}{\textbf<3->{rain}}
+        and sleet}
+     };
+    \draw (db.north west) -- (main.north west);
+    \draw (db.south west) -- (main.south west);
+    \draw (db.north east) -- (main.north east);
+    \draw (db.south east) -- (main.south east);
+  \end{tikzpicture}
+\end{center}
+\end{frame}
