@@ -39,11 +39,16 @@ For example, consider the following hypothesis (H)
 {A flower produces the seeds.}
 
 %-> But, this is easy for lexical methods
+This requires a relatively large amount of inference:
+  the most natural atomic fact in the sentence is that
+  ovaries produce eggs.
+These inferences are feasible in a limited domain, but become
+  difficult the more open-domain reasoning they require.
 In contrast, even a simple lexical overlap classifier could correctly predict
-  the entailment (see, e.g., \newcite{key:2009maccartney-thesis}).
-%In fact, such a bag-of-words entailment model has been shown to be surprisingly
-%  effective on the Recognizing Textual Entailment (RTE) challenges 
-%  \cite{key:2009maccartney-thesis}.
+  the entailment.
+In fact, such a bag-of-words entailment model has been shown to be surprisingly
+  effective on the Recognizing Textual Entailment (RTE) challenges 
+  \cite{key:2009maccartney-thesis}.
 %-> But, lexical methods are easy to fool.
 On the other hand, such methods are also notorious for ignoring even trivial 
   cases of nonentailment that are easy for natural logic, e.g., recognizing negation
@@ -98,7 +103,7 @@ We present the following contributions:
 (2) we augment NaturalLI with an evaluation function to provide an estimate of entailment
     for any query; and 
 (3) we run our system over the Aristo science questions corpus,
-    achieving the best published numbers.
+    achieving the strong results.
 
 
 %

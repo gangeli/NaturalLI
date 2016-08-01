@@ -14,6 +14,16 @@ These approaches often rely on alignment features, similar to ours, but
 The discourse commitments in \newcite{key:2007hickl-rte} can be thought
   of as similar to the additional entailed facts we add to the
   knowledge base (\refsec{naturalli-forward}).
+In another line of work, \newcite{key:2014tian-dcs} approach the RTE problem
+  by parsing into Dependency Compositional Semantics (DCS)
+  \cite{key:2011liang-semantics}.
+This work  particularly relevant in that it also incorporates an evaluation
+  function (using distributional similarity) to augment their theorem prover --
+  although in their case, this requires a translation back and forth between
+  DCS and language.
+\newcite{key:2016beltagy-logic} takes a similar approach, but encoding
+  distributional information directly in entailment rules in a Markov Logic
+  Network \cite{key:2006richardson-mln}.
 
 % -- Q/A
 Many systems make use of structured knowledge bases for question
@@ -49,10 +59,13 @@ Open IE \cite{key:2010wu-openie,key:2012mausam-ollie}
 %  of open IE extractions.
 
 % -- Logic-based QA
+Of course, this work is not alone in attempting to incorporate
+  strict logical reasoning into question answering systems.
 The COGEX system \cite{key:2003moldovan-trec} incorporates a theorem
-  prover into a QA system, boosting overall performance.
+  prover into a QA system, boosting overall performance on the TREC
+  QA task.
 Similarly, Watson \cite{key:2010ferrucci-watson} incorporates
-  logical reasoning components.
+  logical reasoning components alongside shallower methods.
 This work follows a similar vein, but both the theorem prover
   and lexical classifier operate over text, without requiring either
   the premises or axioms to be in logical forms.

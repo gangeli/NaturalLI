@@ -1,9 +1,29 @@
 \Section{conclude}{Conclusion}
-We have presented two theoretical improvements to natural logic inference to
-  make the formalism more robust for question answering.
-We augment the formalism with a theory for handling relational entailment and meronymy,
-  and we incorporate a soft evaluation function for predicting likely entailments when
-  formal support could not be found.
+We have improved NaturalLI to be more
+  robust for question answering by running the inference over dependency trees,
+  pre-computing deletions, and incorporating a soft evaluation function for 
+  predicting likely entailments when formal support could not be found.
+Lastly, we show that relational entailment and meronymy can be elegantly incorporated
+  into natural logic.
 These features allow us to perform large-scale broad domain question answering,
-  achieving the best published numbers on the Aristo science exams corpus.
+  achieving strong results on the Aristo science exams corpus.
+
+
+\section*{Acknowledgments}
+We thank the anonymous reviewers for their
+  thoughtful comments. 
+We gratefully acknowledge the support of the Allen Institute
+  for Artificial Intelligence, and in particular Peter Clark and
+  Oren Etzioni for
+  valuable discussions, as well as for access to the Aristo corpora
+  and associated preprocessing.
+We would also like to acknowledge the support of the 
+  Defense Advanced Research Projects Agency (DARPA) Deep Exploration
+  and Filtering of Text (DEFT) Program under
+  Air Force Research Laboratory (AFRL) contract
+  no. FA8750-13-2-0040. 
+Any opinions, findings, and conclusion or recommendations expressed
+  in this material are those of the authors and
+  do not necessarily reflect the view of AI2, DARPA,
+  AFRL, or the US government.
 

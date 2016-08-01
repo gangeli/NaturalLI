@@ -154,9 +154,8 @@ A version of the classifier constructed in
   than keyphrases can be incorporated directly into
   NaturalLI's search to give a score for each candidate premise visited.
 This can be thought of as analogous to the evaluation function in game-playing
-  search.
-%  -- even though an agent cannot play a game of Chess to completion,
-%  at some depth it can apply an evaluation function to its leaf states.
+  search -- even though an agent cannot play a game of Chess to completion,
+  at some depth it can apply an evaluation function to its leaf states.
 
 %Unlike the keyphrase spans in the classifier from \refsec{softsignals-classifier},
 %  keywords are single tokens in NaturalLI -- note that this is not always
@@ -177,6 +176,9 @@ Importantly though, this allows the feature values to be computed
 For instance, if we are deleting a word which was previously aligned perfectly
   to the premise, we would subtract the weight for a perfect and imperfect
   alignment, and add the weight for an unaligned premise keyphrase.
+This has the same effect as applying the trained classifier to the new state,
+  and uses the same weights learned for this classifier,
+  but requires substantially less computation.
 
 % Soft negation
 In addition to finding entailments from candidate premises, our system also
@@ -202,7 +204,7 @@ To illustrate, consider the polarity signatures of common operators:
 
 \vspace{-0.75em}
 \begin{center}
-\begin{tabular}{lcc}
+\begin{tabular}{l@{\hskip -0.15cm}cc}
 %  \hline
   \textbf{Operators} & \textbf{Subj. polarity} & \textbf{Obj. polarity} \\
 %  \hline

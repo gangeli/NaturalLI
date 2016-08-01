@@ -12,7 +12,7 @@ import Qry._
 //)
 
 
-using("tmp/validation/")
+using("tmp/monarch/")
 
 //
 // Run the models (train; all corpora)
