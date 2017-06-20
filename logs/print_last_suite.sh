@@ -10,7 +10,7 @@ for i in `seq 3 $COUNT`; do
   cat "$DIR/last_suite/$i/_rerun.sh" | grep 'naturalli.use'; 
   cat "$DIR/last_suite/$i/_rerun.sh" | grep "data'"; 
   cat "$DIR/last_suite/$i/_rerun.sh" | grep "model'"; 
-  tail -n 1 "$DIR/last_suite/$i/redwood.log"; 
+  tail -n 2 "$DIR/last_suite/$i/redwood.log" | head -n 1; 
   echo "-----"; 
   echo ""; 
 done | sed -r \

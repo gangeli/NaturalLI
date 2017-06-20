@@ -62,7 +62,7 @@ AC_SUBST([GTEST_LIBS])
 
 # (CoreNLP jar)
 AC_SUBST(CORENLP)
-CORENLP="`pwd`/stanford-corenlp-3.5.3.jar"
+CORENLP="`pwd`/stanford-corenlp-3.6.0.jar"
 AC_ARG_WITH([corenlp],
   [AS_HELP_STRING([--with-corenlp=/path/to/jar/file],[The path to the CoreNLP jar file. Must be absolute!])],
   [CORENLP="$with_corenlp"],

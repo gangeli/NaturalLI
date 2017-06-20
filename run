@@ -25,8 +25,10 @@ def classifier =
     -('classifier, "NATURALLI")
     -('naturalli_search, "src/naturalli_search")
     -("train.file", "etc/aristo/turk_90_trainset.tab")
-    -("train.cache.do", "true")
+    -("train.cache.do", "false")
+    -("test.cache.do", "false")
     -("train.debugdoc", "/dev/null")
+    -("train.regularizer", "l2")
     -("log.file", touch("redwood.log"))
    )
 
@@ -166,6 +168,7 @@ def cp:String = {
   ).mkString(":")
   val CUSTOM = List(
       "lib/gson-2.3.1.jar",
+      "lib/berkeleyaligner.jar",
       "lib/jaws.jar"
     ).mkString(":")
   List("src/naturalli_preprocess.jar", JAVANLP, CUSTOM).mkString(":")

@@ -3,31 +3,60 @@ exec scala -cp qry.jar:test/src/test_client.jar:src/naturalli_client.jar "$0" "$
 !#
 import Qry._
 
+import java.nio.file.StandardCopyOption.REPLACE_EXISTING
+import java.nio.file.Files.copy
+import java.nio.file.Paths.get
+
+implicit def toPath (filename: String) = get(filename)
+
 //
 // Train the classifiers
 //
 //submit(classifier
 //  -('features, "LUCENE_SCORE KEYWORD_OVERLAP")
-//  -('model, "logs/monarch_both.ser.gz")
+//  -('model, "logs/model.both.ser.gz")
 //)
 
 
-using("tmp/validation/")
+using("logs/monarch_run")
 
 //
 // Run the models (train; all corpora)
 //
-submit(multchoice
-  -("naturalli.incache", "logs/monarch_train.cache")
-  -("naturalli.outcache", "logs/out.cache")
-  -('data, "etc/aristo/eval_monarch_train_allcorpora.tab")
-  -('model, "logs/model.both.ser.gz")
-  -('features, "LUCENE_SCORE KEYWORD_OVERLAP")
-  -("naturalli.weight",  "1.0")
-  -("classifier.weight", "0.00")
-  -("lucene.weight",  "0.042")
-  -("log.file",  touch("redwood.log"))
-)
+
+def run(dataset:String, naturalli:Double, classifier:Double, lucene:Double) = {
+  submit(multchoice
+    -("naturalli.incache", "logs/monarch_" + dataset + ".cache")
+    -("naturalli.outcache", "logs/monarch_" + dataset + ".cache.out")
+    -('data, "etc/aristo/eval_monarch_" + dataset + "_allcorpora.tab")
+    -('model, "logs/model.both.ser.gz")
+    -('features, "LUCENE_SCORE KEYWORD_OVERLAP")
+    -("naturalli.weight",  "" + naturalli)
+    -("classifier.weight", "" + classifier)
+    -("lucene.weight",  "" + lucene)
+    -("log.file",  touch("redwood.log"))
+  )
+}
+
+//run("train", 1.0, 0.0, 0.0)
+//copy("logs/monarch_train.cache.out", "logs/monarch_train.cache", REPLACE_EXISTING)
+//run("train", 0.0, 1.0, 0.0)
+//run("train", 0.0, 1.0, 1.0)
+//run("train", 1.0, 0.0, 0.042)
+//
+//run("dev", 1.0, 0.0, 0.0)
+//copy("logs/monarch_dev.cache.out", "logs/monarch_dev.cache", REPLACE_EXISTING)
+//run("dev", 0.0, 1.0, 0.0)
+//run("dev", 0.0, 1.0, 1.0)
+//run("dev", 1.0, 0.0, 0.042)
+//
+//run("test", 1.0, 0.0, 0.0)
+//copy("logs/monarch_test.cache.out", "logs/monarch_test.cache", REPLACE_EXISTING)
+//run("test", 0.0, 1.0, 0.0)
+//run("test", 0.0, 1.0, 1.0)
+//run("test", 1.0, 0.0, 0.042)
+
+run("test", 0.0, 0.0, 1.0)
 
 
 
@@ -81,7 +110,8 @@ def cp:String = {
     System.getenv("JAVANLP_HOME") + "/projects/research/classes",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/reverb.jar",
     System.getenv("JAVANLP_HOME") + "/projects/research/lib/postgresql.jar",
-    "/home/gabor/staging/stanford-corenlp-models-current.jar"
+    "/afs/cs.stanford.edu/u/angeli/workspace/naturalli/stanford-corenlp-models-current.jar",
+    "/afs/cs.stanford.edu/u/angeli/workspace/naturalli/stanford-corenlp-caseless-models-current.jar"
   ).mkString(":")
   val CUSTOM = List(
       "lib/gson-2.3.1.jar",
