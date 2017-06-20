@@ -55,7 +55,7 @@ export TEST_CP=${CP}:${LIB}/test/junit-4.11.jar:${LIB}/test/hamcrest-core-1.3.ja
 
 # (some tasks)
 etc/graphData/:
-	wget -O ${etc}/graphData.tar.gz 'https://www.dropbox.com/s/l8hm7v60mopihwr/naturalli_raw_graph_data.tar.gz?dl=1'
+	wget -O ${etc}/graphData.tar.gz 'https://storage.googleapis.com/naturalli/graphData.tar.gz'
 	cd etc && tar xvfz graphData.tar.gz
 
 etc/.pp_affinity: etc/pp.sql
@@ -89,7 +89,7 @@ etc/.pp_affinity: etc/pp.sql
 #endif
 
 etc/clauseSplitterModel.ser.gz:
-	wget -O ${etc}/clauseSplitterModel.ser.gz 'https://www.dropbox.com/s/cbh3jrzs81m404o/clauseSplitterModel.ser.gz?dl=1'
+	wget -O ${etc}/clauseSplitterModel.ser.gz 'https://storage.googleapis.com/naturalli/clauseSplitterModel.ser.gz'
 
 etc/.mk_graph: etc/graphData/ etc/mkGraph.sh
 	bash -c 'cd ${etc} && ./mkGraph.sh'
