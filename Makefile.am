@@ -79,12 +79,12 @@ etc/.pp_affinity: etc/pp.sql
 #	touch ${etc}/.pp_affinity
 #else
 	@echo "Could not find Greenplum; downloading attachment models instead."
-	wget -O ${etc}/pp.tab.gz 'https://www.dropbox.com/s/tgqwwcvoaspmzj3/pp.tab.gz?dl=1'
-	wget -O ${etc}/subj_obj_pp.tab.gz 'https://www.dropbox.com/s/4sajae63s25i7uw/subj_obj_pp.tab.gz?dl=1'
-	wget -O ${etc}/subj_pp_obj.tab.gz 'https://www.dropbox.com/s/xkw9moy0g91x5zv/subj_pp_obj.tab.gz?dl=1'
-	wget -O ${etc}/subj_pp_pp.tab.gz 'https://www.dropbox.com/s/1ed2u0elmx977jh/subj_pp_pp.tab.gz?dl=1'
-	wget -O ${etc}/subj_pp.tab.gz 'https://www.dropbox.com/s/a89ax0mfce7j2sv/subj_pp.tab.gz?dl=1'
-	wget -O ${etc}/obj.tab.gz 'https://www.dropbox.com/s/bxzrobeh64ts2cw/obj.tab.gz?dl=1'
+	wget -O ${etc}/pp.tab.gz 'https://storage.googleapis.com/naturalli/pp.tab.gz'
+	wget -O ${etc}/subj_obj_pp.tab.gz 'https://storage.googleapis.com/naturallij/subj_obj_pp.tab.gz'
+	wget -O ${etc}/subj_pp_obj.tab.gz 'https://storage.googleapis.com/naturallij/subj_pp_obj.tab.gz'
+	wget -O ${etc}/subj_pp_pp.tab.gz 'https://storage.googleapis.com/naturalli/subj_pp_pp.tab.gz'
+	wget -O ${etc}/subj_pp.tab.gz 'https://storage.googleapis.com/naturalli/subj_pp.tab.gz'
+	wget -O ${etc}/obj.tab.gz 'https://storage.googleapis.com/naturalli/obj.tab.gz'
 	touch ${etc}/.pp_affinity
 #endif
 
