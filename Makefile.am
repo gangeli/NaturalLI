@@ -80,8 +80,8 @@ etc/.pp_affinity: etc/pp.sql
 #else
 	@echo "Could not find Greenplum; downloading attachment models instead."
 	wget -O ${etc}/pp.tab.gz 'https://storage.googleapis.com/naturalli/pp.tab.gz'
-	wget -O ${etc}/subj_obj_pp.tab.gz 'https://storage.googleapis.com/naturallij/subj_obj_pp.tab.gz'
-	wget -O ${etc}/subj_pp_obj.tab.gz 'https://storage.googleapis.com/naturallij/subj_pp_obj.tab.gz'
+	wget -O ${etc}/subj_obj_pp.tab.gz 'https://storage.googleapis.com/naturalli/subj_obj_pp.tab.gz'
+	wget -O ${etc}/subj_pp_obj.tab.gz 'https://storage.googleapis.com/naturalli/subj_pp_obj.tab.gz'
 	wget -O ${etc}/subj_pp_pp.tab.gz 'https://storage.googleapis.com/naturalli/subj_pp_pp.tab.gz'
 	wget -O ${etc}/subj_pp.tab.gz 'https://storage.googleapis.com/naturalli/subj_pp.tab.gz'
 	wget -O ${etc}/obj.tab.gz 'https://storage.googleapis.com/naturalli/obj.tab.gz'
